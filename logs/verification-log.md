@@ -2424,3 +2424,27 @@ Result:
 - `wave-72-20260601-1943-rereview.md` reported stale latest-rereview closeout wording; current logs already cited the latest passing rereview, and `wave-72-20260601-1944-rereview.md` passed with no findings.
 - Final reviewer audit passed after `wave-72-20260601-1944-rereview.md`: 74 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 73 wave files, 376 project files.
+
+## 2026-06-01 - Wave 73 Remote Cleanroom After UI Evidence Clarity
+
+Commands:
+
+- `remote=$(git remote get-url origin) && commit=$(git rev-parse HEAD) && tmp=$(mktemp -d /tmp/splunkready-wave73-remote-XXXXXX) && { echo "remote=$remote"; echo "expected_commit=$commit"; echo "tmp=$tmp"; git clone --depth 1 --branch splunkready-build --single-branch "$remote" "$tmp/repo"; cd "$tmp/repo"; echo "actual_commit=$(git rev-parse HEAD)"; npm ci --ignore-scripts; npm run audit:reviewers; npm run check; npx vitest run tests/ui/shell.test.ts; if git ls-files | rg '(^|/)(\\.antigravitycli|\\.playwright-cli|artifacts)(/|$)'; then echo "sidecar_artifacts=present"; exit 20; else echo "sidecar_artifacts=absent"; fi; } | tee "$tmp/cleanroom.log"`
+
+Result:
+
+- PASS.
+- Remote clone checked out `e8e6ea6da7ee5d0da35ab71c4b62f6cc3f91ee00`, matching the expected pushed Wave 72 commit.
+- Remote `npm ci --ignore-scripts` passed: 55 packages installed, 0 vulnerabilities.
+- Remote reviewer audit passed: 74 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Remote full project check passed: scaffold verifier plus 31 test files / 141 tests.
+- Remote focused UI shell test passed: 1 test file / 10 tests.
+- Tracked sidecar artifact scan passed: `sidecar_artifacts=absent`.
+- Initial local reviewer audit passed before a Wave 73-specific reviewer inbox file arrived: 74 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Initial local scaffold verifier and `git diff --check` passed: 74 wave files, 378 project files.
+- Follow-up scaffold verifier and `git diff --check` passed after the Wave 73 log placement fix: 74 wave files, 379 project files.
+- `wave-73-20260601-1949-review.md` reported `MEDIUM-001` for stale pending-closeout wording and `MEDIUM-002` for execution-log placement; both were resolved by moving the Wave 73 execution-log section to the chronological tail and recording the local audit/scaffold closeout.
+- `wave-73-20260601-1951-rereview.md` passed with no findings after the closeout and placement fixes.
+- `wave-73-20260601-1952-rereview.md` passed with concerns for stale pending wording; final closeout was updated.
+- Final reviewer audit passed after `wave-73-20260601-1952-rereview.md`: 75 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 74 wave files, 381 project files.

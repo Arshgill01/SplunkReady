@@ -79,3 +79,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-70-remote-cleanroom-after-ui-semantic-patch.md`: verify the pushed branch after the UI semantic patch from a fresh remote clone.
 - `wave-71-goal-audit-after-ui-cleanroom.md`: refresh the prompt-to-artifact goal completion audit against the current pushed Wave 70 state without marking the overall goal complete.
 - `wave-72-antigravity-ui-192344-triage.md`: triage the fresh 19:23 Antigravity UI sidecar and integrate bounded evidence-clarity improvements.
+- `wave-73-remote-cleanroom-after-ui-evidence-clarity.md`: verify the pushed branch after the Wave 72 UI evidence-clarity patch from a fresh remote clone.

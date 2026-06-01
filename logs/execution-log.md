@@ -2856,3 +2856,42 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 73 Remote Cleanroom After UI Evidence Clarity
+
+Scope:
+- Verify the pushed `splunkready-build` branch after Wave 72 from a fresh remote clone.
+- Confirm the cleanroom clone resolves to the expected Wave 72 commit.
+- Run fresh install, reviewer audit, full project check, focused UI shell test, and tracked sidecar artifact scan.
+- Keep explicit user approval as the blocker for overall goal completion.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/remote-cleanroom-after-ui-evidence-clarity-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-73-remote-cleanroom-after-ui-evidence-clarity.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- reviewer inbox files if new Wave 73 findings arrive.
+
+Notes:
+- Cleanroom path: `/tmp/splunkready-wave73-remote-qoR6ir/repo`.
+- Remote clone checked out `e8e6ea6da7ee5d0da35ab71c4b62f6cc3f91ee00`, matching the expected pushed Wave 72 commit.
+- `npm ci --ignore-scripts`, `npm run audit:reviewers`, `npm run check`, and `npx vitest run tests/ui/shell.test.ts` passed in the remote clone.
+- Remote focused UI shell test covered 1 test file / 10 tests, including Wave 72 evidence-clarity coverage.
+- Tracked sidecar artifact scan returned `sidecar_artifacts=absent`.
+- Initial local reviewer audit passed before a Wave 73-specific reviewer inbox file arrived: 74 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Initial local scaffold verifier and `git diff --check` passed: 74 wave files, 378 project files.
+- Follow-up scaffold verifier and `git diff --check` passed after the Wave 73 log placement fix: 74 wave files, 379 project files.
+- `wave-73-20260601-1949-review.md` reported `MEDIUM-001` for stale pending-closeout wording and `MEDIUM-002` for execution-log placement; both were resolved by moving this section to the chronological tail and recording the local audit/scaffold closeout.
+- `wave-73-20260601-1951-rereview.md` passed with no findings after the closeout and placement fixes.
+- `wave-73-20260601-1952-rereview.md` passed with concerns for stale pending wording; final closeout was updated.
+- Final reviewer audit passed after `wave-73-20260601-1952-rereview.md`: 75 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 74 wave files, 381 project files.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.
