@@ -35,7 +35,7 @@ This audit does not mark the goal complete. The explicit user approval to mark c
 | One commit per completed wave by default | Recent history contains wave commits through `wave-50: triage sidecar ui`; Wave 51 pending commit | IN PROGRESS |
 | Do not start next wave with unresolved dirty implementation changes | Wave 51 started from clean `splunkready-build` after Wave 50 push | PASS |
 | Logs are updated per wave | `logs/execution-log.md` and `logs/verification-log.md` include Wave 51 pending entries after this report | IN PROGRESS |
-| Current-state docs do not claim implementation has not started | Wave 51 updated `MANIFEST.md` and `docs/implementation-handoff.md` from scaffold-era status to current continuation status | PASS |
+| Current-state docs do not claim implementation has not started | Wave 51 updated `MANIFEST.md`, `PLAN.md`, and `docs/implementation-handoff.md` from scaffold-era status to current continuation status | PASS |
 | Goal is not marked complete without explicit user approval | No `update_goal` call has been made; this report records approval as missing | PASS |
 
 ## Current Verification Evidence

@@ -2165,6 +2165,8 @@ Files changed:
 - `logs/execution-log.md`
 - `logs/verification-log.md`
 - `logs/reviewer-inbox/wave-51-20260601-1704-review.md`
+- `logs/reviewer-inbox/wave-51-20260601-1705-rereview.md`
+- `logs/reviewer-inbox/wave-51-20260601-1707-rereview.md`
 
 Notes:
 - Fresh Wave 51 demo artifacts were generated at `/tmp/splunkready-wave51-demo-SC0NMt`.
@@ -2172,6 +2174,8 @@ Notes:
 - Required demo rule IDs were present: `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, and `SPL-003`.
 - Updated stale scaffold-era current-state text in `MANIFEST.md` and `docs/implementation-handoff.md`.
 - `wave-51-20260601-1704-review.md`: reviewer passed with no open findings.
+- `wave-51-20260601-1705-rereview.md` `HIGH-001`: resolved by updating the top-level `PLAN.md` status and the completion-audit evidence row so all cited current-state docs agree implementation has started.
+- `wave-51-20260601-1707-rereview.md`: reviewer passed with no open Wave 51 findings.
 - The audit records explicit user approval as still missing, so the overall goal is not complete.
 
 Result:

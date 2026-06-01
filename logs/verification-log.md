@@ -1861,3 +1861,7 @@ Result:
 - `npm run audit:reviewers` passed again after `wave-51-20260601-1704-review.md` arrived: 53 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Fresh fixture demo passed at `/tmp/splunkready-wave51-demo-SC0NMt`: 18 artifacts, fixture `NOT READY` score 0 -> fixture `READY` score 100, route `splunkready-shell.html#rerun-receipts`, and `fitsUnderThreeMinutes: true`.
 - Scaffold verifier and `git diff --check` passed after the Wave 51 docs updates: 52 wave files, 281 project files.
+- After `wave-51-20260601-1705-rereview.md`, stale current-state wording was rechecked with `rg "scaffold complete, implementation not started|scaffold-only|Implementation has not started|No implementation has started|Start Wave 00 by running" MANIFEST.md PLAN.md docs/implementation-handoff.md`; no matches remained.
+- After the Wave 51 rereview fix, `bash scripts/verify-scaffold.sh && git diff --check` passed: 52 wave files, 283 project files.
+- After the Wave 51 rereview fix, `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
+- After `wave-51-20260601-1707-rereview.md` arrived, `npm run audit:reviewers` passed: 53 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
