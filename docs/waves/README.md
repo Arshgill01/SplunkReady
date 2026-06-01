@@ -57,3 +57,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-48-reviewer-audit-automation.md`: repeatable reviewer inbox audit.
 - `wave-49-submission-copy-guardrails.md`: repeatable submission copy boundary audit.
 - `wave-50-antigravity-ui-sidecar-triage.md`: triage fresh Antigravity UI sidecar output.
+- `wave-51-goal-completion-audit.md`: prompt-to-artifact audit against the full goal.

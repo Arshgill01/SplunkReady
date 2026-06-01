@@ -1,8 +1,8 @@
 # SplunkReady Scaffold Manifest
 
-Status: scaffold-only. No implementation has started.
+Status: implemented through Wave 51 continuation QA on `splunkready-build`.
 
-This repository scaffold turns the locked SplunkReady idea into an execution system for future coding agents.
+This repository turns the locked SplunkReady idea into an implemented, fixture-first certification harness with continuing wave-based QA. The scaffold process remains in force for future continuation waves.
 
 ## Product Lock
 
@@ -40,7 +40,7 @@ This repository scaffold turns the locked SplunkReady idea into an execution sys
 - `docs/schemas/`: canonical schema contracts for implementation.
 - `docs/skills/`: local workflow skills future agents should create or follow.
 - `docs/stack-recommendation.md`: pre-implementation stack recommendation.
-- `docs/verification-matrix.md`: scaffold and future implementation verification requirements.
+- `docs/verification-matrix.md`: scaffold and implementation verification requirements.
 - `docs/grader-rule-catalog.md`: deterministic rule IDs and pass/fail boundaries.
 - `docs/golden-traces.md`: reference failure/pass traces for future tests and demo.
 - `docs/fixture-live-parity.md`: fixture/live adapter parity contract.
@@ -54,7 +54,7 @@ This repository scaffold turns the locked SplunkReady idea into an execution sys
 
 ## Completion Gate
 
-Future implementation is not done until:
+The implementation is not done until:
 
 - fixture and live modes share the same interfaces;
 - deterministic grader covers the core failure modes;

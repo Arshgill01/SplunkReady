@@ -2,11 +2,11 @@
 
 ## Current State
 
-The repository is scaffolded for execution. Implementation has not started.
+SplunkReady is implemented through Wave 51 continuation QA on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, static UI shell, optional read-only live smoke path, submission copy guardrails, reviewer audit automation, and a goal completion audit.
 
 ## Start Here
 
-Future implementation agent should begin with:
+Future continuation agents should begin with:
 
 1. `AGENTS.md`
 2. `PLAN.md`
@@ -14,16 +14,17 @@ Future implementation agent should begin with:
 4. `ARCHITECTURE.md`
 5. `QUALITY-BAR.md`
 6. `docs/waves/WAVE-CONTRACT.md`
-7. `docs/waves/wave-00-control-system.md`
+7. `docs/waves/WAVE-CONTRACT.md`
+8. the latest wave file under `docs/waves/`
 
-## First Implementation Decision
+## Implementation Decisions Already Made
 
-Wave 02 must choose stack before code:
+Wave 02 selected the implementation stack. Current core choices:
 
-- TypeScript is likely the conservative default.
-- Runtime schema validation should be mandatory.
-- Fixture mode must run without Splunk credentials.
-- UI should not start before schema and grader spine are stable.
+- TypeScript is the implementation language.
+- Runtime schema validation is mandatory.
+- Fixture mode runs without Splunk credentials.
+- UI work follows the schema, grader, receipt, and artifact spine.
 
 ## Main Executor Rule
 
@@ -52,10 +53,10 @@ Do not parallelize:
 
 ## Next Concrete Step
 
-Start Wave 00 by running:
+Continue with the next narrow wave. Start from a clean `splunkready-build` checkout, read the latest wave file, check `logs/reviewer-inbox/`, then run the wave-specific verification. The current broad health check is:
 
 ```bash
-bash scripts/verify-scaffold.sh
+npm run check
 ```
 
-Then record the result in `logs/verification-log.md`.
+Then record the exact result in `logs/verification-log.md`.
