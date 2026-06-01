@@ -43,7 +43,7 @@ For each wave:
 8. Ask reviewer loop to inspect.
 9. Resolve or waive reviewer notes before next wave.
 
-After Wave 41, do not treat the original wave list as a stopping point. Add or execute narrowly scoped continuation waves for discovered gaps, judge-run resilience, UI sidecar polish, optional live-mode hardening, security review, demo reliability, remote cleanroom QA, artifact integrity, reviewer-audit automation, submission-copy guardrails, sidecar-output triage, and goal-completion auditing. Do not mark the overall goal complete until the user explicitly approves completion.
+After Wave 41, do not treat the original wave list as a stopping point. Add or execute narrowly scoped continuation waves for discovered gaps, judge-run resilience, UI sidecar polish, optional live-mode hardening, security review, demo reliability, remote cleanroom QA, artifact integrity, reviewer-audit automation, submission-copy guardrails, sidecar-output triage, goal-completion auditing, and post-audit remote cleanroom QA. Do not mark the overall goal complete until the user explicitly approves completion.
 
 ## Reviewer Loop
 

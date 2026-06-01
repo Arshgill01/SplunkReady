@@ -1865,3 +1865,24 @@ Result:
 - After the Wave 51 rereview fix, `bash scripts/verify-scaffold.sh && git diff --check` passed: 52 wave files, 283 project files.
 - After the Wave 51 rereview fix, `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
 - After `wave-51-20260601-1707-rereview.md` arrived, `npm run audit:reviewers` passed: 53 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+
+## 2026-06-01 - Wave 52 Remote Cleanroom After Audit
+
+Commands:
+
+- `remote=$(git remote get-url origin) && tmp=$(mktemp -d /tmp/splunkready-wave52-remote-XXXXXX) && git clone --depth 1 --branch splunkready-build --single-branch "$remote" "$tmp/repo" && cd "$tmp/repo" && ...`
+
+Result:
+
+- PASS.
+- Remote cleanroom path: `/tmp/splunkready-wave52-remote-ZQqxzd/repo`.
+- Remote commit tested: `64774c3`.
+- `npm ci --ignore-scripts` passed: 55 packages installed, 0 vulnerabilities reported.
+- `npm run check` passed in the cleanroom: scaffold verifier plus 31 test files / 139 tests.
+- `npm run audit:submission-copy` passed: 28 required claims.
+- `npm run audit:reviewers` passed: 53 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- `npm run build` passed.
+- Fixture demo with live Splunk env vars unset passed at `/tmp/splunkready-wave52-remote-ZQqxzd/demo-vVBTnS`: 18 artifacts, fixture `NOT READY` score 0 -> fixture `READY` score 100, route `splunkready-shell.html#rerun-receipts`, and `fitsUnderThreeMinutes: true`.
+- Local `npm run audit:reviewers` passed after Wave 52 edits: 53 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Local `bash scripts/verify-scaffold.sh && git diff --check` passed after Wave 52 edits: 53 wave files, 286 project files.
+- After `wave-52-20260601-1711-review.md` arrived, local `npm run audit:reviewers` passed: 54 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
