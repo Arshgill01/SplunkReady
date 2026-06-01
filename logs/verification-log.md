@@ -2,6 +2,36 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 12:54 - Wave 15 Policy Compiler
+
+Commands:
+
+- `npx vitest run tests/policy/compiler.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "compileAgentPolicy|exportAgentPolicy|SPL-001|SPL-005|KO-001|EVD-001|SAF-001|specimen-agent|forbiddenQueryPatterns|restrictedIndexes" src/policy tests/policy docs/grader-rule-catalog.md docs/waves/wave-15-policy-compiler.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-15-*' -print | sort`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-15-20260601-1254-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/policy/compiler.test.ts` passed: 1 test file and 4 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 11 test files and 45 tests.
+- Traceability grep found the compiler/exporter and catalog rule IDs in source/tests/docs.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 150`; 11 test files and 45 tests passed.
+- `git diff --check` passed.
+- `logs/reviewer-inbox/wave-15-20260601-1254-review.md` passed with no open findings.
+
+Notes:
+
+- Policy references contract id/version/mode.
+- Policy blocks `index=*` through `SPL-001` and `finance_pii` through `SPL-005`.
+- Policy exports stable JSON for the specimen agent.
+
 ## 2026-06-01 12:50 - Wave 14 Knowledge Graph
 
 Commands:

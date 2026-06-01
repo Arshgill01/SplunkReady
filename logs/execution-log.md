@@ -23,6 +23,43 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 12:54 - Wave 15
+
+Scope:
+- Added agent policy compiler derived from `EnvironmentContract`.
+- Added structured policy rules for restricted resources, query budgets, saved-search preference, app context, evidence, and untrusted Splunk data.
+- Added stable JSON policy export for the specimen agent.
+
+Files changed:
+- `src/policy/compiler.ts`
+- `tests/policy/compiler.test.ts`
+- `logs/reviewer-inbox/wave-15-20260601-1254-review.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-15-20260601-1254-review.md`
+
+Commands:
+- `npx vitest run tests/policy/compiler.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "compileAgentPolicy|exportAgentPolicy|SPL-001|SPL-005|KO-001|EVD-001|SAF-001|specimen-agent|forbiddenQueryPatterns|restrictedIndexes" src/policy tests/policy docs/grader-rule-catalog.md docs/waves/wave-15-policy-compiler.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-15-*' -print | sort`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-15-20260601-1254-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Policy rule IDs are validated against `graderRuleIdSchema`.
+- The compiler blocks broad query patterns from contract data and restricted indexes from `restrictedIndexes`.
+- The exported policy is structured JSON, not generic prompt advice.
+- Wave 15 reviewer passed with no open findings.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 150` and 11 test files / 45 tests passed.
+
 ## 2026-06-01 12:50 - Wave 14
 
 Scope:
