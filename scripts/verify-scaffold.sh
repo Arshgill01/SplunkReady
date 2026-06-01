@@ -60,7 +60,7 @@ for file in "${required_root[@]}"; do
 done
 
 wave_count="$(find docs/waves -maxdepth 1 -type f -name 'wave-*.md' | wc -l | tr -d ' ')"
-[[ "$wave_count" -eq 42 ]] || fail "expected 42 wave files, found $wave_count"
+[[ "$wave_count" -ge 42 ]] || fail "expected at least 42 wave files, found $wave_count"
 
 for i in $(seq -w 0 41); do
   require_file "docs/waves/wave-${i}-"*.md

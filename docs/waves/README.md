@@ -48,4 +48,7 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-39-demo-orchestration.md`: demo script.
 - `wave-40-submission-docs.md`: README and architecture diagram.
 - `wave-41-final-qa.md`: final verification and confidence scoring.
-
+- `wave-42-demo-reliability.md`: post-final-QA demo reliability iteration.
+- `wave-43-ui-sidecar-polish.md`: Antigravity/Gemini-backed UI polish.
+- `wave-44-live-operator-readiness.md`: optional live-mode operator hardening.
+- `wave-45-judge-resilience.md`: fresh-checkout and submission resilience.

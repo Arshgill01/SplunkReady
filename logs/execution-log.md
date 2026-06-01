@@ -1826,3 +1826,44 @@ Commands:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 40 Submission Docs
+
+Scope:
+- Complete submission packaging for judges.
+- Keep live mode optional and fixture mode judge-runnable.
+- Encode the post-Wave-41 continuation loop requested by the user and reviewer.
+
+Files changed:
+- `README.md`
+- `LICENSE`
+- `docs/architecture.svg`
+- `docs/devpost-submission.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-42-demo-reliability.md`
+- `docs/waves/wave-43-ui-sidecar-polish.md`
+- `docs/waves/wave-44-live-operator-readiness.md`
+- `docs/waves/wave-45-judge-resilience.md`
+- `PLAN.md`
+- `scripts/verify-scaffold.sh`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-40-20260601-1544-review.md`
+- `logs/reviewer-inbox/wave-40-20260601-1546-rereview.md`
+- `logs/reviewer-inbox/wave-40-20260601-1558-rereview.md`
+- `logs/reviewer-inbox/wave-40-20260601-1600-rereview.md`
+- `logs/reviewer-inbox/wave-40-20260601-1601-rereview.md`
+
+Reviewer findings resolved:
+- `wave-40-20260601-1544-review.md` `HIGH-001`: resolved by deferring the out-of-scope UI restyle, keeping Antigravity output in a side worktree, and completing Wave 40 submission docs instead.
+- `wave-40-20260601-1544-review.md` `MEDIUM-001`: resolved by not integrating the earlier UI restyle that added external font dependencies.
+- `wave-40-20260601-1544-review.md` `MEDIUM-002`: resolved by running Antigravity/Gemini in a visible tmux sidecar on branch `antigravity-ui-again`; output is intentionally not merged in Wave 40 and is scoped for Wave 43.
+- `wave-40-20260601-1544-review.md` `MEDIUM-003`: resolved by adding post-Wave-41 continuation waves and updating `PLAN.md`.
+- `wave-40-20260601-1546-rereview.md` `HIGH-001`: resolved by adding README fixture demo/live-mode/limitations content, root `LICENSE`, `docs/architecture.svg`, and `docs/devpost-submission.md`.
+- `wave-40-20260601-1546-rereview.md` `MEDIUM-001`: resolved by updating `PLAN.md`, `docs/waves/README.md`, and adding Wave 42-45 files.
+- `wave-40-20260601-1558-rereview.md` `MEDIUM-001`: resolved by adding Wave 40 execution and verification log entries; verification log now records the wave commands and results.
+- `wave-40-20260601-1600-rereview.md` `MEDIUM-001`: resolved by keeping the Wave 40 execution entry in `logs/execution-log.md` and including this reviewer file in the wave commit.
+- `wave-40-20260601-1601-rereview.md`: reviewer passed with no open Critical, High, Medium, or Low findings.
+
+Result:
+- PASS.

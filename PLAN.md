@@ -10,7 +10,9 @@ Build a production-grade hackathon project that demonstrates:
 
 ## Execution Strategy
 
-Use 42 waves. Each wave is intentionally small enough for one main executor to finish, verify, and hand to a reviewer loop.
+Use the original 42-wave spine through Wave 41, then continue with explicitly added continuation waves and iterative QA until the user says to stop.
+
+Each wave is intentionally small enough for one main executor to finish, verify, and hand to a reviewer loop.
 
 The project should not be one-shot implemented. The schema and trace-grading spine must stabilize before UI or demo polish.
 
@@ -25,6 +27,7 @@ The project should not be one-shot implemented. The schema and trace-grading spi
 - Phase 6: Receipts, policy patches, CLI, waves 31-33.
 - Phase 7: UI, waves 34-37.
 - Phase 8: Live path, demo, submission, waves 38-41.
+- Phase 9: Post-final-QA hardening and iterative submission polish, waves 42+.
 
 ## Main Build Loop
 
@@ -39,6 +42,8 @@ For each wave:
 7. Update `logs/verification-log.md`.
 8. Ask reviewer loop to inspect.
 9. Resolve or waive reviewer notes before next wave.
+
+After Wave 41, do not treat the original wave list as a stopping point. Add or execute narrowly scoped continuation waves for discovered gaps, judge-run resilience, UI sidecar polish, optional live-mode hardening, security review, and demo reliability. Do not mark the overall goal complete until the user explicitly approves completion.
 
 ## Reviewer Loop
 

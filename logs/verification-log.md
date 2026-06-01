@@ -1572,3 +1572,63 @@ Result:
 - 83 files.
 - 4,441 lines.
 - No empty Markdown files found.
+
+## 2026-06-01 - Wave 40 Submission Docs
+
+Commands:
+
+- `bash scripts/verify-scaffold.sh`
+- `npm install --dry-run`
+- `npm run check`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-wave40-demo-XXXXXX) && npm run splunkready -- demo --out "$tmp" && printf 'DEMO_DIR=%s\n' "$tmp" && sed -n '1,120p' "$tmp/demo-rehearsal.md"`
+- `tmp=$(mktemp -d /tmp/splunkready-wave40-live-smoke-XXXXXX) && npm run splunkready -- live-smoke --out "$tmp" && printf 'LIVE_SMOKE_DIR=%s\n' "$tmp" && find "$tmp" -maxdepth 1 -type f -print`
+
+Markdown local link check:
+
+```bash
+node <<'NODE'
+const fs = require('fs');
+const path = require('path');
+const root = process.cwd();
+const files = [];
+function walk(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (['.git', 'node_modules', 'dist', 'coverage'].includes(entry.name)) continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walk(full);
+    else if (entry.isFile() && full.endsWith('.md')) files.push(full);
+  }
+}
+walk(root);
+const linkRe = /!?(?:\[[^\]]*\])\(([^)]+)\)/g;
+let failed = false;
+for (const file of files) {
+  const text = fs.readFileSync(file, 'utf8');
+  let match;
+  while ((match = linkRe.exec(text))) {
+    const raw = match[1].trim();
+    if (!raw || raw.startsWith('#') || /^[a-z][a-z0-9+.-]*:/i.test(raw) || raw.startsWith('mailto:')) continue;
+    const withoutTitle = raw.match(/^<([^>]+)>/)?.[1] ?? raw.split(/\s+/)[0];
+    const targetPath = decodeURIComponent(withoutTitle.split('#')[0]);
+    if (!targetPath) continue;
+    const resolved = path.resolve(path.dirname(file), targetPath);
+    if (!fs.existsSync(resolved)) {
+      console.error(`BROKEN ${path.relative(root, file)} -> ${raw}`);
+      failed = true;
+    }
+  }
+}
+if (failed) process.exit(1);
+console.log(`PASS markdown local links checked (${files.length} Markdown files)`);
+NODE
+```
+
+Result:
+
+- PASS
+- Scaffold verifier passed with 46 wave files and 242 project files.
+- Markdown local link check passed across 170 Markdown files.
+- Setup dry run passed.
+- `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
+- Fixture demo command passed and wrote 18 artifacts to `/tmp/splunkready-wave40-demo-ef1Ixr`.
+- No-credential live smoke skipped safely and reported missing live configuration fields without writing live artifacts.
