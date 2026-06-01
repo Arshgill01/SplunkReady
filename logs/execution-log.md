@@ -23,6 +23,47 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 14:21 - Wave 30
+
+Scope:
+- Added reproducible readiness scoring and verdict generation.
+- Scores start at 100, subtract mission severity weights by violation count, and clamp to 0-100.
+- Verdicts use documented thresholds and blockers: Critical forces `NOT READY`; Critical or High blocks `READY`.
+
+Files changed:
+- `src/grader/scoring.ts`
+- `tests/grader/scoring.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-30-20260601-1421-review.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-30-20260601-1421-review.md`
+
+Commands:
+- `sed -n '1,260p' docs/waves/wave-30-scoring-verdict.md`
+- `rg -n "score|verdict|ready|not-ready|severityWeights|criticalViolations|passedMissions|failedMissions|Readiness Receipt" src tests docs fixtures`
+- `sed -n '180,230p' src/schemas/core.ts`
+- `sed -n '230,280p' docs/schemas/core-contracts.md`
+- `npx vitest run tests/grader/scoring.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "scoreMissionReadiness|scoreMissionSuite|verdictThresholds|Critical violations force|Score 58 = 100 - 42|Readiness score appears arbitrary|severityWeights|NOT_READY|NEEDS_REVIEW|READY" src/grader tests/grader docs/waves/wave-30-scoring-verdict.md docs/schemas/core-contracts.md`
+- `rg -n "scoreMissionReadiness|scoreMissionSuite|verdictThresholds|Critical violations force|Score 58 = 100 - 42|Readiness score appears arbitrary|severityWeights|NOT READY|NEEDS REVIEW|READY" src/grader tests/grader docs/waves/wave-30-scoring-verdict.md docs/schemas/core-contracts.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-30-20260601-1421-review.md`
+
+Result:
+- PASS
+
+Notes:
+- `scoreMissionReadiness` returns score, verdict, pass/fail flag, critical/high ids, threshold data, blockers, and a score explanation string.
+- `scoreMissionSuite` aggregates mission scores for receipt generation.
+- Verdict strings were aligned with existing receipt examples: `READY`, `NEEDS REVIEW`, and `NOT READY`.
+- Wave 30 reviewer passed with no findings.
+- Final `npm run check` passed: scaffold verifier reported `project files: 205` and 26 test files / 115 tests passed.
+
 ## 2026-06-01 14:16 - Wave 29
 
 Scope:

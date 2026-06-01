@@ -2,6 +2,42 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 14:21 - Wave 30 Scoring and Verdict
+
+Commands:
+
+- `sed -n '1,260p' docs/waves/wave-30-scoring-verdict.md`
+- `rg -n "score|verdict|ready|not-ready|severityWeights|criticalViolations|passedMissions|failedMissions|Readiness Receipt" src tests docs fixtures`
+- `sed -n '180,230p' src/schemas/core.ts`
+- `sed -n '230,280p' docs/schemas/core-contracts.md`
+- `npx vitest run tests/grader/scoring.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "scoreMissionReadiness|scoreMissionSuite|verdictThresholds|Critical violations force|Score 58 = 100 - 42|Readiness score appears arbitrary|severityWeights|NOT_READY|NEEDS_REVIEW|READY" src/grader tests/grader docs/waves/wave-30-scoring-verdict.md docs/schemas/core-contracts.md`
+- `rg -n "scoreMissionReadiness|scoreMissionSuite|verdictThresholds|Critical violations force|Score 58 = 100 - 42|Readiness score appears arbitrary|severityWeights|NOT READY|NEEDS REVIEW|READY" src/grader tests/grader docs/waves/wave-30-scoring-verdict.md docs/schemas/core-contracts.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-30-20260601-1421-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/grader/scoring.test.ts` passed: 1 test file and 5 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 26 test files and 115 tests.
+- Traceability grep found scoring functions, threshold exports, critical blocker behavior, score arithmetic, receipt schema score/verdict fields, and the wave stop condition.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 205`; 26 test files and 115 tests passed.
+- `git diff --check` passed.
+- Wave 30 reviewer inbox scan found `logs/reviewer-inbox/wave-30-20260601-1421-review.md`.
+- Wave 30 reviewer passed with no findings.
+
+Notes:
+
+- Score arithmetic is `100 - sum(count by severity * mission.severityWeights[severity])`, clamped to 0-100.
+- `READY` requires score >= 90 and no Critical or High violations.
+- `NEEDS REVIEW` requires score >= 75 and no Critical violations.
+- `NOT READY` applies when Critical violations exist or score is below 75.
+
 ## 2026-06-01 14:16 - Wave 29 Query Budget Checks
 
 Commands:
