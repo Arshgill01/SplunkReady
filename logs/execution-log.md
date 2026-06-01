@@ -23,6 +23,45 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 14:29 - Wave 32
+
+Scope:
+- Added Policy Patch export for observed readiness failures.
+- Patch rules are generated from receipt violation ids and cover saved-search discovery, evidence handling, query budget limits, untrusted event text, and compiled contract summary.
+- Patch output includes schema-valid JSON and human-readable Markdown and explicitly does not mutate Splunk.
+
+Files changed:
+- `src/policy/patch.ts`
+- `tests/policy/patch.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- None found for Wave 32 at implementation time.
+
+Commands:
+- `sed -n '1,260p' docs/waves/wave-32-policy-patch.md`
+- `sed -n '1,220p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-32-*' -print | sort`
+- `sed -n '285,340p' docs/schemas/core-contracts.md`
+- `rg -n "policyPatchSchema|PolicyPatch|suggestedPolicyPatch|patch|export" src tests docs/waves/wave-32-policy-patch.md`
+- `npx vitest run tests/policy/patch.test.ts tests/agents/specimen.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "generatePolicyPatch|renderPolicyPatchMarkdown|Policy Patch|violationRefs|does not mutate Splunk|does not change Splunk configuration|discover-saved-searches-first|carry-evidence-into-final-answer|stay-inside-query-budget|treat-splunk-event-text-as-data|Patch is generic prompt fluff" src/policy tests/policy docs/waves/wave-32-policy-patch.md docs/schemas/core-contracts.md`
+- `npm run check`
+- `git diff --check`
+
+Result:
+- PASS
+
+Notes:
+- `generatePolicyPatch` rejects violations that are not present in the source receipt.
+- Patch JSON is validated with `policyPatchSchema`.
+- Markdown includes violation refs, rule text, diff, and human-review/non-mutation language.
+- Before/after fixture rerun test confirmed the unpatched agent uses broad custom SPL and the policy-injected path uses the validated saved search.
+- Final `npm run check` passed: scaffold verifier reported `project files: 210` and 28 test files / 123 tests passed.
+
 ## 2026-06-01 14:25 - Wave 31
 
 Scope:

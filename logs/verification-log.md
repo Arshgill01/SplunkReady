@@ -2,6 +2,39 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 14:29 - Wave 32 Policy Patch Export
+
+Commands:
+
+- `sed -n '1,260p' docs/waves/wave-32-policy-patch.md`
+- `sed -n '1,220p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-32-*' -print | sort`
+- `sed -n '285,340p' docs/schemas/core-contracts.md`
+- `rg -n "policyPatchSchema|PolicyPatch|suggestedPolicyPatch|patch|export" src tests docs/waves/wave-32-policy-patch.md`
+- `npx vitest run tests/policy/patch.test.ts tests/agents/specimen.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "generatePolicyPatch|renderPolicyPatchMarkdown|Policy Patch|violationRefs|does not mutate Splunk|does not change Splunk configuration|discover-saved-searches-first|carry-evidence-into-final-answer|stay-inside-query-budget|treat-splunk-event-text-as-data|Patch is generic prompt fluff" src/policy tests/policy docs/waves/wave-32-policy-patch.md docs/schemas/core-contracts.md`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS
+- `npx vitest run tests/policy/patch.test.ts tests/agents/specimen.test.ts` passed: 2 test files and 7 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 28 test files and 123 tests.
+- Traceability grep found policy patch generator/rendering, violation refs, non-mutation language, scoped rule ids, and the wave stop condition.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 210`; 28 test files and 123 tests passed.
+- `git diff --check` passed.
+- Wave 32 reviewer inbox scan found no files.
+
+Notes:
+
+- Patch rules are generated from deterministic violation ids in the source receipt.
+- The patch includes contract summary context and no Splunk write tools.
+- Before/after fixture rerun coverage is included through `tests/policy/patch.test.ts` and `tests/agents/specimen.test.ts`.
+
 ## 2026-06-01 14:25 - Wave 31 Readiness Receipt Generator
 
 Commands:
