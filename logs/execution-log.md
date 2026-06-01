@@ -2818,3 +2818,41 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 72 Antigravity UI 19:23 Triage
+
+Scope:
+- Triage the fresh Antigravity/Gemini UI sidecar launched in tmux window `Splunk:6` from `/private/tmp/splunkready-antigravity-ui-fresh-20260601-192344`.
+- Integrate only bounded evidence-clarity UI changes.
+- Keep the sidecar worktree isolated and exclude `.antigravitycli/`.
+
+Files changed:
+- `src/ui/shell.ts`
+- `tests/ui/shell.test.ts`
+- `docs/antigravity-ui-192344-triage-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-72-antigravity-ui-192344-triage.md`
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- reviewer inbox files if new Wave 72 findings arrive.
+
+Notes:
+- Accepted sidecar behavior: contract table empty states and trace overview truncation notice.
+- Adjusted the sidecar footer integration to use local CSS instead of inline style.
+- Rejected sidecar metadata and any broad visual restyling.
+- `unknown-wave-20260601-1935-review.md` reported the early unscoped UI diff; `unknown-wave-20260601-1936-rereview.md` passed after the Wave 72 contract and logs were added.
+- `wave-72-20260601-1936-review.md` reported `HIGH-001` for a missing `Reviewer Checklist` heading and `MEDIUM-001` for pending full verification; `HIGH-001` was resolved by adding the required section, and full check plus scaffold hygiene passed.
+- `wave-72-20260601-1938-rereview.md` passed with no findings after the checklist and verification fixes.
+- `wave-72-20260601-1939-rereview.md` reported stale final-audit closeout wording and execution-log placement; both were resolved by moving this section to the chronological tail and recording final audit/scaffold closeout.
+- `wave-72-20260601-1941-rereview.md` passed with no findings after the closeout updates.
+- `wave-72-20260601-1943-rereview.md` reported stale latest-rereview closeout wording; current logs already cited the latest passing rereview, and `wave-72-20260601-1944-rereview.md` passed with no findings.
+- Final reviewer audit passed after `wave-72-20260601-1944-rereview.md`: 74 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 73 wave files, 376 project files.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.

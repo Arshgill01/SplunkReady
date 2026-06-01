@@ -474,4 +474,49 @@ describe("SplunkReady UI shell", () => {
 
     await expect(loadUiArtifacts(outDir)).rejects.toThrow("Run the SplunkReady CLI receipt or rerun command first");
   });
+
+  it("renders contract table fallback rows when compiled object lists are empty", () => {
+    const emptyContract: EnvironmentContract = {
+      ...contract(),
+      indexes: [],
+      restrictedIndexes: [],
+      sourcetypes: [],
+      canonicalFields: {},
+      savedSearches: [],
+      dataModels: []
+    };
+
+    const html = renderUiShell({
+      phase: "after",
+      outDir: "/tmp/splunkready-ui",
+      contract: emptyContract,
+      missions: [mission()],
+      receipt: receipt(),
+      traceEvents: [],
+      violations: [],
+      paths: artifactPaths()
+    });
+
+    expect(html).toContain("No indexes compiled in contract.");
+    expect(html).toContain("No sourcetypes compiled in contract.");
+    expect(html).toContain("No canonical fields or absent fields compiled in contract.");
+    expect(html).toContain("No saved searches compiled in contract.");
+  });
+
+  it("signals when the receipt overview shows a truncated trace event list", () => {
+    const traceEvents = Array.from({ length: 10 }, (_, index) => traceEvent(`trace-event-${index + 1}`));
+
+    const html = renderUiShell({
+      phase: "after",
+      outDir: "/tmp/splunkready-ui",
+      contract: contract(),
+      missions: [mission()],
+      receipt: receipt(),
+      traceEvents,
+      violations: [],
+      paths: artifactPaths()
+    });
+
+    expect(html).toContain("Showing 8 of 10 events. View full trace in the Mission trace section.");
+  });
 });

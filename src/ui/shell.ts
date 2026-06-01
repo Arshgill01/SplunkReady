@@ -220,6 +220,9 @@ const renderRefGroup = (label: string, values: string[], emptyText: string): str
     ${renderList(values, emptyText)}
   </div>`;
 
+const renderEmptyTableRow = (columnCount: number, message: string): string =>
+  `<tr><td colspan="${columnCount}">${escapeHtml(message)}</td></tr>`;
+
 const renderViolations = (violations: Violation[]): string => {
   if (violations.length === 0) {
     return `<p class="empty">No violations in the current receipt phase.</p>`;
@@ -261,15 +264,25 @@ const renderTraceEvents = (events: TraceEvent[]): string => {
     )
     .join("");
 
+  const footer =
+    events.length > 8
+      ? `<tfoot><tr class="trace-limit-row"><td colspan="4">Showing 8 of ${escapeValue(events.length)} events. View full trace in the Mission trace section.</td></tr></tfoot>`
+      : "";
+
   return `<table>
     <thead>
       <tr><th>Trace event</th><th>Type</th><th>Tool</th><th>Evidence refs</th></tr>
     </thead>
     <tbody>${rows}</tbody>
+    ${footer}
   </table>`;
 };
 
 const renderIndexRows = (contract: EnvironmentContract): string => {
+  if (contract.indexes.length === 0) {
+    return renderEmptyTableRow(2, "No indexes compiled in contract.");
+  }
+
   const restricted = new Set(contract.restrictedIndexes);
 
   return contract.indexes
@@ -284,8 +297,12 @@ const renderIndexRows = (contract: EnvironmentContract): string => {
     .join("");
 };
 
-const renderSourcetypeRows = (contract: EnvironmentContract): string =>
-  contract.sourcetypes
+const renderSourcetypeRows = (contract: EnvironmentContract): string => {
+  if (contract.sourcetypes.length === 0) {
+    return renderEmptyTableRow(2, "No sourcetypes compiled in contract.");
+  }
+
+  return contract.sourcetypes
     .map(
       (sourcetype) => `<tr>
         <td><code>${escapeHtml(sourcetype.name)}</code></td>
@@ -293,6 +310,7 @@ const renderSourcetypeRows = (contract: EnvironmentContract): string =>
       </tr>`
     )
     .join("");
+};
 
 const renderCanonicalFieldRows = (contract: EnvironmentContract): string => {
   const rows = Object.entries(contract.canonicalFields).map(
@@ -315,6 +333,10 @@ const renderCanonicalFieldRows = (contract: EnvironmentContract): string => {
     }
   }
 
+  if (rows.length === 0) {
+    return renderEmptyTableRow(2, "No canonical fields or absent fields compiled in contract.");
+  }
+
   return rows.join("");
 };
 
@@ -322,6 +344,10 @@ const preferredSavedSearchRefs = (missions: MissionDefinition[]): Set<string> =>
   new Set(missions.flatMap((mission) => mission.preferredSavedSearchRefs ?? []));
 
 const renderSavedSearchRows = (contract: EnvironmentContract, missions: MissionDefinition[]): string => {
+  if (contract.savedSearches.length === 0) {
+    return renderEmptyTableRow(2, "No saved searches compiled in contract.");
+  }
+
   const preferredRefs = preferredSavedSearchRefs(missions);
 
   return contract.savedSearches
@@ -1051,6 +1077,13 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
     tbody tr:hover td {
       background: #fbfbf9;
+    }
+
+    .trace-limit-row td {
+      color: var(--muted);
+      text-align: center;
+      background: #eeeeea;
+      font-size: 12px;
     }
 
     .stacked-table {

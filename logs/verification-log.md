@@ -2396,3 +2396,31 @@ Result:
 - `wave-71-20260601-1930-rereview.md` passed with no findings after the final-audit closeout.
 - Final reviewer audit passed after `wave-71-20260601-1930-rereview.md`: 73 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 72 wave files, 366 project files.
+
+## 2026-06-01 - Wave 72 Antigravity UI 19:23 Triage
+
+Commands:
+
+- `npx vitest run tests/ui/shell.test.ts`
+- `npm run build`
+- `npm run check`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Focused UI shell tests passed: 1 test file, 10 tests.
+- TypeScript build passed.
+- Full check passed: scaffold verifier plus 31 test files / 141 tests.
+- Scaffold verifier during `npm run check` passed with 73 wave files and 369 project files.
+- Standalone scaffold verifier and `git diff --check` passed with 73 wave files and 369 project files.
+- `unknown-wave-20260601-1935-review.md` reported the early unscoped UI diff; `unknown-wave-20260601-1936-rereview.md` passed after the Wave 72 contract and logs were added.
+- `wave-72-20260601-1936-review.md` reported `HIGH-001` for a missing `Reviewer Checklist` heading and `MEDIUM-001` for pending full verification; `HIGH-001` was resolved by adding the required section, and full check plus scaffold hygiene passed.
+- `wave-72-20260601-1938-rereview.md` passed with no findings after the checklist and verification fixes.
+- `wave-72-20260601-1939-rereview.md` reported stale final-audit closeout wording and execution-log placement; both were resolved by moving the Wave 72 execution-log section to the chronological tail and recording final audit/scaffold closeout.
+- `wave-72-20260601-1941-rereview.md` passed with no findings after the closeout updates.
+- `wave-72-20260601-1943-rereview.md` reported stale latest-rereview closeout wording; current logs already cited the latest passing rereview, and `wave-72-20260601-1944-rereview.md` passed with no findings.
+- Final reviewer audit passed after `wave-72-20260601-1944-rereview.md`: 74 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 73 wave files, 376 project files.
