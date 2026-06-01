@@ -2895,3 +2895,47 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 74 Goal Audit After Remote UI Cleanroom
+
+Scope:
+- Refresh the prompt-to-artifact goal completion audit against current Wave 73 remote cleanroom evidence.
+- Re-run current health, submission-copy, reviewer, build, fixture demo, and artifact inspection checks.
+- Preserve the explicit user-approval blocker and avoid marking the overall goal complete.
+- Include late Wave 73 reviewer pass file `wave-73-20260601-1954-rereview.md`.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/goal-completion-audit.md`
+- `docs/implementation-handoff.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-74-goal-audit-after-remote-ui-cleanroom.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-73-20260601-1954-rereview.md`
+- reviewer inbox files if new Wave 74 findings arrive.
+
+Notes:
+- Fresh fixture demo output path: `/tmp/splunkready-wave74-audit/demo`.
+- The first artifact-inspection command failed because it expected an older exact policy-patch sentence and assumed `violations-before.json` had a wrapper object. Inspection of the current artifacts showed the policy patch still states `This patch does not change Splunk configuration.` and `It does not mutate Splunk.`
+- The corrected artifact-inspection command passed against the current receipt and violation JSON shape.
+- Demo artifacts showed 18 generated files, policy patch JSON/Markdown, before receipt `NOT READY` score `0` with 6 violations, after receipt `READY` score `100` with zero violations, and rehearsal `PASS` under 3 minutes.
+- Deterministic rule IDs present in the demo artifacts: `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, `SPL-003`.
+- Wave 73 remote cleanroom evidence remains the current pushed-branch evidence before this Wave 74 commit: cleanroom checkout `e8e6ea6da7ee5d0da35ab71c4b62f6cc3f91ee00`, and pushed Wave 73 branch head `d77a57007d1d9b5b28bf903ce82d6edd14825881`.
+- `wave-74-20260601-2002-review.md` reported `MEDIUM-001` for execution-log placement and `MEDIUM-002` for abbreviated artifact-inspection command evidence.
+- `MEDIUM-001` was resolved by moving this section to the chronological tail after Wave 73.
+- `MEDIUM-002` was resolved by recording the full copy-pasteable artifact-inspection Node heredoc in the audit and verification log, then rerunning that exact command successfully.
+- Follow-up scaffold verifier and `git diff --check` passed after the reviewer fixes: 75 wave files, 384 project files.
+- `wave-74-20260601-2006-rereview.md` passed with no findings after the placement and artifact-command fixes.
+- Final reviewer audit passed after `wave-74-20260601-2006-rereview.md`: 76 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the passing rereview file arrived: 75 wave files, 385 project files.
+- Final full check passed after the Wave 74 closeout update: 75 wave files, 386 project files, 31 test files, 141 tests.
+- `wave-74-20260601-2009-rereview.md` passed with no findings after final closeout wording.
+- Final reviewer audit passed after `wave-74-20260601-2009-rereview.md`: 76 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after `wave-74-20260601-2009-rereview.md`: 75 wave files, 386 project files.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.

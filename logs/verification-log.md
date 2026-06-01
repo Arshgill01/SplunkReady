@@ -2448,3 +2448,106 @@ Result:
 - `wave-73-20260601-1952-rereview.md` passed with concerns for stale pending wording; final closeout was updated.
 - Final reviewer audit passed after `wave-73-20260601-1952-rereview.md`: 75 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 74 wave files, 381 project files.
+
+## 2026-06-01 - Wave 74 Goal Audit After Remote UI Cleanroom
+
+Commands:
+
+- `npm run check`
+- `npm run audit:submission-copy`
+- `npm run audit:reviewers`
+- `npm run build`
+- `env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- demo --out /tmp/splunkready-wave74-audit/demo`
+- Artifact inspection:
+
+```bash
+node - <<'NODE' /tmp/splunkready-wave74-audit/demo
+const fs = require('fs');
+const path = require('path');
+const out = process.argv[2];
+const readJson = (name) => JSON.parse(fs.readFileSync(path.join(out, name), 'utf8'));
+const artifacts = fs.readdirSync(out).sort();
+const before = readJson('receipt-before-001.json');
+const after = readJson('receipt-after-001.json');
+const rehearsal = readJson('demo-rehearsal.json');
+const policyPatch = readJson('policy-patch.json');
+const violationsBefore = readJson('violations-before.json');
+const policyMarkdown = fs.readFileSync(path.join(out, 'policy-patch.md'), 'utf8');
+const ruleIds = [...new Set(violationsBefore.map((violation) => violation.ruleId))].sort();
+const scoreValue = (receipt) => typeof receipt.score === 'number' ? receipt.score : receipt.score?.overall;
+const violationCount = (receipt) => Array.isArray(receipt.violations) ? receipt.violations.length : receipt.summary?.violationCount;
+const policyPatchMarkdownNoMutation =
+  policyMarkdown.includes('This patch does not change Splunk configuration.') &&
+  policyMarkdown.includes('It does not mutate Splunk.');
+const summary = {
+  artifactCount: artifacts.length,
+  shellExists: fs.existsSync(path.join(out, 'splunkready-shell.html')),
+  policyPatchJsonExists: fs.existsSync(path.join(out, 'policy-patch.json')),
+  policyPatchMarkdownExists: fs.existsSync(path.join(out, 'policy-patch.md')),
+  policyPatchMarkdownNoMutation,
+  policyPatchRules: policyPatch.rules.map((rule) => rule.id),
+  before: {
+    id: before.id,
+    verdict: before.verdict,
+    score: scoreValue(before),
+    violations: violationCount(before),
+  },
+  after: {
+    id: after.id,
+    verdict: after.verdict,
+    score: scoreValue(after),
+    violations: violationCount(after),
+  },
+  rehearsal: {
+    status: rehearsal.status,
+    targetSeconds: rehearsal.targetSeconds,
+    measuredSeconds: rehearsal.measuredSeconds,
+    fitsUnderThreeMinutes: rehearsal.fitsUnderThreeMinutes,
+    story: rehearsal.story,
+    uiRoute: rehearsal.uiRoute,
+  },
+  ruleIds,
+};
+console.log(JSON.stringify(summary, null, 2));
+if (artifacts.length !== 18) process.exit(10);
+if (!summary.shellExists || !summary.policyPatchJsonExists || !summary.policyPatchMarkdownExists) process.exit(11);
+if (!policyPatchMarkdownNoMutation) process.exit(12);
+if (before.verdict !== 'NOT_READY' && before.verdict !== 'NOT READY') process.exit(13);
+if (scoreValue(before) !== 0 || violationCount(before) < 1) process.exit(14);
+if (after.verdict !== 'READY' || scoreValue(after) !== 100 || violationCount(after) !== 0) process.exit(15);
+if (rehearsal.status !== 'PASS' || rehearsal.fitsUnderThreeMinutes !== true) process.exit(16);
+for (const id of ['ANS-001', 'EVD-001', 'KO-001', 'SPL-001', 'SPL-003']) {
+  if (!ruleIds.includes(id)) process.exit(17);
+}
+NODE
+```
+
+Result:
+
+- PASS.
+- Full check passed: scaffold verifier plus 31 test files / 141 tests.
+- Scaffold verifier during `npm run check` passed with 74 wave files and 382 project files.
+- Submission-copy audit passed: 28 required claims.
+- Reviewer audit passed after late Wave 73 reviewer file `wave-73-20260601-1954-rereview.md`: 75 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- TypeScript build passed.
+- Fixture demo passed with live Splunk env vars unset.
+- First artifact-inspection attempt failed because it checked stale exact policy-patch wording and assumed the wrong violation JSON wrapper shape.
+- Corrected artifact inspection passed: 18 artifacts, UI shell present, policy patch JSON/Markdown present, and policy patch Markdown states `This patch does not change Splunk configuration.` plus `It does not mutate Splunk.`
+- Policy patch rules present: `inject-contract-summary`, `discover-saved-searches-first`, `carry-evidence-into-final-answer`.
+- Before receipt was `NOT READY` with score `0` and 6 violations.
+- After receipt was `READY` with score `100` and zero violations.
+- Demo rehearsal passed under 3 minutes with measured CLI orchestration `0.025s`.
+- Demo rehearsal route: `/tmp/splunkready-wave74-audit/demo/splunkready-shell.html#rerun-receipts`.
+- Demo story: `fail -> compile -> patch -> rerun -> pass`.
+- Deterministic rule IDs present: `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, `SPL-003`.
+- `wave-74-20260601-2002-review.md` reported `MEDIUM-001` for execution-log placement and `MEDIUM-002` for abbreviated artifact-inspection command evidence.
+- The execution-log section was moved to the chronological tail after Wave 73.
+- The artifact-inspection command was recorded as a full copy-pasteable Node heredoc and rerun successfully.
+- Follow-up scaffold verifier and `git diff --check` passed after the reviewer fixes: 75 wave files, 384 project files.
+- `wave-74-20260601-2006-rereview.md` passed with no findings.
+- Final reviewer audit passed after `wave-74-20260601-2006-rereview.md`: 76 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the passing rereview file arrived: 75 wave files, 385 project files.
+- Final `npm run check` passed after the Wave 74 closeout update: scaffold verifier reported 75 wave files and 386 project files; Vitest passed 31 test files / 141 tests.
+- `wave-74-20260601-2009-rereview.md` passed with no findings after final closeout wording.
+- Final reviewer audit passed after `wave-74-20260601-2009-rereview.md`: 76 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after `wave-74-20260601-2009-rereview.md`: 75 wave files, 386 project files.
