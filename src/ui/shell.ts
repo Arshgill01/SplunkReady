@@ -467,7 +467,41 @@ const renderContractView = (artifacts: UiArtifacts): string => {
   </section>`;
 };
 
-const renderMissionList = (missions: MissionDefinition[]): string => {
+const renderMissionCheckBadges = (
+  missionId: string,
+  checks: string[],
+  beforeViolations: Violation[],
+  afterViolations: Violation[],
+  hasAfterEvidence: boolean
+): string => {
+  if (checks.length === 0) {
+    return "None";
+  }
+
+  const beforeRuleIds = new Set<string>(
+    beforeViolations.filter((violation) => violation.missionId === missionId).map((violation) => violation.ruleId)
+  );
+  const afterRuleIds = new Set<string>(
+    afterViolations.filter((violation) => violation.missionId === missionId).map((violation) => violation.ruleId)
+  );
+
+  return checks
+    .map((checkId) => {
+      const failedBefore = beforeRuleIds.has(checkId);
+      const failedAfter = afterRuleIds.has(checkId);
+      const status = failedAfter || (failedBefore && !hasAfterEvidence) ? "failed" : failedBefore ? "resolved" : "pass";
+
+      return `<span class="check-badge check-badge-${status}" title="${escapeHtml(checkId)} ${status}">${escapeHtml(checkId)} ${status}</span>`;
+    })
+    .join(" ");
+};
+
+const renderMissionList = (
+  missions: MissionDefinition[],
+  beforeViolations: Violation[] = [],
+  afterViolations: Violation[] = [],
+  hasAfterEvidence = false
+): string => {
   if (missions.length === 0) {
     return `<p class="empty">No missions artifact loaded.</p>`;
   }
@@ -479,12 +513,13 @@ const renderMissionList = (missions: MissionDefinition[]): string => {
         <td>${mission.expectedTools.map((tool) => `<code>${escapeHtml(tool)}</code>`).join(" ")}</td>
         <td>${(mission.preferredSavedSearchRefs ?? []).map((ref) => `<code>${escapeHtml(ref)}</code>`).join(" ") || "None"}</td>
         <td>${(mission.authorizedIndexes ?? []).map((index) => `<code>${escapeHtml(index)}</code>`).join(" ") || "None"}</td>
+        <td>${renderMissionCheckBadges(mission.id, mission.checks, beforeViolations, afterViolations, hasAfterEvidence)}</td>
       </tr>`
     )
     .join("");
 
   return `<table>
-    <thead><tr><th>Mission</th><th>Expected tools</th><th>Preferred saved search</th><th>Authorized indexes</th></tr></thead>
+    <thead><tr><th>Mission</th><th>Expected tools</th><th>Preferred saved search</th><th>Authorized indexes</th><th>Deterministic checks</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 };
@@ -574,10 +609,11 @@ const renderMissionTraceView = (artifacts: UiArtifacts): string => {
   const beforeViolations = artifacts.beforeViolations ?? (artifacts.phase === "before" ? artifacts.violations : []);
   const afterTraceEvents = artifacts.afterTraceEvents ?? (artifacts.phase === "after" ? artifacts.traceEvents : []);
   const afterViolations = artifacts.afterViolations ?? (artifacts.phase === "after" ? artifacts.violations : []);
+  const hasAfterEvidence = afterTraceEvents.length > 0 || artifacts.afterReceipt !== undefined;
 
   return `<section id="mission-trace" class="shell-section" aria-label="Mission execution and MCP trace">
     <h2>Mission and trace</h2>
-    ${renderMissionList(artifacts.missions)}
+    ${renderMissionList(artifacts.missions, beforeViolations, afterViolations, hasAfterEvidence)}
     <div class="trace-phases">
       ${renderTraceTimeline("Failing trace before patch", beforeTraceEvents, beforeViolations)}
       ${renderTraceTimeline("Passing trace after patch", afterTraceEvents, afterViolations)}
@@ -1105,6 +1141,31 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     .timeline-table th:nth-child(4),
     .timeline-table td:nth-child(4) {
       width: 34%;
+    }
+
+    .check-badge {
+      display: inline-block;
+      margin: 0 4px 4px 0;
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .check-badge-pass {
+      color: var(--ready);
+      background: #eff8f3;
+    }
+
+    .check-badge-resolved {
+      color: var(--muted);
+      background: #f4f5f2;
+    }
+
+    .check-badge-failed {
+      color: var(--blocked);
+      background: #fbefee;
     }
 
     .inline-violations {

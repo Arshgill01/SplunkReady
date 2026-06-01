@@ -354,6 +354,58 @@ describe("SplunkReady UI shell", () => {
     expect(html.match(/violation-spl-001/g)).toHaveLength(1);
   });
 
+  it("renders mission deterministic checks from before and after violation evidence", () => {
+    const html = renderUiShell({
+      phase: "after",
+      outDir: "/tmp/splunkready-ui",
+      contract: contract(),
+      missions: [mission()],
+      receipt: receipt(),
+      traceEvents: afterTrace(),
+      violations: [],
+      beforeTraceEvents: beforeTrace(),
+      beforeViolations: [broadQueryViolation()],
+      afterTraceEvents: afterTrace(),
+      afterViolations: [],
+      afterReceipt: receipt(),
+      paths: artifactPaths()
+    });
+
+    expect(html).toContain("Deterministic checks");
+    expect(html).toContain("SPL-001 resolved");
+    expect(html).toContain("EVD-002 pass");
+    expect(html).not.toContain("SPL-001 failed");
+  });
+
+  it("scopes deterministic check badges to each mission's own violations", () => {
+    const unaffectedMission: MissionDefinition = {
+      ...mission(),
+      id: "mission-unaffected-saved-search-readiness",
+      title: "Unaffected mission",
+      checks: ["SPL-001", "EVD-002"]
+    };
+    const html = renderUiShell({
+      phase: "after",
+      outDir: "/tmp/splunkready-ui",
+      contract: contract(),
+      missions: [mission(), unaffectedMission],
+      receipt: receipt(),
+      traceEvents: afterTrace(),
+      violations: [],
+      beforeTraceEvents: beforeTrace(),
+      beforeViolations: [broadQueryViolation()],
+      afterTraceEvents: afterTrace(),
+      afterViolations: [],
+      afterReceipt: receipt(),
+      paths: artifactPaths()
+    });
+    const unaffectedMissionRow = html.slice(html.indexOf("Unaffected mission"));
+
+    expect(unaffectedMissionRow).toContain("SPL-001 pass");
+    expect(unaffectedMissionRow).toContain("EVD-002 pass");
+    expect(unaffectedMissionRow).not.toContain("SPL-001 resolved");
+  });
+
   it("renders failed receipt, policy patch, rerun receipt, and score comparison", () => {
     const html = renderUiShell({
       phase: "after",

@@ -1,8 +1,8 @@
 # SplunkReady Scaffold Manifest
 
-Status: implemented through Wave 74 continuation QA on `splunkready-build`.
+Status: implemented through Wave 75 continuation QA on `splunkready-build`.
 
-This repository turns the locked SplunkReady idea into an implemented, fixture-first certification harness with continuing wave-based QA through Wave 74. The scaffold process remains in force for future continuation waves.
+This repository turns the locked SplunkReady idea into an implemented, fixture-first certification harness with continuing wave-based QA through Wave 75. The scaffold process remains in force for future continuation waves.
 
 ## Product Lock
 

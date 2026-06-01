@@ -2939,3 +2939,52 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 75 Antigravity UI 19:57 Triage
+
+Scope:
+- Triage the fresh Antigravity/Gemini UI sidecar launched in tmux window `Splunk:7` from `/private/tmp/splunkready-antigravity-ui-fresh-20260601-195731`.
+- Integrate only bounded deterministic-check evidence badges.
+- Reject broad palette, typography, spacing, navigation, and layout restyling.
+- Keep the sidecar worktree isolated and exclude `.antigravitycli/`.
+
+Files changed:
+- `src/ui/shell.ts`
+- `tests/ui/shell.test.ts`
+- `docs/antigravity-ui-195731-triage-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-75-antigravity-ui-195731-triage.md`
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- reviewer inbox files if new Wave 75 findings arrive.
+
+Notes:
+- Accepted sidecar behavior: mission table deterministic-check badges backed by before/after violation evidence.
+- Adjusted the sidecar logic to avoid showing `resolved` for before-only shells that do not yet have rerun evidence.
+- Rejected the sidecar's broad visual restyling and metadata.
+- Focused UI shell test passed: 1 test file, 11 tests.
+- TypeScript build passed after making rule-id sets explicit as `Set<string>`.
+- Full check passed after the Wave 75 contract and logs were added: 76 wave files, 389 project files, 31 test files, 142 tests.
+- Standalone scaffold verifier and `git diff --check` passed: 76 wave files, 389 project files.
+- `unknown-wave-20260601-2013-review.md` reported `HIGH-001` for a UI source change before a visible Wave 75 contract/log and `MEDIUM-001` for only focused UI verification.
+- `HIGH-001` was resolved by adding the Wave 75 contract, current-state docs, and Wave 75 execution/verification log entries.
+- `MEDIUM-001` was resolved by running the full check and scaffold hygiene after the Wave 75 scope was documented.
+- `unknown-wave-20260601-2015-rereview.md` passed after the Wave 75 contract and log entries were visible.
+- `wave-75-20260601-2015-review.md` reported `HIGH-001` because deterministic-check badges used global rule-id sets instead of mission-scoped violations, plus `MEDIUM-001` for final verification closeout.
+- Wave 75 `HIGH-001` was resolved by filtering before/after violations by the current mission id and adding a two-mission regression test that prevents rule-id leakage across mission rows.
+- Focused UI shell tests passed after the mission-scoping fix: 1 test file, 12 tests.
+- TypeScript build passed after the mission-scoping fix.
+- Full check passed after the mission-scoping fix: 76 wave files, 392 project files, 31 test files, 143 tests.
+- Standalone scaffold verifier and `git diff --check` passed after the mission-scoping fix: 76 wave files, 392 project files.
+- `wave-75-20260601-2019-rereview.md` passed with no open findings after the mission-scoping fix.
+- Reviewer audit passed after `wave-75-20260601-2019-rereview.md`: 77 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the passing Wave 75 rereview file arrived: 76 wave files, 393 project files.
+- Final full check passed after the passing Wave 75 rereview file arrived: 76 wave files, 393 project files, 31 test files, 143 tests.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.

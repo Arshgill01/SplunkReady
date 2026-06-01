@@ -2551,3 +2551,38 @@ Result:
 - `wave-74-20260601-2009-rereview.md` passed with no findings after final closeout wording.
 - Final reviewer audit passed after `wave-74-20260601-2009-rereview.md`: 76 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed after `wave-74-20260601-2009-rereview.md`: 75 wave files, 386 project files.
+
+## 2026-06-01 - Wave 75 Antigravity UI 19:57 Triage
+
+Commands:
+
+- `npx vitest run tests/ui/shell.test.ts`
+- `npm run build`
+- `npm run check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PARTIAL pending reviewer rereview.
+- Focused UI shell tests passed: 1 test file, 11 tests.
+- Initial TypeScript build failed because `Set` inferred the narrow `GraderRuleId` union and rejected string mission checks.
+- TypeScript build passed after changing the before/after rule-id sets to `Set<string>`.
+- Full check passed after the Wave 75 contract and logs were added: scaffold verifier reported 76 wave files and 389 project files; Vitest passed 31 test files / 142 tests.
+- Reviewer audit failed because `unknown-wave-20260601-2013-review.md` was the latest `unknown-wave` verdict.
+- Standalone scaffold verifier and `git diff --check` passed: 76 wave files, 389 project files.
+- `unknown-wave-20260601-2013-review.md` reported `HIGH-001` for a UI source change before a visible Wave 75 contract/log and `MEDIUM-001` for only focused UI verification.
+- `HIGH-001` was resolved by adding the Wave 75 contract, current-state docs, and Wave 75 execution/verification log entries.
+- `MEDIUM-001` was resolved by running the full check and scaffold hygiene after the Wave 75 scope was documented.
+- `unknown-wave-20260601-2015-rereview.md` passed after the Wave 75 contract and log entries were visible.
+- `wave-75-20260601-2015-review.md` reported `HIGH-001` because deterministic-check badges used global rule-id sets instead of mission-scoped violations, plus `MEDIUM-001` for final verification closeout.
+- Wave 75 `HIGH-001` was resolved by filtering before/after violations by the current mission id and adding a two-mission regression test that prevents rule-id leakage across mission rows.
+- Focused UI shell tests passed after the mission-scoping fix: 1 test file, 12 tests.
+- TypeScript build passed after the mission-scoping fix.
+- Full check passed after the mission-scoping fix: scaffold verifier reported 76 wave files and 392 project files; Vitest passed 31 test files / 143 tests.
+- Reviewer audit failed because `wave-75-20260601-2017-rereview.md` was the latest Wave 75 verdict.
+- Standalone scaffold verifier and `git diff --check` passed after the mission-scoping fix: 76 wave files, 392 project files.
+- `wave-75-20260601-2019-rereview.md` passed with no open findings after the mission-scoping fix.
+- Reviewer audit passed after `wave-75-20260601-2019-rereview.md`: 77 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the passing Wave 75 rereview file arrived: 76 wave files, 393 project files.
+- Final `npm run check` passed after the passing Wave 75 rereview file arrived: scaffold verifier reported 76 wave files and 393 project files; Vitest passed 31 test files / 143 tests.
