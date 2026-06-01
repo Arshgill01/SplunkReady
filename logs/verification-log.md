@@ -14,6 +14,7 @@ Commands:
 - `npm test`
 - `npm run check`
 - `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 16`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-10-20260601-1230-review.md`
 
 Result:
 
@@ -28,7 +29,7 @@ Notes:
 
 - Failing trace includes full tool input with `index=*` and `src_ip`, zero rows, no saved-search discovery, and a final answer with no evidence refs.
 - Passing trace discovers knowledge objects before running the app-scoped saved search and cites `evt-102`, `evt-118`, and `evt-141`.
-- No Wave 10 reviewer inbox file was present before this log entry.
+- Wave 10 reviewer passed with no open findings and is included before Wave 11 implementation.
 
 ## 2026-06-01 12:23 - Wave 09 Fixture Query Results
 

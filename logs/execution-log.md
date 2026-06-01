@@ -39,7 +39,7 @@ Files changed:
 - `logs/verification-log.md`
 
 Reviewer files read and included:
-- None; no Wave 10 reviewer inbox file was present before this log entry.
+- `logs/reviewer-inbox/wave-10-20260601-1230-review.md`
 
 Commands:
 - `npx tsc --noEmit`
@@ -50,6 +50,7 @@ Commands:
 - `npm test`
 - `npm run check`
 - `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 16`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-10-20260601-1230-review.md`
 
 Result:
 - PASS
@@ -58,6 +59,7 @@ Notes:
 - Initial `npx tsc --noEmit` failed because the test indexed raw `unknown` JSON values; fixed by checking the parsed trace is an array and typing fixture events as records.
 - Final `npx tsc --noEmit` passed.
 - Final `npm run check` passed: scaffold verifier passed with `project files: 131` and 6 test files / 24 tests passed.
+- Wave 10 reviewer passed with no open findings and is included before Wave 11 implementation.
 
 ## 2026-06-01 12:23 - Wave 09
 
