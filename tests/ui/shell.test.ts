@@ -396,6 +396,9 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("Policy patch JSON");
     expect(html).not.toContain("display:none");
     expect(html).not.toContain("fonts.googleapis");
+    expect(html).toContain("color-scheme: light");
+    expect(html).not.toContain("color-scheme: dark");
+    expect(html).not.toMatch(/letter-spacing:\s*-/);
   });
 
 

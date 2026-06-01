@@ -160,6 +160,7 @@ Files changed:
 - `tests/ui/shell.test.ts`
 - `logs/execution-log.md`
 - `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-50-20260601-1659-review.md`
 - `logs/reviewer-inbox/wave-37-20260601-1509-review.md`
 - `logs/reviewer-inbox/wave-37-20260601-1510-rereview.md`
 
@@ -2114,6 +2115,34 @@ Notes:
 - `wave-49-20260601-1649-review.md` `HIGH-001`: resolved by forbidden-positive drift checks and a temp contradictory-copy regression.
 - `wave-49-20260601-1649-review.md` `HIGH-002`: Wave 48 and Wave 49 latest rereviews now pass.
 - `wave-49-20260601-1654-rereview.md`: reviewer passed with no open Wave 49 findings.
+
+Result:
+- PASS.
+
+## 2026-06-01 - Wave 50 Antigravity UI Sidecar Triage
+
+Scope:
+- Triage the fresh Antigravity/Gemini UI sidecar output from a clean side worktree.
+- Document why the broad UI rewrite was not merged.
+- Add a narrow UI regression guard for the drift pattern exposed by the sidecar.
+
+Files changed:
+- `docs/waves/wave-50-antigravity-ui-sidecar-triage.md`
+- `docs/waves/README.md`
+- `PLAN.md`
+- `docs/antigravity-ui-sidecar-triage-report.md`
+- `tests/ui/shell.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- Fresh sidecar window: `Splunk:6` / `agy-ui-fresh-1650`.
+- Fresh sidecar worktree: `/tmp/splunkready-antigravity-ui-fresh-20260601-165040`.
+- Antigravity showed `Gemini 3.5 Flash (High)`.
+- Sidecar changed `src/ui/shell.ts` in its worktree only: 302 changed lines, plus `.antigravitycli/` metadata.
+- Rejected the broad dark slate theme, gradients, glow-style verdict text, hover animation sweep, and negative letter spacing because they increased generic dashboard styling risk without improving receipt provenance.
+- Added a main-branch UI test guard that keeps the generated shell on the current light color scheme and rejects negative letter spacing.
+- `wave-50-20260601-1659-review.md`: reviewer passed with no open findings.
 
 Result:
 - PASS.

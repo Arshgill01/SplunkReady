@@ -56,3 +56,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-47-demo-artifact-integrity.md`: fixture demo artifact integrity checks.
 - `wave-48-reviewer-audit-automation.md`: repeatable reviewer inbox audit.
 - `wave-49-submission-copy-guardrails.md`: repeatable submission copy boundary audit.
+- `wave-50-antigravity-ui-sidecar-triage.md`: triage fresh Antigravity UI sidecar output.

@@ -1823,3 +1823,21 @@ Result:
 - `npm run audit:reviewers` initially failed because the latest Wave 49 reviewer file was the expected pre-fix `fail`; after `wave-49-20260601-1654-rereview.md` arrived, rerun audit passed across 51 groups with 4 pass-with-concerns files and 0 failing latest verdicts.
 - `bash scripts/verify-scaffold.sh && git diff --check` passed: waves 50, project files 274.
 - `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
+
+## 2026-06-01 - Wave 50 Antigravity UI Sidecar Triage
+
+Commands:
+
+- `npx vitest run tests/ui/shell.test.ts`
+- `npm run audit:reviewers`
+- `npm run check`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- UI shell tests passed: 8 tests, including the new light-theme and negative-letter-spacing guard.
+- Reviewer inbox audit initially passed before the Wave 50 reviewer file existed: 51 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Reviewer inbox audit passed again after `wave-50-20260601-1659-review.md` arrived: 52 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Full project check passed: scaffold verifier plus 31 test files / 139 tests.
+- Scaffold verifier and `git diff --check` passed.
