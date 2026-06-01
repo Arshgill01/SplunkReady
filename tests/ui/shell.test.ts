@@ -11,6 +11,10 @@ import type { MissionDefinition } from "../../src/missions/dsl.js";
 const artifactPaths = (outDir = "/tmp/splunkready-ui"): UiArtifactPaths => ({
   contract: join(outDir, "environment-contract.json"),
   missions: join(outDir, "missions.json"),
+  beforeTrace: join(outDir, "trace-before.json"),
+  beforeViolations: join(outDir, "violations-before.json"),
+  afterTrace: join(outDir, "trace-after.json"),
+  afterViolations: join(outDir, "violations-after.json"),
   receipt: join(outDir, "receipt-after-001.json"),
   trace: join(outDir, "trace-after.json"),
   violations: join(outDir, "violations-after.json")
@@ -59,6 +63,56 @@ const traceEvent = (id: string): TraceEvent => ({
   error: null
 });
 
+const beforeTrace = (): TraceEvent[] => [
+  {
+    id: "trace-before-query",
+    missionId: "mission-security-lateral-movement-readiness",
+    timestamp: "2026-06-01T06:31:00.000Z",
+    actor: "specimen_agent",
+    type: "tool_call",
+    toolName: "splunk_run_query",
+    toolInput: { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" },
+    toolOutputSummary: null,
+    queryRef: null,
+    timeWindow: { earliest: "-24h", latest: "now" },
+    resultCount: null,
+    evidenceRefs: [],
+    error: null,
+    step: 1
+  },
+  {
+    id: "trace-before-result",
+    missionId: "mission-security-lateral-movement-readiness",
+    timestamp: "2026-06-01T06:31:01.000Z",
+    actor: "splunk_adapter",
+    type: "tool_result",
+    toolName: "splunk_run_query",
+    toolInput: null,
+    toolOutputSummary: "Query used a broad index pattern and stale field.",
+    queryRef: "query-naive-lateral-movement",
+    timeWindow: { earliest: "-24h", latest: "now" },
+    resultCount: 0,
+    evidenceRefs: [],
+    error: null,
+    step: 2,
+    parentId: "trace-before-query"
+  }
+];
+
+const afterTrace = (): TraceEvent[] => [
+  traceEvent("trace-after-saved-search"),
+  {
+    ...traceEvent("trace-after-result"),
+    actor: "splunk_adapter",
+    type: "tool_result",
+    toolInput: null,
+    toolOutputSummary: "Saved search returned 3 evidence rows.",
+    queryRef: "saved-search-lateral-movement",
+    resultCount: 3,
+    parentId: "trace-after-saved-search"
+  }
+];
+
 const violation = (): Violation => ({
   id: "violation-evd-001",
   missionId: "mission-security-lateral-movement-readiness",
@@ -69,6 +123,18 @@ const violation = (): Violation => ({
   evidence: { finalAnswerId: "trace-final-answer" },
   suggestedPolicyPatch: "Carry saved-search provenance into the final answer.",
   evidenceRefs: ["evt-auth-001"]
+});
+
+const broadQueryViolation = (): Violation => ({
+  id: "violation-spl-001",
+  missionId: "mission-security-lateral-movement-readiness",
+  traceEventId: "trace-before-query",
+  ruleId: "SPL-001",
+  severity: "High",
+  reason: "Query used forbidden broad index pattern index=*.",
+  evidence: { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" },
+  suggestedPolicyPatch: "Use authorized indexes and validated saved searches.",
+  evidenceRefs: []
 });
 
 const contract = (): EnvironmentContract => ({
@@ -170,7 +236,9 @@ describe("SplunkReady UI shell", () => {
     await writeJson(join(outDir, "receipt-after-001.json"), receipt());
     await writeJson(join(outDir, "environment-contract.json"), contract());
     await writeJson(join(outDir, "missions.json"), [mission()]);
-    await writeJson(join(outDir, "trace-after.json"), [traceEvent("trace-saved-search-call")]);
+    await writeJson(join(outDir, "trace-before.json"), beforeTrace());
+    await writeJson(join(outDir, "violations-before.json"), [broadQueryViolation()]);
+    await writeJson(join(outDir, "trace-after.json"), afterTrace());
     await writeJson(join(outDir, "violations-after.json"), []);
 
     const artifacts = await loadUiArtifacts(outDir);
@@ -179,7 +247,10 @@ describe("SplunkReady UI shell", () => {
     expect(artifacts.receipt.verdict).toBe("READY");
     expect(artifacts.contract?.restrictedIndexes).toEqual(["finance_pii"]);
     expect(artifacts.missions[0]?.preferredSavedSearchRefs).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain");
-    expect(artifacts.traceEvents).toHaveLength(1);
+    expect(artifacts.traceEvents).toHaveLength(2);
+    expect(artifacts.beforeTraceEvents).toHaveLength(2);
+    expect(artifacts.beforeViolations).toHaveLength(1);
+    expect(artifacts.afterTraceEvents).toHaveLength(2);
     expect(artifacts.violations).toEqual([]);
     expect(artifacts.paths.receipt).toBe(join(outDir, "receipt-after-001.json"));
   });
@@ -208,6 +279,37 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("maxToolCalls");
     expect(html).toContain("security-evidence");
     expect(html).toContain("requiresEvidenceRefs: true");
+  });
+
+  it("renders failing and passing mission traces with inline violations and evidence", () => {
+    const duplicateViolation = broadQueryViolation();
+    const html = renderUiShell({
+      phase: "after",
+      outDir: "/tmp/splunkready-ui",
+      contract: contract(),
+      missions: [mission()],
+      receipt: receipt(),
+      traceEvents: afterTrace(),
+      violations: [],
+      beforeTraceEvents: beforeTrace(),
+      beforeViolations: [duplicateViolation, duplicateViolation],
+      afterTraceEvents: afterTrace(),
+      afterViolations: [],
+      paths: artifactPaths()
+    });
+
+    expect(html).toContain("Mission and trace");
+    expect(html).toContain("Investigate lateral movement from win-finance-07");
+    expect(html).toContain("Failing trace before patch");
+    expect(html).toContain("splunk_run_query");
+    expect(html).toContain("search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now");
+    expect(html).toContain("violation-spl-001");
+    expect(html).toContain("SPL-001");
+    expect(html).toContain("Passing trace after patch");
+    expect(html).toContain("splunk_run_saved_search");
+    expect(html).toContain("ES - Lateral Movement Auth Chain");
+    expect(html).toContain("evt-auth-001");
+    expect(html.match(/violation-spl-001/g)).toHaveLength(1);
   });
 
   it("renders deterministic violations when the current receipt is not ready", () => {
@@ -249,7 +351,9 @@ describe("SplunkReady UI shell", () => {
     await writeJson(join(outDir, "receipt-after-001.json"), receipt());
     await writeJson(join(outDir, "environment-contract.json"), contract());
     await writeJson(join(outDir, "missions.json"), [mission()]);
-    await writeJson(join(outDir, "trace-after.json"), [traceEvent("trace-saved-search-call")]);
+    await writeJson(join(outDir, "trace-before.json"), beforeTrace());
+    await writeJson(join(outDir, "violations-before.json"), [broadQueryViolation()]);
+    await writeJson(join(outDir, "trace-after.json"), afterTrace());
     await writeJson(join(outDir, "violations-after.json"), []);
 
     const shellPath = await writeUiShell(outDir);
@@ -258,6 +362,7 @@ describe("SplunkReady UI shell", () => {
     expect(shellPath).toBe(join(outDir, "splunkready-shell.html"));
     expect(html).toContain("Readiness Receipt");
     expect(html).toContain("Environment contract");
+    expect(html).toContain("Mission and trace");
     expect(html).toContain("receipt-after-001.json");
   });
 

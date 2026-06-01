@@ -2,6 +2,61 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 15:02 - Wave 36 UI Mission and Trace Views
+
+Commands:
+
+- `sed -n '1,280p' docs/waves/wave-36-ui-mission-trace.md`
+- `sed -n '1,240p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-36-*' -print | sort`
+- `git status --short --branch`
+- `sed -n '1,260p' src/ui/shell.ts && sed -n '1,320p' tests/ui/shell.test.ts`
+- `npx vitest run tests/ui/shell.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && node --input-type=module -e "import { writeUiShell } from './dist/src/ui/shell.js'; const p = await writeUiShell('/tmp/splunkready-ui-shell-Br2xW4'); console.log('SHELL_PATH=' + p);"`
+- `python3 -m http.server 41737 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41737/splunkready-shell.html`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave36-mission-trace.png --full-page`
+- `file /tmp/splunkready-wave36-mission-trace.png && ls -lh /tmp/splunkready-wave36-mission-trace.png`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-36-20260601-1502-review.md`
+- `npx vitest run tests/ui/shell.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && node --input-type=module -e "import { writeUiShell } from './dist/src/ui/shell.js'; const p = await writeUiShell('/tmp/splunkready-ui-shell-Br2xW4'); console.log('SHELL_PATH=' + p);"`
+- `python3 -m http.server 41738 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41738/splunkready-shell.html`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave36-mission-trace.png --full-page`
+- `file /tmp/splunkready-wave36-mission-trace.png && ls -lh /tmp/splunkready-wave36-mission-trace.png`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-36-*' -print | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-36-20260601-1504-rereview.md`
+
+Result:
+
+- PASS.
+- `npx vitest run tests/ui/shell.test.ts` passed: 1 test file and 7 tests.
+- `npx tsc --noEmit` passed.
+- Fixture shell generation from compiled artifacts passed.
+- Playwright snapshot showed mission list, failing trace before patch, broad `splunk_run_query` input, inline `SPL-001`/`SPL-003`/`KO-001`/`EVD-001` violations, passing trace after patch, saved-search input, result count `3`, and evidence refs `evt-102`, `evt-118`, `evt-141`.
+- Playwright screenshot passed and wrote `/tmp/splunkready-wave36-mission-trace.png`.
+- Initial screenshot file check passed: 1280 x 4382 PNG, 583 KB.
+- Wave 36 reviewer inbox scan found `logs/reviewer-inbox/wave-36-20260601-1502-review.md`.
+- Reviewer `MEDIUM-001` fixed by deduplicating inline trace violations by id before rendering.
+- Final focused `npx vitest run tests/ui/shell.test.ts` passed: 1 test file and 7 tests.
+- Final `npx tsc --noEmit` passed.
+- Final Playwright snapshot showed duplicate `SPL-003` was removed from the inline violation list while `SPL-001`, `SPL-003`, `KO-001`, and `EVD-001` remain visible.
+- Final screenshot file check passed: 1280 x 4253 PNG, 564 KB.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 223`; 30 test files and 132 tests passed.
+- `git diff --check` passed.
+- Wave 36 rereview passed with no open findings.
+
+Notes:
+
+- The trace view is built from trace and violation artifacts, not from score-only state.
+- Before/after artifacts remain loaded through the same fixture/live adapter boundary outputs produced by the CLI flow.
+
 ## 2026-06-01 14:57 - Wave 35 UI Contract Views
 
 Commands:

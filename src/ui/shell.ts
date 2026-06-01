@@ -16,6 +16,10 @@ import { parseMissionDefinition, type MissionDefinition } from "../missions/dsl.
 export interface UiArtifactPaths {
   contract?: string;
   missions?: string;
+  beforeTrace?: string;
+  beforeViolations?: string;
+  afterTrace?: string;
+  afterViolations?: string;
   receipt: string;
   trace: string;
   violations: string;
@@ -29,6 +33,10 @@ export interface UiArtifacts {
   receipt: ReadinessReceipt;
   traceEvents: TraceEvent[];
   violations: Violation[];
+  beforeTraceEvents?: TraceEvent[];
+  beforeViolations?: Violation[];
+  afterTraceEvents?: TraceEvent[];
+  afterViolations?: Violation[];
   paths: UiArtifactPaths;
 }
 
@@ -100,8 +108,16 @@ export const loadUiArtifacts = async (outDir: string): Promise<UiArtifacts> => {
   const receipt = readinessReceiptSchema.parse(await readJson(current.path));
   const contractPath = join(outDir, "environment-contract.json");
   const missionsPath = join(outDir, "missions.json");
+  const beforeTracePath = join(outDir, "trace-before.json");
+  const beforeViolationsPath = join(outDir, "violations-before.json");
+  const afterTracePath = join(outDir, "trace-after.json");
+  const afterViolationsPath = join(outDir, "violations-after.json");
   const tracePath = join(outDir, `trace-${current.phase}.json`);
   const violationPath = join(outDir, `violations-${current.phase}.json`);
+  const beforeTraceEvents = await readOptionalTrace(beforeTracePath);
+  const beforeViolations = await readOptionalViolations(beforeViolationsPath);
+  const afterTraceEvents = await readOptionalTrace(afterTracePath);
+  const afterViolations = await readOptionalViolations(afterViolationsPath);
 
   return {
     phase: current.phase,
@@ -109,11 +125,19 @@ export const loadUiArtifacts = async (outDir: string): Promise<UiArtifacts> => {
     contract: await readOptionalContract(contractPath),
     missions: await readOptionalMissions(missionsPath),
     receipt,
-    traceEvents: await readOptionalTrace(tracePath),
-    violations: await readOptionalViolations(violationPath),
+    traceEvents: current.phase === "after" ? afterTraceEvents : beforeTraceEvents,
+    violations: current.phase === "after" ? afterViolations : beforeViolations,
+    beforeTraceEvents,
+    beforeViolations,
+    afterTraceEvents,
+    afterViolations,
     paths: {
       contract: contractPath,
       missions: missionsPath,
+      beforeTrace: beforeTracePath,
+      beforeViolations: beforeViolationsPath,
+      afterTrace: afterTracePath,
+      afterViolations: afterViolationsPath,
       receipt: current.path,
       trace: tracePath,
       violations: violationPath
@@ -130,6 +154,9 @@ const escapeHtml = (value: string): string =>
     .replaceAll("'", "&#39;");
 
 const escapeValue = (value: unknown): string => escapeHtml(String(value));
+
+const truncate = (value: string, maxLength = 160): string =>
+  value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
 
 const verdictClass = (verdict: string): string => {
   if (verdict === "READY") {
@@ -378,10 +405,132 @@ const renderContractView = (artifacts: UiArtifacts): string => {
   </section>`;
 };
 
+const renderMissionList = (missions: MissionDefinition[]): string => {
+  if (missions.length === 0) {
+    return `<p class="empty">No missions artifact loaded.</p>`;
+  }
+
+  const rows = missions
+    .map(
+      (mission) => `<tr>
+        <td><code>${escapeHtml(mission.id)}</code><br>${escapeHtml(mission.title)}</td>
+        <td>${mission.expectedTools.map((tool) => `<code>${escapeHtml(tool)}</code>`).join(" ")}</td>
+        <td>${(mission.preferredSavedSearchRefs ?? []).map((ref) => `<code>${escapeHtml(ref)}</code>`).join(" ") || "None"}</td>
+        <td>${(mission.authorizedIndexes ?? []).map((index) => `<code>${escapeHtml(index)}</code>`).join(" ") || "None"}</td>
+      </tr>`
+    )
+    .join("");
+
+  return `<table>
+    <thead><tr><th>Mission</th><th>Expected tools</th><th>Preferred saved search</th><th>Authorized indexes</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+};
+
+const toolInputSummary = (event: TraceEvent): string => {
+  if (!event.toolInput) {
+    return event.toolOutputSummary ? truncate(event.toolOutputSummary) : "";
+  }
+
+  if ("query" in event.toolInput && typeof event.toolInput.query === "string") {
+    return event.toolInput.query;
+  }
+
+  if ("name" in event.toolInput && typeof event.toolInput.name === "string") {
+    const app = "app" in event.toolInput && typeof event.toolInput.app === "string" ? `${event.toolInput.app}::` : "";
+    return `${app}${event.toolInput.name}`;
+  }
+
+  return truncate(JSON.stringify(event.toolInput));
+};
+
+const violationsByTraceEvent = (violations: Violation[]): Map<string, Violation[]> => {
+  const grouped = new Map<string, Violation[]>();
+
+  for (const violation of violations) {
+    const current = grouped.get(violation.traceEventId) ?? [];
+    if (!current.some((existing) => existing.id === violation.id)) {
+      current.push(violation);
+    }
+    grouped.set(violation.traceEventId, current);
+  }
+
+  return grouped;
+};
+
+const renderInlineViolations = (violations: Violation[]): string => {
+  if (violations.length === 0) {
+    return "";
+  }
+
+  return `<ul class="inline-violations">
+    ${violations
+      .map(
+        (violation) =>
+          `<li><code>${escapeHtml(violation.id)}</code> ${escapeHtml(violation.severity)} <code>${escapeHtml(violation.ruleId)}</code>: ${escapeHtml(violation.reason)}</li>`
+      )
+      .join("")}
+  </ul>`;
+};
+
+const renderTraceTimeline = (label: string, events: TraceEvent[], violations: Violation[]): string => {
+  if (events.length === 0) {
+    return `<div>
+      <h3>${escapeHtml(label)}</h3>
+      <p class="empty">No ${escapeHtml(label.toLowerCase())} trace artifact loaded.</p>
+    </div>`;
+  }
+
+  const groupedViolations = violationsByTraceEvent(violations);
+  const rows = events
+    .map((event) => {
+      const eventViolations = groupedViolations.get(event.id) ?? [];
+      const evidence = event.evidenceRefs.length > 0 ? event.evidenceRefs.map((ref) => `<code>${escapeHtml(ref)}</code>`).join(" ") : "None";
+
+      return `<tr>
+        <td>${event.step ? escapeValue(event.step) : ""}</td>
+        <td><code>${escapeHtml(event.id)}</code><br>${escapeHtml(event.type)}</td>
+        <td>${event.toolName ? `<code>${escapeHtml(event.toolName)}</code>` : "final answer"}</td>
+        <td><code>${escapeHtml(toolInputSummary(event))}</code></td>
+        <td>${escapeValue(event.resultCount ?? "n/a")}</td>
+        <td>${evidence}${renderInlineViolations(eventViolations)}</td>
+      </tr>`;
+    })
+    .join("");
+
+  return `<div>
+    <h3>${escapeHtml(label)}</h3>
+    <table class="timeline-table">
+      <thead><tr><th>Step</th><th>Trace event</th><th>Tool</th><th>Input or summary</th><th>Results</th><th>Evidence and violations</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+};
+
+const renderMissionTraceView = (artifacts: UiArtifacts): string => {
+  const beforeTraceEvents = artifacts.beforeTraceEvents ?? (artifacts.phase === "before" ? artifacts.traceEvents : []);
+  const beforeViolations = artifacts.beforeViolations ?? (artifacts.phase === "before" ? artifacts.violations : []);
+  const afterTraceEvents = artifacts.afterTraceEvents ?? (artifacts.phase === "after" ? artifacts.traceEvents : []);
+  const afterViolations = artifacts.afterViolations ?? (artifacts.phase === "after" ? artifacts.violations : []);
+
+  return `<section id="mission-trace" class="shell-section" aria-label="Mission execution and MCP trace">
+    <h2>Mission and trace</h2>
+    ${renderMissionList(artifacts.missions)}
+    <div class="trace-phases">
+      ${renderTraceTimeline("Failing trace before patch", beforeTraceEvents, beforeViolations)}
+      ${renderTraceTimeline("Passing trace after patch", afterTraceEvents, afterViolations)}
+    </div>
+  </section>`;
+};
+
 const renderArtifactPaths = (paths: UiArtifactPaths): string =>
   `<dl class="artifact-paths">
     ${paths.contract ? `<div><dt>Contract</dt><dd><code>${escapeHtml(paths.contract)}</code></dd></div>` : ""}
     ${paths.missions ? `<div><dt>Missions</dt><dd><code>${escapeHtml(paths.missions)}</code></dd></div>` : ""}
+    ${paths.beforeTrace ? `<div><dt>Before trace</dt><dd><code>${escapeHtml(paths.beforeTrace)}</code></dd></div>` : ""}
+    ${paths.beforeViolations ? `<div><dt>Before violations</dt><dd><code>${escapeHtml(paths.beforeViolations)}</code></dd></div>` : ""}
+    ${paths.afterTrace ? `<div><dt>After trace</dt><dd><code>${escapeHtml(paths.afterTrace)}</code></dd></div>` : ""}
+    ${paths.afterViolations ? `<div><dt>After violations</dt><dd><code>${escapeHtml(paths.afterViolations)}</code></dd></div>` : ""}
     <div><dt>Receipt</dt><dd><code>${escapeHtml(paths.receipt)}</code></dd></div>
     <div><dt>Trace</dt><dd><code>${escapeHtml(paths.trace)}</code></dd></div>
     <div><dt>Violations</dt><dd><code>${escapeHtml(paths.violations)}</code></dd></div>
@@ -436,6 +585,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     code {
       font-family: "SF Mono", "Menlo", monospace;
       font-size: 12px;
+      overflow-wrap: anywhere;
     }
 
     .app-shell {
@@ -610,6 +760,23 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       margin-top: 12px;
     }
 
+    .trace-phases {
+      display: grid;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .timeline-table th:nth-child(4),
+    .timeline-table td:nth-child(4) {
+      width: 34%;
+    }
+
+    .inline-violations {
+      margin-top: 8px;
+      padding-left: 16px;
+      color: var(--blocked);
+    }
+
     ul {
       margin: 0;
       padding-left: 18px;
@@ -703,6 +870,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       <nav>
         <a aria-current="page" href="#receipt">Readiness Receipt</a>
         <a href="#contract">Contract</a>
+        <a href="#mission-trace">Mission trace</a>
         <a href="#provenance">Provenance</a>
         <a href="#violations">Violations</a>
         <a href="#artifacts">Artifacts</a>
@@ -768,6 +936,8 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       </section>
 
       ${renderContractView(artifacts)}
+
+      ${renderMissionTraceView(artifacts)}
 
       <section id="provenance" class="shell-section" aria-label="Trace and evidence provenance">
         <div class="section-grid">

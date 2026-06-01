@@ -23,6 +23,65 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 15:02 - Wave 36
+
+Scope:
+- Added mission execution and MCP trace views to the static UI shell.
+- UI now loads both before/after trace and violation artifacts when present.
+- Added mission list with expected tools, preferred saved search, and authorized indexes.
+- Added before/after tool-call timelines with query details, result counts, evidence refs, and inline violations grounded by trace event id.
+
+Files changed:
+- `src/ui/shell.ts`
+- `tests/ui/shell.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-36-20260601-1502-review.md`
+- `logs/reviewer-inbox/wave-36-20260601-1504-rereview.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-36-20260601-1502-review.md`
+- `logs/reviewer-inbox/wave-36-20260601-1504-rereview.md`
+
+Commands:
+- `sed -n '1,280p' docs/waves/wave-36-ui-mission-trace.md`
+- `sed -n '1,240p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-36-*' -print | sort`
+- `git status --short --branch`
+- `sed -n '1,260p' src/ui/shell.ts && sed -n '1,320p' tests/ui/shell.test.ts`
+- `npx vitest run tests/ui/shell.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && node --input-type=module -e "import { writeUiShell } from './dist/src/ui/shell.js'; const p = await writeUiShell('/tmp/splunkready-ui-shell-Br2xW4'); console.log('SHELL_PATH=' + p);"`
+- `python3 -m http.server 41737 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41737/splunkready-shell.html`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave36-mission-trace.png --full-page`
+- `file /tmp/splunkready-wave36-mission-trace.png && ls -lh /tmp/splunkready-wave36-mission-trace.png`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-36-20260601-1502-review.md`
+- `npx vitest run tests/ui/shell.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && node --input-type=module -e "import { writeUiShell } from './dist/src/ui/shell.js'; const p = await writeUiShell('/tmp/splunkready-ui-shell-Br2xW4'); console.log('SHELL_PATH=' + p);"`
+- `python3 -m http.server 41738 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41738/splunkready-shell.html`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave36-mission-trace.png --full-page`
+- `file /tmp/splunkready-wave36-mission-trace.png && ls -lh /tmp/splunkready-wave36-mission-trace.png`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-36-*' -print | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-36-20260601-1504-rereview.md`
+
+Result:
+- PASS.
+
+Notes:
+- Failing trace view shows the bad `splunk_run_query` call with `index=*` and `src_ip`, plus inline deterministic violations including `SPL-001`, `SPL-003`, `KO-001`, and `EVD-001`.
+- Passing trace view shows `splunk_get_knowledge_objects`, `splunk_run_saved_search`, `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`, result count `3`, and evidence refs `evt-102`, `evt-118`, and `evt-141`.
+- Reviewer `MEDIUM-001` fixed by deduplicating inline trace violations by violation id before rendering and adding a focused duplicate-id assertion.
+- Final Wave 36 rereview passed with no open findings.
+- Final `npm run check` passed: scaffold verifier reported `project files: 223` and 30 test files / 132 tests passed.
+- Screenshot artifact: `/tmp/splunkready-wave36-mission-trace.png` (1280 x 4253 PNG).
+
 ## 2026-06-01 14:57 - Wave 35
 
 Scope:
