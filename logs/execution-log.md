@@ -23,6 +23,40 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 11:43 - Wave 03
+
+Scope:
+- Tightened the domain glossary before schema canon.
+- Added explicit schema-name alignment for Environment Contract, Mission, Trace Event, Violation, and Readiness Receipt.
+- Added Fixture Adapter and Live Adapter definitions with fixture/live parity boundaries.
+
+Files changed:
+- `docs/domain-glossary.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-02-20260601-1141-rereview.md`
+- `logs/reviewer-inbox/wave-03-20260601-1142-review.md`
+- `logs/reviewer-inbox/wave-03-20260601-1143-rereview.md`
+
+Commands:
+- `rg -n "Environment Contract|Readiness Receipt|Specimen Agent" docs/domain-glossary.md docs/schemas`
+- `npm run verify:scaffold`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-02-20260601-1141-rereview.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-03-20260601-1142-review.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-03-20260601-1143-rereview.md`
+
+Result:
+- PASS
+
+Notes:
+- The glossary avoids generic scorecard language and keeps Readiness Receipt as the artifact noun.
+- Wave 02 rereview passed with no open findings.
+- Wave 03 reviewer `LOW-001` was a stale in-progress snapshot and is resolved by this execution entry and the matching verification entry.
+- Wave 03 rereview passed with no open findings.
+
 ## 2026-06-01 11:38 - Wave 02
 
 Scope:

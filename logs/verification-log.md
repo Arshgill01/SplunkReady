@@ -2,6 +2,30 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 11:43 - Wave 03 Domain Glossary
+
+Commands:
+
+- `rg -n "Environment Contract|Readiness Receipt|Specimen Agent" docs/domain-glossary.md docs/schemas`
+- `npm run verify:scaffold`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-02-20260601-1141-rereview.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-03-20260601-1142-review.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-03-20260601-1143-rereview.md`
+
+Result:
+
+- PASS
+- Wave verification found `Environment Contract`, `Readiness Receipt`, and `Specimen Agent` in `docs/domain-glossary.md`.
+- Scaffold verifier passed: `PASS: scaffold verified`, `waves: 42`, `project files: 101`.
+- Wave 02 rereview had no open findings.
+
+Notes:
+
+- No runtime behavior was implemented in Wave 03.
+- Wave 03 reviewer `LOW-001` is resolved by the Wave 03 log entries.
+- Wave 03 rereview passed with no open findings.
+
 ## 2026-06-01 11:38 - Wave 02 Stack Selection
 
 Commands:
