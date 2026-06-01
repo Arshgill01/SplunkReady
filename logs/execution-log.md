@@ -2551,3 +2551,33 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 64 Fresh Antigravity UI 1830 Triage
+
+Scope:
+- Triage the fresh Antigravity/Gemini UI sidecar restarted in tmux window `Splunk:4` / `agy-ui-fresh-1830`.
+- Review the sidecar worktree diff from `/private/tmp/splunkready-antigravity-ui-fresh-20260601-183020`.
+- Decide whether the sidecar `src/ui/shell.ts` changes should be integrated.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/antigravity-ui-fresh-1830-triage-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-64-fresh-antigravity-ui-1830-triage.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- reviewer inbox files if new Wave 64 findings arrive.
+
+Notes:
+- The sidecar ran in `/private/tmp/splunkready-antigravity-ui-fresh-20260601-183020` on branch `antigravity-ui-fresh-20260601-183020` with Gemini 3.5 Flash (High).
+- The sidecar modified only `src/ui/shell.ts` and created local-only `.antigravitycli/` artifacts in the side worktree.
+- The sidecar diff was rejected for main-branch integration because it is a broad presentation refresh without new receipt, trace, violation, policy patch, or fixture/live evidence clarity.
+- No `src/ui` changes or sidecar-generated artifacts were integrated into the main branch.
+- Wave 64 reviewer rereview passed and cleared `HIGH-001`, `MEDIUM-001`, and `MEDIUM-002`.
+- `npm run audit:reviewers`, `bash scripts/verify-scaffold.sh && git diff --check`, and `npm run check` passed.
+- No `update_goal` call was made.
+
+Result:
+- PASS.

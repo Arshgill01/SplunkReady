@@ -2182,3 +2182,30 @@ Result:
 - Wave 63 reviewer rereview passed with no open findings after clearing `HIGH-001` and `MEDIUM-001`.
 - Final reviewer audit passed after the Wave 63 rereview file arrived: 65 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 64 wave files, 327 project files.
+
+## 2026-06-01 - Wave 64 Fresh Antigravity UI 1830 Triage
+
+Commands:
+
+- `git -C /private/tmp/splunkready-antigravity-ui-fresh-20260601-183020 diff -- src/ui/shell.ts`
+- `git -C /private/tmp/splunkready-antigravity-ui-fresh-20260601-183020 diff --stat && git -C /private/tmp/splunkready-antigravity-ui-fresh-20260601-183020 status --short --branch`
+- `find /private/tmp/splunkready-antigravity-ui-fresh-20260601-183020/.antigravitycli -maxdepth 2 -print | sed -n '1,80p'`
+- `git ls-files | rg '(^|/)(\.antigravitycli|\.playwright-cli|artifacts)(/|$)' || true`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS.
+- Sidecar diff inspection showed only `src/ui/shell.ts` modified, with 91 insertions and 64 deletions.
+- Sidecar status showed branch `antigravity-ui-fresh-20260601-183020` behind `origin/splunkready-build` by one commit, with `src/ui/shell.ts` modified and `.antigravitycli/` untracked.
+- Sidecar `.antigravitycli/` scan found isolated side-worktree artifact `/private/tmp/splunkready-antigravity-ui-fresh-20260601-183020/.antigravitycli/dadabe39-f6df-4a6c-9a4f-8267ee31731b.json`.
+- Main-branch tracked sidecar artifact scan returned no tracked `.antigravitycli`, `.playwright-cli`, or `artifacts` paths.
+- Reviewer audit passed before a Wave 64-specific reviewer inbox file arrived: 65 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Scaffold verifier and `git diff --check` passed: 65 wave files, 329 project files.
+- Full check passed: scaffold verifier plus 31 test files / 139 tests.
+- Wave 64 reviewer rereview passed with no open findings after clearing `HIGH-001`, `MEDIUM-001`, and `MEDIUM-002`.
+- Follow-up scaffold verifier and `git diff --check` passed after the artifact-evidence correction: 65 wave files, 330 project files.
+- Final reviewer audit passed after the Wave 64 rereview file arrived: 66 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 65 wave files, 331 project files.
