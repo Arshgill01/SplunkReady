@@ -23,6 +23,49 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 13:42 - Wave 24
+
+Scope:
+- Added contract lookup grader rules for canonical field aliases, unknown fields, unknown sourcetypes, and restricted index access.
+- Added tests for `src_ip` canonical-field failure, unknown sourcetype failure, unknown field failure, restricted index failure, authorized restricted index pass, and known metadata pass.
+
+Files changed:
+- `src/grader/contract.ts`
+- `tests/grader/contract.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-24-20260601-1343-review.md`
+- `logs/reviewer-inbox/wave-24-20260601-1344-rereview.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-24-20260601-1343-review.md`
+- `logs/reviewer-inbox/wave-24-20260601-1344-rereview.md`
+
+Commands:
+- `sed -n '1,260p' docs/waves/wave-24-field-sourcetype-checks.md`
+- `sed -n '1,120p' docs/grader-rule-catalog.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-24-*' -print | sort`
+- `npx vitest run tests/grader/contract.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "SPL-003|SPL-005|createContractLookupRules|canonical field|Unknown:Security|finance_pii|authorizedIndexes|model interpretation|query intent" src/grader tests/grader docs/waves/wave-24-field-sourcetype-checks.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-24-20260601-1343-review.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-24-20260601-1344-rereview.md`
+
+Result:
+- PASS
+
+Notes:
+- Rules cite deterministic catalog IDs `SPL-003` and `SPL-005`.
+- Contract lookups are direct set membership checks against `EnvironmentContract` and mission `authorizedIndexes`.
+- Unknown sourcetypes and unknown/canonicalized fields fail under `SPL-003`; restricted index access fails under `SPL-005` unless the mission authorizes the index.
+- Reviewer `MEDIUM-001` fixed by normalizing reserved SPL modifier keys before field-candidate filtering.
+- Wave 24 rereview passed with no findings.
+- No model interpretation of query intent is used.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 185` and 20 test files / 83 tests passed.
+
 ## 2026-06-01 13:37 - Wave 23
 
 Scope:

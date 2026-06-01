@@ -2,6 +2,41 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 13:42 - Wave 24 Field and Sourcetype Checks
+
+Commands:
+
+- `sed -n '1,260p' docs/waves/wave-24-field-sourcetype-checks.md`
+- `sed -n '1,120p' docs/grader-rule-catalog.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-24-*' -print | sort`
+- `npx vitest run tests/grader/contract.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "SPL-003|SPL-005|createContractLookupRules|canonical field|Unknown:Security|finance_pii|authorizedIndexes|model interpretation|query intent" src/grader tests/grader docs/waves/wave-24-field-sourcetype-checks.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-24-20260601-1343-review.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-24-20260601-1344-rereview.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/grader/contract.test.ts` passed: 1 test file and 7 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 20 test files and 83 tests.
+- Traceability grep found SPL contract rule IDs, canonical field checks, sourcetype checks, restricted index authorization, and the stop-condition text.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 185`; 20 test files and 83 tests passed.
+- `git diff --check` passed.
+- Wave 24 reviewer inbox scan found `logs/reviewer-inbox/wave-24-20260601-1343-review.md` and `logs/reviewer-inbox/wave-24-20260601-1344-rereview.md`.
+
+Notes:
+
+- Rules emit structured violations through the Wave 22 engine and deterministic rule IDs.
+- Contract lookups are deterministic set membership checks.
+- Reviewer `MEDIUM-001` was resolved by adding case-insensitive reserved SPL modifier filtering and a regression test.
+- Wave 24 rereview passed with no findings.
+- No model interpretation of query intent is used.
+
 ## 2026-06-01 13:37 - Wave 23 SPL Structural Checks
 
 Commands:
