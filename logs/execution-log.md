@@ -23,6 +23,45 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 13:58 - Wave 26
+
+Scope:
+- Added app-context grader rule for `KO-002`.
+- Added deterministic checks for duplicate saved-search names, missing app context, app contexts outside the contract, macro app context, and correct app-context pass.
+
+Files changed:
+- `src/grader/app-context.ts`
+- `tests/grader/app-context.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-26-20260601-1358-review.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-26-20260601-1358-review.md`
+
+Commands:
+- `sed -n '1,260p' docs/waves/wave-26-app-context-checks.md`
+- `sed -n '25,35p' docs/grader-rule-catalog.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-26-*' -print | sort`
+- `npx vitest run tests/grader/app-context.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "KO-002|createAppContextRules|app context|duplicate-name|duplicateName|blastRadius|SplunkEnterpriseSecuritySuite|security_content_ctime|fixture works without it" src/grader tests/grader docs/waves/wave-26-app-context-checks.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-26-20260601-1358-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Rule cites deterministic catalog ID `KO-002`.
+- App context is checked against `EnvironmentContract.appContexts` and app-scoped contract objects.
+- Duplicate saved-search names are resolved against structured mission `preferredSavedSearchRefs`; fixture fallback is not trusted.
+- Violations include blast-radius evidence for wrong or missing app context.
+- Wave 26 reviewer pass had no findings.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 192` and 22 test files / 95 tests passed.
+
 ## 2026-06-01 13:50 - Wave 25
 
 Scope:

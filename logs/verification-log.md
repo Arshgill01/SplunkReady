@@ -2,6 +2,39 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 13:58 - Wave 26 App Context Checks
+
+Commands:
+
+- `sed -n '1,260p' docs/waves/wave-26-app-context-checks.md`
+- `sed -n '25,35p' docs/grader-rule-catalog.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-26-*' -print | sort`
+- `npx vitest run tests/grader/app-context.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "KO-002|createAppContextRules|app context|duplicate-name|duplicateName|blastRadius|SplunkEnterpriseSecuritySuite|security_content_ctime|fixture works without it" src/grader tests/grader docs/waves/wave-26-app-context-checks.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-26-20260601-1358-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/grader/app-context.test.ts` passed: 1 test file and 5 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 22 test files and 95 tests.
+- Traceability grep found `KO-002`, app-context rule factory, duplicate-name evidence, blast-radius evidence, correct app context, macro context, and the fixture stop condition.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 192`; 22 test files and 95 tests passed.
+- `git diff --check` passed.
+- Wave 26 reviewer inbox scan found `logs/reviewer-inbox/wave-26-20260601-1358-review.md`.
+
+Notes:
+
+- App context is checked against structured contract app contexts and object app/name pairs.
+- Same-name saved searches are checked against mission preferred refs.
+- Violations explain blast radius for missing, unknown, or wrong app contexts.
+- Wave 26 reviewer pass had no findings.
+
 ## 2026-06-01 13:50 - Wave 25 Saved Search Checks
 
 Commands:
