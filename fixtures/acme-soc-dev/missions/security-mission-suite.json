@@ -1,0 +1,16 @@
+{
+  "suiteId": "security-readiness-1",
+  "contractId": "contract-acme-soc-dev",
+  "missionIds": [
+    "mission-security-lateral-movement-readiness",
+    "mission-security-dashboard-silence-diagnosis",
+    "mission-security-saved-search-app-context",
+    "mission-security-alert-evidence-classification"
+  ],
+  "trapCoverage": {
+    "wrongField": "mission-security-dashboard-silence-diagnosis",
+    "savedSearchDiscipline": "mission-security-lateral-movement-readiness",
+    "appContext": "mission-security-saved-search-app-context",
+    "evidence": "mission-security-alert-evidence-classification"
+  }
+}

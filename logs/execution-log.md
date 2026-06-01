@@ -23,6 +23,44 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 13:02 - Wave 17
+
+Scope:
+- Added security mission generator for the flagship investigation story.
+- Added security mission suite fixture metadata.
+- Added tests for lateral movement, dashboard silence, saved-search app context, and evidence/safety traps grounded in the compiled contract.
+
+Files changed:
+- `src/missions/security.ts`
+- `fixtures/acme-soc-dev/missions/security-mission-suite.json`
+- `tests/missions/security.test.ts`
+- `logs/reviewer-inbox/wave-17-20260601-1302-review.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-17-20260601-1302-review.md`
+
+Commands:
+- `npx vitest run tests/missions/security.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "lateral|dashboard|saved search|evidence" fixtures src`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-17-*' -print | sort`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-17-20260601-1302-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Generated missions cover wrong field, saved-search discipline, app context, and evidence traps.
+- Preferred saved-search refs are verified against the compiled contract.
+- Each mission declares deterministic checks from the grader catalog.
+- Wave 17 reviewer passed with no open findings.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 158` and 13 test files / 54 tests passed.
+
 ## 2026-06-01 12:58 - Wave 16
 
 Scope:

@@ -2,6 +2,35 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 13:02 - Wave 17 Security Missions
+
+Commands:
+
+- `npx vitest run tests/missions/security.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "lateral|dashboard|saved search|evidence" fixtures src`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-17-*' -print | sort`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-17-20260601-1302-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/missions/security.test.ts` passed: 1 test file and 4 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 13 test files and 54 tests.
+- Required grep found lateral, dashboard, saved search, and evidence references in fixtures/source.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 158`; 13 test files and 54 tests passed.
+- `git diff --check` passed.
+- `logs/reviewer-inbox/wave-17-20260601-1302-review.md` passed with no open findings.
+
+Notes:
+
+- Security missions are generated from `EnvironmentContract` saved-search objects.
+- Suite fixture records mission IDs and trap coverage.
+
 ## 2026-06-01 12:58 - Wave 16 Mission DSL
 
 Commands:
