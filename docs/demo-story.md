@@ -4,6 +4,10 @@
 
 Under 3 minutes.
 
+## Positioning
+
+This is a certification story, not a chatbot story. The demo should make a judge understand that SplunkReady is pre-production infrastructure for Platform & Developer Experience teams, using security investigation readiness as the flagship scenario.
+
 ## Scene 1: Confident Failure
 
 Prompt:
@@ -83,4 +87,3 @@ Verdict:
 ## Final Line
 
 > Splunk is making operational data agent-ready. SplunkReady makes agents Splunk-ready.
-

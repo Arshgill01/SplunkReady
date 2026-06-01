@@ -12,6 +12,8 @@ Certify AI agents before they touch production Splunk.
 
 Splunk MCP makes it easier for AI agents to call Splunk tools. That does not mean the agent understands a customer's Splunk deployment.
 
+Splunk is making operational data agent-ready. SplunkReady makes agents Splunk-ready.
+
 SplunkReady answers the deployment-specific trust question:
 
 > This agent can call Splunk. But can it be trusted here?
@@ -43,6 +45,12 @@ Existing Splunk surfaces can provide tool access, telemetry, rate limits, securi
 
 SplunkReady compiles a live or fixture Splunk environment into a contract, evaluates an agent against realistic missions, grades its MCP trace deterministically, and produces a Readiness Receipt.
 
+The Agent Readiness Compiler is the engine. The Readiness Receipt is the artifact a platform team can use to decide whether an agent is ready for bounded operation.
+
+## Prize Strategy
+
+SplunkReady targets the Platform & Developer Experience track because it is infrastructure for safely shipping Splunk-connected agents. Security investigation readiness is the flagship story because it makes the risk concrete without turning the product into a SOC copilot.
+
 ## Demo Promise
 
 The demo shows an agent confidently saying "no evidence of lateral movement." SplunkReady proves the answer is unsafe, exports a policy patch, reruns the same agent, and produces a ready verdict with trace evidence.
@@ -65,4 +73,3 @@ The demo shows an agent confidently saying "no evidence of lateral movement." Sp
 - The receipt looks enterprise-real.
 - The repository proves fixture mode is reproducible.
 - Live mode exists as a credible path, not a demo dependency.
-

@@ -2,6 +2,35 @@
 
 Implementation has not started. These entries verify scaffold readiness only.
 
+## 2026-06-01 11:33 - Wave 01 Product Narrative
+
+Commands:
+
+- `rg -n "certif|agent-ready|Splunk-ready|Platform" README.md docs`
+- `bash scripts/verify-scaffold.sh`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-00-20260601-1131-review.md`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-00-20260601-1133-rereview.md`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-01-20260601-1132-review.md`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-01-20260601-1134-rereview.md`
+- `bash -n scripts/verify-scaffold.sh && bash scripts/verify-scaffold.sh`
+- `rg -n "reviewer-notes|reviewer-inbox|project files" PLAN.md scripts/verify-scaffold.sh logs/execution-log.md logs/verification-log.md`
+
+Result:
+
+- PASS
+- Wave verification found certification, `agent-ready`, `Splunk-ready`, and Platform references in `README.md` and docs.
+- Scaffold verifier passed after doc and verifier updates: `PASS: scaffold verified`, `waves: 42`, `project files: 88`.
+- Reviewer inbox contained Wave 00 review/rereview and Wave 01 review/rereview files; open findings were resolved.
+
+Notes:
+
+- `MEDIUM-001`: fixed stale `PLAN.md` reviewer path.
+- `LOW-001`: fixed verifier file count to exclude `.git`.
+- Wave 00 rereview: passed with no open findings.
+- Wave 01 `LOW-001`: fixed by adding Wave 01 execution and verification log entries.
+- Wave 01 rereview `LOW-001`: fixed by separating reviewer artifacts from executor-edited files in the execution log.
+
 ## 2026-06-01 11:30 - Wave 00 Control System
 
 Commands:
@@ -14,7 +43,7 @@ Commands:
 Result:
 
 - PASS
-- Both `bash scripts/verify-scaffold.sh` runs reported `PASS: scaffold verified`, `waves: 42`, `files: 101`.
+- Both `bash scripts/verify-scaffold.sh` runs reported `PASS: scaffold verified`, `waves: 42`, `files: 101`; this was a raw workspace count that included `.git` before the verifier was corrected.
 - `find . -maxdepth 3 -type f | sort` completed successfully.
 - Reviewer inbox contains only `logs/reviewer-inbox/README.md`.
 

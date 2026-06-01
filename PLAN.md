@@ -51,7 +51,9 @@ Reviewer tasks:
 - look for hidden LLM-judging-LLM drift;
 - check fixture/live parity;
 - verify demo story remains honest;
-- write findings into `logs/reviewer-notes.md`.
+- write findings as unique files under `logs/reviewer-inbox/`.
+
+`logs/reviewer-notes.md` is retained only as a legacy scaffold note location; reviewer handoff files belong in `logs/reviewer-inbox/`.
 
 ## Success Standard
 
@@ -80,4 +82,3 @@ Do not build all features. Build the smallest real vertical slice:
 - one receipt flow;
 - one patch/rerun path;
 - fixture mode first, live mode second.
-

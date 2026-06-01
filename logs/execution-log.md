@@ -23,6 +23,50 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 11:33 - Wave 01
+
+Scope:
+- Locked the implementation-facing product narrative.
+- Added a root README entry point.
+- Resolved reviewer Wave 00 control-system findings that arrived after the Wave 00 commit.
+
+Files changed:
+- `README.md`
+- `docs/product-brief.md`
+- `docs/demo-story.md`
+- `PLAN.md`
+- `scripts/verify-scaffold.sh`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-00-20260601-1131-review.md`
+- `logs/reviewer-inbox/wave-00-20260601-1133-rereview.md`
+- `logs/reviewer-inbox/wave-01-20260601-1132-review.md`
+- `logs/reviewer-inbox/wave-01-20260601-1134-rereview.md`
+
+Commands:
+- `rg -n "certif|agent-ready|Splunk-ready|Platform" README.md docs`
+- `bash scripts/verify-scaffold.sh`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-00-20260601-1131-review.md`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-00-20260601-1133-rereview.md`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-01-20260601-1132-review.md`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-01-20260601-1134-rereview.md`
+- `bash -n scripts/verify-scaffold.sh && bash scripts/verify-scaffold.sh`
+- `rg -n "reviewer-notes|reviewer-inbox|project files" PLAN.md scripts/verify-scaffold.sh logs/execution-log.md logs/verification-log.md`
+
+Result:
+- PASS
+
+Notes:
+- `MEDIUM-001` fixed by updating `PLAN.md` to require unique reviewer files under `logs/reviewer-inbox/`.
+- `LOW-001` fixed by changing the scaffold verifier to report project files excluding `.git`.
+- Wave 01 reviewer `LOW-001` was resolved by the Wave 01 execution and verification log entries.
+- Wave 00 rereview passed with no open findings.
+- Wave 01 rereview `LOW-001` was resolved by separating reviewer files from executor-edited files in this log.
+- Final verifier output after the reviewer response was `PASS: scaffold verified`, `waves: 42`, `project files: 88`.
+
 ## 2026-06-01 11:30 - Wave 00
 
 Scope:
@@ -45,7 +89,7 @@ Result:
 Notes:
 - No source implementation files were created or modified.
 - Reviewer inbox contains only `logs/reviewer-inbox/README.md`.
-- The final verifier rerun after log edits reported `PASS: scaffold verified`, `waves: 42`, `files: 101`.
+- The final verifier rerun after log edits reported `PASS: scaffold verified`, `waves: 42`, `files: 101`; this was a raw workspace count that included `.git` before the verifier was corrected.
 
 ## 2026-06-01 - Scaffold Hardening Pass 5
 
