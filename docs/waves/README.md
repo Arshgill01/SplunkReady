@@ -54,3 +54,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-45-judge-resilience.md`: fresh-checkout and submission resilience.
 - `wave-46-remote-cleanroom-qa.md`: cleanroom verification from the pushed branch.
 - `wave-47-demo-artifact-integrity.md`: fixture demo artifact integrity checks.
+- `wave-48-reviewer-audit-automation.md`: repeatable reviewer inbox audit.

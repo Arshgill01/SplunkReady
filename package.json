@@ -9,6 +9,7 @@
     "splunkready": "node dist/src/cli.js",
     "test": "vitest run --passWithNoTests",
     "verify:scaffold": "bash scripts/verify-scaffold.sh",
+    "audit:reviewers": "node scripts/audit-reviewer-inbox.mjs",
     "check": "npm run verify:scaffold && npm test"
   },
   "dependencies": {

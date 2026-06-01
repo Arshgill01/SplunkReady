@@ -2053,3 +2053,32 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 48 Reviewer Audit Automation
+
+Scope:
+- Add a repeatable reviewer inbox audit command.
+- Cover numbered waves and `unknown-wave` reviewer files.
+- Verify failing latest verdicts cause a nonzero exit.
+
+Files changed:
+- `docs/waves/wave-48-reviewer-audit-automation.md`
+- `docs/waves/README.md`
+- `PLAN.md`
+- `scripts/audit-reviewer-inbox.mjs`
+- `package.json`
+- `docs/reviewer-audit-automation-report.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-47-20260601-1644-review.md`
+
+Notes:
+- Added `npm run audit:reviewers`.
+- Audit groups latest numbered wave files plus latest `unknown-wave` files.
+- Negative temp-inbox check confirmed a latest `fail` verdict exits nonzero.
+- Superseded temp-inbox check confirmed a later passing rereview clears an earlier failing review.
+- Late Wave 47 reviewer file passed and is included in this checkpoint.
+- No Wave 48 reviewer file appeared during the wait window before commit.
+
+Result:
+- PASS.

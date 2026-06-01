@@ -1781,3 +1781,22 @@ Result:
 - Fixture demo artifact inspection passed at `/tmp/splunkready-wave47-demo-u95OAJ`: 18 files on disk, 18 rehearsal artifact refs, no missing paths, `NOT READY` -> `READY`, Markdown verdicts aligned with JSON, and no missing required rule IDs.
 - Late Wave 46 rereviews passed and are included in the Wave 47 checkpoint.
 - Latest reviewer verdict audit passed across 47 reviewer-covered waves with 4 pass-with-concerns files and 0 failing latest verdicts; no Wave 47 reviewer file appeared during the wait window.
+
+## 2026-06-01 - Wave 48 Reviewer Audit Automation
+
+Commands:
+
+- `npm run audit:reviewers`
+- `tmp=$(mktemp -d /tmp/splunkready-wave48-audit-XXXXXX) && cat > "$tmp/wave-99-20260601-0000-review.md" ... && node scripts/audit-reviewer-inbox.mjs "$tmp" ...`
+- `tmp=$(mktemp -d /tmp/splunkready-wave48-audit-pass-XXXXXX) && cat > "$tmp/wave-99-20260601-0000-review.md" ... && cat > "$tmp/wave-99-20260601-0001-rereview.md" ... && node scripts/audit-reviewer-inbox.mjs "$tmp"`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS.
+- Real reviewer inbox audit passed: 49 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Negative temp-inbox check returned `RC=1` for latest verdict `fail`.
+- Superseded failure temp-inbox check passed when a later rereview had verdict `pass`.
+- Scaffold verifier and full project check passed.
+- No Wave 48 reviewer file appeared during the wait window before commit.
