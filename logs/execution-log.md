@@ -37,12 +37,14 @@ Files changed:
 - `tests/agents/specimen.test.ts`
 - `logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`
 - `logs/reviewer-inbox/wave-21-20260601-1318-review.md`
+- `logs/reviewer-inbox/wave-21-20260601-1320-rereview.md`
 - `logs/execution-log.md`
 - `logs/verification-log.md`
 
 Reviewer files read and included:
 - `logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`
 - `logs/reviewer-inbox/wave-21-20260601-1318-review.md`
+- `logs/reviewer-inbox/wave-21-20260601-1320-rereview.md`
 
 Commands:
 - `npx vitest run tests/traces/recorder.test.ts tests/agents/specimen.test.ts`
@@ -54,6 +56,7 @@ Commands:
 - `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-21-*' -print | sort`
 - `sed -n '1,260p' logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`
 - `sed -n '1,300p' logs/reviewer-inbox/wave-21-20260601-1318-review.md`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-21-20260601-1320-rereview.md`
 
 Result:
 - PASS
@@ -64,7 +67,8 @@ Notes:
 - Sensitive outputs are represented by bounded summaries and evidence refs.
 - `LOW-001` resolved by including and logging the Wave 20 rereview pass.
 - Wave 21 reviewer passed code behavior with only the now-resolved audit-trail concern.
-- Final `npm run check` passed: scaffold verifier passed with `project files: 172` and 17 test files / 65 tests passed.
+- Wave 21 rereview audit concern resolved by including the rereview artifact and current log updates.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 173` and 17 test files / 65 tests passed.
 
 ## 2026-06-01 13:13 - Wave 20
 

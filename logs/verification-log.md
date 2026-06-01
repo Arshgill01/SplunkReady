@@ -15,6 +15,7 @@ Commands:
 - `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-21-*' -print | sort`
 - `sed -n '1,260p' logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`
 - `sed -n '1,300p' logs/reviewer-inbox/wave-21-20260601-1318-review.md`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-21-20260601-1320-rereview.md`
 
 Result:
 
@@ -23,16 +24,18 @@ Result:
 - `npx tsc --noEmit` passed.
 - `npm test` passed: 17 test files and 65 tests.
 - Traceability grep found recorder APIs, parent links, result counts, evidence refs, and schema validation.
-- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 172`; 17 test files and 65 tests passed.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 173`; 17 test files and 65 tests passed.
 - `git diff --check` passed.
 - Wave 20 rereview passed with no open findings.
 - Wave 21 `LOW-001` resolved by including and logging `logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`.
+- Wave 21 rereview `LOW-001` resolved by including and logging `logs/reviewer-inbox/wave-21-20260601-1320-rereview.md`.
 
 Notes:
 
 - Recorder produces structured trace events with stable ids.
 - Query and saved-search result events preserve result count and evidence refs.
 - Wave 21 review had no code behavior gaps.
+- Wave 21 rereview confirmed only audit staging concerns, now resolved.
 
 ## 2026-06-01 13:13 - Wave 20 Naive Specimen Agent
 
