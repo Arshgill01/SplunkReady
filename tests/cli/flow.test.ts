@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, stat } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile } from "node:child_process";
@@ -191,11 +191,14 @@ describe("SplunkReady CLI flow", () => {
       "violations-before.json",
       "score-before.json",
       "receipt-before-001.json",
+      "receipt-before-001.md",
       "policy-patch.json",
+      "policy-patch.md",
       "trace-after.json",
       "violations-after.json",
       "score-after.json",
       "receipt-after-001.json",
+      "receipt-after-001.md",
       "splunkready-shell.html",
       "demo-rehearsal.json",
       "demo-rehearsal.md"
@@ -212,9 +215,20 @@ describe("SplunkReady CLI flow", () => {
       story: string;
       expectedArtifacts: string[];
     };
-    const beforeReceipt = JSON.parse(await readFile(join(outDir, "receipt-before-001.json"), "utf8")) as { verdict: string };
+    const beforeReceipt = JSON.parse(await readFile(join(outDir, "receipt-before-001.json"), "utf8")) as {
+      verdict: string;
+    };
     const afterReceipt = JSON.parse(await readFile(join(outDir, "receipt-after-001.json"), "utf8")) as { verdict: string };
+    const beforeViolations = JSON.parse(await readFile(join(outDir, "violations-before.json"), "utf8")) as Array<{
+      ruleId: string;
+    }>;
+    const beforeReceiptMarkdown = await readFile(join(outDir, "receipt-before-001.md"), "utf8");
+    const afterReceiptMarkdown = await readFile(join(outDir, "receipt-after-001.md"), "utf8");
+    const policyPatchMarkdown = await readFile(join(outDir, "policy-patch.md"), "utf8");
     const shell = await readFile(join(outDir, "splunkready-shell.html"), "utf8");
+    const artifactNames = (await readdir(outDir)).sort();
+    const expectedArtifactPaths = expectedArtifacts.map((artifact) => join(outDir, artifact)).sort();
+    const requiredRuleIds = ["SPL-001", "SPL-003", "KO-001", "EVD-001", "ANS-001"];
 
     expect(rehearsal).toMatchObject({
       status: "PASS",
@@ -222,10 +236,22 @@ describe("SplunkReady CLI flow", () => {
       story: "fail -> compile -> patch -> rerun -> pass"
     });
     expect(rehearsal.uiRoute).toContain("splunkready-shell.html#rerun-receipts");
-    expect(rehearsal.expectedArtifacts).toEqual(expect.arrayContaining(expectedArtifacts.map((artifact) => join(outDir, artifact))));
+    expect(await exists(rehearsal.uiRoute.split("#")[0] ?? "")).toBe(true);
+    expect(artifactNames).toEqual([...expectedArtifacts].sort());
+    expect([...rehearsal.expectedArtifacts].sort()).toEqual(expectedArtifactPaths);
+    for (const artifactPath of rehearsal.expectedArtifacts) {
+      expect(await exists(artifactPath)).toBe(true);
+    }
     expect(beforeReceipt.verdict).toBe("NOT READY");
     expect(afterReceipt.verdict).toBe("READY");
-    expect(shell).toContain("ANS-001");
+    expect(beforeReceiptMarkdown).toContain("NOT READY");
+    expect(afterReceiptMarkdown).toContain("READY");
+    expect(policyPatchMarkdown).toContain("This patch does not change Splunk configuration.");
+    expect(beforeViolations.map((violation) => violation.ruleId)).toEqual(expect.arrayContaining(requiredRuleIds));
+    for (const ruleId of requiredRuleIds) {
+      expect(beforeReceiptMarkdown).toContain(ruleId);
+      expect(shell).toContain(ruleId);
+    }
     expect(shell).toContain("Definitive benign conclusion is not supported by adequate evidence.");
   });
 

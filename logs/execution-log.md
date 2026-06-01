@@ -2026,3 +2026,30 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 47 Demo Artifact Integrity
+
+Scope:
+- Add a continuation wave for fixture demo artifact integrity.
+- Tighten CLI flow tests for generated artifact completeness and receipt Markdown/JSON agreement.
+- Verify artifact bundle inspection remains fixture-only and credential-free.
+
+Files changed:
+- `docs/waves/wave-47-demo-artifact-integrity.md`
+- `docs/waves/README.md`
+- `PLAN.md`
+- `tests/cli/flow.test.ts`
+- `docs/demo-artifact-integrity-report.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/unknown-wave-20260601-1640-rereview.md`
+- `logs/reviewer-inbox/wave-46-20260601-1640-rereview.md`
+
+Notes:
+- Demo orchestration test now asserts the full 18-file artifact bundle, exact `demo-rehearsal.json` artifact paths, real UI route file, receipt Markdown/JSON verdict agreement, required rule IDs in Markdown and UI, and policy patch non-mutation text.
+- Manual fixture demo artifact inspection passed at `/tmp/splunkready-wave47-demo-u95OAJ`.
+- Late Wave 46 rereviews are included in this checkpoint; both passed with no open Critical, High, Medium, or Low findings.
+- No Wave 47 reviewer file appeared during the wait window before commit.
+
+Result:
+- PASS.

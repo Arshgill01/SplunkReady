@@ -1762,3 +1762,22 @@ Result:
 - Fixture demo passed with 18 artifacts, `fitsUnderThreeMinutes: true`, fixture `NOT READY` -> `READY`, and no missing required UI/rule strings.
 - Latest reviewer verdict audit passed across 47 waves with 4 pass-with-concerns files and 0 failing latest verdicts.
 - Wave 46 scope-audit reviewer passed and confirmed the prior unknown-wave `HIGH-001` continuation finding was resolved.
+
+## 2026-06-01 - Wave 47 Demo Artifact Integrity
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts`
+- `npx tsc --noEmit`
+- `npm run check`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-wave47-demo-XXXXXX) && env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- demo --out "$tmp" && node - <<'NODE' "$tmp" ... NODE`
+
+Result:
+
+- PASS.
+- Targeted CLI flow tests passed: 5 tests.
+- TypeScript no-emit check passed.
+- `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
+- Fixture demo artifact inspection passed at `/tmp/splunkready-wave47-demo-u95OAJ`: 18 files on disk, 18 rehearsal artifact refs, no missing paths, `NOT READY` -> `READY`, Markdown verdicts aligned with JSON, and no missing required rule IDs.
+- Late Wave 46 rereviews passed and are included in the Wave 47 checkpoint.
+- Latest reviewer verdict audit passed across 47 reviewer-covered waves with 4 pass-with-concerns files and 0 failing latest verdicts; no Wave 47 reviewer file appeared during the wait window.
