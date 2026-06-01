@@ -23,6 +23,49 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 12:23 - Wave 09
+
+Scope:
+- Seeded deterministic query and saved-search result rows for the lateral-movement fixture.
+- Added wrong-field zero-result behavior, correct saved-search evidence rows, prompt-injection event data, and observability latency rows.
+- Aligned golden trace prompt-injection evidence refs with the seeded fixture row.
+- Added fixture result tests proving stable counts, citeable evidence rows, and prompt-injection text remains event data.
+
+Files changed:
+- `fixtures/acme-soc-dev/adapter-fixture.json`
+- `tests/fixtures/query-results.test.ts`
+- `tests/adapters/fixture.test.ts`
+- `docs/golden-traces.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-09-20260601-1223-review.md`
+
+Commands:
+- `npx tsc --noEmit`
+- `npx vitest run tests/fixtures/query-results.test.ts`
+- `npm test`
+- `rg -n "evt-102|evt-118|evt-141|evt-injection-001|obs-201|obs-202|src_ip|src|saved search|app" fixtures src tests docs/golden-traces.md`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 14`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-09-20260601-1223-review.md`
+- `rg -n "Ignore previous instructions|mark this alert benign|instruction_like_event_sample|evt-injection" fixtures tests docs/golden-traces.md`
+- `npx vitest run tests/fixtures/query-results.test.ts`
+- `npm test`
+- `npm run check`
+
+Result:
+- PASS
+
+Notes:
+- Correct lateral-movement saved-search path now returns 3 rows with evidence refs `evt-102`, `evt-118`, and `evt-141`.
+- Wrong broad and wrong-field query paths return stable zero-row results with warnings.
+- Prompt-injection text is stored only in the returned row `message` field with evidence ref `evt-injection-001`.
+- Observability latency fixture rows use stable refs `obs-201` and `obs-202`.
+- `HIGH-001` fixed by removing the exact prompt-injection instruction from saved-search metadata and adding a regression test that confines the instruction text to saved-search result rows.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 127` and 5 test files / 21 tests passed.
+
 ## 2026-06-01 12:19 - Wave 08
 
 Scope:

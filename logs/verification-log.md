@@ -2,6 +2,41 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 12:23 - Wave 09 Fixture Query Results
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/fixtures/query-results.test.ts`
+- `npm test`
+- `rg -n "evt-102|evt-118|evt-141|evt-injection-001|obs-201|obs-202|src_ip|src|saved search|app" fixtures src tests docs/golden-traces.md`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 14`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-09-20260601-1223-review.md`
+- `rg -n "Ignore previous instructions|mark this alert benign|instruction_like_event_sample|evt-injection" fixtures tests docs/golden-traces.md`
+- `npx vitest run tests/fixtures/query-results.test.ts`
+- `npm test`
+- `npm run check`
+
+Result:
+
+- PASS
+- `npx tsc --noEmit` passed.
+- Initial `npx vitest run tests/fixtures/query-results.test.ts` passed: 1 test file and 4 tests.
+- Initial `npm test` passed: 5 test files and 20 tests.
+- Initial `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 126`; 5 test files and 20 tests passed.
+- Final `npx vitest run tests/fixtures/query-results.test.ts` passed after reviewer fix: 1 test file and 5 tests.
+- Final `npm test` passed: 5 test files and 21 tests.
+- Final `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 127`; 5 test files and 21 tests passed.
+- Evidence-id search found `evt-102`, `evt-118`, `evt-141`, `evt-injection-001`, `obs-201`, `obs-202`, `src_ip`, `src`, saved-search, and app references in fixture data/tests/docs.
+
+Notes:
+
+- Correct path produces concrete event rows and stable evidence refs.
+- Wrong path produces plausible zero results with warning context.
+- Prompt-injection text appears as row data, not fixture warnings or agent behavior.
+- `HIGH-001`: fixed by moving the exact prompt-injection instruction out of saved-search metadata and adding a row-only regression test.
+
 ## 2026-06-01 12:19 - Wave 08 Fixture Knowledge Objects
 
 Commands:

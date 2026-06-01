@@ -64,7 +64,7 @@ describe("fixture Splunk adapter", () => {
         },
         requestOptions
       )
-    ).resolves.toMatchObject({ resultCount: 2, evidenceRefs: ["evt-102", "evt-118"] });
+    ).resolves.toMatchObject({ resultCount: 3, evidenceRefs: ["evt-102", "evt-118", "evt-141"] });
   });
 
   it("records deterministic trace hook events around fixture calls", async () => {
@@ -102,8 +102,8 @@ describe("fixture Splunk adapter", () => {
       requestId: "req-fixture-001"
     });
     expect(ends[1]).toMatchObject({
-      resultCount: 2,
-      evidenceRefs: ["evt-102", "evt-118"]
+      resultCount: 3,
+      evidenceRefs: ["evt-102", "evt-118", "evt-141"]
     });
   });
 });
