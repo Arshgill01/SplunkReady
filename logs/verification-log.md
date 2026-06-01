@@ -14,23 +14,25 @@ Commands:
 - `git diff --check`
 - `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-22-*' -print | sort`
 - `sed -n '1,260p' logs/reviewer-inbox/wave-22-20260601-1324-review.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-22-20260601-1329-rereview.md`
 
 Result:
 
 - PASS
-- `npx vitest run tests/grader/engine.test.ts` passed: 1 test file and 5 tests.
+- `npx vitest run tests/grader/engine.test.ts` passed: 1 test file and 6 tests.
 - `npx tsc --noEmit` passed.
-- `npm test` passed: 18 test files and 70 tests.
+- `npm test` passed: 18 test files and 71 tests.
 - Traceability grep found rule engine APIs, violation schema validation, severity catalog, and catalog stop-condition text.
-- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 176`; 18 test files and 70 tests passed.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 177`; 18 test files and 71 tests passed.
 - `git diff --check` passed.
-- Wave 22 reviewer inbox scan found `logs/reviewer-inbox/wave-22-20260601-1324-review.md`.
+- Wave 22 reviewer inbox scan found `logs/reviewer-inbox/wave-22-20260601-1324-review.md` and `logs/reviewer-inbox/wave-22-20260601-1329-rereview.md`.
 
 Notes:
 
 - Rule engine returns structured pass/fail evaluations and ordered violations.
 - LLMs are absent from the pass/fail path.
 - Reviewer `HIGH-001` was resolved by enforcing canonical rule/result/violation identity and severity in `runRuleEngine`, with negative tests for each mismatch class.
+- Rereview `HIGH-001` was resolved by runtime-validating the complete pass/fail result shape and rejecting malformed status prose.
 
 ## 2026-06-01 13:18 - Wave 21 Trace Recorder
 

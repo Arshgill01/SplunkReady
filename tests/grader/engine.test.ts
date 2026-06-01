@@ -180,6 +180,24 @@ describe("rule engine foundation", () => {
     );
   });
 
+  it("rejects malformed result statuses instead of accepting prose grades", async () => {
+    const context = await loadContext();
+    const rule: GraderRule = {
+      id: "SPL-001",
+      severity: "Critical",
+      evaluate() {
+        return {
+          status: "looks safe",
+          ruleId: "SPL-001",
+          severity: "Critical",
+          evidence: {}
+        } as never;
+      }
+    };
+
+    expect(() => runRuleEngine(context, [rule])).toThrow("Rule SPL-001 returned malformed evaluation.");
+  });
+
   it("rejects violations emitted for a different rule id or severity", async () => {
     const context = await loadContext();
     const firstEvent = context.traceEvents[0];

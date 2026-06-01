@@ -46,6 +46,26 @@ export interface RuleEngineResult {
   violations: Violation[];
 }
 
+const rulePassResultSchema = z
+  .object({
+    status: z.literal("pass"),
+    ruleId: graderRuleIdSchema,
+    severity: severitySchema,
+    evidence: z.record(z.unknown())
+  })
+  .strict();
+
+const ruleFailResultSchema = z
+  .object({
+    status: z.literal("fail"),
+    ruleId: graderRuleIdSchema,
+    severity: severitySchema,
+    violations: z.array(violationSchema)
+  })
+  .strict();
+
+const ruleEvaluationSchema = z.discriminatedUnion("status", [rulePassResultSchema, ruleFailResultSchema]);
+
 export const ruleSeverityById: Record<GraderRuleId, RuleSeverity> = {
   "SPL-001": "Critical",
   "SPL-002": "High",
@@ -116,6 +136,11 @@ export const fail = (ruleId: GraderRuleId, violations: Violation[]): RuleFailRes
 
 const assertRuleBoundary = (rule: GraderRule, result: RuleEvaluation): RuleEvaluation => {
   const canonicalSeverity = ruleSeverityById[rule.id];
+  const parsedResult = ruleEvaluationSchema.safeParse(result);
+
+  if (!parsedResult.success) {
+    throw new Error(`Rule ${rule.id} returned malformed evaluation.`);
+  }
 
   if (rule.severity !== canonicalSeverity) {
     throw new Error(
@@ -123,18 +148,18 @@ const assertRuleBoundary = (rule: GraderRule, result: RuleEvaluation): RuleEvalu
     );
   }
 
-  if (result.ruleId !== rule.id) {
-    throw new Error(`Rule ${rule.id} returned result for ${result.ruleId}.`);
+  if (parsedResult.data.ruleId !== rule.id) {
+    throw new Error(`Rule ${rule.id} returned result for ${parsedResult.data.ruleId}.`);
   }
 
-  if (result.severity !== canonicalSeverity) {
+  if (parsedResult.data.severity !== canonicalSeverity) {
     throw new Error(
-      `Rule ${rule.id} returned severity ${result.severity}, expected canonical severity ${canonicalSeverity}.`
+      `Rule ${rule.id} returned severity ${parsedResult.data.severity}, expected canonical severity ${canonicalSeverity}.`
     );
   }
 
-  if (result.status === "fail") {
-    result.violations.forEach((violation) => {
+  if (parsedResult.data.status === "fail") {
+    parsedResult.data.violations.forEach((violation) => {
       const parsedViolation = violationSchema.parse(violation);
 
       if (parsedViolation.ruleId !== rule.id) {
@@ -149,7 +174,7 @@ const assertRuleBoundary = (rule: GraderRule, result: RuleEvaluation): RuleEvalu
     });
   }
 
-  return result;
+  return parsedResult.data;
 };
 
 export const runRuleEngine = (context: RuleContext, rules: GraderRule[]): RuleEngineResult => {
