@@ -1867,3 +1867,28 @@ Reviewer findings resolved:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 41 Final QA
+
+Scope:
+- Run final QA commands.
+- Audit latest reviewer verdicts.
+- Record risk register closure assessment.
+- Produce final QA report and submission checklist.
+
+Files changed:
+- `docs/final-qa-report.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-41-20260601-1607-review.md`
+
+Notes:
+- Confidence benchmark is 90/100 based on the rubric in `docs/final-qa-report.md`, above the 85% Wave 41 threshold.
+- Demo rehearsal passed under 3 minutes with 18 generated artifacts.
+- Latest reviewer verdict audit passed across 41 waves with 0 failing latest verdicts.
+- `logs/reviewer-inbox/wave-41-20260601-1607-review.md` `MEDIUM-001`: resolved by adding the confidence rubric to `docs/final-qa-report.md`.
+- Overall `/goal` is not complete because the user explicitly required continuation after Wave 41 and explicit approval before completion.
+
+Result:
+- PASS.

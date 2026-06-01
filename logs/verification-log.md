@@ -1632,3 +1632,30 @@ Result:
 - `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
 - Fixture demo command passed and wrote 18 artifacts to `/tmp/splunkready-wave40-demo-ef1Ixr`.
 - No-credential live smoke skipped safely and reported missing live configuration fields without writing live artifacts.
+
+## 2026-06-01 - Wave 41 Final QA
+
+Commands:
+
+- `npm run check`
+- `bash scripts/verify-scaffold.sh`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-wave41-demo-XXXXXX) && npm run splunkready -- demo --out "$tmp" && node -e 'const fs=require("fs"); const dir=process.argv[1]; const j=JSON.parse(fs.readFileSync(`${dir}/demo-rehearsal.json`,"utf8")); console.log(JSON.stringify({dir,status:j.status,targetSeconds:j.targetSeconds,measuredSeconds:j.measuredSeconds,fitsUnderThreeMinutes:j.fitsUnderThreeMinutes,uiRoute:j.uiRoute,artifactCount:j.expectedArtifacts?.length ?? j.artifactCount,before:j.before?.verdict,after:j.after?.verdict,ruleIds:j.ruleIds}, null, 2));' "$tmp"`
+- `sed -n '1,240p' /tmp/splunkready-wave41-demo-LLFRo5/demo-rehearsal.json`
+- `node - <<'NODE'
+const fs=require('fs');
+const dir='/tmp/splunkready-wave41-demo-LLFRo5';
+const before=JSON.parse(fs.readFileSync(`${dir}/receipt-before-001.json`,'utf8'));
+const after=JSON.parse(fs.readFileSync(`${dir}/receipt-after-001.json`,'utf8'));
+const beforeViolations=JSON.parse(fs.readFileSync(`${dir}/violations-before.json`,'utf8'));
+console.log(JSON.stringify({beforeVerdict:before.verdict,afterVerdict:after.verdict,beforeMode:before.mode,afterMode:after.mode,ruleIds:[...new Set(beforeViolations.map(v=>v.ruleId))]}, null, 2));
+NODE`
+- reviewer verdict audit script recorded in `docs/final-qa-report.md`
+
+Result:
+
+- PASS
+- `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
+- `bash scripts/verify-scaffold.sh` passed with 46 wave files and 245 project files.
+- Demo rehearsal passed with `fitsUnderThreeMinutes: true`, 18 artifacts, and route `/tmp/splunkready-wave41-demo-LLFRo5/splunkready-shell.html#rerun-receipts`.
+- Receipt inspection confirmed fixture `NOT READY` -> fixture `READY`, with rule IDs `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`.
+- Latest reviewer verdict audit passed across 41 waves with 4 pass-with-concerns files and 0 failing latest verdicts.
