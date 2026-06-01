@@ -1,0 +1,55 @@
+[
+  {
+    "id": "trace-naive-call-001",
+    "missionId": "mission-lateral-movement",
+    "timestamp": "2026-06-01T06:00:10.000Z",
+    "actor": "specimen_agent",
+    "type": "tool_call",
+    "toolName": "splunk_run_query",
+    "toolInput": {
+      "query": "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now"
+    },
+    "toolOutputSummary": null,
+    "queryRef": null,
+    "timeWindow": { "earliest": "-24h", "latest": "now" },
+    "resultCount": null,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 1
+  },
+  {
+    "id": "trace-naive-result-001",
+    "missionId": "mission-lateral-movement",
+    "timestamp": "2026-06-01T06:00:11.000Z",
+    "actor": "splunk_adapter",
+    "type": "tool_result",
+    "toolName": "splunk_run_query",
+    "toolInput": {
+      "query": "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now"
+    },
+    "toolOutputSummary": "Fixture query returned zero rows for broad index and stale field src_ip.",
+    "queryRef": "query-naive-lateral-movement",
+    "timeWindow": { "earliest": "-24h", "latest": "now" },
+    "resultCount": 0,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 1,
+    "parentId": "trace-naive-call-001"
+  },
+  {
+    "id": "trace-naive-final-001",
+    "missionId": "mission-lateral-movement",
+    "timestamp": "2026-06-01T06:00:18.000Z",
+    "actor": "specimen_agent",
+    "type": "final_answer",
+    "toolName": null,
+    "toolInput": null,
+    "toolOutputSummary": "No evidence of lateral movement was found.",
+    "queryRef": null,
+    "timeWindow": { "earliest": "-24h", "latest": "now" },
+    "resultCount": 0,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 2
+  }
+]

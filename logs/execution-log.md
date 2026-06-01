@@ -23,6 +23,42 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 12:28 - Wave 10
+
+Scope:
+- Added before/after trace fixtures for the lateral-movement mission.
+- Captured the naive failing trace with overbroad `index=*`, stale `src_ip`, no saved-search discovery, zero result count, and unsupported benign conclusion.
+- Captured the contract-informed passing trace with knowledge-object discovery, correct app-scoped saved-search execution, result count, evidence refs, and final answer citations.
+- Added trace fixture validation tests against `traceEventSchema`.
+
+Files changed:
+- `fixtures/acme-soc-dev/traces/naive-failure.json`
+- `fixtures/acme-soc-dev/traces/contract-aware-pass.json`
+- `tests/fixtures/traces.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- None; no Wave 10 reviewer inbox file was present before this log entry.
+
+Commands:
+- `npx tsc --noEmit`
+- `npx vitest run tests/fixtures/traces.test.ts`
+- `rg -n "index=\\*|src_ip|splunk_get_knowledge_objects|splunk_run_saved_search|evt-102|evt-118|evt-141|No evidence|toolInput" fixtures/acme-soc-dev/traces tests/fixtures/traces.test.ts`
+- `npx tsc --noEmit`
+- `npx vitest run tests/fixtures/traces.test.ts`
+- `npm test`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 16`
+
+Result:
+- PASS
+
+Notes:
+- Initial `npx tsc --noEmit` failed because the test indexed raw `unknown` JSON values; fixed by checking the parsed trace is an array and typing fixture events as records.
+- Final `npx tsc --noEmit` passed.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 131` and 6 test files / 24 tests passed.
+
 ## 2026-06-01 12:23 - Wave 09
 
 Scope:

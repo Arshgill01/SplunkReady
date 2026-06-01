@@ -2,6 +2,34 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 12:28 - Wave 10 Fixture Traces
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/fixtures/traces.test.ts`
+- `rg -n "index=\\*|src_ip|splunk_get_knowledge_objects|splunk_run_saved_search|evt-102|evt-118|evt-141|No evidence|toolInput" fixtures/acme-soc-dev/traces tests/fixtures/traces.test.ts`
+- `npx tsc --noEmit`
+- `npx vitest run tests/fixtures/traces.test.ts`
+- `npm test`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 16`
+
+Result:
+
+- PASS
+- Initial `npx tsc --noEmit` failed because raw parsed trace values were typed as `unknown`.
+- `npx vitest run tests/fixtures/traces.test.ts` passed before and after the type fix.
+- Final `npx tsc --noEmit` passed.
+- Final `npm test` passed: 6 test files and 24 tests.
+- Final `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 131`; 6 test files and 24 tests passed.
+
+Notes:
+
+- Failing trace includes full tool input with `index=*` and `src_ip`, zero rows, no saved-search discovery, and a final answer with no evidence refs.
+- Passing trace discovers knowledge objects before running the app-scoped saved search and cites `evt-102`, `evt-118`, and `evt-141`.
+- No Wave 10 reviewer inbox file was present before this log entry.
+
 ## 2026-06-01 12:23 - Wave 09 Fixture Query Results
 
 Commands:
