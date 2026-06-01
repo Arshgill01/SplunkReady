@@ -37,10 +37,12 @@ Files changed:
 - `logs/verification-log.md`
 - `logs/reviewer-inbox/wave-22-20260601-1324-review.md`
 - `logs/reviewer-inbox/wave-22-20260601-1329-rereview.md`
+- `logs/reviewer-inbox/wave-22-20260601-1331-rereview.md`
 
 Reviewer files read and included:
 - `logs/reviewer-inbox/wave-22-20260601-1324-review.md`
 - `logs/reviewer-inbox/wave-22-20260601-1329-rereview.md`
+- `logs/reviewer-inbox/wave-22-20260601-1331-rereview.md`
 
 Commands:
 - `npx vitest run tests/grader/engine.test.ts`
@@ -52,6 +54,7 @@ Commands:
 - `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-22-*' -print | sort`
 - `sed -n '1,260p' logs/reviewer-inbox/wave-22-20260601-1324-review.md`
 - `sed -n '1,260p' logs/reviewer-inbox/wave-22-20260601-1329-rereview.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-22-20260601-1331-rereview.md`
 
 Result:
 - PASS
@@ -62,7 +65,8 @@ Notes:
 - Engine accepts structured pass/fail results only; no LLM or arbitrary prose grading path is present.
 - Reviewer `HIGH-001` fixed by enforcing canonical rule id and severity at the engine boundary for rule declarations, returned results, and emitted violations.
 - Rereview `HIGH-001` fixed by validating the full pass/fail result union at runtime and rejecting malformed status prose.
-- Final `npm run check` passed: scaffold verifier passed with `project files: 177` and 18 test files / 71 tests passed.
+- Final Wave 22 rereview passed with no findings.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 178` and 18 test files / 71 tests passed.
 
 ## 2026-06-01 13:18 - Wave 21
 
