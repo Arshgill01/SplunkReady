@@ -20,6 +20,7 @@ Product lock:
 
 Hard rules:
 - Do not mark this goal complete unless the user explicitly gives the green light.
+- Do not stop at the original Wave 41 boundary. After Wave 41, continue with newly added waves, iterative QA, demo rehearsal, reviewer follow-up, and polish until the user explicitly approves completion.
 - Do not start broad implementation before reading the scaffold docs.
 - Do not use an LLM as the primary pass/fail grader.
 - Do not hardcode the specimen agent to fail or pass.
@@ -133,4 +134,3 @@ Definition of done:
 - Repo is clean except intentional final artifacts.
 - User explicitly approves marking the goal complete.
 ```
-

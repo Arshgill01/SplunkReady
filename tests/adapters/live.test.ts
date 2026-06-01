@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createHttpLiveSplunkTransport,
   createLiveSplunkAccessAdapter,
   createLiveSplunkAdapterConfigFromEnv,
   type LiveSplunkTransport,
@@ -87,6 +88,57 @@ describe("live Splunk adapter skeleton", () => {
         requestOptions
       )
     ).resolves.toMatchObject({ resultCount: 1, evidenceRefs: ["live-evt-001"] });
+  });
+
+  it("calls MCP tools over HTTP without placing secrets in the request body", async () => {
+    const fetchImpl: typeof fetch = async (_input, init) => {
+      const body = JSON.parse(String(init?.body)) as {
+        method: string;
+        params: { name: string; arguments: Record<string, never>; defaultApp?: string };
+      };
+      const headers = init?.headers as Record<string, string>;
+
+      expect(init?.method).toBe("POST");
+      expect(headers.authorization).toBe("Bearer test-token");
+      expect(String(init?.body)).not.toContain("test-token");
+      expect(body).toMatchObject({
+        method: "tools/call",
+        params: {
+          name: "splunk_get_info",
+          arguments: {},
+          defaultApp: "search"
+        }
+      });
+
+      return new Response(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          result: {
+            structuredContent: {
+              mode: "live",
+              deploymentName: "acme-soc-prod",
+              readOnlyTools: ["splunk_get_info"]
+            }
+          }
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      );
+    };
+
+    await expect(
+      createHttpLiveSplunkTransport({ fetch: fetchImpl }).call<Record<string, never>, unknown>({
+        toolName: "splunk_get_info",
+        input: {},
+        endpointUrl: "https://splunk.example.invalid/mcp",
+        authToken: "test-token",
+        defaultApp: "search",
+        timeoutMs: 30_000,
+        options: requestOptions
+      })
+    ).resolves.toMatchObject({
+      mode: "live",
+      deploymentName: "acme-soc-prod"
+    });
   });
 
   it("checks configured live capabilities before transport calls", async () => {

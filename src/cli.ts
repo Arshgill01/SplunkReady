@@ -2,6 +2,11 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 import { createFixtureSplunkAccessAdapter, loadFixtureSplunkDatasetFromFile } from "./adapters/fixture.js";
+import {
+  createHttpLiveSplunkTransport,
+  createLiveSplunkAccessAdapter,
+  createLiveSplunkAdapterConfigFromEnv
+} from "./adapters/live.js";
 import { NaiveSpecimenAgent } from "./agents/specimen.js";
 import { compileEnvironmentContract } from "./compiler/environment.js";
 import { createAppContextRules } from "./grader/app-context.js";
@@ -30,6 +35,7 @@ interface CliOptions {
   mission: string;
   out: string;
   phase: "before" | "after";
+  requireLive: boolean;
 }
 
 const allRules = (): GraderRule[] => [
@@ -49,6 +55,7 @@ Commands:
   evaluate  --out <dir>
   receipt   --out <dir> [--phase before|after]
   rerun     --out <dir>
+  live-smoke --out <dir> [--require-live true|false]
 
 Defaults:
   --fixture ${defaultFixturePath}
@@ -62,7 +69,8 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     fixture: defaultFixturePath,
     mission: defaultMissionPath,
     out: defaultOutDir,
-    phase: "before"
+    phase: "before",
+    requireLive: false
   };
 
   for (let index = 0; index < rest.length; index += 1) {
@@ -87,6 +95,12 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       }
 
       options.phase = value;
+    } else if (flag === "--require-live") {
+      if (value !== "true" && value !== "false") {
+        throw new Error("--require-live must be true or false.");
+      }
+
+      options.requireLive = value === "true";
     } else {
       throw new Error(`Unknown option ${flag}.\n${usage}`);
     }
@@ -148,6 +162,73 @@ const compileCommand = async (options: CliOptions): Promise<string[]> => {
     join(options.out, "missions.json"),
     join(options.out, "agent-policy.json")
   ];
+};
+
+const liveSmokeMissingEnvFields = (env: NodeJS.ProcessEnv): string[] => {
+  const missingFields: string[] = [];
+
+  if (env.SPLUNKREADY_LIVE_ENABLED !== "true") {
+    missingFields.push("SPLUNKREADY_LIVE_ENABLED=true");
+  }
+
+  if (!env.SPLUNKREADY_SPLUNK_MCP_URL) {
+    missingFields.push("SPLUNKREADY_SPLUNK_MCP_URL");
+  }
+
+  if (!env.SPLUNKREADY_SPLUNK_MCP_TOKEN) {
+    missingFields.push("SPLUNKREADY_SPLUNK_MCP_TOKEN");
+  }
+
+  return missingFields;
+};
+
+const liveSmokeCommand = async (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<{ status: "PASS" | "SKIP"; artifacts: string[]; messages: string[] }> => {
+  const missingFields = liveSmokeMissingEnvFields(env);
+
+  if (missingFields.length > 0) {
+    const message = `Live smoke skipped; missing ${missingFields.join(", ")}.`;
+
+    if (options.requireLive) {
+      throw new Error(message);
+    }
+
+    return { status: "SKIP", artifacts: [], messages: [message] };
+  }
+
+  const metadataTimeWindow = { earliest: "-15m", latest: "now" };
+  const adapter = createLiveSplunkAccessAdapter({
+    ...createLiveSplunkAdapterConfigFromEnv(env),
+    transport: createHttpLiveSplunkTransport()
+  });
+  const contract = await compileEnvironmentContract(adapter, {
+    requestId: "req-cli-live-smoke-001",
+    contractVersion: "live-smoke-2026.06.01",
+    generatedAt,
+    metadataTimeWindow,
+    queryBudgets: {
+      maxToolCalls: 5,
+      maxResultRows: 1,
+      timeoutSeconds: 30
+    }
+  });
+  const contractPath = join(options.out, "live-smoke-contract.json");
+  const summaryPath = join(options.out, "live-smoke-summary.json");
+
+  await writeJson(contractPath, contract);
+  await writeJson(summaryPath, {
+    status: "PASS",
+    mode: contract.mode,
+    contractId: contract.id,
+    sourceRefs: contract.sourceRefs,
+    metadataTimeWindow,
+    readOnlyToolsOnly: true,
+    destructiveOperations: false
+  });
+
+  return { status: "PASS", artifacts: [contractPath, summaryPath], messages: [] };
 };
 
 const evaluateCommand = async (options: CliOptions): Promise<string[]> => {
@@ -271,6 +352,18 @@ const main = async (): Promise<void> => {
 
   if (command === "help" || command === "--help" || command === "-h") {
     console.log(usage);
+    return;
+  }
+
+  if (command === "live-smoke") {
+    const result = await liveSmokeCommand(options);
+    console.log(`${result.status} live-smoke`);
+    for (const message of result.messages) {
+      console.log(message);
+    }
+    for (const artifact of result.artifacts) {
+      console.log(`artifact ${artifact}`);
+    }
     return;
   }
 

@@ -2,6 +2,53 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 15:23 - Wave 38 Live MCP Smoke Path
+
+Commands:
+
+- `sed -n '1,260p' docs/waves/wave-38-live-smoke.md`
+- `sed -n '1,260p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-38-*' -print | sort`
+- `rg --files | sort | rg '^(src/adapters|tests/adapters|docs|README|package.json|scripts)'`
+- `sed -n '1,260p' src/adapters/live.ts`
+- `sed -n '1,260p' tests/adapters/live.test.ts`
+- `cat package.json`
+- `sed -n '1,260p' docs/live-adapter.md`
+- `sed -n '1,320p' src/cli.ts`
+- `sed -n '1,300p' src/compiler/environment.ts`
+- `sed -n '1,320p' src/adapters/splunk-access.ts`
+- `sed -n '1,260p' tests/cli/flow.test.ts`
+- `cat tsconfig.json`
+- `npx vitest run tests/adapters/live.test.ts tests/cli/flow.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- live-smoke --out /tmp/splunkready-live-smoke-skip`
+- `git diff -- src/adapters/live.ts src/cli.ts tests/adapters/live.test.ts tests/cli/flow.test.ts docs/live-adapter.md`
+- `rg -n "live-smoke|SPLUNKREADY_LIVE_ENABLED|SPLUNKREADY_SPLUNK_MCP_URL|SPLUNKREADY_SPLUNK_MCP_TOKEN|splunk_get_metadata|tools/call|readOnlyToolsOnly|destructiveOperations|SKIP live-smoke|PASS live-smoke|--require-live" src tests docs/live-adapter.md package.json`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,260p' docs/prompts/main-executor-goal.md`
+- `sed -n '1,220p' docs/prompts/reviewer-goal.md`
+- `git status --short --branch`
+
+Result:
+
+- PASS after one focused-test fix.
+- Initial `npx vitest run tests/adapters/live.test.ts tests/cli/flow.test.ts` failed because `maxResultRows: 0` violated the shared environment contract schema.
+- Final `npx vitest run tests/adapters/live.test.ts tests/cli/flow.test.ts` passed: 2 test files and 11 tests.
+- `npx tsc --noEmit` passed.
+- No-credential `live-smoke` command passed with `SKIP live-smoke`, wrote no live contract, and did not require Splunk credentials.
+- Traceability grep found live smoke docs, env vars, `tools/call`, read-only smoke summary flags, skip/pass strings, and `--require-live`.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 225`; 30 test files and 136 tests passed.
+- `git diff --check` passed.
+- Wave 38 reviewer inbox scan found no files at implementation time.
+
+Notes:
+
+- The mock-live smoke test proves the command calls only `splunk_get_info`, `splunk_get_user_info`, `splunk_get_indexes`, `splunk_get_metadata`, and `splunk_get_knowledge_objects`.
+- The live metadata request is bounded to `earliest=-15m`, `latest=now`, and known indexes from `splunk_get_indexes`.
+- The live smoke path uses the same `compileEnvironmentContract` function as fixture mode after the adapter boundary.
+- The main executor prompt now explicitly says to continue after Wave 41 with added waves and iterative QA until the user explicitly approves completion.
+
 ## 2026-06-01 15:14 - Wave 37 UI Receipt and Rerun Views
 
 Commands:

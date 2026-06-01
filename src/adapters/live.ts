@@ -46,6 +46,10 @@ export interface LiveSplunkAdapterConfig {
   transport?: LiveSplunkTransport;
 }
 
+export interface HttpLiveSplunkTransportOptions {
+  fetch?: typeof fetch;
+}
+
 export const createLiveSplunkAdapterConfigFromEnv = (
   env: NodeJS.ProcessEnv = process.env
 ): LiveSplunkAdapterConfig => ({
@@ -67,6 +71,98 @@ const parseCapabilities = (rawCapabilities: string | undefined): ReadOnlySplunkT
     .map((toolName) => toolName.trim())
     .filter((toolName) => toolName.length > 0)
     .map((toolName) => readOnlySplunkToolNameSchema.parse(toolName));
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+const parseTextContent = (value: string): unknown => {
+  try {
+    return JSON.parse(value) as unknown;
+  } catch {
+    return value;
+  }
+};
+
+const extractMcpToolOutput = (payload: unknown): unknown => {
+  if (!isRecord(payload)) {
+    return payload;
+  }
+
+  if (isRecord(payload.error)) {
+    const message = typeof payload.error.message === "string" ? payload.error.message : "Live MCP tool call failed.";
+    throw new Error(message);
+  }
+
+  if ("output" in payload) {
+    return payload.output;
+  }
+
+  const result = payload.result;
+  if (!isRecord(result)) {
+    return result ?? payload;
+  }
+
+  if ("structuredContent" in result) {
+    return result.structuredContent;
+  }
+
+  if ("output" in result) {
+    return result.output;
+  }
+
+  if (Array.isArray(result.content)) {
+    const textItem = result.content.find(
+      (item): item is { type: string; text: string } =>
+        isRecord(item) && item.type === "text" && typeof item.text === "string"
+    );
+
+    if (textItem) {
+      return parseTextContent(textItem.text);
+    }
+  }
+
+  return result;
+};
+
+export const createHttpLiveSplunkTransport = (options: HttpLiveSplunkTransportOptions = {}): LiveSplunkTransport => {
+  const fetchImpl = options.fetch ?? globalThis.fetch;
+
+  return {
+    async call<TInput, TOutput>(request: LiveSplunkTransportRequest<TInput>): Promise<TOutput> {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), request.timeoutMs);
+
+      try {
+        const response = await fetchImpl(request.endpointUrl, {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${request.authToken}`,
+            "content-type": "application/json"
+          },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: `${request.options.requestId}:${request.toolName}`,
+            method: "tools/call",
+            params: {
+              name: request.toolName,
+              arguments: request.input,
+              defaultApp: request.defaultApp
+            }
+          }),
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error(`Live MCP endpoint returned HTTP ${response.status}.`);
+        }
+
+        return extractMcpToolOutput((await response.json()) as unknown) as TOutput;
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+  };
 };
 
 const createContext = (

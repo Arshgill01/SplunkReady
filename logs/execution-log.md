@@ -23,6 +23,65 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 15:23 - Wave 38
+
+Scope:
+- Added a safe optional `live-smoke` CLI path for compiling a minimal live contract through the shared adapter boundary.
+- Added an HTTP MCP transport that sends JSON-RPC `tools/call` requests and keeps tokens in the authorization header.
+- Added no-credential skip behavior for normal CI and a bounded mock-live smoke test using only read-only metadata tools.
+- Updated live adapter docs with configuration, skip behavior, read-only tools, bounded metadata window, and output artifacts.
+- Updated the main executor prompt to keep working after Wave 41 with newly added waves and iterative QA until explicit user approval.
+
+Files changed:
+- `docs/live-adapter.md`
+- `docs/prompts/main-executor-goal.md`
+- `src/adapters/live.ts`
+- `src/cli.ts`
+- `tests/adapters/live.test.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- None found for Wave 38 at implementation time.
+
+Commands:
+- `sed -n '1,260p' docs/waves/wave-38-live-smoke.md`
+- `sed -n '1,260p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-38-*' -print | sort`
+- `rg --files | sort | rg '^(src/adapters|tests/adapters|docs|README|package.json|scripts)'`
+- `sed -n '1,260p' src/adapters/live.ts`
+- `sed -n '1,260p' tests/adapters/live.test.ts`
+- `cat package.json`
+- `sed -n '1,260p' docs/live-adapter.md`
+- `sed -n '1,320p' src/cli.ts`
+- `sed -n '1,300p' src/compiler/environment.ts`
+- `sed -n '1,320p' src/adapters/splunk-access.ts`
+- `sed -n '1,260p' tests/cli/flow.test.ts`
+- `cat tsconfig.json`
+- `npx vitest run tests/adapters/live.test.ts tests/cli/flow.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- live-smoke --out /tmp/splunkready-live-smoke-skip`
+- `git diff -- src/adapters/live.ts src/cli.ts tests/adapters/live.test.ts tests/cli/flow.test.ts docs/live-adapter.md`
+- `rg -n "live-smoke|SPLUNKREADY_LIVE_ENABLED|SPLUNKREADY_SPLUNK_MCP_URL|SPLUNKREADY_SPLUNK_MCP_TOKEN|splunk_get_metadata|tools/call|readOnlyToolsOnly|destructiveOperations|SKIP live-smoke|PASS live-smoke|--require-live" src tests docs/live-adapter.md package.json`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,260p' docs/prompts/main-executor-goal.md`
+- `sed -n '1,220p' docs/prompts/reviewer-goal.md`
+- `git status --short --branch`
+
+Result:
+- PASS after one focused-test fix.
+
+Notes:
+- Initial focused `npx vitest run tests/adapters/live.test.ts tests/cli/flow.test.ts` failed because `live-smoke` used `maxResultRows: 0`, which violated the shared positive-number contract schema. This was fixed by using `maxResultRows: 1`; the live smoke still does not run searches.
+- Final focused adapter/CLI tests passed: 2 test files and 11 tests.
+- `npx tsc --noEmit` passed.
+- No-credential smoke command passed with `SKIP live-smoke` and listed missing live env vars without requiring credentials.
+- Full `npm run check` passed: scaffold verifier reported `project files: 225` and 30 test files / 136 tests passed.
+- `git diff --check` passed.
+- No Wave 38 reviewer inbox files were present at the final scan before log update.
+
 ## 2026-06-01 15:14 - Wave 37
 
 Scope:
