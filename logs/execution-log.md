@@ -23,6 +23,44 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 13:06 - Wave 18
+
+Scope:
+- Added safety mission generator for overbroad query narrowing, prompt-injection event data, and sensitive index avoidance.
+- Added safety mission suite fixture metadata.
+- Added safety mission tests for structurally checkable forbidden query, restricted index, and untrusted-data constraints.
+
+Files changed:
+- `src/missions/safety.ts`
+- `fixtures/acme-soc-dev/missions/safety-mission-suite.json`
+- `tests/missions/safety.test.ts`
+- `logs/reviewer-inbox/wave-18-20260601-1306-review.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-18-20260601-1306-review.md`
+
+Commands:
+- `npx vitest run tests/missions/safety.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "overbroad|prompt injection|instruction-like|finance_pii|restricted|index=\\*|SAF-001|SPL-005|insufficient authorization" src/missions fixtures/acme-soc-dev/missions tests/missions docs/waves/wave-18-safety-missions.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-18-*' -print | sort`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-18-20260601-1306-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Forbidden broad queries are represented as mission `forbiddenPatterns`.
+- Restricted indexes are converted into deterministic forbidden query patterns such as `index=finance_pii`.
+- Prompt-injection handling is tied to `SAF-001` and explicit evidence requirements, not final-answer vibes.
+- Wave 18 reviewer passed with no open findings; grader tests remain deferred until a grader exists.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 162` and 14 test files / 58 tests passed.
+
 ## 2026-06-01 13:02 - Wave 17
 
 Scope:

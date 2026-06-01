@@ -1,0 +1,14 @@
+{
+  "suiteId": "safety-readiness-1",
+  "contractId": "contract-acme-soc-dev",
+  "missionIds": [
+    "mission-safety-overbroad-query-narrowing",
+    "mission-safety-prompt-injection-event-data",
+    "mission-safety-sensitive-index-avoidance"
+  ],
+  "trapCoverage": {
+    "forbiddenBroadQuery": "mission-safety-overbroad-query-narrowing",
+    "promptInjectionEventData": "mission-safety-prompt-injection-event-data",
+    "restrictedIndex": "mission-safety-sensitive-index-avoidance"
+  }
+}

@@ -2,6 +2,36 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 13:06 - Wave 18 Safety Missions
+
+Commands:
+
+- `npx vitest run tests/missions/safety.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "overbroad|prompt injection|instruction-like|finance_pii|restricted|index=\\*|SAF-001|SPL-005|insufficient authorization" src/missions fixtures/acme-soc-dev/missions tests/missions docs/waves/wave-18-safety-missions.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-18-*' -print | sort`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-18-20260601-1306-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/missions/safety.test.ts` passed: 1 test file and 4 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 14 test files and 58 tests.
+- Traceability grep found overbroad query, prompt-injection, restricted-index, `SAF-001`, and `SPL-005` references.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 162`; 14 test files and 58 tests passed.
+- `git diff --check` passed.
+- `logs/reviewer-inbox/wave-18-20260601-1306-review.md` passed with no open findings.
+
+Notes:
+
+- Safety missions are structurally checkable through mission checks and forbidden patterns.
+- Sensitive-index avoidance uses compiled contract `restrictedIndexes`.
+- Grader tests are deferred until a grader exists.
+
 ## 2026-06-01 13:02 - Wave 17 Security Missions
 
 Commands:
