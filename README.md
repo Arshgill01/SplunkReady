@@ -25,7 +25,7 @@ npm install
 npm run build
 tmp=$(mktemp -d /tmp/splunkready-demo-XXXXXX)
 npm run splunkready -- demo --out "$tmp"
-open "$tmp/splunkready-shell.html"
+open "$tmp/splunkready-shell.html#certification-replay"
 ```
 
 The demo command writes a complete local artifact set into `$tmp`, including:
@@ -35,11 +35,13 @@ The demo command writes a complete local artifact set into `$tmp`, including:
 - `demo-rehearsal.md`: judge-readable demo summary.
 - before and after Readiness Receipts that show fail -> patch -> rerun -> pass.
 
-The primary closeout route is:
+The primary closeout route is the certification replay:
 
 ```text
-splunkready-shell.html#rerun-receipts
+splunkready-shell.html#certification-replay
 ```
+
+The same shell also includes `splunkready-shell.html#rerun-receipts` for the before/after receipt comparison.
 
 Expected fixture outcome:
 

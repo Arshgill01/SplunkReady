@@ -10,7 +10,7 @@ From a clean fixture artifact directory:
 npm run build
 tmp=$(mktemp -d /tmp/splunkready-demo-XXXXXX)
 npm run splunkready -- demo --out "$tmp"
-open "$tmp/splunkready-shell.html"
+open "$tmp/splunkready-shell.html#certification-replay"
 ```
 
 The demo command runs the fixture path end to end:
@@ -22,7 +22,9 @@ The demo command runs the fixture path end to end:
 5. generate passing Readiness Receipt;
 6. write `splunkready-shell.html`, `demo-rehearsal.json`, and `demo-rehearsal.md`.
 
-Primary UI route for the close: `splunkready-shell.html#rerun-receipts`.
+Primary UI route for the close: `splunkready-shell.html#certification-replay`.
+
+Supporting receipt comparison route: `splunkready-shell.html#rerun-receipts`.
 
 ## 0:00-0:15 - Setup
 
@@ -129,7 +131,8 @@ With the environment contract injected, the same agent uses the validated saved 
 
 Screen:
 
-- Before and after receipts side by side.
+- Certification replay on the `Pass` stage.
+- Before and after receipts remain available in the same shell.
 - Final line: `Certify AI agents before they touch production Splunk.`
 
 Voice:

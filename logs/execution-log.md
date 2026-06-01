@@ -3095,3 +3095,54 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 78 Certification Replay Demo Route
+
+Scope:
+- Make the certification replay the primary closeout route for the fixture demo.
+- Keep the before/after receipt comparison available as supporting evidence in the same static shell.
+- Update living run instructions and submission copy so judges are pointed at `splunkready-shell.html#certification-replay`.
+- Add regression coverage for the generated rehearsal JSON, rehearsal Markdown, and shell anchors.
+
+Files changed:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `docs/demo-script.md`
+- `docs/devpost-submission.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-78-certification-replay-demo-route.md`
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-78-20260601-2056-review.md`
+- `logs/reviewer-inbox/wave-78-20260601-2058-rereview.md`
+- reviewer inbox files if new Wave 78 findings arrive.
+
+Notes:
+- `demo-rehearsal.json.uiRoute` now points at `#certification-replay`.
+- `demo-rehearsal.md` is written from the same route and is covered by a CLI regression assertion.
+- The generated shell is still asserted to contain both `id="certification-replay"` and `id="rerun-receipts"`.
+- README, demo script, and Devpost draft now open on the replay route while preserving the receipt comparison route as supporting evidence.
+- Focused CLI flow tests passed after the route change before reviewer feedback: 1 test file, 5 tests.
+- TypeScript build passed after the route change.
+- Fixture demo generation with live Splunk env vars unset passed and produced 18 artifacts; rehearsal metadata pointed at `#certification-replay`, and the shell contained both replay and rerun receipt anchors.
+- Full check passed after the route change: scaffold verifier reported 79 wave files and 410 project files; Vitest passed 31 test files / 143 tests.
+- Standalone scaffold verifier and `git diff --check` passed after the route change: 79 wave files, 410 project files.
+- `wave-78-20260601-2056-review.md` reported `MEDIUM-001` for missing Wave 78 closeout log evidence and `LOW-001` for not asserting the route in `demo-rehearsal.md`.
+- `MEDIUM-001` was resolved by adding this Wave 78 execution log and the matching verification log.
+- `LOW-001` was resolved by adding a CLI assertion that `demo-rehearsal.md` contains `splunkready-shell.html#certification-replay`.
+- Focused CLI flow tests passed after the markdown assertion: 1 test file, 5 tests.
+- TypeScript build passed after the markdown assertion.
+- Reviewer audit still fails because `wave-78-20260601-2056-review.md` remains the latest Wave 78 verdict until a newer reviewer pass arrives.
+- Scaffold verifier and `git diff --check` passed after the markdown assertion: 79 wave files, 410 project files.
+- `wave-78-20260601-2058-rereview.md` passed with no findings after the log and markdown-assertion fixes.
+- Final reviewer audit passed after the Wave 78 rereview: 80 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the Wave 78 rereview: 79 wave files, 411 project files.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.

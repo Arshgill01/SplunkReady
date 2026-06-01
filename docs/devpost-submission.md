@@ -63,10 +63,10 @@ npm install
 npm run build
 tmp=$(mktemp -d /tmp/splunkready-demo-XXXXXX)
 npm run splunkready -- demo --out "$tmp"
-open "$tmp/splunkready-shell.html"
+open "$tmp/splunkready-shell.html#certification-replay"
 ```
 
-Open `splunkready-shell.html#rerun-receipts` to show the before and after Readiness Receipts.
+Open `splunkready-shell.html#certification-replay` to show the fail -> rules -> patch -> rerun -> pass certification replay. The same shell includes `splunkready-shell.html#rerun-receipts` for the before and after Readiness Receipts.
 
 ## Optional Live Smoke
 

@@ -84,3 +84,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-75-antigravity-ui-195731-triage.md`: triage the fresh 19:57 Antigravity UI sidecar and integrate bounded deterministic-check evidence badges.
 - `wave-76-remote-cleanroom-after-ui-deterministic-checks.md`: verify the pushed branch after the Wave 75 deterministic-check UI patch from a fresh remote clone.
 - `wave-77-certification-replay-ui.md`: add an evidence-backed certification replay to make the demo more memorable without generic dashboard drift.
+- `wave-78-certification-replay-demo-route.md`: make the certification replay the primary fixture demo closeout route.

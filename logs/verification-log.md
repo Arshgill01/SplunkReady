@@ -1811,6 +1811,10 @@ Commands:
 - `tmp=$(mktemp -d /tmp/splunkready-wave49-copy-drift-XXXXXX) ... node scripts/audit-submission-copy.mjs "$tmp" ... test "$rc" -ne 0`
 - `npm run audit:reviewers`
 - `bash scripts/verify-scaffold.sh && git diff --check`
+- `npx vitest run tests/cli/flow.test.ts`
+- `npm run build`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
 - `npx vitest run tests/ui/shell.test.ts`
 - `npm run build`
 - `npm run audit:reviewers`
@@ -2673,3 +2677,42 @@ Result:
 - Late `wave-77-20260601-2052-rereview.md` passed with no findings after the Wave 77 commit.
 - Follow-up reviewer audit passed after including the late rereview file: 79 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Follow-up scaffold verifier and `git diff --check` passed after including the late rereview file: 78 wave files, 408 project files.
+
+## 2026-06-01 - Wave 78 Certification Replay Demo Route
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts`
+- `npm run build`
+- `rg -n "splunkready-shell.html#(rerun-receipts|certification-replay)|uiRoute|certification replay" README.md docs/demo-script.md docs/devpost-submission.md src/cli.ts tests/cli/flow.test.ts`
+- `tmp=$(mktemp -d /tmp/splunkready-wave78-demo-XXXXXX) && unset SPLUNK_HOST SPLUNK_TOKEN SPLUNK_USERNAME SPLUNK_PASSWORD SPLUNK_SCHEME SPLUNK_PORT && npm run splunkready -- demo --out "$tmp" && node -e "const fs=require('fs'); const path=require('path'); const dir=process.argv[1]; const rehearsal=JSON.parse(fs.readFileSync(path.join(dir,'demo-rehearsal.json'),'utf8')); const notes=fs.readFileSync(path.join(dir,'demo-rehearsal.md'),'utf8'); const shell=fs.readFileSync(path.join(dir,'splunkready-shell.html'),'utf8'); console.log(JSON.stringify({dir,uiRoute:rehearsal.uiRoute,notesHasReplay:notes.includes('#certification-replay'),shellHasReplay:shell.includes('id=\"certification-replay\"'),shellHasRerun:shell.includes('id=\"rerun-receipts\"'),fitsUnderThreeMinutes:rehearsal.fitsUnderThreeMinutes,artifactCount:rehearsal.expectedArtifacts.length}, null, 2));" "$tmp"`
+- `npm run check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npx vitest run tests/cli/flow.test.ts`
+- `npm run build`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Focused CLI flow tests passed before reviewer feedback: 1 test file / 5 tests.
+- TypeScript build passed.
+- Route grep showed CLI, README, demo script, Devpost draft, and CLI test using the certification replay route while retaining `#rerun-receipts` as a supporting route.
+- Demo generation passed in `/tmp/splunkready-wave78-demo-nI1ylw` with live Splunk env vars unset.
+- Demo inspection reported `uiRoute: /tmp/splunkready-wave78-demo-nI1ylw/splunkready-shell.html#certification-replay`, `notesHasReplay: true`, `shellHasReplay: true`, `shellHasRerun: true`, `fitsUnderThreeMinutes: true`, and `artifactCount: 18`.
+- Full check passed before reviewer feedback: scaffold verifier reported 79 wave files and 410 project files; Vitest passed 31 test files / 143 tests.
+- Reviewer audit failed because `wave-78-20260601-2056-review.md` was the latest Wave 78 verdict.
+- Standalone scaffold verifier and `git diff --check` passed before reviewer fixes: 79 wave files, 410 project files.
+- `wave-78-20260601-2056-review.md` reported `MEDIUM-001` for missing closeout log evidence and `LOW-001` for missing `demo-rehearsal.md` route regression coverage.
+- The CLI flow test now asserts `demo-rehearsal.md` contains `splunkready-shell.html#certification-replay`.
+- Focused CLI flow tests passed after the markdown assertion: 1 test file / 5 tests.
+- TypeScript build passed after the markdown assertion.
+- Reviewer audit still fails because `wave-78-20260601-2056-review.md` remains the latest Wave 78 verdict.
+- Scaffold verifier and `git diff --check` passed after the markdown assertion: 79 wave files, 410 project files.
+- `wave-78-20260601-2058-rereview.md` passed with no findings after the log and markdown-assertion fixes.
+- Final reviewer audit passed after `wave-78-20260601-2058-rereview.md`: 80 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after `wave-78-20260601-2058-rereview.md`: 79 wave files, 411 project files.

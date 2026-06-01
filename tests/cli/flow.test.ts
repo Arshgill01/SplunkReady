@@ -225,6 +225,7 @@ describe("SplunkReady CLI flow", () => {
     const beforeReceiptMarkdown = await readFile(join(outDir, "receipt-before-001.md"), "utf8");
     const afterReceiptMarkdown = await readFile(join(outDir, "receipt-after-001.md"), "utf8");
     const policyPatchMarkdown = await readFile(join(outDir, "policy-patch.md"), "utf8");
+    const demoRehearsalMarkdown = await readFile(join(outDir, "demo-rehearsal.md"), "utf8");
     const shell = await readFile(join(outDir, "splunkready-shell.html"), "utf8");
     const artifactNames = (await readdir(outDir)).sort();
     const expectedArtifactPaths = expectedArtifacts.map((artifact) => join(outDir, artifact)).sort();
@@ -235,7 +236,8 @@ describe("SplunkReady CLI flow", () => {
       fitsUnderThreeMinutes: true,
       story: "fail -> compile -> patch -> rerun -> pass"
     });
-    expect(rehearsal.uiRoute).toContain("splunkready-shell.html#rerun-receipts");
+    expect(rehearsal.uiRoute).toContain("splunkready-shell.html#certification-replay");
+    expect(demoRehearsalMarkdown).toContain("splunkready-shell.html#certification-replay");
     expect(await exists(rehearsal.uiRoute.split("#")[0] ?? "")).toBe(true);
     expect(artifactNames).toEqual([...expectedArtifacts].sort());
     expect([...rehearsal.expectedArtifacts].sort()).toEqual(expectedArtifactPaths);
@@ -252,6 +254,8 @@ describe("SplunkReady CLI flow", () => {
       expect(beforeReceiptMarkdown).toContain(ruleId);
       expect(shell).toContain(ruleId);
     }
+    expect(shell).toContain('id="certification-replay"');
+    expect(shell).toContain('id="rerun-receipts"');
     expect(shell).toContain("Definitive benign conclusion is not supported by adequate evidence.");
   });
 

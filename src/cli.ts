@@ -396,7 +396,7 @@ const demoCommand = async (options: CliOptions): Promise<string[]> => {
     rehearsalPath,
     notesPath
   ];
-  const uiRoute = `${uiShellPath}#rerun-receipts`;
+  const uiRoute = `${uiShellPath}#certification-replay`;
   const rehearsal = {
     status: "PASS",
     targetSeconds: 180,
