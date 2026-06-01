@@ -23,6 +23,48 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 14:02 - Wave 27
+
+Scope:
+- Added evidence grounding grader rules for `EVD-001` through `EVD-004`.
+- Added deterministic checks for provenance/result count/evidence refs, time-window preservation, returned evidence refs, and uncertainty language when tool errors exist.
+
+Files changed:
+- `src/grader/evidence.ts`
+- `tests/grader/evidence.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-27-20260601-1403-review.md`
+- `logs/reviewer-inbox/wave-27-20260601-1405-rereview.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-27-20260601-1403-review.md`
+- `logs/reviewer-inbox/wave-27-20260601-1405-rereview.md`
+
+Commands:
+- `sed -n '1,260p' docs/waves/wave-27-evidence-checks.md`
+- `sed -n '34,45p' docs/grader-rule-catalog.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-27-*' -print | sort`
+- `npx vitest run tests/grader/evidence.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "EVD-001|EVD-002|EVD-003|EVD-004|createEvidenceRules|unsupported benign|result count|query-canonical|evt-102|uncertain|Receipt claim cannot be traced" src/grader tests/grader docs/waves/wave-27-evidence-checks.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-27-20260601-1403-review.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-27-20260601-1405-rereview.md`
+
+Result:
+- PASS
+
+Notes:
+- Rules cite deterministic catalog IDs `EVD-001`, `EVD-002`, `EVD-003`, and `EVD-004`.
+- Final-answer claims are tied to trace fields and tool-result evidence, not prose interpretation.
+- Missing evidence on a security mission emits a Critical `EVD-001` violation.
+- Reviewer `HIGH-001` fixed by requiring the final answer text to cite one returned query or saved-search provenance id.
+- Wave 27 rereview passed with no findings.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 196` and 23 test files / 102 tests passed.
+
 ## 2026-06-01 13:58 - Wave 26
 
 Scope:

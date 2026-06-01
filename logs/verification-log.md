@@ -2,6 +2,41 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 14:02 - Wave 27 Evidence Grounding Checks
+
+Commands:
+
+- `sed -n '1,260p' docs/waves/wave-27-evidence-checks.md`
+- `sed -n '34,45p' docs/grader-rule-catalog.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-27-*' -print | sort`
+- `npx vitest run tests/grader/evidence.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "EVD-001|EVD-002|EVD-003|EVD-004|createEvidenceRules|unsupported benign|result count|query-canonical|evt-102|uncertain|Receipt claim cannot be traced" src/grader tests/grader docs/waves/wave-27-evidence-checks.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-27-20260601-1403-review.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-27-20260601-1405-rereview.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/grader/evidence.test.ts` passed: 1 test file and 7 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 23 test files and 102 tests.
+- Traceability grep found evidence rule IDs, evidence rule factory, unsupported benign-conclusion coverage, result-count and event-ref coverage, uncertainty language, and the stop-condition text.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 196`; 23 test files and 102 tests passed.
+- `git diff --check` passed.
+- Wave 27 reviewer inbox scan found `logs/reviewer-inbox/wave-27-20260601-1403-review.md` and `logs/reviewer-inbox/wave-27-20260601-1405-rereview.md`.
+
+Notes:
+
+- Evidence rules are deterministic trace-field checks.
+- Critical missing-evidence failures use `EVD-001`.
+- Reviewer `HIGH-001` was resolved by requiring final-answer text to cite returned query or saved-search provenance.
+- Wave 27 rereview passed with no findings.
+- Tool errors require explicit uncertainty language in the final answer.
+
 ## 2026-06-01 13:58 - Wave 26 App Context Checks
 
 Commands:
