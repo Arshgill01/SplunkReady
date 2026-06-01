@@ -2746,3 +2746,29 @@ Result:
 - `wave-79-20260601-2105-rereview.md` passed with no findings after the cleanroom report and log entries were visible.
 - Final reviewer audit passed after `wave-79-20260601-2105-rereview.md`: 81 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed after `wave-79-20260601-2105-rereview.md`: 80 wave files, 415 project files.
+
+## 2026-06-01 - Wave 80 Goal Audit After Demo Route Cleanroom
+
+Commands:
+
+- `npm run check`
+- `npm run audit:submission-copy`
+- `npm run build`
+- `tmp=$(mktemp -d /tmp/splunkready-wave80-audit-XXXXXX) && unset SPLUNK_HOST SPLUNK_TOKEN SPLUNK_USERNAME SPLUNK_PASSWORD SPLUNK_SCHEME SPLUNK_PORT && npm run splunkready -- demo --out "$tmp" >/tmp/splunkready-wave80-demo-command.log && node - <<'NODE' "$tmp" ...`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Full check passed: scaffold verifier reported 81 wave files and 417 project files; Vitest passed 31 test files / 143 tests.
+- Submission-copy audit passed: 28 required claims.
+- TypeScript build passed.
+- Fixture demo generation passed with live Splunk env vars unset and produced `/tmp/splunkready-wave80-audit-QwNqbe`.
+- Demo inspection reported `artifactCount: 18`, `replayRoute: true`, `notesHasReplay: true`, `shellHasReplay: true`, `shellHasRerun: true`, and `policyPatchMarkdownNoMutation: true`.
+- Before receipt inspection reported `NOT READY`, score `0`, and 6 violations.
+- After receipt inspection reported `READY`, score `100`, and 0 violations.
+- Rehearsal inspection reported status `PASS`, story `fail -> compile -> patch -> rerun -> pass`, measured seconds `0.06`, and `fitsUnderThreeMinutes: true`.
+- Deterministic before-violation rule ids included `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, and `SPL-003`.
+- Reviewer audit passed after the main-executor resolution file: 82 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after closeout docs/logs: 81 wave files, 418 project files.

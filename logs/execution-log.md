@@ -3190,3 +3190,37 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 80 Goal Audit After Demo Route Cleanroom
+
+Scope:
+- Refresh the prompt-to-artifact goal completion audit against the current pushed Wave 79 state.
+- Map the product lock, deterministic grading, fixture/live parity, specimen-agent behavior, demo route, reviewer workflow, branch state, and explicit user-approval blocker to current artifacts.
+- Preserve the rule that the overall goal remains active until the user explicitly approves marking it complete.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/goal-completion-audit.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-80-goal-audit-after-demo-route-cleanroom.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-80-20260601-2110-review.md`
+- `logs/reviewer-inbox/wave-80-20260601-2119-main-resolution.md`
+
+Notes:
+- Fresh fixture demo generation ran with live Splunk env vars unset and produced `/tmp/splunkready-wave80-audit-QwNqbe`.
+- Demo inspection confirmed `#certification-replay` is the rehearsal route, the supporting `#rerun-receipts` anchor remains present, and the demo still shows fail -> patch -> rerun -> pass.
+- Before receipt: `NOT READY`, score `0`, 6 violations.
+- After receipt: `READY`, score `100`, 0 violations.
+- Deterministic rule ids present in the before violations: `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, and `SPL-003`.
+- `wave-80-20260601-2110-review.md` reported two Medium findings against an intermediate state: missing current-state doc/log updates and missing verification-log corroboration.
+- Both Medium findings were resolved by adding current-state docs, execution and verification logs, and an explicit main-executor resolution note.
+- No Critical or High reviewer findings were present.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.

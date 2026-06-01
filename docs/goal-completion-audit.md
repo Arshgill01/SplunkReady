@@ -1,10 +1,22 @@
 # Goal Completion Audit
 
-Wave: 74 - Goal Audit After Remote UI Cleanroom
+Wave: 80 - Goal Audit After Demo Route Cleanroom
 
 ## Objective Restated
 
-Build SplunkReady end to end, wave by wave, as a Splunk-native certification harness that proves whether an AI agent is safe and correct enough to operate on a specific Splunk deployment. The build must preserve the product lock, deterministic grading, fixture/live safety boundaries, reviewer workflow, commit discipline, demo story, sidecar isolation, pushed-branch cleanroom evidence, and explicit user approval requirement.
+Build SplunkReady end to end, wave by wave, as a Splunk-native certification harness that proves whether a specific AI agent is safe and correct enough to operate on a specific Splunk deployment.
+
+Concrete success criteria:
+
+- preserve the locked product identity: SplunkReady, Agent Readiness Compiler, Readiness Receipt, Platform & Developer Experience, security investigation readiness;
+- implement a fixture-first certification flow that does not require live Splunk credentials for normal tests;
+- keep fixture and live modes aligned after the adapter boundary;
+- run a real but naive specimen agent, record traces, grade them with deterministic rule IDs, and generate receipts;
+- avoid LLM-primary pass/fail grading, Splunk auto-mutation, chatbot/copilot/dashboard/generic-eval drift, and hardcoded pass/fail behavior;
+- demonstrate fail -> compile -> patch -> rerun -> pass in under 3 minutes with reviewable artifacts;
+- keep reviewer findings resolved or explicitly waived;
+- keep the pushed `splunkready-build` branch clean and verifiable from a fresh remote clone;
+- do not mark the overall thread goal complete until the user explicitly approves completion.
 
 This audit does not mark the goal complete. The explicit user approval to mark completion has not been given, and no `update_goal` call has been made.
 
@@ -14,41 +26,41 @@ This audit does not mark the goal complete. The explicit user approval to mark c
 | --- | --- | --- |
 | Product name is `SplunkReady` | `README.md`, `docs/devpost-submission.md`, `npm run audit:submission-copy` | PASS |
 | Tagline is `Certify AI agents before they touch production Splunk.` | `README.md`, `docs/devpost-submission.md`, `npm run audit:submission-copy` | PASS |
-| Engine is `Agent Readiness Compiler` | README, receipt generator tests, UI shell tests, submission-copy audit | PASS |
-| Primary artifact is `Readiness Receipt` | receipt JSON/Markdown artifacts, `src/receipts`, `tests/receipts/generator.test.ts`, UI shell | PASS |
+| Engine is `Agent Readiness Compiler` | README, Devpost draft, receipt/UI copy, submission-copy audit | PASS |
+| Primary artifact is `Readiness Receipt` | receipt generator tests, CLI artifacts, UI shell, README | PASS |
 | Submission track is Platform & Developer Experience | `docs/devpost-submission.md`, `npm run audit:submission-copy` | PASS |
-| Flagship story is security investigation readiness | `docs/demo-script.md`, security missions, fresh Wave 74 demo artifacts | PASS |
-| Product is not chatbot, SOC copilot, telemetry dashboard, detection-health dashboard, or generic eval harness | README and Devpost negative claims, submission-copy positive-drift audit, UI tests | PASS |
-| No LLM primary pass/fail grader | grader rule catalog, `src/grader`, full test suite, deterministic rule IDs in demo artifacts | PASS |
-| Deterministic grader rules cite catalog IDs | `docs/grader-rule-catalog.md`; Wave 74 demo violations include `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, `ANS-001` | PASS |
-| Specimen agent is not hardcoded to fail/pass | `tests/agents/specimen.test.ts`, CLI flow tests, before/after trace artifacts | PASS |
-| No auto-mutation of Splunk | README, Devpost copy, live-adapter docs, live smoke skip tests, policy patch Markdown in Wave 74 demo | PASS |
-| Normal fixture tests require no live Splunk credentials | `npm run check` and fresh Wave 74 demo ran with live env vars unset | PASS |
-| Fixture and live modes do not diverge after adapter boundary | adapter contracts and tests, `docs/fixture-live-parity.md`, `tests/adapters/live.test.ts`, `tests/adapters/fixture.test.ts` | PASS |
-| Golden traces are representable by real trace data | fixture trace tests, CLI demo artifacts, Wave 47 artifact integrity report | PASS |
-| Important UI claims backed by contract, trace, violation, or receipt data | `tests/ui/shell.test.ts`, demo artifacts, UI shell renders receipt, trace, evidence, artifact paths, empty contract states, and trace truncation notices | PASS |
-| UI sidecar work was bounded and reviewed | Wave 72 accepted only evidence-clarity UI changes from the 19:23 Antigravity/Gemini sidecar; Wave 73 remote cleanroom verified the pushed branch | PASS |
-| Demo follows `docs/demo-script.md` | Fresh Wave 74 demo route is `splunkready-shell.html#rerun-receipts`; fixture receipts show fail -> patch -> rerun -> pass | PASS |
-| Readiness Receipts show fail -> patch -> rerun -> pass | `/tmp/splunkready-wave74-audit/demo`: before fixture `NOT READY` score 0, after fixture `READY` score 100, 18 artifacts | PASS |
-| Demo rehearsed under 3 minutes | Fresh Wave 74 `demo-rehearsal.json` reported `fitsUnderThreeMinutes: true` and measured CLI orchestration `0.025s` | PASS |
-| Reviewer Critical/High findings resolved or waived | `npm run audit:reviewers` passed across 75 groups, 4 pass-with-concerns files, and 0 failing latest verdicts after late Wave 73 pass file `wave-73-20260601-1954-rereview.md` | PASS |
-| Branch is long-running `splunkready-build` | `git status --short --branch` showed `splunkready-build...origin/splunkready-build`; Wave 73 pushed commit `d77a570` to `origin/splunkready-build` | PASS |
-| Remote branch is verifiable from a clean clone | Wave 73 cleanroom checked out `e8e6ea6da7ee5d0da35ab71c4b62f6cc3f91ee00` and passed install, reviewer audit, full tests, focused UI tests, and sidecar artifact scan | PASS |
-| One commit per completed wave by default | Recent history contains separate wave commits through Wave 73; extra commits were used only for separable reviewer/continuation milestones | PASS |
-| Do not start next wave with unresolved dirty implementation changes | Wave 74 started from pushed Wave 73 state with only late reviewer file `wave-73-20260601-1954-rereview.md` untracked | PASS |
-| Logs are updated per wave | `logs/execution-log.md` and `logs/verification-log.md` include entries through Wave 73 before this Wave 74 update | PASS |
-| Current-state docs reflect implementation progress | `MANIFEST.md`, `PLAN.md`, `docs/implementation-handoff.md`, wave index, logs, cleanroom report, and this audit are refreshed through Wave 74 | PASS |
+| Flagship story is security investigation readiness | `docs/demo-script.md`, security missions, fresh Wave 80 demo artifacts | PASS |
+| Product is not a chatbot, SOC copilot, MCP telemetry dashboard, detection-health dashboard, or generic eval harness | README, Devpost draft, negative-claim audit, UI bounded to receipt/trace evidence | PASS |
+| Does not use an LLM as primary pass/fail grader | `src/grader`, deterministic rule tests, `docs/grader-rule-catalog.md`, demo rule IDs | PASS |
+| Deterministic grader rules cite rule IDs from catalog | `docs/grader-rule-catalog.md`; Wave 80 demo violations include `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, `ANS-001` | PASS |
+| Specimen agent is real but naive, not hardcoded to fail/pass | `tests/agents/specimen.test.ts`, CLI flow tests, before/after traces and receipts | PASS |
+| Does not auto-mutate Splunk | policy patch Markdown, README, Devpost draft, live adapter docs, live smoke tests | PASS |
+| Normal fixture tests require no live Splunk credentials | `npm run check` and fresh Wave 80 demo ran with live env vars unset | PASS |
+| Fixture and live mode do not diverge after adapter boundary | `docs/fixture-live-parity.md`, adapter tests, live smoke tests, shared CLI/artifact contracts | PASS |
+| Golden traces are representable by real trace data | fixture trace tests, CLI demo artifacts, trace recorder tests, `docs/golden-traces.md` | PASS |
+| Important UI claims are backed by contract, trace, violation, receipt, or evidence data | `tests/ui/shell.test.ts`, Wave 77 certification replay, Wave 80 shell inspection | PASS |
+| UI remains creative without AI-slop/dashboard drift | Wave 77 replay UI and Wave 78 route changes use artifact-backed certification replay, not fake live telemetry or generic charts | PASS |
+| Demo follows current `docs/demo-script.md` | Fresh Wave 80 demo route is `splunkready-shell.html#certification-replay`; supporting rerun receipt route remains present | PASS |
+| Readiness Receipts show fail -> patch -> rerun -> pass | Fresh Wave 80 demo: before `NOT READY` score 0 with 6 violations; after `READY` score 100 with 0 violations; policy patch present | PASS |
+| Demo rehearsed under 3 minutes | Fresh Wave 80 `demo-rehearsal.json` reported `fitsUnderThreeMinutes: true`, measured CLI orchestration `0.06s` | PASS |
+| Reviewer Critical/High findings resolved or waived | `npm run audit:reviewers` passed: 81 groups, 4 pass-with-concerns files, 0 failing latest verdicts | PASS |
+| Branch is long-running `splunkready-build` | `git status --short --branch` showed `splunkready-build...origin/splunkready-build` | PASS |
+| Remote branch is pushed and verifiable | `git rev-parse HEAD` and `git rev-parse origin/splunkready-build` both returned `29f03d63cc65252d710b7a3ca8c747512b8e76c1`; Wave 79 cleanroom verified Wave 78 pushed commit | PASS |
+| One commit per completed wave by default | Recent history contains separate Wave 77, Wave 78, and Wave 79 commits; Wave 77 used a small follow-up commit for a late reviewer pass | PASS |
+| Do not start next wave with unresolved dirty implementation changes | Wave 80 started from a clean `splunkready-build` worktree after Wave 79 push | PASS |
+| Logs are updated per wave | `logs/execution-log.md` and `logs/verification-log.md` contain Wave 80 entries with exact command/result evidence | PASS |
+| Current-state docs reflect implementation progress | `MANIFEST.md`, `PLAN.md`, handoff, wave index, logs, and this audit are refreshed through Wave 80 | PASS |
 | Goal is not marked complete without explicit user approval | No `update_goal` call has been made; this report records approval as missing | PASS |
 
 ## Current Verification Evidence
 
-Commands run on June 1, 2026:
+Commands run on June 1, 2026 from `/Users/arshdeepsingh/Developer/SplunkReady`.
 
 ```bash
 npm run check
 ```
 
-Result: PASS. Scaffold verifier passed with 74 wave files and 382 project files; Vitest passed 31 test files / 141 tests.
+Result: PASS. Scaffold verifier passed with 81 wave files and 417 project files; Vitest passed 31 test files / 143 tests.
 
 ```bash
 npm run audit:submission-copy
@@ -60,7 +72,7 @@ Result: PASS. The audit checked 28 required claims.
 npm run audit:reviewers
 ```
 
-Result: PASS after late Wave 73 reviewer file `wave-73-20260601-1954-rereview.md`: 75 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+Result: PASS. Reviewer inbox audit passed across 81 groups, 4 pass-with-concerns files, and 0 failing latest verdicts.
 
 ```bash
 npm run build
@@ -69,107 +81,76 @@ npm run build
 Result: PASS. TypeScript compiled to `dist`.
 
 ```bash
-env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- demo --out /tmp/splunkready-wave74-audit/demo
+tmp=$(mktemp -d /tmp/splunkready-wave80-audit-XXXXXX) && \
+  unset SPLUNK_HOST SPLUNK_TOKEN SPLUNK_USERNAME SPLUNK_PASSWORD SPLUNK_SCHEME SPLUNK_PORT && \
+  npm run splunkready -- demo --out "$tmp"
 ```
 
-Result: PASS. Fresh Wave 74 demo output directory: `/tmp/splunkready-wave74-audit/demo`.
+Result: PASS. Fresh Wave 80 demo output directory: `/tmp/splunkready-wave80-audit-QwNqbe`.
 
-```bash
-node - <<'NODE' /tmp/splunkready-wave74-audit/demo
-const fs = require('fs');
-const path = require('path');
-const out = process.argv[2];
-const readJson = (name) => JSON.parse(fs.readFileSync(path.join(out, name), 'utf8'));
-const artifacts = fs.readdirSync(out).sort();
-const before = readJson('receipt-before-001.json');
-const after = readJson('receipt-after-001.json');
-const rehearsal = readJson('demo-rehearsal.json');
-const policyPatch = readJson('policy-patch.json');
-const violationsBefore = readJson('violations-before.json');
-const policyMarkdown = fs.readFileSync(path.join(out, 'policy-patch.md'), 'utf8');
-const ruleIds = [...new Set(violationsBefore.map((violation) => violation.ruleId))].sort();
-const scoreValue = (receipt) => typeof receipt.score === 'number' ? receipt.score : receipt.score?.overall;
-const violationCount = (receipt) => Array.isArray(receipt.violations) ? receipt.violations.length : receipt.summary?.violationCount;
-const policyPatchMarkdownNoMutation =
-  policyMarkdown.includes('This patch does not change Splunk configuration.') &&
-  policyMarkdown.includes('It does not mutate Splunk.');
-const summary = {
-  artifactCount: artifacts.length,
-  shellExists: fs.existsSync(path.join(out, 'splunkready-shell.html')),
-  policyPatchJsonExists: fs.existsSync(path.join(out, 'policy-patch.json')),
-  policyPatchMarkdownExists: fs.existsSync(path.join(out, 'policy-patch.md')),
-  policyPatchMarkdownNoMutation,
-  policyPatchRules: policyPatch.rules.map((rule) => rule.id),
-  before: {
-    id: before.id,
-    verdict: before.verdict,
-    score: scoreValue(before),
-    violations: violationCount(before),
+Demo inspection summary:
+
+```json
+{
+  "out": "/tmp/splunkready-wave80-audit-QwNqbe",
+  "artifactCount": 18,
+  "shellExists": true,
+  "replayRoute": true,
+  "notesHasReplay": true,
+  "shellHasReplay": true,
+  "shellHasRerun": true,
+  "policyPatchMarkdownNoMutation": true,
+  "policyPatchRules": [
+    "inject-contract-summary",
+    "discover-saved-searches-first",
+    "carry-evidence-into-final-answer"
+  ],
+  "before": {
+    "id": "receipt-before-001",
+    "verdict": "NOT READY",
+    "score": 0,
+    "violations": 6
   },
-  after: {
-    id: after.id,
-    verdict: after.verdict,
-    score: scoreValue(after),
-    violations: violationCount(after),
+  "after": {
+    "id": "receipt-after-001",
+    "verdict": "READY",
+    "score": 100,
+    "violations": 0
   },
-  rehearsal: {
-    status: rehearsal.status,
-    targetSeconds: rehearsal.targetSeconds,
-    measuredSeconds: rehearsal.measuredSeconds,
-    fitsUnderThreeMinutes: rehearsal.fitsUnderThreeMinutes,
-    story: rehearsal.story,
-    uiRoute: rehearsal.uiRoute,
+  "rehearsal": {
+    "status": "PASS",
+    "targetSeconds": 180,
+    "measuredSeconds": 0.06,
+    "fitsUnderThreeMinutes": true,
+    "story": "fail -> compile -> patch -> rerun -> pass",
+    "uiRoute": "/tmp/splunkready-wave80-audit-QwNqbe/splunkready-shell.html#certification-replay"
   },
-  ruleIds,
-};
-console.log(JSON.stringify(summary, null, 2));
-if (artifacts.length !== 18) process.exit(10);
-if (!summary.shellExists || !summary.policyPatchJsonExists || !summary.policyPatchMarkdownExists) process.exit(11);
-if (!policyPatchMarkdownNoMutation) process.exit(12);
-if (before.verdict !== 'NOT_READY' && before.verdict !== 'NOT READY') process.exit(13);
-if (scoreValue(before) !== 0 || violationCount(before) < 1) process.exit(14);
-if (after.verdict !== 'READY' || scoreValue(after) !== 100 || violationCount(after) !== 0) process.exit(15);
-if (rehearsal.status !== 'PASS' || rehearsal.fitsUnderThreeMinutes !== true) process.exit(16);
-for (const id of ['ANS-001', 'EVD-001', 'KO-001', 'SPL-001', 'SPL-003']) {
-  if (!ruleIds.includes(id)) process.exit(17);
+  "ruleIds": [
+    "ANS-001",
+    "EVD-001",
+    "KO-001",
+    "SPL-001",
+    "SPL-003"
+  ]
 }
-NODE
 ```
 
-Result: PASS after aligning the inspection script to the current receipt and violation JSON shape.
+Current pushed branch evidence:
 
-Key demo facts:
-
-- artifact count: 18
-- shell artifact: `splunkready-shell.html`
-- policy patch JSON/Markdown present
-- policy patch Markdown states `This patch does not change Splunk configuration.` and `It does not mutate Splunk.`
-- policy patch rules: `inject-contract-summary`, `discover-saved-searches-first`, `carry-evidence-into-final-answer`
-- rehearsal status: `PASS`
-- route: `/tmp/splunkready-wave74-audit/demo/splunkready-shell.html#rerun-receipts`
-- before receipt: fixture `NOT READY`, score `0`, 6 violations
-- after receipt: fixture `READY`, score `100`, zero violations
-- deterministic rule IDs: `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, `SPL-003`
-- live Splunk env vars were unset for the fixture demo
-
-Wave 73 remote cleanroom evidence:
-
-- cleanroom path: `/tmp/splunkready-wave73-remote-qoR6ir/repo`
-- checked-out commit: `e8e6ea6da7ee5d0da35ab71c4b62f6cc3f91ee00`
-- expected pushed Wave 72 commit matched actual checkout
-- `npm ci --ignore-scripts`, `npm run audit:reviewers`, `npm run check`, and `npx vitest run tests/ui/shell.test.ts` passed
-- tracked sidecar artifact scan returned `sidecar_artifacts=absent`
-
-Current pushed branch evidence before Wave 74:
-
-- `origin/splunkready-build` was pushed through Wave 73 at `d77a57007d1d9b5b28bf903ce82d6edd14825881`.
+- Local `HEAD`: `29f03d63cc65252d710b7a3ca8c747512b8e76c1`
+- `origin/splunkready-build`: `29f03d63cc65252d710b7a3ca8c747512b8e76c1`
+- Wave 79 remote cleanroom verified the pushed Wave 78 commit `a2d36b88b6a61afe5dffde61d12b81718215b4b2` from a fresh clone.
+- Wave 79 cleanroom passed `npm ci --ignore-scripts`, `npm run audit:reviewers`, `npm run check`, `npm run build`, fixture demo route inspection, and tracked sidecar artifact scan.
 
 ## Missing Or Weakly Verified Items
 
 - Overall goal completion is intentionally blocked until the user explicitly approves marking it complete.
-- No real live Splunk endpoint was used during this audit. That is expected for normal fixture and cleanroom verification; live mode remains optional and read-only through the documented live-smoke path.
-- Antigravity sidecar worktrees remain isolated by design. Wave 72 documents the accepted evidence-clarity fix and rejected broad styling churn; Wave 73 verifies the pushed branch does not track sidecar artifact directories.
+- No real live Splunk endpoint was used during this audit. This is expected for normal fixture and cleanroom verification; live mode remains optional and read-only through the documented live-smoke path.
+- `npm ci --ignore-scripts` in Wave 79 cleanroom reported one critical npm audit warning. No dependency change was made in that verification wave.
+- The final demo video itself has not been produced in this repository; the rehearsed artifact path and script are ready and verified.
 
 ## Conclusion
 
-The implementation evidence is strong for the product, safety, deterministic grading, fixture demo, reviewer, branch, UI sidecar, remote cleanroom, and submission-copy requirements. The objective must remain open because explicit user approval to mark completion has not been given and continuation QA is still active.
+The implementation evidence is strong for the product lock, deterministic grading, fixture/live boundaries, specimen-agent honesty, receipt provenance, certification replay demo route, fail -> patch -> rerun -> pass story, reviewer workflow, and pushed-branch cleanroom verification.
+
+The objective must remain open because explicit user approval to mark completion has not been given and continuation QA is still active.
