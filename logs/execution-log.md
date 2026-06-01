@@ -3057,6 +3057,7 @@ Files changed:
 - `logs/reviewer-inbox/wave-77-20260601-2044-rereview.md`
 - `logs/reviewer-inbox/wave-77-20260601-2047-rereview.md`
 - `logs/reviewer-inbox/wave-77-20260601-2050-rereview.md`
+- `logs/reviewer-inbox/wave-77-20260601-2052-rereview.md`
 - reviewer inbox files if new Wave 77 findings arrive.
 
 Notes:
@@ -3087,6 +3088,7 @@ Notes:
 - Final TypeScript build passed after the replay tab marker shape cleanup.
 - Final reviewer audit passed after the closeout update: 79 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed after the closeout update: 78 wave files, 407 project files.
+- Late `wave-77-20260601-2052-rereview.md` passed with no findings after the Wave 77 commit and was included in a follow-up housekeeping commit before Wave 78 started.
 - No separate reviewer rereview arrived before the Wave 77 review, so `unknown-wave-20260601-2041-main-resolution.md` remains an explicit main-executor pass-with-concerns note for the stale `unknown-wave` blocker.
 - No live Splunk credentials were used.
 - No `update_goal` call was made.

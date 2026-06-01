@@ -1815,6 +1815,8 @@ Commands:
 - `npm run build`
 - `npm run audit:reviewers`
 - `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
 - `npm run check`
 - `npm run audit:reviewers`
 - `bash scripts/verify-scaffold.sh && git diff --check`
@@ -2668,3 +2670,6 @@ Result:
 - Final TypeScript build passed after the replay tab marker shape cleanup.
 - Final reviewer audit passed after the replay tab marker shape cleanup: 79 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed after the replay tab marker shape cleanup: 78 wave files, 407 project files.
+- Late `wave-77-20260601-2052-rereview.md` passed with no findings after the Wave 77 commit.
+- Follow-up reviewer audit passed after including the late rereview file: 79 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Follow-up scaffold verifier and `git diff --check` passed after including the late rereview file: 78 wave files, 408 project files.
