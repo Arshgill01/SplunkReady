@@ -23,6 +23,44 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 12:38 - Wave 12
+
+Scope:
+- Added environment contract compiler from shared adapter inventory.
+- Compiler inventories info, user context, indexes, metadata, and knowledge objects through the adapter interface.
+- Compiler emits schema-valid `EnvironmentContract` with mode, version, source refs, warnings, query budgets, evidence rules, and forbidden query patterns.
+- Added compiler tests for fixture compilation, optional helper-tool degradation, and no invented canonical fields.
+
+Files changed:
+- `src/compiler/environment.ts`
+- `tests/compiler/environment.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-12-20260601-1239-review.md`
+- `logs/reviewer-inbox/wave-12-20260601-1240-rereview.md`
+
+Commands:
+- `npx tsc --noEmit`
+- `npx vitest run tests/compiler/environment.test.ts`
+- `rg -n "compileEnvironmentContract|canonicalFields|sourceRefs|Optional helper|index=\\*|finance_pii|splunk_get_metadata" src tests docs/schemas/core-contracts.md`
+- `npm test`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 18`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-12-20260601-1239-review.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-12-20260601-1240-rereview.md`
+
+Result:
+- PASS
+
+Notes:
+- Compiler infers canonical fields only when the discovered metadata contains the backing field names.
+- Optional `saia_*` helper tools produce warnings instead of blocking compilation.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 141` and 8 test files / 33 tests passed.
+- `LOW-001` resolved by adding the Wave 12 execution and verification log entries and including the reviewer file.
+- Wave 12 rereview passed with no open findings.
+
 ## 2026-06-01 12:35 - Wave 11
 
 Scope:

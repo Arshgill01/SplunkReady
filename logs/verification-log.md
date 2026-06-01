@@ -2,6 +2,35 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 12:38 - Wave 12 Environment Compiler
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/compiler/environment.test.ts`
+- `rg -n "compileEnvironmentContract|canonicalFields|sourceRefs|Optional helper|index=\\*|finance_pii|splunk_get_metadata" src tests docs/schemas/core-contracts.md`
+- `npm test`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 18`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-12-20260601-1239-review.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-12-20260601-1240-rereview.md`
+
+Result:
+
+- PASS
+- `npx tsc --noEmit` passed.
+- `npx vitest run tests/compiler/environment.test.ts` passed: 1 test file and 3 tests.
+- `npm test` passed: 8 test files and 33 tests.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 141`; 8 test files and 33 tests passed.
+
+Notes:
+
+- Compiler output validates against `environmentContractSchema`.
+- Missing optional helper tools degrade to warnings.
+- Canonical fields are not emitted when backing fields are absent from metadata.
+- `LOW-001` resolved by adding Wave 12 logs and including the reviewer file.
+- Wave 12 rereview passed with no open findings.
+
 ## 2026-06-01 12:35 - Wave 11 Live Adapter Skeleton
 
 Commands:
