@@ -46,7 +46,8 @@ describe("naive specimen agent", () => {
     });
     expect(finalAnswer).toMatchObject({
       toolOutputSummary: "No evidence was found by the naive broad search.",
-      evidenceRefs: []
+      evidenceRefs: [],
+      parentId: "mission-security-lateral-movement-readiness-trace-001-result"
     });
     expect(run.traceEvents.every((event) => traceEventSchema.safeParse(event).success)).toBe(true);
   });
@@ -86,6 +87,9 @@ describe("naive specimen agent", () => {
       queryRef: "saved-search-lateral-movement",
       resultCount: 3,
       evidenceRefs: ["evt-102", "evt-118", "evt-141"]
+    });
+    expect(run.traceEvents[4]).toMatchObject({
+      parentId: "mission-security-lateral-movement-readiness-trace-003-result"
     });
     expect(run.finalAnswer).toContain("Evidence supports the investigation");
     expect(run.traceEvents.every((event) => traceEventSchema.safeParse(event).success)).toBe(true);

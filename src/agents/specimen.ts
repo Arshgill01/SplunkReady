@@ -115,7 +115,7 @@ export class NaiveSpecimenAgent {
       result.resultCount > 0
         ? `Found ${result.resultCount} matching result(s), but this naive run did not inspect validated Splunk knowledge.`
         : "No evidence was found by the naive broad search.";
-    this.addFinalAnswer(traceEvents, input.mission.id, timestamp, 3, finalAnswer, result);
+    this.addFinalAnswer(traceEvents, input.mission.id, timestamp, 3, finalAnswer, result, `${callId}-result`);
 
     return { finalAnswer, traceEvents };
   }
@@ -198,7 +198,7 @@ export class NaiveSpecimenAgent {
       result.resultCount > 0
         ? `Evidence supports the investigation: ${result.resultCount} result(s), evidence ${result.evidenceRefs.join(", ")}.`
         : "The validated saved search returned no evidence; confidence is limited.";
-    this.addFinalAnswer(traceEvents, input.mission.id, timestamp, 5, finalAnswer, result);
+    this.addFinalAnswer(traceEvents, input.mission.id, timestamp, 5, finalAnswer, result, `${savedSearchCallId}-result`);
 
     return { finalAnswer, traceEvents };
   }
@@ -300,7 +300,8 @@ export class NaiveSpecimenAgent {
     timestamp: string,
     step: number,
     finalAnswer: string,
-    result: QueryResult | SavedSearchResult
+    result: QueryResult | SavedSearchResult,
+    parentId: string
   ): void {
     traceEvents.push(
       traceEvent({
@@ -317,7 +318,8 @@ export class NaiveSpecimenAgent {
         resultCount: result.resultCount,
         evidenceRefs: result.evidenceRefs,
         error: null,
-        step
+        step,
+        parentId
       })
     );
   }

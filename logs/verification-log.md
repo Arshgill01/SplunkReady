@@ -2,6 +2,38 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 13:18 - Wave 21 Trace Recorder
+
+Commands:
+
+- `npx vitest run tests/traces/recorder.test.ts tests/agents/specimen.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "TraceRecorder|recordToolCall|recordToolResult|recordFinalAnswer|recordError|parentId|resultCount|evidenceRefs|traceEventSchema" src/traces src/agents tests/traces tests/agents docs/waves/wave-21-trace-recorder.md fixtures/acme-soc-dev/traces`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-21-*' -print | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-21-20260601-1318-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/traces/recorder.test.ts tests/agents/specimen.test.ts` passed: 2 test files and 5 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 17 test files and 65 tests.
+- Traceability grep found recorder APIs, parent links, result counts, evidence refs, and schema validation.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 172`; 17 test files and 65 tests passed.
+- `git diff --check` passed.
+- Wave 20 rereview passed with no open findings.
+- Wave 21 `LOW-001` resolved by including and logging `logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`.
+
+Notes:
+
+- Recorder produces structured trace events with stable ids.
+- Query and saved-search result events preserve result count and evidence refs.
+- Wave 21 review had no code behavior gaps.
+
 ## 2026-06-01 13:13 - Wave 20 Naive Specimen Agent
 
 Commands:
@@ -15,6 +47,7 @@ Commands:
 - `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-20-*' -print | sort`
 - `sed -n '1,300p' logs/reviewer-inbox/wave-20-20260601-1312-review.md`
 - `rg -n "policySavedSearchRefs|policyPreferredSavedSearchRef|KO-001|knowledgeRules|unrelated policy|splunk_run_saved_search|index=\\*|HIGH-001" src/agents tests/agents logs/reviewer-inbox/wave-20-20260601-1312-review.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`
 
 Result:
 
@@ -26,6 +59,7 @@ Result:
 - `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 168`; 16 test files and 63 tests passed.
 - `git diff --check` passed.
 - `HIGH-001` resolved by deriving saved-search behavior from matching `KO-001` policy content and adding an unrelated-policy negative test.
+- `logs/reviewer-inbox/wave-20-20260601-1316-rereview.md` passed with no open findings.
 
 Notes:
 

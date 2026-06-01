@@ -23,6 +23,49 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 13:18 - Wave 21
+
+Scope:
+- Added structured trace recorder for tool calls, tool results, errors, final answers, result counts, and evidence refs.
+- Updated specimen final answers to link to the preceding result trace event.
+- Added trace recorder tests and updated agent trace assertions.
+
+Files changed:
+- `src/traces/recorder.ts`
+- `tests/traces/recorder.test.ts`
+- `src/agents/specimen.ts`
+- `tests/agents/specimen.test.ts`
+- `logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`
+- `logs/reviewer-inbox/wave-21-20260601-1318-review.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`
+- `logs/reviewer-inbox/wave-21-20260601-1318-review.md`
+
+Commands:
+- `npx vitest run tests/traces/recorder.test.ts tests/agents/specimen.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "TraceRecorder|recordToolCall|recordToolResult|recordFinalAnswer|recordError|parentId|resultCount|evidenceRefs|traceEventSchema" src/traces src/agents tests/traces tests/agents docs/waves/wave-21-trace-recorder.md fixtures/acme-soc-dev/traces`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-21-*' -print | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-21-20260601-1318-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Trace events validate through `traceEventSchema`, not freeform strings.
+- Tool result and final-answer links use `parentId`.
+- Sensitive outputs are represented by bounded summaries and evidence refs.
+- `LOW-001` resolved by including and logging the Wave 20 rereview pass.
+- Wave 21 reviewer passed code behavior with only the now-resolved audit-trail concern.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 172` and 17 test files / 65 tests passed.
+
 ## 2026-06-01 13:13 - Wave 20
 
 Scope:
@@ -39,6 +82,7 @@ Files changed:
 
 Reviewer files read and included:
 - `logs/reviewer-inbox/wave-20-20260601-1312-review.md`
+- `logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`
 
 Commands:
 - `npx vitest run tests/agents/specimen.test.ts`
@@ -50,6 +94,7 @@ Commands:
 - `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-20-*' -print | sort`
 - `sed -n '1,300p' logs/reviewer-inbox/wave-20-20260601-1312-review.md`
 - `rg -n "policySavedSearchRefs|policyPreferredSavedSearchRef|KO-001|knowledgeRules|unrelated policy|splunk_run_saved_search|index=\\*|HIGH-001" src/agents tests/agents logs/reviewer-inbox/wave-20-20260601-1312-review.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-20-20260601-1316-rereview.md`
 
 Result:
 - PASS
@@ -57,6 +102,7 @@ Result:
 Notes:
 - Unpatched behavior naturally runs a broad `index=*` / `src_ip` query against the fixture mission and records an empty-evidence final answer.
 - `HIGH-001` resolved: patched behavior now requires matching `KO-001` saved-search preference content inside the injected policy plus mission preferred refs, not policy presence alone.
+- Wave 20 rereview passed with no open findings.
 - Trace events validate against `traceEventSchema`.
 - Final `npm run check` passed: scaffold verifier passed with `project files: 168` and 16 test files / 63 tests passed.
 
