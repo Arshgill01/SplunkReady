@@ -59,3 +59,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-50-antigravity-ui-sidecar-triage.md`: triage fresh Antigravity UI sidecar output.
 - `wave-51-goal-completion-audit.md`: prompt-to-artifact audit against the full goal.
 - `wave-52-remote-cleanroom-after-audit.md`: remote cleanroom verification after the goal audit.
+- `wave-53-handoff-freshness.md`: refresh handoff and completion audit current-state docs.

@@ -36,7 +36,7 @@ Verify the latest pushed `origin/splunkready-build` branch after Wave 51 complet
 ## Documentation Evidence
 
 - `docs/goal-completion-audit.md` in the remote clone records that explicit user approval to mark completion has not been given.
-- `PLAN.md` in the remote clone records the current status as implemented through Wave 51 continuation QA on `splunkready-build`.
+- `PLAN.md` in the remote clone at commit `64774c3` recorded the then-current status as implemented through Wave 51 continuation QA on `splunkready-build`.
 
 ## Conclusion
 

@@ -2,7 +2,7 @@
 
 ## Current State
 
-SplunkReady is implemented through Wave 51 continuation QA on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, static UI shell, optional read-only live smoke path, submission copy guardrails, reviewer audit automation, and a goal completion audit.
+SplunkReady is implemented through Wave 52 continuation QA on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, static UI shell, optional read-only live smoke path, submission copy guardrails, reviewer audit automation, goal completion audit, and post-audit remote cleanroom verification.
 
 ## Start Here
 
@@ -14,8 +14,7 @@ Future continuation agents should begin with:
 4. `ARCHITECTURE.md`
 5. `QUALITY-BAR.md`
 6. `docs/waves/WAVE-CONTRACT.md`
-7. `docs/waves/WAVE-CONTRACT.md`
-8. the latest wave file under `docs/waves/`
+7. the latest wave file under `docs/waves/`
 
 ## Implementation Decisions Already Made
 
