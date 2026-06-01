@@ -43,7 +43,7 @@ Files changed:
 - `logs/verification-log.md`
 
 Reviewer files read and included:
-- None found for Wave 38 at implementation time.
+- Late reviewer pass included in follow-up commit: `logs/reviewer-inbox/wave-38-20260601-1525-review.md`.
 
 Commands:
 - `sed -n '1,260p' docs/waves/wave-38-live-smoke.md`
@@ -81,6 +81,8 @@ Notes:
 - Full `npm run check` passed: scaffold verifier reported `project files: 225` and 30 test files / 136 tests passed.
 - `git diff --check` passed.
 - No Wave 38 reviewer inbox files were present at the final scan before log update.
+- Late Wave 38 reviewer file passed with no open findings. Reviewer noted `docs/prompts/main-executor-goal.md` was outside narrow live-smoke scope; this was accepted because it directly records the user's instruction to continue beyond Wave 41 and does not change product behavior.
+- Follow-up `npm run check` after adding the reviewer file passed: scaffold verifier reported `project files: 226` and 30 test files / 136 tests passed.
 
 ## 2026-06-01 15:14 - Wave 37
 

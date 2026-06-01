@@ -29,6 +29,7 @@ Commands:
 - `sed -n '1,260p' docs/prompts/main-executor-goal.md`
 - `sed -n '1,220p' docs/prompts/reviewer-goal.md`
 - `git status --short --branch`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-38-20260601-1525-review.md`
 
 Result:
 
@@ -41,6 +42,8 @@ Result:
 - `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 225`; 30 test files and 136 tests passed.
 - `git diff --check` passed.
 - Wave 38 reviewer inbox scan found no files at implementation time.
+- Late Wave 38 reviewer pass file was read and included in a follow-up commit.
+- Follow-up `npm run check` after adding the reviewer file passed: `PASS: scaffold verified`, `waves: 42`, `project files: 226`; 30 test files and 136 tests passed.
 
 Notes:
 
@@ -48,6 +51,7 @@ Notes:
 - The live metadata request is bounded to `earliest=-15m`, `latest=now`, and known indexes from `splunk_get_indexes`.
 - The live smoke path uses the same `compileEnvironmentContract` function as fixture mode after the adapter boundary.
 - The main executor prompt now explicitly says to continue after Wave 41 with added waves and iterative QA until the user explicitly approves completion.
+- Reviewer noted `docs/prompts/main-executor-goal.md` was outside narrow live-smoke scope; this was accepted as a direct user-requested process update.
 
 ## 2026-06-01 15:14 - Wave 37 UI Receipt and Rerun Views
 
