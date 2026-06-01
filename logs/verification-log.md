@@ -2255,3 +2255,23 @@ Result:
 - Wave 66 reviewer passed with no findings in `wave-66-20260601-1846-review.md`.
 - Final reviewer audit passed after the Wave 66 reviewer file arrived: 68 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 67 wave files, 339 project files.
+
+## 2026-06-01 - Wave 67 Quality Confidence Refresh
+
+Commands:
+
+- `npm run check`
+- `npm run audit:submission-copy`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Full check passed: scaffold verifier plus 31 test files / 139 tests.
+- Submission-copy audit passed: 28 required claims.
+- Reviewer audit passed before a Wave 67-specific reviewer inbox file arrived: 68 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Scaffold verifier and `git diff --check` passed: 68 wave files, 341 project files.
+- Wave 67 reviewer passed with no findings in `wave-67-20260601-1850-review.md`.
+- Final reviewer audit passed after the Wave 67 reviewer file arrived: 69 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 68 wave files, 342 project files.
