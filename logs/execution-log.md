@@ -23,6 +23,44 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 13:37 - Wave 23
+
+Scope:
+- Added conservative SPL structural rules for forbidden query patterns, known write-oriented commands, required time bounds, expanded earliest windows, and early index/sourcetype filtering.
+- Added unit tests for `index=* earliest=-30d`, missing time bounds, forbidden commands, late filtering, and a passing bounded query.
+
+Files changed:
+- `src/grader/spl.ts`
+- `tests/grader/spl.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-23-20260601-1337-review.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-23-20260601-1337-review.md`
+
+Commands:
+- `sed -n '1,260p' docs/waves/wave-23-spl-structural-checks.md`
+- `sed -n '1,120p' docs/grader-rule-catalog.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-23-*' -print | sort`
+- `npx vitest run tests/grader/spl.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "SPL-001|SPL-002|SPL-004|createSplStructuralRules|forbiddenCommand|earliest=-30d|missing explicit mission time bounds|LLM|parse all SPL" src/grader tests/grader docs/waves/wave-23-spl-structural-checks.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-23-20260601-1337-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Rules cite deterministic catalog IDs `SPL-001`, `SPL-002`, and `SPL-004`.
+- Implementation uses structural string/token heuristics and does not claim to parse all SPL.
+- Checks do not call an LLM or accept prose grading.
+- Wave 23 reviewer pass had no findings.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 181` and 19 test files / 76 tests passed.
+
 ## 2026-06-01 13:24 - Wave 22
 
 Scope:

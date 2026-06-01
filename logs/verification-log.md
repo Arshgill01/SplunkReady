@@ -2,6 +2,39 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 13:37 - Wave 23 SPL Structural Checks
+
+Commands:
+
+- `sed -n '1,260p' docs/waves/wave-23-spl-structural-checks.md`
+- `sed -n '1,120p' docs/grader-rule-catalog.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-23-*' -print | sort`
+- `npx vitest run tests/grader/spl.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "SPL-001|SPL-002|SPL-004|createSplStructuralRules|forbiddenCommand|earliest=-30d|missing explicit mission time bounds|LLM|parse all SPL" src/grader tests/grader docs/waves/wave-23-spl-structural-checks.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-23-20260601-1337-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/grader/spl.test.ts` passed: 1 test file and 5 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 19 test files and 76 tests.
+- Traceability grep found SPL catalog IDs, structural rule factory, acceptance examples, LLM boundary text, and the stop-condition text.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 181`; 19 test files and 76 tests passed.
+- `git diff --check` passed.
+- Wave 23 reviewer inbox scan found `logs/reviewer-inbox/wave-23-20260601-1337-review.md`.
+
+Notes:
+
+- Rules emit structured violations through the Wave 22 engine and deterministic rule IDs.
+- The SPL implementation is intentionally conservative and heuristic; it does not claim full SPL parsing.
+- No LLM is used in the pass/fail path.
+- Wave 23 reviewer pass had no findings.
+
 ## 2026-06-01 13:24 - Wave 22 Rule Engine Foundation
 
 Commands:
