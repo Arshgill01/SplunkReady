@@ -2,6 +2,52 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 14:36 - Wave 33 CLI Flow
+
+Commands:
+
+- `sed -n '1,280p' docs/waves/wave-33-cli-flow.md`
+- `sed -n '1,220p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-33-*' -print | sort`
+- `find src tests -maxdepth 3 -type f | sort | rg "cli|runner|orchestr|receipt|policy"`
+- `npx vitest run tests/cli/flow.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "SplunkReady CLI|compile|evaluate|receipt|rerun|PASS compile|receipt-after-001|artifact|Unable to read environment contract|CLI requires live Splunk" src tests docs/waves/wave-33-cli-flow.md package.json`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-32-20260601-1431-review.md`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-33-20260601-1435-review.md`
+- `npm run build && npm run splunkready -- --help`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-33-20260601-1437-rereview.md`
+- `npx vitest run tests/cli/flow.test.ts tests/agents/specimen.test.ts tests/grader/evidence.test.ts`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-cli-final-XXXXXX) && npm run splunkready -- compile --out "$tmp" && npm run splunkready -- evaluate --out "$tmp" && npm run splunkready -- receipt --out "$tmp" && npm run splunkready -- rerun --out "$tmp" && node -e "const fs=require('fs'); const r=JSON.parse(fs.readFileSync(process.argv[1] + '/receipt-after-001.json','utf8')); const v=JSON.parse(fs.readFileSync(process.argv[1] + '/violations-after.json','utf8')); console.log(JSON.stringify({verdict:r.verdict, score:r.score, violations:v.length}, null, 2));" "$tmp"`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-33-20260601-1441-rereview.md`
+
+Result:
+
+- PASS after fixing reviewer High findings.
+- Initial `npx vitest run tests/cli/flow.test.ts` failed because direct `node src/cli.ts` could not resolve compiled `.js` imports from TypeScript source.
+- Final `npx vitest run tests/cli/flow.test.ts` passed: 1 test file and 2 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 29 test files and 125 tests.
+- Traceability grep found CLI commands, stable artifact assertions, actionable error coverage, and the wave stop condition.
+- `npm run check` passed after reviewer-file inclusion: `PASS: scaffold verified`, `waves: 42`, `project files: 216`; 29 test files and 125 tests passed.
+- `git diff --check` passed.
+- Wave 33 reviewer inbox scan found `logs/reviewer-inbox/wave-33-20260601-1435-review.md`.
+- Late Wave 32 reviewer file `logs/reviewer-inbox/wave-32-20260601-1431-review.md` was read before the Wave 33 commit.
+- Reviewer `HIGH-001` fixed: `npm run build && npm run splunkready -- --help` passed.
+- Reviewer `HIGH-002` fixed: CLI fixture smoke coverage exists in `tests/cli/flow.test.ts`.
+- Reviewer rereview `HIGH-001` fixed: targeted CLI/specimen/evidence tests passed, and full package CLI smoke produced `{"verdict":"READY","score":100,"violations":0}` for `receipt-after-001.json` and `violations-after.json`.
+- Final Wave 33 rereview file `logs/reviewer-inbox/wave-33-20260601-1441-rereview.md` passed with no open findings.
+- Wave 32 reviewer `LOW-001` waived: direct exported-patch application is deferred because Wave 32 patch output is a review artifact; fixture rerun currently exercises the compiled policy path. Revisit during Wave 39 demo orchestration if patch application becomes executable.
+
+Notes:
+
+- Fixture CLI flow does not require live Splunk credentials.
+- Commands write artifacts to predictable names: environment contract, missions, policy, traces, violations, scores, receipts, and policy patch.
+- Runtime CLI entrypoint is compiled JavaScript at `dist/src/cli.js`.
+
 ## 2026-06-01 14:29 - Wave 32 Policy Patch Export
 
 Commands:

@@ -115,7 +115,16 @@ export class NaiveSpecimenAgent {
       result.resultCount > 0
         ? `Found ${result.resultCount} matching result(s), but this naive run did not inspect validated Splunk knowledge.`
         : "No evidence was found by the naive broad search.";
-    this.addFinalAnswer(traceEvents, input.mission.id, timestamp, 3, finalAnswer, result, `${callId}-result`);
+    this.addFinalAnswer(
+      traceEvents,
+      input.mission.id,
+      timestamp,
+      3,
+      finalAnswer,
+      result,
+      `${callId}-result`,
+      input.mission.requestedTimeWindow
+    );
 
     return { finalAnswer, traceEvents };
   }
@@ -196,9 +205,18 @@ export class NaiveSpecimenAgent {
 
     const finalAnswer =
       result.resultCount > 0
-        ? `Evidence supports the investigation: ${result.resultCount} result(s), evidence ${result.evidenceRefs.join(", ")}.`
+        ? `Evidence supports the investigation: ${result.resultCount} result(s) from ${result.savedSearchRef} in time window ${input.mission.requestedTimeWindow.earliest} to ${input.mission.requestedTimeWindow.latest}, evidence ${result.evidenceRefs.join(", ")}.`
         : "The validated saved search returned no evidence; confidence is limited.";
-    this.addFinalAnswer(traceEvents, input.mission.id, timestamp, 5, finalAnswer, result, `${savedSearchCallId}-result`);
+    this.addFinalAnswer(
+      traceEvents,
+      input.mission.id,
+      timestamp,
+      5,
+      finalAnswer,
+      result,
+      `${savedSearchCallId}-result`,
+      input.mission.requestedTimeWindow
+    );
 
     return { finalAnswer, traceEvents };
   }
@@ -301,7 +319,8 @@ export class NaiveSpecimenAgent {
     step: number,
     finalAnswer: string,
     result: QueryResult | SavedSearchResult,
-    parentId: string
+    parentId: string,
+    timeWindow: TraceEvent["timeWindow"]
   ): void {
     traceEvents.push(
       traceEvent({
@@ -314,7 +333,7 @@ export class NaiveSpecimenAgent {
         toolInput: null,
         toolOutputSummary: finalAnswer,
         queryRef: null,
-        timeWindow: null,
+        timeWindow,
         resultCount: result.resultCount,
         evidenceRefs: result.evidenceRefs,
         error: null,

@@ -5,6 +5,8 @@
   "type": "module",
   "description": "Splunk-native certification harness for AI agents before they touch production Splunk.",
   "scripts": {
+    "build": "tsc --outDir dist",
+    "splunkready": "node dist/src/cli.js",
     "test": "vitest run --passWithNoTests",
     "verify:scaffold": "bash scripts/verify-scaffold.sh",
     "check": "npm run verify:scaffold && npm test"

@@ -23,6 +23,63 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 14:36 - Wave 33
+
+Scope:
+- Added fixture-mode CLI commands for `compile`, `evaluate`, `receipt`, and `rerun`.
+- Added stable artifact paths under a caller-provided output directory.
+- Added focused CLI smoke tests for the full fixture flow and actionable prerequisite errors.
+
+Files changed:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `package.json`
+- `src/agents/specimen.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-32-20260601-1431-review.md`
+- `logs/reviewer-inbox/wave-33-20260601-1435-review.md`
+- `logs/reviewer-inbox/wave-33-20260601-1437-rereview.md`
+- `logs/reviewer-inbox/wave-33-20260601-1441-rereview.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-32-20260601-1431-review.md`
+- `logs/reviewer-inbox/wave-33-20260601-1435-review.md`
+- `logs/reviewer-inbox/wave-33-20260601-1437-rereview.md`
+- `logs/reviewer-inbox/wave-33-20260601-1441-rereview.md`
+
+Commands:
+- `sed -n '1,280p' docs/waves/wave-33-cli-flow.md`
+- `sed -n '1,220p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-33-*' -print | sort`
+- `find src tests -maxdepth 3 -type f | sort | rg "cli|runner|orchestr|receipt|policy"`
+- `npx vitest run tests/cli/flow.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "SplunkReady CLI|compile|evaluate|receipt|rerun|PASS compile|receipt-after-001|artifact|Unable to read environment contract|CLI requires live Splunk" src tests docs/waves/wave-33-cli-flow.md package.json`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-32-20260601-1431-review.md`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-33-20260601-1435-review.md`
+- `npm run build && npm run splunkready -- --help`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-33-20260601-1437-rereview.md`
+- `npx vitest run tests/cli/flow.test.ts tests/agents/specimen.test.ts tests/grader/evidence.test.ts`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-cli-final-XXXXXX) && npm run splunkready -- compile --out "$tmp" && npm run splunkready -- evaluate --out "$tmp" && npm run splunkready -- receipt --out "$tmp" && npm run splunkready -- rerun --out "$tmp" && node -e "const fs=require('fs'); const r=JSON.parse(fs.readFileSync(process.argv[1] + '/receipt-after-001.json','utf8')); const v=JSON.parse(fs.readFileSync(process.argv[1] + '/violations-after.json','utf8')); console.log(JSON.stringify({verdict:r.verdict, score:r.score, violations:v.length}, null, 2));" "$tmp"`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-33-20260601-1441-rereview.md`
+
+Result:
+- PASS after fixing reviewer High findings.
+
+Notes:
+- Initial CLI smoke failed because direct `node src/cli.ts` could not resolve NodeNext `.js` imports before TypeScript compilation.
+- `package.json` now exposes `npm run build` and runs the CLI from `dist/src/cli.js`.
+- Reviewer `HIGH-001` fixed: `npm run build && npm run splunkready -- --help` passes.
+- Reviewer `HIGH-002` fixed: `tests/cli/flow.test.ts` exercises compile/evaluate/receipt/rerun in fixture mode and checks predictable artifacts.
+- Reviewer rereview `HIGH-001` fixed by carrying saved-search provenance and mission time window into the policy-informed final answer; CLI rerun now produces `receipt-after-001.json` with verdict `READY`, score `100`, and zero after violations.
+- Final Wave 33 rereview passed with no open findings.
+- Late Wave 32 reviewer `LOW-001` explicitly waived: Wave 32 exports a reviewable patch artifact and Wave 33/39 own executable orchestration. Risk accepted: current before/after rerun proves the compiled policy path, not direct patch application. Revisit plan: connect exported patch application to rerun semantics during demo orchestration if the patch becomes executable rather than review-only.
+- `npm run check` passed after reviewer-file inclusion: scaffold verifier reported `project files: 216` and 29 test files / 125 tests passed.
+
 ## 2026-06-01 14:29 - Wave 32
 
 Scope:
