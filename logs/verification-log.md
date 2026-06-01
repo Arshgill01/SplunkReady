@@ -2,6 +2,34 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 12:50 - Wave 14 Knowledge Graph
+
+Commands:
+
+- `npx vitest run tests/knowledge/graph.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "buildKnowledgeGraph|explainDependencyPath|MISSING_DEPENDENCY|panel_saved_search|search_field|search_sourcetype" src/knowledge tests/knowledge docs/waves/wave-14-knowledge-graph.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-14-20260601-1250-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/knowledge/graph.test.ts` passed: 1 test file and 4 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 10 test files and 41 tests.
+- Traceability grep found the graph builder, path explainer, warning code, and edge types in source/tests.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 147`; 10 test files and 41 tests passed.
+- `git diff --check` passed.
+
+Notes:
+
+- Graph edges are sorted and carry provenance.
+- Search field/sourcetype extraction is deterministic parser-light logic over fixture metadata and SPL strings.
+- `logs/reviewer-inbox/wave-14-20260601-1250-review.md` passed with no open findings.
+
 ## 2026-06-01 12:43 - Wave 13 Knowledge Normalizer
 
 Commands:

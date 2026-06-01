@@ -23,6 +23,42 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 12:50 - Wave 14
+
+Scope:
+- Added deterministic knowledge graph builder over normalized knowledge objects.
+- Added provenance-bearing graph edges for dashboard-panel, panel-saved-search, saved-search-macro, search-lookup, field, sourcetype, and app-context relationships.
+- Added missing dependency warnings and a graph path explainer for panel-to-field dependency explanations.
+
+Files changed:
+- `src/knowledge/graph.ts`
+- `tests/knowledge/graph.test.ts`
+- `logs/reviewer-inbox/wave-14-20260601-1250-review.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-14-20260601-1250-review.md`
+
+Commands:
+- `npx vitest run tests/knowledge/graph.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "buildKnowledgeGraph|explainDependencyPath|MISSING_DEPENDENCY|panel_saved_search|search_field|search_sourcetype" src/knowledge tests/knowledge docs/waves/wave-14-knowledge-graph.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-14-20260601-1250-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Initial targeted graph test exposed ordering and direct panel-field edge semantics; both were fixed before the passing rerun.
+- Graph construction is deterministic TypeScript logic and does not use LLM parsing.
+- Missing knowledge-object dependencies are warnings, not dropped silently.
+- Wave 14 reviewer passed with no open findings.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 147` and 10 test files / 41 tests passed.
+
 ## 2026-06-01 12:43 - Wave 13
 
 Scope:
