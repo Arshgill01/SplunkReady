@@ -766,6 +766,10 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
   <link rel="icon" href="data:,">
   <title>SplunkReady - Readiness Receipt</title>
   <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
     :root {
       color-scheme: light;
       --page: #f7f7f4;
@@ -831,9 +835,18 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       padding: 9px 10px;
       border-radius: 6px;
       margin-bottom: 4px;
+      transition: background-color 0.15s ease;
+    }
+
+    .side-nav a:hover {
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .side-nav a[aria-current="page"] {
+      background: #34372f;
+    }
+
+    .side-nav a[aria-current="page"]:hover {
       background: #34372f;
     }
 
@@ -1032,6 +1045,14 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       border-bottom: 0;
     }
 
+    tbody tr {
+      transition: background-color 0.1s ease;
+    }
+
+    tbody tr:hover td {
+      background: #fbfbf9;
+    }
+
     .stacked-table {
       margin-top: 12px;
     }
@@ -1147,6 +1168,17 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
         grid-template-columns: 1fr;
       }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .side-nav a,
+      tbody tr {
+        transition: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1260,6 +1292,25 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       </section>
     </main>
   </div>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const links = Array.from(document.querySelectorAll(".side-nav a"));
+      const updateActiveLink = () => {
+        const activeHash = window.location.hash || "#receipt";
+
+        links.forEach((link) => {
+          if (link.getAttribute("href") === activeHash) {
+            link.setAttribute("aria-current", "page");
+          } else {
+            link.removeAttribute("aria-current");
+          }
+        });
+      };
+
+      window.addEventListener("hashchange", updateActiveLink);
+      updateActiveLink();
+    });
+  </script>
 </body>
 </html>`;
 };

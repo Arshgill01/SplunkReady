@@ -2304,3 +2304,37 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 56 Fresh Antigravity UI Triage
+
+Scope:
+- Triage the fresh Antigravity/Gemini UI sidecar output from `Splunk:7`.
+- Integrate only bounded receipt-navigation polish into the static UI shell.
+- Preserve SplunkReady as a certification receipt/artifact viewer, not a dashboard or assistant.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/antigravity-ui-fresh-1726-triage-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-56-fresh-antigravity-ui-triage.md`
+- `src/ui/shell.ts`
+- `tests/ui/shell.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-56-20260601-1741-review.md`
+- `logs/reviewer-inbox/wave-56-20260601-1742-review.md`
+- `logs/reviewer-inbox/wave-56-20260601-1743-rereview.md`
+
+Notes:
+- Fresh sidecar context: `agy --dangerously-skip-permissions`, Gemini 3.5 Flash (High), tmux `Splunk:7` / `agy-ui-fresh-1726`, worktree `/tmp/splunkready-antigravity-ui-fresh-20260601-172602`.
+- Accepted sidecar ideas: restrained sidebar/table hover states, hash-aware sidebar `aria-current`, and reduced-motion-aware smooth in-page navigation.
+- Rejected sidecar idea: changing the existing UI font stack to a generic system stack.
+- Rendered fixture shell verified over localhost at `/tmp/splunkready-wave56-ui-Yc0mkT/splunkready-shell.html`; clicking `Rerun receipts` moved the active nav state to `#rerun-receipts`.
+- `wave-56-20260601-1741-review.md` and `wave-56-20260601-1742-review.md` flagged missing Wave 56 logs and transient `.playwright-cli/` snapshots. The logs are now present and `.playwright-cli/` was removed from the main worktree.
+- `wave-56-20260601-1743-rereview.md`: reviewer passed with no open Wave 56 findings.
+- Overall goal remains open pending explicit user approval.
+
+Result:
+- PASS.

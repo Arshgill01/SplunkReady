@@ -399,6 +399,12 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("color-scheme: light");
     expect(html).not.toContain("color-scheme: dark");
     expect(html).not.toMatch(/letter-spacing:\s*-/);
+    expect(html).not.toMatch(/transform\s*:/);
+    expect(html).toContain("scroll-behavior: smooth;");
+    expect(html).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(html).toContain(".side-nav a:hover");
+    expect(html).toContain("tbody tr:hover td");
+    expect(html).toContain('window.addEventListener("hashchange", updateActiveLink)');
   });
 
 

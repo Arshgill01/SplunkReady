@@ -1951,3 +1951,43 @@ Result:
 - `wave-55-20260601-1732-rereview.md` and `wave-55-20260601-1733-rereview.md` failed on the stale `docs/goal-completion-audit.md` row and the executor-authored resolution record.
 - After `wave-55-20260601-1735-rereview.md` arrived, `npm run audit:reviewers` passed: 57 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final stale wording search over current-state docs returned no matches after renaming the goal-audit row.
+
+## 2026-06-01 - Wave 56 Fresh Antigravity UI Triage
+
+Commands:
+
+- `npx vitest run tests/ui/shell.test.ts`
+- `tmp=$(mktemp -d /tmp/splunkready-wave56-ui-XXXXXX) && npm run build >/tmp/splunkready-wave56-build.log && env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- demo --out "$tmp" >/tmp/splunkready-wave56-demo.log && printf '%s\n' "$tmp" && ls -1 "$tmp" | sed -n '1,40p' && rg -n "scroll-behavior|prefers-reduced-motion|hashchange|side-nav a:hover|tbody tr:hover" "$tmp/splunkready-shell.html"`
+- `command -v npx >/dev/null 2>&1 && echo npx-present`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh --help | sed -n '1,80p'`
+- `python3 -m http.server 41756 --bind 127.0.0.1`
+- `PLAYWRIGHT_CLI_SESSION=splunkready-wave56 bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh goto http://127.0.0.1:41756/splunkready-shell.html`
+- `PLAYWRIGHT_CLI_SESSION=splunkready-wave56 bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `PLAYWRIGHT_CLI_SESSION=splunkready-wave56 bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval '() => ({ title: document.title, current: document.querySelector(".side-nav a[aria-current=page]")?.getAttribute("href"), navCount: document.querySelectorAll(".side-nav a").length, hasReceipt: Boolean(document.querySelector("#receipt")), bodyText: document.body.innerText.includes("Readiness Receipt") })'`
+- `PLAYWRIGHT_CLI_SESSION=splunkready-wave56 bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e10`
+- `PLAYWRIGHT_CLI_SESSION=splunkready-wave56 bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval '() => ({ hash: window.location.hash, current: document.querySelector(".side-nav a[aria-current=page]")?.getAttribute("href") })'`
+- `npx vitest run tests/ui/shell.test.ts`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run check`
+- `rm -rf .playwright-cli && git status --short --branch`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npx vitest run tests/ui/shell.test.ts`
+
+Result:
+
+- PASS.
+- UI unit test passed: 8 tests.
+- Fresh fixture demo shell generated at `/tmp/splunkready-wave56-ui-Yc0mkT/splunkready-shell.html`.
+- Generated shell contains the accepted interaction hooks: smooth scroll, reduced-motion fallback, hashchange handler, sidebar hover, and table-row hover.
+- Playwright rendered `http://127.0.0.1:41756/splunkready-shell.html` with title `SplunkReady - Readiness Receipt`, 7 sidebar links, `#receipt` active by default, and receipt content present.
+- Playwright click on `Rerun receipts` changed `window.location.hash` and active nav state to `#rerun-receipts`.
+- UI unit test rerun passed: 8 tests.
+- `bash scripts/verify-scaffold.sh && git diff --check` passed: 57 wave files, 303 project files.
+- `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
+- `npm run audit:reviewers` failed while `wave-56-20260601-1742-review.md` was the latest Wave 56 verdict.
+- Transient `.playwright-cli/` snapshots were removed from the main worktree.
+- After `wave-56-20260601-1743-rereview.md` arrived, reviewer audit passed with 58 groups, 4 pass-with-concerns files, and 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the rereview file arrived.
+- Final targeted UI test passed after the rereview file arrived.
