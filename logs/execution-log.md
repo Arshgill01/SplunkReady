@@ -1968,3 +1968,31 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 45 Judge Resilience
+
+Scope:
+- Harden fresh-checkout and judge-facing setup instructions.
+- Verify the README/demo-script command path.
+- Audit reviewer inbox state and include late reviewer passes.
+
+Files changed:
+- `.nvmrc`
+- `README.md`
+- `docs/judge-resilience-report.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-44-20260601-1629-review.md`
+- `logs/reviewer-inbox/wave-45-20260601-1631-review.md`
+
+Notes:
+- Added `.nvmrc` with Node `22` and clarified Node setup in `README.md`.
+- Verified a fresh temp copy excluding `.git`, `node_modules`, and `dist` can install, build, and run the fixture demo.
+- Current-repo demo verification produced `/tmp/splunkready-wave45-demo-hTC4pr` with fixture `NOT READY` -> `READY` and no missing required UI strings.
+- `wave-44-20260601-1629-review.md`: reviewer passed with no open Critical, High, Medium, or Low findings; included in this checkpoint because it arrived after the Wave 44 commit.
+- `wave-45-20260601-1631-review.md` `HIGH-001`: resolved by adding `docs/judge-resilience-report.md` and Wave 45 execution/verification log entries.
+- `wave-45-20260601-1631-review.md` `MEDIUM-001`: resolved by including the late Wave 44 reviewer pass in this checkpoint.
+- No Wave 45 rereview file appeared during the wait window; reviewer blocker audit passed by confirming the Wave 45 `HIGH-001` finding is resolved in the current report/log diff.
+
+Result:
+- PASS.

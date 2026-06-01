@@ -1721,3 +1721,24 @@ Result:
 - Rerun TypeScript no-emit check passed.
 - No-credential live-smoke command built the CLI, returned `SKIP live-smoke`, named missing live env vars, stated no live calls/artifacts were made, and wrote no files under `/tmp/splunkready-wave44-live-smoke-OUQVfC`.
 - `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
+
+## 2026-06-01 - Wave 45 Judge Resilience
+
+Commands:
+
+- `node --version && npm --version && npm install --dry-run`
+- `npm run check`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-wave45-demo-XXXXXX) && npm run splunkready -- demo --out "$tmp" && node - <<'NODE' "$tmp" ... NODE`
+- `tmp=$(mktemp -d /tmp/splunkready-wave45-fresh-XXXXXX) && mkdir "$tmp/repo" && rsync -a --exclude .git --exclude node_modules --exclude dist ./ "$tmp/repo/" && cd "$tmp/repo" && node --version && npm ci --ignore-scripts && npm run build && out_dir=$(mktemp -d "$tmp/demo-XXXXXX") && npm run splunkready -- demo --out "$out_dir" && node - <<'NODE' "$out_dir" ... NODE`
+- reviewer inbox audit script
+
+Result:
+
+- PASS.
+- Node check reported `v22.21.0`; npm reported `10.9.4`; `npm install --dry-run` completed.
+- `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
+- Demo command from `docs/demo-script.md` passed and wrote 18 artifacts to `/tmp/splunkready-wave45-demo-hTC4pr`; receipt check confirmed fixture `NOT READY` -> `READY`, `fitsUnderThreeMinutes: true`, and required UI strings/rule IDs present.
+- First fresh-copy validation failed after the demo succeeded because the Node verification snippet referenced an undefined local variable. The command was rerun with a corrected snippet.
+- Corrected fresh-copy verification passed from `/private/tmp/splunkready-wave45-fresh-2vOMo5/repo`: `npm ci --ignore-scripts`, `npm run build`, and fixture demo all passed with `NOT READY` -> `READY`.
+- Initial reviewer inbox audit found `wave-45-20260601-1631-review.md` failing because Wave 45 evidence had not been recorded yet; the finding is resolved by the Wave 45 report and log entries.
+- Final reviewer blocker audit passed across 46 waves with 4 pass-with-concerns files and 0 unresolved Critical/High findings; `wave-45-20260601-1631-review.md` is recorded as resolved by the current Wave 45 report/log diff.

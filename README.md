@@ -18,7 +18,7 @@ The flagship demo story is security investigation readiness: a naive Splunk MCP 
 
 Fixture mode is the default path. It requires no Splunk credentials and does not call a live Splunk deployment.
 
-Prerequisite: Node.js 22 or newer.
+Prerequisite: Node.js 22 or newer. If you use `nvm`, run `nvm use 22` from the repo root.
 
 ```bash
 npm install
@@ -102,7 +102,7 @@ Core flow:
 
 ## Development
 
-Prerequisite: Node.js 22 or newer.
+Prerequisite: Node.js 22 or newer. The repo includes `.nvmrc` with `22` for local version managers.
 
 ```bash
 npm install
