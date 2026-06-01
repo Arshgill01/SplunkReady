@@ -23,6 +23,59 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 14:49 - Wave 34
+
+Scope:
+- Added a static SplunkReady application shell renderer backed by Readiness Receipt, trace, and violation artifacts.
+- Added artifact loading that selects the current `receipt-after-001.json` when present and falls back to `receipt-before-001.json`.
+- Added UI tests for first-screen product/mode/verdict content, provenance-backed claims, deterministic violations, HTML artifact writing, and missing-receipt errors.
+
+Files changed:
+- `src/ui/shell.ts`
+- `tests/ui/shell.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- None found for Wave 34 at implementation time.
+
+Commands:
+- `sed -n '1,280p' docs/waves/wave-34-ui-shell.md`
+- `sed -n '1,240p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-34-*' -print | sort`
+- `find . -name AGENTS.md -print`
+- `rg --files | sort | rg '^(src|tests|app|web|ui|public|vite|index|package|tsconfig)'`
+- `cat package.json`
+- `cat tsconfig.json`
+- `find . -maxdepth 3 -type f \\( -name 'vite.config.*' -o -name '*.tsx' -o -name '*.jsx' -o -name '*.css' -o -name 'index.html' \\) -print | sort`
+- `sed -n '1,220p' /Users/arshdeepsingh/.agents/skills/frontend-design/SKILL.md`
+- `sed -n '1,220p' /Users/arshdeepsingh/.agents/skills/uncodixfy/SKILL.md`
+- `sed -n '1,220p' /Users/arshdeepsingh/.codex/skills/playwright/SKILL.md`
+- `npx vitest run tests/ui/shell.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-ui-shell-XXXXXX) && npm run splunkready -- compile --out "$tmp" && npm run splunkready -- evaluate --out "$tmp" && npm run splunkready -- receipt --out "$tmp" && npm run splunkready -- rerun --out "$tmp" && node --input-type=module -e "import { writeUiShell } from './dist/src/ui/shell.js'; const p = await writeUiShell(process.argv[1]); console.log('SHELL_PATH=' + p);" "$tmp"`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `python3 -m http.server 41734 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41734/splunkready-shell.html`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave34-ui-shell.png --full-page`
+- `file /tmp/splunkready-wave34-ui-shell.png && ls -lh /tmp/splunkready-wave34-ui-shell.png`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-34-*' -print | sort`
+
+Result:
+- PASS.
+
+Notes:
+- No frontend framework dependency was added; the shell is static HTML generated from schema-validated artifacts.
+- First screen shows `SplunkReady`, the tagline, fixture/after mode, current verdict, score, violation count, trace refs, and evidence refs.
+- UI content prioritizes the Readiness Receipt, deterministic violations, trace/evidence refs, and loaded artifact paths.
+- Initial `file://` browser opening was blocked by the Playwright wrapper, so the same generated shell was served through a temporary localhost server for the screenshot check.
+- Screenshot artifact: `/tmp/splunkready-wave34-ui-shell.png` (1280 x 1565 PNG).
+- Final `npm run check` passed: scaffold verifier reported `project files: 218` and 30 test files / 130 tests passed.
+- Final Wave 34 reviewer inbox scan found no files.
+
 ## 2026-06-01 14:36 - Wave 33
 
 Scope:

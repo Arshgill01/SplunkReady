@@ -1,0 +1,571 @@
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+
+import {
+  readinessReceiptSchema,
+  traceEventSchema,
+  violationSchema,
+  type ReadinessReceipt,
+  type TraceEvent,
+  type Violation
+} from "../schemas/core.js";
+
+export interface UiArtifactPaths {
+  receipt: string;
+  trace: string;
+  violations: string;
+}
+
+export interface UiArtifacts {
+  phase: "before" | "after";
+  outDir: string;
+  receipt: ReadinessReceipt;
+  traceEvents: TraceEvent[];
+  violations: Violation[];
+  paths: UiArtifactPaths;
+}
+
+const exists = async (path: string): Promise<boolean> =>
+  stat(path)
+    .then(() => true)
+    .catch(() => false);
+
+const readJson = async (path: string): Promise<unknown> => JSON.parse(await readFile(path, "utf8"));
+
+const readOptionalTrace = async (path: string): Promise<TraceEvent[]> => {
+  if (!(await exists(path))) {
+    return [];
+  }
+
+  return traceEventSchema.array().parse(await readJson(path));
+};
+
+const readOptionalViolations = async (path: string): Promise<Violation[]> => {
+  if (!(await exists(path))) {
+    return [];
+  }
+
+  return violationSchema.array().parse(await readJson(path));
+};
+
+const currentReceiptPath = async (outDir: string): Promise<{ phase: "before" | "after"; path: string }> => {
+  const afterPath = join(outDir, "receipt-after-001.json");
+
+  if (await exists(afterPath)) {
+    return { phase: "after", path: afterPath };
+  }
+
+  const beforePath = join(outDir, "receipt-before-001.json");
+
+  if (await exists(beforePath)) {
+    return { phase: "before", path: beforePath };
+  }
+
+  throw new Error(
+    `Unable to load a Readiness Receipt from ${outDir}. Run the SplunkReady CLI receipt or rerun command first.`
+  );
+};
+
+export const loadUiArtifacts = async (outDir: string): Promise<UiArtifacts> => {
+  const current = await currentReceiptPath(outDir);
+  const receipt = readinessReceiptSchema.parse(await readJson(current.path));
+  const tracePath = join(outDir, `trace-${current.phase}.json`);
+  const violationPath = join(outDir, `violations-${current.phase}.json`);
+
+  return {
+    phase: current.phase,
+    outDir,
+    receipt,
+    traceEvents: await readOptionalTrace(tracePath),
+    violations: await readOptionalViolations(violationPath),
+    paths: {
+      receipt: current.path,
+      trace: tracePath,
+      violations: violationPath
+    }
+  };
+};
+
+const escapeHtml = (value: string): string =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+
+const escapeValue = (value: unknown): string => escapeHtml(String(value));
+
+const verdictClass = (verdict: string): string => {
+  if (verdict === "READY") {
+    return "verdict-ready";
+  }
+
+  if (verdict === "NEEDS REVIEW") {
+    return "verdict-review";
+  }
+
+  return "verdict-blocked";
+};
+
+const renderList = (values: string[], emptyText: string): string => {
+  if (values.length === 0) {
+    return `<p class="empty">${escapeHtml(emptyText)}</p>`;
+  }
+
+  return `<ul>${values.map((value) => `<li><code>${escapeHtml(value)}</code></li>`).join("")}</ul>`;
+};
+
+const renderViolations = (violations: Violation[]): string => {
+  if (violations.length === 0) {
+    return `<p class="empty">No violations in the current receipt phase.</p>`;
+  }
+
+  const rows = violations
+    .map(
+      (violation) => `<tr>
+        <td><code>${escapeHtml(violation.id)}</code></td>
+        <td>${escapeHtml(violation.severity)}</td>
+        <td><code>${escapeHtml(violation.ruleId)}</code></td>
+        <td>${escapeHtml(violation.reason)}</td>
+      </tr>`
+    )
+    .join("");
+
+  return `<table>
+    <thead>
+      <tr><th>Violation</th><th>Severity</th><th>Rule</th><th>Reason</th></tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+};
+
+const renderTraceEvents = (events: TraceEvent[]): string => {
+  if (events.length === 0) {
+    return `<p class="empty">Trace file not loaded; receipt trace refs remain visible below.</p>`;
+  }
+
+  const rows = events
+    .slice(0, 8)
+    .map(
+      (event) => `<tr>
+        <td><code>${escapeHtml(event.id)}</code></td>
+        <td>${escapeHtml(event.type)}</td>
+        <td>${event.toolName ? `<code>${escapeHtml(event.toolName)}</code>` : "final answer"}</td>
+        <td>${event.evidenceRefs.length}</td>
+      </tr>`
+    )
+    .join("");
+
+  return `<table>
+    <thead>
+      <tr><th>Trace event</th><th>Type</th><th>Tool</th><th>Evidence refs</th></tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+};
+
+const renderArtifactPaths = (paths: UiArtifactPaths): string =>
+  `<dl class="artifact-paths">
+    <div><dt>Receipt</dt><dd><code>${escapeHtml(paths.receipt)}</code></dd></div>
+    <div><dt>Trace</dt><dd><code>${escapeHtml(paths.trace)}</code></dd></div>
+    <div><dt>Violations</dt><dd><code>${escapeHtml(paths.violations)}</code></dd></div>
+  </dl>`;
+
+export const renderUiShell = (artifacts: UiArtifacts): string => {
+  const { receipt } = artifacts;
+  const criticalCount = receipt.criticalViolations.length;
+  const violationCount = receipt.violations.length;
+  const evidenceCount = receipt.evidenceRefs.length;
+  const traceCount = receipt.traceRefs.length;
+  const resolvedViolations = Array.isArray(artifacts.receipt.rerunComparison.resolvedViolations)
+    ? artifacts.receipt.rerunComparison.resolvedViolations.map((value) => String(value))
+    : [];
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>SplunkReady - Readiness Receipt</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f7f7f4;
+      --ink: #1f2421;
+      --muted: #646a66;
+      --line: #d7d9d2;
+      --surface: #ffffff;
+      --rail: #242622;
+      --rail-muted: #c6c8bf;
+      --accent: #b45224;
+      --ready: #176b4d;
+      --review: #8a5a14;
+      --blocked: #a2342e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: "Aptos", "Helvetica Neue", sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    code {
+      font-family: "SF Mono", "Menlo", monospace;
+      font-size: 12px;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .side-nav {
+      background: var(--rail);
+      color: #f7f7f4;
+      border-right: 1px solid #171915;
+      padding: 24px 18px;
+    }
+
+    .brand {
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .tagline {
+      color: var(--rail-muted);
+      margin: 0 0 28px;
+    }
+
+    .side-nav a {
+      display: block;
+      color: #f7f7f4;
+      text-decoration: none;
+      padding: 9px 10px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+
+    .side-nav a[aria-current="page"] {
+      background: #34372f;
+    }
+
+    .content {
+      min-width: 0;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 22px 28px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      font-weight: 680;
+    }
+
+    h1 {
+      font-size: 22px;
+    }
+
+    h2 {
+      font-size: 16px;
+      margin-bottom: 14px;
+    }
+
+    .subtle {
+      color: var(--muted);
+      margin: 4px 0 0;
+    }
+
+    .mode-indicator {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 10px;
+      background: #fbfbf8;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .receipt-strip {
+      display: grid;
+      grid-template-columns: 240px repeat(4, minmax(120px, 1fr));
+      gap: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .verdict-cell,
+    .metric-cell {
+      padding: 18px 22px;
+      border-right: 1px solid var(--line);
+    }
+
+    .metric-cell:last-child {
+      border-right: 0;
+    }
+
+    .cell-label {
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .cell-value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .verdict-ready .cell-value {
+      color: var(--ready);
+    }
+
+    .verdict-review .cell-value {
+      color: var(--review);
+    }
+
+    .verdict-blocked .cell-value {
+      color: var(--blocked);
+    }
+
+    .shell-section {
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--line);
+      background: var(--page);
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+      gap: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--line);
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eeeeea;
+      font-weight: 650;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    li {
+      margin-bottom: 7px;
+    }
+
+    .artifact-paths {
+      margin: 0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+    }
+
+    .artifact-paths div {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 12px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .artifact-paths div:last-child {
+      border-bottom: 0;
+    }
+
+    dt {
+      color: var(--muted);
+    }
+
+    dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .empty {
+      margin: 0;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: 12px;
+    }
+
+    .provenance-columns {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    @media (max-width: 920px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .side-nav {
+        border-right: 0;
+        border-bottom: 1px solid #171915;
+      }
+
+      .receipt-strip,
+      .section-grid,
+      .provenance-columns {
+        grid-template-columns: 1fr;
+      }
+
+      .verdict-cell,
+      .metric-cell {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-nav" aria-label="SplunkReady sections">
+      <div class="brand">SplunkReady</div>
+      <p class="tagline">Certify AI agents before they touch production Splunk.</p>
+      <nav>
+        <a aria-current="page" href="#receipt">Readiness Receipt</a>
+        <a href="#provenance">Provenance</a>
+        <a href="#violations">Violations</a>
+        <a href="#artifacts">Artifacts</a>
+      </nav>
+    </aside>
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <h1>Readiness Receipt</h1>
+          <p class="subtle">Agent Readiness Compiler output for ${escapeHtml(receipt.agent.name)} ${escapeHtml(receipt.agent.version)}</p>
+        </div>
+        <div class="mode-indicator">${escapeHtml(receipt.mode)} mode / ${escapeHtml(artifacts.phase)} run</div>
+      </header>
+
+      <section id="receipt" class="receipt-strip" aria-label="Current agent verdict">
+        <div class="verdict-cell ${verdictClass(receipt.verdict)}">
+          <div class="cell-label">Current verdict</div>
+          <div class="cell-value">${escapeHtml(receipt.verdict)}</div>
+        </div>
+        <div class="metric-cell">
+          <div class="cell-label">Score</div>
+          <div class="cell-value">${escapeValue(receipt.score)}</div>
+        </div>
+        <div class="metric-cell">
+          <div class="cell-label">Violations</div>
+          <div class="cell-value">${escapeValue(violationCount)}</div>
+        </div>
+        <div class="metric-cell">
+          <div class="cell-label">Trace refs</div>
+          <div class="cell-value">${escapeValue(traceCount)}</div>
+        </div>
+        <div class="metric-cell">
+          <div class="cell-label">Evidence refs</div>
+          <div class="cell-value">${escapeValue(evidenceCount)}</div>
+        </div>
+      </section>
+
+      <section class="shell-section" aria-label="Receipt identity">
+        <div class="section-grid">
+          <div>
+            <h2>${escapeHtml(receipt.id)}</h2>
+            <table>
+              <tbody>
+                <tr><th>Environment</th><td>${escapeHtml(receipt.environment.name)} <code>${escapeHtml(receipt.environment.id)}</code></td></tr>
+                <tr><th>Contract</th><td>${escapeHtml(receipt.contractVersion)}</td></tr>
+                <tr><th>Mission suite</th><td>${escapeHtml(receipt.missionSuiteVersion)}</td></tr>
+                <tr><th>Generated by</th><td>${escapeHtml(receipt.generatedBy ?? "Agent Readiness Compiler")}</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h2>Rerun comparison</h2>
+            <table>
+              <tbody>
+                <tr><th>Critical violations</th><td>${escapeValue(criticalCount)}</td></tr>
+                <tr><th>Resolved violations</th><td>${escapeValue(resolvedViolations.length)}</td></tr>
+                <tr><th>Passed missions</th><td>${escapeValue(receipt.passedMissions.length)}</td></tr>
+                <tr><th>Failed missions</th><td>${escapeValue(receipt.failedMissions.length)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="provenance" class="shell-section" aria-label="Trace and evidence provenance">
+        <div class="section-grid">
+          <div>
+            <h2>Trace events</h2>
+            ${renderTraceEvents(artifacts.traceEvents)}
+          </div>
+          <div>
+            <h2>Receipt refs</h2>
+            <div class="provenance-columns">
+              <div>${renderList(receipt.traceRefs, "No trace refs.")}</div>
+              <div>${renderList(receipt.evidenceRefs, "No evidence refs.")}</div>
+              <div>${renderList(receipt.violations, "No violation refs.")}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="violations" class="shell-section" aria-label="Deterministic violations">
+        <h2>Deterministic violations</h2>
+        ${renderViolations(artifacts.violations)}
+      </section>
+
+      <section id="artifacts" class="shell-section" aria-label="Loaded artifact paths">
+        <h2>Loaded artifacts</h2>
+        ${renderArtifactPaths(artifacts.paths)}
+      </section>
+    </main>
+  </div>
+</body>
+</html>`;
+};
+
+export const writeUiShell = async (outDir: string, targetPath = join(outDir, "splunkready-shell.html")): Promise<string> => {
+  const html = renderUiShell(await loadUiArtifacts(outDir));
+
+  await mkdir(dirname(targetPath), { recursive: true });
+  await writeFile(targetPath, `${html}\n`, "utf8");
+
+  return targetPath;
+};

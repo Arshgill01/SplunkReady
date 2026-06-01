@@ -2,6 +2,53 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 14:49 - Wave 34 UI Shell
+
+Commands:
+
+- `sed -n '1,280p' docs/waves/wave-34-ui-shell.md`
+- `sed -n '1,240p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-34-*' -print | sort`
+- `find . -name AGENTS.md -print`
+- `rg --files | sort | rg '^(src|tests|app|web|ui|public|vite|index|package|tsconfig)'`
+- `cat package.json`
+- `cat tsconfig.json`
+- `find . -maxdepth 3 -type f \\( -name 'vite.config.*' -o -name '*.tsx' -o -name '*.jsx' -o -name '*.css' -o -name 'index.html' \\) -print | sort`
+- `sed -n '1,220p' /Users/arshdeepsingh/.agents/skills/frontend-design/SKILL.md`
+- `sed -n '1,220p' /Users/arshdeepsingh/.agents/skills/uncodixfy/SKILL.md`
+- `sed -n '1,220p' /Users/arshdeepsingh/.codex/skills/playwright/SKILL.md`
+- `npx vitest run tests/ui/shell.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-ui-shell-XXXXXX) && npm run splunkready -- compile --out "$tmp" && npm run splunkready -- evaluate --out "$tmp" && npm run splunkready -- receipt --out "$tmp" && npm run splunkready -- rerun --out "$tmp" && node --input-type=module -e "import { writeUiShell } from './dist/src/ui/shell.js'; const p = await writeUiShell(process.argv[1]); console.log('SHELL_PATH=' + p);" "$tmp"`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `python3 -m http.server 41734 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41734/splunkready-shell.html`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave34-ui-shell.png --full-page`
+- `file /tmp/splunkready-wave34-ui-shell.png && ls -lh /tmp/splunkready-wave34-ui-shell.png`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-34-*' -print | sort`
+
+Result:
+
+- PASS.
+- `npx vitest run tests/ui/shell.test.ts` passed: 1 test file and 5 tests.
+- `npx tsc --noEmit` passed.
+- Fixture artifact generation passed through `compile`, `evaluate`, `receipt`, `rerun`, then wrote `/tmp/splunkready-ui-shell-Br2xW4/splunkready-shell.html`.
+- Playwright `file://` open was blocked by the wrapper, so the generated shell was served from `http://127.0.0.1:41734/splunkready-shell.html`.
+- Playwright snapshot showed the first screen with `SplunkReady`, `Readiness Receipt`, `fixture mode / after run`, verdict `READY`, score `100`, zero violations, trace refs, evidence refs, and loaded artifact paths.
+- Playwright screenshot passed and wrote `/tmp/splunkready-wave34-ui-shell.png`.
+- Screenshot file check passed: 1280 x 1565 PNG, 184 KB.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 218`; 30 test files and 130 tests passed.
+- `git diff --check` passed.
+- Wave 34 reviewer inbox scan found no files.
+
+Notes:
+
+- The UI shell loads schema-validated receipt artifacts and optional trace/violation artifact arrays.
+- The shell avoids a landing page and does not present a chatbot, copilot, telemetry dashboard, or generic metric dashboard.
+
 ## 2026-06-01 14:36 - Wave 33 CLI Flow
 
 Commands:
