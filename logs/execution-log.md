@@ -2581,3 +2581,33 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 65 Remote Cleanroom After 1830 Sidecar Triage
+
+Scope:
+- Verify the pushed `splunkready-build` branch after Wave 64 from a fresh remote clone.
+- Confirm the cleanroom clone resolves to the expected Wave 64 commit.
+- Run fresh install, reviewer audit, full project check, and tracked sidecar artifact scan.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/remote-cleanroom-after-1830-sidecar-triage-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-65-remote-cleanroom-after-1830-sidecar-triage.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- reviewer inbox files if new Wave 65 findings arrive.
+
+Notes:
+- Cleanroom path: `/tmp/splunkready-wave65-remote-aEWKWh/repo`.
+- Remote clone checked out `fc4daa7ef8e539c1fee24f09a945b0f799162e71`, matching the expected pushed Wave 64 commit.
+- `npm ci --ignore-scripts`, `npm run audit:reviewers`, and `npm run check` passed in the remote clone.
+- Tracked sidecar artifact scan returned `sidecar_artifacts=absent`.
+- Wave 65 reviewer rereview passed and cleared the execution-log placement finding.
+- Final local reviewer audit and scaffold verifier passed.
+- Overall goal remains open pending explicit user approval.
+
+Result:
+- PASS.

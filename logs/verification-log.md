@@ -2209,3 +2209,25 @@ Result:
 - Follow-up scaffold verifier and `git diff --check` passed after the artifact-evidence correction: 65 wave files, 330 project files.
 - Final reviewer audit passed after the Wave 64 rereview file arrived: 66 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 65 wave files, 331 project files.
+
+## 2026-06-01 - Wave 65 Remote Cleanroom After 1830 Sidecar Triage
+
+Commands:
+
+- `remote=$(git remote get-url origin) && commit=$(git rev-parse HEAD) && tmp=$(mktemp -d /tmp/splunkready-wave65-remote-XXXXXX) && { echo "remote=$remote"; echo "expected_commit=$commit"; echo "tmp=$tmp"; git clone --depth 1 --branch splunkready-build --single-branch "$remote" "$tmp/repo"; cd "$tmp/repo"; echo "actual_commit=$(git rev-parse HEAD)"; npm ci --ignore-scripts; npm run audit:reviewers; npm run check; if git ls-files | rg '(^|/)(\.antigravitycli|\.playwright-cli|artifacts)(/|$)'; then echo "sidecar_artifacts=present"; exit 20; else echo "sidecar_artifacts=absent"; fi; } | tee "$tmp/cleanroom.log"`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Remote clone checked out `fc4daa7ef8e539c1fee24f09a945b0f799162e71`, matching the expected pushed Wave 64 commit.
+- `npm ci --ignore-scripts` passed: 55 packages installed, 0 vulnerabilities.
+- Remote reviewer audit passed: 66 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Remote full project check passed: scaffold verifier plus 31 test files / 139 tests.
+- Tracked sidecar artifact scan passed: `sidecar_artifacts=absent`.
+- Initial Wave 65 reviewer finding `HIGH-001` was resolved by adding the cleanroom report and execution/verification log evidence.
+- Wave 65 rereview finding `MEDIUM-001` was resolved by moving the execution-log section to the chronological tail.
+- Wave 65 passing rereview arrived in `wave-65-20260601-1842-rereview.md`.
+- Final local reviewer audit passed after the Wave 65 passing rereview arrived: 67 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final local scaffold verifier and `git diff --check` passed: 66 wave files, 336 project files.
