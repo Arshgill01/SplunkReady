@@ -249,6 +249,24 @@ describe("SplunkReady CLI flow", () => {
     ).resolves.toMatchObject({
       stdout: expect.stringContaining("SKIP live-smoke")
     });
+    const result = await runCli(["live-smoke", "--out", outDir], process.cwd(), {
+      SPLUNKREADY_LIVE_ENABLED: undefined,
+      SPLUNKREADY_SPLUNK_MCP_URL: undefined,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "super-secret-token"
+    });
+    expect(result.stdout).toContain("No live Splunk calls were made and no live artifacts were written.");
+    expect(result.stdout).toContain("Fixture commands still run without live credentials.");
+    expect(result.stdout).toContain("docs/live-adapter.md");
+    expect(result.stdout).not.toContain("super-secret-token");
+    await expect(
+      runCli(["live-smoke", "--out", outDir, "--require-live", "true"], process.cwd(), {
+        SPLUNKREADY_LIVE_ENABLED: undefined,
+        SPLUNKREADY_SPLUNK_MCP_URL: undefined,
+        SPLUNKREADY_SPLUNK_MCP_TOKEN: "super-secret-token"
+      })
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("No live Splunk calls were made and no live artifacts were written.")
+    });
     expect(await exists(join(outDir, "live-smoke-contract.json"))).toBe(false);
   });
 
@@ -262,7 +280,8 @@ describe("SplunkReady CLI flow", () => {
           SPLUNKREADY_LIVE_ENABLED: "true",
           SPLUNKREADY_SPLUNK_MCP_URL: server.url,
           SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token",
-          SPLUNKREADY_SPLUNK_APP: "search"
+          SPLUNKREADY_SPLUNK_APP: "search",
+          SPLUNKREADY_SPLUNK_CAPABILITIES: "splunk_run_query,splunk_run_saved_search"
         })
       ).resolves.toMatchObject({
         stdout: expect.stringContaining("PASS live-smoke")
@@ -276,13 +295,28 @@ describe("SplunkReady CLI flow", () => {
       savedSearches: Array<{ name: string }>;
     };
     const summary = JSON.parse(await readFile(join(outDir, "live-smoke-summary.json"), "utf8")) as {
+      allowedTools: string[];
+      notCalledTools: string[];
       readOnlyToolsOnly: boolean;
       destructiveOperations: boolean;
     };
 
     expect(contract.mode).toBe("live");
     expect(contract.savedSearches).toEqual([{ app: "SplunkEnterpriseSecuritySuite", name: "ES - Live Auth Chain" }]);
-    expect(summary).toMatchObject({ readOnlyToolsOnly: true, destructiveOperations: false });
+    expect(summary).toMatchObject({
+      allowedTools: [
+        "splunk_get_info",
+        "splunk_get_user_info",
+        "splunk_get_indexes",
+        "splunk_get_metadata",
+        "splunk_get_knowledge_objects"
+      ],
+      readOnlyToolsOnly: true,
+      destructiveOperations: false
+    });
+    expect(summary.notCalledTools).toEqual(
+      expect.arrayContaining(["splunk_run_query", "splunk_run_saved_search", "saia_explain_spl", "saia_optimize_spl"])
+    );
     expect(server.calls.map((call) => call.params.name)).toEqual([
       "splunk_get_info",
       "splunk_get_user_info",

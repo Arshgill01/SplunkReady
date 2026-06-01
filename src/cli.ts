@@ -23,7 +23,15 @@ import { parseMissionDefinition, type MissionDefinition } from "./missions/dsl.j
 import { compileAgentPolicy, type AgentPolicy } from "./policy/compiler.js";
 import { generatePolicyPatch } from "./policy/patch.js";
 import { generateReadinessReceipt } from "./receipts/generator.js";
-import { environmentContractSchema, readinessReceiptSchema, type EnvironmentContract, type TraceEvent, type Violation } from "./schemas/core.js";
+import {
+  readOnlySplunkToolNameSchema,
+  environmentContractSchema,
+  readinessReceiptSchema,
+  type EnvironmentContract,
+  type ReadOnlySplunkToolName,
+  type TraceEvent,
+  type Violation
+} from "./schemas/core.js";
 import { writeUiShell } from "./ui/shell.js";
 
 const defaultFixturePath = "fixtures/acme-soc-dev/adapter-fixture.json";
@@ -31,6 +39,16 @@ const defaultMissionPath = "fixtures/acme-soc-dev/missions/security-investigatio
 const defaultOutDir = "artifacts/fixture-demo";
 const generatedAt = "2026-06-01T06:30:00.000Z";
 const compiledAt = "2026-06-01T06:45:00.000Z";
+const liveSmokeInventoryTools: ReadOnlySplunkToolName[] = [
+  "splunk_get_info",
+  "splunk_get_user_info",
+  "splunk_get_indexes",
+  "splunk_get_metadata",
+  "splunk_get_knowledge_objects"
+];
+const liveSmokeNotCalledTools = readOnlySplunkToolNameSchema.options.filter(
+  (toolName) => !liveSmokeInventoryTools.includes(toolName)
+);
 
 interface CliOptions {
   fixture: string;
@@ -193,7 +211,12 @@ const liveSmokeCommand = async (
   const missingFields = liveSmokeMissingEnvFields(env);
 
   if (missingFields.length > 0) {
-    const message = `Live smoke skipped; missing ${missingFields.join(", ")}.`;
+    const message = [
+      `Live smoke skipped; missing ${missingFields.join(", ")}.`,
+      "No live Splunk calls were made and no live artifacts were written.",
+      "Fixture commands still run without live credentials.",
+      "See docs/live-adapter.md for the opt-in setup checklist."
+    ].join(" ");
 
     if (options.requireLive) {
       throw new Error(message);
@@ -205,6 +228,7 @@ const liveSmokeCommand = async (
   const metadataTimeWindow = { earliest: "-15m", latest: "now" };
   const adapter = createLiveSplunkAccessAdapter({
     ...createLiveSplunkAdapterConfigFromEnv(env),
+    capabilities: liveSmokeInventoryTools,
     transport: createHttpLiveSplunkTransport()
   });
   const contract = await compileEnvironmentContract(adapter, {
@@ -228,6 +252,8 @@ const liveSmokeCommand = async (
     contractId: contract.id,
     sourceRefs: contract.sourceRefs,
     metadataTimeWindow,
+    allowedTools: liveSmokeInventoryTools,
+    notCalledTools: liveSmokeNotCalledTools,
     readOnlyToolsOnly: true,
     destructiveOperations: false
   });

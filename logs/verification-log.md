@@ -1703,3 +1703,21 @@ Result:
 - Browser screenshot was copied to `/tmp/splunkready-wave43-ui-sidecar-polish.png`; dimensions were `1280 x 6648`.
 - Scaffold verifier plus `git diff --check` passed.
 - `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
+
+## 2026-06-01 - Wave 44 Live Operator Readiness
+
+Commands:
+
+- `npx vitest run tests/adapters/live.test.ts tests/cli/flow.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-wave44-live-smoke-XXXXXX) && env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- live-smoke --out "$tmp" && printf 'LIVE_SMOKE_DIR=%s\n' "$tmp" && find "$tmp" -maxdepth 1 -type f -print`
+- `npm run check`
+
+Result:
+
+- PASS after one local type fix.
+- Initial targeted Vitest run failed because the new live-smoke allowlist was inferred too narrowly for `includes`; `npx tsc --noEmit` reported the same type error in `src/cli.ts`. The allowlist was changed to `ReadOnlySplunkToolName[]`.
+- Rerun targeted tests passed: `tests/adapters/live.test.ts` and `tests/cli/flow.test.ts`, 12 tests. The CLI test covers both no-credential skip output and missing-config `--require-live true` error output.
+- Rerun TypeScript no-emit check passed.
+- No-credential live-smoke command built the CLI, returned `SKIP live-smoke`, named missing live env vars, stated no live calls/artifacts were made, and wrote no files under `/tmp/splunkready-wave44-live-smoke-OUQVfC`.
+- `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.

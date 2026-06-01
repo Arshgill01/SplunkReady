@@ -1945,3 +1945,26 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 44 Live Operator Readiness
+
+Scope:
+- Improve optional live smoke setup clarity without requiring live credentials for normal verification.
+- Pin the live-smoke path to an inventory-only read-only tool allowlist.
+- Improve no-credential skip messages and secret-handling assertions.
+
+Files changed:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `docs/live-adapter.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- `live-smoke` now overrides operator-provided live capabilities with the five inventory tools used by the smoke path: `splunk_get_info`, `splunk_get_user_info`, `splunk_get_indexes`, `splunk_get_metadata`, and `splunk_get_knowledge_objects`.
+- `live-smoke-summary.json` now records `allowedTools` and `notCalledTools` so operators can inspect that query, saved-search, and optional SPL helper tools were not used by smoke.
+- The no-credential skip path now states that no live Splunk calls were made, no live artifacts were written, fixture commands still run without credentials, and `docs/live-adapter.md` contains the opt-in setup checklist.
+- CLI tests assert that a configured secret value is not echoed in skip output and that `--require-live true` returns the same actionable missing-config guidance.
+
+Result:
+- PASS.

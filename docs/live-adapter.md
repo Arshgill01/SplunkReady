@@ -33,7 +33,7 @@ Without live configuration, the command exits successfully with `SKIP live-smoke
 npm run splunkready -- live-smoke --out artifacts/live-smoke --require-live true
 ```
 
-With live configuration, the command calls only these read-only MCP tools:
+With live configuration, the command uses a fixed inventory-only allowlist and calls only these read-only MCP tools:
 
 - `splunk_get_info`
 - `splunk_get_user_info`
@@ -41,12 +41,24 @@ With live configuration, the command calls only these read-only MCP tools:
 - `splunk_get_metadata`
 - `splunk_get_knowledge_objects`
 
+`SPLUNKREADY_SPLUNK_CAPABILITIES` can narrow adapter behavior in other live-adapter exercises, but `live-smoke` pins the allowlist above so the smoke path cannot start running searches if an operator sets broader capabilities.
+
 The smoke path writes:
 
 - `live-smoke-contract.json`: a schema-validated minimal live environment contract.
-- `live-smoke-summary.json`: mode, source refs, bounded metadata window, and read-only safety flags.
+- `live-smoke-summary.json`: mode, source refs, bounded metadata window, fixed allowed tools, tools intentionally not called, and read-only safety flags.
 
 The metadata request is bounded to `earliest=-15m` and `latest=now`. The smoke path does not call `splunk_run_query`, does not run saved searches, and never writes or mutates Splunk configuration.
+
+## Operator Checklist
+
+Before running live smoke against a real MCP endpoint:
+
+- Confirm the endpoint is a non-production or approved read-only Splunk MCP endpoint.
+- Export credentials only in the local shell; never write tokens into repo files, fixtures, screenshots, logs, or reviewer inbox notes.
+- Run the no-credential skip path first to confirm the CLI reports missing fields without writing live artifacts.
+- Use `--require-live true` only when you want missing configuration to fail the command.
+- Inspect `live-smoke-summary.json` after a live run and confirm `readOnlyToolsOnly: true`, `destructiveOperations: false`, and the fixed `allowedTools` list.
 
 ## Safety Properties
 
