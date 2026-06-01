@@ -1894,3 +1894,23 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 42 Demo Reliability Iteration
+
+Scope:
+- Validate demo timing stability.
+- Verify artifact completeness and UI route content.
+- Serve the generated demo locally and capture a browser screenshot.
+
+Files changed:
+- `docs/demo-reliability-report.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Result:
+- PASS.
+
+Notes:
+- No source code changes were required.
+- Demo artifacts were generated in `/tmp/splunkready-wave42-demo-46n1zG`.
+- Browser screenshot was captured at `/tmp/splunkready-wave42-rerun-receipts.png`.

@@ -1659,3 +1659,23 @@ Result:
 - Demo rehearsal passed with `fitsUnderThreeMinutes: true`, 18 artifacts, and route `/tmp/splunkready-wave41-demo-LLFRo5/splunkready-shell.html#rerun-receipts`.
 - Receipt inspection confirmed fixture `NOT READY` -> fixture `READY`, with rule IDs `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`.
 - Latest reviewer verdict audit passed across 41 waves with 4 pass-with-concerns files and 0 failing latest verdicts.
+
+## 2026-06-01 - Wave 42 Demo Reliability Iteration
+
+Commands:
+
+- `command -v npx >/dev/null 2>&1 && echo NPX_OK && export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}" && export PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh" && test -x "$PWCLI" && echo "PWCLI=$PWCLI"`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-wave42-demo-XXXXXX) && npm run splunkready -- demo --out "$tmp" && node - <<'NODE' "$tmp" ... NODE`
+- `python3 -m http.server 41742 --bind 127.0.0.1 --directory /tmp/splunkready-wave42-demo-46n1zG`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41742/splunkready-shell.html#rerun-receipts && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot && mkdir -p output/playwright && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/wave-42-rerun-receipts.png --full-page`
+- `file output/playwright/wave-42-rerun-receipts.png && ls -lh output/playwright/wave-42-rerun-receipts.png`
+- `npm run check`
+
+Result:
+
+- PASS
+- `npx` was present; Playwright wrapper was invoked with `bash` because the wrapper file is not executable.
+- Demo artifact check passed: 18 artifacts, no missing UI strings, fixture `NOT READY` -> fixture `READY`, `fitsUnderThreeMinutes: true`, and route `/tmp/splunkready-wave42-demo-46n1zG/splunkready-shell.html#rerun-receipts`.
+- Local preview opened at `http://127.0.0.1:41742/splunkready-shell.html#rerun-receipts`.
+- Browser screenshot was captured and copied to `/tmp/splunkready-wave42-rerun-receipts.png`.
+- `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
