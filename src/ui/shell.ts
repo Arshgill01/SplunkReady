@@ -698,7 +698,7 @@ const renderCriticalIssueFixPairs = (
       return patchRules[index];
     }
 
-    if (violation.ruleId.startsWith("EVD")) {
+    if (violation.ruleId.startsWith("EVD") || violation.ruleId.startsWith("ANS")) {
       return patchRules.find((rule) => rule.id.includes("evidence") || rule.text.toLowerCase().includes("evidence"));
     }
 
@@ -730,6 +730,156 @@ const renderCriticalIssueFixPairs = (
     <thead><tr><th>Critical issue</th><th>Policy patch or fix</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
+};
+
+interface ReplayStep {
+  id: string;
+  label: string;
+  state: string;
+  metric: string;
+  detail: string;
+  evidence: string[];
+}
+
+const uniqueStrings = (values: string[]): string[] => [...new Set(values.filter((value) => value.length > 0))];
+
+const traceEventSummary = (event: TraceEvent | undefined): string =>
+  event
+    ? `${event.toolName ?? event.type}: ${toolInputSummary(event) || event.id}`
+    : "No trace event loaded.";
+
+const renderReplayEvidence = (items: string[]): string =>
+  items.length > 0
+    ? `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+    : `<p class="empty">No artifact evidence loaded for this stage.</p>`;
+
+const renderReplayPanel = (step: ReplayStep, index: number): string => `<article
+  id="replay-${escapeHtml(step.id)}"
+  class="replay-panel"
+  data-replay-panel
+  aria-labelledby="replay-tab-${escapeHtml(step.id)}"
+  ${index === 0 ? "" : "hidden"}
+>
+  <div class="replay-panel-head">
+    <div>
+      <h3>${escapeHtml(step.label)}</h3>
+      <p>${escapeHtml(step.detail)}</p>
+    </div>
+    <div class="replay-metric">
+      <span>${escapeHtml(step.state)}</span>
+      <strong>${escapeHtml(step.metric)}</strong>
+    </div>
+  </div>
+  ${renderReplayEvidence(step.evidence)}
+</article>`;
+
+const renderCertificationReplay = (artifacts: UiArtifacts): string => {
+  const beforeReceipt = artifacts.beforeReceipt ?? (artifacts.phase === "before" ? artifacts.receipt : undefined);
+  const afterReceipt = artifacts.afterReceipt ?? (artifacts.phase === "after" ? artifacts.receipt : undefined);
+  const beforeTraceEvents = artifacts.beforeTraceEvents ?? (artifacts.phase === "before" ? artifacts.traceEvents : []);
+  const afterTraceEvents = artifacts.afterTraceEvents ?? (artifacts.phase === "after" ? artifacts.traceEvents : []);
+  const beforeViolations = artifacts.beforeViolations ?? (artifacts.phase === "before" ? artifacts.violations : []);
+  const afterViolations = artifacts.afterViolations ?? (artifacts.phase === "after" ? artifacts.violations : []);
+  const firstFailingTool = beforeTraceEvents.find((event) => event.toolName) ?? beforeTraceEvents[0];
+  const firstPassingTool =
+    afterTraceEvents.find((event) => event.toolName === "splunk_run_saved_search") ??
+    afterTraceEvents.find((event) => event.toolName) ??
+    afterTraceEvents[0];
+  const ruleIds = uniqueStrings(beforeViolations.map((violation) => violation.ruleId));
+  const resolvedViolations = uniqueStrings(
+    afterReceipt && Array.isArray(afterReceipt.rerunComparison.resolvedViolations)
+      ? afterReceipt.rerunComparison.resolvedViolations.map((value) => String(value))
+      : []
+  );
+  const evidenceRefs = uniqueStrings(afterTraceEvents.flatMap((event) => event.evidenceRefs));
+
+  const steps: ReplayStep[] = [
+    {
+      id: "fail",
+      label: "Fail",
+      state: beforeReceipt ? beforeReceipt.verdict : "missing",
+      metric: beforeReceipt ? `${beforeReceipt.score}/100` : "n/a",
+      detail: beforeReceipt
+        ? `${beforeReceipt.id} captured ${beforeReceipt.criticalViolations.length} critical issue(s).`
+        : "No failed receipt artifact is loaded.",
+      evidence: [
+        beforeReceipt ? `receipt: ${beforeReceipt.id}` : "",
+        firstFailingTool ? `trace: ${firstFailingTool.id}` : "",
+        firstFailingTool ? `tool: ${traceEventSummary(firstFailingTool)}` : ""
+      ].filter(Boolean)
+    },
+    {
+      id: "rules",
+      label: "Rules",
+      state: beforeViolations.length > 0 ? "deterministic" : "clear",
+      metric: `${ruleIds.length} rule id(s)`,
+      detail:
+        beforeViolations.length > 0
+          ? "The failed trace is graded by explicit rule ids, not an LLM pass/fail judgment."
+          : "No before-run violations are loaded.",
+      evidence: ruleIds.map((ruleId) => `rule: ${ruleId}`)
+    },
+    {
+      id: "patch",
+      label: "Patch",
+      state: artifacts.policyPatch?.status ?? "missing",
+      metric: artifacts.policyPatch ? `${artifacts.policyPatch.rules.length} rule(s)` : "n/a",
+      detail: artifacts.policyPatch
+        ? `${artifacts.policyPatch.id} is exported for operator review.`
+        : "No policy patch artifact is loaded.",
+      evidence: artifacts.policyPatch?.rules.map((rule) => `patch: ${rule.id}`) ?? []
+    },
+    {
+      id: "rerun",
+      label: "Rerun",
+      state: afterTraceEvents.length > 0 ? "captured" : "missing",
+      metric: `${afterTraceEvents.length} event(s)`,
+      detail: firstPassingTool ? traceEventSummary(firstPassingTool) : "No rerun trace artifact is loaded.",
+      evidence: [
+        firstPassingTool ? `trace: ${firstPassingTool.id}` : "",
+        firstPassingTool ? `results: ${String(firstPassingTool.resultCount ?? "n/a")}` : "",
+        evidenceRefs.length > 0 ? `evidence refs: ${evidenceRefs.join(", ")}` : ""
+      ].filter(Boolean)
+    },
+    {
+      id: "pass",
+      label: "Pass",
+      state: afterReceipt?.verdict ?? "missing",
+      metric: afterReceipt ? `${afterReceipt.score}/100` : "n/a",
+      detail: afterReceipt
+        ? `${afterReceipt.id} resolves ${resolvedViolations.length} violation(s); after-run violations: ${afterViolations.length}.`
+        : "No rerun receipt artifact is loaded.",
+      evidence: [
+        afterReceipt ? `receipt: ${afterReceipt.id}` : "",
+        resolvedViolations.length > 0 ? `resolved: ${resolvedViolations.join(", ")}` : "",
+        afterReceipt ? `failed missions: ${afterReceipt.failedMissions.length}` : ""
+      ].filter(Boolean)
+    }
+  ];
+
+  return `<section id="certification-replay" class="shell-section" aria-label="Certification replay">
+    <h2>Certification replay</h2>
+    <div class="replay-board" data-replay>
+      <div class="replay-tabs" role="tablist" aria-label="Agent Readiness Compiler stages">
+        ${steps
+          .map(
+            (step, index) => `<button
+              id="replay-tab-${escapeHtml(step.id)}"
+              class="replay-tab"
+              type="button"
+              role="tab"
+              aria-selected="${index === 0 ? "true" : "false"}"
+              aria-controls="replay-${escapeHtml(step.id)}"
+              data-replay-target="replay-${escapeHtml(step.id)}"
+            ><span>${escapeValue(index + 1)}</span>${escapeHtml(step.label)}</button>`
+          )
+          .join("")}
+      </div>
+      <div class="replay-panels">
+        ${steps.map(renderReplayPanel).join("")}
+      </div>
+    </div>
+  </section>`;
 };
 
 const renderReceiptRerunView = (artifacts: UiArtifacts): string => {
@@ -1025,6 +1175,96 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       color: var(--muted);
     }
 
+    .replay-board {
+      background: var(--surface);
+      border: 1px solid var(--line);
+    }
+
+    .replay-tabs {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      border-bottom: 1px solid var(--line);
+    }
+
+    .replay-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      padding: 11px 12px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      background: #eeeeea;
+      color: var(--muted);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .replay-tab:last-child {
+      border-right: 0;
+    }
+
+    .replay-tab:hover,
+    .replay-tab[aria-selected="true"] {
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    .replay-tab span {
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .replay-tab[aria-selected="true"] span {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .replay-panel {
+      padding: 18px;
+    }
+
+    .replay-panel[hidden] {
+      display: none;
+    }
+
+    .replay-panel-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 160px;
+      gap: 18px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .replay-panel-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+    }
+
+    .replay-metric {
+      border-left: 3px solid var(--accent);
+      padding-left: 12px;
+    }
+
+    .replay-metric span {
+      display: block;
+      color: var(--muted);
+    }
+
+    .replay-metric strong {
+      display: block;
+      font-size: 20px;
+    }
+
     .receipt-strip {
       display: grid;
       grid-template-columns: 240px repeat(4, minmax(120px, 1fr));
@@ -1261,6 +1501,16 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       .readiness-flow {
         grid-template-columns: 1fr;
       }
+
+      .replay-tabs,
+      .replay-panel-head {
+        grid-template-columns: 1fr;
+      }
+
+      .replay-tab {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1269,6 +1519,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       }
 
       .side-nav a,
+      .replay-tab,
       tbody tr {
         transition: none;
       }
@@ -1282,6 +1533,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       <p class="tagline">Certify AI agents before they touch production Splunk.</p>
       <nav>
         <a aria-current="page" href="#receipt">Readiness Receipt</a>
+        <a href="#certification-replay">Replay</a>
         <a href="#contract">Contract</a>
         <a href="#mission-trace">Mission trace</a>
         <a href="#rerun-receipts">Rerun receipts</a>
@@ -1324,6 +1576,8 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
           <div class="cell-value">${escapeValue(evidenceCount)}</div>
         </div>
       </section>
+
+      ${renderCertificationReplay(artifacts)}
 
       <section class="shell-section" aria-label="Receipt identity">
         <div class="section-grid">
@@ -1403,6 +1657,26 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
       window.addEventListener("hashchange", updateActiveLink);
       updateActiveLink();
+
+      const replayTabs = Array.from(document.querySelectorAll("[data-replay-target]"));
+      const replayPanels = Array.from(document.querySelectorAll("[data-replay-panel]"));
+      replayTabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const targetId = tab.getAttribute("data-replay-target");
+
+          replayTabs.forEach((candidate) => {
+            candidate.setAttribute("aria-selected", candidate === tab ? "true" : "false");
+          });
+
+          replayPanels.forEach((panel) => {
+            if (panel.id === targetId) {
+              panel.removeAttribute("hidden");
+            } else {
+              panel.setAttribute("hidden", "");
+            }
+          });
+        });
+      });
     });
   </script>
 </body>

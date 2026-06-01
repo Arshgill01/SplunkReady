@@ -3029,3 +3029,67 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 77 Certification Replay UI
+
+Scope:
+- Respond to the UI critique with a product-native creative replay, not a generic dashboard restyle.
+- Add an evidence-backed `Certification replay` section to the static Readiness Receipt shell.
+- Keep the replay sourced only from loaded receipt, trace, violation, policy-patch, and evidence-ref artifacts.
+- Integrate the bounded Antigravity/Gemini sidecar fix that maps `ANS-*` critical findings to evidence/uncertainty policy patch guidance.
+- Reject glassmorphism, fake live execution, generic charts, assistant UI, and live Splunk requirements.
+
+Files changed:
+- `src/ui/shell.ts`
+- `tests/ui/shell.test.ts`
+- `docs/antigravity-ui-202817-triage-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-77-certification-replay-ui.md`
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/unknown-wave-20260601-2038-review.md`
+- `logs/reviewer-inbox/unknown-wave-20260601-2041-main-resolution.md`
+- `logs/reviewer-inbox/unknown-wave-20260601-2043-rereview.md`
+- `logs/reviewer-inbox/wave-77-20260601-2043-review.md`
+- `logs/reviewer-inbox/wave-77-20260601-2044-rereview.md`
+- `logs/reviewer-inbox/wave-77-20260601-2047-rereview.md`
+- `logs/reviewer-inbox/wave-77-20260601-2050-rereview.md`
+- reviewer inbox files if new Wave 77 findings arrive.
+
+Notes:
+- The new replay has five tabs: `Fail`, `Rules`, `Patch`, `Rerun`, and `Pass`.
+- Replay data is derived from failed/passing receipts, before/after traces, before/after violations, policy patch rules, and evidence refs.
+- The replay explicitly states deterministic rule ids and does not introduce live Splunk claims.
+- `ANS-*` violations now use the same evidence/uncertainty policy patch family as `EVD-*` violations.
+- Focused UI shell tests passed: 1 test file, 12 tests.
+- TypeScript build passed.
+- Full check passed: scaffold verifier reported 78 wave files and 401 project files; Vitest passed 31 test files / 143 tests.
+- Browser-level verification used Playwright against `/tmp/splunkready-wave77-ui-m26eLe/splunkready-shell.html`.
+- Browser verification clicked the `Rules` replay tab and confirmed `aria-selected=true`, `#replay-rules` visible, `#replay-fail` hidden, and visible rule evidence including `SPL-001` and `ANS-001`.
+- Screenshot artifact: `/tmp/splunkready-wave77-certification-replay.png` (1280 x 7059 PNG).
+- `unknown-wave-20260601-2038-review.md` reported `HIGH-001` for implementation before visible Wave 77 contract/logs and `MEDIUM-001` for missing browser-level replay verification.
+- `HIGH-001` was resolved by adding the Wave 77 contract, sidecar triage report, current-state docs, and Wave 77 execution/verification log entries.
+- `MEDIUM-001` was resolved by running the Playwright browser replay-tab verification and recording the screenshot artifact.
+- `unknown-wave-20260601-2043-rereview.md` passed for the original unknown-wave concern after the Wave 77 scope/logs and browser evidence were visible.
+- `wave-77-20260601-2043-review.md` reported `MEDIUM-001` because this section was inserted into the historical middle of the execution log.
+- `MEDIUM-001` was resolved by moving this section to the chronological tail after Wave 76.
+- `wave-77-20260601-2044-rereview.md` still failed against an intermediate state before the final log move.
+- `wave-77-20260601-2047-rereview.md` confirmed execution-log placement was fixed, then reported a new `MEDIUM-001` for an accidental literal `*** End of File` patch marker.
+- The patch marker was removed from `logs/execution-log.md`.
+- Patch-marker scan across logs, docs, manifests, source, and tests returned no matches.
+- Scaffold verifier and `git diff --check` passed after the marker fix: 78 wave files, 406 project files.
+- Reviewer audit still fails because `wave-77-20260601-2047-rereview.md` remains the latest Wave 77 verdict until a newer reviewer pass arrives.
+- `wave-77-20260601-2050-rereview.md` passed with no findings after the patch marker was removed.
+- Final focused UI shell tests passed after the replay tab marker shape cleanup: 1 test file, 12 tests.
+- Final TypeScript build passed after the replay tab marker shape cleanup.
+- Final reviewer audit passed after the closeout update: 79 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the closeout update: 78 wave files, 407 project files.
+- No separate reviewer rereview arrived before the Wave 77 review, so `unknown-wave-20260601-2041-main-resolution.md` remains an explicit main-executor pass-with-concerns note for the stale `unknown-wave` blocker.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.

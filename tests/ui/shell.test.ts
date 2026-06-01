@@ -154,6 +154,18 @@ const broadQueryViolation = (): Violation => ({
   evidenceRefs: []
 });
 
+const answerViolation = (): Violation => ({
+  id: "violation-ans-001",
+  missionId: "mission-security-lateral-movement-readiness",
+  traceEventId: "trace-final-answer",
+  ruleId: "ANS-001",
+  severity: "Critical",
+  reason: "Final answer gave an unsupported benign conclusion.",
+  evidence: { finalAnswerId: "trace-final-answer" },
+  suggestedPolicyPatch: "Require uncertainty and evidence refs before final conclusions.",
+  evidenceRefs: []
+});
+
 const policyPatch = (): PolicyPatch => ({
   id: "patch-security-readiness",
   createdAt: "2026-06-01T06:45:00.000Z",
@@ -407,19 +419,23 @@ describe("SplunkReady UI shell", () => {
   });
 
   it("renders failed receipt, policy patch, rerun receipt, and score comparison", () => {
+    const failed = failedReceipt();
+    failed.criticalViolations = [...failed.criticalViolations, "violation-ans-001"];
+    failed.violations = [...failed.violations, "violation-ans-001"];
+
     const html = renderUiShell({
       phase: "after",
       outDir: "/tmp/splunkready-ui",
       contract: contract(),
       missions: [mission()],
       receipt: receipt(),
-      beforeReceipt: failedReceipt(),
+      beforeReceipt: failed,
       afterReceipt: receipt(),
       policyPatch: policyPatch(),
       traceEvents: afterTrace(),
       violations: [],
       beforeTraceEvents: beforeTrace(),
-      beforeViolations: [broadQueryViolation(), violation()],
+      beforeViolations: [broadQueryViolation(), violation(), answerViolation()],
       afterTraceEvents: afterTrace(),
       afterViolations: [],
       paths: artifactPaths()
@@ -431,6 +447,12 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("<strong>Patch</strong><span>complete</span>");
     expect(html).toContain("<strong>Rerun</strong><span>complete</span>");
     expect(html).toContain("<strong>Pass</strong><span>complete</span>");
+    expect(html).toContain("Certification replay");
+    expect(html).toContain('data-replay-target="replay-rules"');
+    expect(html).toContain("rule: SPL-001");
+    expect(html).toContain("rule: EVD-001");
+    expect(html).toContain("rule: ANS-001");
+    expect(html).toContain("evidence refs: evt-auth-001");
     expect(html).toContain("Failed receipt");
     expect(html).toContain("receipt-before-001");
     expect(html).toContain("NOT READY");
@@ -444,6 +466,10 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("carry-evidence-refs");
     expect(html).toContain("Critical issues and fixes");
     expect(html).toContain("violation-spl-001");
+    expect(html).toContain("violation-ans-001");
+    expect(html.slice(html.indexOf("violation-ans-001"), html.indexOf("violation-ans-001") + 500)).toContain(
+      "carry-evidence-refs"
+    );
     expect(html).toContain("Before receipt");
     expect(html).toContain("Policy patch JSON");
     expect(html).not.toContain("display:none");
@@ -457,6 +483,7 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain(".side-nav a:hover");
     expect(html).toContain("tbody tr:hover td");
     expect(html).toContain('window.addEventListener("hashchange", updateActiveLink)');
+    expect(html).toContain('panel.setAttribute("hidden", "")');
   });
 
 

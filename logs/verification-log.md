@@ -1811,6 +1811,10 @@ Commands:
 - `tmp=$(mktemp -d /tmp/splunkready-wave49-copy-drift-XXXXXX) ... node scripts/audit-submission-copy.mjs "$tmp" ... test "$rc" -ne 0`
 - `npm run audit:reviewers`
 - `bash scripts/verify-scaffold.sh && git diff --check`
+- `npx vitest run tests/ui/shell.test.ts`
+- `npm run build`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
 - `npm run check`
 - `npm run audit:reviewers`
 - `bash scripts/verify-scaffold.sh && git diff --check`
@@ -2609,3 +2613,58 @@ Result:
 - `wave-76-20260601-2032-rereview.md` passed with no open findings after the Wave 76 execution-log section was actually moved after Wave 75.
 - Final reviewer audit passed after `wave-76-20260601-2032-rereview.md`: 78 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed after the final placement fix: 77 wave files, 398 project files.
+
+## 2026-06-01 - Wave 77 Certification Replay UI
+
+Commands:
+
+- `npx vitest run tests/ui/shell.test.ts`
+- `npm run build`
+- `npm run check`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh --help`
+- `tmp=$(mktemp -d /tmp/splunkready-wave77-ui-XXXXXX) && unset SPLUNK_HOST SPLUNK_TOKEN SPLUNK_USERNAME SPLUNK_PASSWORD SPLUNK_SCHEME SPLUNK_PORT && npm run splunkready -- demo --out "$tmp" && printf 'demo_out=%s\n' "$tmp"`
+- `python3 -m http.server 41777 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41777/splunkready-shell.html#certification-replay`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e44`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval '() => JSON.stringify({selected: document.querySelector("[data-replay-target=\"replay-rules\"]")?.getAttribute("aria-selected"), rulesHidden: document.querySelector("#replay-rules")?.hasAttribute("hidden"), failHidden: document.querySelector("#replay-fail")?.hasAttribute("hidden"), rulesText: document.querySelector("#replay-rules")?.textContent?.includes("SPL-001") && document.querySelector("#replay-rules")?.textContent?.includes("ANS-001")})' --raw`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave77-certification-replay.png --full-page`
+- `file /tmp/splunkready-wave77-certification-replay.png && ls -lh /tmp/splunkready-wave77-certification-replay.png`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `rg -n "^\\*\\*\\* End of File$|^\\*\\*\\* Begin Patch|^\\*\\*\\* Add File|^\\*\\*\\* Update File" logs docs MANIFEST.md PLAN.md src tests`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Focused UI shell tests passed: 1 test file / 12 tests.
+- TypeScript build passed.
+- Full check passed: scaffold verifier reported 78 wave files and 401 project files; Vitest passed 31 test files / 143 tests.
+- Initial reviewer audit failed because `unknown-wave-20260601-2038-review.md` was the latest `unknown-wave` verdict.
+- Standalone scaffold verifier and `git diff --check` passed: 78 wave files, 401 project files.
+- Demo generation passed in `/tmp/splunkready-wave77-ui-m26eLe` with live Splunk env vars unset.
+- Playwright opened `http://127.0.0.1:41777/splunkready-shell.html#certification-replay`.
+- Initial snapshot showed the `Certification replay` section and default selected `Fail` tab with failed receipt, broad `index=*` trace, and `NOT READY` score evidence.
+- Browser click on the `Rules` tab succeeded.
+- Follow-up snapshot showed `Rules` as selected with visible deterministic rule evidence: `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`.
+- Browser eval returned `{"selected":"true","rulesHidden":false,"failHidden":true,"rulesText":true}`.
+- Screenshot captured at `/tmp/splunkready-wave77-certification-replay.png`: 1280 x 7059 PNG, 1.0M.
+- `unknown-wave-20260601-2041-main-resolution.md` was added as a main-executor pass-with-concerns resolution note because no separate reviewer rereview arrived after the fixes.
+- `wave-77-20260601-2044-rereview.md` failed against an intermediate execution-log placement state.
+- `wave-77-20260601-2047-rereview.md` confirmed execution-log placement was fixed and failed on an accidental literal patch marker in `logs/execution-log.md`.
+- Patch-marker scan returned no matches after the marker was removed.
+- Reviewer audit still fails because the latest Wave 77 verdict is `wave-77-20260601-2047-rereview.md`.
+- Scaffold verifier and `git diff --check` passed after the marker fix: 78 wave files, 406 project files.
+- `wave-77-20260601-2050-rereview.md` passed with no findings after the patch marker was removed.
+- Final reviewer audit passed after `wave-77-20260601-2050-rereview.md`: 79 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the closeout wording update: 78 wave files, 407 project files.
+- Final focused UI shell tests passed after the replay tab marker shape cleanup: 1 test file / 12 tests.
+- Final TypeScript build passed after the replay tab marker shape cleanup.
+- Final reviewer audit passed after the replay tab marker shape cleanup: 79 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the replay tab marker shape cleanup: 78 wave files, 407 project files.
