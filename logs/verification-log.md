@@ -1742,3 +1742,4 @@ Result:
 - Corrected fresh-copy verification passed from `/private/tmp/splunkready-wave45-fresh-2vOMo5/repo`: `npm ci --ignore-scripts`, `npm run build`, and fixture demo all passed with `NOT READY` -> `READY`.
 - Initial reviewer inbox audit found `wave-45-20260601-1631-review.md` failing because Wave 45 evidence had not been recorded yet; the finding is resolved by the Wave 45 report and log entries.
 - Final reviewer blocker audit passed across 46 waves with 4 pass-with-concerns files and 0 unresolved Critical/High findings; `wave-45-20260601-1631-review.md` is recorded as resolved by the current Wave 45 report/log diff.
+- Late Wave 45 rereview `logs/reviewer-inbox/wave-45-20260601-1634-rereview.md` passed and confirmed `HIGH-001` and `MEDIUM-001` resolved.
