@@ -2306,3 +2306,30 @@ Result:
 - Wave 68 rereview passed with no findings in `wave-68-20260601-1859-rereview.md`.
 - Final reviewer audit passed after the Wave 68 passing rereview arrived: 70 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 69 wave files, 347 project files.
+
+## 2026-06-01 - Wave 69 Antigravity UI 185700 Triage
+
+Commands:
+
+- `npx vitest run tests/ui/shell.test.ts`
+- `npm run build`
+- `npm run check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Focused UI shell tests passed: 1 test file, 8 tests.
+- TypeScript build passed.
+- Full project check passed: scaffold verifier plus 31 test files / 139 tests.
+- Scaffold verifier during `npm run check` reported 70 wave files and 349 project files.
+- Initial reviewer audit passed before a Wave 69-specific reviewer inbox file arrived: 70 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Initial scaffold verifier and `git diff --check` passed: 70 wave files, 349 project files.
+- The accepted UI change keeps before-phase rerun receipt output pending until `receipt-after-001.json` exists.
+- The sidecar's broad CSS restyle was not integrated.
+- `wave-69-20260601-1904-review.md` reported `HIGH-001` for missing gate log evidence and `MEDIUM-001` for execution-log placement.
+- `HIGH-001` and `MEDIUM-001` were resolved by recording the missing gates above and moving the Wave 69 execution-log section to the chronological tail.
+- Wave 69 rereview passed with no findings in `wave-69-20260601-1908-rereview.md`.
+- Final reviewer audit passed after the Wave 69 passing rereview arrived: 71 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 70 wave files, 351 project files.

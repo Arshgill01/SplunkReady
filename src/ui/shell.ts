@@ -671,8 +671,8 @@ const renderCriticalIssueFixPairs = (
 };
 
 const renderReceiptRerunView = (artifacts: UiArtifacts): string => {
-  const beforeReceipt = artifacts.beforeReceipt;
-  const afterReceipt = artifacts.afterReceipt ?? artifacts.receipt;
+  const beforeReceipt = artifacts.beforeReceipt ?? (artifacts.phase === "before" ? artifacts.receipt : undefined);
+  const afterReceipt = artifacts.afterReceipt ?? (artifacts.phase === "after" ? artifacts.receipt : undefined);
   const failComplete = Boolean(beforeReceipt) || artifacts.receipt.verdict === "NOT READY";
   const patchComplete = Boolean(artifacts.policyPatch);
   const rerunComplete = Boolean(artifacts.afterReceipt) || artifacts.phase === "after";

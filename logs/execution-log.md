@@ -2705,3 +2705,41 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 69 Antigravity UI 185700 Triage
+
+Scope:
+- Triage the fresh Antigravity/Gemini UI sidecar launched at 18:57 in an isolated worktree.
+- Integrate only bounded receipt-phase semantics from the sidecar output.
+- Reject broad CSS restyling that did not improve receipt, trace, violation, contract, or demo evidence.
+- Keep explicit user approval as the blocker for overall goal completion.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/antigravity-ui-185700-triage-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-69-antigravity-ui-185700-triage.md`
+- `src/ui/shell.ts`
+- `tests/ui/shell.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- reviewer inbox files if new Wave 69 findings arrive.
+
+Notes:
+- Sidecar worktree: `/private/tmp/splunkready-antigravity-ui-fresh-20260601-185700`.
+- Sidecar branch: `antigravity-ui-fresh-20260601-185700`.
+- Sidecar model shown by Antigravity: `Gemini 3.5 Flash (High)`.
+- Accepted the receipt-phase routing fix so a before-phase shell treats the current receipt as the failed receipt and leaves the rerun receipt pending.
+- Rejected the sidecar's broad palette, spacing, typography, table, code-chip, stepper, and border restyling as visual churn without evidence-backed product value.
+- Added a UI regression assertion for before-phase rerun pending state.
+- `npx vitest run tests/ui/shell.test.ts`, `npm run build`, `npm run check`, initial `npm run audit:reviewers`, and initial `bash scripts/verify-scaffold.sh && git diff --check` passed.
+- Wave 69 reviewer reported `HIGH-001` and `MEDIUM-001`; both were resolved by recording the missing gates and moving this section to the chronological tail.
+- Wave 69 rereview passed with no findings in `wave-69-20260601-1908-rereview.md`.
+- Final reviewer audit passed after the Wave 69 passing rereview arrived: 71 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 70 wave files, 351 project files.
+- No `update_goal` call was made.
+
+Result:
+- PASS.

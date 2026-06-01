@@ -439,6 +439,10 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("violation-evd-001");
     expect(html).toContain("EVD-001");
     expect(html).toContain("Final answer lacks saved-search provenance.");
+    expect(html).toContain("Failed receipt");
+    expect(html).toContain("<strong>Fail</strong><span>complete</span>");
+    expect(html).toContain("<strong>Rerun</strong><span>pending</span>");
+    expect(html).toContain("No receipt-after-001.json artifact loaded.");
   });
 
   it("writes a static shell HTML artifact for browser inspection", async () => {
