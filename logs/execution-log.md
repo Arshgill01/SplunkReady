@@ -23,6 +23,49 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 13:50 - Wave 25
+
+Scope:
+- Added saved-search discovery grader rule for `KO-001`.
+- Added deterministic checks for required discovery before custom SPL, preferred saved-search usage, ignored preferred searches, and saved-search provenance on passing traces.
+
+Files changed:
+- `src/grader/saved-search.ts`
+- `tests/grader/saved-search.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-25-20260601-1350-review.md`
+- `logs/reviewer-inbox/wave-25-20260601-1352-rereview.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-25-20260601-1350-review.md`
+- `logs/reviewer-inbox/wave-25-20260601-1352-rereview.md`
+
+Commands:
+- `sed -n '1,260p' docs/waves/wave-25-saved-search-checks.md`
+- `sed -n '20,45p' docs/grader-rule-catalog.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-25-*' -print | sort`
+- `npx vitest run tests/grader/saved-search.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "KO-001|createSavedSearchRules|preferredSavedSearchRefs|saved-search discovery|splunk_get_knowledge_objects|splunk_run_saved_search|saved-search id|app context deferred|only prompt text" src/grader tests/grader docs/waves/wave-25-saved-search-checks.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-25-20260601-1350-review.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-25-20260601-1352-rereview.md`
+
+Result:
+- PASS
+
+Notes:
+- Rule cites deterministic catalog ID `KO-001`.
+- Mission preference comes from structured `preferredSavedSearchRefs`, not prompt text.
+- App-context ambiguity checks are intentionally deferred to Wave 26.
+- Passing traces must run a mission preferred saved search and include saved-search result provenance.
+- Reviewer `HIGH-001` fixed by requiring saved-search result `queryRef`; row evidence refs no longer satisfy the saved-search-id provenance requirement.
+- Wave 25 rereview passed with no findings.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 189` and 21 test files / 90 tests passed.
+
 ## 2026-06-01 13:42 - Wave 24
 
 Scope:

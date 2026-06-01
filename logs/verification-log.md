@@ -2,6 +2,41 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 13:50 - Wave 25 Saved Search Checks
+
+Commands:
+
+- `sed -n '1,260p' docs/waves/wave-25-saved-search-checks.md`
+- `sed -n '20,45p' docs/grader-rule-catalog.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-25-*' -print | sort`
+- `npx vitest run tests/grader/saved-search.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "KO-001|createSavedSearchRules|preferredSavedSearchRefs|saved-search discovery|splunk_get_knowledge_objects|splunk_run_saved_search|saved-search id|app context deferred|only prompt text" src/grader tests/grader docs/waves/wave-25-saved-search-checks.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-25-20260601-1350-review.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-25-20260601-1352-rereview.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/grader/saved-search.test.ts` passed: 1 test file and 7 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 21 test files and 90 tests.
+- Traceability grep found `KO-001`, saved-search rule factory, structured preferred refs, discovery tools, provenance acceptance text, app-context deferral, and the prompt-text stop condition.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 189`; 21 test files and 90 tests passed.
+- `git diff --check` passed.
+- Wave 25 reviewer inbox scan found `logs/reviewer-inbox/wave-25-20260601-1350-review.md` and `logs/reviewer-inbox/wave-25-20260601-1352-rereview.md`.
+
+Notes:
+
+- Saved-search preference is read from mission `preferredSavedSearchRefs`.
+- The rule checks trace order and saved-search result provenance deterministically.
+- Reviewer `HIGH-001` was resolved by requiring `queryRef` as the saved-search id; row evidence refs alone fail.
+- Wave 25 rereview passed with no findings.
+- App-context ambiguity is not graded in this wave.
+
 ## 2026-06-01 13:42 - Wave 24 Field and Sourcetype Checks
 
 Commands:
