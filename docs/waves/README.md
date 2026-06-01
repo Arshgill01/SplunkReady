@@ -60,3 +60,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-51-goal-completion-audit.md`: prompt-to-artifact audit against the full goal.
 - `wave-52-remote-cleanroom-after-audit.md`: remote cleanroom verification after the goal audit.
 - `wave-53-handoff-freshness.md`: refresh handoff and completion audit current-state docs.
+- `wave-54-branch-strategy-handoff.md`: document `splunkready-build` as the remote source of truth.
