@@ -2,6 +2,35 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 13:09 - Wave 19 Observability Mission
+
+Commands:
+
+- `npx vitest run tests/missions/observability.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "observability|latency|_internal|query-observability-latency|obs-201|obs-202|service_or_source|mission-observability-latency" fixtures/acme-soc-dev tests/missions src docs/waves/wave-19-observability-mission.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-19-*' -print | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-19-20260601-1309-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/missions/observability.test.ts` passed: 1 test file and 2 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 15 test files and 60 tests.
+- Traceability grep found observability mission, latency query, `_internal`, query ref, and evidence refs.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 165`; 15 test files and 60 tests passed.
+- `git diff --check` passed.
+- `logs/reviewer-inbox/wave-19-20260601-1309-review.md` passed with no open findings.
+
+Notes:
+
+- Observability remains a small transfer mission, not a second product path.
+- Fixture result validation uses the shared fixture adapter.
+
 ## 2026-06-01 13:06 - Wave 18 Safety Missions
 
 Commands:

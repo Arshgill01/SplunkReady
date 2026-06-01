@@ -23,6 +23,43 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 13:09 - Wave 19
+
+Scope:
+- Added one observability transfer mission for API latency investigation.
+- Added tests that validate the mission DSL and reuse the fixture adapter query path.
+- Kept observability secondary to the security demo while reusing the same mission, trace, and evidence concepts.
+
+Files changed:
+- `fixtures/acme-soc-dev/missions/observability-latency.json`
+- `tests/missions/observability.test.ts`
+- `logs/reviewer-inbox/wave-19-20260601-1309-review.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-19-20260601-1309-review.md`
+
+Commands:
+- `npx vitest run tests/missions/observability.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "observability|latency|_internal|query-observability-latency|obs-201|obs-202|service_or_source|mission-observability-latency" fixtures/acme-soc-dev tests/missions src docs/waves/wave-19-observability-mission.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-19-*' -print | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-19-20260601-1309-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Mission uses `_internal` and the existing `query-observability-latency` fixture.
+- Evidence refs `obs-201` and `obs-202` are validated through the same fixture adapter boundary.
+- No new observability product path was introduced.
+- Wave 19 reviewer passed with no open findings.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 165` and 15 test files / 60 tests passed.
+
 ## 2026-06-01 13:06 - Wave 18
 
 Scope:
