@@ -1997,3 +1997,32 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 46 Remote Cleanroom QA
+
+Scope:
+- Add and execute the remote cleanroom QA continuation wave.
+- Verify the pushed `splunkready-build` branch from a temp clone.
+- Audit demo artifacts and latest reviewer verdicts.
+
+Files changed:
+- `docs/waves/wave-46-remote-cleanroom-qa.md`
+- `docs/waves/README.md`
+- `PLAN.md`
+- `docs/remote-cleanroom-qa-report.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/unknown-wave-20260601-1637-review.md`
+- `logs/reviewer-inbox/wave-46-20260601-1638-review.md`
+
+Notes:
+- Remote cleanroom clone tested `origin/splunkready-build` at commit `28f72ec`.
+- Temp checkout path was `/tmp/splunkready-wave46-remote-9tjSfG/repo`.
+- Demo artifacts were generated under `/tmp/splunkready-wave46-remote-9tjSfG/demo-46doGe`.
+- Remote cleanroom demo produced 18 artifacts, fixture `NOT READY` -> `READY`, `fitsUnderThreeMinutes: true`, and no missing required UI/rule strings.
+- Latest reviewer verdict audit passed across 47 waves with 0 failing latest verdicts.
+- `unknown-wave-20260601-1637-review.md` `HIGH-001`: resolved by adding `docs/waves/wave-46-remote-cleanroom-qa.md`, indexing it in `docs/waves/README.md`, and updating `PLAN.md`.
+- `wave-46-20260601-1638-review.md`: reviewer passed the scope audit with no open Critical, High, Medium, or Low findings.
+
+Result:
+- PASS.

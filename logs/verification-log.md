@@ -1743,3 +1743,22 @@ Result:
 - Initial reviewer inbox audit found `wave-45-20260601-1631-review.md` failing because Wave 45 evidence had not been recorded yet; the finding is resolved by the Wave 45 report and log entries.
 - Final reviewer blocker audit passed across 46 waves with 4 pass-with-concerns files and 0 unresolved Critical/High findings; `wave-45-20260601-1631-review.md` is recorded as resolved by the current Wave 45 report/log diff.
 - Late Wave 45 rereview `logs/reviewer-inbox/wave-45-20260601-1634-rereview.md` passed and confirmed `HIGH-001` and `MEDIUM-001` resolved.
+
+## 2026-06-01 - Wave 46 Remote Cleanroom QA
+
+Commands:
+
+- `remote=$(git remote get-url origin) && tmp=$(mktemp -d /tmp/splunkready-wave46-remote-XXXXXX) && git clone --depth 1 --branch splunkready-build --single-branch "$remote" "$tmp/repo" && cd "$tmp/repo" && printf 'REMOTE_CLEANROOM=%s\n' "$tmp/repo" && git rev-parse --short HEAD && node --version && npm ci --ignore-scripts && npm run check && npm run build && out_dir=$(mktemp -d "$tmp/demo-XXXXXX") && env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- demo --out "$out_dir" && node - <<'NODE' "$out_dir" ... NODE`
+- latest reviewer verdict audit script.
+
+Result:
+
+- PASS.
+- Remote cleanroom checkout path: `/tmp/splunkready-wave46-remote-9tjSfG/repo`.
+- Remote commit tested: `28f72ec`.
+- `npm ci --ignore-scripts` installed dependencies with 0 vulnerabilities reported.
+- `npm run check` passed in the cleanroom checkout: scaffold verifier plus 31 test files / 139 tests.
+- `npm run build` passed in the cleanroom checkout.
+- Fixture demo passed with 18 artifacts, `fitsUnderThreeMinutes: true`, fixture `NOT READY` -> `READY`, and no missing required UI/rule strings.
+- Latest reviewer verdict audit passed across 47 waves with 4 pass-with-concerns files and 0 failing latest verdicts.
+- Wave 46 scope-audit reviewer passed and confirmed the prior unknown-wave `HIGH-001` continuation finding was resolved.

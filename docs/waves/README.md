@@ -52,3 +52,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-43-ui-sidecar-polish.md`: Antigravity/Gemini-backed UI polish.
 - `wave-44-live-operator-readiness.md`: optional live-mode operator hardening.
 - `wave-45-judge-resilience.md`: fresh-checkout and submission resilience.
+- `wave-46-remote-cleanroom-qa.md`: cleanroom verification from the pushed branch.
