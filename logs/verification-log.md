@@ -2333,3 +2333,26 @@ Result:
 - Wave 69 rereview passed with no findings in `wave-69-20260601-1908-rereview.md`.
 - Final reviewer audit passed after the Wave 69 passing rereview arrived: 71 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 70 wave files, 351 project files.
+
+## 2026-06-01 - Wave 70 Remote Cleanroom After UI Semantic Patch
+
+Commands:
+
+- `remote=$(git remote get-url origin) && commit=$(git rev-parse HEAD) && tmp=$(mktemp -d /tmp/splunkready-wave70-remote-XXXXXX) && { echo "remote=$remote"; echo "expected_commit=$commit"; echo "tmp=$tmp"; git clone --depth 1 --branch splunkready-build --single-branch "$remote" "$tmp/repo"; cd "$tmp/repo"; echo "actual_commit=$(git rev-parse HEAD)"; npm ci --ignore-scripts; npm run audit:reviewers; npm run check; npx vitest run tests/ui/shell.test.ts; if git ls-files | rg '(^|/)(\\.antigravitycli|\\.playwright-cli|artifacts)(/|$)'; then echo "sidecar_artifacts=present"; exit 20; else echo "sidecar_artifacts=absent"; fi; } | tee "$tmp/cleanroom.log"`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Remote clone checked out `31ccf31503f1f49dde4c16ed5ec32c632a172919`, matching the expected pushed Wave 69 commit.
+- Remote `npm ci --ignore-scripts` passed: 55 packages installed, 0 vulnerabilities.
+- Remote reviewer audit passed: 71 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Remote full project check passed: scaffold verifier plus 31 test files / 139 tests.
+- Remote focused UI shell test passed: 1 test file / 8 tests.
+- Tracked sidecar artifact scan passed: `sidecar_artifacts=absent`.
+- Initial local reviewer audit passed before a Wave 70-specific reviewer inbox file arrived: 71 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Initial local scaffold verifier and `git diff --check` passed: 71 wave files, 353 project files.
+- Wave 70 reviewer passed with no findings in `wave-70-20260601-1913-review.md`.
+- Final reviewer audit passed after the Wave 70 reviewer file arrived: 72 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 71 wave files, 354 project files.

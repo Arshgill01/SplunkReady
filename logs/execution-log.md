@@ -2743,3 +2743,37 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 70 Remote Cleanroom After UI Semantic Patch
+
+Scope:
+- Verify the pushed `splunkready-build` branch after Wave 69 from a fresh remote clone.
+- Confirm the cleanroom clone resolves to the expected Wave 69 commit.
+- Run fresh install, reviewer audit, full project check, focused UI shell test, and tracked sidecar artifact scan.
+- Keep explicit user approval as the blocker for overall goal completion.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/remote-cleanroom-after-ui-semantic-patch-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-70-remote-cleanroom-after-ui-semantic-patch.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- reviewer inbox files if new Wave 70 findings arrive.
+
+Notes:
+- Cleanroom path: `/tmp/splunkready-wave70-remote-mZNIUn/repo`.
+- Remote clone checked out `31ccf31503f1f49dde4c16ed5ec32c632a172919`, matching the expected pushed Wave 69 commit.
+- `npm ci --ignore-scripts`, `npm run audit:reviewers`, `npm run check`, and `npx vitest run tests/ui/shell.test.ts` passed in the remote clone.
+- Tracked sidecar artifact scan returned `sidecar_artifacts=absent`.
+- Initial local reviewer audit and scaffold verifier passed.
+- Wave 70 reviewer passed with no findings in `wave-70-20260601-1913-review.md`.
+- Final reviewer audit passed after the Wave 70 reviewer file arrived: 72 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 71 wave files, 354 project files.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.
