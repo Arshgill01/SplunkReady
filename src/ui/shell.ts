@@ -673,9 +673,33 @@ const renderCriticalIssueFixPairs = (
 const renderReceiptRerunView = (artifacts: UiArtifacts): string => {
   const beforeReceipt = artifacts.beforeReceipt;
   const afterReceipt = artifacts.afterReceipt ?? artifacts.receipt;
+  const failComplete = Boolean(beforeReceipt) || artifacts.receipt.verdict === "NOT READY";
+  const patchComplete = Boolean(artifacts.policyPatch);
+  const rerunComplete = Boolean(artifacts.afterReceipt) || artifacts.phase === "after";
+  const passComplete = afterReceipt?.verdict === "READY";
+  const stepClass = (complete: boolean): string => (complete ? "readiness-step readiness-step-complete" : "readiness-step");
+  const stepState = (complete: boolean): string => (complete ? "complete" : "pending");
 
   return `<section id="rerun-receipts" class="shell-section" aria-label="Readiness receipt rerun comparison">
     <h2>Receipts and rerun</h2>
+    <div class="readiness-flow" aria-label="Readiness lifecycle">
+      <div class="${stepClass(failComplete)}">
+        <div class="step-index">1</div>
+        <div><strong>Fail</strong><span>${stepState(failComplete)}</span></div>
+      </div>
+      <div class="${stepClass(patchComplete)}">
+        <div class="step-index">2</div>
+        <div><strong>Patch</strong><span>${stepState(patchComplete)}</span></div>
+      </div>
+      <div class="${stepClass(rerunComplete)}">
+        <div class="step-index">3</div>
+        <div><strong>Rerun</strong><span>${stepState(rerunComplete)}</span></div>
+      </div>
+      <div class="${stepClass(passComplete)}">
+        <div class="step-index">4</div>
+        <div><strong>Pass</strong><span>${stepState(passComplete)}</span></div>
+      </div>
+    </div>
     <div class="receipt-comparison">
       <div>
         <h3>Failed receipt</h3>
@@ -729,6 +753,10 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
   const resolvedViolations = Array.isArray(artifacts.receipt.rerunComparison.resolvedViolations)
     ? artifacts.receipt.rerunComparison.resolvedViolations.map((value) => String(value))
     : [];
+  const modeDetail =
+    receipt.mode === "fixture"
+      ? "Fixture mode: reproducible local fixture; no live Splunk mutation."
+      : "Live mode: operator-supplied Splunk MCP context; no automatic Splunk mutation.";
 
   return `<!doctype html>
 <html lang="en">
@@ -855,7 +883,71 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       padding: 7px 10px;
       background: #fbfbf8;
       color: var(--ink);
+      max-width: 360px;
+    }
+
+    .mode-label {
       white-space: nowrap;
+      font-weight: 650;
+    }
+
+    .mode-detail {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .readiness-flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .readiness-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--muted);
+    }
+
+    .readiness-step-complete {
+      border-color: #d7a48d;
+      color: var(--ink);
+    }
+
+    .step-index {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: #eeeeea;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .readiness-step-complete .step-index {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .readiness-step strong {
+      display: block;
+    }
+
+    .readiness-step span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
     }
 
     .receipt-strip {
@@ -1050,6 +1142,10 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
         align-items: flex-start;
         flex-direction: column;
       }
+
+      .readiness-flow {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -1074,7 +1170,10 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
           <h1>Readiness Receipt</h1>
           <p class="subtle">Agent Readiness Compiler output for ${escapeHtml(receipt.agent.name)} ${escapeHtml(receipt.agent.version)}</p>
         </div>
-        <div class="mode-indicator">${escapeHtml(receipt.mode)} mode / ${escapeHtml(artifacts.phase)} run</div>
+        <div class="mode-indicator">
+          <span class="mode-label">${escapeHtml(receipt.mode)} mode / ${escapeHtml(artifacts.phase)} run</span>
+          <span class="mode-detail">${escapeHtml(modeDetail)}</span>
+        </div>
       </header>
 
       <section id="receipt" class="receipt-strip" aria-label="Current agent verdict">

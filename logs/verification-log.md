@@ -1679,3 +1679,27 @@ Result:
 - Local preview opened at `http://127.0.0.1:41742/splunkready-shell.html#rerun-receipts`.
 - Browser screenshot was captured and copied to `/tmp/splunkready-wave42-rerun-receipts.png`.
 - `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
+
+## 2026-06-01 - Wave 43 UI Sidecar Polish
+
+Commands:
+
+- `npx vitest run tests/ui/shell.test.ts && npx tsc --noEmit`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-wave43-ui-XXXXXX) && npm run splunkready -- demo --out "$tmp" && node - <<'NODE' "$tmp" ... NODE`
+- `python3 -m http.server 41743 --bind 127.0.0.1 --directory /tmp/splunkready-wave43-ui-xKVZIq`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41743/splunkready-shell.html#rerun-receipts && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot && mkdir -p output/playwright && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/wave-43-ui-sidecar-polish.png --full-page`
+- `cp output/playwright/wave-43-ui-sidecar-polish.png /tmp/splunkready-wave43-ui-sidecar-polish.png && file /tmp/splunkready-wave43-ui-sidecar-polish.png`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS
+- UI shell tests passed: 8 tests.
+- TypeScript no-emit check passed.
+- Demo artifact check passed: readiness lifecycle and fixture-mode text were present; `display:none` and `fonts.googleapis` were absent.
+- Local preview opened at `http://127.0.0.1:41743/splunkready-shell.html#rerun-receipts`.
+- Browser snapshot showed the Readiness Receipt page with `fixture mode / after run`, visible fixture-mode boundary text, and complete Fail/Patch/Rerun/Pass lifecycle.
+- Browser screenshot was copied to `/tmp/splunkready-wave43-ui-sidecar-polish.png`; dimensions were `1280 x 6648`.
+- Scaffold verifier plus `git diff --check` passed.
+- `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.

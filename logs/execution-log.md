@@ -1914,3 +1914,34 @@ Notes:
 - No source code changes were required.
 - Demo artifacts were generated in `/tmp/splunkready-wave42-demo-46n1zG`.
 - Browser screenshot was captured at `/tmp/splunkready-wave42-rerun-receipts.png`.
+- Late reviewer pass `logs/reviewer-inbox/wave-42-20260601-1615-review.md` arrived after the Wave 42 commit and was included in the Wave 43 checkpoint.
+
+## 2026-06-01 - Wave 43 UI Sidecar Polish
+
+Scope:
+- Restart Antigravity/Gemini in a clean side worktree and visible tmux window.
+- Review sidecar UI recommendations and integrate only bounded, receipt-first polish.
+- Make fixture/live mode boundaries and the fail -> patch -> rerun -> pass story visible.
+
+Files changed:
+- `src/ui/shell.ts`
+- `tests/ui/shell.test.ts`
+- `docs/ui-sidecar-polish-report.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-42-20260601-1615-review.md`
+- `logs/reviewer-inbox/wave-43-20260601-1619-review.md`
+- `logs/reviewer-inbox/wave-43-20260601-1621-rereview.md`
+- `logs/reviewer-inbox/wave-43-20260601-1622-rereview.md`
+
+Notes:
+- Antigravity/Gemini fresh restart ran in tmux `Splunk:agy-ui-fresh`, worktree `/tmp/splunkready-antigravity-ui-fresh-20260601-161837`, branch `antigravity-ui-fresh-20260601-161837`, with `Gemini 3.5 Flash (High)` visible.
+- Integrated a narrow readiness lifecycle strip and visible fixture/live mode explanation.
+- Rejected broad dark restyling, the fresh sidecar's 721-line UI rewrite, inline JavaScript interaction controls, external fonts, hidden compatibility text, and generic dashboard framing.
+- Browser screenshot was captured at `/tmp/splunkready-wave43-ui-sidecar-polish.png`.
+- `wave-43-20260601-1619-review.md` `HIGH-001` and `wave-43-20260601-1621-rereview.md` `HIGH-001`: resolved by adding `docs/ui-sidecar-polish-report.md` plus Wave 43 execution and verification log entries recording sidecar worktrees, accepted/rejected recommendations, screenshot route/result, and main-executor ownership.
+- `wave-43-20260601-1619-review.md` `MEDIUM-001`: resolved by copying the screenshot to `/tmp/splunkready-wave43-ui-sidecar-polish.png`, removing transient `.playwright-cli/` and `output/` artifacts from the repo, and recording the screenshot route/result.
+- `wave-43-20260601-1622-rereview.md`: reviewer passed with no open Critical, High, Medium, or Low findings.
+
+Result:
+- PASS.

@@ -251,6 +251,7 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("SplunkReady");
     expect(html).toContain("Certify AI agents before they touch production Splunk.");
     expect(html).toContain("fixture mode / after run");
+    expect(html).toContain("Fixture mode: reproducible local fixture; no live Splunk mutation.");
     expect(html).toContain("Current verdict");
     expect(html).toContain("READY");
     expect(html).toContain("Naive SOC MCP Agent 0.1.0");
@@ -373,6 +374,11 @@ describe("SplunkReady UI shell", () => {
     });
 
     expect(html).toContain("Receipts and rerun");
+    expect(html).toContain("Readiness lifecycle");
+    expect(html).toContain("<strong>Fail</strong><span>complete</span>");
+    expect(html).toContain("<strong>Patch</strong><span>complete</span>");
+    expect(html).toContain("<strong>Rerun</strong><span>complete</span>");
+    expect(html).toContain("<strong>Pass</strong><span>complete</span>");
     expect(html).toContain("Failed receipt");
     expect(html).toContain("receipt-before-001");
     expect(html).toContain("NOT READY");
@@ -388,6 +394,8 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("violation-spl-001");
     expect(html).toContain("Before receipt");
     expect(html).toContain("Policy patch JSON");
+    expect(html).not.toContain("display:none");
+    expect(html).not.toContain("fonts.googleapis");
   });
 
 
