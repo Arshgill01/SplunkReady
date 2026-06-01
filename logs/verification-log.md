@@ -2,6 +2,37 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 11:53 - Wave 05 Schema Validation
+
+Commands:
+
+- `npm test`
+- `rg -n "invalid|missing|traceRefs" test* src*`
+- `npm run verify:scaffold`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-05-20260601-1153-review.md`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-05-20260601-1155-rereview.md`
+- `sed -n '1,360p' logs/reviewer-inbox/wave-05-20260601-1156-rereview.md`
+- `npx tsc --noEmit`
+- `rg -n "mutation|destructive|write|splunk_.*(create|delete|update|edit|modify)|mcpTools|allowedTools|expectedTools" src tests docs/schemas/core-contracts.md`
+- `npm run check`
+
+Result:
+
+- PASS
+- `npm test` passed after reviewer response: 1 test file and 7 tests.
+- Required negative-case search found `invalid`, `missing`, and `traceRefs` coverage in `src/schemas/core.ts` and `tests/schemas/core.test.ts`.
+- `npx tsc --noEmit` passed after fixing NodeNext test imports and explicit issue typing.
+- Scaffold verifier passed after reviewer response: `PASS: scaffold verified`, `waves: 42`, `project files: 110`.
+
+Notes:
+
+- Runtime validators are Zod schemas, not TypeScript-only types.
+- Tests cover the Wave 05 required negative cases.
+- `HIGH-001`: fixed with a read-only Splunk tool allowlist and mutation-tool negative tests.
+- `LOW-001`: fixed by logging reviewer findings and resolution.
+- Wave 05 final rereview `LOW-001`: fixed by adding the rereview file to this audit trail.
+
 ## 2026-06-01 11:47 - Wave 04 Schema Canon
 
 Commands:

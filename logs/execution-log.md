@@ -23,6 +23,47 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 11:53 - Wave 05
+
+Scope:
+- Added executable Zod validators for the core schema contracts.
+- Added schema tests for valid examples and required negative cases.
+- Proved invalid trace events, receipts without trace refs, and missions without deterministic checks fail validation.
+
+Files changed:
+- `src/schemas/core.ts`
+- `tests/schemas/core.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-05-20260601-1153-review.md`
+- `logs/reviewer-inbox/wave-05-20260601-1155-rereview.md`
+- `logs/reviewer-inbox/wave-05-20260601-1156-rereview.md`
+
+Commands:
+- `npm test`
+- `rg -n "invalid|missing|traceRefs" test* src*`
+- `npm run verify:scaffold`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-05-20260601-1153-review.md`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-05-20260601-1155-rereview.md`
+- `sed -n '1,360p' logs/reviewer-inbox/wave-05-20260601-1156-rereview.md`
+- `npx tsc --noEmit`
+- `rg -n "mutation|destructive|write|splunk_.*(create|delete|update|edit|modify)|mcpTools|allowedTools|expectedTools" src tests docs/schemas/core-contracts.md`
+- `npm run check`
+
+Result:
+- PASS
+
+Notes:
+- `npm test` passed after reviewer response: 1 test file, 7 tests.
+- `rg -n "invalid|missing|traceRefs" test* src*` found the required negative-case coverage.
+- Scaffold verifier passed after reviewer response: `PASS: scaffold verified`, `waves: 42`, `project files: 110`.
+- `HIGH-001` fixed by adding a read-only Splunk tool allowlist for environment contract and mission tools, plus negative tests for `splunk_delete_saved_search`.
+- `LOW-001` fixed by logging the reviewer files and the High finding resolution.
+- Wave 05 final rereview `LOW-001` was resolved by adding the rereview file to this audit trail.
+
 ## 2026-06-01 11:47 - Wave 04
 
 Scope:
