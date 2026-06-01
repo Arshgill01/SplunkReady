@@ -85,3 +85,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-76-remote-cleanroom-after-ui-deterministic-checks.md`: verify the pushed branch after the Wave 75 deterministic-check UI patch from a fresh remote clone.
 - `wave-77-certification-replay-ui.md`: add an evidence-backed certification replay to make the demo more memorable without generic dashboard drift.
 - `wave-78-certification-replay-demo-route.md`: make the certification replay the primary fixture demo closeout route.
+- `wave-79-remote-cleanroom-after-demo-route.md`: verify the pushed branch after the Wave 78 demo-route change from a fresh remote clone.

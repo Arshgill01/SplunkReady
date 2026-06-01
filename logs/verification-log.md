@@ -2716,3 +2716,33 @@ Result:
 - `wave-78-20260601-2058-rereview.md` passed with no findings after the log and markdown-assertion fixes.
 - Final reviewer audit passed after `wave-78-20260601-2058-rereview.md`: 80 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed after `wave-78-20260601-2058-rereview.md`: 79 wave files, 411 project files.
+
+## 2026-06-01 - Wave 79 Remote Cleanroom After Demo Route
+
+Commands:
+
+- remote cleanroom command captured in `docs/remote-cleanroom-after-demo-route-report.md`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- First remote cleanroom attempt cloned the expected commit and passed `npm ci --ignore-scripts`, `npm run audit:reviewers`, and `npm run check`, then failed the fixture demo command because `npm run build` had not been run and `dist/src/cli.js` did not exist.
+- Corrected remote cleanroom command passed after adding `npm run build` before `npm run splunkready -- demo`.
+- Remote clone checked out `a2d36b88b6a61afe5dffde61d12b81718215b4b2`, matching the expected pushed Wave 78 commit.
+- Remote `npm ci --ignore-scripts` completed; npm reported one critical audit warning, and this wave made no dependency changes.
+- Remote reviewer audit passed: 80 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Remote full project check passed: scaffold verifier plus 31 test files / 143 tests.
+- Remote TypeScript build passed.
+- Remote fixture demo passed with live Splunk env vars unset.
+- Remote demo route inspection reported `uiRoute: /tmp/splunkready-wave79-remote-NhMNln/demo-if1AaM/splunkready-shell.html#certification-replay`, `routeIsReplay: true`, `notesHasReplay: true`, `shellHasReplay: true`, `shellHasRerun: true`, `fitsUnderThreeMinutes: true`, and `artifactCount: 18`.
+- Tracked sidecar artifact scan passed: `sidecar_artifacts=absent`.
+- Local reviewer audit failed because `wave-79-20260601-2103-review.md` was the latest Wave 79 verdict.
+- Local scaffold verifier and `git diff --check` passed after the cleanroom report and log entries were added: 80 wave files, 414 project files.
+- `wave-79-20260601-2103-review.md` reported `MEDIUM-001` because it reviewed the Wave 79 current-state docs before the cleanroom report and log entries were visible.
+- `wave-79-20260601-2105-rereview.md` passed with no findings after the cleanroom report and log entries were visible.
+- Final reviewer audit passed after `wave-79-20260601-2105-rereview.md`: 81 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after `wave-79-20260601-2105-rereview.md`: 80 wave files, 415 project files.

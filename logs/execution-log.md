@@ -3146,3 +3146,47 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 79 Remote Cleanroom After Demo Route
+
+Scope:
+- Verify the pushed `splunkready-build` branch after Wave 78 from a fresh remote clone.
+- Confirm the cleanroom clone resolves to the expected Wave 78 commit.
+- Run fresh install, reviewer audit, full project check, build, fixture demo route inspection, and tracked sidecar artifact scan.
+- Keep explicit user approval as the blocker for overall goal completion.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/remote-cleanroom-after-demo-route-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-79-remote-cleanroom-after-demo-route.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-79-20260601-2103-review.md`
+- `logs/reviewer-inbox/wave-79-20260601-2105-rereview.md`
+- reviewer inbox files if new Wave 79 findings arrive.
+
+Notes:
+- Passing cleanroom path: `/tmp/splunkready-wave79-remote-NhMNln/repo`.
+- Remote clone checked out `a2d36b88b6a61afe5dffde61d12b81718215b4b2`, matching the expected pushed Wave 78 commit.
+- Initial cleanroom attempt passed install, reviewer audit, and full check, then failed the demo command because it did not run `npm run build` before invoking `npm run splunkready`.
+- Corrected cleanroom command included `npm run build` before the demo inspection and passed.
+- Remote `npm ci --ignore-scripts` completed; npm reported one critical audit warning, and this wave made no dependency changes.
+- Remote reviewer audit passed: 80 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Remote full project check passed: scaffold verifier plus 31 test files / 143 tests.
+- Remote TypeScript build passed.
+- Remote fixture demo route inspection reported `routeIsReplay: true`, `notesHasReplay: true`, `shellHasReplay: true`, `shellHasRerun: true`, `fitsUnderThreeMinutes: true`, and `artifactCount: 18`.
+- Tracked sidecar artifact scan returned `sidecar_artifacts=absent`.
+- `wave-79-20260601-2103-review.md` reported `MEDIUM-001` because it reviewed the Wave 79 current-state docs before the remote cleanroom report and log entries were visible.
+- `MEDIUM-001` was resolved by adding `docs/remote-cleanroom-after-demo-route-report.md`, this execution-log section, and the matching verification-log section with the corrected cleanroom evidence.
+- Local scaffold verifier and `git diff --check` passed after the cleanroom report and log entries were added: 80 wave files, 414 project files.
+- `wave-79-20260601-2105-rereview.md` passed with no findings after the cleanroom report and log entries were visible.
+- Final reviewer audit passed after the Wave 79 rereview: 81 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the Wave 79 rereview: 80 wave files, 415 project files.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.
