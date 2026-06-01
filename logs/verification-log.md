@@ -1896,6 +1896,7 @@ Commands:
 - `bash scripts/verify-scaffold.sh && git diff --check`
 - `npm run check`
 - `rg -n "WAVE-CONTRACT|latest wave|Status:" docs/implementation-handoff.md MANIFEST.md PLAN.md`
+- `rg "wave51-demo|Wave 51 itself still needs|Wave 51 pending|IN PROGRESS|wave-50: triage sidecar ui|implementation not started|scaffold-only|Start Wave 00" MANIFEST.md PLAN.md docs/implementation-handoff.md docs/goal-completion-audit.md docs/remote-cleanroom-after-audit-report.md`
 
 Result:
 
@@ -1905,4 +1906,7 @@ Result:
 - Scaffold verifier and `git diff --check` passed: 54 wave files, 288 project files.
 - Full project check passed: scaffold verifier plus 31 test files / 139 tests.
 - Handoff reading-order inspection shows one `WAVE-CONTRACT` entry followed by the latest wave file instruction.
-- No Wave 53 reviewer file appeared during the wait window before commit.
+- Initial Wave 53 reviewer file `wave-53-20260601-1717-review.md` failed because the completion audit mixed the old Wave 51 demo command with Wave 52 remote-cleanroom evidence.
+- After the fix, stale/evidence-mismatch search over active handoff and audit docs returned no matches.
+- After the fix, scaffold verifier and `git diff --check` passed: 54 wave files, 289 project files.
+- After `wave-53-20260601-1719-rereview.md` arrived, `npm run audit:reviewers` passed: 55 groups, 4 pass-with-concerns files, 0 failing latest verdicts.

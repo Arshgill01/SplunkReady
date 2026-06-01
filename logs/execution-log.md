@@ -2195,6 +2195,8 @@ Files changed:
 - `docs/remote-cleanroom-after-audit-report.md`
 - `logs/execution-log.md`
 - `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-53-20260601-1717-review.md`
+- `logs/reviewer-inbox/wave-53-20260601-1719-rereview.md`
 - `logs/reviewer-inbox/wave-52-20260601-1711-review.md`
 
 Notes:
@@ -2230,8 +2232,9 @@ Notes:
 - Top-level status docs now agree on Wave 52 continuation QA as the latest pushed checkpoint.
 - Completion audit no longer marks resolved Wave 51 commit/log items as `IN PROGRESS`.
 - Handoff reading order now lists `docs/waves/WAVE-CONTRACT.md` once, then the latest wave file.
+- `wave-53-20260601-1717-review.md` `HIGH-001`: resolved by replacing the stale Wave 51 local demo command in `docs/goal-completion-audit.md` with the actual Wave 52 remote cleanroom command that produced the cited artifact directory.
+- `wave-53-20260601-1719-rereview.md`: reviewer passed with no open Wave 53 findings.
 - Overall goal remains open pending explicit user approval.
-- No Wave 53 reviewer file appeared during the wait window before commit.
 
 Result:
 - PASS.

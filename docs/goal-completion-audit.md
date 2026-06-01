@@ -61,7 +61,7 @@ npm run audit:reviewers
 Result: PASS. Reviewer audit passed across 54 groups with 4 pass-with-concerns files and 0 failing latest verdicts after the Wave 52 reviewer file arrived.
 
 ```bash
-npm run build && tmp=$(mktemp -d /tmp/splunkready-wave51-demo-XXXXXX) && env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- demo --out "$tmp" && node - <<'NODE' "$tmp" ... NODE
+remote=$(git remote get-url origin) && tmp=$(mktemp -d /tmp/splunkready-wave52-remote-XXXXXX) && git clone --depth 1 --branch splunkready-build --single-branch "$remote" "$tmp/repo" && cd "$tmp/repo" && npm ci --ignore-scripts && npm run check && npm run audit:submission-copy && npm run audit:reviewers && npm run build && out_dir=$(mktemp -d "$tmp/demo-XXXXXX") && env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- demo --out "$out_dir" && node - <<'NODE' "$out_dir" ... NODE
 ```
 
 Result: PASS. Latest remote cleanroom demo output directory: `/tmp/splunkready-wave52-remote-ZQqxzd/demo-vVBTnS`.
