@@ -2,9 +2,9 @@
 
 ## Current Source Of Truth
 
-`splunkready-build` is the long-running implementation branch and the current remote source of truth for SplunkReady.
+`splunkready-build` is the long-running implementation branch, the current remote source of truth, and the GitHub default branch for SplunkReady.
 
-Evidence from June 1, 2026:
+Current evidence from June 1, 2026:
 
 ```bash
 git status --short --branch
@@ -17,25 +17,39 @@ Result:
 ```
 
 ```bash
-git branch -r -vv
+git remote show origin
 ```
 
-Result:
+Relevant result:
 
 ```text
-origin/HEAD              -> origin/splunkready-build
-origin/splunkready-build 6feed4b wave-53: resolve handoff rereview
+HEAD branch: splunkready-build
+Remote branch:
+  splunkready-build tracked
+Local ref configured for 'git push':
+  splunkready-build pushes to splunkready-build (up to date)
 ```
 
 ```bash
-git remote -v
+git ls-remote --symref origin HEAD && git ls-remote --heads origin
 ```
 
 Result:
 
 ```text
-origin git@github.com:Arshgill01/SplunkReady.git (fetch)
-origin git@github.com:Arshgill01/SplunkReady.git (push)
+ref: refs/heads/splunkready-build	HEAD
+ede4232223e07d1abca582e9649c42ac1c688099	HEAD
+ede4232223e07d1abca582e9649c42ac1c688099	refs/heads/splunkready-build
+```
+
+```bash
+gh repo view Arshgill01/SplunkReady --json defaultBranchRef,nameWithOwner,pushedAt
+```
+
+Result:
+
+```json
+{"defaultBranchRef":{"name":"splunkready-build"},"nameWithOwner":"Arshgill01/SplunkReady","pushedAt":"2026-06-01T12:47:54Z"}
 ```
 
 ## Working Rule
@@ -49,7 +63,7 @@ origin git@github.com:Arshgill01/SplunkReady.git (push)
 
 The current remote branch listing only exposes `origin/splunkready-build`, and `origin/HEAD` points to it. The implementation history, reviewer logs, cleanroom verification, and continuation-wave checkpoints all live on `splunkready-build`.
 
-If the repository later needs a default branch rename or a protected release branch, that should be handled as an explicit repository-maintenance task after the user approves the branch policy.
+If the repository later needs a `master` mirror, protected release branch, or another default branch, that should be handled as an explicit repository-maintenance task after the user approves the branch policy.
 
 ## Goal Status
 

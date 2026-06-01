@@ -68,3 +68,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-59-current-state-sweep.md`: sweep handoff and audit docs for stale continuation status wording.
 - `wave-60-fresh-antigravity-ui-1759-triage.md`: triage the fresh Antigravity UI sidecar launched after Wave 59.
 - `wave-61-remote-cleanroom-after-sidecar-triage.md`: verify the pushed branch after sidecar triage from a fresh remote clone.
+- `wave-62-remote-branch-handoff-refresh.md`: refresh GitHub default-branch and remote branch handoff evidence.

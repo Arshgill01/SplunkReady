@@ -2121,3 +2121,34 @@ Result:
 - `wave-61-20260601-1816-review.md` passed with no open findings.
 - Final reviewer audit passed after the Wave 61 reviewer file arrived: 63 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 62 wave files, 320 project files.
+
+## 2026-06-01 - Wave 62 Remote Branch Handoff Refresh
+
+Commands:
+
+- `git status --short --branch`
+- `git remote show origin`
+- `git ls-remote --symref origin HEAD && git ls-remote --heads origin`
+- `gh repo view Arshgill01/SplunkReady --json defaultBranchRef,nameWithOwner,pushedAt`
+- `git branch -vv && git branch -r -vv`
+- `rg -n "Status: implemented through Wave 61|through Wave 61 continuation|Wave 61 keeps" MANIFEST.md PLAN.md docs/implementation-handoff.md docs/goal-completion-audit.md docs/branch-strategy.md docs/remote-branch-handoff-refresh-report.md logs/execution-log.md logs/verification-log.md`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Local status showed `## splunkready-build...origin/splunkready-build`.
+- `git remote show origin` reported `HEAD branch: splunkready-build` and push configuration up to date.
+- `git ls-remote --symref origin HEAD` reported `ref: refs/heads/splunkready-build	HEAD`; the only remote head listed was `refs/heads/splunkready-build` at `ede4232223e07d1abca582e9649c42ac1c688099`.
+- GitHub CLI reported default branch `splunkready-build` for `Arshgill01/SplunkReady`.
+- Local and remote branch listings showed `splunkready-build` tracking `origin/splunkready-build` at `ede4232 wave-61: verify remote after sidecar triage`.
+- Stale Wave 61 active-status search returned no matches.
+- Reviewer audit passed before a Wave 62-specific reviewer inbox file arrived: 63 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Scaffold verifier and `git diff --check` passed: 63 wave files, 322 project files.
+- `wave-62-20260601-1821-review.md` finding `HIGH-001` was resolved by adding the exact required Wave 62 reviewer and scaffold gates above.
+- `wave-62-20260601-1821-review.md` finding `MEDIUM-001` was resolved by moving the Wave 62 execution-log section to the chronological end of `logs/execution-log.md`.
+- `wave-62-20260601-1822-rereview.md` passed with no open findings.
+- Follow-up scaffold verifier and `git diff --check` passed after the rereview file arrived: 63 wave files, 323 project files.
+- Final reviewer audit passed after the Wave 62 rereview file arrived: 64 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 63 wave files, 324 project files.
