@@ -8,12 +8,20 @@ Both modes must implement the same internal adapter interface:
 
 ```ts
 interface SplunkAccessAdapter {
-  getInfo(): Promise<SplunkInfo>;
-  getIndexes(): Promise<IndexSummary[]>;
-  getMetadata(input: MetadataRequest): Promise<MetadataResult>;
-  getKnowledgeObjects(input: KnowledgeObjectRequest): Promise<KnowledgeObjectResult>;
-  runQuery(input: RunQueryRequest): Promise<QueryResult>;
-  runSavedSearch(input: RunSavedSearchRequest): Promise<SavedSearchResult>;
+  mode: "fixture" | "live";
+  traceHooks?: AdapterTraceHooks;
+  getInfo(options: AdapterCallOptions): Promise<SplunkInfo>;
+  getUserInfo(options: AdapterCallOptions): Promise<SplunkUserInfo>;
+  getIndexes(options: AdapterCallOptions): Promise<IndexSummary[]>;
+  getMetadata(input: MetadataRequest, options: AdapterCallOptions): Promise<MetadataResult>;
+  getKnowledgeObjects(
+    input: KnowledgeObjectRequest,
+    options: AdapterCallOptions
+  ): Promise<KnowledgeObjectResult>;
+  runQuery(input: RunQueryRequest, options: AdapterCallOptions): Promise<QueryResult>;
+  runSavedSearch(input: RunSavedSearchRequest, options: AdapterCallOptions): Promise<SavedSearchResult>;
+  explainSpl?(input: ExplainSplRequest, options: AdapterCallOptions): Promise<ExplainSplResult>;
+  optimizeSpl?(input: OptimizeSplRequest, options: AdapterCallOptions): Promise<OptimizeSplResult>;
 }
 ```
 
@@ -76,4 +84,3 @@ Stop implementation if:
 - live mode receives extra capabilities not represented in fixture mode;
 - the grader contains mode-specific branches;
 - receipt evidence differs by mode for the same trace.
-

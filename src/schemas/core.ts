@@ -243,3 +243,4 @@ export type TraceEvent = z.infer<typeof traceEventSchema>;
 export type Violation = z.infer<typeof violationSchema>;
 export type ReadinessReceipt = z.infer<typeof readinessReceiptSchema>;
 export type PolicyPatch = z.infer<typeof policyPatchSchema>;
+export type ReadOnlySplunkToolName = z.infer<typeof readOnlySplunkToolNameSchema>;

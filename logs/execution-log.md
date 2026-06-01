@@ -23,6 +23,48 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 12:02 - Wave 06
+
+Scope:
+- Defined the shared Splunk access adapter contract for fixture and live modes.
+- Added normalized request, result, trace-hook, optional AI Assistant helper, user-info, and adapter error types.
+- Added adapter contract tests proving normalized outputs and preserved error request context.
+- Updated fixture/live parity docs to include user info and optional SPL explain/optimize methods.
+
+Files changed:
+- `src/adapters/splunk-access.ts`
+- `tests/adapters/splunk-access.test.ts`
+- `src/schemas/core.ts`
+- `docs/fixture-live-parity.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-06-20260601-1202-review.md`
+- `logs/reviewer-inbox/wave-06-20260601-1203-rereview.md`
+- `logs/reviewer-inbox/wave-06-20260601-1204-rereview.md`
+
+Commands:
+- `npx tsc --noEmit`
+- `npm test`
+- `npm run check`
+- `rg -n "SplunkAccessAdapter|getUserInfo|splunk_get_knowledge_objects|explainSpl|optimizeSpl|SplunkAdapterError" src tests docs/fixture-live-parity.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+- `sed -n '1,360p' logs/reviewer-inbox/wave-06-20260601-1202-review.md`
+- `sed -n '1,360p' logs/reviewer-inbox/wave-06-20260601-1203-rereview.md`
+- `sed -n '1,360p' logs/reviewer-inbox/wave-06-20260601-1204-rereview.md`
+
+Result:
+- PASS
+
+Notes:
+- `npm run check` passed: scaffold verifier passed and 2 test files / 9 tests passed.
+- TypeScript typecheck passed after the adapter fixture test was typed as `SplunkAccessAdapter`.
+- `MEDIUM-001` fixed by aligning the fixture/live parity doc snippet with the source adapter contract, including `mode`, `traceHooks?`, and `AdapterCallOptions`.
+- Wave 06 rereview `MEDIUM-001` was stale; current parity doc search shows `mode`, `traceHooks?`, and `AdapterCallOptions`.
+- `LOW-001` fixed by adding the reviewer files and resolution to this audit trail.
+- Wave 06 final rereview passed with no open findings.
+
 ## 2026-06-01 11:53 - Wave 05
 
 Scope:

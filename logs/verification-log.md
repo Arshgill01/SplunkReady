@@ -2,6 +2,34 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 12:02 - Wave 06 MCP Adapter Contract
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npm test`
+- `npm run check`
+- `rg -n "SplunkAccessAdapter|getUserInfo|splunk_get_knowledge_objects|explainSpl|optimizeSpl|SplunkAdapterError" src tests docs/fixture-live-parity.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+- `sed -n '1,360p' logs/reviewer-inbox/wave-06-20260601-1202-review.md`
+- `sed -n '1,360p' logs/reviewer-inbox/wave-06-20260601-1203-rereview.md`
+- `sed -n '1,360p' logs/reviewer-inbox/wave-06-20260601-1204-rereview.md`
+
+Result:
+
+- PASS
+- `npx tsc --noEmit` passed.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 116`; 2 test files and 9 tests passed.
+- Adapter contract search found the shared interface, user-info method, knowledge-object coverage, optional SPL helper methods, and adapter error shape.
+
+Notes:
+
+- Fixture/live implementations are intentionally deferred to later adapter waves.
+- `MEDIUM-001`: fixed by aligning `docs/fixture-live-parity.md` with the source adapter contract.
+- Wave 06 rereview `MEDIUM-001` was stale; current parity doc search shows `mode`, `traceHooks?`, and `AdapterCallOptions`.
+- `LOW-001`: fixed by adding the reviewer files and resolution to this audit trail.
+- Wave 06 final rereview passed with no open findings.
+
 ## 2026-06-01 11:53 - Wave 05 Schema Validation
 
 Commands:
