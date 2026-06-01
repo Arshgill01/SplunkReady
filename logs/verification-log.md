@@ -2152,3 +2152,33 @@ Result:
 - Follow-up scaffold verifier and `git diff --check` passed after the rereview file arrived: 63 wave files, 323 project files.
 - Final reviewer audit passed after the Wave 62 rereview file arrived: 64 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 63 wave files, 324 project files.
+
+## 2026-06-01 - Wave 63 Goal Audit Refresh
+
+Commands:
+
+- `npm run check`
+- `npm run audit:submission-copy`
+- `npm run audit:reviewers`
+- `npm run build`
+- `env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- demo --out /tmp/splunkready-wave63-audit-gzyOEP/demo`
+- `node - <<'NODE' /tmp/splunkready-wave63-audit-gzyOEP/demo ... NODE`
+- `rg -n "Status: implemented through Wave 62|through Wave 62 continuation|Wave 62 keeps|Wave: 51 - Goal Completion Audit|Wave 52 remote cleanroom|fresh Wave 51|Latest remote cleanroom demo" MANIFEST.md PLAN.md docs/implementation-handoff.md docs/goal-completion-audit.md logs/execution-log.md logs/verification-log.md`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Full check passed: scaffold verifier plus 31 test files / 139 tests.
+- Submission-copy audit passed: 28 required claims.
+- Reviewer audit passed: 64 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Build passed.
+- Fixture demo passed with live Splunk env vars unset.
+- Demo output contained 18 artifacts, shell HTML, JSON/Markdown policy patch, before fixture `NOT READY` score 0, after fixture `READY` score 100, and deterministic rule IDs `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, `SPL-003`.
+- Demo rehearsal route: `/tmp/splunkready-wave63-audit-gzyOEP/demo/splunkready-shell.html#rerun-receipts`.
+- Demo rehearsal passed under 3 minutes with measured CLI orchestration `0.028s`.
+- Stale audit search found one active `fresh Wave 51 demo` row in `docs/goal-completion-audit.md`; it was updated to Wave 63 demo evidence. The other match was historical Wave 53 execution-log text.
+- Scaffold verifier and `git diff --check` passed: 64 wave files, 325 project files.
+- Wave 63 reviewer rereview passed with no open findings after clearing `HIGH-001` and `MEDIUM-001`.
+- Final reviewer audit passed after the Wave 63 rereview file arrived: 65 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 64 wave files, 327 project files.
