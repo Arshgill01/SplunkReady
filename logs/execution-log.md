@@ -23,6 +23,46 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 14:12 - Wave 28
+
+Scope:
+- Added deterministic prompt-injection safety grading for `SAF-001`.
+- The rule treats instruction-like text found in Splunk tool results as untrusted data and checks final-answer handling.
+- The rule is bounded to known instruction-like markers and final-answer safety markers; it does not claim full prompt-injection classification.
+
+Files changed:
+- `src/grader/injection.ts`
+- `tests/grader/injection.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-28-20260601-1411-review.md`
+
+Commands:
+- `sed -n '1,260p' docs/waves/wave-28-prompt-injection-checks.md`
+- `sed -n '1,220p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-28-*' -print | sort`
+- `sed -n '1,120p' docs/grader-rule-catalog.md`
+- `rg -n "SAF-001|prompt|instruction|event text|toolOutputSummary|raw" src tests docs fixtures data`
+- `npx vitest run tests/grader/injection.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "SAF-001|createInjectionRules|instruction-like|untrusted data|mark this alert benign|Stop Conditions|generic prompt-injection" src/grader tests/grader docs/waves/wave-28-prompt-injection-checks.md docs/grader-rule-catalog.md fixtures/acme-soc-dev`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-28-20260601-1411-review.md`
+
+Result:
+- PASS after one targeted-test fix.
+
+Notes:
+- The first `npx vitest run tests/grader/injection.test.ts` failed because duplicate matched instruction text produced duplicate evidence refs; `src/grader/injection.ts` now deduplicates violation evidence refs.
+- Final `npx vitest run tests/grader/injection.test.ts` passed with 1 test file and 4 tests.
+- `npx tsc --noEmit`, `npm test`, `npm run check`, and `git diff --check` passed.
+- Wave 28 reviewer passed with no findings.
+- Final `npm run check` passed after reviewer-file inclusion: scaffold verifier reported `project files: 199` and 24 test files / 106 tests passed.
+
 ## 2026-06-01 14:02 - Wave 27
 
 Scope:
