@@ -3,10 +3,12 @@ import { dirname, join } from "node:path";
 
 import {
   environmentContractSchema,
+  policyPatchSchema,
   readinessReceiptSchema,
   traceEventSchema,
   violationSchema,
   type EnvironmentContract,
+  type PolicyPatch,
   type ReadinessReceipt,
   type TraceEvent,
   type Violation
@@ -20,6 +22,10 @@ export interface UiArtifactPaths {
   beforeViolations?: string;
   afterTrace?: string;
   afterViolations?: string;
+  beforeReceipt?: string;
+  afterReceipt?: string;
+  policyPatchJson?: string;
+  policyPatchMarkdown?: string;
   receipt: string;
   trace: string;
   violations: string;
@@ -31,6 +37,9 @@ export interface UiArtifacts {
   contract?: EnvironmentContract;
   missions: MissionDefinition[];
   receipt: ReadinessReceipt;
+  beforeReceipt?: ReadinessReceipt;
+  afterReceipt?: ReadinessReceipt;
+  policyPatch?: PolicyPatch;
   traceEvents: TraceEvent[];
   violations: Violation[];
   beforeTraceEvents?: TraceEvent[];
@@ -61,6 +70,22 @@ const readOptionalViolations = async (path: string): Promise<Violation[]> => {
   }
 
   return violationSchema.array().parse(await readJson(path));
+};
+
+const readOptionalReceipt = async (path: string): Promise<ReadinessReceipt | undefined> => {
+  if (!(await exists(path))) {
+    return undefined;
+  }
+
+  return readinessReceiptSchema.parse(await readJson(path));
+};
+
+const readOptionalPolicyPatch = async (path: string): Promise<PolicyPatch | undefined> => {
+  if (!(await exists(path))) {
+    return undefined;
+  }
+
+  return policyPatchSchema.parse(await readJson(path));
 };
 
 const readOptionalContract = async (path: string): Promise<EnvironmentContract | undefined> => {
@@ -112,6 +137,10 @@ export const loadUiArtifacts = async (outDir: string): Promise<UiArtifacts> => {
   const beforeViolationsPath = join(outDir, "violations-before.json");
   const afterTracePath = join(outDir, "trace-after.json");
   const afterViolationsPath = join(outDir, "violations-after.json");
+  const beforeReceiptPath = join(outDir, "receipt-before-001.json");
+  const afterReceiptPath = join(outDir, "receipt-after-001.json");
+  const policyPatchPath = join(outDir, "policy-patch.json");
+  const policyPatchMarkdownPath = join(outDir, "policy-patch.md");
   const tracePath = join(outDir, `trace-${current.phase}.json`);
   const violationPath = join(outDir, `violations-${current.phase}.json`);
   const beforeTraceEvents = await readOptionalTrace(beforeTracePath);
@@ -125,6 +154,9 @@ export const loadUiArtifacts = async (outDir: string): Promise<UiArtifacts> => {
     contract: await readOptionalContract(contractPath),
     missions: await readOptionalMissions(missionsPath),
     receipt,
+    beforeReceipt: await readOptionalReceipt(beforeReceiptPath),
+    afterReceipt: await readOptionalReceipt(afterReceiptPath),
+    policyPatch: await readOptionalPolicyPatch(policyPatchPath),
     traceEvents: current.phase === "after" ? afterTraceEvents : beforeTraceEvents,
     violations: current.phase === "after" ? afterViolations : beforeViolations,
     beforeTraceEvents,
@@ -138,6 +170,10 @@ export const loadUiArtifacts = async (outDir: string): Promise<UiArtifacts> => {
       beforeViolations: beforeViolationsPath,
       afterTrace: afterTracePath,
       afterViolations: afterViolationsPath,
+      beforeReceipt: beforeReceiptPath,
+      afterReceipt: afterReceiptPath,
+      policyPatchJson: policyPatchPath,
+      policyPatchMarkdown: policyPatchMarkdownPath,
       receipt: current.path,
       trace: tracePath,
       violations: violationPath
@@ -523,6 +559,150 @@ const renderMissionTraceView = (artifacts: UiArtifacts): string => {
   </section>`;
 };
 
+const receiptSummaryRows = (receipt: ReadinessReceipt): string =>
+  `<table>
+    <tbody>
+      <tr><th>Receipt</th><td><code>${escapeHtml(receipt.id)}</code></td></tr>
+      <tr><th>Verdict</th><td>${escapeHtml(receipt.verdict)}</td></tr>
+      <tr><th>Score</th><td>${escapeValue(receipt.score)}</td></tr>
+      <tr><th>Violations</th><td>${escapeValue(receipt.violations.length)}</td></tr>
+      <tr><th>Critical</th><td>${escapeValue(receipt.criticalViolations.length)}</td></tr>
+    </tbody>
+  </table>`;
+
+const renderScoreComparison = (beforeReceipt: ReadinessReceipt | undefined, afterReceipt: ReadinessReceipt | undefined): string => {
+  if (!beforeReceipt || !afterReceipt) {
+    return `<p class="empty">Before and after receipts are both required for score comparison.</p>`;
+  }
+
+  const resolvedViolations = Array.isArray(afterReceipt.rerunComparison.resolvedViolations)
+    ? afterReceipt.rerunComparison.resolvedViolations.map((value) => String(value))
+    : beforeReceipt.violations.filter((violationId) => !afterReceipt.violations.includes(violationId));
+  const uniqueResolvedViolations = [...new Set(resolvedViolations)];
+
+  return `<table>
+    <thead><tr><th>Before score</th><th>After score</th><th>Before verdict</th><th>After verdict</th><th>Resolved violations</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>${escapeValue(beforeReceipt.score)}</td>
+        <td>${escapeValue(afterReceipt.score)}</td>
+        <td>${escapeHtml(beforeReceipt.verdict)}</td>
+        <td>${escapeHtml(afterReceipt.verdict)}</td>
+        <td>${uniqueResolvedViolations.length > 0 ? uniqueResolvedViolations.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "None"}</td>
+      </tr>
+    </tbody>
+  </table>`;
+};
+
+const renderPolicyPatch = (policyPatch: PolicyPatch | undefined): string => {
+  if (!policyPatch) {
+    return `<p class="empty">No policy-patch.json artifact loaded.</p>`;
+  }
+
+  const rules = policyPatch.rules
+    .map(
+      (rule) => `<tr>
+        <td><code>${escapeHtml(rule.id)}</code></td>
+        <td>${escapeHtml(rule.text)}</td>
+      </tr>`
+    )
+    .join("");
+
+  return `<table>
+    <thead><tr><th>Patch rule</th><th>Text</th></tr></thead>
+    <tbody>
+      <tr><th>Patch</th><td><code>${escapeHtml(policyPatch.id)}</code></td></tr>
+      <tr><th>Source receipt</th><td><code>${escapeHtml(policyPatch.sourceReceiptId)}</code></td></tr>
+      <tr><th>Status</th><td>${escapeHtml(policyPatch.status)}</td></tr>
+      ${rules}
+    </tbody>
+  </table>`;
+};
+
+const renderCriticalIssueFixPairs = (
+  beforeReceipt: ReadinessReceipt | undefined,
+  beforeViolations: Violation[],
+  policyPatch: PolicyPatch | undefined
+): string => {
+  if (!beforeReceipt || beforeReceipt.criticalViolations.length === 0) {
+    return `<p class="empty">No critical issues in the failed receipt.</p>`;
+  }
+
+  const violationById = new Map(beforeViolations.map((violation) => [violation.id, violation]));
+  const patchRules = policyPatch?.rules ?? [];
+  const criticalViolationIds = [...new Set(beforeReceipt.criticalViolations)];
+  const matchingPatchRule = (violation: Violation | undefined, index: number): PolicyPatch["rules"][number] | undefined => {
+    if (!violation) {
+      return patchRules[index];
+    }
+
+    if (violation.ruleId.startsWith("EVD")) {
+      return patchRules.find((rule) => rule.id.includes("evidence") || rule.text.toLowerCase().includes("evidence"));
+    }
+
+    if (violation.ruleId.startsWith("KO") || violation.ruleId === "SPL-003") {
+      return patchRules.find((rule) => rule.id.includes("saved-search") || rule.text.toLowerCase().includes("saved search"));
+    }
+
+    if (violation.ruleId === "SPL-001" || violation.ruleId.startsWith("SAF")) {
+      return patchRules.find((rule) => rule.id.includes("contract") || rule.text.toLowerCase().includes("contract"));
+    }
+
+    return patchRules[index];
+  };
+
+  const rows = criticalViolationIds
+    .map((violationId, index) => {
+      const violation = violationById.get(violationId);
+      const patchRule = matchingPatchRule(violation, index);
+      const fallbackFix = violation?.suggestedPolicyPatch;
+
+      return `<tr>
+        <td><code>${escapeHtml(violationId)}</code>${violation ? `<br><code>${escapeHtml(violation.ruleId)}</code> ${escapeHtml(violation.reason)}` : ""}</td>
+        <td>${patchRule ? `<code>${escapeHtml(patchRule.id)}</code><br>${escapeHtml(patchRule.text)}` : escapeHtml(fallbackFix ?? "No patch rule mapped.")}</td>
+      </tr>`;
+    })
+    .join("");
+
+  return `<table>
+    <thead><tr><th>Critical issue</th><th>Policy patch or fix</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+};
+
+const renderReceiptRerunView = (artifacts: UiArtifacts): string => {
+  const beforeReceipt = artifacts.beforeReceipt;
+  const afterReceipt = artifacts.afterReceipt ?? artifacts.receipt;
+
+  return `<section id="rerun-receipts" class="shell-section" aria-label="Readiness receipt rerun comparison">
+    <h2>Receipts and rerun</h2>
+    <div class="receipt-comparison">
+      <div>
+        <h3>Failed receipt</h3>
+        ${beforeReceipt ? receiptSummaryRows(beforeReceipt) : `<p class="empty">No receipt-before-001.json artifact loaded.</p>`}
+      </div>
+      <div>
+        <h3>Rerun receipt</h3>
+        ${afterReceipt ? receiptSummaryRows(afterReceipt) : `<p class="empty">No receipt-after-001.json artifact loaded.</p>`}
+      </div>
+    </div>
+    <div class="trace-phases">
+      <div>
+        <h3>Score comparison</h3>
+        ${renderScoreComparison(beforeReceipt, afterReceipt)}
+      </div>
+      <div>
+        <h3>Policy patch</h3>
+        ${renderPolicyPatch(artifacts.policyPatch)}
+      </div>
+      <div>
+        <h3>Critical issues and fixes</h3>
+        ${renderCriticalIssueFixPairs(beforeReceipt, artifacts.beforeViolations ?? [], artifacts.policyPatch)}
+      </div>
+    </div>
+  </section>`;
+};
+
 const renderArtifactPaths = (paths: UiArtifactPaths): string =>
   `<dl class="artifact-paths">
     ${paths.contract ? `<div><dt>Contract</dt><dd><code>${escapeHtml(paths.contract)}</code></dd></div>` : ""}
@@ -531,6 +711,10 @@ const renderArtifactPaths = (paths: UiArtifactPaths): string =>
     ${paths.beforeViolations ? `<div><dt>Before violations</dt><dd><code>${escapeHtml(paths.beforeViolations)}</code></dd></div>` : ""}
     ${paths.afterTrace ? `<div><dt>After trace</dt><dd><code>${escapeHtml(paths.afterTrace)}</code></dd></div>` : ""}
     ${paths.afterViolations ? `<div><dt>After violations</dt><dd><code>${escapeHtml(paths.afterViolations)}</code></dd></div>` : ""}
+    ${paths.beforeReceipt ? `<div><dt>Before receipt</dt><dd><code>${escapeHtml(paths.beforeReceipt)}</code></dd></div>` : ""}
+    ${paths.afterReceipt ? `<div><dt>After receipt</dt><dd><code>${escapeHtml(paths.afterReceipt)}</code></dd></div>` : ""}
+    ${paths.policyPatchJson ? `<div><dt>Policy patch JSON</dt><dd><code>${escapeHtml(paths.policyPatchJson)}</code></dd></div>` : ""}
+    ${paths.policyPatchMarkdown ? `<div><dt>Policy patch Markdown</dt><dd><code>${escapeHtml(paths.policyPatchMarkdown)}</code></dd></div>` : ""}
     <div><dt>Receipt</dt><dd><code>${escapeHtml(paths.receipt)}</code></dd></div>
     <div><dt>Trace</dt><dd><code>${escapeHtml(paths.trace)}</code></dd></div>
     <div><dt>Violations</dt><dd><code>${escapeHtml(paths.violations)}</code></dd></div>
@@ -766,6 +950,12 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       margin-top: 24px;
     }
 
+    .receipt-comparison {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+
     .timeline-table th:nth-child(4),
     .timeline-table td:nth-child(4) {
       width: 34%;
@@ -845,6 +1035,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       .receipt-strip,
       .section-grid,
       .contract-grid,
+      .receipt-comparison,
       .provenance-columns {
         grid-template-columns: 1fr;
       }
@@ -871,6 +1062,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
         <a aria-current="page" href="#receipt">Readiness Receipt</a>
         <a href="#contract">Contract</a>
         <a href="#mission-trace">Mission trace</a>
+        <a href="#rerun-receipts">Rerun receipts</a>
         <a href="#provenance">Provenance</a>
         <a href="#violations">Violations</a>
         <a href="#artifacts">Artifacts</a>
@@ -934,6 +1126,8 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
           </div>
         </div>
       </section>
+
+      ${renderReceiptRerunView(artifacts)}
 
       ${renderContractView(artifacts)}
 

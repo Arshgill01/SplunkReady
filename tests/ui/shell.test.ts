@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { loadUiArtifacts, renderUiShell, writeUiShell, type UiArtifactPaths } from "../../src/ui/shell.js";
-import type { EnvironmentContract, ReadinessReceipt, TraceEvent, Violation } from "../../src/schemas/core.js";
+import type { EnvironmentContract, PolicyPatch, ReadinessReceipt, TraceEvent, Violation } from "../../src/schemas/core.js";
 import type { MissionDefinition } from "../../src/missions/dsl.js";
 
 const artifactPaths = (outDir = "/tmp/splunkready-ui"): UiArtifactPaths => ({
@@ -15,6 +15,10 @@ const artifactPaths = (outDir = "/tmp/splunkready-ui"): UiArtifactPaths => ({
   beforeViolations: join(outDir, "violations-before.json"),
   afterTrace: join(outDir, "trace-after.json"),
   afterViolations: join(outDir, "violations-after.json"),
+  beforeReceipt: join(outDir, "receipt-before-001.json"),
+  afterReceipt: join(outDir, "receipt-after-001.json"),
+  policyPatchJson: join(outDir, "policy-patch.json"),
+  policyPatchMarkdown: join(outDir, "policy-patch.md"),
   receipt: join(outDir, "receipt-after-001.json"),
   trace: join(outDir, "trace-after.json"),
   violations: join(outDir, "violations-after.json")
@@ -46,6 +50,19 @@ const receipt = (overrides: Partial<ReadinessReceipt> = {}): ReadinessReceipt =>
   generatedBy: "Agent Readiness Compiler",
   ...overrides
 });
+
+const failedReceipt = (): ReadinessReceipt =>
+  receipt({
+    id: "receipt-before-001",
+    verdict: "NOT READY",
+    score: 60,
+    passedMissions: [],
+    failedMissions: ["mission-security-lateral-movement-readiness"],
+    criticalViolations: ["violation-spl-001", "violation-spl-001", "violation-evd-001"],
+    violations: ["violation-spl-001", "violation-evd-001"],
+    policyPatchSummary: [{ id: "patch-security-readiness", status: "exported" }],
+    rerunComparison: {}
+  });
 
 const traceEvent = (id: string): TraceEvent => ({
   id,
@@ -135,6 +152,26 @@ const broadQueryViolation = (): Violation => ({
   evidence: { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" },
   suggestedPolicyPatch: "Use authorized indexes and validated saved searches.",
   evidenceRefs: []
+});
+
+const policyPatch = (): PolicyPatch => ({
+  id: "patch-security-readiness",
+  createdAt: "2026-06-01T06:45:00.000Z",
+  sourceReceiptId: "receipt-before-001",
+  targetAgent: { name: "Naive SOC MCP Agent", version: "0.1.0" },
+  rules: [
+    {
+      id: "use-validated-saved-search",
+      text: "Discover and run SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain before custom SPL."
+    },
+    {
+      id: "carry-evidence-refs",
+      text: "Carry result count, saved-search provenance, and evidence refs into the final answer."
+    }
+  ],
+  violationRefs: ["violation-spl-001", "violation-evd-001"],
+  status: "exported",
+  summary: "Patch the agent policy for the security readiness rerun."
 });
 
 const contract = (): EnvironmentContract => ({
@@ -234,6 +271,7 @@ describe("SplunkReady UI shell", () => {
 
     await writeJson(join(outDir, "receipt-before-001.json"), receipt({ id: "receipt-before-001", verdict: "NOT READY", score: 60 }));
     await writeJson(join(outDir, "receipt-after-001.json"), receipt());
+    await writeJson(join(outDir, "policy-patch.json"), policyPatch());
     await writeJson(join(outDir, "environment-contract.json"), contract());
     await writeJson(join(outDir, "missions.json"), [mission()]);
     await writeJson(join(outDir, "trace-before.json"), beforeTrace());
@@ -245,6 +283,9 @@ describe("SplunkReady UI shell", () => {
 
     expect(artifacts.phase).toBe("after");
     expect(artifacts.receipt.verdict).toBe("READY");
+    expect(artifacts.beforeReceipt?.verdict).toBe("NOT READY");
+    expect(artifacts.afterReceipt?.score).toBe(100);
+    expect(artifacts.policyPatch?.id).toBe("patch-security-readiness");
     expect(artifacts.contract?.restrictedIndexes).toEqual(["finance_pii"]);
     expect(artifacts.missions[0]?.preferredSavedSearchRefs).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain");
     expect(artifacts.traceEvents).toHaveLength(2);
@@ -312,6 +353,44 @@ describe("SplunkReady UI shell", () => {
     expect(html.match(/violation-spl-001/g)).toHaveLength(1);
   });
 
+  it("renders failed receipt, policy patch, rerun receipt, and score comparison", () => {
+    const html = renderUiShell({
+      phase: "after",
+      outDir: "/tmp/splunkready-ui",
+      contract: contract(),
+      missions: [mission()],
+      receipt: receipt(),
+      beforeReceipt: failedReceipt(),
+      afterReceipt: receipt(),
+      policyPatch: policyPatch(),
+      traceEvents: afterTrace(),
+      violations: [],
+      beforeTraceEvents: beforeTrace(),
+      beforeViolations: [broadQueryViolation(), violation()],
+      afterTraceEvents: afterTrace(),
+      afterViolations: [],
+      paths: artifactPaths()
+    });
+
+    expect(html).toContain("Receipts and rerun");
+    expect(html).toContain("Failed receipt");
+    expect(html).toContain("receipt-before-001");
+    expect(html).toContain("NOT READY");
+    expect(html).toContain("Rerun receipt");
+    expect(html).toContain("receipt-after-001");
+    expect(html).toContain("READY");
+    expect(html).toContain("<td>60</td>");
+    expect(html).toContain("<td>100</td>");
+    expect(html).toContain("patch-security-readiness");
+    expect(html).toContain("use-validated-saved-search");
+    expect(html).toContain("carry-evidence-refs");
+    expect(html).toContain("Critical issues and fixes");
+    expect(html).toContain("violation-spl-001");
+    expect(html).toContain("Before receipt");
+    expect(html).toContain("Policy patch JSON");
+  });
+
+
   it("renders deterministic violations when the current receipt is not ready", () => {
     const html = renderUiShell({
       phase: "before",
@@ -349,6 +428,8 @@ describe("SplunkReady UI shell", () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-ui-write-"));
 
     await writeJson(join(outDir, "receipt-after-001.json"), receipt());
+    await writeJson(join(outDir, "receipt-before-001.json"), failedReceipt());
+    await writeJson(join(outDir, "policy-patch.json"), policyPatch());
     await writeJson(join(outDir, "environment-contract.json"), contract());
     await writeJson(join(outDir, "missions.json"), [mission()]);
     await writeJson(join(outDir, "trace-before.json"), beforeTrace());
@@ -363,6 +444,7 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("Readiness Receipt");
     expect(html).toContain("Environment contract");
     expect(html).toContain("Mission and trace");
+    expect(html).toContain("Receipts and rerun");
     expect(html).toContain("receipt-after-001.json");
   });
 

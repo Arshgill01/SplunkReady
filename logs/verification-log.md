@@ -2,6 +2,58 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 15:14 - Wave 37 UI Receipt and Rerun Views
+
+Commands:
+
+- `sed -n '1,220p' docs/waves/wave-37-ui-receipt-rerun.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-37-*' -print | sort`
+- `sed -n '1,220p' logs/reviewer-inbox/wave-37-20260601-1509-review.md`
+- `sed -n '1,220p' logs/reviewer-inbox/wave-37-20260601-1510-rereview.md`
+- `git diff -- src/ui/shell.ts tests/ui/shell.test.ts`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `npx vitest run tests/ui/shell.test.ts`
+- `npx tsc --noEmit`
+- `tmp=$(mktemp -d /tmp/splunkready-wave37-ui-XXXXXX) && npm run build && npm run splunkready -- compile --out "$tmp" && npm run splunkready -- evaluate --out "$tmp" && npm run splunkready -- receipt --out "$tmp" && npm run splunkready -- rerun --out "$tmp" && node --input-type=module -e "import { writeUiShell } from './dist/src/ui/shell.js'; const p = await writeUiShell(process.argv[1]); console.log(process.argv[1]); console.log(p);" "$tmp"`
+- `rg -n "Receipts and rerun|Failed receipt|Rerun receipt|Score comparison|Critical issues and fixes|No patch rule mapped|policy-patch|receipt-before|receipt-after|NOT READY|READY" /tmp/splunkready-wave37-ui-m694uI/splunkready-shell.html`
+- `node -e "const fs=require('fs'); const html=fs.readFileSync('/tmp/splunkready-wave37-ui-m694uI/splunkready-shell.html','utf8'); const markers=['Receipt identity','Receipts and rerun','Environment contract','Mission and trace']; console.log(JSON.stringify(Object.fromEntries(markers.map(m=>[m,html.indexOf(m)])), null, 2)); if (html.includes('No patch rule mapped')) process.exit(1); if (!(html.indexOf('Receipts and rerun') < html.indexOf('Environment contract'))) process.exit(2);"`
+- `sed -n '430,485p' /tmp/splunkready-wave37-ui-m694uI/splunkready-shell.html`
+- `python3 -m http.server 41740 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41740/splunkready-shell.html`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave37-rerun-receipts.png --full-page`
+- `file /tmp/splunkready-wave37-rerun-receipts.png && ls -lh /tmp/splunkready-wave37-rerun-receipts.png`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-37-*' -print | sort`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-37-*' -print | sort`
+
+Result:
+
+- PASS.
+- `npx vitest run tests/ui/shell.test.ts` passed: 1 test file and 8 tests.
+- `npx tsc --noEmit` passed.
+- Fixture shell generation passed through `compile`, `evaluate`, `receipt`, `rerun`, then wrote `/tmp/splunkready-wave37-ui-m694uI/splunkready-shell.html`.
+- Generated HTML contains `Receipts and rerun`, failed receipt `receipt-before-001` / `NOT READY`, rerun receipt `receipt-after-001` / `READY`, score comparison, policy patch, and critical issue/fix pairs.
+- Order check passed: `Receipts and rerun` appears before `Environment contract`.
+- Missing-patch fallback check passed: generated shell does not contain `No patch rule mapped`.
+- Playwright snapshot showed the receipt/rerun comparison immediately after receipt identity, with `patch-security-readiness`, `inject-contract-summary`, `discover-saved-searches-first`, and `carry-evidence-into-final-answer`.
+- Playwright screenshot passed and wrote `/tmp/splunkready-wave37-rerun-receipts.png`.
+- Screenshot file check passed: 1280 x 6219 PNG, 904 KB.
+- Final reviewer inbox scan found `logs/reviewer-inbox/wave-37-20260601-1509-review.md` and `logs/reviewer-inbox/wave-37-20260601-1510-rereview.md`.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 225`; 30 test files and 133 tests passed.
+- `git diff --check` passed.
+
+Reviewer Handling:
+
+- Wave 37 `HIGH-001` fixed by deduplicating critical/resolved violation ids and mapping issue/fix pairs by deterministic rule family instead of patch-rule row order.
+- Wave 37 rereview passed with no open findings.
+
+Notes:
+
+- The receipt/rerun view is generated from schema-validated receipt and policy patch artifacts.
+- The UI still presents the Readiness Receipt as the artifact and does not imply Splunk auto-mutation.
+
 ## 2026-06-01 15:02 - Wave 36 UI Mission and Trace Views
 
 Commands:

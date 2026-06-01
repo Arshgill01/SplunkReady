@@ -23,6 +23,60 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 15:14 - Wave 37
+
+Scope:
+- Added a receipt/rerun comparison view to the static UI shell.
+- UI now loads failed receipt, rerun receipt, policy patch JSON, and policy patch Markdown artifact paths.
+- Added before/after receipt summaries, score comparison, policy patch table, and critical issue/fix pairing.
+- Moved the rerun receipt comparison directly after receipt identity so the before/after contrast appears before contract and trace detail.
+
+Files changed:
+- `src/ui/shell.ts`
+- `tests/ui/shell.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-37-20260601-1509-review.md`
+- `logs/reviewer-inbox/wave-37-20260601-1510-rereview.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-37-20260601-1509-review.md`
+- `logs/reviewer-inbox/wave-37-20260601-1510-rereview.md`
+
+Commands:
+- `sed -n '1,220p' docs/waves/wave-37-ui-receipt-rerun.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-37-*' -print | sort`
+- `sed -n '1,220p' logs/reviewer-inbox/wave-37-20260601-1509-review.md`
+- `sed -n '1,220p' logs/reviewer-inbox/wave-37-20260601-1510-rereview.md`
+- `git diff -- src/ui/shell.ts tests/ui/shell.test.ts`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `npx vitest run tests/ui/shell.test.ts`
+- `npx tsc --noEmit`
+- `tmp=$(mktemp -d /tmp/splunkready-wave37-ui-XXXXXX) && npm run build && npm run splunkready -- compile --out "$tmp" && npm run splunkready -- evaluate --out "$tmp" && npm run splunkready -- receipt --out "$tmp" && npm run splunkready -- rerun --out "$tmp" && node --input-type=module -e "import { writeUiShell } from './dist/src/ui/shell.js'; const p = await writeUiShell(process.argv[1]); console.log(process.argv[1]); console.log(p);" "$tmp"`
+- `rg -n "Receipts and rerun|Failed receipt|Rerun receipt|Score comparison|Critical issues and fixes|No patch rule mapped|policy-patch|receipt-before|receipt-after|NOT READY|READY" /tmp/splunkready-wave37-ui-m694uI/splunkready-shell.html`
+- `node -e "const fs=require('fs'); const html=fs.readFileSync('/tmp/splunkready-wave37-ui-m694uI/splunkready-shell.html','utf8'); const markers=['Receipt identity','Receipts and rerun','Environment contract','Mission and trace']; console.log(JSON.stringify(Object.fromEntries(markers.map(m=>[m,html.indexOf(m)])), null, 2)); if (html.includes('No patch rule mapped')) process.exit(1); if (!(html.indexOf('Receipts and rerun') < html.indexOf('Environment contract'))) process.exit(2);"`
+- `sed -n '430,485p' /tmp/splunkready-wave37-ui-m694uI/splunkready-shell.html`
+- `python3 -m http.server 41740 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41740/splunkready-shell.html`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave37-rerun-receipts.png --full-page`
+- `file /tmp/splunkready-wave37-rerun-receipts.png && ls -lh /tmp/splunkready-wave37-rerun-receipts.png`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-37-*' -print | sort`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-37-*' -print | sort`
+
+Result:
+- PASS.
+
+Notes:
+- Reviewer `HIGH-001` fixed by deduplicating critical/resolved violation ids and pairing fixes by deterministic rule family: `SPL-001` to contract guidance, `SPL-003`/`KO-*` to saved-search guidance, and `EVD-*` to evidence-carrying guidance.
+- Rereview passed with no open findings.
+- Generated shell order check confirmed `Receipts and rerun` appears before `Environment contract` and no `No patch rule mapped` fallback remains.
+- Screenshot artifact: `/tmp/splunkready-wave37-rerun-receipts.png` (1280 x 6219 PNG).
+- Final `npm run check` passed: scaffold verifier reported `project files: 225` and 30 test files / 133 tests passed.
+- `git diff --check` passed.
+
 ## 2026-06-01 15:02 - Wave 36
 
 Scope:
