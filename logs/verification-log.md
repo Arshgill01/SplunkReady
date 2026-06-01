@@ -2,6 +2,43 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 14:16 - Wave 29 Query Budget Checks
+
+Commands:
+
+- `sed -n '1,260p' docs/waves/wave-29-query-budget-checks.md`
+- `sed -n '1,220p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-29-*' -print | sort`
+- `sed -n '48,62p' docs/grader-rule-catalog.md`
+- `rg -n "maxToolCalls|maxResultRows|timeoutSeconds|maxRows|approval|rate|budget|SAF-002" src tests fixtures docs`
+- `npx vitest run tests/grader/budget.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "SAF-002|createBudgetRules|query-budget|maxToolCalls|maxResultRows|timeoutSeconds|approval|time-range|hardcoded only for demo prompt" src/grader tests/grader docs/waves/wave-29-query-budget-checks.md docs/grader-rule-catalog.md src/policy fixtures/acme-soc-dev`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-29-20260601-1416-review.md`
+
+Result:
+
+- PASS after fixing the time-window source and typecheck issues found by the first targeted run.
+- Initial `npx vitest run tests/grader/budget.test.ts` failed: expanded SPL time modifiers were missed when the trace also carried the requested time window.
+- Initial `npx tsc --noEmit` failed on an incomplete fallback event cast for tool-call-count violations.
+- Final `npx vitest run tests/grader/budget.test.ts` passed: 1 test file and 4 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 25 test files and 110 tests.
+- Traceability grep found `SAF-002`, `createBudgetRules`, compiled budget fields, approval handling, time-range checks, and the wave stop condition.
+- `npm run check` passed after reviewer-file inclusion: `PASS: scaffold verified`, `waves: 42`, `project files: 202`; 25 test files and 110 tests passed.
+- `git diff --check` passed.
+- Wave 29 reviewer inbox scan found `logs/reviewer-inbox/wave-29-20260601-1416-review.md`.
+- Wave 29 reviewer passed with no findings.
+
+Notes:
+
+- Budget thresholds come from `EnvironmentContract.queryBudgets`, not demo prompt text.
+- Violations cite `policyId: query-budget` and `contractRef: contract-acme-soc-dev.queryBudgets`.
+- Approval-seeking passes only when the over-budget action is not executed.
+
 ## 2026-06-01 14:12 - Wave 28 Prompt Injection Checks
 
 Commands:
