@@ -2,6 +2,36 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 11:47 - Wave 04 Schema Canon
+
+Commands:
+
+- `rg -n "Required fields|Invariant|Example|rule" docs/schemas`
+- `npm run verify:scaffold`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+- `rg -n "PolicyPatch|traceRefs|violations|checks" docs/schemas/core-contracts.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-03-20260601-1145-rereview.md`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-04-20260601-1147-review.md`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-04-20260601-1147-rereview.md`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-04-20260601-1148-rereview.md`
+- `nl -ba docs/schemas/core-contracts.md | sed -n '58,66p'`
+
+Result:
+
+- PASS
+- Wave verification found required fields, invariants, examples, and deterministic rule references in `docs/schemas/core-contracts.md`.
+- Scaffold verifier passed: `PASS: scaffold verified`, `waves: 42`, `project files: 105`.
+- PolicyPatch, traceRefs, violations, and checks are explicitly represented.
+
+Notes:
+
+- Wave 03 rereview had no open findings.
+- Runtime validation remains intentionally deferred to Wave 05.
+- `HIGH-001`: fixed the EnvironmentContract example so `restrictedIndexes` references a declared index.
+- `LOW-001`: fixed by adding Wave 04 execution and verification log entries.
+- Wave 04 rereview `HIGH-001` was stale; `nl -ba docs/schemas/core-contracts.md | sed -n '58,66p'` shows `finance_pii` in both `indexes` and `restrictedIndexes`.
+- Wave 04 final rereview passed with no open findings.
+
 ## 2026-06-01 11:43 - Wave 03 Domain Glossary
 
 Commands:

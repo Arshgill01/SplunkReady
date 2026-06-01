@@ -23,6 +23,46 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 11:47 - Wave 04
+
+Scope:
+- Expanded the schema canon into implementation-ready contracts.
+- Added required fields, optional fields, examples, and invariants for EnvironmentContract, Mission, TraceEvent, Violation, ReadinessReceipt, and PolicyPatch.
+- Preserved deterministic rule references and receipt trace/violation provenance.
+
+Files changed:
+- `docs/schemas/core-contracts.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-03-20260601-1145-rereview.md`
+- `logs/reviewer-inbox/wave-04-20260601-1147-review.md`
+- `logs/reviewer-inbox/wave-04-20260601-1147-rereview.md`
+- `logs/reviewer-inbox/wave-04-20260601-1148-rereview.md`
+
+Commands:
+- `rg -n "Required fields|Invariant|Example|rule" docs/schemas`
+- `npm run verify:scaffold`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+- `rg -n "PolicyPatch|traceRefs|violations|checks" docs/schemas/core-contracts.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-03-20260601-1145-rereview.md`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-04-20260601-1147-review.md`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-04-20260601-1147-rereview.md`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-04-20260601-1148-rereview.md`
+- `nl -ba docs/schemas/core-contracts.md | sed -n '58,66p'`
+
+Result:
+- PASS
+
+Notes:
+- Wave 03 rereview passed with no open findings.
+- No runtime schema validators were added; Wave 05 owns executable validation and negative tests.
+- `HIGH-001` fixed by adding `finance_pii` to the EnvironmentContract example `indexes` list so `restrictedIndexes` references a declared index.
+- `LOW-001` was a stale in-progress snapshot and is resolved by this execution entry and the matching verification entry.
+- Wave 04 rereview `HIGH-001` was stale; current lines 61-65 show `finance_pii` present in `indexes` and referenced by `restrictedIndexes`.
+- Wave 04 final rereview passed with no open findings.
+
 ## 2026-06-01 11:43 - Wave 03
 
 Scope:
