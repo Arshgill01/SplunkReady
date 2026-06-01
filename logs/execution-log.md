@@ -40,6 +40,7 @@ Files changed:
 
 Reviewer files read and included:
 - `logs/reviewer-inbox/wave-11-20260601-1234-review.md`
+- `logs/reviewer-inbox/wave-11-20260601-1236-rereview.md`
 
 Commands:
 - `npx tsc --noEmit`
@@ -51,6 +52,7 @@ Commands:
 - `npm run check`
 - `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 16`
 - `sed -n '1,320p' logs/reviewer-inbox/wave-11-20260601-1234-review.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-11-20260601-1236-rereview.md`
 
 Result:
 - PASS
@@ -60,6 +62,7 @@ Notes:
 - Final `npx tsc --noEmit` passed.
 - Final `npm run check` passed: scaffold verifier passed with `project files: 136` and 7 test files / 30 tests passed.
 - Live adapter tests run without Splunk credentials and verify disabled, missing-config, capability, mock transport, and trace-error behavior.
+- Wave 11 rereview passed with no open findings and is included before Wave 12 completion.
 
 ## 2026-06-01 12:28 - Wave 10
 

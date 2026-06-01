@@ -15,6 +15,7 @@ Commands:
 - `npm run check`
 - `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 16`
 - `sed -n '1,320p' logs/reviewer-inbox/wave-11-20260601-1234-review.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-11-20260601-1236-rereview.md`
 
 Result:
 
@@ -31,6 +32,7 @@ Notes:
 - Missing config errors cite required field names and do not echo configured secret values.
 - Capability checks run before transport calls.
 - `HIGH-001`: fixed by typing the mock transport request parameter.
+- Wave 11 rereview passed with no open findings and is included before Wave 12 completion.
 
 ## 2026-06-01 12:28 - Wave 10 Fixture Traces
 
