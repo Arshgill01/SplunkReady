@@ -13,6 +13,7 @@ Commands:
 - `npm run check`
 - `git diff --check`
 - `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-16-*' -print | sort`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-16-20260601-1258-review.md`
 
 Result:
 
@@ -21,16 +22,15 @@ Result:
 - `npx tsc --noEmit` passed.
 - `npm test` passed: 12 test files and 50 tests.
 - Traceability grep found mission parser/validator, fixture mission constraints, expected tools, and rule IDs.
-- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 153`; 12 test files and 50 tests passed.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 154`; 12 test files and 50 tests passed.
 - `git diff --check` passed.
-- Wave 16 reviewer inbox scan returned no files.
+- `logs/reviewer-inbox/wave-16-20260601-1258-review.md` passed with no open findings.
 
 Notes:
 
 - Fixture mission validates before execution.
 - Saved-search discovery is enforced structurally through tools, preferred refs, and `KO-001`.
 - Safety constraints are explicit and tied to `SAF-*` rule IDs.
-- No Wave 16 reviewer inbox file was present before this log entry.
 
 ## 2026-06-01 12:54 - Wave 15 Policy Compiler
 
