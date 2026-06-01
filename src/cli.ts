@@ -9,6 +9,7 @@ import {
 } from "./adapters/live.js";
 import { NaiveSpecimenAgent } from "./agents/specimen.js";
 import { compileEnvironmentContract } from "./compiler/environment.js";
+import { createAnswerRules } from "./grader/answer.js";
 import { createAppContextRules } from "./grader/app-context.js";
 import { createBudgetRules } from "./grader/budget.js";
 import { createContractLookupRules } from "./grader/contract.js";
@@ -23,6 +24,7 @@ import { compileAgentPolicy, type AgentPolicy } from "./policy/compiler.js";
 import { generatePolicyPatch } from "./policy/patch.js";
 import { generateReadinessReceipt } from "./receipts/generator.js";
 import { environmentContractSchema, readinessReceiptSchema, type EnvironmentContract, type TraceEvent, type Violation } from "./schemas/core.js";
+import { writeUiShell } from "./ui/shell.js";
 
 const defaultFixturePath = "fixtures/acme-soc-dev/adapter-fixture.json";
 const defaultMissionPath = "fixtures/acme-soc-dev/missions/security-investigation-readiness.json";
@@ -44,6 +46,7 @@ const allRules = (): GraderRule[] => [
   ...createSavedSearchRules(),
   ...createAppContextRules(),
   ...createEvidenceRules(),
+  ...createAnswerRules(),
   ...createInjectionRules(),
   ...createBudgetRules()
 ];
@@ -56,6 +59,7 @@ Commands:
   receipt   --out <dir> [--phase before|after]
   rerun     --out <dir>
   live-smoke --out <dir> [--require-live true|false]
+  demo      --out <dir>
 
 Defaults:
   --fixture ${defaultFixturePath}
@@ -346,6 +350,62 @@ const rerunCommand = async (options: CliOptions): Promise<string[]> => {
   ];
 };
 
+const demoCommand = async (options: CliOptions): Promise<string[]> => {
+  const startedAt = Date.now();
+  const beforeOptions = { ...options, phase: "before" as const };
+  const compileArtifacts = await compileCommand(beforeOptions);
+  const evaluateArtifacts = await evaluateCommand(beforeOptions);
+  const receiptArtifacts = await receiptCommand(beforeOptions);
+  const rerunArtifacts = await rerunCommand(beforeOptions);
+  const uiShellPath = await writeUiShell(options.out);
+  const rehearsalPath = join(options.out, "demo-rehearsal.json");
+  const notesPath = join(options.out, "demo-rehearsal.md");
+  const elapsedSeconds = Number(((Date.now() - startedAt) / 1000).toFixed(3));
+  const expectedArtifacts = [
+    ...compileArtifacts,
+    ...evaluateArtifacts,
+    ...receiptArtifacts,
+    ...rerunArtifacts,
+    uiShellPath,
+    rehearsalPath,
+    notesPath
+  ];
+  const uiRoute = `${uiShellPath}#rerun-receipts`;
+  const rehearsal = {
+    status: "PASS",
+    targetSeconds: 180,
+    measuredSeconds: elapsedSeconds,
+    fitsUnderThreeMinutes: elapsedSeconds < 180,
+    uiRoute,
+    story: "fail -> compile -> patch -> rerun -> pass",
+    expectedArtifacts,
+    timingNotes: [
+      { segment: "setup", targetSeconds: 15 },
+      { segment: "scary failure", targetSeconds: 30 },
+      { segment: "compile and grade", targetSeconds: 70 },
+      { segment: "policy patch", targetSeconds: 25 },
+      { segment: "rerun and close", targetSeconds: 40 }
+    ]
+  };
+
+  await writeJson(rehearsalPath, rehearsal);
+  await writeText(
+    notesPath,
+    `# SplunkReady Demo Rehearsal
+
+- Story: fail -> compile -> patch -> rerun -> pass.
+- Target: under 180 seconds.
+- Measured CLI orchestration: ${elapsedSeconds}s.
+- UI route: ${uiRoute}
+- Expected artifacts: ${expectedArtifacts.length}
+
+Open the UI shell at the route above and follow docs/demo-script.md for the spoken path.
+`
+  );
+
+  return expectedArtifacts;
+};
+
 const main = async (): Promise<void> => {
   const { command, options } = parseArgs(process.argv.slice(2));
   let artifacts: string[];
@@ -375,6 +435,8 @@ const main = async (): Promise<void> => {
     artifacts = await receiptCommand(options);
   } else if (command === "rerun") {
     artifacts = await rerunCommand(options);
+  } else if (command === "demo") {
+    artifacts = await demoCommand(options);
   } else {
     throw new Error(`Unknown command ${command}.\n${usage}`);
   }

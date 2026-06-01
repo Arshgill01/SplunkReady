@@ -23,6 +23,66 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 15:36 - Wave 39
+
+Scope:
+- Added a `demo` CLI command that runs the clean fixture path end to end: compile, evaluate, failed receipt, policy patch, rerun, passing receipt, UI shell, and rehearsal artifacts.
+- Added `demo-rehearsal.json` and `demo-rehearsal.md` outputs with expected artifacts, UI route, measured orchestration time, and under-3-minute target status.
+- Added deterministic `ANS-001` answer-support grading so the demo visibly catches the unsupported benign conclusion.
+- Updated demo docs with rehearsal commands, the fixture-backed disclosure, expected UI route, current scores, and demo acceptance criteria.
+- Stabilized CLI flow tests under the full suite by giving the TypeScript build hook a 30s timeout.
+
+Files changed:
+- `docs/demo-acceptance-criteria.md`
+- `docs/demo-script.md`
+- `src/cli.ts`
+- `src/grader/answer.ts`
+- `tests/cli/flow.test.ts`
+- `tests/grader/answer.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-39-20260601-1529-review.md`
+- `logs/reviewer-inbox/wave-39-20260601-1531-rereview.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-39-20260601-1529-review.md`
+- `logs/reviewer-inbox/wave-39-20260601-1531-rereview.md`
+
+Commands:
+- `sed -n '1,260p' docs/waves/wave-39-demo-orchestration.md`
+- `sed -n '1,260p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-39-*' -print | sort`
+- `sed -n '1,260p' docs/demo-script.md`
+- `sed -n '1,220p' docs/demo-acceptance-criteria.md`
+- `find . -maxdepth 3 -type f | sort | rg '(^./artifacts|demo|ui|shell|cli|README|gitignore)'`
+- `find . -maxdepth 2 -name '.gitignore' -print -exec cat {} \\;`
+- `npx vitest run tests/grader/answer.test.ts tests/cli/flow.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-demo-wave39-XXXXXX) && npm run splunkready -- demo --out "$tmp" && node -e "const fs=require('fs'); const path=require('path'); const d=process.argv[1]; const r=JSON.parse(fs.readFileSync(path.join(d,'demo-rehearsal.json'),'utf8')); const before=JSON.parse(fs.readFileSync(path.join(d,'receipt-before-001.json'),'utf8')); const after=JSON.parse(fs.readFileSync(path.join(d,'receipt-after-001.json'),'utf8')); const violations=JSON.parse(fs.readFileSync(path.join(d,'violations-before.json'),'utf8')); console.log('DEMO_OUT=' + d); console.log(JSON.stringify({status:r.status,fitsUnderThreeMinutes:r.fitsUnderThreeMinutes,measuredSeconds:r.measuredSeconds,uiRoute:path.basename(r.uiRoute),beforeMode:before.mode,beforeVerdict:before.verdict,afterMode:after.mode,afterVerdict:after.verdict,ruleIds:[...new Set(violations.map(v=>v.ruleId))],artifactCount:r.expectedArtifacts.length}, null, 2));" "$tmp"`
+- `python3 -m http.server 41741 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41741/splunkready-shell.html#rerun-receipts`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave39-demo-route.png --full-page`
+- `file /tmp/splunkready-wave39-demo-route.png && ls -lh /tmp/splunkready-wave39-demo-route.png`
+- `rg -n "demo|ANS-001|live-smoke|fail -> compile -> patch -> rerun -> pass|demo-rehearsal|splunkready-shell.html#rerun-receipts|fitsUnderThreeMinutes" src tests docs/demo-script.md docs/demo-acceptance-criteria.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-39-20260601-1529-review.md`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-39-20260601-1531-rereview.md`
+- `npm run check`
+- `git diff --check`
+
+Result:
+- PASS after fixing reviewer High findings and test timeout.
+
+Notes:
+- Reviewer `HIGH-001` fixed by changing the spoken script from “live Splunk knowledge layer” to a fixture-backed rehearsal disclosure through the same adapter interface used by live MCP mode.
+- Reviewer `HIGH-002` fixed by updating the new answer-rule test fixture to match `MissionDefinition`; final `npx tsc --noEmit` passed.
+- Initial focused CLI/answer test reruns failed first for the bad test fixture and once for concurrent TypeScript compile timeout; final focused rerun passed: 2 test files and 7 tests.
+- Demo rehearsal passed from clean temp output: fixture before receipt `NOT READY`, fixture after receipt `READY`, `fitsUnderThreeMinutes: true`, UI route `splunkready-shell.html#rerun-receipts`, 18 expected artifacts, and visible rule IDs `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, `ANS-001`.
+- Browser route rehearsal passed and screenshot artifact is `/tmp/splunkready-wave39-demo-route.png` (1280 x 6553 PNG).
+- Initial full `npm run check` failed because `tests/cli/flow.test.ts` build hook exceeded Vitest's default 10s timeout under the full suite. The hook timeout was raised to 30s.
+- Final `npm run check` passed: scaffold verifier reported `project files: 230` and 31 test files / 139 tests passed.
+- `git diff --check` passed.
+
 ## 2026-06-01 15:23 - Wave 38
 
 Scope:

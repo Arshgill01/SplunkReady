@@ -14,7 +14,7 @@ beforeAll(async () => {
   const buildDir = join(process.cwd(), "dist", "cli-flow-test");
   await execFileAsync("npx", ["tsc", "--outDir", join(buildDir, "dist")], { cwd: process.cwd() });
   cliPath = join(buildDir, "dist", "src", "cli.js");
-});
+}, 30_000);
 
 const runCli = async (args: string[], cwd: string = process.cwd(), env: NodeJS.ProcessEnv = {}) =>
   execFileAsync(process.execPath, [cliPath, ...args], { cwd, env: { ...process.env, ...env } });
@@ -174,6 +174,59 @@ describe("SplunkReady CLI flow", () => {
     expect(beforeReceipt.traceRefs).toContain("mission-security-lateral-movement-readiness-trace-001");
     expect(afterReceipt).toMatchObject({ verdict: "READY", score: 100, violations: [] });
     expect(afterViolations).toEqual([]);
+  });
+
+  it("runs the clean fixture demo orchestration and writes rehearsal artifacts", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-demo-"));
+
+    await expect(runCli(["demo", "--out", outDir])).resolves.toMatchObject({
+      stdout: expect.stringContaining("PASS demo")
+    });
+
+    const expectedArtifacts = [
+      "environment-contract.json",
+      "missions.json",
+      "agent-policy.json",
+      "trace-before.json",
+      "violations-before.json",
+      "score-before.json",
+      "receipt-before-001.json",
+      "policy-patch.json",
+      "trace-after.json",
+      "violations-after.json",
+      "score-after.json",
+      "receipt-after-001.json",
+      "splunkready-shell.html",
+      "demo-rehearsal.json",
+      "demo-rehearsal.md"
+    ];
+
+    for (const artifact of expectedArtifacts) {
+      expect(await exists(join(outDir, artifact))).toBe(true);
+    }
+
+    const rehearsal = JSON.parse(await readFile(join(outDir, "demo-rehearsal.json"), "utf8")) as {
+      status: string;
+      fitsUnderThreeMinutes: boolean;
+      uiRoute: string;
+      story: string;
+      expectedArtifacts: string[];
+    };
+    const beforeReceipt = JSON.parse(await readFile(join(outDir, "receipt-before-001.json"), "utf8")) as { verdict: string };
+    const afterReceipt = JSON.parse(await readFile(join(outDir, "receipt-after-001.json"), "utf8")) as { verdict: string };
+    const shell = await readFile(join(outDir, "splunkready-shell.html"), "utf8");
+
+    expect(rehearsal).toMatchObject({
+      status: "PASS",
+      fitsUnderThreeMinutes: true,
+      story: "fail -> compile -> patch -> rerun -> pass"
+    });
+    expect(rehearsal.uiRoute).toContain("splunkready-shell.html#rerun-receipts");
+    expect(rehearsal.expectedArtifacts).toEqual(expect.arrayContaining(expectedArtifacts.map((artifact) => join(outDir, artifact))));
+    expect(beforeReceipt.verdict).toBe("NOT READY");
+    expect(afterReceipt.verdict).toBe("READY");
+    expect(shell).toContain("ANS-001");
+    expect(shell).toContain("Definitive benign conclusion is not supported by adequate evidence.");
   });
 
   it("returns an actionable error when evaluate runs before compile", async () => {

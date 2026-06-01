@@ -2,6 +2,55 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 15:36 - Wave 39 Demo Orchestration
+
+Commands:
+
+- `sed -n '1,260p' docs/waves/wave-39-demo-orchestration.md`
+- `sed -n '1,260p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-39-*' -print | sort`
+- `sed -n '1,260p' docs/demo-script.md`
+- `sed -n '1,220p' docs/demo-acceptance-criteria.md`
+- `find . -maxdepth 3 -type f | sort | rg '(^./artifacts|demo|ui|shell|cli|README|gitignore)'`
+- `find . -maxdepth 2 -name '.gitignore' -print -exec cat {} \\;`
+- `npx vitest run tests/grader/answer.test.ts tests/cli/flow.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-demo-wave39-XXXXXX) && npm run splunkready -- demo --out "$tmp" && node -e "const fs=require('fs'); const path=require('path'); const d=process.argv[1]; const r=JSON.parse(fs.readFileSync(path.join(d,'demo-rehearsal.json'),'utf8')); const before=JSON.parse(fs.readFileSync(path.join(d,'receipt-before-001.json'),'utf8')); const after=JSON.parse(fs.readFileSync(path.join(d,'receipt-after-001.json'),'utf8')); const violations=JSON.parse(fs.readFileSync(path.join(d,'violations-before.json'),'utf8')); console.log('DEMO_OUT=' + d); console.log(JSON.stringify({status:r.status,fitsUnderThreeMinutes:r.fitsUnderThreeMinutes,measuredSeconds:r.measuredSeconds,uiRoute:path.basename(r.uiRoute),beforeMode:before.mode,beforeVerdict:before.verdict,afterMode:after.mode,afterVerdict:after.verdict,ruleIds:[...new Set(violations.map(v=>v.ruleId))],artifactCount:r.expectedArtifacts.length}, null, 2));" "$tmp"`
+- `python3 -m http.server 41741 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41741/splunkready-shell.html#rerun-receipts`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave39-demo-route.png --full-page`
+- `file /tmp/splunkready-wave39-demo-route.png && ls -lh /tmp/splunkready-wave39-demo-route.png`
+- `rg -n "demo|ANS-001|live-smoke|fail -> compile -> patch -> rerun -> pass|demo-rehearsal|splunkready-shell.html#rerun-receipts|fitsUnderThreeMinutes" src tests docs/demo-script.md docs/demo-acceptance-criteria.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-39-20260601-1529-review.md`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-39-20260601-1531-rereview.md`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS after fixing reviewer High findings and test timeout.
+- Initial focused `npx vitest run tests/grader/answer.test.ts tests/cli/flow.test.ts` failed while the answer-rule test used an invalid `MissionDefinition` fixture; this was fixed.
+- Final focused `npx vitest run tests/grader/answer.test.ts tests/cli/flow.test.ts` passed: 2 test files and 7 tests.
+- `npx tsc --noEmit` passed.
+- Demo rehearsal passed from a clean temp directory and generated 18 artifacts including failed receipt, policy patch, passing receipt, `splunkready-shell.html`, `demo-rehearsal.json`, and `demo-rehearsal.md`.
+- Rehearsal summary showed fixture before receipt `NOT READY`, fixture after receipt `READY`, `fitsUnderThreeMinutes: true`, UI route `splunkready-shell.html#rerun-receipts`, and visible rule IDs `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, `ANS-001`.
+- Playwright browser route rehearsal passed for `http://127.0.0.1:41741/splunkready-shell.html#rerun-receipts`.
+- Screenshot file check passed: `/tmp/splunkready-wave39-demo-route.png`, 1280 x 6553 PNG, 962 KB.
+- Initial full `npm run check` failed because `tests/cli/flow.test.ts` build hook exceeded Vitest's default 10s timeout under the full suite. The hook timeout was raised to 30s.
+- Final `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 230`; 31 test files and 139 tests passed.
+- `git diff --check` passed.
+
+Reviewer Handling:
+
+- Wave 39 `HIGH-001` fixed by making the spoken demo script disclose fixture-backed rehearsal and same-interface live MCP compatibility.
+- Wave 39 `HIGH-002` fixed by correcting the answer-rule test fixture and rerunning typecheck/tests.
+
+Notes:
+
+- The demo remains fixture-backed and does not depend on unreliable live Splunk behavior.
+- `ANS-001` is deterministic and only checks whether a definitive benign conclusion is supported by result count and evidence refs.
+
 ## 2026-06-01 15:23 - Wave 38 Live MCP Smoke Path
 
 Commands:

@@ -23,6 +23,7 @@ The final demo must pass these checks before recording.
 ## Timing Checks
 
 - Full demo path rehearses under 3 minutes.
+- `npm run splunkready -- demo --out <clean-dir>` writes `demo-rehearsal.json` with `fitsUnderThreeMinutes: true`.
 - Intro is under 20 seconds.
 - Failure reveal is under 45 seconds.
 - Contract/grade/patch sequence is under 90 seconds.

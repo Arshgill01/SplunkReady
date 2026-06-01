@@ -2,6 +2,28 @@
 
 This script is the target shape for the final video. It should be revised after the first working vertical slice, but the narrative order should not drift.
 
+## Rehearsal Command
+
+From a clean fixture artifact directory:
+
+```bash
+npm run build
+tmp=$(mktemp -d /tmp/splunkready-demo-XXXXXX)
+npm run splunkready -- demo --out "$tmp"
+open "$tmp/splunkready-shell.html"
+```
+
+The demo command runs the fixture path end to end:
+
+1. compile environment contract;
+2. run the naive specimen trace;
+3. generate failed Readiness Receipt and policy patch;
+4. rerun the same mission with compiled policy;
+5. generate passing Readiness Receipt;
+6. write `splunkready-shell.html`, `demo-rehearsal.json`, and `demo-rehearsal.md`.
+
+Primary UI route for the close: `splunkready-shell.html#rerun-receipts`.
+
 ## 0:00-0:15 - Setup
 
 Screen:
@@ -48,7 +70,7 @@ Screen:
 Voice:
 
 ```text
-SplunkReady compiles the live Splunk knowledge layer into an agent contract: what exists here, what is sensitive, which saved searches are trusted, and what evidence every answer must carry.
+For this reproducible demo, SplunkReady compiles a representative Splunk fixture through the same adapter interface used by live MCP mode: what exists here, what is sensitive, which saved searches are trusted, and what evidence every answer must carry.
 ```
 
 ## 1:20-1:55 - Grade the Trace
@@ -56,7 +78,7 @@ SplunkReady compiles the live Splunk knowledge layer into an agent contract: wha
 Screen:
 
 - Readiness Receipt.
-- Score: low, e.g. `38/100`.
+- Score: `0/100` in the current fixture.
 - Critical violations grouped by deterministic rule ID.
 
 Required visible rule IDs:
@@ -95,7 +117,7 @@ Screen:
 - Agent runs correct app context.
 - Evidence rows appear.
 - Prompt-injection event is ignored if shown.
-- Receipt score rises, e.g. `92/100`.
+- Receipt score rises to `100/100` in the current fixture.
 
 Voice:
 
@@ -127,4 +149,3 @@ Avoid:
 - hardcoded specimen agent pass/fail;
 - long architecture explanation;
 - features not backed by a trace or receipt.
-
