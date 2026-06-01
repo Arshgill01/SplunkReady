@@ -82,3 +82,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-73-remote-cleanroom-after-ui-evidence-clarity.md`: verify the pushed branch after the Wave 72 UI evidence-clarity patch from a fresh remote clone.
 - `wave-74-goal-audit-after-remote-ui-cleanroom.md`: refresh the prompt-to-artifact goal completion audit against the current pushed Wave 73 state without marking the overall goal complete.
 - `wave-75-antigravity-ui-195731-triage.md`: triage the fresh 19:57 Antigravity UI sidecar and integrate bounded deterministic-check evidence badges.
+- `wave-76-remote-cleanroom-after-ui-deterministic-checks.md`: verify the pushed branch after the Wave 75 deterministic-check UI patch from a fresh remote clone.

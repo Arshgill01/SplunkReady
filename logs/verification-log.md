@@ -2564,7 +2564,7 @@ Commands:
 
 Result:
 
-- PARTIAL pending reviewer rereview.
+- PASS.
 - Focused UI shell tests passed: 1 test file, 11 tests.
 - Initial TypeScript build failed because `Set` inferred the narrow `GraderRuleId` union and rejected string mission checks.
 - TypeScript build passed after changing the before/after rule-id sets to `Set<string>`.
@@ -2586,3 +2586,26 @@ Result:
 - Reviewer audit passed after `wave-75-20260601-2019-rereview.md`: 77 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed after the passing Wave 75 rereview file arrived: 76 wave files, 393 project files.
 - Final `npm run check` passed after the passing Wave 75 rereview file arrived: scaffold verifier reported 76 wave files and 393 project files; Vitest passed 31 test files / 143 tests.
+
+## 2026-06-01 - Wave 76 Remote Cleanroom After UI Deterministic Checks
+
+Commands:
+
+- remote cleanroom clone and verification command captured in `docs/remote-cleanroom-after-ui-deterministic-checks-report.md`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Remote clone checked out `70b743f676f3a4ae28daa4ab86f8cd9790d9c746`, matching the expected pushed Wave 75 commit.
+- Remote `npm ci --ignore-scripts` completed; npm reported one critical audit warning, and this wave made no dependency changes.
+- Remote reviewer audit passed: 77 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Remote full project check passed: scaffold verifier plus 31 test files / 143 tests.
+- Remote focused UI shell test passed: 1 test file / 12 tests.
+- Tracked sidecar artifact scan passed: `sidecar_artifacts=absent`.
+- Initial local reviewer audit failed because `wave-76-20260601-2026-review.md` was the latest Wave 76 verdict.
+- Follow-up local reviewer audit failed because `wave-76-20260601-2031-rereview.md` was still based on intermediate log placement.
+- `wave-76-20260601-2032-rereview.md` passed with no open findings after the Wave 76 execution-log section was actually moved after Wave 75.
+- Final reviewer audit passed after `wave-76-20260601-2032-rereview.md`: 78 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the final placement fix: 77 wave files, 398 project files.

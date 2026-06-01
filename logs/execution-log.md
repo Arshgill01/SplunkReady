@@ -2988,3 +2988,44 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 76 Remote Cleanroom After UI Deterministic Checks
+
+Scope:
+- Verify the pushed `splunkready-build` branch after Wave 75 from a fresh remote clone.
+- Confirm the cleanroom clone resolves to the expected Wave 75 commit.
+- Run fresh install, reviewer audit, full project check, focused UI shell test, and tracked sidecar artifact scan.
+- Keep explicit user approval as the blocker for overall goal completion.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/remote-cleanroom-after-ui-deterministic-checks-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-76-remote-cleanroom-after-ui-deterministic-checks.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-76-20260601-2026-review.md`
+- `logs/reviewer-inbox/wave-76-20260601-2031-rereview.md`
+- `logs/reviewer-inbox/wave-76-20260601-2032-rereview.md`
+- reviewer inbox files if new Wave 76 findings arrive.
+
+Notes:
+- Cleanroom path: `/tmp/splunkready-wave76-remote-xCM9Ea/repo`.
+- Remote clone checked out `70b743f676f3a4ae28daa4ab86f8cd9790d9c746`, matching the expected pushed Wave 75 commit.
+- `npm ci --ignore-scripts`, `npm run audit:reviewers`, `npm run check`, and `npx vitest run tests/ui/shell.test.ts` passed in the remote clone.
+- Remote focused UI shell test covered 1 test file / 12 tests, including Wave 75 deterministic-check evidence coverage.
+- Tracked sidecar artifact scan returned `sidecar_artifacts=absent`.
+- npm reported one critical audit warning during cleanroom install; no dependency changes were made in this wave.
+- `wave-76-20260601-2026-review.md` reported `MEDIUM-001` because this section was inserted into the historical middle of the execution log.
+- `MEDIUM-001` was resolved by moving this section to the chronological tail after Wave 75.
+- `wave-76-20260601-2031-rereview.md` still failed against the intermediate log placement before the final move landed.
+- `wave-76-20260601-2032-rereview.md` passed with no open findings after the final placement fix.
+- Final reviewer audit passed after `wave-76-20260601-2032-rereview.md`: 78 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the final placement fix: 77 wave files, 398 project files.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.
