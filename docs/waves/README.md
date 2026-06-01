@@ -63,3 +63,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-54-branch-strategy-handoff.md`: document `splunkready-build` as the remote source of truth.
 - `wave-55-scaffold-doc-refresh.md`: mark scaffold-era reference docs as historical and point to current evidence.
 - `wave-56-fresh-antigravity-ui-triage.md`: triage the fresh Antigravity UI sidecar and integrate bounded receipt-navigation polish.
+- `wave-57-remote-cleanroom-ui-smoke.md`: verify the pushed branch in a remote cleanroom after UI sidecar integration.

@@ -1812,6 +1812,7 @@ Commands:
 - `npm run audit:reviewers`
 - `bash scripts/verify-scaffold.sh && git diff --check`
 - `npm run check`
+- `npm run check`
 
 Result:
 
@@ -1991,3 +1992,28 @@ Result:
 - After `wave-56-20260601-1743-rereview.md` arrived, reviewer audit passed with 58 groups, 4 pass-with-concerns files, and 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed after the rereview file arrived.
 - Final targeted UI test passed after the rereview file arrived.
+
+## 2026-06-01 - Wave 57 Remote Cleanroom UI Smoke
+
+Commands:
+
+- `remote=$(git remote get-url origin) ... git clone --depth 1 --branch splunkready-build --single-branch "$remote" "$tmp/repo" ... npm ci --ignore-scripts ... npm run check ... npm run audit:reviewers ... npm run build ... env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- demo --out "$out_dir" ... node - <<'NODE' "$tmp" "$commit" "$out_dir" ... NODE`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Remote cleanroom path: `/tmp/splunkready-wave57-remote-amX14Y/repo`.
+- Remote commit tested: `83ebc6b`.
+- `npm ci --ignore-scripts` passed: 55 packages installed, 0 vulnerabilities reported.
+- `npm run check` passed in the cleanroom: scaffold verifier plus 31 test files / 139 tests.
+- `npm run audit:reviewers` passed in the cleanroom: 58 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- `npm run build` passed.
+- Fixture demo with live Splunk env vars unset passed at `/tmp/splunkready-wave57-remote-amX14Y/demo-E3bfBO`: 18 artifacts, fixture `NOT READY` score 0 -> fixture `READY` score 100, and `fitsUnderThreeMinutes: true`.
+- Generated shell hook inspection passed for 7 expected content/hooks.
+- Local reviewer audit passed before a Wave 57 reviewer file arrived: 58 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Local scaffold verifier and `git diff --check` passed after Wave 57 docs: 58 wave files, 305 project files.
+- After `wave-57-20260601-1749-review.md` arrived, local reviewer audit passed: 59 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final local scaffold verifier and `git diff --check` passed: 58 wave files, 306 project files.
+- Final local `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.

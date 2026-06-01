@@ -2,7 +2,7 @@
 
 ## Current State
 
-SplunkReady is implemented through Wave 56 continuation QA on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, static UI shell with bounded receipt-navigation polish, optional read-only live smoke path, submission copy guardrails, reviewer audit automation, goal completion audit, post-audit remote cleanroom verification, branch-strategy handoff, scaffold-doc refresh, and fresh Antigravity UI triage.
+SplunkReady is implemented through Wave 57 continuation QA on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, static UI shell with bounded receipt-navigation polish, optional read-only live smoke path, submission copy guardrails, reviewer audit automation, goal completion audit, post-audit remote cleanroom verification, branch-strategy handoff, scaffold-doc refresh, fresh Antigravity UI triage, and post-UI remote cleanroom smoke.
 
 ## Start Here
 

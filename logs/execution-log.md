@@ -2338,3 +2338,34 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 57 Remote Cleanroom UI Smoke
+
+Scope:
+- Verify the pushed `origin/splunkready-build` branch after Wave 56 from a fresh remote clone.
+- Run install, checks, reviewer audit, build, fixture demo, and generated UI hook inspection outside the main worktree.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/goal-completion-audit.md`
+- `docs/remote-cleanroom-ui-smoke-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-57-remote-cleanroom-ui-smoke.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-57-20260601-1749-review.md`
+
+Notes:
+- Remote cleanroom path: `/tmp/splunkready-wave57-remote-amX14Y/repo`.
+- Remote commit tested: `83ebc6b`.
+- Demo artifact directory: `/tmp/splunkready-wave57-remote-amX14Y/demo-E3bfBO`.
+- Remote clone demo produced 18 artifacts with fixture `NOT READY` score 0 -> fixture `READY` score 100.
+- Generated shell contained the Wave 56 navigation hooks.
+- Current-state audit rows now reference Wave 57 closeout instead of Wave 55.
+- `wave-57-20260601-1749-review.md`: reviewer passed with no open Wave 57 findings.
+- Overall goal remains open pending explicit user approval.
+
+Result:
+- PASS.
