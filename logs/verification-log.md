@@ -13,6 +13,7 @@ Commands:
 - `sed -n '1,340p' logs/reviewer-inbox/wave-05-20260601-1153-review.md`
 - `sed -n '1,340p' logs/reviewer-inbox/wave-05-20260601-1155-rereview.md`
 - `sed -n '1,360p' logs/reviewer-inbox/wave-05-20260601-1156-rereview.md`
+- `sed -n '1,340p' logs/reviewer-inbox/wave-05-20260601-1157-rereview.md`
 - `npx tsc --noEmit`
 - `rg -n "mutation|destructive|write|splunk_.*(create|delete|update|edit|modify)|mcpTools|allowedTools|expectedTools" src tests docs/schemas/core-contracts.md`
 - `npm run check`
@@ -32,6 +33,7 @@ Notes:
 - `HIGH-001`: fixed with a read-only Splunk tool allowlist and mutation-tool negative tests.
 - `LOW-001`: fixed by logging reviewer findings and resolution.
 - Wave 05 final rereview `LOW-001`: fixed by adding the rereview file to this audit trail.
+- Wave 05 post-commit rereview passed with no open findings.
 
 ## 2026-06-01 11:47 - Wave 04 Schema Canon
 
