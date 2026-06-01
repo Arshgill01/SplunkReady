@@ -23,6 +23,43 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 13:24 - Wave 22
+
+Scope:
+- Added deterministic grader rule engine foundation.
+- Added typed rule interface, severity catalog, pass/fail result shapes, violation helper, and ordered runner.
+- Added tests for pass/fail rules, structured violation schema validation, order preservation, and rejected rule/result/violation boundary mismatches.
+
+Files changed:
+- `src/grader/engine.ts`
+- `tests/grader/engine.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-22-20260601-1324-review.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-22-20260601-1324-review.md`
+
+Commands:
+- `npx vitest run tests/grader/engine.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "runRuleEngine|GraderRule|RuleContext|RuleEvaluation|createViolation|violationSchema|ruleSeverityById|SPL-001|KO-001|LLM|prose" src/grader tests/grader docs/waves/wave-22-rule-engine.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-22-*' -print | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-22-20260601-1324-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Rule evaluation consumes `EnvironmentContract`, mission, and trace events.
+- Violations are validated through `violationSchema`.
+- Engine accepts structured pass/fail results only; no LLM or arbitrary prose grading path is present.
+- Reviewer `HIGH-001` fixed by enforcing canonical rule id and severity at the engine boundary for rule declarations, returned results, and emitted violations.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 176` and 18 test files / 70 tests passed.
+
 ## 2026-06-01 13:18 - Wave 21
 
 Scope:

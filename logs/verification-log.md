@@ -2,6 +2,36 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 13:24 - Wave 22 Rule Engine Foundation
+
+Commands:
+
+- `npx vitest run tests/grader/engine.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "runRuleEngine|GraderRule|RuleContext|RuleEvaluation|createViolation|violationSchema|ruleSeverityById|SPL-001|KO-001|LLM|prose" src/grader tests/grader docs/waves/wave-22-rule-engine.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-22-*' -print | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-22-20260601-1324-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/grader/engine.test.ts` passed: 1 test file and 5 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 18 test files and 70 tests.
+- Traceability grep found rule engine APIs, violation schema validation, severity catalog, and catalog stop-condition text.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 176`; 18 test files and 70 tests passed.
+- `git diff --check` passed.
+- Wave 22 reviewer inbox scan found `logs/reviewer-inbox/wave-22-20260601-1324-review.md`.
+
+Notes:
+
+- Rule engine returns structured pass/fail evaluations and ordered violations.
+- LLMs are absent from the pass/fail path.
+- Reviewer `HIGH-001` was resolved by enforcing canonical rule/result/violation identity and severity in `runRuleEngine`, with negative tests for each mismatch class.
+
 ## 2026-06-01 13:18 - Wave 21 Trace Recorder
 
 Commands:
