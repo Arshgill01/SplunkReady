@@ -2,6 +2,36 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 12:35 - Wave 11 Live Adapter Skeleton
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/adapters/live.test.ts`
+- `rg -n "SPLUNKREADY|authToken|super-secret|LIVE_ADAPTER|capabilit|SplunkAccessAdapter|hardcoded|https://splunk.example.invalid" src/adapters/live.ts tests/adapters/live.test.ts docs/live-adapter.md`
+- `npx tsc --noEmit`
+- `npm test`
+- `npx tsc --noEmit`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 16`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-11-20260601-1234-review.md`
+
+Result:
+
+- PASS
+- Initial `npx tsc --noEmit` failed with `TS7006` for the mock live transport request parameter.
+- `npx vitest run tests/adapters/live.test.ts` passed before and after the type fix.
+- Final `npx tsc --noEmit` passed.
+- Final `npm test` passed: 7 test files and 30 tests.
+- Final `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 136`; 7 test files and 30 tests passed.
+
+Notes:
+
+- No live Splunk credentials are required for tests.
+- Missing config errors cite required field names and do not echo configured secret values.
+- Capability checks run before transport calls.
+- `HIGH-001`: fixed by typing the mock transport request parameter.
+
 ## 2026-06-01 12:28 - Wave 10 Fixture Traces
 
 Commands:

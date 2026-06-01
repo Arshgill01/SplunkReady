@@ -23,6 +23,44 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 12:35 - Wave 11
+
+Scope:
+- Added disabled-by-default live Splunk adapter skeleton implementing `SplunkAccessAdapter`.
+- Added live config shape, environment config loader, capability checks, trace hooks, and actionable missing-config errors.
+- Added a mock transport seam for later live MCP wiring without requiring credentials in tests.
+- Added live adapter configuration documentation.
+
+Files changed:
+- `src/adapters/live.ts`
+- `tests/adapters/live.test.ts`
+- `docs/live-adapter.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-11-20260601-1234-review.md`
+
+Commands:
+- `npx tsc --noEmit`
+- `npx vitest run tests/adapters/live.test.ts`
+- `rg -n "SPLUNKREADY|authToken|super-secret|LIVE_ADAPTER|capabilit|SplunkAccessAdapter|hardcoded|https://splunk.example.invalid" src/adapters/live.ts tests/adapters/live.test.ts docs/live-adapter.md`
+- `npx tsc --noEmit`
+- `npm test`
+- `npx tsc --noEmit`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 16`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-11-20260601-1234-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Initial `npx tsc --noEmit` failed on `HIGH-001` because the mock live transport request parameter had implicit `any`; fixed by typing it as `LiveSplunkTransportRequest<TInput>`.
+- Final `npx tsc --noEmit` passed.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 136` and 7 test files / 30 tests passed.
+- Live adapter tests run without Splunk credentials and verify disabled, missing-config, capability, mock transport, and trace-error behavior.
+
 ## 2026-06-01 12:28 - Wave 10
 
 Scope:
