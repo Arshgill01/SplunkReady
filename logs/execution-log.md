@@ -23,6 +23,41 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 12:58 - Wave 16
+
+Scope:
+- Added mission DSL parser/validator around the core mission contract.
+- Added a fixture security investigation readiness mission with saved-search discovery and safety constraints.
+- Added mission validation tests for required tools, forbidden patterns, safety rule references, evidence requirements, and stable export.
+
+Files changed:
+- `src/missions/dsl.ts`
+- `fixtures/acme-soc-dev/missions/security-investigation-readiness.json`
+- `tests/missions/dsl.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- None; no Wave 16 reviewer inbox file was present before this log entry.
+
+Commands:
+- `npx vitest run tests/missions/dsl.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "parseMissionDefinition|validateMissionDefinition|requiresSavedSearchDiscovery|safetyConstraints|KO-001|SAF-001|splunk_get_knowledge_objects|preferredSavedSearchRefs" src/missions tests/missions fixtures/acme-soc-dev/missions docs/waves/wave-16-mission-dsl.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-16-*' -print | sort`
+
+Result:
+- PASS
+
+Notes:
+- Initial targeted mission test isolated multiple invariants at once; the test input was narrowed before the passing rerun.
+- Missions that require saved-search discovery must include `KO-001`, `splunk_get_knowledge_objects`, and preferred saved-search refs.
+- Missions with safety constraints must cite corresponding `SAF-*` rule IDs in `checks`.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 153` and 12 test files / 50 tests passed.
+
 ## 2026-06-01 12:54 - Wave 15
 
 Scope:

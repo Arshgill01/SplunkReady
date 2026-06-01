@@ -2,6 +2,36 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 12:58 - Wave 16 Mission DSL
+
+Commands:
+
+- `npx vitest run tests/missions/dsl.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "parseMissionDefinition|validateMissionDefinition|requiresSavedSearchDiscovery|safetyConstraints|KO-001|SAF-001|splunk_get_knowledge_objects|preferredSavedSearchRefs" src/missions tests/missions fixtures/acme-soc-dev/missions docs/waves/wave-16-mission-dsl.md docs/grader-rule-catalog.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-16-*' -print | sort`
+
+Result:
+
+- PASS
+- `npx vitest run tests/missions/dsl.test.ts` passed: 1 test file and 5 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 12 test files and 50 tests.
+- Traceability grep found mission parser/validator, fixture mission constraints, expected tools, and rule IDs.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 153`; 12 test files and 50 tests passed.
+- `git diff --check` passed.
+- Wave 16 reviewer inbox scan returned no files.
+
+Notes:
+
+- Fixture mission validates before execution.
+- Saved-search discovery is enforced structurally through tools, preferred refs, and `KO-001`.
+- Safety constraints are explicit and tied to `SAF-*` rule IDs.
+- No Wave 16 reviewer inbox file was present before this log entry.
+
 ## 2026-06-01 12:54 - Wave 15 Policy Compiler
 
 Commands:
