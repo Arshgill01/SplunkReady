@@ -2356,3 +2356,43 @@ Result:
 - Wave 70 reviewer passed with no findings in `wave-70-20260601-1913-review.md`.
 - Final reviewer audit passed after the Wave 70 reviewer file arrived: 72 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 71 wave files, 354 project files.
+
+## 2026-06-01 - Wave 71 Goal Audit After UI Cleanroom
+
+Commands:
+
+- `npm run check`
+- `npm run audit:submission-copy`
+- `npm run audit:reviewers`
+- `npm run build`
+- `env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- demo --out /tmp/splunkready-wave71-audit/demo`
+- `node - <<'NODE' /tmp/splunkready-wave71-audit/demo ... NODE`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Full check passed: scaffold verifier plus 31 test files / 139 tests.
+- Scaffold verifier during `npm run check` reported 72 wave files and 355 project files.
+- Submission-copy audit passed: 28 required claims.
+- Reviewer audit passed before Wave 71 reviewer files arrived: 72 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- TypeScript build passed.
+- Fixture demo passed with live Splunk env vars unset.
+- Artifact inspection passed: 18 artifacts, UI shell present, policy patch JSON/Markdown present, and policy patch Markdown states no Splunk mutation.
+- Before receipt was `NOT READY` with score `0`.
+- After receipt was `READY` with score `100` and zero violations.
+- Demo rehearsal passed under 3 minutes with measured CLI orchestration `0.064s`.
+- Demo rehearsal route: `/tmp/splunkready-wave71-audit/demo/splunkready-shell.html#rerun-receipts`.
+- Demo story: `fail -> compile -> patch -> rerun -> pass`.
+- Deterministic rule IDs present: `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, `SPL-003`.
+- `wave-71-20260601-1918-rereview.md` reported `HIGH-001`, `HIGH-002`, `MEDIUM-001`, and `MEDIUM-002`; all were resolved by refreshing the audit, adding this verification section, removing repository-root generated artifacts, and updating current-state docs.
+- Follow-up scaffold verifier and `git diff --check` passed after Wave 71 audit/log fixes: 72 wave files, 363 project files.
+- Wave 71 rereview passed with no findings in `wave-71-20260601-1922-rereview.md`.
+- `wave-71-20260601-1923-rereview.md` reported `MEDIUM-001` for stale pending-rereview wording after the passing rereview arrived; this was resolved by updating the Wave 71 execution and verification logs.
+- `wave-71-20260601-1928-rereview.md` passed with no findings after the stale-log closeout.
+- `wave-71-20260601-1929-rereview.md` reported stale final-audit closeout wording after the first final audit pass; this was resolved by recording the final audit and scaffold closeout.
+- `wave-71-20260601-1930-rereview.md` passed with no findings after the final-audit closeout.
+- Final reviewer audit passed after `wave-71-20260601-1930-rereview.md`: 73 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 72 wave files, 366 project files.

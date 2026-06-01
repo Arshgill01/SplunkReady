@@ -2777,3 +2777,44 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 71 Goal Audit After UI Cleanroom
+
+Scope:
+- Refresh the prompt-to-artifact goal completion audit against the current pushed Wave 70 state.
+- Re-run product copy, reviewer, full test, build, and fixture demo verification.
+- Preserve explicit user approval as the blocker for overall goal completion.
+- Keep generated demo artifacts outside the repository worktree.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/goal-completion-audit.md`
+- `docs/implementation-handoff.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-71-goal-audit-after-ui-cleanroom.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- reviewer inbox files if new Wave 71 findings arrive.
+
+Notes:
+- Fresh Wave 71 demo output: `/tmp/splunkready-wave71-audit/demo`.
+- Live Splunk env vars were unset for the demo command.
+- Demo replay produced 18 artifacts, including the UI shell and policy patch JSON/Markdown.
+- Policy patch Markdown states no Splunk mutation.
+- Before receipt was `NOT READY` with score `0`; after receipt was `READY` with score `100` and zero violations.
+- Rehearsal reported `fitsUnderThreeMinutes: true`, measured CLI orchestration `0.064s`, and story `fail -> compile -> patch -> rerun -> pass`.
+- Deterministic rule IDs present: `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, `SPL-003`.
+- `npm run check`, `npm run audit:submission-copy`, `npm run audit:reviewers`, `npm run build`, fixture demo, artifact inspection, follow-up scaffold hygiene, final reviewer audit, and final scaffold hygiene passed.
+- Wave 71 reviewer findings `HIGH-001`, `HIGH-002`, `MEDIUM-001`, and `MEDIUM-002` were resolved by refreshing the audit, recording verification, removing repo-root `tmp/`, and updating current-state docs.
+- Wave 71 rereview passed with no findings in `wave-71-20260601-1922-rereview.md`.
+- `wave-71-20260601-1923-rereview.md` reported `MEDIUM-001` for stale pending-rereview wording after the passing rereview arrived; this was resolved by updating the Wave 71 execution and verification logs.
+- `wave-71-20260601-1928-rereview.md` passed with no findings after the stale-log closeout.
+- `wave-71-20260601-1929-rereview.md` reported stale final-audit closeout wording after the first final audit pass; this was resolved by recording the final audit and scaffold closeout.
+- `wave-71-20260601-1930-rereview.md` passed with no findings after the final-audit closeout.
+- Final reviewer audit passed after `wave-71-20260601-1930-rereview.md`: 73 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 72 wave files, 366 project files.
+- No `update_goal` call was made.
+
+Result:
+- PASS.
