@@ -1812,6 +1812,8 @@ Commands:
 - `npm run audit:reviewers`
 - `bash scripts/verify-scaffold.sh && git diff --check`
 - `npm run check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
 - `npm run check`
 
 Result:
@@ -2017,3 +2019,29 @@ Result:
 - After `wave-57-20260601-1749-review.md` arrived, local reviewer audit passed: 59 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final local scaffold verifier and `git diff --check` passed: 58 wave files, 306 project files.
 - Final local `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
+
+## 2026-06-01 - Wave 58 Sidecar Worktree Hygiene
+
+Commands:
+
+- `git status --short --branch && git log --oneline -5 --decorate`
+- `git worktree list --porcelain`
+- `tmux list-windows -t Splunk`
+- `for d in /private/tmp/splunkready-antigravity-ui ...; do git -C "$d" status --short --branch; git -C "$d" diff --stat; done`
+- `for w in 4 5 6 7; do tmux capture-pane -pt Splunk:$w -S -30 | tail -30; done`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS pending final reviewer audit.
+- Main worktree status was clean on `splunkready-build...origin/splunkready-build`.
+- Registered sidecar worktrees were inventoried with branch, HEAD, and dirty state.
+- `Splunk` tmux windows `4` through `7` were inspected as Antigravity sidecar windows.
+- No destructive cleanup command was run.
+- Reviewer audit passed before a Wave 58 reviewer file arrived: 59 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Scaffold verifier and `git diff --check` passed: 59 wave files, 308 project files.
+- Full project check passed: scaffold verifier plus 31 test files / 139 tests.
+- After `wave-58-20260601-1754-review.md` arrived, reviewer audit passed: 60 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 59 wave files, 309 project files.

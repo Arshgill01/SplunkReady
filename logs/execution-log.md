@@ -2369,3 +2369,34 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 58 Sidecar Worktree Hygiene
+
+Scope:
+- Inventory Antigravity/Gemini sidecar worktrees and tmux windows.
+- Document which sidecar outputs were rejected, partially integrated, or left isolated.
+- Keep cleanup non-destructive unless the user explicitly approves deletion or window shutdown.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/goal-completion-audit.md`
+- `docs/antigravity-sidecar-hygiene-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-58-sidecar-worktree-hygiene.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-58-20260601-1754-review.md`
+
+Notes:
+- Main worktree was clean at `79e62c9 wave-57: verify ui cleanroom smoke`.
+- Five Antigravity sidecar worktrees are registered under `/private/tmp`.
+- Four Antigravity tmux windows remain in session `Splunk`.
+- No sidecar worktree was deleted and no tmux window was killed.
+- Wave 56 remains the only accepted sidecar integration from the fresh `Splunk:7` instance, and it was reimplemented on main rather than directly merged.
+- `wave-58-20260601-1754-review.md`: reviewer passed with no open Wave 58 findings.
+- Overall goal remains open pending explicit user approval.
+
+Result:
+- PASS.
