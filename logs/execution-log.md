@@ -23,6 +23,43 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 13:13 - Wave 20
+
+Scope:
+- Added a real but naive specimen agent wrapper that calls the shared Splunk adapter.
+- Added policy injection behavior that uses mission saved-search preference only when a compiled policy is provided.
+- Added trace event capture for tool calls, tool results, and final answers.
+
+Files changed:
+- `src/agents/specimen.ts`
+- `tests/agents/specimen.test.ts`
+- `logs/reviewer-inbox/wave-20-20260601-1312-review.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-20-20260601-1312-review.md`
+
+Commands:
+- `npx vitest run tests/agents/specimen.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "NaiveSpecimenAgent|policy|splunk_run_query|index=\\*|src_ip|splunk_get_knowledge_objects|splunk_run_saved_search|traceEventSchema|No evidence" src/agents tests/agents fixtures/acme-soc-dev/missions docs/waves/wave-20-naive-agent.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-20-*' -print | sort`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-20-20260601-1312-review.md`
+- `rg -n "policySavedSearchRefs|policyPreferredSavedSearchRef|KO-001|knowledgeRules|unrelated policy|splunk_run_saved_search|index=\\*|HIGH-001" src/agents tests/agents logs/reviewer-inbox/wave-20-20260601-1312-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Unpatched behavior naturally runs a broad `index=*` / `src_ip` query against the fixture mission and records an empty-evidence final answer.
+- `HIGH-001` resolved: patched behavior now requires matching `KO-001` saved-search preference content inside the injected policy plus mission preferred refs, not policy presence alone.
+- Trace events validate against `traceEventSchema`.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 168` and 16 test files / 63 tests passed.
+
 ## 2026-06-01 13:09 - Wave 19
 
 Scope:

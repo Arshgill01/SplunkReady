@@ -2,6 +2,36 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 13:13 - Wave 20 Naive Specimen Agent
+
+Commands:
+
+- `npx vitest run tests/agents/specimen.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "NaiveSpecimenAgent|policy|splunk_run_query|index=\\*|src_ip|splunk_get_knowledge_objects|splunk_run_saved_search|traceEventSchema|No evidence" src/agents tests/agents fixtures/acme-soc-dev/missions docs/waves/wave-20-naive-agent.md`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-20-*' -print | sort`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-20-20260601-1312-review.md`
+- `rg -n "policySavedSearchRefs|policyPreferredSavedSearchRef|KO-001|knowledgeRules|unrelated policy|splunk_run_saved_search|index=\\*|HIGH-001" src/agents tests/agents logs/reviewer-inbox/wave-20-20260601-1312-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/agents/specimen.test.ts` passed: 1 test file and 3 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 16 test files and 63 tests.
+- Traceability grep found the agent, policy injection point, broad query failure path, saved-search path, and schema validation.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 168`; 16 test files and 63 tests passed.
+- `git diff --check` passed.
+- `HIGH-001` resolved by deriving saved-search behavior from matching `KO-001` policy content and adding an unrelated-policy negative test.
+
+Notes:
+
+- The agent has no contract before policy injection.
+- The policy path is driven by `preferredSavedSearchRefs` and compiled policy content.
+
 ## 2026-06-01 13:09 - Wave 19 Observability Mission
 
 Commands:
