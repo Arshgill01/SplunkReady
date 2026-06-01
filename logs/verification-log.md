@@ -17,6 +17,7 @@ Commands:
 - `npx vitest run tests/fixtures/query-results.test.ts`
 - `npm test`
 - `npm run check`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-09-20260601-1226-rereview.md`
 
 Result:
 
@@ -36,6 +37,7 @@ Notes:
 - Wrong path produces plausible zero results with warning context.
 - Prompt-injection text appears as row data, not fixture warnings or agent behavior.
 - `HIGH-001`: fixed by moving the exact prompt-injection instruction out of saved-search metadata and adding a row-only regression test.
+- Wave 09 post-commit rereview passed with no open findings and is included before Wave 10 completion.
 
 ## 2026-06-01 12:19 - Wave 08 Fixture Knowledge Objects
 
