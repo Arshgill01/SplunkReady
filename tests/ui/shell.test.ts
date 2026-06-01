@@ -5,9 +5,12 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { loadUiArtifacts, renderUiShell, writeUiShell, type UiArtifactPaths } from "../../src/ui/shell.js";
-import type { ReadinessReceipt, TraceEvent, Violation } from "../../src/schemas/core.js";
+import type { EnvironmentContract, ReadinessReceipt, TraceEvent, Violation } from "../../src/schemas/core.js";
+import type { MissionDefinition } from "../../src/missions/dsl.js";
 
 const artifactPaths = (outDir = "/tmp/splunkready-ui"): UiArtifactPaths => ({
+  contract: join(outDir, "environment-contract.json"),
+  missions: join(outDir, "missions.json"),
   receipt: join(outDir, "receipt-after-001.json"),
   trace: join(outDir, "trace-after.json"),
   violations: join(outDir, "violations-after.json")
@@ -68,6 +71,63 @@ const violation = (): Violation => ({
   evidenceRefs: ["evt-auth-001"]
 });
 
+const contract = (): EnvironmentContract => ({
+  id: "contract-acme-soc-dev",
+  name: "acme-soc-dev",
+  version: "2026.06.01",
+  generatedAt: "2026-06-01T06:30:00.000Z",
+  mode: "fixture",
+  indexes: [
+    { name: "wineventlog", sensitive: false },
+    { name: "finance_pii", sensitive: true }
+  ],
+  restrictedIndexes: ["finance_pii"],
+  sourcetypes: [{ name: "XmlWinEventLog:Security", fields: ["src", "dest", "user", "signature", "EventCode"] }],
+  canonicalFields: {
+    auth_source: "src",
+    auth_destination: "dest",
+    auth_user: "user"
+  },
+  macros: [{ name: "security_content_ctime", app: "SplunkEnterpriseSecuritySuite" }],
+  lookups: [{ name: "asset_lookup", app: "SplunkEnterpriseSecuritySuite" }],
+  savedSearches: [
+    { name: "ES - Lateral Movement Auth Chain", app: "search" },
+    { name: "ES - Lateral Movement Auth Chain", app: "SplunkEnterpriseSecuritySuite" }
+  ],
+  dashboardPanels: [],
+  dataModels: [
+    {
+      id: "data-model-authentication",
+      type: "data_models",
+      name: "Authentication",
+      app: "SplunkEnterpriseSecuritySuite",
+      metadata: { fields: ["src", "dest", "user"], absentFields: ["src_ip"] }
+    }
+  ],
+  appContexts: ["SplunkEnterpriseSecuritySuite", "search"],
+  mcpTools: ["splunk_get_knowledge_objects", "splunk_run_saved_search", "splunk_run_query"],
+  queryBudgets: { maxToolCalls: 6, maxResultRows: 50, timeoutSeconds: 30 },
+  evidenceRules: [{ id: "security-evidence", requiresResultCount: true, requiresEvidenceRefs: true }],
+  forbiddenQueryPatterns: ["index=*"]
+});
+
+const mission = (): MissionDefinition => ({
+  id: "mission-security-lateral-movement-readiness",
+  title: "Investigate lateral movement from win-finance-07",
+  domain: "security",
+  prompt: "Investigate possible lateral movement from win-finance-07 over the last 24 hours.",
+  requestedTimeWindow: { earliest: "-24h", latest: "now" },
+  expectedTools: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+  allowedTools: ["splunk_get_knowledge_objects", "splunk_run_saved_search", "splunk_run_query"],
+  forbiddenPatterns: ["index=*"],
+  requiredEvidence: [{ type: "result_count" }, { type: "evidence_refs" }],
+  checks: ["SPL-001", "SPL-003", "KO-001", "KO-002", "EVD-001", "EVD-002", "SAF-002"],
+  severityWeights: { Critical: 25, High: 15, Medium: 8, Low: 2 },
+  authorizedIndexes: ["wineventlog"],
+  preferredSavedSearchRefs: ["SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain"],
+  requiresSavedSearchDiscovery: true
+});
+
 const writeJson = async (path: string, value: unknown): Promise<void> => {
   await writeFile(path, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 };
@@ -77,6 +137,8 @@ describe("SplunkReady UI shell", () => {
     const html = renderUiShell({
       phase: "after",
       outDir: "/tmp/splunkready-ui",
+      contract: contract(),
+      missions: [mission()],
       receipt: receipt(),
       traceEvents: [traceEvent("trace-saved-search-call")],
       violations: [],
@@ -92,6 +154,9 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("receipt-after-001");
     expect(html).toContain("trace-saved-search-call");
     expect(html).toContain("evt-auth-001");
+    expect(html).toContain("Trace refs");
+    expect(html).toContain("Evidence refs");
+    expect(html).toContain("Violation refs");
     expect(html).toContain("Loaded artifacts");
     expect(html).not.toContain("hero");
     expect(html).not.toContain("chat");
@@ -103,6 +168,8 @@ describe("SplunkReady UI shell", () => {
 
     await writeJson(join(outDir, "receipt-before-001.json"), receipt({ id: "receipt-before-001", verdict: "NOT READY", score: 60 }));
     await writeJson(join(outDir, "receipt-after-001.json"), receipt());
+    await writeJson(join(outDir, "environment-contract.json"), contract());
+    await writeJson(join(outDir, "missions.json"), [mission()]);
     await writeJson(join(outDir, "trace-after.json"), [traceEvent("trace-saved-search-call")]);
     await writeJson(join(outDir, "violations-after.json"), []);
 
@@ -110,15 +177,45 @@ describe("SplunkReady UI shell", () => {
 
     expect(artifacts.phase).toBe("after");
     expect(artifacts.receipt.verdict).toBe("READY");
+    expect(artifacts.contract?.restrictedIndexes).toEqual(["finance_pii"]);
+    expect(artifacts.missions[0]?.preferredSavedSearchRefs).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain");
     expect(artifacts.traceEvents).toHaveLength(1);
     expect(artifacts.violations).toEqual([]);
     expect(artifacts.paths.receipt).toBe(join(outDir, "receipt-after-001.json"));
+  });
+
+  it("renders the compiled contract evidence behind the security readiness trap", () => {
+    const html = renderUiShell({
+      phase: "after",
+      outDir: "/tmp/splunkready-ui",
+      contract: contract(),
+      missions: [mission()],
+      receipt: receipt(),
+      traceEvents: [traceEvent("trace-saved-search-call")],
+      violations: [],
+      paths: artifactPaths()
+    });
+
+    expect(html).toContain("Environment contract");
+    expect(html).toContain("finance_pii");
+    expect(html).toContain("restricted");
+    expect(html).toContain("XmlWinEventLog:Security");
+    expect(html).toContain("<code>src</code>");
+    expect(html).toContain("src_ip");
+    expect(html).toContain("absent from Authentication");
+    expect(html).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain");
+    expect(html).toContain("preferred for mission");
+    expect(html).toContain("maxToolCalls");
+    expect(html).toContain("security-evidence");
+    expect(html).toContain("requiresEvidenceRefs: true");
   });
 
   it("renders deterministic violations when the current receipt is not ready", () => {
     const html = renderUiShell({
       phase: "before",
       outDir: "/tmp/splunkready-ui",
+      contract: contract(),
+      missions: [mission()],
       receipt: receipt({
         id: "receipt-before-001",
         verdict: "NOT READY",
@@ -132,6 +229,8 @@ describe("SplunkReady UI shell", () => {
       traceEvents: [traceEvent("trace-final-answer")],
       violations: [violation()],
       paths: {
+        contract: "/tmp/splunkready-ui/environment-contract.json",
+        missions: "/tmp/splunkready-ui/missions.json",
         receipt: "/tmp/splunkready-ui/receipt-before-001.json",
         trace: "/tmp/splunkready-ui/trace-before.json",
         violations: "/tmp/splunkready-ui/violations-before.json"
@@ -148,6 +247,8 @@ describe("SplunkReady UI shell", () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-ui-write-"));
 
     await writeJson(join(outDir, "receipt-after-001.json"), receipt());
+    await writeJson(join(outDir, "environment-contract.json"), contract());
+    await writeJson(join(outDir, "missions.json"), [mission()]);
     await writeJson(join(outDir, "trace-after.json"), [traceEvent("trace-saved-search-call")]);
     await writeJson(join(outDir, "violations-after.json"), []);
 
@@ -156,6 +257,7 @@ describe("SplunkReady UI shell", () => {
 
     expect(shellPath).toBe(join(outDir, "splunkready-shell.html"));
     expect(html).toContain("Readiness Receipt");
+    expect(html).toContain("Environment contract");
     expect(html).toContain("receipt-after-001.json");
   });
 

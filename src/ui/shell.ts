@@ -2,15 +2,20 @@ import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 import {
+  environmentContractSchema,
   readinessReceiptSchema,
   traceEventSchema,
   violationSchema,
+  type EnvironmentContract,
   type ReadinessReceipt,
   type TraceEvent,
   type Violation
 } from "../schemas/core.js";
+import { parseMissionDefinition, type MissionDefinition } from "../missions/dsl.js";
 
 export interface UiArtifactPaths {
+  contract?: string;
+  missions?: string;
   receipt: string;
   trace: string;
   violations: string;
@@ -19,6 +24,8 @@ export interface UiArtifactPaths {
 export interface UiArtifacts {
   phase: "before" | "after";
   outDir: string;
+  contract?: EnvironmentContract;
+  missions: MissionDefinition[];
   receipt: ReadinessReceipt;
   traceEvents: TraceEvent[];
   violations: Violation[];
@@ -48,6 +55,28 @@ const readOptionalViolations = async (path: string): Promise<Violation[]> => {
   return violationSchema.array().parse(await readJson(path));
 };
 
+const readOptionalContract = async (path: string): Promise<EnvironmentContract | undefined> => {
+  if (!(await exists(path))) {
+    return undefined;
+  }
+
+  return environmentContractSchema.parse(await readJson(path));
+};
+
+const readOptionalMissions = async (path: string): Promise<MissionDefinition[]> => {
+  if (!(await exists(path))) {
+    return [];
+  }
+
+  const input = await readJson(path);
+
+  if (!Array.isArray(input)) {
+    throw new Error(`Expected missions artifact at ${path} to be an array.`);
+  }
+
+  return input.map((mission) => parseMissionDefinition(mission));
+};
+
 const currentReceiptPath = async (outDir: string): Promise<{ phase: "before" | "after"; path: string }> => {
   const afterPath = join(outDir, "receipt-after-001.json");
 
@@ -69,16 +98,22 @@ const currentReceiptPath = async (outDir: string): Promise<{ phase: "before" | "
 export const loadUiArtifacts = async (outDir: string): Promise<UiArtifacts> => {
   const current = await currentReceiptPath(outDir);
   const receipt = readinessReceiptSchema.parse(await readJson(current.path));
+  const contractPath = join(outDir, "environment-contract.json");
+  const missionsPath = join(outDir, "missions.json");
   const tracePath = join(outDir, `trace-${current.phase}.json`);
   const violationPath = join(outDir, `violations-${current.phase}.json`);
 
   return {
     phase: current.phase,
     outDir,
+    contract: await readOptionalContract(contractPath),
+    missions: await readOptionalMissions(missionsPath),
     receipt,
     traceEvents: await readOptionalTrace(tracePath),
     violations: await readOptionalViolations(violationPath),
     paths: {
+      contract: contractPath,
+      missions: missionsPath,
       receipt: current.path,
       trace: tracePath,
       violations: violationPath
@@ -115,6 +150,12 @@ const renderList = (values: string[], emptyText: string): string => {
 
   return `<ul>${values.map((value) => `<li><code>${escapeHtml(value)}</code></li>`).join("")}</ul>`;
 };
+
+const renderRefGroup = (label: string, values: string[], emptyText: string): string =>
+  `<div class="ref-group">
+    <h3>${escapeHtml(label)}</h3>
+    ${renderList(values, emptyText)}
+  </div>`;
 
 const renderViolations = (violations: Violation[]): string => {
   if (violations.length === 0) {
@@ -165,8 +206,182 @@ const renderTraceEvents = (events: TraceEvent[]): string => {
   </table>`;
 };
 
+const renderIndexRows = (contract: EnvironmentContract): string => {
+  const restricted = new Set(contract.restrictedIndexes);
+
+  return contract.indexes
+    .map((index) => {
+      const access = restricted.has(index.name) || index.sensitive ? "restricted" : "available";
+
+      return `<tr>
+        <td><code>${escapeHtml(index.name)}</code></td>
+        <td>${escapeHtml(access)}</td>
+      </tr>`;
+    })
+    .join("");
+};
+
+const renderSourcetypeRows = (contract: EnvironmentContract): string =>
+  contract.sourcetypes
+    .map(
+      (sourcetype) => `<tr>
+        <td><code>${escapeHtml(sourcetype.name)}</code></td>
+        <td>${sourcetype.fields.map((field) => `<code>${escapeHtml(field)}</code>`).join(" ")}</td>
+      </tr>`
+    )
+    .join("");
+
+const renderCanonicalFieldRows = (contract: EnvironmentContract): string => {
+  const rows = Object.entries(contract.canonicalFields).map(
+    ([alias, canonical]) => `<tr>
+      <td><code>${escapeHtml(alias)}</code></td>
+      <td><code>${escapeHtml(canonical)}</code></td>
+    </tr>`
+  );
+
+  for (const dataModel of contract.dataModels) {
+    const metadata = dataModel.metadata;
+
+    if (metadata && typeof metadata === "object" && "absentFields" in metadata && Array.isArray(metadata.absentFields)) {
+      for (const absentField of metadata.absentFields) {
+        rows.push(`<tr>
+          <td><code>${escapeValue(absentField)}</code></td>
+          <td>absent from ${escapeHtml(String(dataModel.name))}</td>
+        </tr>`);
+      }
+    }
+  }
+
+  return rows.join("");
+};
+
+const preferredSavedSearchRefs = (missions: MissionDefinition[]): Set<string> =>
+  new Set(missions.flatMap((mission) => mission.preferredSavedSearchRefs ?? []));
+
+const renderSavedSearchRows = (contract: EnvironmentContract, missions: MissionDefinition[]): string => {
+  const preferredRefs = preferredSavedSearchRefs(missions);
+
+  return contract.savedSearches
+    .map((savedSearch) => {
+      const ref = `${savedSearch.app}::${savedSearch.name}`;
+      const status = preferredRefs.has(ref) ? "preferred for mission" : "available";
+
+      return `<tr>
+        <td><code>${escapeHtml(ref)}</code></td>
+        <td>${escapeHtml(status)}</td>
+      </tr>`;
+    })
+    .join("");
+};
+
+const renderKnowledgeSummaryRows = (contract: EnvironmentContract): string => {
+  const rows = [
+    ["Macros", contract.macros.map((macro) => `${macro.app}::${macro.name}`)],
+    ["Lookups", contract.lookups.map((lookup) => `${lookup.app}::${lookup.name}`)],
+    ["Data models", contract.dataModels.map((dataModel) => String(dataModel.name))],
+    ["App contexts", contract.appContexts]
+  ];
+
+  return rows
+    .map(
+      ([label, values]) => `<tr>
+        <th>${escapeHtml(label as string)}</th>
+        <td>${(values as string[]).length > 0 ? (values as string[]).map((value) => `<code>${escapeHtml(value)}</code>`).join(" ") : "None"}</td>
+      </tr>`
+    )
+    .join("");
+};
+
+const renderEvidenceRuleRows = (contract: EnvironmentContract): string => {
+  if (contract.evidenceRules.length === 0) {
+    return `<tr><td colspan="2">No evidence rules compiled.</td></tr>`;
+  }
+
+  return contract.evidenceRules
+    .map((rule) => {
+      const id = typeof rule.id === "string" ? rule.id : "evidence-rule";
+      const requirements = Object.entries(rule)
+        .filter(([key]) => key !== "id")
+        .map(([key, value]) => `${key}: ${String(value)}`)
+        .join(", ");
+
+      return `<tr>
+        <td><code>${escapeHtml(id)}</code></td>
+        <td>${escapeHtml(requirements)}</td>
+      </tr>`;
+    })
+    .join("");
+};
+
+const renderContractView = (artifacts: UiArtifacts): string => {
+  if (!artifacts.contract) {
+    return `<section id="contract" class="shell-section" aria-label="Environment contract">
+      <h2>Environment contract</h2>
+      <p class="empty">No environment-contract.json artifact loaded.</p>
+    </section>`;
+  }
+
+  const { contract } = artifacts;
+
+  return `<section id="contract" class="shell-section" aria-label="Environment contract">
+    <h2>Environment contract</h2>
+    <div class="contract-grid">
+      <div>
+        <h3>Indexes</h3>
+        <table>
+          <thead><tr><th>Index</th><th>Access</th></tr></thead>
+          <tbody>${renderIndexRows(contract)}</tbody>
+        </table>
+      </div>
+      <div>
+        <h3>Sourcetype fields</h3>
+        <table>
+          <thead><tr><th>Sourcetype</th><th>Fields</th></tr></thead>
+          <tbody>${renderSourcetypeRows(contract)}</tbody>
+        </table>
+      </div>
+      <div>
+        <h3>Canonical fields</h3>
+        <table>
+          <thead><tr><th>Observed or alias</th><th>Compiled contract guidance</th></tr></thead>
+          <tbody>${renderCanonicalFieldRows(contract)}</tbody>
+        </table>
+      </div>
+      <div>
+        <h3>Saved searches</h3>
+        <table>
+          <thead><tr><th>Object ref</th><th>Use</th></tr></thead>
+          <tbody>${renderSavedSearchRows(contract, artifacts.missions)}</tbody>
+        </table>
+      </div>
+      <div>
+        <h3>Knowledge graph summary</h3>
+        <table>
+          <tbody>${renderKnowledgeSummaryRows(contract)}</tbody>
+        </table>
+      </div>
+      <div>
+        <h3>Budgets and evidence rules</h3>
+        <table>
+          <tbody>
+            <tr><th>maxToolCalls</th><td>${escapeValue(contract.queryBudgets.maxToolCalls)}</td></tr>
+            <tr><th>maxResultRows</th><td>${escapeValue(contract.queryBudgets.maxResultRows)}</td></tr>
+            <tr><th>timeoutSeconds</th><td>${escapeValue(contract.queryBudgets.timeoutSeconds)}</td></tr>
+          </tbody>
+        </table>
+        <table class="stacked-table">
+          <thead><tr><th>Evidence rule</th><th>Requirements</th></tr></thead>
+          <tbody>${renderEvidenceRuleRows(contract)}</tbody>
+        </table>
+      </div>
+    </div>
+  </section>`;
+};
+
 const renderArtifactPaths = (paths: UiArtifactPaths): string =>
   `<dl class="artifact-paths">
+    ${paths.contract ? `<div><dt>Contract</dt><dd><code>${escapeHtml(paths.contract)}</code></dd></div>` : ""}
+    ${paths.missions ? `<div><dt>Missions</dt><dd><code>${escapeHtml(paths.missions)}</code></dd></div>` : ""}
     <div><dt>Receipt</dt><dd><code>${escapeHtml(paths.receipt)}</code></dd></div>
     <div><dt>Trace</dt><dd><code>${escapeHtml(paths.trace)}</code></dd></div>
     <div><dt>Violations</dt><dd><code>${escapeHtml(paths.violations)}</code></dd></div>
@@ -275,7 +490,8 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     }
 
     h1,
-    h2 {
+    h2,
+    h3 {
       margin: 0;
       font-weight: 680;
     }
@@ -287,6 +503,11 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     h2 {
       font-size: 16px;
       margin-bottom: 14px;
+    }
+
+    h3 {
+      font-size: 14px;
+      margin-bottom: 10px;
     }
 
     .subtle {
@@ -355,6 +576,12 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       gap: 24px;
     }
 
+    .contract-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -377,6 +604,10 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
     tr:last-child td {
       border-bottom: 0;
+    }
+
+    .stacked-table {
+      margin-top: 12px;
     }
 
     ul {
@@ -429,6 +660,11 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       gap: 24px;
     }
 
+    .ref-groups {
+      display: grid;
+      gap: 16px;
+    }
+
     @media (max-width: 920px) {
       .app-shell {
         grid-template-columns: 1fr;
@@ -441,6 +677,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
       .receipt-strip,
       .section-grid,
+      .contract-grid,
       .provenance-columns {
         grid-template-columns: 1fr;
       }
@@ -465,6 +702,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       <p class="tagline">Certify AI agents before they touch production Splunk.</p>
       <nav>
         <a aria-current="page" href="#receipt">Readiness Receipt</a>
+        <a href="#contract">Contract</a>
         <a href="#provenance">Provenance</a>
         <a href="#violations">Violations</a>
         <a href="#artifacts">Artifacts</a>
@@ -529,6 +767,8 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
         </div>
       </section>
 
+      ${renderContractView(artifacts)}
+
       <section id="provenance" class="shell-section" aria-label="Trace and evidence provenance">
         <div class="section-grid">
           <div>
@@ -537,10 +777,10 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
           </div>
           <div>
             <h2>Receipt refs</h2>
-            <div class="provenance-columns">
-              <div>${renderList(receipt.traceRefs, "No trace refs.")}</div>
-              <div>${renderList(receipt.evidenceRefs, "No evidence refs.")}</div>
-              <div>${renderList(receipt.violations, "No violation refs.")}</div>
+            <div class="ref-groups">
+              ${renderRefGroup("Trace refs", receipt.traceRefs, "No trace refs.")}
+              ${renderRefGroup("Evidence refs", receipt.evidenceRefs, "No evidence refs.")}
+              ${renderRefGroup("Violation refs", receipt.violations, "No violation refs.")}
             </div>
           </div>
         </div>

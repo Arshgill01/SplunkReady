@@ -2,6 +2,64 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 14:57 - Wave 35 UI Contract Views
+
+Commands:
+
+- `sed -n '1,280p' docs/waves/wave-35-ui-contract.md`
+- `sed -n '1,240p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-35-*' -print | sort`
+- `git status --short --branch`
+- `sed -n '1,260p' src/ui/shell.ts`
+- `sed -n '1,260p' tests/ui/shell.test.ts`
+- `sed -n '1,260p' fixtures/acme-soc-dev/adapter-fixture.json`
+- `cat fixtures/acme-soc-dev/missions/security-investigation-readiness.json`
+- `node -e "const fs=require('fs'); const c=JSON.parse(fs.readFileSync('/tmp/splunkready-ui-shell-Br2xW4/environment-contract.json','utf8')); console.log(JSON.stringify({indexes:c.indexes,sourcetypes:c.sourcetypes,canonicalFields:c.canonicalFields,macros:c.macros,lookups:c.lookups,savedSearches:c.savedSearches,dataModels:c.dataModels,queryBudgets:c.queryBudgets,evidenceRules:c.evidenceRules,restrictedIndexes:c.restrictedIndexes,appContexts:c.appContexts}, null, 2))"`
+- `npx vitest run tests/ui/shell.test.ts`
+- `npx tsc --noEmit`
+- `npm run build && node --input-type=module -e "import { writeUiShell } from './dist/src/ui/shell.js'; const p = await writeUiShell('/tmp/splunkready-ui-shell-Br2xW4'); console.log('SHELL_PATH=' + p);"`
+- `python3 -m http.server 41735 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41735/splunkready-shell.html`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave35-contract-view.png --full-page`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-34-20260601-1450-review.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-35-20260601-1454-review.md`
+- `npm run build && node --input-type=module -e "import { writeUiShell } from './dist/src/ui/shell.js'; const p = await writeUiShell('/tmp/splunkready-ui-shell-Br2xW4'); console.log('SHELL_PATH=' + p);"`
+- `python3 -m http.server 41736 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41736/splunkready-shell.html`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave35-contract-view.png --full-page`
+- `file /tmp/splunkready-wave35-contract-view.png && ls -lh /tmp/splunkready-wave35-contract-view.png`
+- `npm run check`
+- `git diff --check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f \\( -name 'wave-34-*' -o -name 'wave-35-*' \\) -print | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-35-20260601-1457-rereview.md`
+
+Result:
+
+- PASS.
+- `npx vitest run tests/ui/shell.test.ts` passed: 1 test file and 6 tests.
+- `npx tsc --noEmit` passed.
+- Fixture shell generation from compiled artifacts passed.
+- Playwright snapshot showed `Environment contract`, restricted `finance_pii`, `XmlWinEventLog:Security` fields including `src`, `src_ip absent from Authentication`, preferred `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`, knowledge graph summary, query budgets, `security-evidence`, and labeled receipt-ref groups.
+- Playwright screenshot passed and wrote `/tmp/splunkready-wave35-contract-view.png`.
+- Screenshot file check passed: 1280 x 2335 PNG, 301 KB.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 221`; 30 test files and 131 tests passed.
+- `git diff --check` passed.
+- Final reviewer inbox scan found the late Wave 34 review, Wave 35 initial review, and Wave 35 rereview.
+
+Reviewer Handling:
+
+- Late Wave 34 `MEDIUM-001` fixed by labeling receipt-ref groups and stacking long identifiers.
+- Wave 35 `HIGH-001` fixed; typecheck passes with updated UI fixtures.
+- Wave 35 `HIGH-002` fixed; contract-view acceptance criteria are asserted in `tests/ui/shell.test.ts`.
+- Wave 35 rereview passed with no open findings.
+
+Notes:
+
+- The UI contract view is generated from `environment-contract.json` and `missions.json`; it does not infer contract claims from free-form copy.
+- No Splunk writes or live credentials are required.
+
 ## 2026-06-01 14:49 - Wave 34 UI Shell
 
 Commands:
