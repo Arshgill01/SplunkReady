@@ -2,6 +2,41 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 14:25 - Wave 31 Readiness Receipt Generator
+
+Commands:
+
+- `sed -n '1,260p' docs/waves/wave-31-receipt-generator.md`
+- `sed -n '1,220p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-31-*' -print | sort`
+- `sed -n '230,300p' docs/schemas/core-contracts.md`
+- `rg -n "toMarkdown|markdown|snapshot|toMatchInlineSnapshot|readinessReceiptSchema|policyPatchSummary|rerunComparison|agent" src tests`
+- `npx vitest run tests/receipts/generator.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "generateReadinessReceipt|renderReceiptMarkdown|Readiness Receipt|criticalIssues|Critical Issues|traceRefs|evidenceRefs|policyPatchSummary|rerunComparison|dashboard export|Every claim has trace" src tests docs/waves/wave-31-receipt-generator.md docs/schemas/core-contracts.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-31-20260601-1425-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/receipts/generator.test.ts` passed: 1 test file and 4 tests.
+- `npx tsc --noEmit` passed.
+- `npm test` passed: 27 test files and 119 tests.
+- Traceability grep found receipt generation, Markdown rendering, trace/evidence refs, policy patch summary, rerun comparison, and the wave stop condition.
+- `npm run check` passed after reviewer-file inclusion: `PASS: scaffold verified`, `waves: 42`, `project files: 208`; 27 test files and 119 tests passed.
+- `git diff --check` passed.
+- Wave 31 reviewer inbox scan found `logs/reviewer-inbox/wave-31-20260601-1425-review.md`.
+- Wave 31 reviewer passed with no findings.
+
+Notes:
+
+- JSON receipts are validated with `readinessReceiptSchema`.
+- Markdown receipts are rendered from parsed receipt and score data.
+- Critical issues cite violation ids, rule ids, trace ids, and evidence refs where present.
+
 ## 2026-06-01 14:21 - Wave 30 Scoring and Verdict
 
 Commands:

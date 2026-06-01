@@ -23,6 +23,47 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 14:25 - Wave 31
+
+Scope:
+- Added Readiness Receipt generation for JSON and Markdown artifacts.
+- Receipts include agent, environment, contract version, suite version, verdict, score, mission pass/fail, violations, evidence refs, trace refs, policy patch summary, and rerun comparison.
+- Markdown rendering keeps critical issues, violation details, score explanation, and provenance visible.
+
+Files changed:
+- `src/receipts/generator.ts`
+- `tests/receipts/generator.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-31-20260601-1425-review.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-31-20260601-1425-review.md`
+
+Commands:
+- `sed -n '1,260p' docs/waves/wave-31-receipt-generator.md`
+- `sed -n '1,220p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -name 'wave-31-*' -print | sort`
+- `sed -n '230,300p' docs/schemas/core-contracts.md`
+- `rg -n "toMarkdown|markdown|snapshot|toMatchInlineSnapshot|readinessReceiptSchema|policyPatchSummary|rerunComparison|agent" src tests`
+- `npx vitest run tests/receipts/generator.test.ts`
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "generateReadinessReceipt|renderReceiptMarkdown|Readiness Receipt|criticalIssues|Critical Issues|traceRefs|evidenceRefs|policyPatchSummary|rerunComparison|dashboard export|Every claim has trace" src tests docs/waves/wave-31-receipt-generator.md docs/schemas/core-contracts.md`
+- `npm run check`
+- `git diff --check`
+- `sed -n '1,280p' logs/reviewer-inbox/wave-31-20260601-1425-review.md`
+
+Result:
+- PASS
+
+Notes:
+- `generateReadinessReceipt` validates the JSON artifact with `readinessReceiptSchema`.
+- `renderReceiptMarkdown` is generated from the parsed receipt and score output, not separate UI state.
+- Tests assert schema-valid JSON, readable critical issue lines, complete trace/evidence/violation provenance, and before/after rerun support.
+- Wave 31 reviewer passed with no findings.
+- Final `npm run check` passed after reviewer-file inclusion: scaffold verifier reported `project files: 208` and 27 test files / 119 tests passed.
+
 ## 2026-06-01 14:21 - Wave 30
 
 Scope:
