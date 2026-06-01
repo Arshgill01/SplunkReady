@@ -2,6 +2,35 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 12:43 - Wave 13 Knowledge Normalizer
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/knowledge/normalizer.test.ts`
+- `rg -n "normalizeKnowledge|dependsOn|raw|owner|source|appContexts" src/knowledge tests/knowledge fixtures/acme-soc-dev/adapter-fixture.json`
+- `npm test`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 20`
+- `sed -n '1,220p' logs/reviewer-inbox/wave-13-20260601-1244-review.md`
+- `git diff --check`
+
+Result:
+
+- PASS
+- `npx tsc --noEmit` passed.
+- `npx vitest run tests/knowledge/normalizer.test.ts` passed: 1 test file and 4 tests.
+- `npm test` passed: 9 test files and 37 tests.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 144`; 9 test files and 37 tests passed.
+- `git diff --check` passed.
+
+Notes:
+
+- App contexts are preserved, including duplicate saved-search names across apps.
+- Dashboard and panel dependencies are extracted from explicit references.
+- Raw metadata is preserved for debugging and later deterministic grading.
+- `logs/reviewer-inbox/wave-13-20260601-1244-review.md` passed with no open findings.
+
 ## 2026-06-01 12:38 - Wave 12 Environment Compiler
 
 Commands:

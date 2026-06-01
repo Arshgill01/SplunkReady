@@ -23,6 +23,42 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 12:43 - Wave 13
+
+Scope:
+- Added knowledge object normalizer for stable internal records.
+- Normalized id, type, name, app, optional owner/source, deterministic dependencies, metadata, and raw object preservation.
+- Added fixture roundtrip tests for app context, dashboard/panel dependencies, raw metadata, and owner/source handling when provided.
+
+Files changed:
+- `src/knowledge/normalizer.ts`
+- `tests/knowledge/normalizer.test.ts`
+- `logs/reviewer-inbox/wave-13-20260601-1244-review.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-13-20260601-1244-review.md`
+
+Commands:
+- `npx tsc --noEmit`
+- `npx vitest run tests/knowledge/normalizer.test.ts`
+- `rg -n "normalizeKnowledge|dependsOn|raw|owner|source|appContexts" src/knowledge tests/knowledge fixtures/acme-soc-dev/adapter-fixture.json`
+- `npm test`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 20`
+- `sed -n '1,220p' logs/reviewer-inbox/wave-13-20260601-1244-review.md`
+- `git diff --check`
+
+Result:
+- PASS
+
+Notes:
+- Dependency extraction is limited to explicit `dependsOn` and known metadata reference keys.
+- Raw metadata remains available on every normalized record for debugging and later deterministic graders.
+- Wave 13 reviewer passed with no open findings.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 144` and 9 test files / 37 tests passed.
+
 ## 2026-06-01 12:38 - Wave 12
 
 Scope:
