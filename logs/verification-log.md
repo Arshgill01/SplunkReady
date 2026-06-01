@@ -2072,3 +2072,30 @@ Result:
 - Final reviewer audit passed after the rereview file arrived: 61 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 60 wave files, 313 project files.
 - Final full project check passed: scaffold verifier plus 31 test files / 139 tests.
+
+## 2026-06-01 - Wave 60 Fresh Antigravity UI 1759 Triage
+
+Commands:
+
+- `git -C /private/tmp/splunkready-antigravity-ui-fresh-20260601-175939 diff -- src/ui/shell.ts`
+- `git -C /private/tmp/splunkready-antigravity-ui-fresh-20260601-175939 status --short --branch`
+- `rg -n "Wave 59 continuation|through Wave 59|Status: implemented through Wave 59|Wave 59 keeps" MANIFEST.md PLAN.md docs/implementation-handoff.md docs/goal-completion-audit.md docs/antigravity-ui-fresh-1759-triage-report.md logs/execution-log.md logs/verification-log.md`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS.
+- Sidecar diff was inspected and rejected for main-branch integration.
+- Sidecar worktree status showed `src/ui/shell.ts` modified and local-only `.antigravitycli/`, `.playwright-cli/`, and `artifacts/` untracked.
+- Current-state search only matched historical Wave 59 log text, not active handoff/status docs.
+- Reviewer audit passed before a Wave 60-specific reviewer inbox file arrived: 61 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Scaffold verifier and `git diff --check` passed: 61 wave files, 315 project files.
+- Full project check passed: scaffold verifier plus 31 test files / 139 tests.
+- `wave-60-20260601-1809-review.md` finding `HIGH-001` was resolved by adding the exact required Wave 60 gates above.
+- `wave-60-20260601-1809-review.md` finding `MEDIUM-001` was resolved by moving the Wave 60 execution-log section to the chronological end of `logs/execution-log.md`.
+- `wave-60-20260601-1811-rereview.md` passed with no open findings.
+- Follow-up scaffold verifier and `git diff --check` passed after the rereview file arrived: 61 wave files, 316 project files.
+- Final reviewer audit passed after the rereview file arrived: 62 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 61 wave files, 317 project files.
