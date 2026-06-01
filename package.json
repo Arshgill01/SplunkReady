@@ -1,0 +1,23 @@
+{
+  "name": "splunkready",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Splunk-native certification harness for AI agents before they touch production Splunk.",
+  "scripts": {
+    "test": "vitest run --passWithNoTests",
+    "verify:scaffold": "bash scripts/verify-scaffold.sh",
+    "check": "npm run verify:scaffold && npm test"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

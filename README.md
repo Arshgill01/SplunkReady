@@ -30,3 +30,16 @@ SplunkReady targets the Platform & Developer Experience track. The product story
 ## Primary Artifact
 
 The Readiness Receipt is the product artifact. It records the environment contract version, mission suite version, trace evidence, deterministic violations, score, verdict, and policy patch summary.
+
+## Development
+
+Prerequisite: Node.js 22 or newer.
+
+```bash
+npm install
+npm test
+npm run verify:scaffold
+npm run check
+```
+
+Fixture mode is the default development path and must not require live Splunk credentials. Live mode will remain opt-in.

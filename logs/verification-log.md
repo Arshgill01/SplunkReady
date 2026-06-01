@@ -1,6 +1,36 @@
 # Verification Log
 
-Implementation has not started. These entries verify scaffold readiness only.
+Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
+
+## 2026-06-01 11:38 - Wave 02 Stack Selection
+
+Commands:
+
+- `node --version && npm --version`
+- `npm install`
+- `sed -n '1,220p' docs/stack-decision.md`
+- `npm test`
+- `npm run check`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-02-20260601-1137-review.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-02-20260601-1138-rereview.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-02-20260601-1139-rereview.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+
+Result:
+
+- PASS
+- Node version was `v22.21.0`; npm version was `10.9.4`.
+- `npm install` added 54 packages, audited 55 packages, and reported 0 vulnerabilities.
+- Wave verification command printed `docs/stack-decision.md` successfully.
+- `npm test` passed with no tests present because the Wave 02 test command intentionally uses `vitest run --passWithNoTests`.
+- `npm run check` passed after the verifier file count was corrected to ignore generated dependency/build directories.
+
+Notes:
+
+- `LOW-001`: fixed verifier count to exclude `.git`, `node_modules`, `dist`, and `coverage`.
+- `LOW-002`: fixed by adding Wave 02 execution and verification log entries.
+- Wave 02 rereview: `LOW-001` resolved; `LOW-002` was a stale snapshot and is resolved by these log entries.
+- Wave 02 final rereview: passed with no open findings.
 
 ## 2026-06-01 11:33 - Wave 01 Product Narrative
 

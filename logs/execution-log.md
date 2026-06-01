@@ -1,6 +1,6 @@
 # Execution Log
 
-Implementation has not started.
+Implementation stack setup started in Wave 02. Product runtime behavior is not implemented yet.
 
 Future entries must use:
 
@@ -22,6 +22,56 @@ Result:
 Notes:
 - ...
 ```
+
+## 2026-06-01 11:38 - Wave 02
+
+Scope:
+- Chose the conservative TypeScript implementation stack.
+- Added npm package manifest, lockfile, TypeScript config, and ignored generated files.
+- Added README development commands.
+- Fixed the scaffold verifier project-file count after dependency installation exposed `node_modules` noise.
+
+Files changed:
+- `.gitignore`
+- `README.md`
+- `docs/stack-decision.md`
+- `package.json`
+- `package-lock.json`
+- `tsconfig.json`
+- `scripts/verify-scaffold.sh`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-01-20260601-1135-rereview.md`
+- `logs/reviewer-inbox/wave-01-20260601-1136-rereview.md`
+- `logs/reviewer-inbox/wave-02-20260601-1137-review.md`
+- `logs/reviewer-inbox/wave-02-20260601-1138-rereview.md`
+- `logs/reviewer-inbox/wave-02-20260601-1139-rereview.md`
+
+Commands:
+- `node --version && npm --version`
+- `npm install`
+- `sed -n '1,220p' docs/stack-decision.md`
+- `npm test`
+- `npm run check`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-02-20260601-1137-review.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-02-20260601-1138-rereview.md`
+- `sed -n '1,320p' logs/reviewer-inbox/wave-02-20260601-1139-rereview.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+
+Result:
+- PASS
+
+Notes:
+- Node version was `v22.21.0`; npm version was `10.9.4`.
+- `npm install` added 54 packages, audited 55 packages, and reported 0 vulnerabilities.
+- `npm test` passed with `--passWithNoTests`; no test files exist yet, which is acceptable only for stack selection.
+- `npm run check` passed after the verifier was updated to exclude `.git`, `node_modules`, `dist`, and `coverage` from the informational project-file count.
+- Wave 02 reviewer `LOW-001` was fixed by excluding generated dependency/build directories from the verifier file count.
+- Wave 02 reviewer `LOW-002` was fixed by adding this execution entry and the matching verification entry.
+- Wave 02 rereview saw `LOW-001` resolved and had a stale snapshot for `LOW-002`; this entry and the matching verification entry resolve it before commit.
+- Wave 02 final rereview passed with no open findings.
 
 ## 2026-06-01 11:33 - Wave 01
 

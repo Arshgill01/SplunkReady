@@ -123,4 +123,4 @@ rg -q "logs/reviewer-inbox/" docs/prompts/reviewer-goal.md || fail "reviewer pro
 
 echo "PASS: scaffold verified"
 echo "waves: $wave_count"
-echo "project files: $(find . -path './.git' -prune -o -type f -print | wc -l | tr -d ' ')"
+echo "project files: $(find . \( -path './.git' -o -path './node_modules' -o -path './dist' -o -path './coverage' \) -prune -o -type f -print | wc -l | tr -d ' ')"
