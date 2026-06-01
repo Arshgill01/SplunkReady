@@ -23,6 +23,46 @@ Notes:
 - ...
 ```
 
+## 2026-06-01 12:19 - Wave 08
+
+Scope:
+- Seeded fixture knowledge objects for saved-search, dashboard, panel, macro, lookup, field-alias, data-model, and app-context traps.
+- Added structured knowledge-object metadata so future deterministic graders can inspect stale fields, app ambiguity, dependencies, and supported rule IDs without LLM judgment.
+- Added fixture validation tests for the `src_ip` versus `src` wrong-field trap, saved-search/app-context trap, and dashboard dependency trap.
+
+Files changed:
+- `fixtures/acme-soc-dev/adapter-fixture.json`
+- `src/adapters/fixture.ts`
+- `src/adapters/splunk-access.ts`
+- `tests/adapters/fixture.test.ts`
+- `tests/fixtures/knowledge-objects.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Reviewer files read and included:
+- `logs/reviewer-inbox/wave-08-20260601-1219-review.md`
+
+Commands:
+- `npx tsc --noEmit`
+- `npx vitest run tests/fixtures/knowledge-objects.test.ts`
+- `rg -n "src_ip|src|saved search|app" fixtures src`
+- `npm test`
+- `npm run check`
+- `npx tsc --noEmit`
+- `npm test`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 12`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-08-20260601-1219-review.md`
+
+Result:
+- PASS
+
+Notes:
+- Initial `npm test` and `npm run check` failed because the existing fixture adapter test still expected one lateral-movement saved search; Wave 08 intentionally expands that result to three saved-search objects, including the wrong-app trap.
+- Final `npx tsc --noEmit` passed.
+- Final `npm run check` passed: scaffold verifier passed with `project files: 125` and 4 test files / 16 tests passed.
+- Wave 08 reviewer passed with no open findings.
+
 ## 2026-06-01 12:11 - Wave 07
 
 Scope:

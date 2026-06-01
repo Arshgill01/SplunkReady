@@ -129,6 +129,7 @@ export interface KnowledgeObjectSummary {
   app: string;
   description?: string;
   dependsOn?: string[];
+  metadata?: Record<string, unknown>;
 }
 
 export interface KnowledgeObjectResult {

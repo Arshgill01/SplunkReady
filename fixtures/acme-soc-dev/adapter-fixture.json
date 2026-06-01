@@ -46,19 +46,118 @@
       "name": "ES - Lateral Movement Auth Chain",
       "app": "SplunkEnterpriseSecuritySuite",
       "description": "Validated lateral movement authentication chain search",
-      "dependsOn": ["security_content_ctime", "asset_lookup"]
+      "dependsOn": ["macro-security-content-ctime", "lookup-asset-lookup", "field-alias-auth-source"],
+      "metadata": {
+        "search": "search index=wineventlog host=$host$ src=* earliest=$earliest$ latest=$latest$ | stats count by src dest user",
+        "canonicalFields": ["src", "dest", "user"],
+        "trapRulesSupported": ["KO-001", "KO-002", "EVD-001"]
+      }
+    },
+    {
+      "id": "saved-search-lateral-movement-wrong-app",
+      "type": "saved_searches",
+      "name": "ES - Lateral Movement Auth Chain",
+      "app": "search",
+      "description": "Same saved-search title in the wrong app context with incomplete dependencies",
+      "dependsOn": [],
+      "metadata": {
+        "ambiguousWith": "saved-search-lateral-movement",
+        "trapRulesSupported": ["KO-002"],
+        "runnable": false
+      }
+    },
+    {
+      "id": "saved-search-dashboard-lateral-movement-stale-field",
+      "type": "saved_searches",
+      "name": "ES - Dashboard Lateral Movement By Source",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "description": "Dashboard dependency intentionally pinned to stale field src_ip",
+      "dependsOn": ["macro-security-content-ctime"],
+      "metadata": {
+        "search": "search index=wineventlog sourcetype=XmlWinEventLog:Security src_ip=* earliest=-24h latest=now | stats count by src_ip dest user",
+        "fieldTrap": {
+          "staleField": "src_ip",
+          "canonicalField": "src",
+          "sourcetype": "XmlWinEventLog:Security"
+        },
+        "trapRulesSupported": ["SPL-003", "KO-004"]
+      }
+    },
+    {
+      "id": "dashboard-executive-lateral-movement",
+      "type": "dashboards",
+      "name": "Executive Lateral Movement Overview",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "description": "Executive dashboard that can be silent when its panel search references stale fields",
+      "dependsOn": ["panel-executive-lateral-movement-silence"],
+      "metadata": {
+        "panelIds": ["panel-executive-lateral-movement-silence"],
+        "trapRulesSupported": ["KO-004"]
+      }
+    },
+    {
+      "id": "panel-executive-lateral-movement-silence",
+      "type": "panels",
+      "name": "Lateral Movement By Source",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "description": "Panel that depends on a saved search using src_ip while current events expose src",
+      "dependsOn": ["saved-search-dashboard-lateral-movement-stale-field"],
+      "metadata": {
+        "dashboardId": "dashboard-executive-lateral-movement",
+        "savedSearchRef": "saved-search-dashboard-lateral-movement-stale-field",
+        "fieldTrap": {
+          "staleField": "src_ip",
+          "canonicalField": "src",
+          "sourcetype": "XmlWinEventLog:Security"
+        },
+        "trapRulesSupported": ["SPL-003", "KO-004"]
+      }
     },
     {
       "id": "macro-security-content-ctime",
       "type": "macros",
       "name": "security_content_ctime",
-      "app": "SplunkEnterpriseSecuritySuite"
+      "app": "SplunkEnterpriseSecuritySuite",
+      "metadata": {
+        "definition": "convert ctime(_time) as readable_time",
+        "trapRulesSupported": ["KO-003"]
+      }
     },
     {
       "id": "lookup-asset-lookup",
       "type": "lookups",
       "name": "asset_lookup",
-      "app": "SplunkEnterpriseSecuritySuite"
+      "app": "SplunkEnterpriseSecuritySuite",
+      "metadata": {
+        "keyFields": ["dest", "src"],
+        "trapRulesSupported": ["KO-003", "EVD-003"]
+      }
+    },
+    {
+      "id": "field-alias-auth-source",
+      "type": "field_aliases",
+      "name": "auth_source_is_src",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "description": "Authentication source field is src; src_ip is intentionally absent",
+      "metadata": {
+        "sourcetype": "XmlWinEventLog:Security",
+        "canonicalField": "src",
+        "absentField": "src_ip",
+        "trapRulesSupported": ["SPL-003"]
+      }
+    },
+    {
+      "id": "data-model-authentication",
+      "type": "data_models",
+      "name": "Authentication",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "description": "Authentication data-model hint for canonical security fields",
+      "dependsOn": ["field-alias-auth-source"],
+      "metadata": {
+        "fields": ["src", "dest", "user"],
+        "absentFields": ["src_ip"],
+        "trapRulesSupported": ["SPL-003"]
+      }
     }
   ],
   "queryResults": {

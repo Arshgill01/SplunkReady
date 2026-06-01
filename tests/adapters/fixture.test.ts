@@ -49,7 +49,7 @@ describe("fixture Splunk adapter", () => {
     ).resolves.toMatchObject({ source: "fixture" });
     await expect(
       adapter.getKnowledgeObjects({ types: ["saved_searches"], query: "lateral movement" }, requestOptions)
-    ).resolves.toMatchObject({ resultCount: 1 });
+    ).resolves.toMatchObject({ resultCount: 3 });
     await expect(
       adapter.runQuery(
         { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" },

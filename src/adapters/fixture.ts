@@ -76,7 +76,8 @@ export const fixtureSplunkDatasetSchema = z
           name: z.string().min(1),
           app: z.string().min(1),
           description: z.string().optional(),
-          dependsOn: z.array(z.string().min(1)).optional()
+          dependsOn: z.array(z.string().min(1)).optional(),
+          metadata: z.record(z.unknown()).optional()
         })
         .strict()
     ),

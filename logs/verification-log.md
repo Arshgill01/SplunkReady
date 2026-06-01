@@ -2,6 +2,38 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 12:19 - Wave 08 Fixture Knowledge Objects
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/fixtures/knowledge-objects.test.ts`
+- `rg -n "src_ip|src|saved search|app" fixtures src`
+- `npm test`
+- `npm run check`
+- `npx tsc --noEmit`
+- `npm test`
+- `npm run check`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -n 12`
+- `sed -n '1,300p' logs/reviewer-inbox/wave-08-20260601-1219-review.md`
+
+Result:
+
+- PASS
+- `npx vitest run tests/fixtures/knowledge-objects.test.ts` passed: 1 test file and 3 tests.
+- Initial `npm test` failed because `tests/adapters/fixture.test.ts` expected `resultCount: 1` for lateral-movement saved searches; the fixture now correctly returns 3.
+- Initial `npm run check` failed for the same test expectation after the scaffold verifier passed with `project files: 124`.
+- Final `npx tsc --noEmit` passed.
+- Final `npm test` passed: 4 test files and 16 tests.
+- Final `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 125`; 4 test files and 16 tests passed.
+
+Notes:
+
+- The wrong-field trap is structured as `fieldTrap.staleField: "src_ip"` and `fieldTrap.canonicalField: "src"`.
+- Saved-search and app-context traps use duplicate saved-search names across `SplunkEnterpriseSecuritySuite` and `search`.
+- Dashboard and panel dependencies use stable object ids and reference the stale-field saved search.
+- Wave 08 reviewer passed with no open findings.
+
 ## 2026-06-01 12:11 - Wave 07 Fixture MCP Model
 
 Commands:
