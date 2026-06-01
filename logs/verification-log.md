@@ -2099,3 +2099,25 @@ Result:
 - Follow-up scaffold verifier and `git diff --check` passed after the rereview file arrived: 61 wave files, 316 project files.
 - Final reviewer audit passed after the rereview file arrived: 62 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 61 wave files, 317 project files.
+
+## 2026-06-01 - Wave 61 Remote Cleanroom After Sidecar Triage
+
+Commands:
+
+- `remote=$(git remote get-url origin) && commit=$(git rev-parse HEAD) && tmp=$(mktemp -d /tmp/splunkready-wave61-remote-XXXXXX) && { echo "remote=$remote"; echo "expected_commit=$commit"; echo "tmp=$tmp"; git clone --depth 1 --branch splunkready-build --single-branch "$remote" "$tmp/repo"; cd "$tmp/repo"; echo "actual_commit=$(git rev-parse HEAD)"; npm ci --ignore-scripts; npm run audit:reviewers; npm run check; if git ls-files | rg '(^|/)(\.antigravitycli|\.playwright-cli|artifacts)(/|$)'; then echo "sidecar_artifacts=present"; exit 20; else echo "sidecar_artifacts=absent"; fi; } | tee "$tmp/cleanroom.log"`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Remote clone checked out `19f5e2567844ee2599d5f0ef51899f292361a8b5`, matching the expected pushed Wave 60 commit.
+- `npm ci --ignore-scripts` passed: 55 packages installed, 0 vulnerabilities.
+- Remote reviewer audit passed: 62 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Remote full project check passed: scaffold verifier plus 31 test files / 139 tests.
+- Tracked sidecar artifact scan passed: `sidecar_artifacts=absent`.
+- Local reviewer audit passed before a Wave 61-specific reviewer inbox file arrived: 62 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Local scaffold verifier and `git diff --check` passed: 62 wave files, 319 project files.
+- `wave-61-20260601-1816-review.md` passed with no open findings.
+- Final reviewer audit passed after the Wave 61 reviewer file arrived: 63 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 62 wave files, 320 project files.

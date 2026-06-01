@@ -2461,3 +2461,32 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 61 Remote Cleanroom After Sidecar Triage
+
+Scope:
+- Clone the pushed `origin/splunkready-build` branch after Wave 60 into a cleanroom directory.
+- Verify the clone resolves to commit `19f5e2567844ee2599d5f0ef51899f292361a8b5`.
+- Run fresh install, reviewer audit, full check, and tracked sidecar-artifact scan.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/goal-completion-audit.md`
+- `docs/remote-cleanroom-after-sidecar-triage-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-61-remote-cleanroom-after-sidecar-triage.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- reviewer inbox files if new Wave 61 findings arrive.
+
+Notes:
+- Cleanroom path: `/tmp/splunkready-wave61-remote-Blin6i/repo`.
+- `npm ci --ignore-scripts`, `npm run audit:reviewers`, and `npm run check` passed in the remote clone.
+- Tracked sidecar artifact scan returned `sidecar_artifacts=absent`.
+- `wave-61-20260601-1816-review.md` passed with no open findings.
+- Overall goal remains open pending explicit user approval.
+
+Result:
+- PASS.
