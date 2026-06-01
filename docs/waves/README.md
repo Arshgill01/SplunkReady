@@ -65,3 +65,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-56-fresh-antigravity-ui-triage.md`: triage the fresh Antigravity UI sidecar and integrate bounded receipt-navigation polish.
 - `wave-57-remote-cleanroom-ui-smoke.md`: verify the pushed branch in a remote cleanroom after UI sidecar integration.
 - `wave-58-sidecar-worktree-hygiene.md`: inventory Antigravity sidecars and document non-destructive cleanup policy.
+- `wave-59-current-state-sweep.md`: sweep handoff and audit docs for stale continuation status wording.

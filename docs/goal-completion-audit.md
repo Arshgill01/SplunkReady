@@ -32,10 +32,10 @@ This audit does not mark the goal complete. The explicit user approval to mark c
 | Demo rehearsed under 3 minutes | Wave 52 remote cleanroom `demo-rehearsal.json` reported `fitsUnderThreeMinutes: true` | PASS |
 | Reviewer Critical/High findings resolved or waived | `npm run audit:reviewers` passed after `wave-55-20260601-1735-rereview.md`: 57 groups, 4 pass-with-concerns, 0 failing latest verdicts | PASS |
 | Branch is long-running `splunkready-build` | `git status --short --branch` showed `splunkready-build...origin/splunkready-build` during Wave 58 sidecar hygiene inventory | PASS |
-| One commit per completed wave by default | Recent history contains wave commits through Wave 57 and Wave 58 is being closed as a separate continuation wave; Wave 51 and Wave 55 needed follow-up commits because reviewer findings arrived after initial wave pushes | PASS |
-| Do not start next wave with unresolved dirty implementation changes | Wave 58 documents isolated sidecar dirtiness while keeping the main `splunkready-build` worktree clean before any next wave starts | PASS |
-| Logs are updated per wave | `logs/execution-log.md` and `logs/verification-log.md` include entries through Wave 58 | PASS |
-| Current-state docs reflect implementation progress | Wave 58 keeps `MANIFEST.md`, `PLAN.md`, `docs/implementation-handoff.md`, cleanroom reports, sidecar hygiene docs, and verification logs aligned with the current continuation status while preserving scaffold-time docs as historical context | PASS |
+| One commit per completed wave by default | Recent history contains wave commits through Wave 59, with this sweep tracked as the separate current-state continuation commit; Wave 51 and Wave 55 needed follow-up commits because reviewer findings arrived after initial wave pushes | PASS |
+| Do not start next wave with unresolved dirty implementation changes | Wave 59 is documentation-only and keeps implementation changes out of the main `splunkready-build` worktree while sidecar dirtiness remains isolated in separate worktrees | PASS |
+| Logs are updated per wave | `logs/execution-log.md` and `logs/verification-log.md` include entries through Wave 59 | PASS |
+| Current-state docs reflect implementation progress | Wave 59 keeps `MANIFEST.md`, `PLAN.md`, `docs/implementation-handoff.md`, cleanroom reports, sidecar hygiene docs, and verification logs aligned with the current continuation status while preserving scaffold-time docs as historical context | PASS |
 | Goal is not marked complete without explicit user approval | No `update_goal` call has been made; this report records approval as missing | PASS |
 
 ## Current Verification Evidence

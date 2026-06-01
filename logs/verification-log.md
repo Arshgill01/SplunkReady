@@ -2045,3 +2045,30 @@ Result:
 - Full project check passed: scaffold verifier plus 31 test files / 139 tests.
 - After `wave-58-20260601-1754-review.md` arrived, reviewer audit passed: 60 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 59 wave files, 309 project files.
+
+## 2026-06-01 - Wave 59 Current State Sweep
+
+Commands:
+
+- `rg -n "implemented through Wave 5[0-7]|through Wave 5[0-7]|Wave 57 closeout|Wave 57 keeps|Wave 56 continuation|Wave 56 closeout|latest Wave 5[0-7]|current continuation status|Current State|Next Concrete Step|overall goal remains open|explicit user approval|Antigravity sidecar worktree remains" MANIFEST.md PLAN.md docs/implementation-handoff.md docs/goal-completion-audit.md docs/remote-cleanroom-ui-smoke-report.md docs/remote-cleanroom-after-audit-report.md docs/branch-strategy.md docs/final-qa-report.md docs/devpost-submission.md README.md logs/execution-log.md logs/verification-log.md`
+- `rg -n "implemented through Wave 5[0-8]|through Wave 5[0-8]|Wave 58 is being closed|Wave 58 keeps|Wave 57 closeout|latest Wave 5[0-8]|Status: implemented through Wave 5[0-8]" MANIFEST.md PLAN.md docs/implementation-handoff.md docs/goal-completion-audit.md docs/current-state-sweep-report.md`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS.
+- Search found active status docs already updated to Wave 58 after the prior wave.
+- Follow-up search found `docs/goal-completion-audit.md` current-state rows that still stopped at Wave 58; they were updated.
+- Historical Wave 51/Wave 52 cleanroom and verification log entries were left unchanged.
+- Reviewer audit passed before a Wave 59-specific reviewer inbox file arrived: 60 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Scaffold verifier and `git diff --check` passed: 60 wave files, 311 project files.
+- Full project check passed: scaffold verifier plus 31 test files / 139 tests.
+- `wave-59-20260601-1800-review.md` finding `HIGH-001` was resolved by adding the exact required Wave 59 gates above.
+- `wave-59-20260601-1800-review.md` finding `MEDIUM-001` was resolved by updating the goal audit to credit Wave 59 for current-state alignment.
+- `wave-59-20260601-1801-rereview.md` passed with no open findings.
+- Follow-up scaffold verifier and `git diff --check` passed after the rereview file arrived: 60 wave files, 312 project files.
+- Final reviewer audit passed after the rereview file arrived: 61 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 60 wave files, 313 project files.
+- Final full project check passed: scaffold verifier plus 31 test files / 139 tests.
