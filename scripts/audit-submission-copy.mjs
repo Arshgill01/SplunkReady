@@ -1,0 +1,79 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const rootDir = process.argv[2] ?? ".";
+
+const files = {
+  readme: readFileSync(join(rootDir, "README.md"), "utf8"),
+  devpost: readFileSync(join(rootDir, "docs/devpost-submission.md"), "utf8"),
+  demo: readFileSync(join(rootDir, "docs/demo-script.md"), "utf8"),
+  liveAdapter: readFileSync(join(rootDir, "docs/live-adapter.md"), "utf8")
+};
+
+const checks = [
+  ["README product name", files.readme, "SplunkReady"],
+  ["README tagline", files.readme, "Certify AI agents before they touch production Splunk."],
+  ["README engine", files.readme, "Agent Readiness Compiler"],
+  ["README primary artifact", files.readme, "Readiness Receipt"],
+  ["README fixture no credentials", files.readme, "Fixture mode is the default path. It requires no Splunk credentials"],
+  ["README no auto mutation", files.readme, "SplunkReady never auto-mutates Splunk"],
+  ["README deterministic pass/fail", files.readme, "deterministic grader rules decide pass/fail"],
+  ["README not chatbot", files.readme, "Not a Splunk chatbot."],
+  ["README not copilot", files.readme, "Not a SOC copilot."],
+  ["README not telemetry", files.readme, "Not MCP telemetry."],
+  ["README not detection dashboard", files.readme, "Not a detection-health dashboard."],
+  ["README not generic eval", files.readme, "Not a generic eval harness."],
+  ["README not LLM judge", files.readme, "Not an LLM judging another LLM."],
+  ["Devpost product name", files.devpost, "SplunkReady"],
+  ["Devpost tagline", files.devpost, "Certify AI agents before they touch production Splunk."],
+  ["Devpost track", files.devpost, "Platform & Developer Experience"],
+  ["Devpost engine", files.devpost, "Agent Readiness Compiler"],
+  ["Devpost primary artifact", files.devpost, "Readiness Receipt"],
+  ["Devpost flagship story", files.devpost, "security investigation readiness"],
+  ["Devpost no credentials", files.devpost, "requires no live Splunk credentials"],
+  ["Devpost no mutation", files.devpost, "does not mutate Splunk"],
+  ["Demo no LLM vibes", files.demo, "not another LLM judging vibes"],
+  ["Demo no mutation", files.demo, "does not mutate Splunk"],
+  ["Demo route", files.demo, "splunkready-shell.html#rerun-receipts"],
+  ["Live disabled", files.liveAdapter, "Live mode is disabled by default"],
+  ["Live no credentials for fixture", files.liveAdapter, "Normal fixture tests must not require Splunk credentials"],
+  ["Live fixed allowlist", files.liveAdapter, "fixed inventory-only allowlist"],
+  ["Live no mutation", files.liveAdapter, "never writes or mutates Splunk configuration"]
+];
+
+const forbiddenPositiveClaims = [
+  ["Splunk chatbot positive claim", /\bis\s+(?:a|an)\s+Splunk chatbot\b/i],
+  ["SOC copilot positive claim", /\bis\s+(?:a|an)\s+SOC copilot\b/i],
+  ["MCP telemetry dashboard positive claim", /\bis\s+(?:a|an)\s+MCP telemetry dashboard\b/i],
+  ["telemetry dashboard positive claim", /\bis\s+(?:a|an)\s+telemetry dashboard\b/i],
+  ["detection-health dashboard positive claim", /\bis\s+(?:a|an)\s+detection-health dashboard\b/i],
+  ["generic eval harness positive claim", /\bis\s+(?:a|an)\s+generic eval harness\b/i],
+  ["LLM judge positive claim", /\bis\s+(?:a|an)\s+LLM judge\b/i]
+];
+
+const failures = checks.filter(([, text, expected]) => !text.includes(expected));
+const driftClaims = [];
+
+for (const [fileName, text] of Object.entries(files)) {
+  for (const [name, pattern] of forbiddenPositiveClaims) {
+    if (pattern.test(text)) {
+      driftClaims.push({ file: fileName, name, pattern: String(pattern) });
+    }
+  }
+}
+
+if (failures.length > 0 || driftClaims.length > 0) {
+  console.error(
+    JSON.stringify(
+      {
+        failures: failures.map(([name, , expected]) => ({ name, expected })),
+        driftClaims
+      },
+      null,
+      2
+    )
+  );
+  process.exit(1);
+}
+
+console.log(`PASS submission copy audited (${checks.length} required claims)`);

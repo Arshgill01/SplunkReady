@@ -2082,3 +2082,38 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 49 Submission Copy Guardrails
+
+Scope:
+- Add a repeatable submission-copy audit for judge-facing product boundaries.
+- Guard against contradictory chatbot, copilot, telemetry-dashboard, detection-health-dashboard, generic-eval, and LLM-judge positioning.
+- Resolve the late Wave 48 reviewer finding by making latest reviewer verdict parsing fail closed.
+
+Files changed:
+- `docs/waves/wave-49-submission-copy-guardrails.md`
+- `docs/waves/README.md`
+- `PLAN.md`
+- `scripts/audit-submission-copy.mjs`
+- `scripts/audit-reviewer-inbox.mjs`
+- `package.json`
+- `docs/submission-copy-guardrails-report.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-48-20260601-1648-review.md`
+- `logs/reviewer-inbox/wave-48-20260601-1652-rereview.md`
+- `logs/reviewer-inbox/wave-49-20260601-1649-review.md`
+- `logs/reviewer-inbox/wave-49-20260601-1654-rereview.md`
+
+Notes:
+- Added `npm run audit:submission-copy`.
+- Required product-lock phrases are checked across README, Devpost copy, demo script, and live-adapter docs.
+- Forbidden-positive drift checks fail copy that states SplunkReady is a Splunk chatbot, SOC copilot, telemetry dashboard, detection-health dashboard, generic eval harness, or LLM judge.
+- `scripts/audit-reviewer-inbox.mjs` now treats unparseable latest reviewer verdicts as blockers instead of silently reporting `unknown`.
+- `wave-48-20260601-1648-review.md` `HIGH-001`: resolved by the reviewer-audit fail-closed patch and a passing Wave 48 rereview.
+- `wave-49-20260601-1649-review.md` `HIGH-001`: resolved by forbidden-positive drift checks and a temp contradictory-copy regression.
+- `wave-49-20260601-1649-review.md` `HIGH-002`: Wave 48 and Wave 49 latest rereviews now pass.
+- `wave-49-20260601-1654-rereview.md`: reviewer passed with no open Wave 49 findings.
+
+Result:
+- PASS.

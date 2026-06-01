@@ -10,6 +10,7 @@
     "test": "vitest run --passWithNoTests",
     "verify:scaffold": "bash scripts/verify-scaffold.sh",
     "audit:reviewers": "node scripts/audit-reviewer-inbox.mjs",
+    "audit:submission-copy": "node scripts/audit-submission-copy.mjs",
     "check": "npm run verify:scaffold && npm test"
   },
   "dependencies": {

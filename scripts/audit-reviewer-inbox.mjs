@@ -4,7 +4,7 @@ import { join } from "node:path";
 const inboxDir = process.argv[2] ?? "logs/reviewer-inbox";
 
 const reviewerFilePattern = /^(wave-(\d+)|unknown-wave)-.*\.md$/;
-const verdictPattern = /## Verdict\n- (.+)/;
+const verdictPattern = /^## Verdict\s*\n\s*-\s*(.+)$/m;
 
 const latestByGroup = new Map();
 
@@ -33,7 +33,14 @@ const orderedGroups = [...latestByGroup.keys()].sort((left, right) => {
 for (const group of orderedGroups) {
   const { name, file } = latestByGroup.get(group);
   const text = readFileSync(file, "utf8");
-  const verdict = text.match(verdictPattern)?.[1] ?? "unknown";
+  const verdict = text.match(verdictPattern)?.[1]?.trim();
+
+  if (!verdict) {
+    const unparseableVerdict = "unparseable";
+    blockers.push({ group, name, verdict: unparseableVerdict });
+    console.log(`${group} ${unparseableVerdict} ${name}`);
+    continue;
+  }
 
   if (/^fail\b/i.test(verdict)) {
     blockers.push({ group, name, verdict });

@@ -1800,3 +1800,26 @@ Result:
 - Superseded failure temp-inbox check passed when a later rereview had verdict `pass`.
 - Scaffold verifier and full project check passed.
 - No Wave 48 reviewer file appeared during the wait window before commit.
+
+## 2026-06-01 - Wave 49 Submission Copy Guardrails
+
+Commands:
+
+- `npm run audit:submission-copy`
+- `tmp=$(mktemp -d /tmp/splunkready-wave49-audit-malformed-XXXXXX) ... node scripts/audit-reviewer-inbox.mjs "$tmp" ... test "$rc" -ne 0`
+- `tmp=$(mktemp -d /tmp/splunkready-wave49-audit-missing-verdict-XXXXXX) ... node scripts/audit-reviewer-inbox.mjs "$tmp" ... test "$rc" -ne 0`
+- `tmp=$(mktemp -d /tmp/splunkready-wave49-copy-drift-XXXXXX) ... node scripts/audit-submission-copy.mjs "$tmp" ... test "$rc" -ne 0`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS.
+- `npm run audit:submission-copy` passed: 28 required claims.
+- Malformed blank-line reviewer verdict fixture exited nonzero with verdict `fail`.
+- Missing-verdict reviewer fixture exited nonzero with verdict `unparseable`.
+- Contradictory-copy fixture exited nonzero for `SplunkReady is a Splunk chatbot and SOC copilot dashboard.`
+- `npm run audit:reviewers` initially failed because the latest Wave 49 reviewer file was the expected pre-fix `fail`; after `wave-49-20260601-1654-rereview.md` arrived, rerun audit passed across 51 groups with 4 pass-with-concerns files and 0 failing latest verdicts.
+- `bash scripts/verify-scaffold.sh && git diff --check` passed: waves 50, project files 274.
+- `npm run check` passed: scaffold verifier plus 31 test files / 139 tests.
