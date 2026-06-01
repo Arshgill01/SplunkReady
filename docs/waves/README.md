@@ -74,3 +74,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-65-remote-cleanroom-after-1830-sidecar-triage.md`: verify the pushed branch after the fresh 18:30 sidecar triage from a clean remote clone.
 - `wave-66-live-smoke-safety-refresh.md`: refresh live-smoke safety evidence without requiring live Splunk credentials.
 - `wave-67-quality-confidence-refresh.md`: refresh the `QUALITY-BAR.md` confidence score with current verification evidence.
+- `wave-68-demo-replay-refresh.md`: replay the fixture flagship demo against the current branch with live env vars unset.

@@ -2669,3 +2669,39 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 68 Demo Replay Refresh
+
+Scope:
+- Replay the flagship fixture demo against the current branch with live Splunk env vars unset.
+- Inspect generated artifacts for receipt verdicts, scores, deterministic rule IDs, UI shell, policy patch, and rehearsal timing.
+- Keep explicit user approval as the blocker for overall goal completion.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/demo-replay-refresh-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-68-demo-replay-refresh.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- reviewer inbox files if new Wave 68 findings arrive.
+
+Notes:
+- Fresh demo output: `/tmp/splunkready-wave68-demo/demo`.
+- Live Splunk env vars were unset for the demo command.
+- Demo replay produced 18 artifacts, including the UI shell and policy patch JSON/Markdown.
+- Before receipt was `NOT READY` with score `0`; after receipt was `READY` with score `100` and zero violations.
+- Rehearsal reported `fitsUnderThreeMinutes: true`, measured CLI orchestration `0.026s`, and story `fail -> compile -> patch -> rerun -> pass`.
+- Deterministic rule IDs present: `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, `SPL-003`.
+- `npm run build`, fixture demo, artifact inspection, initial `npm run audit:reviewers`, and initial `bash scripts/verify-scaffold.sh && git diff --check` passed.
+- Wave 68 reviewer passed with no findings in `wave-68-20260601-1855-review.md`.
+- Wave 68 rereview finding `MEDIUM-001` was resolved by updating stale pending-reviewer wording in the execution and verification logs.
+- Wave 68 rereview passed with no findings in `wave-68-20260601-1859-rereview.md`.
+- Final reviewer audit passed after the Wave 68 passing rereview arrived: 70 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 69 wave files, 347 project files.
+- No `update_goal` call was made.
+
+Result:
+- PASS.

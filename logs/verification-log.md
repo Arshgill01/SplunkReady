@@ -2275,3 +2275,34 @@ Result:
 - Wave 67 reviewer passed with no findings in `wave-67-20260601-1850-review.md`.
 - Final reviewer audit passed after the Wave 67 reviewer file arrived: 69 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 68 wave files, 342 project files.
+
+## 2026-06-01 - Wave 68 Demo Replay Refresh
+
+Commands:
+
+- `npm run build`
+- `env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- demo --out /tmp/splunkready-wave68-demo/demo`
+- `node - <<'NODE' /tmp/splunkready-wave68-demo/demo ... NODE`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Build passed.
+- Fixture demo passed with live Splunk env vars unset.
+- Artifact inspection passed: 18 artifacts, UI shell present, policy patch JSON/Markdown present, and policy patch Markdown states no Splunk mutation.
+- Before receipt was `NOT READY` with score `0`.
+- After receipt was `READY` with score `100` and zero violations.
+- Demo rehearsal passed under 3 minutes with measured CLI orchestration `0.026s`.
+- Demo rehearsal route: `/tmp/splunkready-wave68-demo/demo/splunkready-shell.html#rerun-receipts`.
+- Demo story: `fail -> compile -> patch -> rerun -> pass`.
+- Deterministic rule IDs present: `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, `SPL-003`.
+- Reviewer audit passed before a Wave 68-specific reviewer inbox file arrived: 69 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Scaffold verifier and `git diff --check` passed: 69 wave files, 344 project files.
+- Wave 68 reviewer passed with no findings in `wave-68-20260601-1855-review.md`.
+- `wave-68-20260601-1857-rereview.md` reported `MEDIUM-001`: stale pending-reviewer wording remained after the reviewer pass arrived.
+- `MEDIUM-001` was resolved by updating the Wave 68 execution and verification log closeout wording.
+- Wave 68 rereview passed with no findings in `wave-68-20260601-1859-rereview.md`.
+- Final reviewer audit passed after the Wave 68 passing rereview arrived: 70 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 69 wave files, 347 project files.
