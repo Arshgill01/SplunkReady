@@ -72,3 +72,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-63-goal-audit-refresh.md`: refresh the prompt-to-artifact goal audit against current Wave 62 evidence.
 - `wave-64-fresh-antigravity-ui-1830-triage.md`: triage the fresh Antigravity UI sidecar restarted at 18:30.
 - `wave-65-remote-cleanroom-after-1830-sidecar-triage.md`: verify the pushed branch after the fresh 18:30 sidecar triage from a clean remote clone.
+- `wave-66-live-smoke-safety-refresh.md`: refresh live-smoke safety evidence without requiring live Splunk credentials.

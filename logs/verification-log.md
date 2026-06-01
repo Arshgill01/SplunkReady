@@ -2231,3 +2231,27 @@ Result:
 - Wave 65 passing rereview arrived in `wave-65-20260601-1842-rereview.md`.
 - Final local reviewer audit passed after the Wave 65 passing rereview arrived: 67 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Final local scaffold verifier and `git diff --check` passed: 66 wave files, 336 project files.
+
+## 2026-06-01 - Wave 66 Live Smoke Safety Refresh
+
+Commands:
+
+- `rm -rf /tmp/splunkready-wave66-live-smoke-skip && env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- live-smoke --out /tmp/splunkready-wave66-live-smoke-skip; test ! -e /tmp/splunkready-wave66-live-smoke-skip`
+- `npx vitest run tests/cli/flow.test.ts -t "live smoke"`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- No-credential live smoke returned `SKIP live-smoke`.
+- Skip output stated missing `SPLUNKREADY_LIVE_ENABLED=true`, `SPLUNKREADY_SPLUNK_MCP_URL`, and `SPLUNKREADY_SPLUNK_MCP_TOKEN`.
+- Skip output stated no live Splunk calls were made and no live artifacts were written.
+- Skip output pointed operators to `docs/live-adapter.md`.
+- Skip artifact path `/tmp/splunkready-wave66-live-smoke-skip` remained absent.
+- Targeted live-smoke CLI tests passed: 1 test file, 2 passed and 3 skipped.
+- Reviewer audit passed before a Wave 66-specific reviewer inbox file arrived: 67 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Scaffold verifier and `git diff --check` passed: 67 wave files, 338 project files.
+- Wave 66 reviewer passed with no findings in `wave-66-20260601-1846-review.md`.
+- Final reviewer audit passed after the Wave 66 reviewer file arrived: 68 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 67 wave files, 339 project files.

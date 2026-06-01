@@ -2611,3 +2611,32 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 66 Live Smoke Safety Refresh
+
+Scope:
+- Refresh current live-smoke safety evidence without live Splunk credentials.
+- Prove the no-credential live-smoke path skips cleanly and writes no artifacts.
+- Prove the mocked live-smoke tests keep the path inventory-only and read-only.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/live-smoke-safety-refresh-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-66-live-smoke-safety-refresh.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- reviewer inbox files if new Wave 66 findings arrive.
+
+Notes:
+- No live Splunk credentials were used.
+- No-credential live smoke returned `SKIP live-smoke`, stated no live calls were made, stated no live artifacts were written, and left `/tmp/splunkready-wave66-live-smoke-skip` absent.
+- Targeted live-smoke CLI tests passed: 2 passed, 3 skipped in `tests/cli/flow.test.ts`.
+- Wave 66 reviewer passed with no findings.
+- Final local reviewer audit and scaffold verifier passed.
+- Overall goal remains open pending explicit user approval.
+
+Result:
+- PASS.
