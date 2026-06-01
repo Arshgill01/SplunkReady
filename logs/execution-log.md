@@ -2265,3 +2265,37 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 55 Scaffold Doc Refresh
+
+Scope:
+- Refresh scaffold-era reference docs so future agents do not mistake historical planning docs for current implementation status.
+- Mark the stack recommendation and scaffold confidence scorecard as historical.
+- Update current-state handoff docs, wave index, and verification matrix to point to current implementation evidence.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `docs/scaffold-confidence.md`
+- `docs/stack-decision.md`
+- `docs/stack-recommendation.md`
+- `docs/verification-matrix.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-55-scaffold-doc-refresh.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/wave-55-20260601-1726-review.md`
+- `logs/reviewer-inbox/wave-55-20260601-1732-resolution.md`
+
+Notes:
+- `docs/stack-recommendation.md` now preserves the scaffold-time stack advice as historical Wave 02 input and points to `docs/stack-decision.md`.
+- `docs/stack-decision.md` now matches the implemented static TypeScript-generated UI shell instead of saying Vite/React is deferred.
+- `docs/verification-matrix.md` now describes current implementation evidence from tests, audits, cleanroom verification, and demo artifacts instead of future implementation requirements.
+- `MANIFEST.md`, `PLAN.md`, and `docs/implementation-handoff.md` now identify Wave 55 as the current continuation QA checkpoint.
+- `wave-55-20260601-1726-review.md` `HIGH-001`: fixed by updating `docs/stack-recommendation.md` and related stack/current-state docs.
+- `wave-55-20260601-1732-resolution.md`: records the main-executor resolution because no reviewer-authored rereview arrived after the fix. No risk was waived.
+- Overall goal remains open pending explicit user approval.
+
+Result:
+- PASS.

@@ -1,6 +1,6 @@
 # SplunkReady Scaffold Manifest
 
-Status: implemented through Wave 52 continuation QA on `splunkready-build`.
+Status: implemented through Wave 55 continuation QA on `splunkready-build`.
 
 This repository turns the locked SplunkReady idea into an implemented, fixture-first certification harness with continuing wave-based QA. The scaffold process remains in force for future continuation waves.
 
@@ -39,8 +39,8 @@ This repository turns the locked SplunkReady idea into an implemented, fixture-f
 - `docs/reviewer/`: read-only reviewer loop instructions.
 - `docs/schemas/`: canonical schema contracts for implementation.
 - `docs/skills/`: local workflow skills future agents should create or follow.
-- `docs/stack-recommendation.md`: pre-implementation stack recommendation.
-- `docs/verification-matrix.md`: scaffold and implementation verification requirements.
+- `docs/stack-recommendation.md`: historical Wave 02 stack recommendation superseded by `docs/stack-decision.md`.
+- `docs/verification-matrix.md`: current scaffold and implementation verification evidence.
 - `docs/grader-rule-catalog.md`: deterministic rule IDs and pass/fail boundaries.
 - `docs/golden-traces.md`: reference failure/pass traces for future tests and demo.
 - `docs/fixture-live-parity.md`: fixture/live adapter parity contract.

@@ -2,7 +2,7 @@
 
 ## Current State
 
-SplunkReady is implemented through Wave 52 continuation QA on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, static UI shell, optional read-only live smoke path, submission copy guardrails, reviewer audit automation, goal completion audit, and post-audit remote cleanroom verification.
+SplunkReady is implemented through Wave 55 continuation QA on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, static UI shell, optional read-only live smoke path, submission copy guardrails, reviewer audit automation, goal completion audit, post-audit remote cleanroom verification, branch-strategy handoff, and scaffold-doc refresh.
 
 ## Start Here
 
@@ -23,7 +23,7 @@ Wave 02 selected the implementation stack. Current core choices:
 - TypeScript is the implementation language.
 - Runtime schema validation is mandatory.
 - Fixture mode runs without Splunk credentials.
-- UI work follows the schema, grader, receipt, and artifact spine.
+- UI work follows the schema, grader, receipt, and artifact spine and is currently implemented as a static TypeScript-generated artifact shell.
 
 ## Main Executor Rule
 

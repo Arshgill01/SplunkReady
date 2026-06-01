@@ -1928,3 +1928,23 @@ Result:
 - Reviewer audit passed: 55 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
 - Scaffold verifier and `git diff --check` passed: 55 wave files, 292 project files.
 - After `wave-54-20260601-1722-review.md` arrived, `npm run audit:reviewers` passed: 56 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+
+## 2026-06-01 - Wave 55 Scaffold Doc Refresh
+
+Commands:
+
+- `rg -n "recommendation, not installed|Do not install dependencies until Wave 02|Wave 02 must document|Acceptance Gate For Wave 02|Vite \\\\+ React|Wave count is 42|This matrix defines what future implementation must prove|implemented through Wave 52|Remaining Improvements|implementation has not started|No implementation has started|scaffold-only" MANIFEST.md PLAN.md docs/implementation-handoff.md docs/scaffold-confidence.md docs/stack-decision.md docs/stack-recommendation.md docs/verification-matrix.md docs/waves/README.md`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+- `npm run check`
+- `npm run audit:reviewers`
+- `git diff --check && bash scripts/verify-scaffold.sh`
+
+Result:
+
+- PASS.
+- Targeted stale scaffold-era wording search returned no matches.
+- Scaffold verifier and `git diff --check` passed after final log updates: 56 wave files, 296 project files.
+- Full project check passed: scaffold verifier plus 31 test files / 139 tests.
+- Initial `npm run audit:reviewers` failed because the latest Wave 55 inbox file was the reviewer fail `wave-55-20260601-1726-review.md`.
+- After fixing `HIGH-001` and adding `wave-55-20260601-1732-resolution.md`, `npm run audit:reviewers` passed: 57 groups, 4 pass-with-concerns files, 0 failing latest verdicts.
+- Final post-log `git diff --check && bash scripts/verify-scaffold.sh` passed: 56 wave files, 296 project files.

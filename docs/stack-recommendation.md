@@ -1,8 +1,10 @@
 # Stack Recommendation
 
-Status: recommendation, not installed.
+Status: historical Wave 02 input. The accepted implementation decision is `docs/stack-decision.md`.
 
-## Recommended Stack
+This file preserves the scaffold-time recommendation so future agents can see why the stack was chosen. It is historical context, not the current install manifest.
+
+## Original Recommended Stack
 
 Use TypeScript as the implementation spine.
 
@@ -12,8 +14,12 @@ Recommended choices:
 - Schema validation: Zod or an equivalent runtime validator.
 - Tests: Vitest or the repo-native TypeScript test runner.
 - CLI: small TypeScript CLI using the existing package setup.
-- UI: Vite + React after schema/grader spine is stable.
+- UI: defer UI until the schema/grader spine is stable.
 - Diagrams: Mermaid or static SVG/PNG generated from source-controlled diagram text.
+
+## Accepted Outcome
+
+Wave 02 selected Node.js, npm, TypeScript, Zod, and Vitest. Later UI waves kept the UI dependency-light by generating a static TypeScript-backed HTML shell from contract, trace, violation, and receipt artifacts instead of adding React/Vite.
 
 ## Why TypeScript
 
@@ -28,11 +34,11 @@ SplunkReady is schema-heavy:
 
 TypeScript gives future agents a strong type spine while runtime validators prevent fixture/live drift.
 
-## Dependency Rule
+## Historical Dependency Rule
 
-Do not install dependencies until Wave 02.
+Before Wave 02, agents were instructed not to install dependencies. Wave 02 has completed, and the accepted choices are documented in `docs/stack-decision.md`.
 
-Wave 02 must document:
+Wave 02 documented:
 
 - chosen package manager;
 - chosen schema validator;
@@ -57,13 +63,12 @@ Avoid:
 - paid service dependency;
 - UI-first implementation.
 
-## Acceptance Gate For Wave 02
+## Historical Wave 02 Gate
 
-Wave 02 cannot complete until:
+Wave 02 was allowed to complete after:
 
 - `package.json` or equivalent manifest exists;
 - schema validation dependency is justified;
 - test command exists;
 - fixture mode can run without secrets;
 - `README.md` has basic development commands.
-
