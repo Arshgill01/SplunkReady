@@ -24,6 +24,7 @@ Commands:
 - `rg -n "demo|ANS-001|live-smoke|fail -> compile -> patch -> rerun -> pass|demo-rehearsal|splunkready-shell.html#rerun-receipts|fitsUnderThreeMinutes" src tests docs/demo-script.md docs/demo-acceptance-criteria.md`
 - `sed -n '1,260p' logs/reviewer-inbox/wave-39-20260601-1529-review.md`
 - `sed -n '1,280p' logs/reviewer-inbox/wave-39-20260601-1531-rereview.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-39-20260601-1538-rereview.md`
 - `npm run check`
 - `git diff --check`
 
@@ -45,6 +46,8 @@ Reviewer Handling:
 
 - Wave 39 `HIGH-001` fixed by making the spoken demo script disclose fixture-backed rehearsal and same-interface live MCP compatibility.
 - Wave 39 `HIGH-002` fixed by correcting the answer-rule test fixture and rerunning typecheck/tests.
+- Late Wave 39 rereview passed with no open findings and confirmed both High findings were resolved.
+- Follow-up `npm run check` after adding late rereview passed: `PASS: scaffold verified`, `waves: 42`, `project files: 231`; 31 test files and 139 tests passed.
 
 Notes:
 

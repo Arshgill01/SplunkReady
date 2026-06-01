@@ -47,6 +47,7 @@ Files changed:
 Reviewer files read and included:
 - `logs/reviewer-inbox/wave-39-20260601-1529-review.md`
 - `logs/reviewer-inbox/wave-39-20260601-1531-rereview.md`
+- Late rereview pass included in follow-up commit: `logs/reviewer-inbox/wave-39-20260601-1538-rereview.md`
 
 Commands:
 - `sed -n '1,260p' docs/waves/wave-39-demo-orchestration.md`
@@ -82,6 +83,8 @@ Notes:
 - Initial full `npm run check` failed because `tests/cli/flow.test.ts` build hook exceeded Vitest's default 10s timeout under the full suite. The hook timeout was raised to 30s.
 - Final `npm run check` passed: scaffold verifier reported `project files: 230` and 31 test files / 139 tests passed.
 - `git diff --check` passed.
+- Late Wave 39 rereview passed with no open findings and confirmed both High findings were resolved.
+- Follow-up `npm run check` after adding late rereview passed: scaffold verifier reported `project files: 231` and 31 test files / 139 tests passed.
 
 ## 2026-06-01 15:23 - Wave 38
 
