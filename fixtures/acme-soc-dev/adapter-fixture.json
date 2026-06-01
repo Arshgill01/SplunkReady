@@ -1,0 +1,108 @@
+{
+  "fixtureVersion": "2026.06.01",
+  "mode": "fixture",
+  "deploymentName": "acme-soc-dev",
+  "serverVersion": "fixture-splunk-9.x",
+  "readOnlyTools": [
+    "splunk_get_info",
+    "splunk_get_user_info",
+    "splunk_get_indexes",
+    "splunk_get_metadata",
+    "splunk_get_knowledge_objects",
+    "splunk_run_query",
+    "splunk_run_saved_search",
+    "saia_explain_spl",
+    "saia_optimize_spl"
+  ],
+  "user": {
+    "username": "fixture-user",
+    "roles": ["admin"],
+    "defaultApp": "SplunkEnterpriseSecuritySuite",
+    "capabilities": ["search"]
+  },
+  "indexes": [
+    {
+      "name": "wineventlog",
+      "sensitive": false,
+      "description": "Windows security events"
+    },
+    {
+      "name": "finance_pii",
+      "sensitive": true,
+      "description": "Restricted finance data"
+    }
+  ],
+  "sourcetypes": [
+    {
+      "name": "XmlWinEventLog:Security",
+      "indexes": ["wineventlog"],
+      "fields": ["src", "dest", "user", "signature", "EventCode"]
+    }
+  ],
+  "knowledgeObjects": [
+    {
+      "id": "saved-search-lateral-movement",
+      "type": "saved_searches",
+      "name": "ES - Lateral Movement Auth Chain",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "description": "Validated lateral movement authentication chain search",
+      "dependsOn": ["security_content_ctime", "asset_lookup"]
+    },
+    {
+      "id": "macro-security-content-ctime",
+      "type": "macros",
+      "name": "security_content_ctime",
+      "app": "SplunkEnterpriseSecuritySuite"
+    },
+    {
+      "id": "lookup-asset-lookup",
+      "type": "lookups",
+      "name": "asset_lookup",
+      "app": "SplunkEnterpriseSecuritySuite"
+    }
+  ],
+  "queryResults": {
+    "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now": {
+      "queryRef": "query-naive-lateral-movement",
+      "rows": [],
+      "resultCount": 0,
+      "evidenceRefs": [],
+      "warnings": ["Query used a broad index pattern and stale field."]
+    }
+  },
+  "savedSearchResults": {
+    "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain": {
+      "savedSearchRef": "saved-search-lateral-movement",
+      "rows": [
+        {
+          "src": "win-finance-07",
+          "dest": "admin-login-02",
+          "user": "svc-finance",
+          "signature": "An account was successfully logged on"
+        },
+        {
+          "src": "admin-login-02",
+          "dest": "dc-01",
+          "user": "svc-finance",
+          "signature": "Special privileges assigned to new logon"
+        }
+      ],
+      "resultCount": 2,
+      "evidenceRefs": ["evt-102", "evt-118"],
+      "warnings": []
+    }
+  },
+  "splExplanations": {
+    "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now": {
+      "explanation": "The query searches all indexes and references src_ip, which is not canonical in this fixture.",
+      "warnings": ["Prefer a validated saved search or canonical field src."]
+    }
+  },
+  "splOptimizations": {
+    "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now": {
+      "optimizedQuery": "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now",
+      "rationale": "Narrow to the known authentication index and canonical src field.",
+      "warnings": []
+    }
+  }
+}

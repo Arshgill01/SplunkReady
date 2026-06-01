@@ -27,6 +27,7 @@ export const graderRuleIdSchema = z.enum([
 
 export const readOnlySplunkToolNameSchema = z.enum([
   "splunk_get_info",
+  "splunk_get_user_info",
   "splunk_get_indexes",
   "splunk_get_metadata",
   "splunk_get_knowledge_objects",

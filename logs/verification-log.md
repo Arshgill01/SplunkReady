@@ -2,6 +2,46 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-01 12:11 - Wave 07 Fixture MCP Model
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npm test`
+- `rg -n "fixtureVersion|fixtureSplunkDatasetSchema|loadFixtureSplunkDatasetFromFile|createFixtureSplunkAccessAdapter|mode" fixtures src tests docs/fixture-live-parity.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-07-20260601-1208-review.md`
+- `rg -n "splunk_get_info|readOnlyTools|getUserInfo|get user info|user info|mcpTools|expectedTools|allowedTools" ARCHITECTURE.md docs src tests fixtures README.md`
+- `npx tsc --noEmit`
+- `npm test`
+- `npm run check`
+- `npx vitest run tests/adapters/fixture.test.ts`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-07-20260601-1210-rereview.md`
+- `nl -ba src/adapters/fixture.ts | sed -n '144,154p'`
+- `nl -ba tests/adapters/fixture.test.ts | sed -n '80,104p'`
+- `sed -n '24,36p' src/schemas/core.ts`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-07-20260601-1212-rereview.md`
+- `sed -n '1,260p' logs/reviewer-inbox/wave-07-20260601-1213-rereview.md`
+
+Result:
+
+- PASS
+- Initial `npx tsc --noEmit` failed with `TS2322` in `tests/adapters/fixture.test.ts` because trace hook callbacks returned `Array.push` numbers.
+- Final `npx tsc --noEmit` passed after fixing the callbacks.
+- `npm test` passed: 3 test files and 13 tests.
+- `npm run check` passed: `PASS: scaffold verified`, `waves: 42`, `project files: 123`; 3 test files and 13 tests passed.
+- `npx vitest run tests/adapters/fixture.test.ts` passed: 1 test file and 4 tests.
+
+Notes:
+
+- Fixture data is validated at load time by `fixtureSplunkDatasetSchema`.
+- Fixture adapter implements the shared `SplunkAccessAdapter` interface and emits deterministic trace hook timestamps.
+- `HIGH-001`: fixed by making trace hook callbacks return `void`.
+- `MEDIUM-001`: fixed by adding `splunk_get_user_info` to the read-only tool schema, fixture data, fixture adapter context, contract docs, and trace test.
+- Wave 07 rereview `MEDIUM-001` was stale; line checks showed the current source and test already use `splunk_get_user_info`.
+- Wave 07 final rereview passed with no open findings.
+- Wave 07 12:13 rereview `LOW-001` was stale about omitted 12:10 and 12:12 rereview files; current logs include those files and the 12:13 rereview file.
+
 ## 2026-06-01 12:02 - Wave 06 MCP Adapter Contract
 
 Commands:

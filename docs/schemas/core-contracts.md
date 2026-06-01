@@ -71,7 +71,7 @@ The compiled representation of one Splunk deployment's agent-relevant facts.
   "dashboardPanels": [],
   "dataModels": [],
   "appContexts": ["SplunkEnterpriseSecuritySuite"],
-  "mcpTools": ["splunk_get_knowledge_objects", "splunk_run_saved_search", "splunk_run_query"],
+  "mcpTools": ["splunk_get_user_info", "splunk_get_knowledge_objects", "splunk_run_saved_search", "splunk_run_query"],
   "queryBudgets": { "maxToolCalls": 6, "maxResultRows": 50, "timeoutSeconds": 30 },
   "evidenceRules": [{ "id": "security-evidence", "requiresResultCount": true, "requiresEvidenceRefs": true }],
   "forbiddenQueryPatterns": ["index=*"]
