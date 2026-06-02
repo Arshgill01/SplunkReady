@@ -685,7 +685,7 @@ TIME_FORMAT = %Y-%m-%d %H:%M:%S
 disabled = 0
 dispatch.earliest_time = -24h
 dispatch.latest_time = now
-search = index=wineventlog | rex field=_raw "^(?<_csv_time>[^,]+),(?<eventRef>[^,]+),(?<csv_sourcetype>[^,]+),(?<csv_host>[^,]+),(?<src>[^,]+),(?<dest>[^,]+),(?<user>[^,]+),(?<EventCode>[^,]+),(?<signature>.*)$" | search (src="win-finance-07" OR src="admin-login-02" OR src="dc-01" OR dest="win-finance-07" OR dest="admin-login-02" OR dest="dc-01") | eval sourcetype=coalesce(sourcetype, csv_sourcetype) | table _time eventRef sourcetype src dest user EventCode signature
+search = index=wineventlog | rex field=_raw "^(?<_csv_time>[^,]+),(?<eventRef>[^,]+),(?<csv_sourcetype>[^,]+),(?<csv_host>[^,]+),(?<src>[^,]+),(?<dest>[^,]+),(?<user>[^,]+),(?<EventCode>[^,]+),(?<signature>.*)$" | search (src="win-finance-07" OR src="admin-login-02" OR src="dc-01" OR dest="win-finance-07" OR dest="admin-login-02" OR dest="dc-01") | eval sourcetype=coalesce(sourcetype, csv_sourcetype) | dedup eventRef | table _time eventRef sourcetype src dest user EventCode signature
 `
   );
   await writeText(

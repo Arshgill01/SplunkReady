@@ -1112,6 +1112,7 @@ describe("SplunkReady CLI flow", () => {
     expect(savedSearches).toContain("index=wineventlog");
     expect(savedSearches).toContain("rex field=_raw");
     expect(savedSearches).toContain("eval sourcetype=coalesce(sourcetype, csv_sourcetype)");
+    expect(savedSearches).toContain("dedup eventRef");
     expect(savedSearches).toContain("dispatch.earliest_time = -24h");
     expect(savedSearches).not.toContain("index=wineventlog earliest=-24h");
     expect(savedSearches).not.toContain("is_scheduled");

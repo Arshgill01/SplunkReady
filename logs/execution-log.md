@@ -4448,6 +4448,68 @@ Result:
 - Live security readiness and proof commands passed.
 - Browser snapshot confirmed the refreshed UI renders live fail-to-pass data.
 
+## 2026-06-03 - Phase Live Stable Repeated Import Evidence
+
+Scope:
+- Make the flagship live proof stable when the local operator imports the generated CSV more than once.
+- Preserve canonical evidence refs in readiness/proof artifacts without requiring destructive cleanup of the live Splunk index.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- The generated `live-security-kit` saved search now applies `dedup eventRef` after extracting CSV fields from `_raw`.
+- The focused CLI kit test now asserts `dedup eventRef` is present in generated `savedsearches.conf`.
+
+Live proof result:
+- Reinstalled the regenerated operator app into the local Splunk trial with user-approved live setup.
+- Reimported the generated CSV.
+- `live-security-check` stayed green and now reports:
+  - status `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`;
+  - `resultCount: 3`;
+  - evidence refs `live-evt-141`, `live-evt-118`, `live-evt-102`;
+  - no blockers.
+- `live-security-proof` stayed green:
+  - before receipt: `NOT READY / 60`;
+  - after receipt: `READY / 100`;
+  - `failToPass: true`;
+  - `mutation: false`.
+- Refreshed `artifacts/live-security-ui`.
+- Browser snapshot at `http://127.0.0.1:5173/#live-connect` showed:
+  - `Saved-search run 3 row(s), 3 evidence ref(s)`;
+  - `Evidence refs live-evt-141 / live-evt-118 / live-evt-102`;
+  - `Fail to pass yes`;
+  - `Mutation no`.
+
+Product impact:
+- The live demo path is now idempotent for repeated local kit imports. The operator can rerun setup without making the UI/readiness ledger look inflated.
+- This improves demo reliability without deleting data from Splunk or violating the non-mutation policy from SplunkReady itself.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 33% | 33% | Reliability cleanup, no new visible capability. |
+| Platform & DX | 74% | 75% | Repeatable setup is a real developer-experience improvement. |
+| Security | 48% | 49% | Security evidence now stays concise and canonical. |
+| Best Use of MCP Server | 86% | 86% | MCP behavior unchanged after previous fix. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 68% | 69% | Generated kit is more robust for repeated local use. |
+
+Next directions to consider in future runs:
+- Add a UI note or receipt metadata that distinguishes canonical evidence refs from raw row count if future live missions intentionally return duplicates.
+- Demonstrate SAIA explain/optimize on a live or fixture SPL violation path so Hosted Models evidence is visible in the UI.
+- Continue avoiding live cleanup/delete commands; dedupe at query level is the safer setup-stability path.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused kit test, full repo check, UI build, browser snapshot, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Security Proof Summary in Vite UI
 
 Scope:

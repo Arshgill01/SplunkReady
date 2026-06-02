@@ -3896,3 +3896,54 @@ Open risks:
 - Local TLS still uses `NODE_TLS_REJECT_UNAUTHORIZED=0`; this remains a local trial workaround and is logged in `logs/splunk-feedback.md`.
 - Repeated CSV imports create duplicate live evidence rows; the receipt remains correct, but summaries may show more raw result rows than the three canonical evidence refs.
 - SAIA assistance is still zero in this live proof because the failing live trace did not produce SPL-family violations; SAIA wiring should be demonstrated separately with an SPL violation path.
+
+## 2026-06-03 - Phase Live Stable Repeated Import Evidence
+
+Commands:
+
+- `npm run build && rm -rf artifacts/live-security-kit && npm run splunkready -- live-security-kit --out artifacts/live-security-kit --json && rm -rf /Applications/Splunk/etc/apps/SplunkEnterpriseSecuritySuite && cp -R artifacts/live-security-kit/SplunkEnterpriseSecuritySuite /Applications/Splunk/etc/apps/ && /Applications/Splunk/bin/splunk restart`
+- `set -a; source ./.splunkready-live.env; set +a; /Applications/Splunk/bin/splunk add oneshot artifacts/live-security-kit/lateral-movement-events.csv -index wineventlog -sourcetype XmlWinEventLog:Security -auth "$SPLUNKREADY_SPLUNK_USERNAME:$SPLUNKREADY_SPLUNK_PASSWORD" && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-check --out artifacts/live-security-check --json`
+- `set -a; source ./.splunkready-live.env; set +a; export SPLUNKREADY_LLM_ENABLED=true; export GEMINI_MODEL=gemini-3.1-flash-lite; NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-proof --out artifacts/live-security-proof --json && npm run splunkready -- live-security-ui-bundle --proof-dir artifacts/live-security-proof --security-check-dir artifacts/live-security-check --security-kit-dir artifacts/live-security-kit --out artifacts/live-security-ui --json`
+- `bash "$PWCLI" open 'http://127.0.0.1:5173/#live-connect' && bash "$PWCLI" snapshot`
+- `npx vitest run tests/cli/flow.test.ts -t "live security setup kit"`
+- `npm run check && npm run ui:build && git diff --check`
+
+Result:
+
+- PASS for TypeScript build.
+- PASS for regenerated `live-security-kit`.
+- PASS for Splunk app reinstall/restart:
+  - configuration checks clean;
+  - `wineventlog` validated.
+- PASS for operator-approved CSV import.
+- PASS for live security readiness:
+  - status `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`;
+  - `resultCount: 3`;
+  - evidence refs `live-evt-141`, `live-evt-118`, `live-evt-102`;
+  - no blockers.
+- PASS for live security proof:
+  - before `NOT READY / 60`;
+  - after `READY / 100`;
+  - `failToPass: true`;
+  - `mutation: false`.
+- PASS for refreshed Vite UI bundle.
+- PASS for browser snapshot:
+  - Live Connect rendered `Saved-search run 3 row(s), 3 evidence ref(s)`;
+  - Flagship proof rendered canonical evidence refs;
+  - `Mutation no` remained visible.
+- PASS for focused kit test:
+  - 1 test passed;
+  - assertion covers `dedup eventRef` in generated saved-search config.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 685 project files;
+  - 38 test files;
+  - 206 tests.
+- PASS for production UI build.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The live Splunk index still contains duplicate imported rows from earlier setup attempts; the generated saved search now deduplicates them for the proof path.
+- Local TLS remains a local-only self-signed certificate workaround.
