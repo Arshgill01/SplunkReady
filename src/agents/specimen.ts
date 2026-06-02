@@ -135,6 +135,7 @@ export class NaiveSpecimenAgent {
     timestamp: string,
     preferredSavedSearchRef: string
   ): Promise<SpecimenAgentRun> {
+    const preferredSearch = savedSearchParts(preferredSavedSearchRef);
     const knowledgeCallId = this.addToolCall(traceEvents, {
       missionId: input.mission.id,
       timestamp,
@@ -142,12 +143,12 @@ export class NaiveSpecimenAgent {
       toolName: "splunk_get_knowledge_objects",
       toolInput: {
         types: ["saved_searches", "macros", "lookups"],
-        query: input.mission.title
+        query: preferredSearch.name
       }
     });
     const knowledgeTypes: KnowledgeObjectType[] = ["saved_searches", "macros", "lookups"];
     const knowledgeObjects = await input.adapter.getKnowledgeObjects(
-      { types: knowledgeTypes, query: input.mission.title },
+      { types: knowledgeTypes, query: preferredSearch.name },
       { requestId: `${input.mission.id}-policy`, missionId: input.mission.id, traceEventId: knowledgeCallId }
     );
     traceEvents.push(
@@ -170,7 +171,6 @@ export class NaiveSpecimenAgent {
       })
     );
 
-    const preferredSearch = savedSearchParts(preferredSavedSearchRef);
     const host = extractHost(input.mission.prompt);
     const savedSearchCallId = this.addToolCall(traceEvents, {
       missionId: input.mission.id,

@@ -69,6 +69,11 @@
       "fields": ["src", "dest", "dest_port", "action", "bytes_out", "app"]
     },
     {
+      "name": "dns:query",
+      "indexes": ["network_traffic"],
+      "fields": ["src", "query", "rrtype", "response_code", "bytes_out"]
+    },
+    {
       "name": "splunkd",
       "indexes": ["_internal"],
       "fields": ["component", "service", "latency_ms", "status", "host"]
@@ -153,6 +158,30 @@
         "search": "search index=network_traffic sourcetype=pan:traffic action=allowed earliest=$earliest$ latest=$latest$ | stats sum(bytes_out) as bytes_out count by src dest dest_port app",
         "canonicalFields": ["src", "dest", "dest_port", "bytes_out"],
         "trapRulesSupported": ["KO-001", "EVD-001"]
+      }
+    },
+    {
+      "id": "saved-search-dns-exfiltration-beacon",
+      "type": "saved_searches",
+      "name": "DNS - Suspicious Exfiltration Queries",
+      "app": "search",
+      "description": "Validated DNS exfiltration search for high-volume encoded query bursts from internal hosts",
+      "dependsOn": ["lookup-critical-subnets"],
+      "metadata": {
+        "search": "search index=network_traffic sourcetype=dns:query earliest=$earliest$ latest=$latest$ | stats count as query_count sum(bytes_out) as bytes_out values(rrtype) as rrtypes by src query | sort - query_count",
+        "canonicalFields": ["src", "query", "rrtype", "bytes_out"],
+        "trapRulesSupported": ["KO-001", "EVD-001", "EVD-003"]
+      }
+    },
+    {
+      "id": "saved-search-dns-all-queries-trap",
+      "type": "saved_searches",
+      "name": "DNS - All Queries Last 24h",
+      "app": "search",
+      "description": "Trap saved search that returns broad DNS volume without exfiltration scoping",
+      "metadata": {
+        "search": "search index=network_traffic sourcetype=dns:query earliest=-24h latest=now | head 10000",
+        "trapRulesSupported": ["SAF-002", "EVD-001"]
       }
     },
     {
@@ -443,6 +472,59 @@
       "resultCount": 4,
       "evidenceRefs": ["net-401", "net-402", "net-403", "net-404"],
       "warnings": []
+    },
+    "search index=network_traffic sourcetype=dns:query earliest=-24h latest=now | stats count as query_count sum(bytes_out) as bytes_out values(rrtype) as rrtypes by src query | sort - query_count": {
+      "queryRef": "query-dns-exfiltration-beacon",
+      "rows": [
+        {
+          "eventRef": "dns-501",
+          "_time": "2026-05-31T23:04:02.000Z",
+          "src": "10.44.12.18",
+          "query": "m8f4a2b91.chunk-001.payroll-archive.example.net",
+          "rrtype": "TXT",
+          "response_code": "NOERROR",
+          "bytes_out": 18432
+        },
+        {
+          "eventRef": "dns-502",
+          "_time": "2026-05-31T23:04:07.000Z",
+          "src": "10.44.12.18",
+          "query": "m8f4a2b91.chunk-002.payroll-archive.example.net",
+          "rrtype": "TXT",
+          "response_code": "NOERROR",
+          "bytes_out": 19152
+        },
+        {
+          "eventRef": "dns-503",
+          "_time": "2026-05-31T23:04:12.000Z",
+          "src": "10.44.12.18",
+          "query": "m8f4a2b91.chunk-003.payroll-archive.example.net",
+          "rrtype": "TXT",
+          "response_code": "NOERROR",
+          "bytes_out": 18896
+        },
+        {
+          "eventRef": "dns-504",
+          "_time": "2026-05-31T23:05:41.000Z",
+          "src": "10.44.12.21",
+          "query": "updates.office.example.com",
+          "rrtype": "A",
+          "response_code": "NOERROR",
+          "bytes_out": 384
+        },
+        {
+          "eventRef": "dns-505",
+          "_time": "2026-05-31T23:07:19.000Z",
+          "src": "10.44.12.18",
+          "query": "m8f4a2b91.chunk-004.payroll-archive.example.net",
+          "rrtype": "TXT",
+          "response_code": "NOERROR",
+          "bytes_out": 19344
+        }
+      ],
+      "resultCount": 5,
+      "evidenceRefs": ["dns-501", "dns-502", "dns-503", "dns-504", "dns-505"],
+      "warnings": []
     }
   },
   "savedSearchResults": {
@@ -574,6 +656,49 @@
       "evidenceRefs": ["net-401", "net-402", "net-403", "net-404"],
       "warnings": []
     },
+    "search::DNS - Suspicious Exfiltration Queries": {
+      "savedSearchRef": "saved-search-dns-exfiltration-beacon",
+      "rows": [
+        {
+          "eventRef": "dns-501",
+          "src": "10.44.12.18",
+          "query": "m8f4a2b91.chunk-001.payroll-archive.example.net",
+          "rrtype": "TXT",
+          "bytes_out": 18432
+        },
+        {
+          "eventRef": "dns-502",
+          "src": "10.44.12.18",
+          "query": "m8f4a2b91.chunk-002.payroll-archive.example.net",
+          "rrtype": "TXT",
+          "bytes_out": 19152
+        },
+        {
+          "eventRef": "dns-503",
+          "src": "10.44.12.18",
+          "query": "m8f4a2b91.chunk-003.payroll-archive.example.net",
+          "rrtype": "TXT",
+          "bytes_out": 18896
+        },
+        {
+          "eventRef": "dns-504",
+          "src": "10.44.12.21",
+          "query": "updates.office.example.com",
+          "rrtype": "A",
+          "bytes_out": 384
+        },
+        {
+          "eventRef": "dns-505",
+          "src": "10.44.12.18",
+          "query": "m8f4a2b91.chunk-004.payroll-archive.example.net",
+          "rrtype": "TXT",
+          "bytes_out": 19344
+        }
+      ],
+      "resultCount": 5,
+      "evidenceRefs": ["dns-501", "dns-502", "dns-503", "dns-504", "dns-505"],
+      "warnings": []
+    },
     "search::Platform - MCP Gateway Latency": {
       "savedSearchRef": "saved-search-observability-mcp-latency",
       "rows": [
@@ -611,12 +736,21 @@
     "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now": {
       "explanation": "The query searches all indexes and references src_ip, which is not canonical in this fixture.",
       "warnings": ["Prefer a validated saved search or canonical field src."]
+    },
+    "search index=* sourcetype=dns:query earliest=-24h latest=now | stats count by src query": {
+      "explanation": "The query searches every index for DNS rows instead of the authorized network_traffic index and does not preserve row-level evidence.",
+      "warnings": ["Use the validated DNS exfiltration saved search or narrow custom SPL to network_traffic."]
     }
   },
   "splOptimizations": {
     "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now": {
       "optimizedQuery": "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now",
       "rationale": "Narrow to the known authentication index and canonical src field.",
+      "warnings": []
+    },
+    "search index=* sourcetype=dns:query earliest=-24h latest=now | stats count by src query": {
+      "optimizedQuery": "search index=network_traffic sourcetype=dns:query earliest=-24h latest=now | stats count as query_count sum(bytes_out) as bytes_out values(rrtype) as rrtypes by src query | sort - query_count",
+      "rationale": "Narrow DNS investigation to the authorized network_traffic index and preserve evidence-oriented fields.",
       "warnings": []
     }
   }

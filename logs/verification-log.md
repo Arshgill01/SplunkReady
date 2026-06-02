@@ -3400,3 +3400,37 @@ Open risks:
 
 - Browser screenshots are local under `output/playwright/` and intentionally uncommitted.
 - The Vite UI now shows SAIA assistance when `policy-patch.json` contains `splAssistance`; live-green artifacts without a patch naturally do not show SAIA content.
+
+## 2026-06-02 - Phase Live Move 15 DNS Exfiltration Security Mission
+
+Commands:
+
+- `node -e "JSON.parse(require('fs').readFileSync('fixtures/acme-soc-dev/adapter-fixture.json','utf8')); console.log('fixture json ok')"`
+- `node -e "JSON.parse(require('fs').readFileSync('fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json','utf8')); JSON.parse(require('fs').readFileSync('fixtures/acme-soc-dev/missions/security-mission-suite.json','utf8')); console.log('mission json ok')"`
+- `npx vitest run tests/missions/security.test.ts tests/fixtures/query-results.test.ts tests/fixtures/knowledge-objects.test.ts tests/compiler/readiness-profile.test.ts`
+- `npm run build && OUT=$(mktemp -d /tmp/splunkready-exfil-mission-XXXXXX); npm run splunkready -- compile --mission fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json --out "$OUT" && npm run splunkready -- evaluate --mission fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json --out "$OUT" && npm run splunkready -- receipt --mission fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json --out "$OUT" && npm run splunkready -- rerun --mission fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json --out "$OUT"`
+- `npx vitest run tests/agents/specimen.test.ts tests/missions/security.test.ts tests/fixtures/query-results.test.ts tests/fixtures/knowledge-objects.test.ts tests/compiler/readiness-profile.test.ts && npm run build && OUT=$(mktemp -d /tmp/splunkready-exfil-mission-XXXXXX); npm run splunkready -- compile --mission fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json --out "$OUT" && npm run splunkready -- evaluate --mission fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json --out "$OUT" && npm run splunkready -- receipt --mission fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json --out "$OUT" && npm run splunkready -- rerun --mission fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json --out "$OUT"`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for focused mission, fixture, profile, specimen, build, and CLI proof.
+- Fixture JSON parsed successfully.
+- Mission JSON and mission-suite JSON parsed successfully.
+- Initial focused tests passed: 4 files / 18 tests.
+- After adding specimen discovery-query coverage, focused tests passed: 5 files / 21 tests.
+- Built CLI exfiltration proof passed:
+  - `compile` produced environment contract, mission, policy, and readiness profile artifacts.
+  - `evaluate` produced `trace-before.json`, `violations-before.json`, and `score-before.json`.
+  - `receipt` produced `receipt-before-001.*` and policy patch artifacts.
+  - `rerun` produced `trace-after.json`, `violations-after.json`, `score-after.json`, and `receipt-after-001.*`.
+- Observed exfiltration receipt transition: `NOT READY 0` with 5 violations before policy, then `READY 100` with 0 violations after policy.
+- Policy-backed exfiltration trace discovered 1 matching saved search and ran `saved-search-dns-exfiltration-beacon` with evidence refs `dns-501,dns-502,dns-503,dns-504,dns-505`.
+- Full verification passed: scaffold verified, 85 waves, 591 project files, 37 test files, 190 tests.
+- `git diff --check` passed with no whitespace errors.
+
+Open risks:
+
+- Exfiltration proof is fixture-backed. It improves multi-mission credibility but does not replace the live Splunk proof path.
+- The new DNS saved searches are intentionally read-only fixture content; live mode still depends on the target Splunk deployment exposing comparable DNS/network content.

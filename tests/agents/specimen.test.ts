@@ -71,6 +71,16 @@ describe("naive specimen agent", () => {
       "splunk_run_saved_search",
       null
     ]);
+    expect(run.traceEvents[0]).toMatchObject({
+      toolName: "splunk_get_knowledge_objects",
+      toolInput: {
+        query: "ES - Lateral Movement Auth Chain"
+      }
+    });
+    expect(run.traceEvents[1]).toMatchObject({
+      resultCount: 2,
+      evidenceRefs: ["saved-search-lateral-movement", "saved-search-lateral-movement-wrong-app"]
+    });
     expect(run.traceEvents[2]).toMatchObject({
       toolName: "splunk_run_saved_search",
       toolInput: {

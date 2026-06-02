@@ -297,7 +297,7 @@ describe("SplunkReady CLI flow", () => {
     expect(policyPatchMarkdown).toContain("SAIA Optimized Query:");
     expect(readinessProfile).toMatchObject({
       contractRef: { id: "contract-acme-soc-dev", mode: "fixture" },
-      deploymentSignals: { savedSearchCount: 8, restrictedIndexCount: 1 },
+      deploymentSignals: { savedSearchCount: 10, restrictedIndexCount: 1 },
       llmUsage: { passFailAuthority: "deterministic-rule-engine" }
     });
     expect(readinessProfile.ruleBindings).toEqual(

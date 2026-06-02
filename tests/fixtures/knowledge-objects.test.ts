@@ -45,7 +45,9 @@ describe("fixture knowledge-object traps", () => {
       expect.arrayContaining([
         "saved-search-lateral-movement",
         "saved-search-lateral-movement-wrong-app",
-        "saved-search-dashboard-lateral-movement-stale-field"
+        "saved-search-dashboard-lateral-movement-stale-field",
+        "saved-search-dns-exfiltration-beacon",
+        "saved-search-dns-all-queries-trap"
       ])
     );
     expect(duplicateNames.map((object) => object.app).sort()).toEqual(["SplunkEnterpriseSecuritySuite", "search"]);

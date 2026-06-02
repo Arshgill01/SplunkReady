@@ -4107,3 +4107,64 @@ Reviewer findings:
 
 Result:
 - PASS. Focused UI validation, browser screenshot verification, full scaffold/test verification, and diff whitespace checks passed.
+
+## 2026-06-02 - Phase Live Move 15 DNS Exfiltration Security Mission
+
+Scope:
+- Add a second security readiness mission that is meaningfully distinct from lateral movement.
+- Ground the mission in fixture data, saved searches, generated mission-suite output, and a real CLI fail-to-pass run.
+- Keep the deterministic grader authoritative and avoid changing fixture/live adapter contracts.
+
+Files changed:
+- `fixtures/acme-soc-dev/adapter-fixture.json`
+- `fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json`
+- `fixtures/acme-soc-dev/missions/security-mission-suite.json`
+- `src/missions/security.ts`
+- `src/agents/specimen.ts`
+- `tests/agents/specimen.test.ts`
+- `tests/compiler/readiness-profile.test.ts`
+- `tests/fixtures/knowledge-objects.test.ts`
+- `tests/fixtures/query-results.test.ts`
+- `tests/missions/security.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/splunk-feedback.md`
+
+What changed:
+- Added `dns:query` fixture metadata under `network_traffic`.
+- Added validated saved search `search::DNS - Suspicious Exfiltration Queries`.
+- Added broad trap saved search `search::DNS - All Queries Last 24h`.
+- Added DNS exfiltration query and saved-search result rows with evidence refs `dns-501` through `dns-505`.
+- Added fixture SAIA explanation/optimization for a broad DNS query.
+- Added generated and standalone mission `mission-security-exfiltration-readiness`.
+- Updated the security mission suite to include the exfiltration mission.
+- Updated the policy-backed specimen to discover knowledge objects by preferred saved-search name instead of mission title, so discovery finds real contract objects before running the preferred search.
+
+Product impact:
+- SplunkReady now demonstrates more than one security story: lateral movement and DNS exfiltration.
+- The second mission validates that preferred saved-search discipline, app context, evidence refs, and fail-to-pass receipts scale across different Splunk datasets.
+- The CLI proof for this move produced `NOT READY 0` before policy and `READY 100` after policy for the exfiltration mission.
+
+Estimated prize trajectory after Move 15:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 22% | 23% | The product looks less like a single scripted demo path. |
+| Platform & DX | 46% | 47% | Mission authoring/generation now shows reuse across security scenarios. |
+| Security | 24% | 28% | Adds a distinct exfiltration readiness scenario backed by DNS evidence rows. |
+| Best Use of MCP Server | 65% | 65% | MCP integration unchanged in this move. |
+| Hosted Models | 51% | 52% | SAIA fixture coverage now includes a DNS broad-query correction. |
+| Developer Tools | 40% | 42% | The mission suite and fixture tests better demonstrate extensibility. |
+
+Next direction:
+- Strong candidates for the next core move:
+  - Live mission generator: derive a meaningful live mission from discovered indexes/saved searches instead of relying on preinstalled ES content.
+  - Policy simulator: only if it remains grounded in actual receipt/rule data and avoids becoming a generic dashboard.
+  - Multi-agent summary: useful only after there are multiple artifact directories worth comparing.
+- Avoid another standalone QA/logging wave. The next run should add live proof depth or a developer-facing capability.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No new reviewer inbox file exists for this Phase Live move.
+
+Result:
+- PASS. Focused validation, exfiltration CLI proof, full scaffold/test verification, and diff whitespace checks passed.

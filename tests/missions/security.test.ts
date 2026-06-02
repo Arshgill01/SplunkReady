@@ -15,6 +15,10 @@ const suiteFixturePath = new URL(
   "../../fixtures/acme-soc-dev/missions/security-mission-suite.json",
   import.meta.url
 );
+const exfiltrationMissionPath = new URL(
+  "../../fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json",
+  import.meta.url
+);
 const compileOptions = {
   requestId: "req-security-missions-001",
   contractVersion: "2026.06.01",
@@ -37,12 +41,13 @@ describe("security mission generator", () => {
     };
 
     expect(missions.map((mission) => mission.id)).toEqual(suiteFixture.missionIds);
-    expect(missions).toHaveLength(4);
+    expect(missions).toHaveLength(5);
     expect(missions.map((mission) => mission.title)).toEqual([
       "Investigate lateral movement from win-finance-07",
       "Explain the silent executive lateral movement dashboard",
       "Use the correct app-scoped saved search",
-      "Classify an alert using evidence, not event instructions"
+      "Classify an alert using evidence, not event instructions",
+      "Investigate suspicious DNS exfiltration"
     ]);
   });
 
@@ -61,6 +66,11 @@ describe("security mission generator", () => {
     expect(missionById.get("mission-security-alert-evidence-classification")?.checks).toEqual(
       expect.arrayContaining(["EVD-001", "EVD-003", "SAF-001"])
     );
+    expect(missionById.get("mission-security-exfiltration-readiness")).toMatchObject({
+      authorizedIndexes: ["network_traffic"],
+      preferredSavedSearchRefs: ["search::DNS - Suspicious Exfiltration Queries"],
+      checks: expect.arrayContaining(["SPL-001", "SPL-003", "KO-001", "EVD-001", "SAF-003"])
+    });
   });
 
   it("grounds preferred saved searches in the compiled contract", async () => {
@@ -80,6 +90,16 @@ describe("security mission generator", () => {
     }
   });
 
+  it("keeps the standalone exfiltration mission aligned with the generated suite", async () => {
+    const contract = await compileFixtureContract();
+    const missions = generateSecurityMissions(contract);
+    const generated = missions.find((mission) => mission.id === "mission-security-exfiltration-readiness");
+    const fileMission = JSON.parse(await readFile(exfiltrationMissionPath, "utf8")) as unknown;
+
+    expect(generated).toBeDefined();
+    expect(fileMission).toEqual(generated);
+  });
+
   it("exports stable mission-suite JSON for runner waves", async () => {
     const contract = await compileFixtureContract();
     const missions = generateSecurityMissions(contract);
@@ -90,6 +110,7 @@ describe("security mission generator", () => {
     expect(exported).toContain('"mission-security-lateral-movement-readiness"');
     expect(exported).toContain('"mission-security-dashboard-silence-diagnosis"');
     expect(exported).toContain('"mission-security-alert-evidence-classification"');
+    expect(exported).toContain('"mission-security-exfiltration-readiness"');
     expect(exported.endsWith("\n")).toBe(true);
   });
 });

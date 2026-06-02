@@ -51,8 +51,8 @@ describe("readiness profile compiler", () => {
         mode: "fixture",
         indexCount: 6,
         restrictedIndexCount: 1,
-        sourcetypeCount: 4,
-        savedSearchCount: 8,
+        sourcetypeCount: 5,
+        savedSearchCount: 10,
         appContextCount: 2,
         dataModelCount: 1,
         queryBudgets: { maxToolCalls: 6, maxResultRows: 50, timeoutSeconds: 30 }

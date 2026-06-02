@@ -85,6 +85,18 @@ Suggestion:
 - Make app filtering prominent in MCP tool schemas and examples.
 - Return stable object identifiers that include app context.
 
+### Saved-search discovery works best with exact object names
+
+Observed while adding the DNS exfiltration readiness mission. A human mission title such as "Investigate suspicious DNS exfiltration" is useful to a developer, but it is a weak MCP discovery query. The certification trace became more useful when the agent searched for the exact preferred saved-search name, `DNS - Suspicious Exfiltration Queries`, before running it.
+
+Impact:
+- Discovery traces that return zero knowledge objects are harder to explain, even if a later policy-backed saved-search run succeeds.
+- Agent developers need examples that distinguish "mission prompt text" from "knowledge-object lookup text."
+
+Suggestion:
+- Document exact-name and app-scoped saved-search lookup examples for MCP clients.
+- If possible, return structured search/discovery hints in saved-search inventory so agents can query by stable ids, tags, or normalized aliases instead of free-form mission titles.
+
 ### Aggregated search results lose row-level evidence references
 
 Observed during a live Gemini run. Gemini selected a `stats count by component, message` query. The MCP query returned counts, but the resulting trace had no row-level evidence refs, causing deterministic evidence rules to fail.

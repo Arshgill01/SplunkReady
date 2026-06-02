@@ -5,12 +5,14 @@
     "mission-security-lateral-movement-readiness",
     "mission-security-dashboard-silence-diagnosis",
     "mission-security-saved-search-app-context",
-    "mission-security-alert-evidence-classification"
+    "mission-security-alert-evidence-classification",
+    "mission-security-exfiltration-readiness"
   ],
   "trapCoverage": {
     "wrongField": "mission-security-dashboard-silence-diagnosis",
     "savedSearchDiscipline": "mission-security-lateral-movement-readiness",
     "appContext": "mission-security-saved-search-app-context",
-    "evidence": "mission-security-alert-evidence-classification"
+    "evidence": "mission-security-alert-evidence-classification",
+    "dnsExfiltration": "mission-security-exfiltration-readiness"
   }
 }

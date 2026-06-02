@@ -33,9 +33,9 @@ describe("fixture query and saved-search results", () => {
       expect.arrayContaining(["main", "wineventlog", "_internal", "aws_cloudtrail", "network_traffic", "finance_pii"])
     );
     expect(fixture.sourcetypes.map((sourcetype) => sourcetype.name)).toEqual(
-      expect.arrayContaining(["XmlWinEventLog:Security", "aws:cloudtrail", "pan:traffic", "splunkd"])
+      expect.arrayContaining(["XmlWinEventLog:Security", "aws:cloudtrail", "pan:traffic", "dns:query", "splunkd"])
     );
-    expect(fixture.knowledgeObjects.filter((object) => object.type === "saved_searches")).toHaveLength(8);
+    expect(fixture.knowledgeObjects.filter((object) => object.type === "saved_searches")).toHaveLength(10);
     expect(countSavedSearchRows(fixture)).toBeGreaterThanOrEqual(15);
   });
 
@@ -152,6 +152,13 @@ describe("fixture query and saved-search results", () => {
       },
       requestOptions
     );
+    const dnsResult = await adapter.runSavedSearch(
+      {
+        name: "DNS - Suspicious Exfiltration Queries",
+        app: "search"
+      },
+      requestOptions
+    );
 
     expect(cloudResult).toMatchObject({
       resultCount: 3,
@@ -163,5 +170,17 @@ describe("fixture query and saved-search results", () => {
       evidenceRefs: ["net-401", "net-402", "net-403", "net-404"],
       warnings: []
     });
+    expect(dnsResult).toMatchObject({
+      resultCount: 5,
+      evidenceRefs: ["dns-501", "dns-502", "dns-503", "dns-504", "dns-505"],
+      warnings: []
+    });
+    expect(dnsResult.rows.map((row) => row.src)).toEqual([
+      "10.44.12.18",
+      "10.44.12.18",
+      "10.44.12.18",
+      "10.44.12.21",
+      "10.44.12.18"
+    ]);
   });
 });
