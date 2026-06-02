@@ -381,6 +381,37 @@ const hostedModelProof = {
     "This proof calls hosted-model tools only. It does not run the SPL query, does not grade with an LLM, and does not mutate Splunk."
 } as const;
 
+const proofAudit = {
+  status: "PASS",
+  proofType: "live-security",
+  proofDir: "artifacts/live-security-proof",
+  mode: "live",
+  mutation: false,
+  failToPass: true,
+  readyAfterPatch: true,
+  hostedModelStatus: "invoked",
+  checks: [
+    {
+      id: "contract-loaded",
+      status: "PASS",
+      detail: "Environment contract is present and schema-valid.",
+      evidence: { id: "contract-192-168-1-4", mode: "live" }
+    },
+    {
+      id: "fail-to-pass",
+      status: "PASS",
+      detail: "The proof demonstrates NOT READY -> READY.",
+      evidence: { before: { verdict: "NOT READY", score: 60 }, after: { verdict: "READY", score: 100 } }
+    },
+    {
+      id: "hosted-model-status",
+      status: "PASS",
+      detail: "Hosted-model assistance is present in the proof artifacts.",
+      evidence: { status: "invoked" }
+    }
+  ]
+} as const;
+
 const jsonResponse = (value: unknown): Response => new Response(JSON.stringify(value), { status: 200 });
 
 const fetcherFor = (files: Record<string, unknown>) => async (url: string): Promise<Response> => {
@@ -488,6 +519,7 @@ describe("Vite UI artifact app", () => {
         "live-security-readiness.json": liveSecurityReadiness,
         "live-security-kit.json": liveSecurityKit,
         "hosted-model-proof.json": hostedModelProof,
+        "proof-audit.json": proofAudit,
         "trace-before.json": beforeTrace,
         "trace-after.json": afterTrace,
         "violations-before.json": [],
@@ -522,6 +554,13 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("saia_explain_spl / saia_optimize_spl");
     expect(liveConnect).toContain("advisory only; deterministic grader decides pass/fail");
     expect(liveConnect).toContain("Hosted model proof");
+    expect(liveConnect).toContain("Proof audit");
+    expect(liveConnect).toContain("live-security");
+    expect(liveConnect).toContain("fail-to-pass / PASS");
+    expect(liveConnect).toContain("Warnings or failures");
+    expect(liveConnect).toContain("audit pass");
+    expect(liveConnect).toContain("Hosted models");
+    expect(liveConnect).toContain("invoked");
     expect(liveConnect).toContain("Before SPL");
     expect(liveConnect).toContain("SAIA recommended SPL");
     expect(liveConnect).toContain("| savedsearch &quot;ES - Lateral Movement Auth Chain&quot;");

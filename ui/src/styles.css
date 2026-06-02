@@ -460,6 +460,7 @@ code {
 .live-security-kit-panel,
 .hosted-model-panel,
 .hosted-model-proof-panel,
+.proof-audit-panel,
 .trace-stack {
   margin-top: 16px;
 }

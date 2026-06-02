@@ -4,6 +4,7 @@ import {
   type ArtifactOption,
   type HostedModelProof,
   type HostedModelSummary,
+  type ProofAudit,
   type UiArtifactBundle
 } from "./artifacts.js";
 import type { PolicyPatch, ReadinessReceipt, ReadinessProfile, TraceEvent, Violation } from "../../src/schemas/core.js";
@@ -335,6 +336,36 @@ const renderHostedModelProof = (proof: HostedModelProof | undefined): string => 
   </section>`;
 };
 
+const renderProofAuditSummaryRows = (audit: ProofAudit): Array<[string, unknown]> => [
+  ["Status", audit.status],
+  ["Proof type", audit.proofType],
+  ["Mode", audit.mode ?? "n/a"],
+  ["Fail to pass", audit.failToPass === undefined ? "n/a" : audit.failToPass ? "yes" : "no"],
+  ["Ready after patch", audit.readyAfterPatch === undefined ? "n/a" : audit.readyAfterPatch ? "yes" : "no"],
+  ["Mutation", audit.mutation === undefined ? "n/a" : audit.mutation ? "yes" : "no"],
+  ["Hosted models", audit.hostedModelStatus ?? "not loaded"]
+];
+
+const renderProofAuditPanel = (audit: ProofAudit | undefined): string => {
+  if (!audit) {
+    return "";
+  }
+
+  const failingChecks = audit.checks.filter((check) => check.status !== "PASS");
+
+  return `<section class="panel proof-audit-panel">
+    <h2>Proof audit</h2>
+    ${renderFactTable([
+      ...renderProofAuditSummaryRows(audit),
+      ["Checks", audit.checks.map((check) => `${check.id} / ${check.status}`).join(" / ")],
+      [
+        "Warnings or failures",
+        failingChecks.length > 0 ? failingChecks.map((check) => `${check.id}: ${check.detail}`).join(" / ") : "none"
+      ]
+    ])}
+  </section>`;
+};
+
 const renderLiveSecurityReadiness = (bundle: UiArtifactBundle): string => {
   const readiness = bundle.liveSecurityReadiness;
 
@@ -477,6 +508,14 @@ const renderReceipt = (bundle: UiArtifactBundle, options: RenderOptions): string
             ["Policy patch", bundle.policyPatch?.id ?? "not loaded"]
           ])}
         </section>
+        ${
+          bundle.proofAudit
+            ? `<section class="receipt-book-section">
+                <h2>Proof audit</h2>
+                ${renderFactTable(renderProofAuditSummaryRows(bundle.proofAudit))}
+              </section>`
+            : ""
+        }
         ${
           bundle.liveSecurityProofSummary
             ? `<section class="receipt-book-section">
@@ -654,6 +693,7 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
             ["Mutation posture", "read-only adapter calls only"]
           ])}
         </section>
+        ${renderProofAuditPanel(bundle.proofAudit)}
         ${renderLiveProofSummary(bundle)}
         ${renderLiveSecurityProofSummary(bundle)}
         ${renderHostedModelSummary(bundle.liveSecurityProofSummary?.hostedModels ?? bundle.liveProofSummary?.hostedModels)}
@@ -713,6 +753,7 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: Re
       <span>${value(summary.securityStory)}</span>
       <span>${value(summary.kitStory)}</span>
       <span>${value(summary.hostedModelStory)}</span>
+      <span>${value(summary.auditStory)}</span>
     </div>
   </aside>`;
 };

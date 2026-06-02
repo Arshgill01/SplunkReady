@@ -4350,3 +4350,79 @@ Open risks:
 - The audit command currently writes a diagnostic `proof-audit.json`; it does not fail the process when the audit report status is `WARN` or `FAIL`.
 - Live hosted-model proof remains gated by SAIA-capable MCP access.
 - Local audit artifacts under `artifacts/` are untracked and should remain uncommitted unless a redacted artifact set is explicitly requested.
+
+## 2026-06-03 - Phase Live Proof Audit in Vite UI
+
+Commands:
+
+- `sed -n '1,220p' /Users/arshdeepsingh/.agents/skills/frontend-design/SKILL.md && sed -n '1,220p' /Users/arshdeepsingh/.agents/skills/uncodixfy/SKILL.md`
+- `sed -n '1,260p' ui/src/artifacts.ts`
+- `sed -n '1,320p' ui/src/render.ts`
+- `sed -n '1,260p' ui/src/styles.css`
+- `sed -n '1,240p' tests/ui/app.test.ts`
+- `sed -n '220,520p' ui/src/artifacts.ts`
+- `sed -n '320,760p' ui/src/render.ts`
+- `sed -n '240,860p' tests/ui/app.test.ts`
+- `sed -n '260,620p' ui/src/styles.css`
+- `npx vitest run tests/ui/app.test.ts`
+- `npm run build`
+- `cat package.json`
+- `npm run ui:build`
+- `npm run check`
+- `git diff --check`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `npm run ui:dev -- --port 5174`
+- `bash "$PWCLI" open "http://127.0.0.1:5174/?artifacts=artifacts/live-security-ui#live-connect"`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/proof-audit-live-connect.png --full-page`
+- `bash "$PWCLI" open "http://127.0.0.1:5174/?artifacts=artifacts/live-security-ui#receipt" && bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/proof-audit-receipt.png --full-page`
+
+Result:
+
+- PASS for frontend guidance review:
+  - used the existing restrained brown ledger style;
+  - no gradients, glass, decorative hero, or generic dashboard treatment was added.
+- PASS for focused UI tests:
+  - 10 tests passed.
+- PASS for TypeScript build.
+- PASS for Vite production build:
+  - `dist-ui/index.html`;
+  - bundled CSS/JS and font assets generated successfully.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 712 project files;
+  - 38 test files;
+  - 210 tests.
+- PASS for `git diff --check`.
+- PASS for Playwright prerequisite:
+  - `npx-ok`.
+- PASS for temporary Vite server:
+  - server started at `http://127.0.0.1:5174/`.
+- PASS for Live Connect browser verification:
+  - route `http://127.0.0.1:5174/?artifacts=artifacts/live-security-ui#live-connect`;
+  - sidebar shows `audit warn`;
+  - `Proof audit` panel is rendered;
+  - proof type `live-security`;
+  - fail-to-pass `yes`;
+  - mutation `no`;
+  - hosted models `BLOCKED`;
+  - warning/failure row explains `hosted-model-status`;
+  - screenshot saved to `output/playwright/proof-audit-live-connect.png`.
+- First parallel Receipt screenshot attempt failed because the target browser context closed while the open/snapshot command was still running.
+- PASS for Receipt browser verification after retry:
+  - route `http://127.0.0.1:5174/?artifacts=artifacts/live-security-ui#receipt`;
+  - compact `Proof audit` section appears inside the receipt ledger;
+  - status `WARN`;
+  - fail-to-pass `yes`;
+  - mutation `no`;
+  - hosted models `BLOCKED`;
+  - screenshot saved to `output/playwright/proof-audit-receipt.png`.
+- PASS for cleanup:
+  - temporary Vite server was stopped with Ctrl-C.
+
+Open risks:
+
+- `artifacts/live-security-ui/proof-audit.json` remains a local untracked evidence artifact.
+- The UI correctly reports hosted-model `BLOCKED`; this will remain a warning until live SAIA permissions are fixed and the bundle is regenerated.

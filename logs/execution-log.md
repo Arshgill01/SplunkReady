@@ -4439,6 +4439,85 @@ Reviewer findings:
 Result:
 - Focused CLI proof audit test, local proof audits, full repo verification, TypeScript build, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Proof Audit in Vite UI
+
+Scope:
+- Make `proof-audit.json` visible in the Vite artifact app.
+- Keep the UI as an artifact ledger, not a generic dashboard or assistant.
+
+Files expected/touched:
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- The Vite artifact loader now parses optional `proof-audit.json`.
+- The sidebar summary now shows `audit pass`, `audit warn`, or `audit fail` when an audit artifact is present.
+- The Receipt view now renders a compact `Proof audit` section inside the aligned receipt ledger.
+- The Live Connect view now renders a full `Proof audit` panel with:
+  - audit status;
+  - proof type;
+  - fail-to-pass state;
+  - ready-after-patch state;
+  - mutation state;
+  - hosted-model status;
+  - check status list;
+  - warning/failure details.
+
+Browser verification:
+- Temporary local server:
+  - `http://127.0.0.1:5174/`
+- Verified route:
+  - `http://127.0.0.1:5174/?artifacts=artifacts/live-security-ui#live-connect`
+- Snapshot confirmed:
+  - sidebar shows `audit warn`;
+  - Live Connect shows `Proof audit`;
+  - proof type is `live-security`;
+  - fail-to-pass is `yes`;
+  - mutation is `no`;
+  - hosted models are `BLOCKED`;
+  - only warning/failure row is `hosted-model-status`.
+- Verified route:
+  - `http://127.0.0.1:5174/?artifacts=artifacts/live-security-ui#receipt`
+- Snapshot confirmed:
+  - Receipt view shows a compact aligned `Proof audit` section;
+  - status is `WARN`;
+  - fail-to-pass is `yes`;
+  - mutation is `no`;
+  - hosted models are `BLOCKED`.
+- Screenshots:
+  - `output/playwright/proof-audit-live-connect.png`;
+  - `output/playwright/proof-audit-receipt.png`.
+
+Product impact:
+- The UI now presents audited proof status directly from `proof-audit.json`.
+- The current live security proof is no longer visually conflated with the blocked hosted-model proof: the app shows live fail-to-pass green evidence and a separate SAIA permission warning.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 29% | 29% | Evidence presentation improved, no new runtime capability. |
+| Platform & DX | 74% | 76% | UI now consumes proof audit artifacts directly. |
+| Security | 43% | 44% | Flagship live security state is clearer in the receipt path. |
+| Best Use of MCP Server | 82% | 82% | MCP behavior unchanged. |
+| Hosted Models | 48% | 49% | SAIA block is now explicit and inspectable instead of hidden. |
+| Developer Tools | 70% | 72% | Proof audit becomes visible both as CLI artifact and UI input. |
+
+Next directions to consider in future runs:
+- Add an optional strict `proof-audit` gate flag for CI once the audit report shape is stable.
+- Regenerate `artifacts/live-security-ui` after live SAIA permissions are fixed so audit status can move from `WARN` to `PASS`.
+- Continue meaningful core work: proof gate, external trace ergonomics, firewall reporting, and broader mission coverage.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused UI tests, TypeScript build, Vite production build, full repo verification, browser snapshots, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Artifact Source Selector
 
 Scope:

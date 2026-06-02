@@ -72,6 +72,32 @@ const hostedModelProofSchema = z
 
 export type HostedModelProof = z.infer<typeof hostedModelProofSchema>;
 
+const proofAuditCheckSchema = z
+  .object({
+    id: z.string().min(1),
+    status: z.enum(["PASS", "WARN", "FAIL"]),
+    detail: z.string().min(1),
+    evidence: z.unknown().optional()
+  })
+  .strict();
+
+const proofAuditSchema = z
+  .object({
+    status: z.enum(["PASS", "WARN", "FAIL"]),
+    proofType: z.enum(["live-security", "live", "receipt", "unknown"]),
+    proofDir: z.string().min(1),
+    mode: z.enum(["fixture", "live"]).optional(),
+    mutation: z.boolean().optional(),
+    failToPass: z.boolean().optional(),
+    readyAfterPatch: z.boolean().optional(),
+    readyWithoutPatch: z.boolean().optional(),
+    hostedModelStatus: z.string().min(1).optional(),
+    checks: z.array(proofAuditCheckSchema)
+  })
+  .strict();
+
+export type ProofAudit = z.infer<typeof proofAuditSchema>;
+
 const liveProofSummarySchema = z
   .object({
     status: z.string().min(1),
@@ -243,6 +269,7 @@ export interface UiArtifactBundle {
   liveSecurityReadiness?: LiveSecurityReadiness;
   liveSecurityKit?: LiveSecurityKit;
   hostedModelProof?: HostedModelProof;
+  proofAudit?: ProofAudit;
   beforeTrace: TraceEvent[];
   afterTrace: TraceEvent[];
   beforeViolations: Violation[];
@@ -263,6 +290,7 @@ const optionalFiles = [
   "live-security-readiness.json",
   "live-security-kit.json",
   "hosted-model-proof.json",
+  "proof-audit.json",
   "trace-before.json",
   "trace-after.json",
   "violations-before.json",
@@ -366,6 +394,7 @@ export const loadUiArtifactBundle = async (
     liveSecurityReadiness: liveSecurityReadinessSchema.optional().parse(loaded.get("live-security-readiness.json")),
     liveSecurityKit: liveSecurityKitSchema.optional().parse(loaded.get("live-security-kit.json")),
     hostedModelProof: hostedModelProofSchema.optional().parse(loaded.get("hosted-model-proof.json")),
+    proofAudit: proofAuditSchema.optional().parse(loaded.get("proof-audit.json")),
     beforeTrace: traceEventSchema.array().optional().parse(loaded.get("trace-before.json")) ?? [],
     afterTrace: traceEventSchema.array().optional().parse(loaded.get("trace-after.json")) ?? [],
     beforeViolations: violationSchema.array().optional().parse(loaded.get("violations-before.json")) ?? [],
@@ -387,6 +416,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   securityStory: string;
   kitStory: string;
   hostedModelStory: string;
+  auditStory: string;
 } => {
   const receipt = bundle.receipt;
   const contract = bundle.liveSmokeContract ?? bundle.contract;
@@ -425,6 +455,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
       (bundle.hostedModelProof ? `hosted proof ${bundle.hostedModelProof.status.toLowerCase()}` : undefined) ??
       bundle.liveSecurityProofSummary?.hostedModels?.status ??
       bundle.liveProofSummary?.hostedModels?.status ??
-      (bundle.policyPatch?.splAssistance?.length ? "invoked" : "not loaded")
+      (bundle.policyPatch?.splAssistance?.length ? "invoked" : "not loaded"),
+    auditStory: bundle.proofAudit ? `audit ${bundle.proofAudit.status.toLowerCase()}` : "audit not loaded"
   };
 };
