@@ -474,7 +474,8 @@ const collectSplAssistance = async (
 
 const summarizeHostedModels = (
   contract: EnvironmentContract,
-  policyPatch: PolicyPatch | undefined
+  policyPatch: PolicyPatch | undefined,
+  hostedModelProof?: unknown
 ): {
   status: "invoked" | "available_not_applicable" | "unavailable";
   availableTools: ReadOnlySplunkToolName[];
@@ -485,9 +486,12 @@ const summarizeHostedModels = (
   const contractTools = new Set(contract.mcpTools);
   const availableTools = hostedModelToolNames.filter((toolName) => contractTools.has(toolName));
   const missingTools = hostedModelToolNames.filter((toolName) => !contractTools.has(toolName));
-  const assistanceItems = policyPatch?.splAssistance?.length ?? 0;
+  const patchAssistanceItems = policyPatch?.splAssistance?.length ?? 0;
+  const hostedModelProofStatus = stringFromRecord(hostedModelProof, "status");
+  const hostedModelProofInvoked = hostedModelProofStatus === "PASS";
+  const assistanceItems = patchAssistanceItems > 0 ? patchAssistanceItems : hostedModelProofInvoked ? 1 : 0;
 
-  if (assistanceItems > 0) {
+  if (patchAssistanceItems > 0) {
     return {
       status: "invoked",
       availableTools,
@@ -495,6 +499,28 @@ const summarizeHostedModels = (
       assistanceItems,
       notes:
         "SAIA explain/optimize returned advisory output for SPL-rule violations. Deterministic rules remained authoritative for pass/fail."
+    };
+  }
+
+  if (hostedModelProofInvoked) {
+    return {
+      status: "invoked",
+      availableTools,
+      missingTools,
+      assistanceItems,
+      notes:
+        "SAIA explain/optimize returned advisory output in hosted-model proof mode. The SPL was not executed; deterministic rules remained authoritative for pass/fail."
+    };
+  }
+
+  if (hostedModelProofStatus === "BLOCKED") {
+    return {
+      status: "unavailable",
+      availableTools,
+      missingTools,
+      assistanceItems,
+      notes:
+        "Hosted-model tools were advertised but could not be invoked with the current MCP credentials or entitlement."
     };
   }
 
@@ -1380,7 +1406,13 @@ const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.Process
   );
   const contract = await loadContract(options.out);
   const policyPatch = await readOptionalPolicyPatch(options.out);
-  const hostedModels = summarizeHostedModels(contract, policyPatch);
+  const hostedModelProofPath = await writeHostedModelProofArtifact(
+    liveOptions,
+    await createSplunkAccessAdapter(liveOptions, env),
+    contract
+  );
+  const hostedModelProof = await readJson<unknown>(hostedModelProofPath, "hosted model proof");
+  const hostedModels = summarizeHostedModels(contract, policyPatch, hostedModelProof);
   const liveProofSummaryPath = join(options.out, "live-proof-summary.json");
   const securitySummaryPath = join(options.out, "live-security-proof-summary.json");
   const failToPass = beforeReceipt.verdict === "NOT READY" && afterReceipt.verdict === "READY";
@@ -1446,6 +1478,7 @@ const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.Process
       ...evaluateArtifacts,
       ...receiptArtifacts,
       ...rerunArtifacts,
+      hostedModelProofPath,
       liveProofSummaryPath,
       securitySummaryPath
     ])
@@ -1611,12 +1644,21 @@ const hostedModelProofCommand = async (
 ): Promise<string[]> => {
   const compileArtifacts = await compileCommand(options, env);
   const adapter = await createSplunkAccessAdapter(options, env);
+  const contract = await loadContract(options.out);
+  const proofPath = await writeHostedModelProofArtifact(options, adapter, contract);
 
+  return [...compileArtifacts, proofPath];
+};
+
+const writeHostedModelProofArtifact = async (
+  options: CliOptions,
+  adapter: SplunkAccessAdapter,
+  contract: EnvironmentContract
+): Promise<string> => {
   if (!adapter.explainSpl || !adapter.optimizeSpl) {
     throw new Error("hosted-model-proof requires adapters that expose saia_explain_spl and saia_optimize_spl.");
   }
 
-  const contract = await loadContract(options.out);
   const callOptions = { requestId: "req-hosted-model-proof-1", missionId: "hosted-model-proof" };
   const proofPath = join(options.out, "hosted-model-proof.json");
   const baseProof = {
@@ -1668,7 +1710,7 @@ const hostedModelProofCommand = async (
     });
   }
 
-  return [...compileArtifacts, proofPath];
+  return proofPath;
 };
 
 const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
@@ -1716,8 +1758,9 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
     .map((artifact) => booleanFromRecord(artifact, "mutation"))
     .filter((value): value is boolean => typeof value === "boolean");
   const mutation = mutationValues.length > 0 ? mutationValues.some((value) => value) : undefined;
+  const hostedModelProofStatus = stringFromRecord(hostedModelProof, "status");
   const hostedModelStatus =
-    stringFromRecord(hostedModelProof, "status") ??
+    (hostedModelProofStatus === "PASS" ? "invoked" : hostedModelProofStatus) ??
     stringFromRecord(isRecord(liveSecurityProofSummary) ? liveSecurityProofSummary.hostedModels : undefined, "status") ??
     stringFromRecord(isRecord(liveProofSummary) ? liveProofSummary.hostedModels : undefined, "status");
 

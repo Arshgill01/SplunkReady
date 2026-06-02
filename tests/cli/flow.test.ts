@@ -1476,6 +1476,7 @@ describe("SplunkReady CLI flow", () => {
           join(outDir, "receipt-before-001.json"),
           join(outDir, "policy-patch.json"),
           join(outDir, "receipt-after-001.json"),
+          join(outDir, "hosted-model-proof.json"),
           join(outDir, "live-proof-summary.json"),
           join(outDir, "live-security-proof-summary.json")
         ])
@@ -1512,6 +1513,11 @@ describe("SplunkReady CLI flow", () => {
         missingTools: string[];
       };
     };
+    const hostedModelProof = JSON.parse(await readFile(join(outDir, "hosted-model-proof.json"), "utf8")) as {
+      status: string;
+      mutation: boolean;
+      assistance: { optimizedQuery: string } | null;
+    };
     const uiSummary = JSON.parse(await readFile(join(outDir, "live-proof-summary.json"), "utf8")) as {
       mutation: boolean;
       derivedMission: { strategy: string; missionId: string };
@@ -1537,6 +1543,13 @@ describe("SplunkReady CLI flow", () => {
     expect(beforeReceipt.verdict).toBe("NOT READY");
     expect(beforeReceipt.violations.length).toBeGreaterThan(0);
     expect(afterReceipt).toMatchObject({ verdict: "READY", score: 100 });
+    expect(hostedModelProof).toMatchObject({
+      status: "PASS",
+      mutation: false,
+      assistance: {
+        optimizedQuery: "| savedsearch \"ES - Lateral Movement Auth Chain\""
+      }
+    });
     expect(afterReceipt.evidenceRefs).toEqual([
       "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
       "live-evt-102",

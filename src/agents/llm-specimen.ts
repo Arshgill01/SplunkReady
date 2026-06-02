@@ -149,6 +149,29 @@ const knowledgeObservation = (result: KnowledgeObjectResult): LlmAgentObservatio
 
 const traceInput = (input: object): Record<string, unknown> => ({ ...input });
 
+const evidenceLedgerFrom = (observations: LlmAgentObservation[]): string => {
+  const evidenceRows = observations
+    .filter(
+      (observation) =>
+        observation.queryRef || typeof observation.resultCount === "number" || observation.evidenceRefs.length > 0
+    )
+    .map((observation, index) => {
+      const evidenceRefs = observation.evidenceRefs.length > 0 ? observation.evidenceRefs.join(", ") : "none";
+      return `Observation ${index + 1}: tool ${observation.toolName}; provenance ${observation.queryRef ?? "none"}; resultCount ${observation.resultCount ?? "n/a"}; evidenceRefs ${evidenceRefs}.`;
+    });
+
+  return evidenceRows.length > 0 ? `Evidence ledger: ${evidenceRows.join(" ")}` : "";
+};
+
+const appendEvidenceLedger = (answer: string, observations: LlmAgentObservation[]): string => {
+  const ledger = evidenceLedgerFrom(observations);
+  if (!ledger) {
+    return answer;
+  }
+
+  return answer.includes(ledger) ? answer : `${answer}\n${ledger}`;
+};
+
 export class LlmSpecimenAgent {
   private readonly contract: EnvironmentContract;
   private readonly model: LlmAgentModel;
@@ -242,13 +265,14 @@ export class LlmSpecimenAgent {
       }
     }
 
-    const finalAnswer = await this.model.answer({
+    const modelFinalAnswer = await this.model.answer({
       mission: input.mission,
       contract: this.contract,
       policy: input.policy,
       contractInjected,
       observations
     });
+    const finalAnswer = appendEvidenceLedger(modelFinalAnswer, observations);
     const lastObservation = observations.at(-1);
     const finalAnswerParent = recorder.events().at(-1)?.id;
     recorder.recordFinalAnswer({

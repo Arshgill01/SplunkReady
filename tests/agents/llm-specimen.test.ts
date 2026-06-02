@@ -107,6 +107,42 @@ describe("LlmSpecimenAgent", () => {
     expect(violations).toEqual([]);
   });
 
+  it("appends exact observation provenance to vague model final answers", async () => {
+    const { adapter, contract, mission } = await loadFixtureContext();
+    const model: LlmAgentModel = {
+      async plan() {
+        return {
+          rationale: "Run the preferred saved search.",
+          toolCalls: [
+            {
+              toolName: "splunk_get_knowledge_objects",
+              input: { types: ["saved_searches"], query: "Lateral Movement" }
+            },
+            {
+              toolName: "splunk_run_saved_search",
+              input: {
+                app: "SplunkEnterpriseSecuritySuite",
+                name: "ES - Lateral Movement Auth Chain"
+              }
+            }
+          ]
+        };
+      },
+      async answer() {
+        return "Investigation complete.";
+      }
+    };
+
+    const run = await new LlmSpecimenAgent({ contract, model }).run({ mission, adapter });
+    const violations = runRuleEngine({ contract, mission, traceEvents: run.traceEvents }, allRules()).violations;
+
+    expect(run.finalAnswer).toContain("Evidence ledger");
+    expect(run.finalAnswer).toContain("saved-search-lateral-movement");
+    expect(run.finalAnswer).toContain("resultCount 3");
+    expect(run.finalAnswer).toContain("evt-102");
+    expect(violations).toEqual([]);
+  });
+
   it("rejects unsupported or out-of-policy model tool requests before adapter execution", async () => {
     const { adapter, contract, mission } = await loadFixtureContext();
     const model = {

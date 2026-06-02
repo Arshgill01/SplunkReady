@@ -4709,3 +4709,74 @@ Open risks:
 - `firewall-check` proves the pre-execution block path for the current specimen behavior; it does not replace Readiness Receipts for full agent certification.
 - If an agent does not trigger a firewall block, the command emits normal before-phase trace artifacts and a `firewall-check.json` diagnostic instead of a strict `firewall-block` proof.
 - Live hosted-model proof remains gated by SAIA-capable MCP access.
+
+## 2026-06-03 - Phase Live Hosted Model Proof Attachment and LLM Evidence Ledger
+
+Commands:
+
+- `npm run build`
+- `npx vitest run tests/cli/flow.test.ts -t "hosted-model|flagship live security proof"`
+- `npm run build`
+- `npx vitest run tests/agents/llm-specimen.test.ts tests/cli/flow.test.ts -t "observation provenance|flagship live security proof|hosted-model"`
+- `if [ ! -f .splunkready-live.env ]; then echo "missing-live-env"; exit 0; fi
+set -a
+source ./.splunkready-live.env
+set +a
+export SPLUNKREADY_LLM_ENABLED=true
+export GEMINI_MODEL="${GEMINI_MODEL:-gemini-3.1-flash-lite}"
+rm -rf artifacts/live-security-proof-refresh
+NODE_TLS_REJECT_UNAUTHORIZED="${NODE_TLS_REJECT_UNAUTHORIZED:-0}" npm run splunkready -- live-security-proof --out artifacts/live-security-proof-refresh --json >/tmp/splunkready-live-security-proof-refresh.json
+npm run splunkready -- proof-audit --out artifacts/live-security-proof-refresh --json >/tmp/splunkready-live-security-proof-refresh-audit.json
+cat /tmp/splunkready-live-security-proof-refresh.json
+cat /tmp/splunkready-live-security-proof-refresh-audit.json
+node - <<'NODE'
+const fs = require('fs');
+const summary = JSON.parse(fs.readFileSync('artifacts/live-security-proof-refresh/live-security-proof-summary.json', 'utf8'));
+const audit = JSON.parse(fs.readFileSync('artifacts/live-security-proof-refresh/proof-audit.json', 'utf8'));
+const hosted = JSON.parse(fs.readFileSync('artifacts/live-security-proof-refresh/hosted-model-proof.json', 'utf8'));
+console.log(JSON.stringify({
+  before: summary.before,
+  after: summary.after,
+  failToPass: summary.failToPass,
+  readyAfterPatch: summary.readyAfterPatch,
+  hostedModels: summary.hostedModels,
+  hostedModelProof: { status: hosted.status, mutation: hosted.mutation, hasAssistance: Boolean(hosted.assistance), error: hosted.error },
+  audit: { status: audit.status, proofType: audit.proofType, hostedModelStatus: audit.hostedModelStatus, failingChecks: audit.checks.filter((c)=>c.status==='FAIL').map((c)=>c.id), warningChecks: audit.checks.filter((c)=>c.status==='WARN').map((c)=>c.id) }
+}, null, 2));
+NODE`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for TypeScript build.
+- PASS for focused hosted-model and flagship live security proof CLI tests:
+  - selected CLI tests passed before the LLM evidence-ledger change.
+- PASS for focused LLM/CLI regression tests after the evidence-ledger change:
+  - selected `tests/agents/llm-specimen.test.ts` test passed;
+  - selected `tests/cli/flow.test.ts` hosted-model/live-security proof tests passed.
+- PASS for real live `live-security-proof` command against the current local Splunk/MCP setup:
+  - wrote `hosted-model-proof.json`;
+  - before policy injection was `NOT READY`, score `60`, violations `2`;
+  - after policy injection was `READY`, score `100`, violations `0`;
+  - `failToPass` was `true`;
+  - `readyAfterPatch` was `true`;
+  - no Splunk mutation was reported.
+- PARTIAL for real live `proof-audit`:
+  - command completed and reported no failing checks;
+  - audit status was `WARN`;
+  - only warning check was `hosted-model-status`;
+  - `hostedModelStatus` was `BLOCKED` because current MCP credentials cannot invoke `saia_explain_spl` / `saia_optimize_spl`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 749 project files;
+  - 38 test files;
+  - 213 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Live hosted-model proof needs SAIA-capable MCP permission before strict `proof-audit --require-pass true` can pass for the hosted-model check.
+- `artifacts/live-security-proof-refresh` is local untracked evidence and is not intended for commit.
+- The LLM evidence ledger improves deterministic answer verification, but model behavior can still vary across real Gemini calls.

@@ -4364,6 +4364,75 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Hosted Model Proof Attachment and LLM Evidence Ledger
+
+Scope:
+- Attach hosted-model proof evidence to the flagship live security proof bundle.
+- Stabilize the policy-backed LLM specimen by carrying exact observation provenance into the final answer.
+- Keep deterministic rules authoritative; hosted model output remains advisory evidence only.
+
+Files expected/touched:
+- `src/cli.ts`
+- `src/agents/llm-specimen.ts`
+- `tests/agents/llm-specimen.test.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- `live-security-proof` now writes `hosted-model-proof.json` and includes that artifact in its returned artifact list.
+- The live security summary now distinguishes three hosted-model states:
+  - SAIA policy-patch assistance invoked for SPL violations;
+  - hosted-model proof invoked directly when no SPL violation exists;
+  - hosted-model proof blocked by current MCP credentials or entitlement.
+- `proof-audit` now normalizes a `hosted-model-proof.json` `PASS` status into `hostedModelStatus: invoked`, while preserving `BLOCKED` as a warning state.
+- The Gemini-backed LLM specimen now appends an `Evidence ledger` to final answers when trace observations contain query refs, result counts, or evidence refs.
+- Added coverage proving that a vague model answer can still carry exact saved-search provenance from actual observations into the trace final answer.
+- Updated the flagship live security proof test to expect the attached hosted-model proof artifact.
+
+Real live refresh:
+- Ran `live-security-proof` against the current local live Splunk/MCP setup into `artifacts/live-security-proof-refresh`.
+- Before policy injection:
+  - verdict `NOT READY`;
+  - score `60`;
+  - violations `2`.
+- After policy injection:
+  - verdict `READY`;
+  - score `100`;
+  - violations `0`;
+  - evidence refs include the app-scoped saved search and live event refs.
+- `failToPass` is `true`.
+- `readyAfterPatch` is `true`.
+- `hosted-model-proof.json` was written, but its status is `BLOCKED` because the current live MCP user/token can access read-only Splunk tools but cannot invoke `saia_explain_spl` / `saia_optimize_spl`.
+- `proof-audit` has no failing checks, but reports `WARN` for `hosted-model-status` until SAIA permission is fixed.
+
+Product impact:
+- Move 3 live proof is materially stronger: the live security path now verifies the flagship `NOT READY -> policy -> READY` transition after evidence-ledger hardening.
+- Move 4 no longer disappears when SAIA is unavailable; the proof bundle now records the hosted-model permission block as a durable artifact.
+- The product remains honest about capability: SplunkReady does not claim hosted-model proof is green until the MCP token can invoke the SAIA tools.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 29% | Flagship live fail-to-pass proof is more reliable and inspectable. |
+| Platform & DX | 69% | 71% | Live proof artifacts now distinguish readiness, hosted-model status, and permission blockers. |
+| Security | 39% | 42% | Live lateral-movement proof now lands as a real fail-to-pass certification loop. |
+| Best Use of MCP Server | 79% | 81% | More live MCP evidence is attached to the core proof bundle. |
+| Hosted Models | 53% | 53% | Proof artifact exists, but the current live entitlement is blocked. |
+| Developer Tools | 64% | 66% | The audit/log story is clearer for CI and artifact consumers. |
+
+Next directions to consider in future runs:
+- Add a focused hosted-model diagnostic command so SAIA permissions can be tested without rerunning the whole live proof.
+- Once the MCP user/token can invoke `saia_explain_spl` and `saia_optimize_spl`, rerun `live-security-proof` and `proof-audit --require-pass true`.
+- Continue core product work on non-SAIA paths while the permission issue is resolved: richer external trace SDK proof, firewall gateway polish, and UI rendering of hosted-model proof states.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused LLM/CLI tests, full repo verification, live proof refresh, and `git diff --check` passed except that live `proof-audit` remains a warning for hosted-model permission.
+
 ## 2026-06-03 - Phase Live Firewall Check Command
 
 Scope:
