@@ -7,10 +7,10 @@ import {
   createLiveSplunkAccessAdapter,
   createLiveSplunkAdapterConfigFromEnv
 } from "./adapters/live.js";
-import type { SplunkAccessAdapter } from "./adapters/splunk-access.js";
+import type { SplunkAccessAdapter, SplunkAdapterError } from "./adapters/splunk-access.js";
 import { createGeminiConfigFromEnv, createGeminiLlmAgentModel } from "./agents/gemini-model.js";
 import { LlmSpecimenAgent } from "./agents/llm-specimen.js";
-import { NaiveSpecimenAgent } from "./agents/specimen.js";
+import { NaiveSpecimenAgent, type SpecimenAgentRun } from "./agents/specimen.js";
 import { compileEnvironmentContract } from "./compiler/environment.js";
 import { compileReadinessProfile } from "./compiler/readiness-profile.js";
 import { createAnswerRules } from "./grader/answer.js";
@@ -23,7 +23,7 @@ import { runRuleEngine, type GraderRule } from "./grader/engine.js";
 import { createSavedSearchRules } from "./grader/saved-search.js";
 import { scoreMissionReadiness } from "./grader/scoring.js";
 import { createSplStructuralRules } from "./grader/spl.js";
-import { SplunkFirewallGateway } from "./gateway/firewall.js";
+import { firewallBlockedCode, SplunkFirewallGateway } from "./gateway/firewall.js";
 import { parseMissionDefinition, type MissionDefinition } from "./missions/dsl.js";
 import { deriveLiveMission, type LiveSavedSearchCandidateResult } from "./missions/live.js";
 import { compileAgentPolicy, type AgentPolicy } from "./policy/compiler.js";
@@ -100,7 +100,7 @@ interface ProofAuditCheck {
 
 interface ProofAuditReport {
   status: ProofAuditStatus;
-  proofType: "live-security" | "live" | "receipt" | "unknown";
+  proofType: "live-security" | "live" | "receipt" | "firewall-block" | "unknown";
   proofDir: string;
   mode?: EnvironmentContract["mode"];
   mutation?: boolean;
@@ -109,6 +109,21 @@ interface ProofAuditReport {
   readyWithoutPatch?: boolean;
   hostedModelStatus?: string;
   checks: ProofAuditCheck[];
+}
+
+interface FirewallBlockReport {
+  status: "BLOCKED";
+  code: "FIREWALL_POLICY_BLOCKED";
+  phase: "before" | "after";
+  mode: CliOptions["mode"];
+  mutation: false;
+  blockedBeforeSplunk: true;
+  toolName: string;
+  requestId: string;
+  missionId?: string;
+  message: string;
+  query?: string;
+  violations?: unknown;
 }
 
 const allRules = (): GraderRule[] => [
@@ -569,6 +584,45 @@ const maybeWrapFirewall = (
   options: CliOptions
 ): SplunkAccessAdapter =>
   options.firewall ? new SplunkFirewallGateway(adapter, contract, policy) : adapter;
+
+const isFirewallBlockedError = (error: unknown): error is SplunkAdapterError =>
+  Boolean(
+    error &&
+      typeof error === "object" &&
+      "name" in error &&
+      error.name === "SplunkAdapterError" &&
+      "code" in error &&
+      error.code === firewallBlockedCode
+  );
+
+const writeFirewallBlockReport = async (
+  options: CliOptions,
+  phase: "before" | "after",
+  error: SplunkAdapterError
+): Promise<string> => {
+  const cause =
+    error.cause && typeof error.cause === "object"
+      ? (error.cause as { query?: unknown; violations?: unknown })
+      : {};
+  const report: FirewallBlockReport = {
+    status: "BLOCKED",
+    code: firewallBlockedCode,
+    phase,
+    mode: options.mode,
+    mutation: false,
+    blockedBeforeSplunk: true,
+    toolName: error.context.toolName,
+    requestId: error.context.requestId,
+    missionId: error.context.missionId,
+    message: error.message,
+    query: typeof cause.query === "string" ? cause.query : undefined,
+    violations: cause.violations
+  };
+  const reportPath = join(options.out, `firewall-block-${phase}.json`);
+
+  await writeJson(reportPath, report);
+  return reportPath;
+};
 
 const compileContract = async (
   options: CliOptions,
@@ -1400,7 +1454,18 @@ const evaluateCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = pro
   const policy = options.firewall ? await readJson<AgentPolicy>(join(options.out, "agent-policy.json"), "agent policy") : undefined;
   const adapter = policy ? maybeWrapFirewall(baseAdapter, contract, policy, options) : baseAdapter;
   const agent = llmEnabled(env) ? createLlmSpecimenAgent(contract, options, env) : new NaiveSpecimenAgent();
-  const run = await agent.run({ mission, adapter });
+  let run: SpecimenAgentRun;
+
+  try {
+    run = await agent.run({ mission, adapter });
+  } catch (error) {
+    if (isFirewallBlockedError(error)) {
+      await writeFirewallBlockReport(options, "before", error);
+    }
+
+    throw error;
+  }
+
   const violations = gradeTrace(contract, mission, run.traceEvents);
   const score = scoreMissionReadiness(mission, violations);
 
@@ -1576,19 +1641,24 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
     join(options.out, "live-security-proof-summary.json")
   );
   const hostedModelProof = await readOptionalJson<unknown>(join(options.out, "hosted-model-proof.json"));
+  const firewallBlockBefore = await readOptionalJson<unknown>(join(options.out, "firewall-block-before.json"));
+  const firewallBlockAfter = await readOptionalJson<unknown>(join(options.out, "firewall-block-after.json"));
+  const firewallBlock = firewallBlockBefore ?? firewallBlockAfter;
   const contractResult = contractInput ? environmentContractSchema.safeParse(contractInput) : undefined;
   const beforeReceiptResult = beforeReceiptInput ? readinessReceiptSchema.safeParse(beforeReceiptInput) : undefined;
   const afterReceiptResult = afterReceiptInput ? readinessReceiptSchema.safeParse(afterReceiptInput) : undefined;
   const contract = contractResult?.success ? contractResult.data : undefined;
   const beforeReceipt = beforeReceiptResult?.success ? beforeReceiptResult.data : undefined;
   const afterReceipt = afterReceiptResult?.success ? afterReceiptResult.data : undefined;
-  const proofType: ProofAuditReport["proofType"] = liveSecurityProofSummary
-    ? "live-security"
-    : liveProofSummary
-      ? "live"
-      : beforeReceipt || afterReceipt
-        ? "receipt"
-        : "unknown";
+  const proofType: ProofAuditReport["proofType"] = firewallBlock
+    ? "firewall-block"
+    : liveSecurityProofSummary
+      ? "live-security"
+      : liveProofSummary
+        ? "live"
+        : beforeReceipt || afterReceipt
+          ? "receipt"
+          : "unknown";
   const failToPass =
     booleanFromRecord(liveSecurityProofSummary, "failToPass") ??
     booleanFromRecord(liveProofSummary, "failToPass") ??
@@ -1599,7 +1669,7 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
   const readyAfterPatch =
     booleanFromRecord(liveSecurityProofSummary, "readyAfterPatch") ??
     (afterReceipt ? afterReceipt.verdict === "READY" : undefined);
-  const mutationValues = [liveSecurityProofSummary, liveProofSummary, hostedModelProof]
+  const mutationValues = [liveSecurityProofSummary, liveProofSummary, hostedModelProof, firewallBlock]
     .map((artifact) => booleanFromRecord(artifact, "mutation"))
     .filter((value): value is boolean => typeof value === "boolean");
   const mutation = mutationValues.length > 0 ? mutationValues.some((value) => value) : undefined;
@@ -1625,6 +1695,64 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
           evidence: contractResult && !contractResult.success ? contractResult.error.issues : undefined
         }
   );
+
+  if (proofType === "firewall-block") {
+    const code = stringFromRecord(firewallBlock, "code");
+    const phase = stringFromRecord(firewallBlock, "phase");
+    const toolName = stringFromRecord(firewallBlock, "toolName");
+    const query = stringFromRecord(firewallBlock, "query");
+    const blockedBeforeSplunk = booleanFromRecord(firewallBlock, "blockedBeforeSplunk");
+    const firewallMutation = booleanFromRecord(firewallBlock, "mutation");
+    const violations = isRecord(firewallBlock) && Array.isArray(firewallBlock.violations) ? firewallBlock.violations : [];
+
+    addCheck({
+      id: "firewall-block-loaded",
+      status:
+        code === firewallBlockedCode &&
+        (phase === "before" || phase === "after") &&
+        toolName === "splunk_run_query"
+          ? "PASS"
+          : "FAIL",
+      detail: "Firewall block report must identify the blocked Splunk tool and phase.",
+      evidence: { code, phase, toolName }
+    });
+    addCheck({
+      id: "firewall-block-before-splunk",
+      status: blockedBeforeSplunk === true && firewallMutation === false ? "PASS" : "FAIL",
+      detail: "Firewall block reports must prove the query was rejected before Splunk execution and without mutation.",
+      evidence: { blockedBeforeSplunk, mutation: firewallMutation }
+    });
+    addCheck({
+      id: "firewall-block-query",
+      status: query && violations.length > 0 ? "PASS" : "FAIL",
+      detail: "Firewall block report must include the blocked query and deterministic rule evidence.",
+      evidence: { query, violationCount: violations.length }
+    });
+
+    const status: ProofAuditStatus = checks.some((check) => check.status === "FAIL")
+      ? "FAIL"
+      : checks.some((check) => check.status === "WARN")
+        ? "WARN"
+        : "PASS";
+    const report: ProofAuditReport = {
+      status,
+      proofType,
+      proofDir: options.out,
+      mode: contract?.mode,
+      mutation,
+      checks
+    };
+    const auditPath = join(options.out, "proof-audit.json");
+
+    await writeJson(auditPath, report);
+
+    if (options.requirePass && status !== "PASS") {
+      throw new Error(`proof-audit strict gate failed with ${status}. Inspect ${auditPath}.`);
+    }
+
+    return [auditPath];
+  }
+
   addCheck(
     beforeReceipt
       ? {
@@ -1862,7 +1990,18 @@ const rerunCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = proces
   const policy = await readJson<AgentPolicy>(join(options.out, "agent-policy.json"), "agent policy");
   const adapter = maybeWrapFirewall(baseAdapter, contract, policy, options);
   const agent = llmEnabled(env) ? createLlmSpecimenAgent(contract, options, env) : new NaiveSpecimenAgent();
-  const run = await agent.run({ mission, adapter, policy });
+  let run: SpecimenAgentRun;
+
+  try {
+    run = await agent.run({ mission, adapter, policy });
+  } catch (error) {
+    if (isFirewallBlockedError(error)) {
+      await writeFirewallBlockReport(options, "after", error);
+    }
+
+    throw error;
+  }
+
   const violations = gradeTrace(contract, mission, run.traceEvents);
   const score = scoreMissionReadiness(mission, violations);
 

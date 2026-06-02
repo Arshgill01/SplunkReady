@@ -4522,3 +4522,76 @@ Open risks:
 - GitHub Actions expression validity was inspected and YAML-parsed locally, but the workflow was not executed on GitHub in this run.
 - The optional live proof job will only work in GitHub after the repository owner configures the required secrets and variable.
 - Live hosted-model proof remains gated by SAIA-capable MCP access.
+
+## 2026-06-03 - Phase Live Firewall Block Proof Artifacts
+
+Commands:
+
+- `git status --short --branch`
+- `tail -n 160 logs/execution-log.md`
+- `rg -n "FIREWALL|policy simulator|artifact selector|hosted-model|Next directions|Future expansion|proof-audit|live-security-proof|Move 16|Move 17|Move 18" src tests ui docs logs package.json examples`
+- `sed -n '1,240p' package.json`
+- `sed -n '1,240p' src/gateway/firewall.ts`
+- `sed -n '1,260p' docs/live-proof-gap.md`
+- `sed -n '120,230p' src/cli.ts && sed -n '1960,2025p' src/cli.ts`
+- `sed -n '720,790p' tests/cli/flow.test.ts && sed -n '1180,1230p' tests/cli/flow.test.ts`
+- `sed -n '1260,1365p' src/cli.ts`
+- `sed -n '1,220p' examples/capture-external-trace.js && sed -n '1,200p' tests/examples/external-trace.test.ts`
+- `rg -n "createSplunkAdapterError|SplunkAdapterError|AdapterError|adapter-error|code:" src tests`
+- `sed -n '1,220p' src/adapters/splunk-access.ts`
+- `sed -n '220,360p' src/gateway/firewall.ts`
+- `sed -n '540,590p' src/cli.ts && sed -n '1390,1445p' src/cli.ts && sed -n '1850,1905p' src/cli.ts`
+- `sed -n '1,120p' src/cli.ts`
+- `sed -n '1,110p' tests/gateway/firewall.test.ts`
+- `npm run build`
+- `npx vitest run tests/cli/flow.test.ts -t "firewall"`
+- `tmp=$(mktemp -d /tmp/splunkready-firewall-report-XXXXXX) && npm run splunkready -- compile --out "$tmp" >/dev/null && npm run splunkready -- evaluate --out "$tmp" --firewall >/tmp/splunkready-firewall-stdout.txt 2>/tmp/splunkready-firewall-stderr.txt; code=$?; echo "exit=$code"; cat /tmp/splunkready-firewall-stderr.txt; node -e "const fs=require('fs'); const p=process.argv[1]+'/firewall-block-before.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); console.log(JSON.stringify({status:j.status,code:j.code,phase:j.phase,blockedBeforeSplunk:j.blockedBeforeSplunk,toolName:j.toolName,violations:j.violations.map(v=>v.ruleId)}, null, 2));" "$tmp"`
+- `sed -n '1560,1815p' src/cli.ts`
+- `sed -n '1815,1848p' src/cli.ts`
+- `rg -n "const isRecord|booleanFromRecord|stringFromRecord|readOptionalJson" src/cli.ts`
+- `sed -n '286,334p' src/cli.ts`
+- `sed -n '1,80p' tests/cli/flow.test.ts`
+- `rg -n "firewall|FIREWALL_POLICY_BLOCKED|live agent firewall" README.md docs examples logs src/ui ui/src`
+- `sed -n '1,220p' README.md`
+- `git diff --stat && git diff -- src/cli.ts tests/cli/flow.test.ts README.md | sed -n '1,260p'`
+- `git status --short --branch`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for clean tracked worktree orientation before edits:
+  - branch `splunkready-build` was aligned with `origin/splunkready-build`;
+  - only untracked local `artifacts/` and `output/` existed before this checkpoint.
+- PASS for existing capability inspection:
+  - firewall gateway existed and protected `splunk_run_query`;
+  - CLI tests already covered stderr rejection and no `trace-before.json`;
+  - no durable block artifact existed before this change.
+- PASS for TypeScript build after implementation.
+- First focused firewall test run failed because the new JSON assertion expected compact CLI JSON while `--json` output is pretty-printed.
+- PASS after fixing the assertion to parse CLI JSON:
+  - `tests/cli/flow.test.ts` selected by `-t "firewall"` passed;
+  - 2 selected tests passed, 20 skipped by name filter.
+- PASS for direct CLI smoke:
+  - `evaluate --firewall` exited `1`;
+  - stderr included `FIREWALL_POLICY_BLOCKED`;
+  - `firewall-block-before.json` existed;
+  - report status was `BLOCKED`;
+  - code was `FIREWALL_POLICY_BLOCKED`;
+  - phase was `before`;
+  - `blockedBeforeSplunk` was `true`;
+  - tool was `splunk_run_query`;
+  - violations included `SPL-001` and `SPL-003`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 719 project files;
+  - 38 test files;
+  - 210 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The Vite UI does not yet render `firewall-block-before.json`; the artifact is currently CLI/proof-audit consumable.
+- The firewall intentionally protects `splunk_run_query`; saved-search checks remain delegated to the deterministic receipt rules and trusted saved-search contract.
+- Live hosted-model proof remains gated by SAIA-capable MCP access.

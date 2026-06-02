@@ -4364,6 +4364,68 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Firewall Block Proof Artifacts
+
+Scope:
+- Make the live agent firewall usable as an auditable certification gate instead of only a stderr failure.
+- Preserve the safety behavior that blocked firewall runs do not write a normal trace or receipt.
+- Extend proof audit so a pre-execution firewall block can be checked mechanically in CI.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- `evaluate --firewall` and `rerun --firewall` now catch `FIREWALL_POLICY_BLOCKED`, write a phase-specific block artifact, then rethrow the adapter error:
+  - `firewall-block-before.json`;
+  - `firewall-block-after.json`.
+- The block artifact records:
+  - blocked tool;
+  - request/mission context;
+  - blocked query when present;
+  - deterministic rule evidence from the firewall;
+  - `blockedBeforeSplunk: true`;
+  - `mutation: false`.
+- `proof-audit` now recognizes firewall block bundles as `proofType: firewall-block`.
+- `proof-audit --require-pass true` passes for a valid firewall block bundle when:
+  - the environment contract is schema-valid;
+  - the firewall report has `FIREWALL_POLICY_BLOCKED`;
+  - the report proves pre-Splunk blocking with no mutation;
+  - the report includes query and rule evidence.
+- README now documents the runtime firewall gate and corrects the stale live-mode limitation wording.
+
+Product impact:
+- SplunkReady can now prove two useful outcomes:
+  - a full Readiness Receipt pass path;
+  - a pre-execution safety stop where unsafe SPL never reaches Splunk.
+- This strengthens the "before they touch production Splunk" claim because a blocked agent action is now a first-class artifact, not just a failed process.
+- The deterministic grader remains authoritative for receipts; the firewall audit is a separate safety gate.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 30% | 31% | The product now has a clearer protective runtime story. |
+| Platform & DX | 81% | 83% | CI can audit both READY receipts and firewall-stopped unsafe agents. |
+| Security | 44% | 47% | Unsafe broad SPL is blocked before live Splunk execution and recorded as evidence. |
+| Best Use of MCP Server | 82% | 82% | MCP behavior unchanged, but unsafe calls are stopped before adapter delegation. |
+| Hosted Models | 49% | 49% | SAIA remains permission-blocked. |
+| Developer Tools | 79% | 82% | `firewall-block-*.json` plus strict proof audit is a concrete automation artifact. |
+
+Next directions to consider in future runs:
+- Surface `firewall-block-*.json` in the Vite UI only if a blocked bundle is loaded; avoid adding a generic dashboard panel.
+- Consider adding a GitHub Actions variant that uploads firewall block artifacts when the firewall intentionally rejects a PR agent trace.
+- When SAIA access is available, regenerate hosted-model proof and decide whether strict proof audit should include hosted-model evidence in the main live UI bundle.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- TypeScript build, focused firewall CLI tests, direct CLI smoke, full repo verification, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live GitHub Proof Gate Example
 
 Scope:

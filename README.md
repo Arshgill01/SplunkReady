@@ -69,6 +69,23 @@ The compile command also writes `readiness-profile.json`, which binds active rul
 
 See [examples/README.md](examples/README.md) for a runnable external-trace capture script and generated sample receipt.
 
+## Runtime Firewall Gate
+
+Use `--firewall` on `evaluate`, `rerun`, `live-proof`, or `live-security-proof` to wrap the Splunk adapter with the compiled policy before the specimen can run SPL:
+
+```bash
+npm run splunkready -- compile --out artifacts/firewall-check
+npm run splunkready -- evaluate --out artifacts/firewall-check --firewall
+```
+
+When the firewall blocks a query, SplunkReady rejects it before Splunk execution, writes `firewall-block-before.json` or `firewall-block-after.json`, and exits nonzero. The block report records the query, deterministic rule IDs, tool name, phase, and `mutation: false`. You can audit that bundle directly:
+
+```bash
+npm run splunkready -- proof-audit --out artifacts/firewall-check --require-pass true --json
+```
+
+This is a pre-execution safety gate. It does not replace Readiness Receipts; it prevents provably unsafe SPL from reaching Splunk.
+
 ## Live Mode
 
 Live mode is optional and disabled by default. Normal fixture tests and the fixture demo do not require live Splunk credentials.
@@ -104,6 +121,8 @@ npm run splunkready -- live-proof --out artifacts/live-proof --candidate-limit 1
 ```
 
 `live-proof` compiles the live contract, scans bounded read-only saved-search candidates, writes `live-derived-mission.json`, then runs evaluate -> receipt -> rerun against that generated mission. It also writes `live-proof-summary.json`, including whether the run was `failToPass` or `readyWithoutPatch`. If no saved search returns rows but `_internal` is available, it falls back to a bounded `_internal` query mission. It does not create indexes, install apps, write saved searches, or mutate Splunk.
+
+For the flagship security story, `live-security-proof` is stricter: it first requires the lateral-movement saved search and evidence rows discovered by `live-security-check`, then runs the live Gemini specimen through the fail -> patch -> rerun -> pass loop and writes `live-security-proof-summary.json`.
 
 ## LLM Specimen Agent
 
@@ -170,10 +189,10 @@ npm run check
 
 - SplunkReady is a certification harness, not a chatbot, SOC copilot, detection-health product, or generic eval platform.
 - The fixture demo uses representative Splunk fixture data; it is designed for deterministic local verification, not as a claim about every production deployment.
-- Live mode is a read-only smoke path in this build. It validates adapter shape and environment compilation, but it does not run production searches.
+- Live mode is read-only from SplunkReady's side. The live smoke path only inventories Splunk; `live-proof` and `live-security-proof` run bounded read-only searches through MCP.
 - SplunkReady never auto-mutates Splunk. Policy patches are exported for operator review.
 - LLMs may explain results or draft policy text, but deterministic grader rules decide pass/fail.
-- The default bundled specimen is deterministic TypeScript code for reproducible fixture demos. The env-gated Gemini specimen now produces fixture and live traces; the remaining live gap is a passing security mission on a Splunk deployment with matching saved searches and evidence data.
+- The default bundled specimen is deterministic TypeScript code for reproducible fixture demos. The env-gated Gemini specimen produces fixture and live traces. The strict flagship live security proof requires operator-owned Splunk setup data because SplunkReady does not install apps, indexes, saved searches, or events automatically.
 
 ## Submission Materials
 

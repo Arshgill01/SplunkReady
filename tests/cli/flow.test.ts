@@ -767,6 +767,59 @@ describe("SplunkReady CLI flow", () => {
       stderr: expect.stringContaining("FIREWALL_POLICY_BLOCKED")
     });
     expect(await exists(join(outDir, "trace-before.json"))).toBe(false);
+
+    const blockReport = JSON.parse(await readFile(join(outDir, "firewall-block-before.json"), "utf8")) as {
+      status: string;
+      code: string;
+      phase: string;
+      mutation: boolean;
+      blockedBeforeSplunk: boolean;
+      toolName: string;
+      query: string;
+      violations: Array<{ ruleId: string }>;
+    };
+
+    expect(blockReport).toMatchObject({
+      status: "BLOCKED",
+      code: "FIREWALL_POLICY_BLOCKED",
+      phase: "before",
+      mutation: false,
+      blockedBeforeSplunk: true,
+      toolName: "splunk_run_query"
+    });
+    expect(blockReport.query).toContain("index=*");
+    expect(blockReport.violations.map((violation) => violation.ruleId)).toEqual(
+      expect.arrayContaining(["SPL-001", "SPL-003"])
+    );
+
+    const proofAuditOutput = parseCliJsonOutput(
+      (await runCli(["proof-audit", "--out", outDir, "--require-pass", "true", "--json"])).stdout
+    );
+
+    const proofAudit = JSON.parse(await readFile(join(outDir, "proof-audit.json"), "utf8")) as {
+      status: string;
+      proofType: string;
+      mutation: boolean;
+      checks: Array<{ id: string; status: string }>;
+    };
+
+    expect(proofAuditOutput).toMatchObject({
+      command: "proof-audit",
+      status: "PASS",
+      artifacts: [join(outDir, "proof-audit.json")]
+    });
+    expect(proofAudit).toMatchObject({
+      status: "PASS",
+      proofType: "firewall-block",
+      mutation: false
+    });
+    expect(proofAudit.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "firewall-block-loaded", status: "PASS" }),
+        expect.objectContaining({ id: "firewall-block-before-splunk", status: "PASS" }),
+        expect.objectContaining({ id: "firewall-block-query", status: "PASS" })
+      ])
+    );
   });
 
   it("allows a compliant policy-backed rerun when rerun firewall is enabled", async () => {
