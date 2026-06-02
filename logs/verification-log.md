@@ -4064,3 +4064,48 @@ Open risks:
 
 - Live hosted-model proof remains blocked until the configured MCP token or Splunk user can invoke `saia_explain_spl` and `saia_optimize_spl`.
 - Local TLS still uses `NODE_TLS_REJECT_UNAUTHORIZED=0` for the local Splunk trial.
+
+## 2026-06-03 - Phase Live Receipt Policy Simulator
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts`
+- `npm run build`
+- `npm run ui:build`
+- `bash "$PWCLI" open 'http://127.0.0.1:5173/?artifacts=artifacts/live-security-ui#receipt' && bash "$PWCLI" snapshot`
+- `bash "$PWCLI" open 'http://127.0.0.1:5173/#receipt' && bash "$PWCLI" snapshot`
+- `bash "$PWCLI" eval '() => { for (const ruleId of ["EVD-001", "KO-001"]) { const input = document.querySelector(\`input[data-policy-rule="${ruleId}"]\`); input.checked = false; input.dispatchEvent(new Event("change", { bubbles: true })); } return document.body.textContent.includes("READY (SIMULATED)"); }'`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for focused UI tests:
+  - 9 tests passed;
+  - new coverage asserts the policy simulator renders from `readiness-profile.json`;
+  - coverage asserts Critical/High deductions recalculate the simulated score and verdict.
+- PASS for TypeScript build.
+- PASS for production Vite build.
+- Browser artifact-path correction:
+  - the explicit `?artifacts=artifacts/live-security-ui` URL failed because the Vite dev server does not serve that raw relative directory as JSON;
+  - this was not counted as a product failure.
+- PASS for browser snapshot at the configured dev-server artifact mount:
+  - Receipt route rendered the side `Policy simulator`;
+  - base receipt was `receipt-before-001`;
+  - initial simulated score was `60`;
+  - initial simulated verdict was `NOT READY (SIMULATED)`;
+  - profile rules including `EVD-001` and `KO-001` were visible.
+- PASS for browser DOM interaction:
+  - disabling `EVD-001` and `KO-001` returned `true` for `READY (SIMULATED)` in the rendered page.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 703 project files;
+  - 38 test files;
+  - 209 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The policy simulator is explanatory only; official receipt verdicts still require persisted receipt artifacts.
+- Browser interaction was verified through DOM evaluation because the Playwright wrapper's text-target checkbox command treated labels as CSS selectors.

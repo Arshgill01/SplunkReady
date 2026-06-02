@@ -4,7 +4,15 @@ import { describe, expect, it } from "vitest";
 
 import { artifactUrl, loadUiArtifactBundle, normalizeArtifactBase } from "../../ui/src/artifacts.js";
 import { renderApp } from "../../ui/src/render.js";
-import type { EnvironmentContract, Mission, PolicyPatch, ReadinessReceipt, TraceEvent, Violation } from "../../src/schemas/core.js";
+import type {
+  EnvironmentContract,
+  Mission,
+  PolicyPatch,
+  ReadinessProfile,
+  ReadinessReceipt,
+  TraceEvent,
+  Violation
+} from "../../src/schemas/core.js";
 
 const contract: EnvironmentContract = {
   id: "contract-acme-soc-dev",
@@ -127,6 +135,77 @@ const violation: Violation = {
   evidence: { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" },
   suggestedPolicyPatch: "Use a validated saved search or authorized index.",
   evidenceRefs: []
+};
+
+const koViolation: Violation = {
+  id: "violation-ko-001",
+  missionId: mission.id,
+  traceEventId: "trace-before-call",
+  ruleId: "KO-001",
+  severity: "High",
+  reason: "Mission requires saved-search discovery, but the trace never inspected knowledge objects.",
+  evidence: { expectedTool: "splunk_get_knowledge_objects" },
+  suggestedPolicyPatch: "Inspect validated saved searches before custom SPL.",
+  evidenceRefs: []
+};
+
+const readinessProfile: ReadinessProfile = {
+  id: "readiness-profile-contract-acme-soc-dev-profile-2026-06-01",
+  generatedAt: "2026-06-01T06:30:00.000Z",
+  compiler: "Agent Readiness Compiler",
+  contractRef: {
+    id: contract.id,
+    name: contract.name,
+    version: contract.version,
+    mode: contract.mode
+  },
+  missionRefs: [mission.id],
+  sourceRefs: ["environment-contract.json", "missions.json"],
+  deploymentSignals: {
+    mode: contract.mode,
+    indexCount: contract.indexes.length,
+    restrictedIndexCount: contract.restrictedIndexes.length,
+    sourcetypeCount: contract.sourcetypes.length,
+    savedSearchCount: contract.savedSearches.length,
+    appContextCount: contract.appContexts.length,
+    dataModelCount: contract.dataModels.length,
+    allowedTools: contract.mcpTools,
+    queryBudgets: contract.queryBudgets
+  },
+  ruleBindings: [
+    {
+      ruleId: "SPL-001",
+      severity: "Critical",
+      source: "splunk_contract",
+      contractRefs: [`${contract.id}.forbiddenQueryPatterns`],
+      missionRefs: [mission.id],
+      evidence: [{ ref: `${contract.id}.forbiddenQueryPatterns`, value: contract.forbiddenQueryPatterns }],
+      rationale: "The compiled Splunk contract declares forbidden broad-search patterns."
+    },
+    {
+      ruleId: "KO-001",
+      severity: "High",
+      source: "splunk_contract",
+      contractRefs: [`${contract.id}.savedSearches`],
+      missionRefs: [mission.id],
+      evidence: [{ ref: `${contract.id}.savedSearches`, value: contract.savedSearches }],
+      rationale: "Saved-search discipline is activated because the mission expects saved-search execution."
+    },
+    {
+      ruleId: "EVD-001",
+      severity: "Critical",
+      source: "mission",
+      contractRefs: [contract.id],
+      missionRefs: [mission.id],
+      evidence: [{ ref: `mission:${mission.id}.checks`, value: mission.checks }],
+      rationale: "Mission requires deterministic EVD-001 evaluation."
+    }
+  ],
+  llmUsage: {
+    passFailAuthority: "deterministic-rule-engine",
+    allowedRoles: ["explain deterministic violations", "draft policy patches"],
+    prohibitedRoles: ["decide pass/fail readiness"]
+  }
 };
 
 const policyPatch: PolicyPatch = {
@@ -491,6 +570,45 @@ describe("Vite UI artifact app", () => {
     expect(receiptHtml).toContain("Flagship security readiness");
     expect(receiptHtml).toContain("Exact flagship saved search is not present in the live contract.");
     expect(receiptHtml).not.toContain("Live proof summary artifact not loaded.");
+  });
+
+  it("renders a receipt-grounded policy simulator from readiness profile rules", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": contract,
+        "missions.json": [mission],
+        "readiness-profile.json": readinessProfile,
+        "receipt-before-001.json": receipt({
+          id: "receipt-before-001",
+          verdict: "NOT READY",
+          score: 60,
+          violations: [violation.id, koViolation.id],
+          criticalViolations: [violation.id]
+        }),
+        "receipt-after-001.json": receipt({}),
+        "trace-before.json": beforeTrace,
+        "trace-after.json": afterTrace,
+        "violations-before.json": [violation, koViolation],
+        "violations-after.json": []
+      })
+    );
+    const initial = renderApp(bundle, "receipt");
+    const withoutCritical = renderApp(bundle, "receipt", { disabledRuleIds: new Set(["SPL-001"]) });
+    const withoutCriticalOrHigh = renderApp(bundle, "receipt", { disabledRuleIds: new Set(["SPL-001", "KO-001"]) });
+
+    expect(initial).toContain('id="policy-simulator"');
+    expect(initial).toContain('data-policy-rule="SPL-001" checked');
+    expect(initial).toContain('data-policy-rule="KO-001" checked');
+    expect(initial).toContain('data-policy-rule="EVD-001" checked');
+    expect(initial).toContain("NOT READY (SIMULATED)");
+    expect(initial).toContain("<td>60</td>");
+    expect(withoutCritical).toContain('data-policy-rule="SPL-001" >');
+    expect(withoutCritical).toContain("NOT READY (SIMULATED)");
+    expect(withoutCritical).toContain("<td>85</td>");
+    expect(withoutCriticalOrHigh).toContain("READY (SIMULATED)");
+    expect(withoutCriticalOrHigh).toContain("<td>100</td>");
+    expect(withoutCriticalOrHigh).toContain("deterministic-rule-engine");
   });
 
   it("keeps the app styling away from generic AI dashboard patterns", async () => {

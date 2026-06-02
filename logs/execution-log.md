@@ -4364,6 +4364,70 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Receipt Policy Simulator
+
+Scope:
+- Add a receipt-grounded policy simulator to the Vite app without changing receipt semantics or grader authority.
+- Keep the simulator tied to `readiness-profile.json` and loaded violation artifacts so it is not a generic dashboard control.
+
+Files expected/touched:
+- `ui/src/render.ts`
+- `ui/src/main.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- The Receipt view now includes a `Policy simulator` panel beside the receipt ledger.
+- The simulator renders rule toggles from `readinessProfile.ruleBindings`.
+- Client-side state in `ui/src/main.ts` tracks disabled rule IDs and re-renders the receipt view.
+- Simulation uses only the loaded failing receipt/violation artifacts:
+  - score formula: `max(0, 100 - sum(deductions))`;
+  - severity deductions: Critical `25`, High `15`, Medium `8`, Low `2`;
+  - verdict becomes `READY (SIMULATED)` only when score is at least `75` and no Critical/High violations remain.
+- The actual Readiness Receipt remains unchanged and still shows deterministic-rule-engine authority.
+
+Browser verification:
+- Local dev server:
+  - `http://127.0.0.1:5173/#receipt`
+- Artifact bundle:
+  - `artifacts/live-security-ui`
+- Snapshot confirmed:
+  - Receipt route renders a side `Policy simulator`;
+  - base receipt is `receipt-before-001`;
+  - simulator reads profile rules including `EVD-001` and `KO-001`;
+  - initial simulated score is `60` and verdict is `NOT READY (SIMULATED)`.
+- DOM interaction confirmed:
+  - disabling the active `EVD-001` and `KO-001` rules updates the app to `READY (SIMULATED)`.
+
+Product impact:
+- Developers can now see which deterministic rules are responsible for a receipt outcome and preview rule waivers or policy-scope tradeoffs without mutating artifacts.
+- This strengthens the Platform/DX story while keeping the real receipt and deterministic grader authoritative.
+- The simulator is intentionally scoped to explanation; it does not create receipts, patches, waivers, or Splunk changes.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 29% | The UI now has a useful interactive proof surface, not just static artifact display. |
+| Platform & DX | 69% | 72% | Developers can inspect rule impact from profile/receipt data in the app. |
+| Security | 39% | 40% | Security proof failures are easier to explain without weakening deterministic checks. |
+| Best Use of MCP Server | 79% | 79% | MCP behavior unchanged. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 64% | 67% | The UI now behaves more like a developer certification workbench. |
+
+Next directions to consider in future runs:
+- Rerun `hosted-model-proof --mode live` after the operator updates MCP/Splunk credentials for SAIA permissions.
+- Consider adding a multi-agent artifact selector only if it is backed by multiple real proof directories and does not turn the app into a dashboard.
+- Avoid letting simulator state imply an official receipt; official verdicts must still come from persisted receipt artifacts.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused UI tests, TypeScript build, Vite production build, browser snapshot, DOM interaction verification, full repo verification, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Hosted Model Proof Command
 
 Scope:

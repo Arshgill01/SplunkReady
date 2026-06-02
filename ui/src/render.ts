@@ -1,5 +1,5 @@
 import { summarizeBundle, type HostedModelProof, type HostedModelSummary, type UiArtifactBundle } from "./artifacts.js";
-import type { PolicyPatch, ReadinessReceipt, TraceEvent, Violation } from "../../src/schemas/core.js";
+import type { PolicyPatch, ReadinessReceipt, ReadinessProfile, TraceEvent, Violation } from "../../src/schemas/core.js";
 
 export type ViewId = "certification-replay" | "receipt" | "trace-timeline" | "live-connect";
 
@@ -9,6 +9,10 @@ export const views: Array<{ id: ViewId; label: string }> = [
   { id: "trace-timeline", label: "Trace" },
   { id: "live-connect", label: "Live connect" }
 ];
+
+export interface RenderOptions {
+  disabledRuleIds?: ReadonlySet<string>;
+}
 
 export const normalizeView = (value: string | undefined): ViewId =>
   views.some((view) => view.id === value) ? (value as ViewId) : "certification-replay";
@@ -92,6 +96,86 @@ const renderReceiptPanel = (receipt: ReadinessReceipt | undefined, title: string
       ["Violations", receipt.violations.length]
     ])}
   </section>`;
+};
+
+const severityDeductions: Record<Violation["severity"], number> = {
+  Critical: 25,
+  High: 15,
+  Medium: 8,
+  Low: 2
+};
+
+const activeReceiptForSimulation = (
+  bundle: UiArtifactBundle
+): { receipt: ReadinessReceipt | undefined; violations: Violation[] } => {
+  if (bundle.beforeReceipt && bundle.beforeViolations.length > 0) {
+    return { receipt: bundle.beforeReceipt, violations: bundle.beforeViolations };
+  }
+
+  if (bundle.afterReceipt && bundle.afterViolations.length > 0) {
+    return { receipt: bundle.afterReceipt, violations: bundle.afterViolations };
+  }
+
+  return { receipt: bundle.receipt, violations: bundle.afterViolations.length > 0 ? bundle.afterViolations : bundle.beforeViolations };
+};
+
+const ruleBindingsForSimulator = (profile: ReadinessProfile | undefined): ReadinessProfile["ruleBindings"] => {
+  if (!profile) {
+    return [];
+  }
+
+  return [...profile.ruleBindings].sort((left, right) => left.ruleId.localeCompare(right.ruleId));
+};
+
+const renderPolicySimulator = (bundle: UiArtifactBundle, options: RenderOptions): string => {
+  const profile = bundle.readinessProfile;
+  const bindings = ruleBindingsForSimulator(profile);
+  const disabledRuleIds = options.disabledRuleIds ?? new Set<string>();
+  const { receipt, violations } = activeReceiptForSimulation(bundle);
+  const simulatedViolations = violations.filter((violation) => !disabledRuleIds.has(violation.ruleId));
+  const score = Math.max(
+    0,
+    100 - simulatedViolations.reduce((total, violation) => total + severityDeductions[violation.severity], 0)
+  );
+  const criticalOrHighRemaining = simulatedViolations.some(
+    (violation) => violation.severity === "Critical" || violation.severity === "High"
+  );
+  const verdict = score >= 75 && !criticalOrHighRemaining ? "READY (SIMULATED)" : "NOT READY (SIMULATED)";
+
+  if (!profile) {
+    return `<aside id="policy-simulator" class="panel policy-simulator">
+      <h2>Policy simulator</h2>
+      <p class="empty">Readiness profile artifact not loaded.</p>
+    </aside>`;
+  }
+
+  return `<aside id="policy-simulator" class="panel policy-simulator">
+    <h2>Policy simulator</h2>
+    ${renderFactTable([
+      ["Base receipt", receipt?.id ?? "not loaded"],
+      ["Authority", profile.llmUsage.passFailAuthority],
+      ["Simulated verdict", verdict],
+      ["Simulated score", score],
+      ["Remaining violations", simulatedViolations.length],
+      ["Critical or High remain", criticalOrHighRemaining ? "yes" : "no"]
+    ])}
+    <div class="rule-switchboard" aria-label="Readiness profile rule simulator">
+      ${bindings
+        .map((binding) => {
+          const enabled = !disabledRuleIds.has(binding.ruleId);
+          const hits = violations.filter((violation) => violation.ruleId === binding.ruleId).length;
+
+          return `<label class="rule-switch">
+            <input type="checkbox" data-policy-rule="${value(binding.ruleId)}" ${enabled ? "checked" : ""}>
+            <span>
+              <strong>${value(binding.ruleId)}</strong>
+              <em>${value(binding.severity)} / ${value(binding.source)} / ${hits} hit(s)</em>
+            </span>
+          </label>`;
+        })
+        .join("")}
+    </div>
+  </aside>`;
 };
 
 const renderStage = (index: number, title: string, status: string, detail: string): string =>
@@ -343,7 +427,7 @@ const renderReplay = (bundle: UiArtifactBundle): string => {
   </main>`;
 };
 
-const renderReceipt = (bundle: UiArtifactBundle): string => {
+const renderReceipt = (bundle: UiArtifactBundle, options: RenderOptions): string => {
   const receipt = bundle.receipt;
 
   return `<main class="view" data-view="receipt">
@@ -352,18 +436,19 @@ const renderReceipt = (bundle: UiArtifactBundle): string => {
         <h1>Readiness Receipt</h1>
       </div>
       ${renderProofArtifactWarning(bundle)}
-      <section class="panel receipt-book">
-        <section class="receipt-book-section">
-          <h2>Current receipt</h2>
-          ${receipt ? renderFactTable([
-            ["Receipt", receipt.id],
-            ["Verdict", receipt.verdict],
-            ["Score", receipt.score],
-            ["Contract", `${receipt.environment.id} / ${receipt.contractVersion}`],
-            ["Trace refs", receipt.traceRefs.length],
-            ["Evidence refs", receipt.evidenceRefs.length],
-            ["Violations", receipt.violations.length]
-          ]) : `<p class="empty">Receipt artifact not loaded.</p>`}
+      <div class="receipt-simulator-layout">
+        <section class="panel receipt-book">
+          <section class="receipt-book-section">
+            <h2>Current receipt</h2>
+            ${receipt ? renderFactTable([
+              ["Receipt", receipt.id],
+              ["Verdict", receipt.verdict],
+              ["Score", receipt.score],
+              ["Contract", `${receipt.environment.id} / ${receipt.contractVersion}`],
+              ["Trace refs", receipt.traceRefs.length],
+              ["Evidence refs", receipt.evidenceRefs.length],
+              ["Violations", receipt.violations.length]
+            ]) : `<p class="empty">Receipt artifact not loaded.</p>`}
         </section>
         <section class="receipt-book-section">
           <h2>Rerun comparison</h2>
@@ -429,7 +514,9 @@ const renderReceipt = (bundle: UiArtifactBundle): string => {
                   </section>`
                 : ""
         }
-      </section>
+        </section>
+        ${renderPolicySimulator(bundle, options)}
+      </div>
     </section>
   </main>`;
 };
@@ -598,9 +685,9 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId): string => 
   </aside>`;
 };
 
-const renderActiveView = (bundle: UiArtifactBundle, activeView: ViewId): string => {
+const renderActiveView = (bundle: UiArtifactBundle, activeView: ViewId, options: RenderOptions): string => {
   if (activeView === "receipt") {
-    return renderReceipt(bundle);
+    return renderReceipt(bundle, options);
   }
 
   if (activeView === "trace-timeline") {
@@ -614,10 +701,10 @@ const renderActiveView = (bundle: UiArtifactBundle, activeView: ViewId): string 
   return renderReplay(bundle);
 };
 
-export const renderApp = (bundle: UiArtifactBundle, activeView: ViewId): string =>
+export const renderApp = (bundle: UiArtifactBundle, activeView: ViewId, options: RenderOptions = {}): string =>
   `<div class="app-frame">
     ${renderSidebar(bundle, activeView)}
-    ${renderActiveView(bundle, activeView)}
+    ${renderActiveView(bundle, activeView, options)}
   </div>`;
 
 export const renderError = (message: string): string =>

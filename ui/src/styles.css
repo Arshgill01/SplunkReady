@@ -246,6 +246,13 @@ code {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.receipt-simulator-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 16px;
+  align-items: start;
+}
+
 .receipt-book {
   overflow: hidden;
 }
@@ -429,6 +436,8 @@ code {
 .live-proof-panel,
 .live-security-panel,
 .live-security-kit-panel,
+.hosted-model-panel,
+.hosted-model-proof-panel,
 .trace-stack {
   margin-top: 16px;
 }
@@ -488,6 +497,59 @@ code {
   gap: 16px;
 }
 
+.policy-simulator {
+  position: sticky;
+  top: 0;
+}
+
+.rule-switchboard {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+
+.rule-switch {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  cursor: pointer;
+}
+
+.rule-switch:last-child {
+  border-bottom: 0;
+}
+
+.rule-switch:hover {
+  background: #292414;
+}
+
+.rule-switch input {
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--ready);
+}
+
+.rule-switch span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.rule-switch strong {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 720;
+}
+
+.rule-switch em {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+}
+
 @media (max-width: 980px) {
   body {
     overflow: auto;
@@ -525,8 +587,13 @@ code {
   .stage-line,
   .replay-grid,
   .receipt-ledger,
+  .receipt-simulator-layout,
   .patch-grid {
     grid-template-columns: 1fr;
+  }
+
+  .policy-simulator {
+    position: static;
   }
 
   .patch-rules {

@@ -13,6 +13,7 @@ if (!app) {
 }
 
 let bundle: UiArtifactBundle | undefined;
+const disabledRuleIds = new Set<string>();
 
 const activeViewFromHash = (): ViewId => normalizeView(window.location.hash.replace(/^#/, ""));
 
@@ -36,13 +37,32 @@ const bindInteractions = (): void => {
           return;
         }
 
-        app.innerHTML = renderApp(bundle, activeViewFromHash());
+        app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds });
         bindInteractions();
       });
     });
   }
 
   document.querySelector("[data-run-replay]")?.addEventListener("click", markReplayRunning);
+
+  for (const input of document.querySelectorAll<HTMLInputElement>("[data-policy-rule]")) {
+    input.addEventListener("change", () => {
+      const ruleId = input.dataset.policyRule;
+
+      if (!ruleId || !bundle) {
+        return;
+      }
+
+      if (input.checked) {
+        disabledRuleIds.delete(ruleId);
+      } else {
+        disabledRuleIds.add(ruleId);
+      }
+
+      app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds });
+      bindInteractions();
+    });
+  }
 };
 
 const render = (): void => {
@@ -50,7 +70,7 @@ const render = (): void => {
     return;
   }
 
-  app.innerHTML = renderApp(bundle, activeViewFromHash());
+  app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds });
   bindInteractions();
 };
 
