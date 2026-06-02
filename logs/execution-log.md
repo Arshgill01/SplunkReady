@@ -4420,6 +4420,59 @@ Reviewer findings:
 Result:
 - Focused CLI tests, TypeScript build, actual local bundle generation, DOM verification against the running Vite UI, full repo verification, and `git diff --check` passed.
 
+## 2026-06-02 - Phase Live Empty Artifact Guard
+
+Scope:
+- Prevent the Vite UI from silently rendering empty receipt/trace pages when served from an artifact directory that lacks proof artifacts.
+
+Files expected/touched:
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added an artifact completeness warning for receipt, replay, and trace views.
+- The warning appears only when receipt or trace proof artifacts are missing.
+- The warning shows:
+  - active artifact base;
+  - whether a receipt loaded;
+  - whether a trace loaded;
+  - security readiness state if present;
+  - the exact `live-security-ui-bundle` command.
+- Live Connect does not show the warning, because it can validly inspect security readiness and kit artifacts without full proof data.
+
+Runtime note:
+- The currently running UI is still served from `artifacts/live-security-ui`.
+- DOM verification confirmed the combined folder does not show the warning and still loads `receipt-after-001` plus trace references.
+
+Product impact:
+- The previous “empty UI” failure mode is now self-diagnosing instead of looking like broken product data.
+- The guard stays out of the happy path and does not turn the app into onboarding copy.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 28% | No new runtime capability. |
+| Platform & DX | 70% | 70% | Better artifact diagnostics, but incremental. |
+| Security | 39% | 39% | Security readiness unchanged. |
+| Best Use of MCP Server | 79% | 79% | MCP behavior unchanged. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 66% | 67% | The UI now catches an important local workflow misconfiguration. |
+
+Next directions to consider in future runs:
+- Continue toward making the live security path green once operator setup is done.
+- Consider adding a richer mission selector only if it uses real artifact bundles, not fabricated dashboard state.
+- Keep UI changes ledger-like and avoid returning to generic cards or decorative dashboard layout.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused UI tests, production UI build, TypeScript build, and browser DOM verification passed.
+
 ## 2026-06-02 - Phase Live Flagship Security Readiness Diagnostic
 
 Scope:

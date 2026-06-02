@@ -425,11 +425,21 @@ code {
 }
 
 .patch-panel,
+.artifact-warning,
 .live-proof-panel,
 .live-security-panel,
 .live-security-kit-panel,
 .trace-stack {
   margin-top: 16px;
+}
+
+.section-title + .artifact-warning {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.artifact-warning {
+  border-color: var(--warn);
 }
 
 .trace-stack .panel {

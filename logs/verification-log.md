@@ -3691,3 +3691,25 @@ Open risks:
 - Combined UI bundle remains untracked under `artifacts/live-security-ui/`.
 - Other live/generated artifacts remain untracked under `artifacts/`.
 - Browser screenshots remain untracked under `output/playwright/`.
+
+## 2026-06-02 - Phase Live Empty Artifact Guard
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts && npm run ui:build && npm run build`
+- `node --input-type=module <<'NODE' ... Playwright DOM check for http://127.0.0.1:5173/#receipt ... NODE`
+
+Result:
+
+- PASS for focused Vite UI app tests: 1 file / 7 tests.
+- PASS for production Vite UI build.
+- PASS for TypeScript build.
+- PASS for browser DOM verification against the combined UI bundle.
+- DOM check confirmed:
+  - `Artifact bundle incomplete`: false;
+  - `receipt-after-001`: true;
+  - `Trace refs`: true.
+
+Open risks:
+
+- The warning only detects missing receipt/trace proof artifacts. It does not validate whether the loaded proof is the intended live proof versus a fixture proof.

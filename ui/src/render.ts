@@ -52,6 +52,29 @@ const renderFactTable = (rows: Array<[string, unknown]>): string =>
     .map(([label, rowValue]) => `<tr><th>${value(label)}</th><td>${value(rowValue)}</td></tr>`)
     .join("")}</tbody></table>`;
 
+const renderProofArtifactWarning = (bundle: UiArtifactBundle): string => {
+  const hasReceipt = Boolean(bundle.receipt);
+  const hasTrace = bundle.beforeTrace.length > 0 || bundle.afterTrace.length > 0;
+
+  if (hasReceipt && hasTrace) {
+    return "";
+  }
+
+  return `<section class="panel artifact-warning">
+    <h2>Artifact bundle incomplete</h2>
+    ${renderFactTable([
+      ["Artifact base", bundle.artifactBase],
+      ["Receipt loaded", hasReceipt ? "yes" : "no"],
+      ["Trace loaded", hasTrace ? "yes" : "no"],
+      ["Security readiness", bundle.liveSecurityReadiness ? bundle.liveSecurityReadiness.status : "not loaded"],
+      [
+        "Bundle command",
+        "npm run splunkready -- live-security-ui-bundle --proof-dir artifacts/live-proof --security-check-dir artifacts/live-security-check --security-kit-dir artifacts/live-security-kit --out artifacts/live-security-ui --json"
+      ]
+    ])}
+  </section>`;
+};
+
 const renderReceiptPanel = (receipt: ReadinessReceipt | undefined, title: string): string => {
   if (!receipt) {
     return `<section class="panel"><h2>${value(title)}</h2><p class="empty">Receipt artifact not loaded.</p></section>`;
@@ -224,6 +247,7 @@ const renderReplay = (bundle: UiArtifactBundle): string => {
         <h1>Certification replay</h1>
         <button class="replay-button" type="button" data-run-replay>Run replay</button>
       </div>
+      ${renderProofArtifactWarning(bundle)}
       <ol class="stage-line" aria-label="Certification replay stages">
         ${stages.map(([title, status, detail], index) => renderStage(index + 1, title, status, detail)).join("")}
       </ol>
@@ -248,6 +272,7 @@ const renderReceipt = (bundle: UiArtifactBundle): string => {
       <div class="section-title">
         <h1>Readiness Receipt</h1>
       </div>
+      ${renderProofArtifactWarning(bundle)}
       <section class="panel receipt-book">
         <section class="receipt-book-section">
           <h2>Current receipt</h2>
@@ -365,6 +390,7 @@ const renderTraceTimeline = (bundle: UiArtifactBundle): string =>
       <div class="section-title">
         <h1>Trace timeline</h1>
       </div>
+      ${renderProofArtifactWarning(bundle)}
       <div class="trace-stack">
         <section class="panel">
           <h2>Before patch</h2>

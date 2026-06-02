@@ -345,6 +345,27 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/savedsearches.conf");
   });
 
+  it("shows an actionable warning when proof artifacts are missing from the UI bundle", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": { ...contract, mode: "live" },
+        "live-security-readiness.json": liveSecurityReadiness,
+        "live-security-kit.json": liveSecurityKit
+      })
+    );
+    const receipt = renderApp(bundle, "receipt");
+    const trace = renderApp(bundle, "trace-timeline");
+    const liveConnect = renderApp(bundle, "live-connect");
+
+    expect(receipt).toContain("Artifact bundle incomplete");
+    expect(receipt).toContain("Receipt loaded");
+    expect(receipt).toContain("Trace loaded");
+    expect(receipt).toContain("live-security-ui-bundle");
+    expect(trace).toContain("Artifact bundle incomplete");
+    expect(liveConnect).not.toContain("Artifact bundle incomplete");
+  });
+
   it("keeps receipt sections inside a single aligned ledger", async () => {
     const bundle = await loadUiArtifactBundle(
       "/artifact-base",
@@ -364,6 +385,7 @@ describe("Vite UI artifact app", () => {
 
     expect(receiptHtml).toContain('class="panel receipt-book"');
     expect(receiptHtml.match(/class="receipt-book-section"/g)).toHaveLength(4);
+    expect(receiptHtml).not.toContain("Artifact bundle incomplete");
     expect(receiptHtml).not.toContain("receipt-book-grid");
     expect(receiptHtml).not.toContain("receipt-slot");
   });
