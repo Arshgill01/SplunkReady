@@ -3510,3 +3510,39 @@ Result:
 - Full check passed: scaffold verifier reported 85 waves and 454 project files; Vitest passed 32 test files / 150 tests.
 - Reviewer audit passed with no new Wave 84 reviewer files: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 85 waves and 454 project files.
+
+## 2026-06-02 - Phase Live Move 4 SAIA Policy Patch Assistance
+
+Scope:
+- Wire Splunk AI Assistant explain/optimize tool outputs into the policy patch flow for deterministic SPL violations.
+- Keep deterministic grader rules as the pass/fail authority; SAIA output is advisory evidence for human-reviewed policy patches only.
+- Use the existing Splunk adapter boundary so fixture and live implementations expose the same `saia_explain_spl` / `saia_optimize_spl` behavior.
+
+Files changed:
+- `src/schemas/core.ts`
+- `src/policy/patch.ts`
+- `src/cli.ts`
+- `tests/policy/patch.test.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- `policyPatchSchema` now accepts optional structured `splAssistance` entries with violation ref, rule ID, original query, SAIA explanation, optimized query, rationale, and warnings.
+- `receipt --phase before` now collects SAIA assistance for `SPL-001`, `SPL-003`, and `SPL-004` violations when the violation evidence includes a query.
+- SAIA calls are routed through the adapter and are cached per unique violating query to avoid duplicate explain/optimize calls for the same SPL.
+- `policy-patch.md` now renders `SAIA Explanation:` and `SAIA Optimized Query:` sections.
+- No live Splunk credentials were used.
+- No Splunk write or mutation path was added.
+- No `update_goal` call was made.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No reviewer inbox closeout was available for this Phase Live move.
+
+Result:
+- PASS.
+- Focused policy/CLI tests passed: 2 files / 13 tests.
+- TypeScript build passed.
+- Full check passed: scaffold verifier reported 85 waves and 459 project files; Vitest passed 33 test files / 157 tests.
+- Reviewer audit passed: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed.

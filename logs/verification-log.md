@@ -2978,3 +2978,25 @@ Result:
 - Reviewer audit passed: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed.
 - Live proof remains unverified because no real Splunk MCP endpoint/token values were available.
+
+## 2026-06-02 - Phase Live Move 4 SAIA Policy Patch Assistance
+
+Commands:
+
+- `npx vitest run tests/policy/patch.test.ts tests/cli/flow.test.ts`
+- `npm run build`
+- `npm run check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Focused policy patch and CLI flow tests passed: 2 test files / 13 tests.
+- TypeScript build passed.
+- Full check passed: scaffold verifier reported 85 waves and 459 project files; Vitest passed 33 test files / 157 tests.
+- Reviewer audit passed: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed.
+- `policy-patch.json` now carries structured `splAssistance` entries for SPL violations with query evidence.
+- `policy-patch.md` now includes `SAIA Explanation:` and `SAIA Optimized Query:` output.
+- Live SAIA proof remains unverified because no real Splunk MCP endpoint/token values were available.

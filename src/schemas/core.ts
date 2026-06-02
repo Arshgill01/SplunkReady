@@ -231,6 +231,21 @@ export const policyPatchSchema = z
     targetAgent: z.object({ name: z.string().min(1), version: z.string().min(1) }).strict(),
     rules: z.array(z.object({ id: idSchema, text: z.string().min(1) }).strict()).min(1),
     violationRefs: stringListSchema.min(1),
+    splAssistance: z
+      .array(
+        z
+          .object({
+            violationRef: idSchema,
+            ruleId: graderRuleIdSchema,
+            query: z.string().min(1),
+            explanation: z.string().min(1),
+            optimizedQuery: z.string().min(1),
+            rationale: z.string().optional(),
+            warnings: stringListSchema.optional()
+          })
+          .strict()
+      )
+      .optional(),
     status: z.enum(["draft", "exported", "accepted"]),
     summary: z.string().optional(),
     diff: z.string().optional(),

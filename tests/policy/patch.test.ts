@@ -66,6 +66,13 @@ const loadReceiptFixture = async () => {
   const adapter = createFixtureSplunkAccessAdapter(fixture);
   const environment = await compileEnvironmentContract(adapter, compileOptions);
   const violations = [
+    violation({
+      id: "violation-spl-001",
+      ruleId: "SPL-001",
+      severity: "Critical",
+      traceEventId: "trace-query-call",
+      evidence: { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" }
+    }),
     violation({ id: "violation-ko-001", ruleId: "KO-001", severity: "High" }),
     violation({ id: "violation-evd-001", ruleId: "EVD-001", severity: "Critical" }),
     violation({ id: "violation-saf-002", ruleId: "SAF-002", severity: "High" }),
@@ -102,7 +109,13 @@ describe("policy patch export", () => {
       id: "patch-security-readiness",
       sourceReceiptId: "receipt-before-001",
       targetAgent: { name: "Naive SOC MCP Agent", version: "0.1.0" },
-      violationRefs: ["violation-ko-001", "violation-evd-001", "violation-saf-002", "violation-saf-001"],
+      violationRefs: [
+        "violation-spl-001",
+        "violation-ko-001",
+        "violation-evd-001",
+        "violation-saf-002",
+        "violation-saf-001"
+      ],
       status: "exported"
     });
     expect(generatedPatch.patch.rules.map((rule) => rule.id)).toEqual([
@@ -116,6 +129,43 @@ describe("policy patch export", () => {
     expect(generatedPatch.markdown).toContain("# Policy Patch: patch-security-readiness");
     expect(generatedPatch.markdown).toContain("`violation-evd-001`");
     expect(generatedPatch.markdown).toContain("This patch is exported for human review. It does not mutate Splunk.");
+  });
+
+  it("embeds SAIA explain and optimize output for SPL violations", async () => {
+    const { environment, generatedReceipt, violations } = await loadReceiptFixture();
+    const generatedPatch = generatePolicyPatch({
+      id: "patch-security-readiness",
+      createdAt: "2026-06-01T06:45:00.000Z",
+      sourceReceipt: generatedReceipt.receipt,
+      targetAgent: generatedReceipt.receipt.agent,
+      environment,
+      violations,
+      splAssistance: [
+        {
+          violationRef: "violation-spl-001",
+          ruleId: "SPL-001",
+          query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now",
+          explanation: "The query searches all indexes and references src_ip.",
+          optimizedQuery: "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now",
+          rationale: "Narrow to the known authentication index and canonical src field.",
+          warnings: ["Prefer a validated saved search."]
+        }
+      ]
+    });
+
+    expect(generatedPatch.patch.splAssistance).toEqual([
+      expect.objectContaining({
+        violationRef: "violation-spl-001",
+        ruleId: "SPL-001",
+        optimizedQuery: "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now"
+      })
+    ]);
+    expect(generatedPatch.markdown).toContain("## SAIA Assistance");
+    expect(generatedPatch.markdown).toContain("SAIA Explanation: The query searches all indexes and references src_ip.");
+    expect(generatedPatch.markdown).toContain(
+      "SAIA Optimized Query: `search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now`"
+    );
+    expect(generatedPatch.markdown).toContain("SAIA Rationale: Narrow to the known authentication index and canonical src field.");
   });
 
   it("keeps patch text scoped and free of Splunk write operations", async () => {

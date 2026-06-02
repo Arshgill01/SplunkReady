@@ -13,6 +13,7 @@ export interface GeneratePolicyPatchInput {
   targetAgent: ReadinessReceipt["agent"];
   environment: EnvironmentContract;
   violations: Violation[];
+  splAssistance?: PolicyPatch["splAssistance"];
   status?: PolicyPatch["status"];
 }
 
@@ -98,8 +99,40 @@ const patchRulesFrom = (contract: EnvironmentContract, violations: Violation[]):
 const patchSummary = (sourceReceipt: ReadinessReceipt, violations: Violation[]): string =>
   `Policy patch for ${sourceReceipt.id}: addresses ${violations.length} observed violation(s) from verdict ${sourceReceipt.verdict}.`;
 
-const patchDiff = (rules: PolicyPatch["rules"]): string =>
-  rules.map((rule) => `+ ${rule.id}: ${rule.text}`).join("\n");
+const patchDiff = (rules: PolicyPatch["rules"], splAssistance: PolicyPatch["splAssistance"]): string =>
+  [
+    ...rules.map((rule) => `+ ${rule.id}: ${rule.text}`),
+    ...(splAssistance ?? []).flatMap((assistance) => [
+      `+ saia-explain-${assistance.violationRef}: ${assistance.explanation}`,
+      `+ saia-optimize-${assistance.violationRef}: ${assistance.optimizedQuery}`
+    ])
+  ].join("\n");
+
+const renderSplAssistance = (splAssistance: PolicyPatch["splAssistance"]): string[] => {
+  if (!splAssistance || splAssistance.length === 0) {
+    return [];
+  }
+
+  return [
+    "",
+    "## SAIA Assistance",
+    "",
+    ...splAssistance.flatMap((assistance) => [
+      `### ${assistance.ruleId} / ${assistance.violationRef}`,
+      "",
+      `Query: \`${assistance.query}\``,
+      "",
+      `SAIA Explanation: ${assistance.explanation}`,
+      "",
+      `SAIA Optimized Query: \`${assistance.optimizedQuery}\``,
+      ...(assistance.rationale ? ["", `SAIA Rationale: ${assistance.rationale}`] : []),
+      ...(assistance.warnings && assistance.warnings.length > 0
+        ? ["", `SAIA Warnings: ${assistance.warnings.join("; ")}`]
+        : []),
+      ""
+    ])
+  ];
+};
 
 export const renderPolicyPatchMarkdown = (patch: PolicyPatch): string =>
   [
@@ -120,6 +153,7 @@ export const renderPolicyPatchMarkdown = (patch: PolicyPatch): string =>
     "## Rules",
     "",
     ...patch.rules.map((rule) => `- \`${rule.id}\`: ${rule.text}`),
+    ...renderSplAssistance(patch.splAssistance),
     "",
     "## Diff",
     "",
@@ -142,9 +176,10 @@ export const generatePolicyPatch = (input: GeneratePolicyPatchInput): GeneratedP
     targetAgent: input.targetAgent,
     rules,
     violationRefs,
+    splAssistance: input.splAssistance,
     status: input.status ?? "exported",
     summary: patchSummary(input.sourceReceipt, input.violations),
-    diff: patchDiff(rules),
+    diff: patchDiff(rules, input.splAssistance),
     reviewer: { required: true, reason: "Operator must approve before applying agent policy changes." }
   });
 

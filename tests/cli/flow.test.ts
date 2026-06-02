@@ -234,6 +234,10 @@ describe("SplunkReady CLI flow", () => {
       toolName: string | null;
       toolInput?: { name?: string };
     }>;
+    const policyPatch = JSON.parse(await readFile(join(outDir, "policy-patch.json"), "utf8")) as {
+      splAssistance?: Array<{ ruleId: string; explanation: string; optimizedQuery: string }>;
+    };
+    const policyPatchMarkdown = await readFile(join(outDir, "policy-patch.md"), "utf8");
     const beforeReceipt = JSON.parse(await readFile(join(outDir, "receipt-before-001.json"), "utf8")) as {
       verdict: string;
       traceRefs: string[];
@@ -257,6 +261,17 @@ describe("SplunkReady CLI flow", () => {
     expect(beforeReceipt.traceRefs).toContain("mission-security-lateral-movement-readiness-trace-001");
     expect(afterReceipt).toMatchObject({ verdict: "READY", score: 100, violations: [] });
     expect(afterViolations).toEqual([]);
+    expect(policyPatch.splAssistance).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ruleId: "SPL-001",
+          explanation: "The query searches all indexes and references src_ip, which is not canonical in this fixture.",
+          optimizedQuery: "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now"
+        })
+      ])
+    );
+    expect(policyPatchMarkdown).toContain("SAIA Explanation:");
+    expect(policyPatchMarkdown).toContain("SAIA Optimized Query:");
     expect(readinessProfile).toMatchObject({
       contractRef: { id: "contract-acme-soc-dev", mode: "fixture" },
       deploymentSignals: { savedSearchCount: 4, restrictedIndexCount: 1 },
@@ -350,6 +365,8 @@ describe("SplunkReady CLI flow", () => {
     expect(beforeReceiptMarkdown).toContain("NOT READY");
     expect(afterReceiptMarkdown).toContain("READY");
     expect(policyPatchMarkdown).toContain("This patch does not change Splunk configuration.");
+    expect(policyPatchMarkdown).toContain("SAIA Explanation:");
+    expect(policyPatchMarkdown).toContain("SAIA Optimized Query:");
     expect(beforeViolations.map((violation) => violation.ruleId)).toEqual(expect.arrayContaining(requiredRuleIds));
     for (const ruleId of requiredRuleIds) {
       expect(beforeReceiptMarkdown).toContain(ruleId);

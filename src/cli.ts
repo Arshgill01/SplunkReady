@@ -7,6 +7,7 @@ import {
   createLiveSplunkAccessAdapter,
   createLiveSplunkAdapterConfigFromEnv
 } from "./adapters/live.js";
+import type { SplunkAccessAdapter } from "./adapters/splunk-access.js";
 import { createGeminiConfigFromEnv, createGeminiLlmAgentModel } from "./agents/gemini-model.js";
 import { LlmSpecimenAgent } from "./agents/llm-specimen.js";
 import { NaiveSpecimenAgent } from "./agents/specimen.js";
@@ -32,6 +33,7 @@ import {
   readinessReceiptSchema,
   traceEventSchema,
   type EnvironmentContract,
+  type PolicyPatch,
   type ReadOnlySplunkToolName,
   type TraceEvent,
   type Violation
@@ -203,6 +205,69 @@ const assertTraceMatchesMission = (mission: MissionDefinition, traceEvents: Trac
 
 const gradeTrace = (contract: EnvironmentContract, mission: MissionDefinition, traceEvents: TraceEvent[]): Violation[] =>
   runRuleEngine({ contract, mission, traceEvents }, allRules()).violations;
+
+const splAssistanceRuleIds = new Set(["SPL-001", "SPL-003", "SPL-004"]);
+
+const queryFromViolation = (violation: Violation): string | undefined => {
+  const query = violation.evidence["query"];
+  return typeof query === "string" && query.trim().length > 0 ? query : undefined;
+};
+
+const collectSplAssistance = async (
+  adapter: SplunkAccessAdapter,
+  violations: Violation[]
+): Promise<PolicyPatch["splAssistance"]> => {
+  if (!adapter.explainSpl || !adapter.optimizeSpl) {
+    return undefined;
+  }
+
+  const assistance: NonNullable<PolicyPatch["splAssistance"]> = [];
+  const cache = new Map<
+    string,
+    {
+      explanation: Awaited<ReturnType<NonNullable<SplunkAccessAdapter["explainSpl"]>>>;
+      optimization: Awaited<ReturnType<NonNullable<SplunkAccessAdapter["optimizeSpl"]>>>;
+    }
+  >();
+
+  for (const violation of violations) {
+    if (!splAssistanceRuleIds.has(violation.ruleId)) {
+      continue;
+    }
+
+    const query = queryFromViolation(violation);
+    if (!query) {
+      continue;
+    }
+
+    let result = cache.get(query);
+    if (!result) {
+      const callOptions = {
+        requestId: `req-saia-${cache.size + 1}`,
+        missionId: violation.missionId,
+        traceEventId: violation.traceEventId
+      };
+      const [explanation, optimization] = await Promise.all([
+        adapter.explainSpl({ query }, callOptions),
+        adapter.optimizeSpl({ query }, callOptions)
+      ]);
+      result = { explanation, optimization };
+      cache.set(query, result);
+    }
+
+    assistance.push({
+      violationRef: violation.id,
+      ruleId: violation.ruleId,
+      query,
+      explanation: result.explanation.explanation,
+      optimizedQuery: result.optimization.optimizedQuery,
+      rationale: result.optimization.rationale,
+      warnings: [...result.explanation.warnings, ...result.optimization.warnings]
+    });
+  }
+
+  return assistance.length > 0 ? assistance : undefined;
+};
 
 const llmEnabled = (env: NodeJS.ProcessEnv = process.env): boolean => env.SPLUNKREADY_LLM_ENABLED === "true";
 
@@ -465,13 +530,17 @@ const receiptCommand = async (options: CliOptions): Promise<string[]> => {
   await writeText(markdownPath, generated.markdown);
 
   if (options.phase === "before" && violations.length > 0) {
+    const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
+    const adapter = createFixtureSplunkAccessAdapter(fixture);
+    const splAssistance = await collectSplAssistance(adapter, violations);
     const patch = generatePolicyPatch({
       id: "patch-security-readiness",
       createdAt: compiledAt,
       sourceReceipt: generated.receipt,
       targetAgent: generated.receipt.agent,
       environment: contract,
-      violations
+      violations,
+      splAssistance
     });
 
     await writeText(join(options.out, "policy-patch.json"), patch.json);
