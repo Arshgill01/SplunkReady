@@ -52,6 +52,36 @@ const liveProofSummarySchema = z
 
 export type LiveProofSummary = z.infer<typeof liveProofSummarySchema>;
 
+const liveSecurityProofSummarySchema = z
+  .object({
+    status: z.string().min(1),
+    mode: z.literal("live"),
+    mutation: z.boolean(),
+    mission: z.string().min(1),
+    readinessStatus: z.string().min(1),
+    before: z
+      .object({
+        verdict: z.string().min(1),
+        score: z.number().min(0).max(100),
+        violations: z.number().int().nonnegative()
+      })
+      .strict(),
+    after: z
+      .object({
+        verdict: z.string().min(1),
+        score: z.number().min(0).max(100),
+        violations: z.number().int().nonnegative(),
+        evidenceRefs: z.array(z.string().min(1))
+      })
+      .strict(),
+    failToPass: z.boolean(),
+    readyAfterPatch: z.boolean(),
+    notes: z.string().min(1)
+  })
+  .strict();
+
+export type LiveSecurityProofSummary = z.infer<typeof liveSecurityProofSummarySchema>;
+
 const liveSecurityReadinessSchema = z
   .object({
     status: z.enum(["READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF", "BLOCKED"]),
@@ -152,6 +182,7 @@ export interface UiArtifactBundle {
   receipt?: ReadinessReceipt;
   policyPatch?: PolicyPatch;
   liveProofSummary?: LiveProofSummary;
+  liveSecurityProofSummary?: LiveSecurityProofSummary;
   liveSecurityReadiness?: LiveSecurityReadiness;
   liveSecurityKit?: LiveSecurityKit;
   beforeTrace: TraceEvent[];
@@ -170,6 +201,7 @@ const optionalFiles = [
   "receipt-after-001.json",
   "policy-patch.json",
   "live-proof-summary.json",
+  "live-security-proof-summary.json",
   "live-security-readiness.json",
   "live-security-kit.json",
   "trace-before.json",
@@ -260,6 +292,9 @@ export const loadUiArtifactBundle = async (
     receipt: afterReceipt ?? beforeReceipt,
     policyPatch: policyPatchSchema.optional().parse(loaded.get("policy-patch.json")),
     liveProofSummary: liveProofSummarySchema.optional().parse(loaded.get("live-proof-summary.json")),
+    liveSecurityProofSummary: liveSecurityProofSummarySchema.optional().parse(
+      loaded.get("live-security-proof-summary.json")
+    ),
     liveSecurityReadiness: liveSecurityReadinessSchema.optional().parse(loaded.get("live-security-readiness.json")),
     liveSecurityKit: liveSecurityKitSchema.optional().parse(loaded.get("live-security-kit.json")),
     beforeTrace: traceEventSchema.array().optional().parse(loaded.get("trace-before.json")) ?? [],
@@ -300,7 +335,13 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
       : bundle.liveProofSummary?.readyWithoutPatch
         ? "ready-without-patch"
         : "not loaded",
-    securityStory: bundle.liveSecurityReadiness
+    securityStory: bundle.liveSecurityProofSummary
+      ? bundle.liveSecurityProofSummary.failToPass
+        ? "security fail-to-pass"
+        : bundle.liveSecurityProofSummary.readyAfterPatch
+          ? "security proof ready"
+          : "security proof loaded"
+      : bundle.liveSecurityReadiness
       ? bundle.liveSecurityReadiness.status === "BLOCKED"
         ? "security blocked"
         : "security ready"

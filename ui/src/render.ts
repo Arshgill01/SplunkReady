@@ -164,6 +164,30 @@ const renderLiveProofSummaryTable = (bundle: UiArtifactBundle): string => {
   ]);
 };
 
+const renderLiveSecurityProofSummary = (bundle: UiArtifactBundle): string => {
+  const summary = bundle.liveSecurityProofSummary;
+
+  if (!summary) {
+    return "";
+  }
+
+  return `<section class="panel live-security-proof-panel">
+    <h2>Flagship security proof</h2>
+    ${renderFactTable([
+      ["Status", summary.status],
+      ["Readiness", summary.readinessStatus],
+      ["Mission", summary.mission],
+      ["Before", `${summary.before.verdict} / ${summary.before.score} / ${summary.before.violations} violation(s)`],
+      ["After", `${summary.after.verdict} / ${summary.after.score} / ${summary.after.violations} violation(s)`],
+      ["Fail to pass", summary.failToPass ? "yes" : "no"],
+      ["Ready after patch", summary.readyAfterPatch ? "yes" : "no"],
+      ["Evidence refs", summary.after.evidenceRefs.join(" / ")],
+      ["Mutation", summary.mutation ? "yes" : "no"],
+      ["Notes", summary.notes]
+    ])}
+  </section>`;
+};
+
 const renderLiveSecurityReadiness = (bundle: UiArtifactBundle): string => {
   const readiness = bundle.liveSecurityReadiness;
 
@@ -305,10 +329,51 @@ const renderReceipt = (bundle: UiArtifactBundle): string => {
             ["Policy patch", bundle.policyPatch?.id ?? "not loaded"]
           ])}
         </section>
-        <section class="receipt-book-section">
-          <h2>Live proof summary</h2>
-          ${renderLiveProofSummaryTable(bundle)}
-        </section>
+        ${
+          bundle.liveSecurityProofSummary
+            ? `<section class="receipt-book-section">
+                <h2>Flagship security proof</h2>
+                ${renderFactTable([
+                  ["Readiness", bundle.liveSecurityProofSummary.readinessStatus],
+                  [
+                    "Before",
+                    `${bundle.liveSecurityProofSummary.before.verdict} / ${bundle.liveSecurityProofSummary.before.score}`
+                  ],
+                  [
+                    "After",
+                    `${bundle.liveSecurityProofSummary.after.verdict} / ${bundle.liveSecurityProofSummary.after.score}`
+                  ],
+                  ["Fail to pass", bundle.liveSecurityProofSummary.failToPass ? "yes" : "no"],
+                  ["Ready after patch", bundle.liveSecurityProofSummary.readyAfterPatch ? "yes" : "no"]
+                ])}
+              </section>`
+            : bundle.liveProofSummary
+              ? `<section class="receipt-book-section">
+                  <h2>Live proof summary</h2>
+                  ${renderLiveProofSummaryTable(bundle)}
+                </section>`
+              : bundle.liveSecurityReadiness
+                ? `<section class="receipt-book-section">
+                    <h2>Flagship security readiness</h2>
+                    ${renderFactTable([
+                      ["Status", bundle.liveSecurityReadiness.status],
+                      ["Saved search", bundle.liveSecurityReadiness.requiredSavedSearch.ref],
+                      [
+                        "Saved-search run",
+                        bundle.liveSecurityReadiness.requiredSavedSearch.run.attempted
+                          ? `${bundle.liveSecurityReadiness.requiredSavedSearch.run.resultCount ?? "n/a"} row(s)`
+                          : bundle.liveSecurityReadiness.requiredSavedSearch.run.reason
+                      ],
+                      [
+                        "Blockers",
+                        bundle.liveSecurityReadiness.blockers.length > 0
+                          ? bundle.liveSecurityReadiness.blockers.join(" / ")
+                          : "none"
+                      ]
+                    ])}
+                  </section>`
+                : ""
+        }
       </section>
     </section>
   </main>`;
@@ -440,6 +505,7 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
           ])}
         </section>
         ${renderLiveProofSummary(bundle)}
+        ${renderLiveSecurityProofSummary(bundle)}
         ${renderLiveSecurityReadiness(bundle)}
         ${renderLiveSecurityKit(bundle)}
       </div>

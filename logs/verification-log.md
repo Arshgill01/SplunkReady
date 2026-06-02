@@ -3742,3 +3742,52 @@ Result:
 Open risks:
 
 - The real local Splunk endpoint is still blocked for flagship proof until the operator installs/imports the generated saved search and evidence rows.
+
+## 2026-06-03 - Phase Live Security Proof Summary in Vite UI
+
+Commands:
+
+- `curl -s -i http://127.0.0.1:5173/__splunkready_artifacts/receipt-after-001.json | sed -n '1,24p'`
+- `node - <<'NODE' ... artifact endpoint status check for /__splunkready_artifacts/*.json ... NODE`
+- `npx vitest run tests/ui/app.test.ts`
+- `npx vitest run tests/ui/app.test.ts && npm run ui:build`
+- `git diff --check`
+- `npm run build`
+- `npx playwright --version`
+- `node - <<'NODE' ... Playwright runtime check for http://127.0.0.1:5173/#receipt ... NODE`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for receipt artifact endpoint check:
+  - served `receipt-after-001.json`;
+  - receipt was `live`;
+  - verdict was `NOT READY`;
+  - score was `60`.
+- PASS for artifact endpoint status check:
+  - live-security UI bundle served contract, missions, receipts, policy patch, traces, violations, security readiness, and security kit;
+  - `live-proof-summary.json` returned 204 and is intentionally absent from the current combined bundle.
+- First focused UI test run: FAIL, 1 stale assertion.
+  - Cause: test still expected sidebar text `security blocked` even when a `live-security-proof-summary.json` fixture was present.
+  - Fix: updated the assertion so the sidebar prioritizes explicit proof state `security fail-to-pass`.
+- Second focused UI test run: PASS for Vite UI app tests: 1 file / 8 tests.
+- PASS for production Vite UI build.
+- PASS for `git diff --check`.
+- PASS for TypeScript build.
+- PASS for Playwright runtime check against the running localhost UI:
+  - `hasReceipt: true`;
+  - `hasSecurityReadiness: true`;
+  - `hasEmptyProofPlaceholder: false`;
+  - no browser console or page errors.
+- PASS for full repo verification:
+  - scaffold verified;
+  - 85 waves;
+  - 662 project files;
+  - 38 test files;
+  - 205 tests.
+- PASS for final `git diff --check`.
+
+Open risks:
+
+- The browser URL still depends on the running dev server's artifact root; if the dev server is restarted without `SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/live-security-ui`, it will fall back to `artifacts/fixture-demo`.
+- The current `artifacts/live-security-ui` bundle is a blocked live-security readiness bundle, not the final green flagship proof bundle.

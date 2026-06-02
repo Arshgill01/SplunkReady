@@ -168,6 +168,30 @@ const liveProofSummary = {
     "The live-derived mission was already ready before policy injection; this proves live certification but not the fail-to-pass patch loop."
 };
 
+const liveSecurityProofSummary = {
+  status: "PASS",
+  mode: "live",
+  mutation: false,
+  mission: "mission-security-lateral-movement-readiness",
+  readinessStatus: "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF",
+  before: { verdict: "NOT READY", score: 60, violations: 4 },
+  after: {
+    verdict: "READY",
+    score: 100,
+    violations: 0,
+    evidenceRefs: [
+      "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+      "live-evt-102",
+      "live-evt-118",
+      "live-evt-141"
+    ]
+  },
+  failToPass: true,
+  readyAfterPatch: true,
+  notes:
+    "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
+} as const;
+
 const liveSecurityReadiness = {
   status: "BLOCKED",
   mode: "live",
@@ -312,6 +336,7 @@ describe("Vite UI artifact app", () => {
         "receipt-before-001.json": receipt({ id: "receipt-before-001", mode: "live", verdict: "READY", score: 100, violations: [] }),
         "receipt-after-001.json": receipt({ mode: "live" }),
         "live-proof-summary.json": liveProofSummary,
+        "live-security-proof-summary.json": liveSecurityProofSummary,
         "live-security-readiness.json": liveSecurityReadiness,
         "live-security-kit.json": liveSecurityKit,
         "trace-before.json": beforeTrace,
@@ -331,11 +356,14 @@ describe("Vite UI artifact app", () => {
     expect(replay).toContain("mission-live-internal-query-readiness");
     expect(liveConnect).toContain("Ready without patch");
     expect(liveConnect).toContain("internal-query-fallback");
+    expect(liveConnect).toContain("Flagship security proof");
+    expect(liveConnect).toContain("READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF");
+    expect(liveConnect).toContain("security fail-to-pass");
+    expect(liveConnect).toContain("saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain");
     expect(liveConnect).toContain("Flagship security readiness");
     expect(liveConnect).toContain("BLOCKED");
     expect(liveConnect).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain / missing");
     expect(liveConnect).toContain("wineventlog / missing");
-    expect(liveConnect).toContain("security blocked");
     expect(liveConnect).toContain("Operator security kit");
     expect(liveConnect).toContain("operator kit available");
     expect(liveConnect).toContain("Operator action");
@@ -388,6 +416,28 @@ describe("Vite UI artifact app", () => {
     expect(receiptHtml).not.toContain("Artifact bundle incomplete");
     expect(receiptHtml).not.toContain("receipt-book-grid");
     expect(receiptHtml).not.toContain("receipt-slot");
+  });
+
+  it("renders security readiness in the receipt when proof summaries are not present", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": { ...contract, mode: "live" },
+        "missions.json": [mission],
+        "receipt-before-001.json": receipt({ id: "receipt-before-001", mode: "live", verdict: "NOT READY", score: 60, violations: [violation.id] }),
+        "receipt-after-001.json": receipt({ mode: "live", verdict: "NOT READY", score: 60, violations: [violation.id] }),
+        "live-security-readiness.json": liveSecurityReadiness,
+        "trace-before.json": beforeTrace,
+        "trace-after.json": afterTrace,
+        "violations-before.json": [violation],
+        "violations-after.json": [violation]
+      })
+    );
+    const receiptHtml = renderApp(bundle, "receipt");
+
+    expect(receiptHtml).toContain("Flagship security readiness");
+    expect(receiptHtml).toContain("Exact flagship saved search is not present in the live contract.");
+    expect(receiptHtml).not.toContain("Live proof summary artifact not loaded.");
   });
 
   it("keeps the app styling away from generic AI dashboard patterns", async () => {
