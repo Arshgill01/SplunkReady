@@ -105,6 +105,7 @@ Commands:
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]
   live-security-kit --out <dir> [--json]
+  live-security-proof --out <dir> [--firewall] [--json]
   live-security-ui-bundle --out <dir> [--proof-dir <dir>] [--security-check-dir <dir>] [--security-kit-dir <dir>] [--json]
   live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--json]
   receipt   --out <dir> [--phase before|after] [--json]
@@ -902,6 +903,7 @@ const liveSecurityUiBundleCommand = async (options: CliOptions): Promise<string[
     "agent-policy.json",
     "policy-patch.json",
     "live-proof-summary.json",
+    "live-security-proof-summary.json",
     "live-candidates.json",
     "live-derived-mission.json",
     "live-derived-readiness-profile.json",
@@ -1099,6 +1101,108 @@ const liveProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = pr
       ...receiptArtifacts,
       ...rerunArtifacts,
       summaryPath
+    ])
+  ];
+};
+
+const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
+  if (!llmEnabled(env)) {
+    throw new Error("live-security-proof requires SPLUNKREADY_LLM_ENABLED=true so the certified specimen is a real LLM agent.");
+  }
+
+  const liveOptions = { ...options, mode: "live" as const };
+  const checkArtifacts = await liveSecurityCheckCommand(liveOptions, env);
+  const readiness = await readJson<{
+    status: string;
+    blockers?: string[];
+    nextActions?: string[];
+  }>(join(options.out, "live-security-readiness.json"), "live security readiness report");
+
+  if (readiness.status !== "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF") {
+    const blockers = readiness.blockers && readiness.blockers.length > 0 ? readiness.blockers.join(" ") : "No blockers were reported.";
+    const nextActions =
+      readiness.nextActions && readiness.nextActions.length > 0
+        ? ` Next actions: ${readiness.nextActions.join(" ")}`
+        : "";
+
+    throw new Error(`live-security-proof is blocked: ${blockers}${nextActions}`);
+  }
+
+  const compileArtifacts = await compileCommand(liveOptions, env);
+  const evaluateArtifacts = await evaluateCommand(liveOptions, env);
+  const receiptArtifacts = await receiptCommand(liveOptions, env);
+  const rerunArtifacts = await rerunCommand(liveOptions, env);
+  const beforeReceipt = readinessReceiptSchema.parse(
+    await readJson(join(options.out, "receipt-before-001.json"), "before receipt")
+  );
+  const afterReceipt = readinessReceiptSchema.parse(
+    await readJson(join(options.out, "receipt-after-001.json"), "after receipt")
+  );
+  const liveProofSummaryPath = join(options.out, "live-proof-summary.json");
+  const securitySummaryPath = join(options.out, "live-security-proof-summary.json");
+  const failToPass = beforeReceipt.verdict === "NOT READY" && afterReceipt.verdict === "READY";
+  const readyAfterPatch = afterReceipt.verdict === "READY";
+
+  await writeJson(liveProofSummaryPath, {
+    status: "PASS",
+    mode: "live",
+    mutation: false,
+    derivedMission: {
+      strategy: "saved-search-with-evidence",
+      reason: "The flagship security readiness check passed, so the proof used the exact lateral-movement saved search.",
+      missionId: "mission-security-lateral-movement-readiness",
+      artifacts: ["live-security-readiness.json"]
+    },
+    before: {
+      verdict: beforeReceipt.verdict,
+      score: beforeReceipt.score,
+      violations: beforeReceipt.violations.length
+    },
+    after: {
+      verdict: afterReceipt.verdict,
+      score: afterReceipt.score,
+      violations: afterReceipt.violations.length
+    },
+    failToPass,
+    readyWithoutPatch: beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY",
+    notes: failToPass
+      ? "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
+      : "The flagship live security mission ran against live Splunk MCP tools; inspect receipts for remaining readiness state."
+  });
+
+  await writeJson(securitySummaryPath, {
+    status: "PASS",
+    mode: "live",
+    mutation: false,
+    mission: "mission-security-lateral-movement-readiness",
+    readinessStatus: readiness.status,
+    before: {
+      verdict: beforeReceipt.verdict,
+      score: beforeReceipt.score,
+      violations: beforeReceipt.violations.length
+    },
+    after: {
+      verdict: afterReceipt.verdict,
+      score: afterReceipt.score,
+      violations: afterReceipt.violations.length,
+      evidenceRefs: afterReceipt.evidenceRefs
+    },
+    failToPass,
+    readyAfterPatch,
+    notes: failToPass
+      ? "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
+      : "The flagship live security mission ran against live Splunk MCP tools; inspect receipts for remaining readiness state."
+  });
+
+  return [
+    ...new Set([
+      ...checkArtifacts,
+      ...compileArtifacts,
+      ...evaluateArtifacts,
+      ...receiptArtifacts,
+      ...rerunArtifacts,
+      liveProofSummaryPath,
+      securitySummaryPath
     ])
   ];
 };
@@ -1392,6 +1496,8 @@ const main = async (): Promise<void> => {
     artifacts = await liveSecurityCheckCommand(options);
   } else if (command === "live-security-kit") {
     artifacts = await liveSecurityKitCommand(options);
+  } else if (command === "live-security-proof") {
+    artifacts = await liveSecurityProofCommand(options);
   } else if (command === "live-security-ui-bundle") {
     artifacts = await liveSecurityUiBundleCommand(options);
   } else if (command === "live-proof") {

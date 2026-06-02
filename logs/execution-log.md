@@ -4473,6 +4473,70 @@ Reviewer findings:
 Result:
 - Focused UI tests, production UI build, TypeScript build, and browser DOM verification passed.
 
+## 2026-06-02 - Phase Live Strict Flagship Security Proof
+
+Scope:
+- Add a direct proof command for the flagship security investigation story.
+- Avoid relying on the generic `live-proof` fallback when the goal is to prove lateral-movement readiness.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `docs/live-demo-data-plan.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `live-security-proof --out <dir> [--firewall] [--json]`.
+- The command requires `SPLUNKREADY_LLM_ENABLED=true` so it grades a real LLM specimen agent, not the deterministic fallback.
+- The command runs `live-security-check` first and refuses to proceed unless:
+  - the exact saved search `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain` is present;
+  - it returns rows;
+  - it returns evidence refs;
+  - required read-only MCP tools are present.
+- If readiness is green, it runs the flagship mission through:
+  - live compile;
+  - LLM evaluate;
+  - deterministic receipt and SAIA-backed policy patch;
+  - policy rerun;
+  - final receipt.
+- It writes:
+  - `live-security-readiness.json`;
+  - `receipt-before-001.json`;
+  - `policy-patch.json`;
+  - `receipt-after-001.json`;
+  - UI-compatible `live-proof-summary.json`;
+  - explicit `live-security-proof-summary.json`.
+- `live-security-ui-bundle` now copies `live-security-proof-summary.json` when present.
+
+Product impact:
+- This closes a product gap between generic live MCP proof and the actual flagship demo story.
+- The strict command gives us a clean operator path: install/import the generated kit, rerun one command, and get a real live security fail -> patch -> rerun -> pass proof.
+- It still does not mutate Splunk and still keeps deterministic rules as pass/fail authority.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 30% | The flagship live story now has a single strict proof command. |
+| Platform & DX | 70% | 72% | Developer workflow is clearer: one command verifies the exact security proof. |
+| Security | 39% | 43% | Security path is no longer a manual compile/evaluate/rerun sequence. |
+| Best Use of MCP Server | 79% | 80% | Proof command exercises live MCP tools only when exact evidence is present. |
+| Hosted Models | 53% | 54% | The path includes SAIA-backed patch generation in the strict proof flow. |
+| Developer Tools | 67% | 69% | Clear CLI gate for the flagship live proof improves SDK/tooling credibility. |
+
+Next directions to consider in future runs:
+- Run `live-security-proof` against the real endpoint after operator setup makes `live-security-check` green.
+- Update the Vite UI to display `live-security-proof-summary.json` explicitly if needed, though it already receives `live-proof-summary.json`.
+- Keep `live-proof` as the generic live path and `live-security-proof` as the strict flagship path.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Initial focused test run exposed that passing receipts include the saved-search provenance ref plus event refs; the test expectation was corrected to preserve that stronger evidence.
+- Focused CLI tests and TypeScript build passed after the correction.
+
 ## 2026-06-02 - Phase Live Flagship Security Readiness Diagnostic
 
 Scope:

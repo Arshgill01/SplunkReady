@@ -3713,3 +3713,32 @@ Result:
 Open risks:
 
 - The warning only detects missing receipt/trace proof artifacts. It does not validate whether the loaded proof is the intended live proof versus a fixture proof.
+
+## 2026-06-02 - Phase Live Strict Flagship Security Proof
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts && npm run build`
+- `npx vitest run tests/cli/flow.test.ts && npm run build`
+
+Result:
+
+- First focused run: FAIL, 1 assertion in the new `live-security-proof` green-path test.
+- Cause: expected only event refs, but the actual readiness receipt correctly included saved-search provenance plus event refs.
+- Fix: updated the test to expect:
+  - `saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain`;
+  - `live-evt-102`;
+  - `live-evt-118`;
+  - `live-evt-141`.
+- Second focused run: PASS for CLI flow tests: 1 file / 21 tests.
+- PASS for TypeScript build.
+- Test coverage confirmed:
+  - `live-security-proof` writes the readiness report, before receipt, policy patch, after receipt, UI-compatible live proof summary, and explicit security proof summary;
+  - green path completes `NOT READY` -> `READY`;
+  - blocked path writes the readiness report but does not write trace or receipt proof artifacts;
+  - passing receipt carries saved-search provenance and live event refs;
+  - MCP calls include `splunk_run_saved_search`, `saia_explain_spl`, and `saia_optimize_spl`.
+
+Open risks:
+
+- The real local Splunk endpoint is still blocked for flagship proof until the operator installs/imports the generated saved search and evidence rows.

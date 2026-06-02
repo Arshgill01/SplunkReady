@@ -111,7 +111,7 @@ The command writes local files only. It does not call Splunk and does not mutate
 
 The app directory is intentionally named `SplunkEnterpriseSecuritySuite` because the readiness contract checks the saved-search app context, not just the saved-search display name. If Enterprise Security is already installed, merge the generated stanzas through the normal Splunk admin process instead of overwriting the app.
 
-To inspect the current proof, security readiness diagnostic, and generated operator kit together in the Vite UI, create a UI bundle after running `live-proof`, `live-security-check`, and `live-security-kit`:
+To inspect the current proof, security readiness diagnostic, and generated operator kit together in the Vite UI, create a UI bundle after running `live-security-proof` or `live-proof`, `live-security-check`, and `live-security-kit`:
 
 ```bash
 npm run splunkready -- live-security-ui-bundle \
@@ -126,6 +126,8 @@ SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/live-security-ui npm run ui:dev
 
 The bundle command only copies existing JSON artifacts into one UI-ready directory. It does not call Splunk, generate fake receipts, install apps, or mutate the deployment.
 
+When using the strict flagship path, set `--proof-dir artifacts/live-security-proof` instead of `artifacts/live-proof`.
+
 Operator-approved setup required:
 
 1. Create or install a read-only saved search named `ES - Lateral Movement Auth Chain` in app `SplunkEnterpriseSecuritySuite`.
@@ -137,10 +139,7 @@ Operator-approved setup required:
 set -a && source ./.splunkready-live.env && set +a
 export SPLUNKREADY_LLM_ENABLED=true
 export GEMINI_MODEL=gemini-3.1-flash-lite
-NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- compile --mode live --out artifacts/live-proof
-NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- evaluate --mode live --out artifacts/live-proof
-NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- receipt --mode live --out artifacts/live-proof
-NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- rerun --mode live --out artifacts/live-proof
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-proof --out artifacts/live-security-proof --json
 ```
 
 Expected passing signal:
@@ -149,6 +148,10 @@ Expected passing signal:
 - after receipt becomes `READY`;
 - after trace includes `splunk_run_saved_search`;
 - final answer cites the saved-search provenance, result count, and evidence refs.
+- `live-proof-summary.json` feeds the Vite UI summary with `failToPass: true` and `mutation: false`.
+- `live-security-proof-summary.json` has `failToPass: true`, `readyAfterPatch: true`, and `mutation: false`.
+
+`live-security-proof` is intentionally stricter than `live-proof`: it first runs the flagship readiness diagnostic and refuses to proceed unless the exact `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain` saved search returns evidence. It does not fall back to a generic live-derived mission.
 
 ## Option B: Use The Live-Derived Mission
 

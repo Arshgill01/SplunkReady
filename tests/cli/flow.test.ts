@@ -1222,6 +1222,157 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.artifacts).toEqual(expect.arrayContaining([join(outDir, "receipt-after-001.json")]));
   });
 
+  it("runs the flagship live security proof only when the exact live readiness check is green", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-security-proof-"));
+    const gemini = await startMockGeminiServer();
+    const mcp = await startMockMcpServer();
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: mcp.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token",
+      SPLUNKREADY_SPLUNK_APP: "search",
+      SPLUNKREADY_LLM_ENABLED: "true",
+      GEMINI_API_KEY: "test-gemini-key",
+      GEMINI_MODEL: "gemini-test",
+      SPLUNKREADY_GEMINI_ENDPOINT_BASE_URL: gemini.url
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["live-security-proof", "--out", outDir, "--json"], process.cwd(), env)).stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "live-security-proof",
+        status: "PASS",
+        artifacts: expect.arrayContaining([
+          join(outDir, "live-security-readiness.json"),
+          join(outDir, "environment-contract.json"),
+          join(outDir, "receipt-before-001.json"),
+          join(outDir, "policy-patch.json"),
+          join(outDir, "receipt-after-001.json"),
+          join(outDir, "live-proof-summary.json"),
+          join(outDir, "live-security-proof-summary.json")
+        ])
+      });
+    } finally {
+      await gemini.close();
+      await mcp.close();
+    }
+
+    const readiness = JSON.parse(await readFile(join(outDir, "live-security-readiness.json"), "utf8")) as {
+      status: string;
+      requiredSavedSearch: { run: { resultCount: number; evidenceRefs: string[] } };
+    };
+    const beforeReceipt = JSON.parse(await readFile(join(outDir, "receipt-before-001.json"), "utf8")) as {
+      verdict: string;
+      violations: string[];
+    };
+    const afterReceipt = JSON.parse(await readFile(join(outDir, "receipt-after-001.json"), "utf8")) as {
+      verdict: string;
+      score: number;
+      evidenceRefs: string[];
+    };
+    const summary = JSON.parse(await readFile(join(outDir, "live-security-proof-summary.json"), "utf8")) as {
+      mutation: boolean;
+      readinessStatus: string;
+      failToPass: boolean;
+      readyAfterPatch: boolean;
+      before: { verdict: string; violations: number };
+      after: { verdict: string; score: number; evidenceRefs: string[] };
+    };
+    const uiSummary = JSON.parse(await readFile(join(outDir, "live-proof-summary.json"), "utf8")) as {
+      mutation: boolean;
+      derivedMission: { strategy: string; missionId: string };
+      failToPass: boolean;
+      readyWithoutPatch: boolean;
+    };
+
+    expect(readiness).toMatchObject({
+      status: "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF",
+      requiredSavedSearch: {
+        run: {
+          resultCount: 3,
+          evidenceRefs: ["live-evt-102", "live-evt-118", "live-evt-141"]
+        }
+      }
+    });
+    expect(beforeReceipt.verdict).toBe("NOT READY");
+    expect(beforeReceipt.violations.length).toBeGreaterThan(0);
+    expect(afterReceipt).toMatchObject({ verdict: "READY", score: 100 });
+    expect(afterReceipt.evidenceRefs).toEqual([
+      "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+      "live-evt-102",
+      "live-evt-118",
+      "live-evt-141"
+    ]);
+    expect(summary).toMatchObject({
+      mutation: false,
+      readinessStatus: "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF",
+      failToPass: true,
+      readyAfterPatch: true,
+      before: { verdict: "NOT READY", violations: beforeReceipt.violations.length },
+      after: {
+        verdict: "READY",
+        score: 100,
+        evidenceRefs: [
+          "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+          "live-evt-102",
+          "live-evt-118",
+          "live-evt-141"
+        ]
+      }
+    });
+    expect(uiSummary).toMatchObject({
+      mutation: false,
+      derivedMission: {
+        strategy: "saved-search-with-evidence",
+        missionId: "mission-security-lateral-movement-readiness"
+      },
+      failToPass: true,
+      readyWithoutPatch: false
+    });
+    expect(mcp.calls.map((call) => call.params.name)).toEqual(
+      expect.arrayContaining(["splunk_run_saved_search", "saia_explain_spl", "saia_optimize_spl"])
+    );
+  });
+
+  it("refuses flagship live security proof when readiness is blocked", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-security-proof-blocked-"));
+    const mcp = await startMockMcpServer({
+      savedSearches: [
+        {
+          id: "saved-search-errors",
+          type: "saved_searches",
+          name: "Errors in the last 24 hours",
+          app: "search"
+        }
+      ],
+      savedSearchRows: []
+    });
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: mcp.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token",
+      SPLUNKREADY_SPLUNK_APP: "search",
+      SPLUNKREADY_LLM_ENABLED: "true",
+      GEMINI_API_KEY: "test-gemini-key",
+      GEMINI_MODEL: "gemini-test"
+    };
+
+    try {
+      await expect(runCli(["live-security-proof", "--out", outDir], process.cwd(), env)).rejects.toMatchObject({
+        stderr: expect.stringContaining("live-security-proof is blocked")
+      });
+    } finally {
+      await mcp.close();
+    }
+
+    expect(await exists(join(outDir, "live-security-readiness.json"))).toBe(true);
+    expect(await exists(join(outDir, "receipt-before-001.json"))).toBe(false);
+    expect(await exists(join(outDir, "trace-before.json"))).toBe(false);
+  });
+
   it("runs live proof end to end from a derived saved-search mission", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-proof-"));
     const gemini = await startMockGeminiServer();
