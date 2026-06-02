@@ -44,7 +44,8 @@ This repository turns the locked SplunkReady idea into an implemented, fixture-f
 - `docs/grader-rule-catalog.md`: deterministic rule IDs and pass/fail boundaries.
 - `docs/golden-traces.md`: reference failure/pass traces for future tests and demo.
 - `docs/fixture-live-parity.md`: fixture/live adapter parity contract.
-- `docs/live-proof-gap.md`: current live-unverified status and the smallest next read-only live proof command.
+- `docs/live-proof-gap.md`: current live MCP/Gemini proof status and remaining passing-live-mission gap.
+- `docs/live-demo-data-plan.md`: operator-approved options for turning live MCP/Gemini trace proof into a passing live readiness demo.
 - `docs/live-setup-checklist.md`: Phase Live checklist for producing the required real Splunk MCP live-smoke proof.
 - `docs/llm-specimen-agent.md`: env-gated Gemini specimen agent flow for model-produced traces.
 - `docs/follow-up-gap-closure-report.md`: current real/fixture/live truth table and consolidation evidence.
