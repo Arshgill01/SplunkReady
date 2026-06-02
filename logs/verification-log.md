@@ -2932,3 +2932,49 @@ Result:
 - Full check passed: scaffold verifier reported 85 waves and 454 project files; Vitest passed 32 test files / 150 tests.
 - Reviewer audit passed: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 85 waves and 454 project files.
+
+## 2026-06-02 - Phase Live Move 1 Setup
+
+Commands:
+
+- `git status --short --branch`
+- `sed -n '1,260p' docs/live-adapter.md`
+- `sed -n '1,220p' src/adapters/live.ts`
+- `npx vitest run tests/agents/llm-specimen.test.ts`
+- `npm run build`
+- `rm -rf artifacts/live-smoke-skip && env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- live-smoke --out artifacts/live-smoke-skip`
+- `find artifacts/live-smoke-skip -maxdepth 2 -type f -print 2>/dev/null || true`
+- `git diff --check`
+
+Result:
+
+- PARTIAL.
+- Live setup checklist was created at `docs/live-setup-checklist.md`.
+- Focused LLM specimen tests passed: 1 test file / 4 tests.
+- TypeScript build passed after resolving in-progress LLM-agent type errors from the interrupted prior wave path.
+- No-credential live smoke skipped as expected with missing `SPLUNKREADY_LIVE_ENABLED=true`, `SPLUNKREADY_SPLUNK_MCP_URL`, and `SPLUNKREADY_SPLUNK_MCP_TOKEN`; it made no live Splunk calls.
+- `find artifacts/live-smoke-skip -maxdepth 2 -type f -print` returned no files, confirming the skip path wrote no live artifacts.
+- `git diff --check` passed.
+- Move 1 is not complete. Completion still requires a real `PASS live-smoke` run with `--require-live true` and `artifacts/live-smoke/live-smoke-contract.json` containing live Splunk metadata.
+
+## 2026-06-02 - Phase Live Move 2 LLM Specimen
+
+Commands:
+
+- `npx vitest run tests/agents/llm-specimen.test.ts tests/cli/flow.test.ts`
+- `npm run build`
+- `tmp=$(mktemp -d /tmp/splunkready-llm-missing-key-XXXXXX) && npm run splunkready -- compile --out "$tmp" >/tmp/splunkready-llm-missing-key-compile.log && SPLUNKREADY_LLM_ENABLED=true env -u GEMINI_API_KEY npm run splunkready -- evaluate --out "$tmp"`
+- `npm run check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Focused LLM specimen and CLI flow tests passed: 2 files / 13 tests.
+- TypeScript build passed.
+- The explicit missing-key command failed safely with `SPLUNKREADY_LLM_ENABLED=true requires GEMINI_API_KEY. No Gemini request was made.`
+- Full check passed: scaffold verifier reported 85 waves and 459 project files; Vitest passed 33 files / 156 tests.
+- Reviewer audit passed: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed.
+- Live proof remains unverified because no real Splunk MCP endpoint/token values were available.

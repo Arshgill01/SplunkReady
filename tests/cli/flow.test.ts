@@ -104,6 +104,82 @@ const startMockMcpServer = async () => {
   };
 };
 
+const startMockGeminiServer = async () => {
+  const prompts: string[] = [];
+  const server = createServer((request, response) => {
+    let body = "";
+    request.setEncoding("utf8");
+    request.on("data", (chunk) => {
+      body += chunk;
+    });
+    request.on("end", () => {
+      const parsed = JSON.parse(body) as { contents: Array<{ parts: Array<{ text: string }> }> };
+      const prompt = parsed.contents.flatMap((content) => content.parts).map((part) => part.text).join("\n");
+      prompts.push(prompt);
+      const payload =
+        prompts.length === 1
+          ? {
+              rationale: "No contract was injected, so use a broad exploratory SPL query.",
+              toolCalls: [
+                {
+                  toolName: "splunk_run_query",
+                  input: {
+                    query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now",
+                    timeWindow: { earliest: "-24h", latest: "now" },
+                    maxRows: 10
+                  }
+                }
+              ]
+            }
+          : prompts.length === 2
+            ? { finalAnswer: "No evidence was found by the broad search." }
+            : prompts.length === 3
+              ? {
+                  rationale: "Compiled policy is injected, so discover and run the preferred saved search.",
+                  toolCalls: [
+                    {
+                      toolName: "splunk_get_knowledge_objects",
+                      input: { types: ["saved_searches"], query: "Lateral Movement" }
+                    },
+                    {
+                      toolName: "splunk_run_saved_search",
+                      input: {
+                        app: "SplunkEnterpriseSecuritySuite",
+                        name: "ES - Lateral Movement Auth Chain",
+                        maxRows: 10
+                      }
+                    }
+                  ]
+                }
+              : {
+                  finalAnswer:
+                    "Evidence supports the investigation: 3 result(s) from saved-search-lateral-movement, evidence evt-102, evt-118, evt-141."
+                };
+
+      response.writeHead(200, { "content-type": "application/json" });
+      response.end(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(payload) }] } }] }));
+    });
+  });
+
+  await new Promise<void>((resolve) => {
+    server.listen(0, "127.0.0.1", resolve);
+  });
+
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    throw new Error("Mock Gemini server did not expose a TCP port.");
+  }
+
+  return {
+    prompts,
+    url: `http://127.0.0.1:${address.port}`,
+    close: () =>
+      new Promise<void>((resolve, reject) => {
+        server.close((error) => (error ? reject(error) : resolve()));
+      })
+  };
+};
+
 describe("SplunkReady CLI flow", () => {
   it("runs fixture compile, evaluate, receipt, and rerun commands with stable artifacts", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-cli-"));
@@ -334,6 +410,74 @@ describe("SplunkReady CLI flow", () => {
     );
     expect(markdown).toContain("Captured Agent trace-001");
     expect(markdown).toContain("deterministic rule engine decides pass/fail");
+  });
+
+  it("uses the Gemini-backed specimen for evaluate and rerun when LLM mode is enabled", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-llm-cli-"));
+    const gemini = await startMockGeminiServer();
+    const llmEnv = {
+      SPLUNKREADY_LLM_ENABLED: "true",
+      GEMINI_API_KEY: "test-gemini-key",
+      GEMINI_MODEL: "gemini-test",
+      SPLUNKREADY_GEMINI_ENDPOINT_BASE_URL: gemini.url
+    };
+
+    try {
+      await expect(runCli(["compile", "--out", outDir])).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS compile")
+      });
+      await expect(runCli(["evaluate", "--out", outDir], process.cwd(), llmEnv)).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS evaluate")
+      });
+      await expect(runCli(["receipt", "--out", outDir], process.cwd(), llmEnv)).resolves.toMatchObject({
+        stdout: expect.stringContaining("receipt-before-001.json")
+      });
+      await expect(runCli(["rerun", "--out", outDir], process.cwd(), llmEnv)).resolves.toMatchObject({
+        stdout: expect.stringContaining("receipt-after-001.json")
+      });
+    } finally {
+      await gemini.close();
+    }
+
+    const beforeTrace = JSON.parse(await readFile(join(outDir, "trace-before.json"), "utf8")) as Array<{
+      type: string;
+      toolName: string | null;
+      toolInput?: { query?: string };
+    }>;
+    const afterTrace = JSON.parse(await readFile(join(outDir, "trace-after.json"), "utf8")) as Array<{
+      type: string;
+      toolName: string | null;
+      toolInput?: { name?: string; maxRows?: number };
+    }>;
+    const beforeViolations = JSON.parse(await readFile(join(outDir, "violations-before.json"), "utf8")) as Array<{
+      ruleId: string;
+    }>;
+    const afterReceipt = JSON.parse(await readFile(join(outDir, "receipt-after-001.json"), "utf8")) as {
+      verdict: string;
+      score: number;
+    };
+
+    expect(gemini.prompts).toHaveLength(4);
+    expect(gemini.prompts[0]).toContain("no compiled Splunk contract has been injected");
+    expect(gemini.prompts[2]).toContain("Compiled Splunk contract injected by policy");
+    expect(gemini.prompts[2]).toContain("Compiled agent policy");
+    expect(beforeTrace[0]).toMatchObject({
+      type: "tool_call",
+      toolName: "splunk_run_query",
+      toolInput: { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" }
+    });
+    expect(afterTrace.map((event) => event.toolName)).toEqual([
+      "splunk_get_knowledge_objects",
+      "splunk_get_knowledge_objects",
+      "splunk_run_saved_search",
+      "splunk_run_saved_search",
+      null
+    ]);
+    expect(afterTrace[2]?.toolInput).toMatchObject({ name: "ES - Lateral Movement Auth Chain", maxRows: 10 });
+    expect(beforeViolations.map((violation) => violation.ruleId)).toEqual(
+      expect.arrayContaining(["SPL-001", "SPL-003", "KO-001", "EVD-001", "ANS-001"])
+    );
+    expect(afterReceipt).toMatchObject({ verdict: "READY", score: 100 });
   });
 
   it("rejects an externally supplied trace for the wrong mission", async () => {

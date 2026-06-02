@@ -23,6 +23,85 @@ Notes:
 - ...
 ```
 
+## 2026-06-02 18:47 - Phase Live Move 1
+
+Scope:
+- Pivoted execution to Phase Live: live Splunk proof, real LLM specimen, hosted model evidence, and demo-quality artifacts.
+- Started Move 1 by documenting the exact live MCP setup path needed for `live-smoke --require-live true`.
+- Created a SplunkReady-specific live setup checklist grounded in the repo live adapter and current Splunk MCP Server docs.
+- Restored the interrupted LLM-agent work to a buildable state so the Move 1 live-smoke command can run when credentials are available.
+- Verified the no-credential live-smoke skip path still makes no live calls and writes no live artifacts.
+
+Files changed:
+- `docs/live-setup-checklist.md`
+- `src/agents/gemini-model.ts`
+- `src/agents/llm-specimen.ts`
+- `tests/agents/llm-specimen.test.ts`
+- `src/cli.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Commands:
+- `git status --short --branch`
+- `sed -n '1,260p' docs/live-adapter.md`
+- `sed -n '1,220p' src/adapters/live.ts`
+- `sed -n '1,180p' logs/execution-log.md`
+- `npx vitest run tests/agents/llm-specimen.test.ts`
+- `npm run build`
+- `rm -rf artifacts/live-smoke-skip && env -u SPLUNKREADY_LIVE_ENABLED -u SPLUNKREADY_SPLUNK_MCP_URL -u SPLUNKREADY_SPLUNK_MCP_TOKEN npm run splunkready -- live-smoke --out artifacts/live-smoke-skip`
+- `find artifacts/live-smoke-skip -maxdepth 2 -type f -print 2>/dev/null || true`
+- `git diff --check`
+- Web verification against Splunk MCP Server docs for setup, endpoint, token, tool namespace, and tool names.
+
+Result:
+- PARTIAL
+
+Notes:
+- Move 1 is not complete yet. Completion requires a real `PASS live-smoke` run and `artifacts/live-smoke/live-smoke-contract.json` containing live Splunk metadata.
+- Current worktree contains in-progress Move 2/LLM-agent files from the previous wave path: `src/cli.ts`, `src/agents/gemini-model.ts`, `src/agents/llm-specimen.ts`, and `tests/agents/llm-specimen.test.ts`.
+- The initial interrupted LLM-agent code failed TypeScript because trace recorder inputs were typed as concrete adapter request interfaces instead of plain trace records, and a negative test intentionally returned an invalid tool call without a cast. Both were fixed.
+- `npm run build` now passes.
+- No required live proof has been generated yet because no real MCP endpoint/token was provided in this session.
+
+## 2026-06-02 18:59 - Phase Live Move 2
+
+Scope:
+- Added an env-gated Gemini-backed LLM specimen trace producer.
+- Wired `evaluate` and `rerun` to use the LLM specimen when `SPLUNKREADY_LLM_ENABLED=true`; deterministic `NaiveSpecimenAgent` remains the default fixture fallback.
+- Preserved deterministic grader authority: the model chooses read-only Splunk tool calls, SplunkReady executes them through the adapter, and the existing rule engine decides pass/fail.
+- Changed LLM prompting so the first run receives no compiled Splunk contract injection, while policy-backed reruns receive the compiled contract and compiled agent policy.
+- Added CLI-level coverage with a local fake Gemini endpoint proving `evaluate` produces a broad failing model trace and `rerun` produces a policy-guided passing trace.
+- Documented operator usage in `docs/llm-specimen-agent.md` and updated README/manifest references.
+
+Files changed:
+- `src/agents/llm-specimen.ts`
+- `src/agents/gemini-model.ts`
+- `src/cli.ts`
+- `tests/agents/llm-specimen.test.ts`
+- `tests/cli/flow.test.ts`
+- `docs/llm-specimen-agent.md`
+- `README.md`
+- `MANIFEST.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Commands:
+- `npx vitest run tests/agents/llm-specimen.test.ts tests/cli/flow.test.ts`
+- `npm run build`
+- `tmp=$(mktemp -d /tmp/splunkready-llm-missing-key-XXXXXX) && npm run splunkready -- compile --out "$tmp" >/tmp/splunkready-llm-missing-key-compile.log && SPLUNKREADY_LLM_ENABLED=true env -u GEMINI_API_KEY npm run splunkready -- evaluate --out "$tmp"`
+- `npm run check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+- PASS for Move 2 implementation.
+
+Notes:
+- The explicit missing-key command failed as expected with `SPLUNKREADY_LLM_ENABLED=true requires GEMINI_API_KEY. No Gemini request was made.`
+- Full `npm run check` passed: scaffold verifier reported 85 waves and 459 project files; Vitest passed 33 files / 156 tests.
+- Reviewer audit passed even though the reviewer is off indefinitely: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+- Phase Live Move 1 remains blocked on real Splunk MCP endpoint/token values and has not produced live proof artifacts.
+
 ## 2026-06-01 15:36 - Wave 39
 
 Scope:

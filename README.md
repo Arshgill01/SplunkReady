@@ -12,7 +12,7 @@ Splunk is making operational data agent-ready. SplunkReady makes agents Splunk-r
 
 The Agent Readiness Compiler compiles a fixture or live Splunk environment into an agent contract and readiness profile, runs realistic missions or accepts captured agent traces, grades the resulting tool trace with deterministic rules, and produces a Readiness Receipt.
 
-The flagship demo story is security investigation readiness: the bundled deterministic specimen confidently clears possible lateral movement after using `index=*`, a stale field, and no saved search provenance. SplunkReady catches the unsafe trace, exports a reviewable policy patch, reruns the same mission, and shows a bounded pass with evidence.
+The flagship demo story is security investigation readiness: the bundled specimen confidently clears possible lateral movement after using `index=*`, a stale field, and no saved search provenance. SplunkReady catches the unsafe trace, exports a reviewable policy patch, reruns the same mission, and shows a bounded pass with evidence. The default specimen is deterministic for local reproducibility; set `SPLUNKREADY_LLM_ENABLED=true` to run the Gemini-backed specimen instead.
 
 ## Judge-Runnable Fixture Demo
 
@@ -86,7 +86,24 @@ npm run build
 npm run splunkready -- live-smoke --out artifacts/live-smoke
 ```
 
-Without live configuration, the live smoke command skips safely. With live configuration, it calls read-only MCP tools only, writes `live-smoke-contract.json` plus `live-smoke-readiness-profile.json`, and does not run searches or mutate Splunk configuration. See [docs/live-adapter.md](docs/live-adapter.md).
+Without live configuration, the live smoke command skips safely. With live configuration, it calls read-only MCP tools only, writes `live-smoke-contract.json` plus `live-smoke-readiness-profile.json`, and does not run searches or mutate Splunk configuration. See [docs/live-adapter.md](docs/live-adapter.md) and [docs/live-setup-checklist.md](docs/live-setup-checklist.md).
+
+## LLM Specimen Agent
+
+The normal fixture demo keeps the deterministic specimen as the default. To grade a real model-driven specimen trace, export a Gemini key and enable LLM mode:
+
+```bash
+export SPLUNKREADY_LLM_ENABLED=true
+export GEMINI_API_KEY="..."
+export GEMINI_MODEL="gemini-2.5-flash"
+npm run build
+npm run splunkready -- compile --out artifacts/llm-fixture-proof
+npm run splunkready -- evaluate --out artifacts/llm-fixture-proof
+npm run splunkready -- receipt --out artifacts/llm-fixture-proof
+npm run splunkready -- rerun --out artifacts/llm-fixture-proof
+```
+
+In LLM mode, `evaluate` prompts the model without compiled Splunk contract injection. `rerun` injects the compiled policy and contract. SplunkReady still executes tool calls through the adapter and the deterministic grader still decides pass/fail. See [docs/llm-specimen-agent.md](docs/llm-specimen-agent.md).
 
 ## Submission Strategy
 
@@ -139,7 +156,7 @@ npm run check
 - Live mode is a read-only smoke path in this build. It validates adapter shape and environment compilation, but it does not run production searches.
 - SplunkReady never auto-mutates Splunk. Policy patches are exported for operator review.
 - LLMs may explain results or draft policy text, but deterministic grader rules decide pass/fail.
-- The bundled specimen is deterministic TypeScript code for reproducible fixture demos. It is not a real LLM/MCP agent; use `grade-trace` for traces captured from external agents.
+- The default bundled specimen is deterministic TypeScript code for reproducible fixture demos. The env-gated LLM specimen uses Gemini to produce traces, but live proof still requires a real MCP endpoint and token.
 
 ## Submission Materials
 
@@ -147,3 +164,5 @@ npm run check
 - Demo script: [docs/demo-script.md](docs/demo-script.md)
 - Architecture diagram: [docs/architecture.svg](docs/architecture.svg)
 - Live adapter safety notes: [docs/live-adapter.md](docs/live-adapter.md)
+- Live setup checklist: [docs/live-setup-checklist.md](docs/live-setup-checklist.md)
+- LLM specimen agent: [docs/llm-specimen-agent.md](docs/llm-specimen-agent.md)

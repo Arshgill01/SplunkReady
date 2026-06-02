@@ -7,6 +7,8 @@ import {
   createLiveSplunkAccessAdapter,
   createLiveSplunkAdapterConfigFromEnv
 } from "./adapters/live.js";
+import { createGeminiConfigFromEnv, createGeminiLlmAgentModel } from "./agents/gemini-model.js";
+import { LlmSpecimenAgent } from "./agents/llm-specimen.js";
 import { NaiveSpecimenAgent } from "./agents/specimen.js";
 import { compileEnvironmentContract } from "./compiler/environment.js";
 import { compileReadinessProfile } from "./compiler/readiness-profile.js";
@@ -61,6 +63,7 @@ interface CliOptions {
   trace: string;
   agentName: string;
   agentVersion: string;
+  agentModel: string;
 }
 
 const allRules = (): GraderRule[] => [
@@ -80,6 +83,7 @@ Commands:
   compile   --fixture <path> --mission <path> --out <dir>
   evaluate  --out <dir>
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>]
+  llm-agent --out <dir> [--agent-model <model>]
   receipt   --out <dir> [--phase before|after]
   rerun     --out <dir>
   live-smoke --out <dir> [--require-live true|false]
@@ -101,7 +105,8 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     requireLive: false,
     trace: "",
     agentName: "External Splunk MCP Agent",
-    agentVersion: "unversioned"
+    agentVersion: "unversioned",
+    agentModel: ""
   };
 
   for (let index = 0; index < rest.length; index += 1) {
@@ -138,6 +143,8 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       options.agentName = value;
     } else if (flag === "--agent-version") {
       options.agentVersion = value;
+    } else if (flag === "--agent-model") {
+      options.agentModel = value;
     } else {
       throw new Error(`Unknown option ${flag}.\n${usage}`);
     }
@@ -196,6 +203,28 @@ const assertTraceMatchesMission = (mission: MissionDefinition, traceEvents: Trac
 
 const gradeTrace = (contract: EnvironmentContract, mission: MissionDefinition, traceEvents: TraceEvent[]): Violation[] =>
   runRuleEngine({ contract, mission, traceEvents }, allRules()).violations;
+
+const llmEnabled = (env: NodeJS.ProcessEnv = process.env): boolean => env.SPLUNKREADY_LLM_ENABLED === "true";
+
+const createLlmSpecimenAgent = (
+  contract: EnvironmentContract,
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): LlmSpecimenAgent => {
+  const geminiConfig = createGeminiConfigFromEnv(env);
+
+  if (!geminiConfig) {
+    throw new Error("SPLUNKREADY_LLM_ENABLED=true requires GEMINI_API_KEY. No Gemini request was made.");
+  }
+
+  return new LlmSpecimenAgent({
+    contract,
+    model: createGeminiLlmAgentModel({
+      ...geminiConfig,
+      model: options.agentModel || geminiConfig.model
+    })
+  });
+};
 
 const compileCommand = async (options: CliOptions): Promise<string[]> => {
   const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
@@ -308,12 +337,12 @@ const liveSmokeCommand = async (
   return { status: "PASS", artifacts: [contractPath, profilePath, summaryPath], messages: [] };
 };
 
-const evaluateCommand = async (options: CliOptions): Promise<string[]> => {
+const evaluateCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
   const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
   const adapter = createFixtureSplunkAccessAdapter(fixture);
   const contract = await loadContract(options.out);
   const mission = await loadMission(options.mission);
-  const agent = new NaiveSpecimenAgent();
+  const agent = llmEnabled(env) ? createLlmSpecimenAgent(contract, options, env) : new NaiveSpecimenAgent();
   const run = await agent.run({ mission, adapter });
   const violations = gradeTrace(contract, mission, run.traceEvents);
   const score = scoreMissionReadiness(mission, violations);
@@ -363,6 +392,55 @@ const gradeTraceCommand = async (options: CliOptions): Promise<string[]> => {
   ];
 };
 
+const llmAgentCommand = async (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<string[]> => {
+  const geminiConfig = createGeminiConfigFromEnv(env);
+
+  if (!geminiConfig) {
+    throw new Error("llm-agent requires GEMINI_API_KEY. No Gemini request was made and no Splunk calls were made.");
+  }
+
+  const compileArtifacts = await compileCommand(options);
+  const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
+  const adapter = createFixtureSplunkAccessAdapter(fixture);
+  const contract = await loadContract(options.out);
+  const mission = await loadMission(options.mission);
+  const agent = createLlmSpecimenAgent(contract, options, env);
+  const run = await agent.run({ mission, adapter });
+  const violations = gradeTrace(contract, mission, run.traceEvents);
+  const score = scoreMissionReadiness(mission, violations);
+  const generated = generateReadinessReceipt({
+    id: "receipt-llm-agent-001",
+    agent: { name: "Gemini Splunk MCP Agent", version: options.agentModel || geminiConfig.model },
+    environment: contract,
+    missionSuiteVersion: "security-readiness-llm-1",
+    missions: [mission],
+    traceEvents: run.traceEvents,
+    violations,
+    notes:
+      "This receipt grades a trace produced by a Gemini-backed specimen agent. The model chooses read-only Splunk tool calls; the deterministic rule engine decides pass/fail."
+  });
+
+  await writeJson(join(options.out, "trace-llm-agent.json"), run.traceEvents);
+  await writeJson(join(options.out, "llm-agent-observations.json"), run.observations);
+  await writeJson(join(options.out, "violations-llm-agent.json"), violations);
+  await writeJson(join(options.out, "score-llm-agent.json"), score);
+  await writeText(join(options.out, "receipt-llm-agent-001.json"), generated.json);
+  await writeText(join(options.out, "receipt-llm-agent-001.md"), generated.markdown);
+
+  return [
+    ...compileArtifacts,
+    join(options.out, "trace-llm-agent.json"),
+    join(options.out, "llm-agent-observations.json"),
+    join(options.out, "violations-llm-agent.json"),
+    join(options.out, "score-llm-agent.json"),
+    join(options.out, "receipt-llm-agent-001.json"),
+    join(options.out, "receipt-llm-agent-001.md")
+  ];
+};
+
 const receiptCommand = async (options: CliOptions): Promise<string[]> => {
   const contract = await loadContract(options.out);
   const mission = await loadMission(options.mission);
@@ -405,13 +483,13 @@ const receiptCommand = async (options: CliOptions): Promise<string[]> => {
   return [jsonPath, markdownPath];
 };
 
-const rerunCommand = async (options: CliOptions): Promise<string[]> => {
+const rerunCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
   const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
   const adapter = createFixtureSplunkAccessAdapter(fixture);
   const contract = await loadContract(options.out);
   const mission = await loadMission(options.mission);
   const policy = await readJson<AgentPolicy>(join(options.out, "agent-policy.json"), "agent policy");
-  const agent = new NaiveSpecimenAgent();
+  const agent = llmEnabled(env) ? createLlmSpecimenAgent(contract, options, env) : new NaiveSpecimenAgent();
   const run = await agent.run({ mission, adapter, policy });
   const violations = gradeTrace(contract, mission, run.traceEvents);
   const score = scoreMissionReadiness(mission, violations);
@@ -540,6 +618,8 @@ const main = async (): Promise<void> => {
     artifacts = await evaluateCommand(options);
   } else if (command === "grade-trace") {
     artifacts = await gradeTraceCommand(options);
+  } else if (command === "llm-agent") {
+    artifacts = await llmAgentCommand(options);
   } else if (command === "receipt") {
     artifacts = await receiptCommand(options);
   } else if (command === "rerun") {
