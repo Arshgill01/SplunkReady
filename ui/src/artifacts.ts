@@ -118,6 +118,29 @@ const liveSecurityReadinessSchema = z
 
 export type LiveSecurityReadiness = z.infer<typeof liveSecurityReadinessSchema>;
 
+const liveSecurityKitSchema = z
+  .object({
+    status: z.string().min(1),
+    mutation: z.boolean(),
+    operatorActionRequired: z.boolean(),
+    mission: z.string().min(1),
+    savedSearch: z
+      .object({
+        app: z.string().min(1),
+        name: z.string().min(1),
+        ref: z.string().min(1)
+      })
+      .strict(),
+    preferredIndex: z.string().min(1),
+    sourcetype: z.string().min(1),
+    sampleEvents: z.number().int().nonnegative(),
+    generatedAt: z.string().min(1),
+    artifacts: z.array(z.string().min(1))
+  })
+  .strict();
+
+export type LiveSecurityKit = z.infer<typeof liveSecurityKitSchema>;
+
 export interface UiArtifactBundle {
   artifactBase: string;
   contract?: EnvironmentContract;
@@ -130,6 +153,7 @@ export interface UiArtifactBundle {
   policyPatch?: PolicyPatch;
   liveProofSummary?: LiveProofSummary;
   liveSecurityReadiness?: LiveSecurityReadiness;
+  liveSecurityKit?: LiveSecurityKit;
   beforeTrace: TraceEvent[];
   afterTrace: TraceEvent[];
   beforeViolations: Violation[];
@@ -147,6 +171,7 @@ const optionalFiles = [
   "policy-patch.json",
   "live-proof-summary.json",
   "live-security-readiness.json",
+  "live-security-kit.json",
   "trace-before.json",
   "trace-after.json",
   "violations-before.json",
@@ -236,6 +261,7 @@ export const loadUiArtifactBundle = async (
     policyPatch: policyPatchSchema.optional().parse(loaded.get("policy-patch.json")),
     liveProofSummary: liveProofSummarySchema.optional().parse(loaded.get("live-proof-summary.json")),
     liveSecurityReadiness: liveSecurityReadinessSchema.optional().parse(loaded.get("live-security-readiness.json")),
+    liveSecurityKit: liveSecurityKitSchema.optional().parse(loaded.get("live-security-kit.json")),
     beforeTrace: traceEventSchema.array().optional().parse(loaded.get("trace-before.json")) ?? [],
     afterTrace: traceEventSchema.array().optional().parse(loaded.get("trace-after.json")) ?? [],
     beforeViolations: violationSchema.array().optional().parse(loaded.get("violations-before.json")) ?? [],
@@ -255,6 +281,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   saiaItems: number;
   proofStory: string;
   securityStory: string;
+  kitStory: string;
 } => {
   const receipt = bundle.receipt;
   const contract = bundle.liveSmokeContract ?? bundle.contract;
@@ -277,6 +304,11 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
       ? bundle.liveSecurityReadiness.status === "BLOCKED"
         ? "security blocked"
         : "security ready"
-      : "security not loaded"
+      : "security not loaded",
+    kitStory: bundle.liveSecurityKit
+      ? bundle.liveSecurityKit.operatorActionRequired
+        ? "operator kit available"
+        : "kit loaded"
+      : "kit not loaded"
   };
 };

@@ -4561,3 +4561,77 @@ Reviewer findings:
 
 Result:
 - Focused CLI test/build, generated-kit smoke run, full repo verification, and `git diff --check` passed.
+
+## 2026-06-02 - Phase Live Operator Kit in Vite UI
+
+Scope:
+- Make the generated `live-security-kit.json` visible in the Vite UI.
+- Keep the Live Connect route as a factual readiness ledger: connected live deployment, blocker, operator-owned remediation kit.
+
+Files expected/touched:
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- The Vite artifact loader now parses optional `live-security-kit.json`.
+- The sidebar summary now shows whether an operator kit is available.
+- Live Connect now renders an `Operator security kit` panel with:
+  - mission;
+  - app-scoped saved-search reference;
+  - preferred index;
+  - sourcetype;
+  - sample event count;
+  - `operatorActionRequired`;
+  - `mutation`;
+  - generated artifacts.
+- The UI remains a ledger of artifacts; it does not imply SplunkReady installed or changed Splunk.
+
+Browser verification:
+- Temporary combined artifact directory:
+  - `artifacts/live-security-ui`
+- Source artifacts combined locally:
+  - `artifacts/live-security-check/environment-contract.json`;
+  - `artifacts/live-security-check/live-security-readiness.json`;
+  - `artifacts/live-security-kit/live-security-kit.json`.
+- Local dev server:
+  - `http://127.0.0.1:5173/#live-connect`
+- Screenshot:
+  - `output/playwright/splunkready-live-security-kit-panel.png`
+- Snapshot confirmed:
+  - sidebar shows `security blocked`;
+  - sidebar shows `operator kit available`;
+  - Live Connect shows `Flagship security readiness` as `BLOCKED`;
+  - Live Connect shows `Operator security kit`;
+  - kit mutation is `no`;
+  - kit saved-search ref is `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`.
+
+Product impact:
+- The product now shows both sides of the live security gap: the current Splunk deployment is not ready, and the operator-owned setup kit exists to make it ready.
+- This is stronger Platform/DX evidence than terminal-only artifacts because a developer can inspect the remediation path in the UI.
+- The non-mutation posture is explicit in the UI.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 28% | No new runtime capability, but a cleaner live proof story. |
+| Platform & DX | 67% | 69% | UI now connects live blockers to generated operator remediation. |
+| Security | 38% | 39% | Security proof setup is easier to understand. |
+| Best Use of MCP Server | 79% | 79% | MCP behavior unchanged. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 62% | 64% | Generated kit artifacts are now consumable through the Vite app. |
+
+Next directions to consider in future runs:
+- If the operator installs/imports the kit, rerun `live-security-check` and then `live-proof`.
+- Consider adding a small command that merges `live-security-check` and `live-security-kit` outputs into one UI artifact directory for easier inspection.
+- Avoid adding any UI flow that appears to install or mutate Splunk.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.

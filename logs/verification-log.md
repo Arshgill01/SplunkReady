@@ -3629,3 +3629,35 @@ Open risks:
 
 - Generated kit artifacts remain untracked under `artifacts/live-security-kit/`.
 - The kit only prepares operator-owned setup files; a human still has to install/import them on the approved Splunk trial before the live security proof can turn green.
+
+## 2026-06-02 - Phase Live Operator Kit in Vite UI
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts && npm run ui:build && npm run build`
+- `rm -rf artifacts/live-security-ui && mkdir -p artifacts/live-security-ui && cp artifacts/live-security-check/environment-contract.json artifacts/live-security-check/live-security-readiness.json artifacts/live-security-ui/ && cp artifacts/live-security-kit/live-security-kit.json artifacts/live-security-ui/ && ls artifacts/live-security-ui`
+- `SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/live-security-ui npm run ui:dev -- --host 127.0.0.1`
+- `PWCLI=/Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh; bash "$PWCLI" open 'http://127.0.0.1:5173/#live-connect' && bash "$PWCLI" snapshot && bash "$PWCLI" screenshot --filename output/playwright/splunkready-live-security-kit-panel.png --full-page`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused Vite UI app tests: 1 file / 6 tests.
+- PASS for production Vite UI build.
+- PASS for TypeScript build.
+- PASS for browser verification of `#live-connect` against `artifacts/live-security-ui`.
+- PASS for full verification: scaffold verified, 85 waves, 645 project files, 38 test files, 200 tests.
+- PASS for `git diff --check`.
+- Playwright screenshot saved to `output/playwright/splunkready-live-security-kit-panel.png`.
+- Browser snapshot confirmed:
+  - `security blocked`;
+  - `operator kit available`;
+  - `Flagship security readiness`;
+  - `Operator security kit`;
+  - saved-search ref `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`;
+  - `Mutation no`.
+
+Open risks:
+
+- Combined browser artifact directory remains untracked under `artifacts/live-security-ui/`.
+- Browser screenshot artifact remains untracked under `output/playwright/`.

@@ -171,6 +171,30 @@ const renderLiveSecurityReadiness = (bundle: UiArtifactBundle): string => {
   </section>`;
 };
 
+const renderLiveSecurityKit = (bundle: UiArtifactBundle): string => {
+  const kit = bundle.liveSecurityKit;
+
+  if (!kit) {
+    return "";
+  }
+
+  return `<section class="panel live-security-kit-panel">
+    <h2>Operator security kit</h2>
+    ${renderFactTable([
+      ["Status", kit.status],
+      ["Mission", kit.mission],
+      ["Saved search", kit.savedSearch.ref],
+      ["Preferred index", kit.preferredIndex],
+      ["Sourcetype", kit.sourcetype],
+      ["Sample events", kit.sampleEvents],
+      ["Operator action", kit.operatorActionRequired ? "required" : "not required"],
+      ["Mutation", kit.mutation ? "yes" : "no"],
+      ["Generated", kit.generatedAt],
+      ["Artifacts", kit.artifacts.join(" / ")]
+    ])}
+  </section>`;
+};
+
 const renderReplay = (bundle: UiArtifactBundle): string => {
   const before = bundle.beforeReceipt;
   const after = bundle.afterReceipt;
@@ -391,6 +415,7 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
         </section>
         ${renderLiveProofSummary(bundle)}
         ${renderLiveSecurityReadiness(bundle)}
+        ${renderLiveSecurityKit(bundle)}
       </div>
     </section>
   </main>`;
@@ -418,6 +443,7 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId): string => 
       <span>${summary.beforeViolations} before / ${summary.afterViolations} after</span>
       <span>${value(summary.proofStory)}</span>
       <span>${value(summary.securityStory)}</span>
+      <span>${value(summary.kitStory)}</span>
     </div>
   </aside>`;
 };

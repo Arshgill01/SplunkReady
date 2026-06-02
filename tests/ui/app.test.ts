@@ -213,6 +213,27 @@ const liveSecurityReadiness = {
   ]
 } as const;
 
+const liveSecurityKit = {
+  status: "PASS",
+  mutation: false,
+  operatorActionRequired: true,
+  mission: "mission-security-lateral-movement-readiness",
+  savedSearch: {
+    app: "SplunkEnterpriseSecuritySuite",
+    name: "ES - Lateral Movement Auth Chain",
+    ref: "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain"
+  },
+  preferredIndex: "wineventlog",
+  sourcetype: "XmlWinEventLog:Security",
+  sampleEvents: 3,
+  generatedAt: "2026-06-01T06:30:00.000Z",
+  artifacts: [
+    "artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/savedsearches.conf",
+    "artifacts/live-security-kit/lateral-movement-events.csv",
+    "artifacts/live-security-kit/README.md"
+  ]
+} as const;
+
 const jsonResponse = (value: unknown): Response => new Response(JSON.stringify(value), { status: 200 });
 
 const fetcherFor = (files: Record<string, unknown>) => async (url: string): Promise<Response> => {
@@ -292,6 +313,7 @@ describe("Vite UI artifact app", () => {
         "receipt-after-001.json": receipt({ mode: "live" }),
         "live-proof-summary.json": liveProofSummary,
         "live-security-readiness.json": liveSecurityReadiness,
+        "live-security-kit.json": liveSecurityKit,
         "trace-before.json": beforeTrace,
         "trace-after.json": afterTrace,
         "violations-before.json": [],
@@ -314,6 +336,13 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain / missing");
     expect(liveConnect).toContain("wineventlog / missing");
     expect(liveConnect).toContain("security blocked");
+    expect(liveConnect).toContain("Operator security kit");
+    expect(liveConnect).toContain("operator kit available");
+    expect(liveConnect).toContain("Operator action");
+    expect(liveConnect).toContain("required");
+    expect(liveConnect).toContain("Mutation");
+    expect(liveConnect).toContain("no");
+    expect(liveConnect).toContain("artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/savedsearches.conf");
   });
 
   it("keeps receipt sections inside a single aligned ledger", async () => {

@@ -427,6 +427,7 @@ code {
 .patch-panel,
 .live-proof-panel,
 .live-security-panel,
+.live-security-kit-panel,
 .trace-stack {
   margin-top: 16px;
 }
