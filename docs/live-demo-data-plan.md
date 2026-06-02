@@ -1,31 +1,36 @@
 # Live Demo Data Plan
 
-SplunkReady now has real live MCP connectivity, live Gemini trace execution, and a guided `live-proof` command that can derive a read-only mission from the target deployment's own inventory. The remaining blocker for a flagship live security demo is still deployment content, not adapter code.
+SplunkReady now has real live MCP connectivity, live Gemini trace execution, a guided generic `live-proof` command, and a strict flagship `live-security-proof` command. The flagship security proof is green on the local Splunk trial after operator-approved setup: the live receipt moves from `NOT READY` to `READY` without SplunkReady mutating Splunk.
 
 ## Current Live Finding
 
-The local live proof wrote artifacts under `artifacts/live-proof` with:
+The strict flagship proof writes artifacts under `artifacts/live-security-proof` with:
 
 - contract mode: `live`
 - indexes: `13`
 - saved searches: `100`
 - tools: inventory tools, `splunk_run_query`, `splunk_run_saved_search`, `saia_explain_spl`, `saia_optimize_spl`
+- readiness diagnostic: `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`
+- exact saved search: `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`
+- saved-search result count: `3`
+- evidence refs: `live-evt-141`, `live-evt-118`, `live-evt-102`
 - before receipt: `NOT READY`, score `60`, violations `KO-001` and `EVD-001`
-- after receipt: `NOT READY`, score `60`, violations `KO-001` and `EVD-001`
+- after receipt: `READY`, score `100`, violations `0`
+- proof summary: `failToPass: true`, `readyAfterPatch: true`, `mutation: false`
 
-The live trial does not currently contain the flagship mission's expected saved search:
+Historical note: before the operator-owned setup kit was installed, the live trial did not contain the flagship mission's expected saved search:
 
 ```text
 SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain
 ```
 
-The rerun therefore used an available generic saved search:
+The generic live proof therefore used an available saved search:
 
 ```text
 search:Errors in the last 24 hours
 ```
 
-That returned zero rows and no evidence refs. The deterministic grader correctly refused to issue a `READY` receipt.
+That returned zero rows and no evidence refs. The deterministic grader correctly refused to issue a `READY` receipt. That older blocked state is no longer the current flagship proof state.
 
 ## Read-Only Candidate Scan
 
@@ -38,7 +43,7 @@ NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-candidates --out arti
 
 The 2026-06-02 local scan checked 12 likely live saved searches, including Monitoring Console alerts and `search::Errors in the last 24 hours`. None returned rows or evidence refs.
 
-This reinforces that the remaining blocker is live demo content, not agent behavior or adapter connectivity.
+This remains useful fallback evidence for fresh deployments with no security content. It is not the current flagship proof path.
 
 ## Flagship Security Readiness Check
 
@@ -55,7 +60,7 @@ This command is read-only. It compiles the live contract, checks for the exact s
 SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain
 ```
 
-The 2026-06-02 local run wrote `artifacts/live-security-check/live-security-readiness.json` and reported:
+The initial 2026-06-02 local run wrote `artifacts/live-security-check/live-security-readiness.json` and reported:
 
 - status: `BLOCKED`
 - exact saved search present: `false`
@@ -63,7 +68,15 @@ The 2026-06-02 local run wrote `artifacts/live-security-check/live-security-read
 - missing required MCP tools: none
 - mutation: `false`
 
-This means the current live endpoint is connected and tool-capable, but not ready for the flagship live security fail -> patch -> pass proof until the saved search and authentication/security data are added by an operator-approved setup step.
+After the operator-owned setup kit was installed and sample evidence was imported, the same diagnostic reported:
+
+- status: `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`
+- exact saved search present: `true`
+- saved-search run attempted: `true`
+- result count: `3`
+- evidence refs: `live-evt-141`, `live-evt-118`, `live-evt-102`
+- blockers: none
+- mutation: `false`
 
 ## Guided Live Proof Command
 
@@ -93,7 +106,7 @@ SplunkReady must not auto-mutate Splunk. Any live demo data, saved search, app i
 
 ## Option A: Preserve The Flagship Security Story
 
-Use this when the final video must show lateral movement readiness.
+Use this when the proof must show lateral movement readiness.
 
 SplunkReady can generate a local operator-owned setup kit for this path:
 
@@ -130,7 +143,7 @@ The bundle command only copies existing JSON artifacts into one UI-ready directo
 
 When using the strict flagship path, set `--proof-dir artifacts/live-security-proof` instead of `artifacts/live-proof`.
 
-Operator-approved setup required:
+Operator-approved setup required when starting from a fresh trial:
 
 1. Create or install a read-only saved search named `ES - Lateral Movement Auth Chain` in app `SplunkEnterpriseSecuritySuite`.
 2. Ensure the saved search returns at least one row for `win-finance-07` in the mission window `earliest=-24h latest=now`.
@@ -155,6 +168,13 @@ Expected passing signal:
 
 `live-security-proof` is intentionally stricter than `live-proof`: it first runs the flagship readiness diagnostic and refuses to proceed unless the exact `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain` saved search returns evidence. It does not fall back to a generic live-derived mission.
 
+Current local status:
+
+- The operator setup has been performed on the local Splunk trial.
+- `live-security-check` is green.
+- `live-security-proof` is green.
+- `artifacts/live-security-ui` contains the combined UI-ready proof bundle.
+
 ## Option B: Use The Live-Derived Mission
 
 Use this when the final video should prove live execution without installing Splunk Enterprise Security content.
@@ -173,4 +193,4 @@ Tradeoff:
 
 ## Recommendation
 
-For prize/demo quality, use Option A when the final story must be lateral movement security readiness. Use `live-proof` as the pragmatic live MCP proof path when the target Splunk deployment does not yet contain the security saved search and event data.
+For prize/demo quality, use Option A when the final story must be lateral movement security readiness. Use `live-proof` as the pragmatic live MCP proof path only when a target Splunk deployment does not yet contain the security saved search and event data.

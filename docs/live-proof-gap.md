@@ -1,6 +1,6 @@
 # Live Proof Status
 
-Status: live Splunk MCP proof exists locally, and the codebase now includes a guided `live-proof` command for deriving a runnable live mission from deployment inventory. The flagship live security mission is still not a passing readiness demo until the live deployment contains the expected security content.
+Status: live Splunk MCP proof exists locally, and the flagship live security proof is now green on the local Splunk trial after operator-approved setup. The current source-of-truth proof is `artifacts/live-security-proof`: a real Gemini-backed agent trace against live Splunk MCP that moves from `NOT READY` to `READY` without SplunkReady mutating Splunk.
 
 ## What Is Proven
 
@@ -75,26 +75,37 @@ The command was also rerun against the user's real Splunk MCP endpoint after imp
 
 This proves live certification with real MCP, Gemini, query execution, evidence refs, and receipts. It does not prove the flagship fail-to-pass patch loop because the generated `_internal` mission was already safe enough before policy injection.
 
-## Remaining Gap
+## Flagship Security Proof
 
-The live endpoint is real, but the current flagship mission is still fixture-shaped:
+After the operator-owned live security kit was installed and sample evidence was imported, the strict flagship command passed against the local live endpoint:
 
-- The mission expects `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`.
-- The live trial deployment did not expose that saved search in the compiled live contract.
-- The LLM therefore selected a generic live saved search, `search:Errors in the last 24 hours`.
-- That saved search returned `0` rows and no evidence refs for the lateral-movement story.
-- The candidate scan found no alternate existing saved search with rows in the current trial.
-- The deterministic grader correctly kept the receipt `NOT READY`.
+```bash
+set -a && source ./.splunkready-live.env && set +a
+export SPLUNKREADY_LLM_ENABLED=true
+export GEMINI_MODEL=gemini-3.1-flash-lite
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-proof --out artifacts/live-security-proof --json
+```
 
-This is not a live adapter failure. It is a live mission/data compatibility gap.
+Sanitized result:
 
-## Next Required Action
+- readiness diagnostic: `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`
+- exact saved search: `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`
+- saved-search result count: `3`
+- evidence refs: `live-evt-141`, `live-evt-118`, `live-evt-102`
+- before receipt: `NOT READY`, score `60`, violations `KO-001` and `EVD-001`
+- after receipt: `READY`, score `100`, violations `0`
+- `live-proof-summary.json`: `strategy: saved-search-with-evidence`, `failToPass: true`, `readyWithoutPatch: false`, `mutation: false`
+- `live-security-proof-summary.json`: `status: PASS`, `failToPass: true`, `readyAfterPatch: true`, `mutation: false`
 
-To produce the final live fail-to-pass demo, choose one of these paths:
+This is the flagship live proof path. Earlier blocked states in this document are historical context only.
 
-1. Prepare the live Splunk deployment with the security mission's expected saved search and event data, after explicit operator approval. SplunkReady must not auto-mutate Splunk.
-2. Run `live-proof` against the current live endpoint and use the derived mission if the deployment can produce rows through an existing saved search or `_internal`.
+## Operational Notes
 
-Until the security content path is run successfully against the real endpoint, the honest claim is:
+- SplunkReady still does not auto-mutate Splunk.
+- The app/saved-search/sample-event setup remains an operator-approved step outside the certification run.
+- Local proof artifacts under `artifacts/live-security-proof` and `artifacts/live-security-ui` are intentionally untracked because they can contain deployment-identifying inventory.
+- Local TLS still uses the development-only `NODE_TLS_REJECT_UNAUTHORIZED=0` workaround for the self-signed Splunk certificate.
 
-> SplunkReady has live MCP proof, live LLM trace proof, and a passing live-derived `_internal` readiness receipt, but not yet a passing live security-readiness receipt or live fail-to-pass patch loop.
+## Current Honest Claim
+
+> SplunkReady has live MCP proof, live LLM trace proof, a strict flagship live security readiness proof, and a live `NOT READY -> READY` Readiness Receipt loop. The proof remains read-only from SplunkReady's perspective; all Splunk setup was operator-owned.

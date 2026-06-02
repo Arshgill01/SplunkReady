@@ -4190,3 +4190,55 @@ Open risks:
 
 - The selector presets are local Vite artifact paths; a missing local artifact directory still renders as a load error.
 - The selector improves inspection ergonomics only. It does not resolve the live SAIA `Action forbidden` blocker.
+
+## 2026-06-03 - Phase Live Proof Source Of Truth Refresh
+
+Commands:
+
+- `git status --short --branch`
+- `rg -n "security-exfiltration|exfiltration|dns|http egress|egress|aws_cloudtrail|network_traffic|observability-latency|artifact selector|Policy simulator|FIREWALL_POLICY_BLOCKED|github-workflow|--json" fixtures src tests ui docs logs package.json`
+- `find fixtures/acme-soc-dev -maxdepth 3 -type f | sort`
+- `find artifacts/live-security-proof artifacts/live-security-ui artifacts/live-security-check -maxdepth 1 -type f -print 2>/dev/null | sort`
+- `node - <<'NODE' ... NODE` inspecting:
+  - `artifacts/live-security-proof/live-security-proof-summary.json`;
+  - `artifacts/live-security-proof/live-proof-summary.json`;
+  - `artifacts/live-security-proof/receipt-before-001.json`;
+  - `artifacts/live-security-proof/receipt-after-001.json`;
+  - `artifacts/live-security-check/live-security-readiness.json`;
+  - `artifacts/live-security-ui/live-security-proof-summary.json`.
+- `rg -n "still not|not yet|remaining blocker|BLOCKED|not ready for the flagship|not a passing|not yet a passing|Remaining Gap|live deployment contains the expected" docs/live-proof-gap.md docs/live-demo-data-plan.md logs/execution-log.md logs/verification-log.md`
+- `git diff -- docs/live-proof-gap.md docs/live-demo-data-plan.md`
+- `git diff --check`
+- `npx vitest run tests/cli/flow.test.ts -t "runs the flagship live security proof" tests/ui/app.test.ts`
+- `npx vitest run tests/ui/app.test.ts`
+- `npm run build`
+
+Result:
+
+- PASS for worktree orientation:
+  - branch `splunkready-build` is aligned with `origin/splunkready-build`;
+  - only untracked local `artifacts/` and `output/` existed before this doc refresh.
+- PASS for expansion-state inspection:
+  - JSON CLI output, workflow example, SAIA UI evidence, DNS exfiltration mission, firewall gateway, policy simulator, and artifact selector all have source/test/log evidence.
+- PASS for live proof artifact inspection:
+  - `live-security-proof-summary.json`: `status: PASS`, before `NOT READY / 60`, after `READY / 100`, `failToPass: true`, `readyAfterPatch: true`, `mutation: false`;
+  - `live-proof-summary.json`: `strategy: saved-search-with-evidence`, before `NOT READY / 60`, after `READY / 100`, `failToPass: true`, `readyWithoutPatch: false`, `mutation: false`;
+  - `receipt-before-001.json`: `NOT READY`, score `60`, 2 violations;
+  - `receipt-after-001.json`: `READY`, score `100`, 0 violations;
+  - `live-security-readiness.json`: `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`, exact saved search present, run attempted, result count `3`, evidence refs `live-evt-141`, `live-evt-118`, `live-evt-102`, blockers `[]`, mutation `false`.
+- PASS for stale-language scan of the two updated docs:
+  - remaining `BLOCKED` language is historical context for the initial pre-setup run;
+  - remaining `not yet` language is conditional for target deployments that do not contain the security saved search and event data.
+- PASS for `git diff --check`.
+- PASS for focused flagship proof test:
+  - 1 selected CLI test passed;
+  - the UI test file was skipped by the test-name filter, so it was run separately.
+- PASS for focused UI tests:
+  - 10 tests passed.
+- PASS for TypeScript build.
+
+Open risks:
+
+- The green live proof artifacts are local and untracked; do not commit them unless a redacted artifact set is explicitly requested.
+- Chronological logs still contain older blocked states by design. The new execution-log entry supersedes them.
+- Live hosted-model proof remains separate from live security proof: the local MCP identity still returns `Action forbidden` for `saia_explain_spl` / `saia_optimize_spl`.

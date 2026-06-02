@@ -4423,6 +4423,65 @@ Reviewer findings:
 Result:
 - Focused UI tests, TypeScript build, production Vite build, browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Proof Source Of Truth Refresh
+
+Scope:
+- Correct stale live-proof documentation that still described the flagship security proof as blocked.
+- Preserve the chronological logs as history, but make the current docs reflect the real local proof state.
+
+Files expected/touched:
+- `docs/live-proof-gap.md`
+- `docs/live-demo-data-plan.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Evidence inspected:
+- `artifacts/live-security-proof/live-security-proof-summary.json`
+- `artifacts/live-security-proof/live-proof-summary.json`
+- `artifacts/live-security-proof/receipt-before-001.json`
+- `artifacts/live-security-proof/receipt-after-001.json`
+- `artifacts/live-security-check/live-security-readiness.json`
+- `artifacts/live-security-ui/live-security-proof-summary.json`
+
+What changed:
+- `docs/live-proof-gap.md` now states the current source-of-truth proof:
+  - live security readiness is green;
+  - before receipt is `NOT READY / 60`;
+  - after receipt is `READY / 100`;
+  - `failToPass: true`;
+  - `mutation: false`.
+- `docs/live-demo-data-plan.md` now distinguishes:
+  - the historical blocked state before operator setup;
+  - the current green strict flagship proof;
+  - the generic `live-proof` fallback for fresh deployments without security content.
+- The docs still keep the non-mutation boundary: SplunkReady does not install apps, ingest events, or mutate Splunk during certification.
+
+Product impact:
+- Future compactions and future agents should no longer chase the already-resolved live credential/deployment-content blocker.
+- The current repo story now matches the actual proof bundle: live MCP, live Gemini, saved-search evidence, deterministic receipt failure, policy rerun, and passing Readiness Receipt.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 28% | Documentation correction only. |
+| Platform & DX | 70% | 71% | Source-of-truth docs now prevent operator/future-agent confusion. |
+| Security | 39% | 39% | Security capability unchanged; docs now reflect it accurately. |
+| Best Use of MCP Server | 79% | 79% | MCP behavior unchanged. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 65% | 66% | Better handoff clarity around proof artifacts and commands. |
+
+Next directions to consider in future runs:
+- Continue core feature work from the current state instead of re-opening live proof setup.
+- Treat `artifacts/live-security-proof` and `artifacts/live-security-ui` as local evidence, not commit targets, unless a redacted artifact set is explicitly requested.
+- If UI work resumes, verify against the green `artifacts/live-security-ui` bundle.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Source-of-truth docs were corrected from inspected local artifacts; verification is recorded in `logs/verification-log.md`.
+
 ## 2026-06-03 - Phase Live Receipt Policy Simulator
 
 Scope:
