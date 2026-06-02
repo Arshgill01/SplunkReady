@@ -412,6 +412,52 @@ const proofAudit = {
   ]
 } as const;
 
+const firewallBlock = {
+  status: "BLOCKED",
+  code: "FIREWALL_POLICY_BLOCKED",
+  phase: "before",
+  mode: "fixture",
+  mutation: false,
+  blockedBeforeSplunk: true,
+  toolName: "splunk_run_query",
+  requestId: "mission-security-lateral-movement-readiness-naive",
+  missionId: "mission-security-lateral-movement-readiness",
+  message: "SplunkReady firewall blocked splunk_run_query before Splunk execution.",
+  query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now",
+  violations: [
+    { ruleId: "SPL-001", reason: "Query uses index=* and would search every index." },
+    { ruleId: "SPL-003", reason: "Query references field src_ip, which is not present in the contract." }
+  ]
+} as const;
+
+const firewallProofAudit = {
+  status: "PASS",
+  proofType: "firewall-block",
+  proofDir: "artifacts/firewall-check",
+  mode: "fixture",
+  mutation: false,
+  checks: [
+    {
+      id: "contract-loaded",
+      status: "PASS",
+      detail: "Environment contract is present and schema-valid.",
+      evidence: { id: contract.id, mode: "fixture" }
+    },
+    {
+      id: "firewall-block-loaded",
+      status: "PASS",
+      detail: "Firewall block report identifies the blocked Splunk tool and phase.",
+      evidence: { code: "FIREWALL_POLICY_BLOCKED", phase: "before", toolName: "splunk_run_query" }
+    },
+    {
+      id: "firewall-block-before-splunk",
+      status: "PASS",
+      detail: "Query was rejected before Splunk execution and without mutation.",
+      evidence: { blockedBeforeSplunk: true, mutation: false }
+    }
+  ]
+} as const;
+
 const jsonResponse = (value: unknown): Response => new Response(JSON.stringify(value), { status: 200 });
 
 const fetcherFor = (files: Record<string, unknown>) => async (url: string): Promise<Response> => {
@@ -567,6 +613,31 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("Mutation");
     expect(liveConnect).toContain("no");
     expect(liveConnect).toContain("artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/savedsearches.conf");
+  });
+
+  it("renders firewall block bundles as pre-execution proof", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": contract,
+        "firewall-block-before.json": firewallBlock,
+        "proof-audit.json": firewallProofAudit
+      })
+    );
+    const receipt = renderApp(bundle, "receipt");
+    const liveConnect = renderApp(bundle, "live-connect");
+
+    expect(bundle.firewallBlock?.code).toBe("FIREWALL_POLICY_BLOCKED");
+    expect(receipt).toContain("Firewall block");
+    expect(receipt).toContain("BLOCKED");
+    expect(receipt).toContain("Blocked before Splunk");
+    expect(receipt).toContain("SPL-001 / SPL-003");
+    expect(receipt).toContain("firewall-block");
+    expect(receipt).not.toContain("Artifact bundle incomplete");
+    expect(liveConnect).toContain("Firewall block");
+    expect(liveConnect).toContain("Query uses index=* and would search every index.");
+    expect(liveConnect).toContain("before splunk_run_query");
+    expect(liveConnect).toContain("audit pass");
   });
 
   it("shows an actionable warning when proof artifacts are missing from the UI bundle", async () => {

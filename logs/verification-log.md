@@ -4595,3 +4595,66 @@ Open risks:
 - The Vite UI does not yet render `firewall-block-before.json`; the artifact is currently CLI/proof-audit consumable.
 - The firewall intentionally protects `splunk_run_query`; saved-search checks remain delegated to the deterministic receipt rules and trusted saved-search contract.
 - Live hosted-model proof remains gated by SAIA-capable MCP access.
+
+## 2026-06-03 - Phase Live Firewall Block UI Evidence
+
+Commands:
+
+- `sed -n '1,220p' /Users/arshdeepsingh/.agents/skills/frontend-design/SKILL.md`
+- `sed -n '1,220p' /Users/arshdeepsingh/.agents/skills/uncodixfy/SKILL.md`
+- `sed -n '1,260p' ui/src/artifacts.ts && sed -n '1,430p' ui/src/render.ts`
+- `sed -n '260,460p' ui/src/artifacts.ts`
+- `sed -n '430,760p' ui/src/render.ts`
+- `sed -n '500,720p' tests/ui/app.test.ts`
+- `sed -n '80,260p' tests/ui/app.test.ts`
+- `sed -n '260,500p' tests/ui/app.test.ts`
+- `npm run build`
+- `npx vitest run tests/ui/app.test.ts`
+- `npm run ui:build`
+- `rm -rf artifacts/firewall-block-ui && npm run splunkready -- compile --out artifacts/firewall-block-ui >/dev/null && npm run splunkready -- evaluate --out artifacts/firewall-block-ui --firewall >/tmp/splunkready-firewall-ui-stdout.txt 2>/tmp/splunkready-firewall-ui-stderr.txt; code=$?; npm run splunkready -- proof-audit --out artifacts/firewall-block-ui --require-pass true --json; echo "evaluate_exit=$code"; cat /tmp/splunkready-firewall-ui-stderr.txt`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `npm run ui:dev -- --port 5175`
+- `CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"; PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh"; bash "$PWCLI" open 'http://127.0.0.1:5175/?artifacts=artifacts/firewall-block-ui#live-connect'`
+- `CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"; PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh"; bash "$PWCLI" snapshot`
+- `mkdir -p output/playwright; CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"; PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh"; bash "$PWCLI" screenshot --filename output/playwright/firewall-block-live-connect.png --full-page`
+- `lsof -ti tcp:5175 | xargs -r kill`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for UI skill guardrails:
+  - `frontend-design` and `uncodixfy` guidance were read before editing frontend files.
+- PASS for TypeScript build.
+- PASS for focused UI tests:
+  - `tests/ui/app.test.ts`: 11 tests passed.
+- PASS for Vite production build:
+  - 21 modules transformed;
+  - output written to `dist-ui`.
+- PASS for local firewall UI artifact generation:
+  - `evaluate --firewall` exited `1` as expected;
+  - `proof-audit --require-pass true --json` passed for `artifacts/firewall-block-ui`;
+  - stderr contained `FIREWALL_POLICY_BLOCKED`.
+- PASS for Playwright browser verification:
+  - opened `http://127.0.0.1:5175/?artifacts=artifacts/firewall-block-ui#live-connect`;
+  - snapshot showed sidebar `BLOCKED / --`;
+  - snapshot showed `firewall-block`, `audit pass`, and `before splunk_run_query`;
+  - snapshot showed `Proof audit` with `firewall-block`;
+  - snapshot showed `Firewall block` ledger rows with `FIREWALL_POLICY_BLOCKED`, `Blocked before Splunk yes`, `Mutation no`, the blocked SPL, and deterministic rule reasons.
+- PASS for screenshot capture:
+  - `output/playwright/firewall-block-live-connect.png`.
+- PASS for cleanup:
+  - Vite process on port `5175` was stopped.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 728 project files;
+  - 38 test files;
+  - 211 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The firewall block UI is available only when the artifact bundle includes `firewall-block-before.json` or `firewall-block-after.json`.
+- The UI intentionally does not convert firewall blocks into Readiness Receipts; they remain pre-execution safety evidence.
+- Live hosted-model proof remains gated by SAIA-capable MCP access.

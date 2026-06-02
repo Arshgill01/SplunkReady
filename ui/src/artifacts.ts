@@ -84,7 +84,7 @@ const proofAuditCheckSchema = z
 const proofAuditSchema = z
   .object({
     status: z.enum(["PASS", "WARN", "FAIL"]),
-    proofType: z.enum(["live-security", "live", "receipt", "unknown"]),
+    proofType: z.enum(["live-security", "live", "receipt", "firewall-block", "unknown"]),
     proofDir: z.string().min(1),
     mode: z.enum(["fixture", "live"]).optional(),
     mutation: z.boolean().optional(),
@@ -97,6 +97,34 @@ const proofAuditSchema = z
   .strict();
 
 export type ProofAudit = z.infer<typeof proofAuditSchema>;
+
+const firewallBlockSchema = z
+  .object({
+    status: z.literal("BLOCKED"),
+    code: z.literal("FIREWALL_POLICY_BLOCKED"),
+    phase: z.enum(["before", "after"]),
+    mode: z.enum(["fixture", "live"]),
+    mutation: z.literal(false),
+    blockedBeforeSplunk: z.literal(true),
+    toolName: z.string().min(1),
+    requestId: z.string().min(1),
+    missionId: z.string().min(1).optional(),
+    message: z.string().min(1),
+    query: z.string().min(1).optional(),
+    violations: z
+      .array(
+        z
+          .object({
+            ruleId: z.string().min(1),
+            reason: z.string().min(1)
+          })
+          .passthrough()
+      )
+      .optional()
+  })
+  .strict();
+
+export type FirewallBlock = z.infer<typeof firewallBlockSchema>;
 
 const liveProofSummarySchema = z
   .object({
@@ -270,6 +298,7 @@ export interface UiArtifactBundle {
   liveSecurityKit?: LiveSecurityKit;
   hostedModelProof?: HostedModelProof;
   proofAudit?: ProofAudit;
+  firewallBlock?: FirewallBlock;
   beforeTrace: TraceEvent[];
   afterTrace: TraceEvent[];
   beforeViolations: Violation[];
@@ -291,6 +320,8 @@ const optionalFiles = [
   "live-security-kit.json",
   "hosted-model-proof.json",
   "proof-audit.json",
+  "firewall-block-before.json",
+  "firewall-block-after.json",
   "trace-before.json",
   "trace-after.json",
   "violations-before.json",
@@ -395,6 +426,9 @@ export const loadUiArtifactBundle = async (
     liveSecurityKit: liveSecurityKitSchema.optional().parse(loaded.get("live-security-kit.json")),
     hostedModelProof: hostedModelProofSchema.optional().parse(loaded.get("hosted-model-proof.json")),
     proofAudit: proofAuditSchema.optional().parse(loaded.get("proof-audit.json")),
+    firewallBlock: firewallBlockSchema
+      .optional()
+      .parse(loaded.get("firewall-block-before.json") ?? loaded.get("firewall-block-after.json")),
     beforeTrace: traceEventSchema.array().optional().parse(loaded.get("trace-before.json")) ?? [],
     afterTrace: traceEventSchema.array().optional().parse(loaded.get("trace-after.json")) ?? [],
     beforeViolations: violationSchema.array().optional().parse(loaded.get("violations-before.json")) ?? [],
@@ -417,12 +451,14 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   kitStory: string;
   hostedModelStory: string;
   auditStory: string;
+  firewallStory: string;
 } => {
   const receipt = bundle.receipt;
   const contract = bundle.liveSmokeContract ?? bundle.contract;
+  const firewallBlock = bundle.firewallBlock;
 
   return {
-    verdict: receipt?.verdict ?? "NO RECEIPT",
+    verdict: receipt?.verdict ?? (firewallBlock ? "BLOCKED" : "NO RECEIPT"),
     score: receipt ? `${receipt.score}/100` : "--",
     mode: contract?.mode ?? receipt?.mode ?? "unknown",
     contract: contract?.id ?? receipt?.environment.id ?? "not loaded",
@@ -430,7 +466,9 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
     afterViolations: bundle.afterViolations.length,
     traceEvents: bundle.beforeTrace.length + bundle.afterTrace.length,
     saiaItems: bundle.policyPatch?.splAssistance?.length ?? 0,
-    proofStory: bundle.liveProofSummary?.failToPass
+    proofStory: firewallBlock
+      ? "firewall-block"
+      : bundle.liveProofSummary?.failToPass
       ? "fail-to-pass"
       : bundle.liveProofSummary?.readyWithoutPatch
         ? "ready-without-patch"
@@ -456,6 +494,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
       bundle.liveSecurityProofSummary?.hostedModels?.status ??
       bundle.liveProofSummary?.hostedModels?.status ??
       (bundle.policyPatch?.splAssistance?.length ? "invoked" : "not loaded"),
-    auditStory: bundle.proofAudit ? `audit ${bundle.proofAudit.status.toLowerCase()}` : "audit not loaded"
+    auditStory: bundle.proofAudit ? `audit ${bundle.proofAudit.status.toLowerCase()}` : "audit not loaded",
+    firewallStory: firewallBlock ? `${firewallBlock.phase} ${firewallBlock.toolName}` : "firewall not loaded"
   };
 };

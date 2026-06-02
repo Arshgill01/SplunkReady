@@ -2,6 +2,7 @@ import {
   normalizeArtifactBase,
   summarizeBundle,
   type ArtifactOption,
+  type FirewallBlock,
   type HostedModelProof,
   type HostedModelSummary,
   type ProofAudit,
@@ -68,8 +69,9 @@ const renderFactTable = (rows: Array<[string, unknown]>): string =>
 const renderProofArtifactWarning = (bundle: UiArtifactBundle): string => {
   const hasReceipt = Boolean(bundle.receipt);
   const hasTrace = bundle.beforeTrace.length > 0 || bundle.afterTrace.length > 0;
+  const hasFirewallBlock = Boolean(bundle.firewallBlock);
 
-  if (hasReceipt && hasTrace) {
+  if ((hasReceipt && hasTrace) || hasFirewallBlock) {
     return "";
   }
 
@@ -366,6 +368,29 @@ const renderProofAuditPanel = (audit: ProofAudit | undefined): string => {
   </section>`;
 };
 
+const renderFirewallBlock = (block: FirewallBlock | undefined): string => {
+  if (!block) {
+    return "";
+  }
+
+  return `<section class="panel firewall-block-panel">
+    <h2>Firewall block</h2>
+    ${renderFactTable([
+      ["Status", block.status],
+      ["Code", block.code],
+      ["Phase", block.phase],
+      ["Tool", block.toolName],
+      ["Request", block.requestId],
+      ["Mission", block.missionId ?? "n/a"],
+      ["Blocked before Splunk", block.blockedBeforeSplunk ? "yes" : "no"],
+      ["Mutation", block.mutation ? "yes" : "no"],
+      ["Query", block.query ?? "n/a"],
+      ["Rules", (block.violations ?? []).map((violation) => `${violation.ruleId}: ${violation.reason}`).join(" / ")],
+      ["Message", block.message]
+    ])}
+  </section>`;
+};
+
 const renderLiveSecurityReadiness = (bundle: UiArtifactBundle): string => {
   const readiness = bundle.liveSecurityReadiness;
 
@@ -513,6 +538,22 @@ const renderReceipt = (bundle: UiArtifactBundle, options: RenderOptions): string
             ? `<section class="receipt-book-section">
                 <h2>Proof audit</h2>
                 ${renderFactTable(renderProofAuditSummaryRows(bundle.proofAudit))}
+              </section>`
+            : ""
+        }
+        ${
+          bundle.firewallBlock
+            ? `<section class="receipt-book-section">
+                <h2>Firewall block</h2>
+                ${renderFactTable([
+                  ["Status", bundle.firewallBlock.status],
+                  ["Phase", bundle.firewallBlock.phase],
+                  ["Tool", bundle.firewallBlock.toolName],
+                  ["Blocked before Splunk", bundle.firewallBlock.blockedBeforeSplunk ? "yes" : "no"],
+                  ["Mutation", bundle.firewallBlock.mutation ? "yes" : "no"],
+                  ["Rules", (bundle.firewallBlock.violations ?? []).map((item) => item.ruleId).join(" / ")],
+                  ["Query", bundle.firewallBlock.query ?? "n/a"]
+                ])}
               </section>`
             : ""
         }
@@ -694,6 +735,7 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
           ])}
         </section>
         ${renderProofAuditPanel(bundle.proofAudit)}
+        ${renderFirewallBlock(bundle.firewallBlock)}
         ${renderLiveProofSummary(bundle)}
         ${renderLiveSecurityProofSummary(bundle)}
         ${renderHostedModelSummary(bundle.liveSecurityProofSummary?.hostedModels ?? bundle.liveProofSummary?.hostedModels)}
@@ -754,6 +796,7 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: Re
       <span>${value(summary.kitStory)}</span>
       <span>${value(summary.hostedModelStory)}</span>
       <span>${value(summary.auditStory)}</span>
+      <span>${value(summary.firewallStory)}</span>
     </div>
   </aside>`;
 };

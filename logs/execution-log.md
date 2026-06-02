@@ -4426,6 +4426,83 @@ Reviewer findings:
 Result:
 - TypeScript build, focused firewall CLI tests, direct CLI smoke, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Firewall Block UI Evidence
+
+Scope:
+- Make firewall block proof bundles inspectable in the Vite artifact app.
+- Keep the UI as a proof ledger, not a generic dashboard.
+- Avoid adding a new view; render the block in existing Receipt and Live Connect surfaces.
+
+Files expected/touched:
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- The Vite artifact loader now accepts:
+  - `firewall-block-before.json`;
+  - `firewall-block-after.json`.
+- `proof-audit.json` schema now accepts `proofType: firewall-block`.
+- Sidebar summary now shows:
+  - `BLOCKED / --` when no receipt exists but a firewall block exists;
+  - `firewall-block` as the proof story;
+  - phase/tool summary such as `before splunk_run_query`.
+- Receipt and Live Connect routes now render a `Firewall block` ledger section with:
+  - code;
+  - phase;
+  - blocked tool;
+  - request/mission context;
+  - pre-Splunk block status;
+  - mutation status;
+  - blocked query;
+  - deterministic rule reasons.
+- Firewall-only bundles no longer show the generic "Artifact bundle incomplete" warning.
+
+Browser verification:
+- Generated local artifact bundle:
+  - `artifacts/firewall-block-ui`.
+- Started Vite locally:
+  - `http://127.0.0.1:5175/?artifacts=artifacts/firewall-block-ui#live-connect`.
+- Playwright snapshot confirmed:
+  - sidebar shows `BLOCKED / --`;
+  - sidebar shows `firewall-block`;
+  - sidebar shows `audit pass`;
+  - sidebar shows `before splunk_run_query`;
+  - Live Connect shows `Proof audit` with `firewall-block`;
+  - Live Connect shows `Firewall block`;
+  - block rows include `FIREWALL_POLICY_BLOCKED`, `Blocked before Splunk yes`, `Mutation no`, blocked SPL, and `SPL-001` / `SPL-003`.
+- Screenshot:
+  - `output/playwright/firewall-block-live-connect.png`.
+
+Product impact:
+- A stopped unsafe agent action is now visible in the same artifact app as receipts and live proof summaries.
+- This makes the firewall path demoable and reviewable without requiring raw JSON inspection.
+- The UI remains evidence-backed: every displayed claim comes from `environment-contract.json`, `firewall-block-before.json`, or `proof-audit.json`.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 31% | 31% | No new runtime behavior beyond the previous firewall artifact. |
+| Platform & DX | 83% | 84% | Developers can inspect firewall blocks in the same artifact app as receipts. |
+| Security | 47% | 48% | Unsafe SPL prevention is now visible as evidence, not just a CLI failure. |
+| Best Use of MCP Server | 82% | 82% | MCP behavior unchanged. |
+| Hosted Models | 49% | 49% | SAIA remains permission-blocked. |
+| Developer Tools | 82% | 83% | UI now consumes the new firewall proof artifact. |
+
+Next directions to consider in future runs:
+- Consider adding a CI workflow note for uploading `firewall-block-*.json` on failure.
+- Continue to keep blocked firewall bundles separate from Readiness Receipt pass/fail semantics.
+- Rerun hosted-model live proof once SAIA permissions are resolved.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- TypeScript build, focused UI tests, Vite production build, local artifact generation, strict proof audit, Playwright browser verification, full repo verification, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live GitHub Proof Gate Example
 
 Scope:
