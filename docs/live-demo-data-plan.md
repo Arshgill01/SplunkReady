@@ -95,6 +95,22 @@ SplunkReady must not auto-mutate Splunk. Any live demo data, saved search, app i
 
 Use this when the final video must show lateral movement readiness.
 
+SplunkReady can generate a local operator-owned setup kit for this path:
+
+```bash
+npm run splunkready -- live-security-kit --out artifacts/live-security-kit --json
+```
+
+The command writes local files only. It does not call Splunk and does not mutate any deployment. The generated kit includes:
+
+- `SplunkEnterpriseSecuritySuite/default/savedsearches.conf` with the exact saved search `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`;
+- `SplunkEnterpriseSecuritySuite/default/indexes.conf` with `wineventlog`;
+- `SplunkEnterpriseSecuritySuite/default/props.conf` for `XmlWinEventLog:Security` CSV parsing;
+- `lateral-movement-events.csv` with three evidence rows;
+- `README.md` with operator install/import/rerun commands.
+
+The app directory is intentionally named `SplunkEnterpriseSecuritySuite` because the readiness contract checks the saved-search app context, not just the saved-search display name. If Enterprise Security is already installed, merge the generated stanzas through the normal Splunk admin process instead of overwriting the app.
+
 Operator-approved setup required:
 
 1. Create or install a read-only saved search named `ES - Lateral Movement Auth Chain` in app `SplunkEnterpriseSecuritySuite`.

@@ -101,6 +101,7 @@ Commands:
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]
+  live-security-kit --out <dir> [--json]
   live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--json]
   receipt   --out <dir> [--phase before|after] [--json]
   rerun     --mode fixture|live --out <dir> [--firewall] [--json]
@@ -555,6 +556,144 @@ const flagshipSecuritySavedSearch = {
   app: "SplunkEnterpriseSecuritySuite",
   name: "ES - Lateral Movement Auth Chain",
   ref: "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain"
+};
+
+const liveSecurityKitCommand = async (options: CliOptions): Promise<string[]> => {
+  const appRoot = join(options.out, flagshipSecuritySavedSearch.app);
+  const appConfPath = join(appRoot, "default", "app.conf");
+  const indexesPath = join(appRoot, "default", "indexes.conf");
+  const propsPath = join(appRoot, "default", "props.conf");
+  const savedSearchesPath = join(appRoot, "default", "savedsearches.conf");
+  const sampleEventsPath = join(options.out, "lateral-movement-events.csv");
+  const readmePath = join(options.out, "README.md");
+  const manifestPath = join(options.out, "live-security-kit.json");
+
+  await writeText(
+    appConfPath,
+    `[install]
+is_configured = 1
+
+[launcher]
+author = SplunkReady
+description = Read-only content for the SplunkReady flagship security readiness proof.
+version = 0.1.0
+
+[ui]
+is_visible = 0
+label = SplunkReady Security Readiness
+`
+  );
+  await writeText(
+    indexesPath,
+    `[wineventlog]
+datatype = event
+homePath = $SPLUNK_DB/wineventlog/db
+coldPath = $SPLUNK_DB/wineventlog/colddb
+thawedPath = $SPLUNK_DB/wineventlog/thaweddb
+`
+  );
+  await writeText(
+    propsPath,
+    `[XmlWinEventLog:Security]
+INDEXED_EXTRACTIONS = csv
+KV_MODE = none
+SHOULD_LINEMERGE = false
+TIMESTAMP_FIELDS = _time
+TIME_FORMAT = %Y-%m-%d %H:%M:%S
+`
+  );
+  await writeText(
+    savedSearchesPath,
+    `[${flagshipSecuritySavedSearch.name}]
+disabled = 0
+is_scheduled = 0
+dispatch.earliest_time = -24h
+dispatch.latest_time = now
+search = search index=wineventlog sourcetype=XmlWinEventLog:Security (src="win-finance-07" OR src="admin-login-02" OR src="dc-01" OR dest="win-finance-07" OR dest="admin-login-02" OR dest="dc-01") earliest=-24h latest=now | table _time eventRef sourcetype src dest user EventCode signature
+`
+  );
+  await writeText(
+    sampleEventsPath,
+    `_time,eventRef,sourcetype,host,src,dest,user,EventCode,signature
+2026-06-02 10:14:08,live-evt-102,XmlWinEventLog:Security,win-finance-07,win-finance-07,admin-login-02,svc-finance,4624,An account was successfully logged on
+2026-06-02 10:16:41,live-evt-118,XmlWinEventLog:Security,admin-login-02,admin-login-02,dc-01,svc-finance,4672,Special privileges assigned to new logon
+2026-06-02 10:21:19,live-evt-141,XmlWinEventLog:Security,dc-01,dc-01,finance-sql-03,svc-finance,4624,An account was successfully logged on
+`
+  );
+  await writeText(
+    readmePath,
+    `# SplunkReady Live Security Kit
+
+This directory contains an operator-owned setup bundle for the SplunkReady flagship security proof. SplunkReady generated these files locally; it did not connect to or mutate Splunk.
+
+## Contents
+
+- \`${flagshipSecuritySavedSearch.app}/default/indexes.conf\` defines the \`wineventlog\` index expected by the flagship mission.
+- \`${flagshipSecuritySavedSearch.app}/default/props.conf\` defines CSV parsing for \`XmlWinEventLog:Security\`.
+- \`${flagshipSecuritySavedSearch.app}/default/savedsearches.conf\` defines the exact saved search \`${flagshipSecuritySavedSearch.ref}\`.
+- \`lateral-movement-events.csv\` contains three evidence rows for the \`win-finance-07\` lateral-movement story.
+
+## Operator Setup
+
+Run these commands only on a local or approved Splunk Enterprise trial. They intentionally require an operator to install content and ingest data; SplunkReady will not do that automatically.
+
+If Splunk Enterprise Security is already installed, do not blindly overwrite that app. Merge the saved-search/index/props stanzas through your normal Splunk admin process. On a clean local trial, the generated \`${flagshipSecuritySavedSearch.app}\` app directory provides the app context needed for the exact saved-search reference.
+
+\`\`\`bash
+export SPLUNK_HOME=/path/to/splunk
+cd ${options.out}
+
+# Install or copy the app, then restart if your Splunk deployment requires it for indexes.conf.
+cp -R ${flagshipSecuritySavedSearch.app} "$SPLUNK_HOME/etc/apps/"
+"$SPLUNK_HOME/bin/splunk" restart
+
+# Ingest the sample evidence rows into the operator-created wineventlog index.
+"$SPLUNK_HOME/bin/splunk" add oneshot lateral-movement-events.csv \\
+  -index wineventlog \\
+  -sourcetype XmlWinEventLog:Security \\
+  -auth <user>:<password>
+\`\`\`
+
+## Verify
+
+After setup, rerun the read-only readiness diagnostic:
+
+\`\`\`bash
+set -a; source ./.splunkready-live.env; set +a
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-check --out artifacts/live-security-check --json
+\`\`\`
+
+Expected signal:
+
+- \`status\`: \`READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF\`
+- \`requiredSavedSearch.present\`: \`true\`
+- \`requiredSavedSearch.run.resultCount\`: at least \`1\`
+- \`requiredSavedSearch.run.evidenceRefs\`: non-empty
+
+Then run the live proof:
+
+\`\`\`bash
+set -a; source ./.splunkready-live.env; set +a
+export SPLUNKREADY_LLM_ENABLED=true
+export GEMINI_MODEL=gemini-3.1-flash-lite
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-proof --out artifacts/live-proof --candidate-limit 12 --json
+\`\`\`
+`
+  );
+  await writeJson(manifestPath, {
+    status: "PASS",
+    mutation: false,
+    operatorActionRequired: true,
+    mission: "mission-security-lateral-movement-readiness",
+    savedSearch: flagshipSecuritySavedSearch,
+    preferredIndex: "wineventlog",
+    sourcetype: "XmlWinEventLog:Security",
+    sampleEvents: 3,
+    generatedAt,
+    artifacts: [appConfPath, indexesPath, propsPath, savedSearchesPath, sampleEventsPath, readmePath]
+  });
+
+  return [manifestPath, appConfPath, indexesPath, propsPath, savedSearchesPath, sampleEventsPath, readmePath];
 };
 
 const liveSecurityCheckCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
@@ -1140,6 +1279,8 @@ const main = async (): Promise<void> => {
     artifacts = await liveCandidatesCommand(options);
   } else if (command === "live-security-check") {
     artifacts = await liveSecurityCheckCommand(options);
+  } else if (command === "live-security-kit") {
+    artifacts = await liveSecurityKitCommand(options);
   } else if (command === "live-proof") {
     artifacts = await liveProofCommand(options);
   } else if (command === "receipt") {

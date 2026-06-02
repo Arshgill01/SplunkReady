@@ -92,6 +92,20 @@ Suggestion:
 - Include example installation/setup steps for a read-only lateral-movement saved search and synthetic-but-realistic events in a local trial.
 - Expose saved-search metadata that indicates whether the search has returned rows recently and which indexes/sourcetypes it depends on.
 
+### Saved-search app context is easy to get wrong during setup
+
+Observed while generating the `live-security-kit` operator setup bundle. A saved search named `ES - Lateral Movement Auth Chain` is not enough; the contract and mission require the app-scoped reference `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`. A generated setup app with a different directory name would produce a saved search with the wrong app context even if the visible saved-search name looked correct.
+
+Impact:
+- Operators can install content that appears valid in Splunk search UI but still fails SplunkReady because MCP inventory reports a different app namespace.
+- Developers need to understand whether "app" means the visible app label, the app directory, or another stable object namespace.
+- This is a high-friction setup edge for local trials where Enterprise Security is not installed.
+
+Suggestion:
+- Document saved-search app namespace behavior explicitly in MCP onboarding examples.
+- Return app-qualified object refs in a canonical field such as `ref` alongside `app` and `name`.
+- Provide a clean local-trial example for app-scoped saved-search setup without requiring a full Enterprise Security install.
+
 ## MCP Server Limitations
 
 ### MCP response envelopes need normalization

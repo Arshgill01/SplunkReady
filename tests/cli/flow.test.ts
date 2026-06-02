@@ -1058,6 +1058,58 @@ describe("SplunkReady CLI flow", () => {
     expect(server.calls.map((call) => call.params.name)).not.toContain("splunk_run_saved_search");
   });
 
+  it("generates an operator-owned live security setup kit without live credentials", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-security-kit-"));
+    const output = parseCliJsonOutput(
+      (await runCli(["live-security-kit", "--out", outDir, "--json"], process.cwd(), {
+        SPLUNKREADY_LIVE_ENABLED: "",
+        SPLUNKREADY_SPLUNK_MCP_URL: "",
+        SPLUNKREADY_SPLUNK_MCP_TOKEN: ""
+      })).stdout
+    );
+
+    expect(output).toMatchObject({
+      command: "live-security-kit",
+      status: "PASS",
+      artifacts: expect.arrayContaining([
+        join(outDir, "live-security-kit.json"),
+        join(outDir, "SplunkEnterpriseSecuritySuite", "default", "savedsearches.conf"),
+        join(outDir, "lateral-movement-events.csv"),
+        join(outDir, "README.md")
+      ])
+    });
+
+    const manifest = JSON.parse(await readFile(join(outDir, "live-security-kit.json"), "utf8")) as {
+      mutation: boolean;
+      operatorActionRequired: boolean;
+      savedSearch: { ref: string };
+      preferredIndex: string;
+      sampleEvents: number;
+    };
+    const savedSearches = await readFile(
+      join(outDir, "SplunkEnterpriseSecuritySuite", "default", "savedsearches.conf"),
+      "utf8"
+    );
+    const indexes = await readFile(join(outDir, "SplunkEnterpriseSecuritySuite", "default", "indexes.conf"), "utf8");
+    const sampleEvents = await readFile(join(outDir, "lateral-movement-events.csv"), "utf8");
+    const readme = await readFile(join(outDir, "README.md"), "utf8");
+
+    expect(manifest).toMatchObject({
+      mutation: false,
+      operatorActionRequired: true,
+      savedSearch: { ref: "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain" },
+      preferredIndex: "wineventlog",
+      sampleEvents: 3
+    });
+    expect(savedSearches).toContain("[ES - Lateral Movement Auth Chain]");
+    expect(savedSearches).toContain("index=wineventlog");
+    expect(indexes).toContain("[wineventlog]");
+    expect(sampleEvents).toContain("live-evt-102");
+    expect(readme).toContain("SplunkReady generated these files locally; it did not connect to or mutate Splunk.");
+    expect(readme).toContain("generated `SplunkEnterpriseSecuritySuite` app directory provides the app context");
+    expect(readme).toContain("live-security-check --out artifacts/live-security-check --json");
+  });
+
   it("runs live proof end to end from a derived saved-search mission", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-proof-"));
     const gemini = await startMockGeminiServer();

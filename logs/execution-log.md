@@ -4496,4 +4496,68 @@ Reviewer findings:
 - Reviewer is off indefinitely per user direction.
 
 Result:
-- Focused UI tests, Vite build, TypeScript build, and Playwright browser verification passed. Full verification will be recorded in the verification log after the full suite runs.
+- Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
+
+## 2026-06-02 - Phase Live Operator-Owned Security Setup Kit
+
+Scope:
+- Make the blocked flagship live security proof solvable without SplunkReady mutating Splunk.
+- Generate local setup assets an operator can inspect, install, and ingest on an approved Splunk trial.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `docs/live-demo-data-plan.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/splunk-feedback.md`
+
+What changed:
+- Added `live-security-kit --out <dir> [--json]`.
+- The command writes:
+  - `live-security-kit.json`;
+  - `SplunkEnterpriseSecuritySuite/default/app.conf`;
+  - `SplunkEnterpriseSecuritySuite/default/indexes.conf`;
+  - `SplunkEnterpriseSecuritySuite/default/props.conf`;
+  - `SplunkEnterpriseSecuritySuite/default/savedsearches.conf`;
+  - `lateral-movement-events.csv`;
+  - `README.md`.
+- The generated app directory is intentionally `SplunkEnterpriseSecuritySuite` so the live contract can discover the exact saved-search reference `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`.
+- The kit marks `mutation: false` and `operatorActionRequired: true`; it does not connect to the live MCP endpoint.
+- `docs/live-demo-data-plan.md` now documents the kit as the operator-owned path for unblocking Move 3.
+
+Generated local artifact:
+- Command:
+  - `npm run splunkready -- live-security-kit --out artifacts/live-security-kit --json`
+- Output directory:
+  - `artifacts/live-security-kit`
+- Status:
+  - generated successfully;
+  - local and untracked.
+
+Product impact:
+- SplunkReady now diagnoses a live flagship security blocker and can produce the exact local setup bundle needed to resolve it.
+- The product still respects the non-mutation rule: setup remains operator-owned, and certification remains read-only.
+- This is a concrete path from `BLOCKED` to `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF` instead of a vague instruction to "install security data."
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 27% | 28% | The live proof gap now has an executable setup path. |
+| Platform & DX | 64% | 67% | Operators get a generated content kit and repeatable readiness loop. |
+| Security | 33% | 38% | The flagship security story can now be made green on the local trial. |
+| Best Use of MCP Server | 78% | 79% | The MCP readiness loop is closer to a complete live proof path. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 59% | 62% | CLI now bridges diagnostic output to operator-owned remediation assets. |
+
+Next directions to consider in future runs:
+- Ask the operator to install/import the generated kit only when they are ready; do not auto-run the setup.
+- After operator setup, rerun `live-security-check`; if it reports ready, run `live-proof` with Gemini and inspect whether fail-to-pass is achieved.
+- If the saved-search run returns rows but no evidence refs, improve live result normalization or kit result fields.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI test/build, generated-kit smoke run, full repo verification, and `git diff --check` passed.

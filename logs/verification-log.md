@@ -3594,3 +3594,38 @@ Open risks:
 - Browser screenshot artifacts remain untracked under `output/playwright/`.
 - Real endpoint artifacts remain untracked under `artifacts/live-security-check/`.
 - The live security fail-to-pass path still requires operator-approved Splunk content setup; this UI exposes the gap but does not mutate Splunk to resolve it.
+
+## 2026-06-02 - Phase Live Operator-Owned Security Setup Kit
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts && npm run build`
+- `npm run splunkready -- live-security-kit --out artifacts/live-security-kit --json`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused CLI flow tests: 1 file / 18 tests.
+- PASS for TypeScript build.
+- PASS for local kit generation under `artifacts/live-security-kit`.
+- PASS for full verification: scaffold verified, 85 waves, 639 project files, 38 test files, 200 tests.
+- PASS for `git diff --check`.
+- Generated kit artifacts:
+  - `artifacts/live-security-kit/live-security-kit.json`;
+  - `artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/app.conf`;
+  - `artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/indexes.conf`;
+  - `artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/props.conf`;
+  - `artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/savedsearches.conf`;
+  - `artifacts/live-security-kit/lateral-movement-events.csv`;
+  - `artifacts/live-security-kit/README.md`.
+- Test coverage confirmed:
+  - no live credentials are required for `live-security-kit`;
+  - manifest sets `mutation: false`;
+  - manifest sets `operatorActionRequired: true`;
+  - saved search is emitted in the `SplunkEnterpriseSecuritySuite` app context;
+  - `wineventlog` and evidence rows are present in the generated assets.
+
+Open risks:
+
+- Generated kit artifacts remain untracked under `artifacts/live-security-kit/`.
+- The kit only prepares operator-owned setup files; a human still has to install/import them on the approved Splunk trial before the live security proof can turn green.
