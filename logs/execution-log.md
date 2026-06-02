@@ -4364,6 +4364,90 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Flagship Security Proof Green
+
+Scope:
+- Close the flagship live security proof blocker against the local Splunk Enterprise trial.
+- Keep SplunkReady's non-mutation boundary explicit: generated kit installation and CSV ingestion were operator-approved live setup actions, not automatic SplunkReady behavior.
+- Fix live adapter behavior discovered during the real MCP run.
+
+Files expected/touched:
+- `src/adapters/live.ts`
+- `src/cli.ts`
+- `tests/adapters/live.integration.test.ts`
+- `tests/cli/flow.test.ts`
+- `logs/splunk-feedback.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- `live-security-kit` no longer emits invalid `is_scheduled = 0` in `savedsearches.conf`.
+- The generated flagship saved search now:
+  - relies on `dispatch.earliest_time = -24h` / `dispatch.latest_time = now`;
+  - starts SPL at `index=wineventlog`;
+  - extracts `eventRef`, `src`, `dest`, `user`, `EventCode`, and `signature` from `_raw` with `rex`;
+  - preserves the evidence table expected by the readiness receipt.
+- The live adapter now sends `saved_search_name` to the MCP `splunk_run_saved_search` tool instead of the internal `name` field.
+- The MCP response parser now treats `result.isError === true` as a real adapter error instead of silently normalizing the text payload to zero rows.
+- Regression tests cover both the `saved_search_name` mapping and MCP `isError` behavior.
+- `logs/splunk-feedback.md` records:
+  - invalid saved-search config key friction;
+  - one-shot CSV field extraction friction;
+  - `saved_search_name` vs `name` MCP argument mismatch.
+
+Live setup actions completed with user permission:
+- Installed the generated `SplunkEnterpriseSecuritySuite` app into `/Applications/Splunk/etc/apps/`.
+- Restarted local Splunk Enterprise; final restart had clean configuration checks and validated `wineventlog`.
+- Imported generated `lateral-movement-events.csv` into `wineventlog` with `splunk add oneshot`.
+
+Live proof result:
+- `live-security-check` is green:
+  - status `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`;
+  - saved search present;
+  - result count `9`;
+  - evidence refs include `live-evt-118`, `live-evt-102`, and `live-evt-141`;
+  - no blockers.
+- `live-security-proof` passed against live read-only Splunk MCP:
+  - before receipt: `NOT READY`, score `60`, 2 violations, 1 Critical;
+  - after receipt: `READY`, score `100`, 0 violations, 3 live evidence refs;
+  - summary: `failToPass: true`, `readyAfterPatch: true`, `mutation: false`.
+- The Vite UI artifact bundle was refreshed from `artifacts/live-security-proof`.
+- Browser snapshot at `http://127.0.0.1:5173/` rendered:
+  - `NOT READY / 60` before;
+  - `READY / 100` after;
+  - `Live proof summary`;
+  - `Fail to pass yes`;
+  - `Mutation no`.
+
+Product impact:
+- Move 3 is no longer a theoretical gap: SplunkReady has now certified a Gemini-backed agent trace against real live Splunk MCP calls and produced the fail -> patch -> rerun -> pass readiness receipt.
+- The product story is materially stronger for Platform/DX, MCP Server, and Security because the UI and artifacts now show live evidence refs rather than fixture-only proof.
+- The adapter fix is broadly useful beyond the demo because it prevents MCP tool argument errors from masquerading as empty results.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 33% | Live LLM fail-to-pass proof materially improves credibility. |
+| Platform & DX | 69% | 74% | The certification harness now works against a real local Splunk MCP endpoint. |
+| Security | 39% | 48% | Flagship lateral-movement proof now has live evidence refs. |
+| Best Use of MCP Server | 79% | 86% | Real `splunk_run_saved_search` and live evidence are green. |
+| Hosted Models | 53% | 53% | No new SAIA output in this proof because live violations were not SPL-rule violations. |
+| Developer Tools | 64% | 68% | Adapter error handling and setup kit robustness improved. |
+
+Next directions to consider in future runs:
+- Make the Vite UI clearer when `SAIA items` are zero because the current violation set has no SPL violations, not because SAIA integration is absent.
+- Add a lightweight `live-security-install-check` or docs-only verification command that validates the generated app with `splunk btool` before proof runs.
+- Consider deduplicating imported sample event refs in proof summaries when repeated operator imports create repeated live rows.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused adapter/CLI tests passed.
+- Live security readiness and proof commands passed.
+- Browser snapshot confirmed the refreshed UI renders live fail-to-pass data.
+
 ## 2026-06-03 - Phase Live Security Proof Summary in Vite UI
 
 Scope:

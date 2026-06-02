@@ -249,6 +249,12 @@ const normalizeLiveSavedSearchResult = (input: RunSavedSearchRequest, value: unk
   };
 };
 
+const liveSavedSearchInput = (input: RunSavedSearchRequest): Record<string, unknown> => ({
+  saved_search_name: input.name,
+  ...(input.app ? { app: input.app } : {}),
+  ...(input.maxRows ? { maxRows: input.maxRows } : {})
+});
+
 const normalizeExplainSplResult = (value: unknown): ExplainSplResult => {
   const row = firstRowFrom(value);
   const explanation =
@@ -298,6 +304,17 @@ const extractMcpToolOutput = (payload: unknown): unknown => {
   const result = payload.result;
   if (!isRecord(result)) {
     return result ?? payload;
+  }
+
+  if (result.isError === true) {
+    const text =
+      Array.isArray(result.content) &&
+      result.content.find(
+        (item): item is { type: string; text: string } =>
+          isRecord(item) && item.type === "text" && typeof item.text === "string"
+      )?.text;
+
+    throw new Error(text || "Live MCP tool call failed.");
   }
 
   if ("structuredContent" in result) {
@@ -578,9 +595,9 @@ export const createLiveSplunkAccessAdapter = (
         (output) => normalizeLiveQueryResult(input, output)
       ),
     runSavedSearch: (input: RunSavedSearchRequest, options) =>
-      callLiveTool<RunSavedSearchRequest, unknown>(
+      callLiveTool<Record<string, unknown>, unknown>(
         "splunk_run_saved_search",
-        input,
+        liveSavedSearchInput(input),
         options,
         "Live Splunk saved search executed."
       ).then((output) => normalizeLiveSavedSearchResult(input, output)),

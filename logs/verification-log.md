@@ -3835,3 +3835,64 @@ Open risks:
 
 - This still does not mutate Splunk. The operator must import/install the generated kit before `live-security-check` can become green on the real endpoint.
 - The refreshed generated artifacts remain untracked under `artifacts/`.
+
+## 2026-06-03 - Phase Live Flagship Security Proof Green
+
+Commands:
+
+- `cp -R artifacts/live-security-kit/SplunkEnterpriseSecuritySuite /Applications/Splunk/etc/apps/ && /Applications/Splunk/bin/splunk restart`
+- `npm run build && rm -rf artifacts/live-security-kit && npm run splunkready -- live-security-kit --out artifacts/live-security-kit --json`
+- `rm -rf /Applications/Splunk/etc/apps/SplunkEnterpriseSecuritySuite && cp -R artifacts/live-security-kit/SplunkEnterpriseSecuritySuite /Applications/Splunk/etc/apps/ && /Applications/Splunk/bin/splunk restart`
+- `set -a; source ./.splunkready-live.env; set +a; NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-check --out artifacts/live-security-check --json`
+- `set -a; source ./.splunkready-live.env; set +a; /Applications/Splunk/bin/splunk add oneshot artifacts/live-security-kit/lateral-movement-events.csv -index wineventlog -sourcetype XmlWinEventLog:Security -auth "$SPLUNKREADY_SPLUNK_USERNAME:$SPLUNKREADY_SPLUNK_PASSWORD"`
+- `set -a; source ./.splunkready-live.env; set +a; /Applications/Splunk/bin/splunk search 'index=wineventlog | rex field=_raw "^(?<_csv_time>[^,]+),(?<eventRef>[^,]+),(?<csv_sourcetype>[^,]+),(?<csv_host>[^,]+),(?<src>[^,]+),(?<dest>[^,]+),(?<user>[^,]+),(?<EventCode>[^,]+),(?<signature>.*)$" | search (src="win-finance-07" OR src="admin-login-02" OR src="dc-01" OR dest="win-finance-07" OR dest="admin-login-02" OR dest="dc-01") | eval sourcetype=coalesce(sourcetype, csv_sourcetype) | table _time eventRef sourcetype src dest user EventCode signature' -earliest_time -24h -latest_time now -auth "$SPLUNKREADY_SPLUNK_USERNAME:$SPLUNKREADY_SPLUNK_PASSWORD" -output json`
+- `set -a; source ./.splunkready-live.env; set +a; NODE_TLS_REJECT_UNAUTHORIZED=0 node --input-type=module <<'NODE' ... MCP saved-search argument probe ... NODE`
+- `npx vitest run tests/adapters/live.integration.test.ts`
+- `npx vitest run tests/adapters/live.test.ts tests/adapters/live.integration.test.ts tests/cli/flow.test.ts`
+- `set -a; source ./.splunkready-live.env; set +a; export SPLUNKREADY_LLM_ENABLED=true; export GEMINI_MODEL=gemini-3.1-flash-lite; NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-proof --out artifacts/live-security-proof --json`
+- `npm run splunkready -- live-security-ui-bundle --proof-dir artifacts/live-security-proof --security-check-dir artifacts/live-security-check --security-kit-dir artifacts/live-security-kit --out artifacts/live-security-ui --json`
+- `bash "$PWCLI" open 'http://127.0.0.1:5173/' && bash "$PWCLI" snapshot`
+
+Result:
+
+- PASS for first generated app install/restart, but Splunk reported invalid saved-search key `is_scheduled = 0`.
+- PASS after generator fix and reinstall/restart:
+  - Splunk configuration checks were clean;
+  - `wineventlog` index validated.
+- PASS for generated kit command after removing invalid saved-search key and adding `_raw` field extraction.
+- PASS for operator-approved CSV import:
+  - `splunk add oneshot` accepted `lateral-movement-events.csv`;
+  - `eventcount` showed rows in `wineventlog`.
+- PASS for direct SPL verification after search-shape fix:
+  - query returned live rows with `eventRef`, `src`, `dest`, `user`, `EventCode`, and `signature`.
+- MCP probe findings:
+  - `{ app, name }` returned `Missing required argument: saved_search_name`;
+  - `{ app, saved_search_name }` returned live saved-search rows;
+  - direct `splunk_run_query` also returned live rows.
+- PASS for focused adapter integration tests:
+  - 6 tests passed.
+- PASS for targeted adapter/CLI tests:
+  - 3 test files passed;
+  - 35 tests passed.
+- PASS for TypeScript build.
+- PASS for live security readiness:
+  - status `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`;
+  - `resultCount: 9`;
+  - non-empty evidence refs;
+  - no blockers.
+- PASS for live security proof:
+  - before receipt `NOT READY`, score `60`, 2 violations, 1 Critical;
+  - after receipt `READY`, score `100`, 0 violations, 3 evidence refs;
+  - `failToPass: true`;
+  - `mutation: false`.
+- PASS for refreshed Vite UI bundle from `artifacts/live-security-proof`.
+- PASS for browser snapshot:
+  - sidebar shows `READY / 100/100`, `fail-to-pass`, and `security fail-to-pass`;
+  - replay shows before `NOT READY`, after `READY`;
+  - live proof summary shows `Fail to pass yes` and `Mutation no`.
+
+Open risks:
+
+- Local TLS still uses `NODE_TLS_REJECT_UNAUTHORIZED=0`; this remains a local trial workaround and is logged in `logs/splunk-feedback.md`.
+- Repeated CSV imports create duplicate live evidence rows; the receipt remains correct, but summaries may show more raw result rows than the three canonical evidence refs.
+- SAIA assistance is still zero in this live proof because the failing live trace did not produce SPL-family violations; SAIA wiring should be demonstrated separately with an SPL violation path.

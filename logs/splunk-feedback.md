@@ -120,6 +120,35 @@ Suggestion:
 - MCP demo setup guides should include a row-count verification step immediately after data import.
 - When possible, provide sample-data import commands or packs that generate current timestamps for relative-time demos.
 
+### Saved-search configuration keys vary enough to break clean local installs
+
+Observed while installing the generated `live-security-kit` app into a local Splunk Enterprise 10.4 trial. Splunk accepted the app and restarted, but emitted a configuration warning for `is_scheduled = 0` in `savedsearches.conf`: `Invalid key in stanza [ES - Lateral Movement Auth Chain]`. The saved search is intentionally unscheduled, and the correct generated config can rely on `disabled = 0` plus dispatch-time settings without this invalid key.
+
+Impact:
+- A setup bundle can work while still producing warnings that reduce confidence in the live proof.
+- Developers may waste time debugging app install health when the issue is a stale or invalid saved-search config key.
+- Demo setup should be warning-free wherever possible because every warning looks like product fragility.
+
+Suggestion:
+- Splunk saved-search setup examples should clearly distinguish supported keys for savedsearches.conf in current Splunk Enterprise versions.
+- MCP/demo sample packs should include a `splunk btool check` or equivalent config-validation step before asking developers to run proof commands.
+
+### One-shot CSV ingestion may index events before usable field extraction appears
+
+Observed during the local flagship proof setup. `splunk add oneshot` accepted the generated CSV and `eventcount` showed three rows in `wineventlog`, but the saved search returned zero rows because fields such as `src`, `dest`, and `eventRef` were not available as searchable fields. A direct `_raw` search showed the events existed; adding `rex field=_raw` inside the saved search made the same rows evidence-preserving and runnable.
+
+Impact:
+- Developers can successfully ingest sample data and still get zero rows from a field-filtered saved search.
+- The failure mode looks like missing data, stale timestamps, or MCP trouble even though the events are present in the index.
+- Demo setup needs to be robust to fresh local-trial parsing differences and one-shot import behavior.
+
+Suggestion:
+- Sample-data packs should either include transforms proven to apply for one-shot ingestion or use self-contained saved searches that extract required fields from `_raw`.
+- Splunk MCP demo docs should recommend verifying both `eventcount` and a field-level query before assuming a saved search is ready.
+
+Follow-up:
+- The saved search also needed to rely on `dispatch.earliest_time = -24h` / `dispatch.latest_time = now` instead of embedding `earliest=-24h latest=now` inside the SPL string. The direct CLI query returned rows when the time bounds were passed as dispatch options, while the embedded-time saved-search form returned zero rows in this local trial.
+
 ## MCP Server Limitations
 
 ### MCP response envelopes need normalization
@@ -156,6 +185,20 @@ Impact:
 Suggestion:
 - Document exact-name and app-scoped saved-search lookup examples for MCP clients.
 - If possible, return structured search/discovery hints in saved-search inventory so agents can query by stable ids, tags, or normalized aliases instead of free-form mission titles.
+
+### Saved-search run tool uses `saved_search_name`, not the inventory `name` field
+
+Observed while closing the flagship live proof gap. The MCP knowledge-object inventory reports saved searches with a `name` field, but `splunk_run_saved_search` rejected `{ app, name }` with `Missing required argument: saved_search_name`. The correct argument was `{ app, saved_search_name }`.
+
+Impact:
+- Client implementers can naturally pass the inventory field back into the run tool and get a server-side argument error.
+- If the client parser does not treat MCP `isError: true` as an error, this can silently look like a zero-row saved search instead of an argument mismatch.
+- This adds avoidable friction to the central MCP workflow: discover saved search, then run saved search.
+
+Suggestion:
+- Align tool input names with inventory output names where possible, or document the translation prominently.
+- Include a canonical discover-then-run JSON-RPC example for saved searches with app context.
+- Consider returning machine-readable tool errors in `structuredContent` as well as text content so clients can classify argument mistakes reliably.
 
 ### Aggregated search results lose row-level evidence references
 

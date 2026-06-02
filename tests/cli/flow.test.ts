@@ -1110,6 +1110,11 @@ describe("SplunkReady CLI flow", () => {
     expect(Date.now() - new Date(manifest.generatedAt).getTime()).toBeLessThan(24 * 60 * 60 * 1000);
     expect(savedSearches).toContain("[ES - Lateral Movement Auth Chain]");
     expect(savedSearches).toContain("index=wineventlog");
+    expect(savedSearches).toContain("rex field=_raw");
+    expect(savedSearches).toContain("eval sourcetype=coalesce(sourcetype, csv_sourcetype)");
+    expect(savedSearches).toContain("dispatch.earliest_time = -24h");
+    expect(savedSearches).not.toContain("index=wineventlog earliest=-24h");
+    expect(savedSearches).not.toContain("is_scheduled");
     expect(indexes).toContain("[wineventlog]");
     expect(sampleEvents).toContain("live-evt-102");
     expect(sampleEvents).not.toContain("2026-06-02 10:");

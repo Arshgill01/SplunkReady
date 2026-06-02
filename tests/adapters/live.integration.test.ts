@@ -179,17 +179,25 @@ describe("live Splunk HTTP adapter integration", () => {
   });
 
   it("normalizes saved-search rows and evidence refs from MCP HTTP output", async () => {
-    const mcp = await startMockMcpServer(() => ({
-      jsonrpc: "2.0",
-      result: {
-        structuredContent: {
-          rows: [
-            { eventRef: "live-evt-001", src: "win-finance-07" },
-            { _cd: "bucket:123", src: "admin-login-02" }
-          ]
+    const mcp = await startMockMcpServer((request) => {
+      expect(request.params.arguments).toMatchObject({
+        saved_search_name: "ES - Lateral Movement Auth Chain",
+        app: "SplunkEnterpriseSecuritySuite",
+        maxRows: 5
+      });
+
+      return {
+        jsonrpc: "2.0",
+        result: {
+          structuredContent: {
+            rows: [
+              { eventRef: "live-evt-001", src: "win-finance-07" },
+              { _cd: "bucket:123", src: "admin-login-02" }
+            ]
+          }
         }
-      }
-    }));
+      };
+    });
 
     await expect(
       createAdapter(mcp.url).runSavedSearch(
@@ -200,6 +208,30 @@ describe("live Splunk HTTP adapter integration", () => {
       savedSearchRef: "SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
       resultCount: 2,
       evidenceRefs: ["live-evt-001", "bucket:123"]
+    });
+  });
+
+  it("treats MCP isError tool responses as live adapter transport errors", async () => {
+    const mcp = await startMockMcpServer(() => ({
+      jsonrpc: "2.0",
+      result: {
+        content: [{ type: "text", text: "Missing required argument: saved_search_name" }],
+        isError: true
+      }
+    }));
+
+    await expect(
+      createAdapter(mcp.url).runSavedSearch(
+        { name: "ES - Lateral Movement Auth Chain", app: "SplunkEnterpriseSecuritySuite", maxRows: 5 },
+        requestOptions
+      )
+    ).rejects.toMatchObject({
+      name: "SplunkAdapterError",
+      code: "LIVE_ADAPTER_TRANSPORT_ERROR",
+      context: {
+        mode: "live",
+        toolName: "splunk_run_saved_search"
+      }
     });
   });
 
