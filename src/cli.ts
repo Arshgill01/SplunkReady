@@ -100,6 +100,7 @@ Commands:
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   live-candidates --out <dir> [--candidate-limit <n>]
+  live-security-check --out <dir> [--json]
   live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--json]
   receipt   --out <dir> [--phase before|after] [--json]
   rerun     --mode fixture|live --out <dir> [--firewall] [--json]
@@ -550,6 +551,158 @@ const sortedSavedSearchCandidates = (
     })
     .slice(0, limit);
 
+const flagshipSecuritySavedSearch = {
+  app: "SplunkEnterpriseSecuritySuite",
+  name: "ES - Lateral Movement Auth Chain",
+  ref: "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain"
+};
+
+const liveSecurityCheckCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
+  const liveOptions = { ...options, mode: "live" as const };
+  const contract = await compileContract(liveOptions, env);
+  const contractPath = join(options.out, "environment-contract.json");
+
+  await writeJson(contractPath, contract);
+
+  const adapter = await createSplunkAccessAdapter(liveOptions, env);
+  const requiredTools: ReadOnlySplunkToolName[] = [
+    "splunk_get_knowledge_objects",
+    "splunk_run_saved_search"
+  ];
+  const missingTools = requiredTools.filter((tool) => !contract.mcpTools.includes(tool));
+  const preferredIndex = contract.indexes.find((index) => index.name === "wineventlog");
+  const exactSavedSearch = contract.savedSearches.find(
+    (candidate) => candidate.app === flagshipSecuritySavedSearch.app && candidate.name === flagshipSecuritySavedSearch.name
+  );
+  const nearbySavedSearches = sortedSavedSearchCandidates(contract.savedSearches, 8)
+    .map((candidate) => `${candidate.app}::${candidate.name}`)
+    .filter((ref) => ref !== flagshipSecuritySavedSearch.ref);
+  let runResult:
+    | {
+        attempted: true;
+        resultCount: number | null;
+        evidenceRefs: string[];
+        warnings: string[];
+        error?: string;
+      }
+    | { attempted: false; reason: string };
+
+  if (!exactSavedSearch) {
+    runResult = { attempted: false, reason: "Exact flagship saved search is not present in the live contract." };
+  } else if (missingTools.length > 0) {
+    runResult = {
+      attempted: false,
+      reason: `Cannot run saved search because required MCP tools are missing: ${missingTools.join(", ")}.`
+    };
+  } else {
+    try {
+      const result = await adapter.runSavedSearch(
+        {
+          app: exactSavedSearch.app,
+          name: exactSavedSearch.name,
+          maxRows: 5
+        },
+        {
+          requestId: "req-cli-live-security-check-saved-search",
+          missionId: "live-security-readiness-check"
+        }
+      );
+
+      runResult = {
+        attempted: true,
+        resultCount: result.resultCount,
+        evidenceRefs: result.evidenceRefs,
+        warnings: result.warnings
+      };
+    } catch (error) {
+      runResult = {
+        attempted: true,
+        resultCount: null,
+        evidenceRefs: [],
+        warnings: [],
+        error: formatCliError(error)
+      };
+    }
+  }
+
+  const hasRows = runResult.attempted && typeof runResult.resultCount === "number" && runResult.resultCount > 0;
+  const hasEvidenceRefs = runResult.attempted && runResult.evidenceRefs.length > 0;
+  const ready =
+    missingTools.length === 0 &&
+    Boolean(exactSavedSearch) &&
+    hasRows &&
+    hasEvidenceRefs;
+  const nextActions: string[] = [];
+
+  if (missingTools.length > 0) {
+    nextActions.push(`Expose read-only MCP tools required for the flagship mission: ${missingTools.join(", ")}.`);
+  }
+
+  if (!exactSavedSearch) {
+    nextActions.push(
+      `Install or create read-only saved search ${flagshipSecuritySavedSearch.ref} for the lateral-movement mission.`
+    );
+  }
+
+  if (exactSavedSearch && !hasRows) {
+    nextActions.push(
+      "Ensure the flagship saved search returns at least one row for the current mission window before running live-proof."
+    );
+  }
+
+  if (exactSavedSearch && hasRows && !hasEvidenceRefs) {
+    nextActions.push("Ensure returned rows expose evidence identifiers such as eventRef, _cd, _raw, or _time.");
+  }
+
+  if (!preferredIndex) {
+    nextActions.push("Confirm the deployment has an authentication/security index such as wineventlog for the flagship story.");
+  }
+
+  if (ready) {
+    nextActions.push(
+      "Run live-proof with LLM mode enabled; the deployment has the saved-search evidence needed for the flagship live security path."
+    );
+  }
+
+  const reportPath = join(options.out, "live-security-readiness.json");
+
+  await writeJson(reportPath, {
+    status: ready ? "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF" : "BLOCKED",
+    mode: "live",
+    mutation: false,
+    mission: {
+      id: "mission-security-lateral-movement-readiness",
+      story: "security investigation readiness"
+    },
+    contract: {
+      id: contract.id,
+      name: contract.name,
+      indexes: contract.indexes.length,
+      savedSearches: contract.savedSearches.length,
+      tools: contract.mcpTools.length
+    },
+    requiredTools: {
+      expected: requiredTools,
+      missing: missingTools
+    },
+    preferredIndex: {
+      name: "wineventlog",
+      present: Boolean(preferredIndex),
+      sensitive: preferredIndex?.sensitive ?? null
+    },
+    requiredSavedSearch: {
+      ...flagshipSecuritySavedSearch,
+      present: Boolean(exactSavedSearch),
+      nearbySavedSearches,
+      run: runResult
+    },
+    blockers: nextActions.filter((action) => !ready || !action.startsWith("Run live-proof")),
+    nextActions
+  });
+
+  return [contractPath, reportPath];
+};
+
 const liveCandidatesCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
   const liveOptions = { ...options, mode: "live" as const };
   const contract = await loadContract(options.out);
@@ -985,6 +1138,8 @@ const main = async (): Promise<void> => {
     artifacts = await llmAgentCommand(options);
   } else if (command === "live-candidates") {
     artifacts = await liveCandidatesCommand(options);
+  } else if (command === "live-security-check") {
+    artifacts = await liveSecurityCheckCommand(options);
   } else if (command === "live-proof") {
     artifacts = await liveProofCommand(options);
   } else if (command === "receipt") {

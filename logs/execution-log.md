@@ -4363,3 +4363,71 @@ Reviewer findings:
 
 Result:
 - Focused UI tests, Vite build, TypeScript build, and Playwright browser verification passed. Full verification will be recorded in the verification log after the full suite runs.
+
+## 2026-06-02 - Phase Live Flagship Security Readiness Diagnostic
+
+Scope:
+- Make the live security proof gap actionable instead of leaving Move 3 at `_internal` ready-without-patch.
+- Add a read-only CLI diagnostic for the exact flagship lateral-movement content requirements.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `docs/live-demo-data-plan.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/splunk-feedback.md`
+
+What changed:
+- Added `live-security-check --out <dir> [--json]`.
+- The command compiles the live contract and writes:
+  - `environment-contract.json`;
+  - `live-security-readiness.json`.
+- The report checks:
+  - exact saved search `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`;
+  - required read-only MCP tools;
+  - preferred `wineventlog` index presence;
+  - saved-search result count and evidence refs when the exact saved search is present.
+- The command does not mutate Splunk and does not fabricate a flagship pass when deployment content is missing.
+
+Real endpoint result:
+- Command:
+  - `set -a; source ./.splunkready-live.env; set +a; NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-check --out artifacts/live-security-check --json`
+- Artifact:
+  - `artifacts/live-security-check/live-security-readiness.json`
+- Summary:
+  - status: `BLOCKED`;
+  - exact flagship saved search present: `false`;
+  - preferred `wineventlog` index present: `false`;
+  - missing required MCP tools: none;
+  - mutation: `false`.
+
+Product impact:
+- The path to making Move 3 fully green is now explicit:
+  - install/create the exact read-only lateral-movement saved search;
+  - make sure it returns rows for the mission window;
+  - preserve row-level evidence refs;
+  - rerun `live-security-check`, then `live-proof`.
+- This improves Platform/DX credibility because SplunkReady can tell a developer whether their deployment is ready for the security certification story before running the agent.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 26% | 27% | The live blocker is now productized as a diagnostic rather than an unexplained gap. |
+| Platform & DX | 59% | 62% | Developers get an actionable preflight check for live security proof readiness. |
+| Security | 28% | 31% | The exact security content gap is now measurable and fixable. |
+| Best Use of MCP Server | 77% | 78% | Another read-only MCP-backed live command demonstrates practical endpoint use. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 54% | 57% | The CLI now separates adapter readiness from deployment-content readiness. |
+
+Next directions to consider in future runs:
+- Add a UI panel that can read `live-security-readiness.json` and show exact live security blockers without implying a pass.
+- Add operator-owned sample data/setup docs only if the user wants to prepare the live Splunk instance.
+- Keep pursuing live fail-to-pass only after `live-security-check` reports `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI tests and TypeScript build passed. Full verification will be recorded in the verification log after the full suite runs.

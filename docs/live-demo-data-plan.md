@@ -40,6 +40,31 @@ The 2026-06-02 local scan checked 12 likely live saved searches, including Monit
 
 This reinforces that the remaining blocker is live demo content, not agent behavior or adapter connectivity.
 
+## Flagship Security Readiness Check
+
+SplunkReady also includes a direct readiness diagnostic for the flagship lateral-movement story:
+
+```bash
+set -a && source ./.splunkready-live.env && set +a
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-check --out artifacts/live-security-check --json
+```
+
+This command is read-only. It compiles the live contract, checks for the exact saved search needed by the flagship mission, and only attempts to run that saved search when it is present:
+
+```text
+SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain
+```
+
+The 2026-06-02 local run wrote `artifacts/live-security-check/live-security-readiness.json` and reported:
+
+- status: `BLOCKED`
+- exact saved search present: `false`
+- preferred `wineventlog` index present: `false`
+- missing required MCP tools: none
+- mutation: `false`
+
+This means the current live endpoint is connected and tool-capable, but not ready for the flagship live security fail -> patch -> pass proof until the saved search and authentication/security data are added by an operator-approved setup step.
+
 ## Guided Live Proof Command
 
 For a deployment that has any runnable saved-search candidate with rows, or at least `_internal` plus `splunk_run_query`, run:

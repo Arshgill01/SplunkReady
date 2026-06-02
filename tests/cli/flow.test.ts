@@ -36,11 +36,20 @@ const defaultSavedSearchRows = [
 const startMockMcpServer = async (
   options: {
     indexes?: Array<{ name: string; sensitive: boolean }>;
+    savedSearches?: Array<{ id: string; type: string; name: string; app: string }>;
     savedSearchRows?: Array<Record<string, unknown>>;
   } = {}
 ) => {
   const calls: Array<{ method: string; params: { name: string; arguments: unknown } }> = [];
   const savedSearchRows = options.savedSearchRows ?? defaultSavedSearchRows;
+  const savedSearches = options.savedSearches ?? [
+    {
+      id: "saved-search-live-auth",
+      type: "saved_searches",
+      name: "ES - Lateral Movement Auth Chain",
+      app: "SplunkEnterpriseSecuritySuite"
+    }
+  ];
   const server = createServer((request, response) => {
     let body = "";
     request.setEncoding("utf8");
@@ -78,15 +87,8 @@ const startMockMcpServer = async (
           total_rows: 1
         },
         splunk_get_knowledge_objects: {
-          results: [
-            {
-              id: "saved-search-live-auth",
-              type: "saved_searches",
-              name: "ES - Lateral Movement Auth Chain",
-              app: "SplunkEnterpriseSecuritySuite"
-            }
-          ],
-          total_rows: 1
+          results: savedSearches,
+          total_rows: savedSearches.length
         },
         splunk_run_query: {
           results: [],
@@ -929,6 +931,131 @@ describe("SplunkReady CLI flow", () => {
       expect.arrayContaining(["mission:mission-live-saved-search-readiness"])
     );
     expect(server.calls.map((call) => call.params.name)).toContain("splunk_run_saved_search");
+  });
+
+  it("reports flagship live security readiness when the exact saved search returns evidence", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-security-ready-"));
+    const server = await startMockMcpServer();
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: server.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token",
+      SPLUNKREADY_SPLUNK_APP: "search"
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["live-security-check", "--out", outDir, "--json"], process.cwd(), env)).stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "live-security-check",
+        status: "PASS",
+        artifacts: expect.arrayContaining([
+          join(outDir, "environment-contract.json"),
+          join(outDir, "live-security-readiness.json")
+        ])
+      });
+    } finally {
+      await server.close();
+    }
+
+    const report = JSON.parse(await readFile(join(outDir, "live-security-readiness.json"), "utf8")) as {
+      status: string;
+      mutation: boolean;
+      requiredTools: { missing: string[] };
+      requiredSavedSearch: {
+        present: boolean;
+        run: { attempted: boolean; resultCount: number; evidenceRefs: string[] };
+      };
+      nextActions: string[];
+    };
+
+    expect(report).toMatchObject({
+      status: "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF",
+      mutation: false,
+      requiredTools: { missing: [] },
+      requiredSavedSearch: {
+        present: true,
+        run: {
+          attempted: true,
+          resultCount: 3,
+          evidenceRefs: ["live-evt-102", "live-evt-118", "live-evt-141"]
+        }
+      }
+    });
+    expect(report.nextActions).toEqual(
+      expect.arrayContaining([
+        "Run live-proof with LLM mode enabled; the deployment has the saved-search evidence needed for the flagship live security path."
+      ])
+    );
+    expect(server.calls.map((call) => call.params.name)).toContain("splunk_run_saved_search");
+  });
+
+  it("reports exact live security blockers without inventing a flagship pass", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-security-blocked-"));
+    const server = await startMockMcpServer({
+      savedSearches: [
+        {
+          id: "saved-search-errors",
+          type: "saved_searches",
+          name: "Errors in the last 24 hours",
+          app: "search"
+        }
+      ],
+      savedSearchRows: []
+    });
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: server.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token",
+      SPLUNKREADY_SPLUNK_APP: "search"
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["live-security-check", "--out", outDir, "--json"], process.cwd(), env)).stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "live-security-check",
+        status: "PASS",
+        artifacts: expect.arrayContaining([
+          join(outDir, "environment-contract.json"),
+          join(outDir, "live-security-readiness.json")
+        ])
+      });
+    } finally {
+      await server.close();
+    }
+
+    const report = JSON.parse(await readFile(join(outDir, "live-security-readiness.json"), "utf8")) as {
+      status: string;
+      requiredSavedSearch: {
+        present: boolean;
+        nearbySavedSearches: string[];
+        run: { attempted: boolean; reason: string };
+      };
+      blockers: string[];
+    };
+
+    expect(report).toMatchObject({
+      status: "BLOCKED",
+      requiredSavedSearch: {
+        present: false,
+        nearbySavedSearches: ["search::Errors in the last 24 hours"],
+        run: {
+          attempted: false,
+          reason: "Exact flagship saved search is not present in the live contract."
+        }
+      }
+    });
+    expect(report.blockers).toEqual(
+      expect.arrayContaining([
+        "Install or create read-only saved search SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain for the lateral-movement mission."
+      ])
+    );
+    expect(server.calls.map((call) => call.params.name)).not.toContain("splunk_run_saved_search");
   });
 
   it("runs live proof end to end from a derived saved-search mission", async () => {

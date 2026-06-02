@@ -78,6 +78,20 @@ Follow-up implementation note:
 Real endpoint follow-up:
 - A guided `live-proof` run against the configured local endpoint checked 12 saved-search candidates and found 0 with rows, then correctly fell back to `_internal`. The fallback receipt was `READY` before and after policy injection, which is useful live proof but not the richer patch loop. A developer-facing MCP flow would benefit from "candidate returned rows recently" and "suitable for demo/certification" signals before an agent tries to build a mission around saved searches.
 
+### Flagship security content readiness needs exact diagnostics
+
+Observed while adding `live-security-check`. The live MCP endpoint exposed the required read-only tools, but the exact flagship saved search `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain` was absent, and the preferred `wineventlog` index was absent. The command could therefore report a precise security-story blocker without attempting to fabricate a live pass.
+
+Impact:
+- Developers can have a fully connected MCP endpoint but still be unable to run a realistic security certification story.
+- Generic saved-search inventory is not enough; the developer needs to know whether the exact mission dependency exists and whether it returns row-level evidence.
+- Without a diagnostic like this, teams waste time tuning agents when the actual blocker is deployment content.
+
+Suggestion:
+- Provide an MCP/server-side readiness endpoint or documented checklist for demo-grade security content: required apps, saved searches, indexes, sourcetypes, and evidence-preserving result fields.
+- Include example installation/setup steps for a read-only lateral-movement saved search and synthetic-but-realistic events in a local trial.
+- Expose saved-search metadata that indicates whether the search has returned rows recently and which indexes/sourcetypes it depends on.
+
 ## MCP Server Limitations
 
 ### MCP response envelopes need normalization

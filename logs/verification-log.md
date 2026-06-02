@@ -3527,3 +3527,34 @@ Open risks:
 
 - Browser screenshot artifacts remain untracked under `output/playwright/`.
 - Live proof is still `_internal` ready-without-patch; the flagship live security fail-to-pass path remains the next major product gap.
+
+## 2026-06-02 - Phase Live Flagship Security Readiness Diagnostic
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts && npm run build`
+- `set -a; source ./.splunkready-live.env; set +a; NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-check --out artifacts/live-security-check --json`
+- `node -e 'const fs=require("fs"); const r=JSON.parse(fs.readFileSync("artifacts/live-security-check/live-security-readiness.json","utf8")); console.log(JSON.stringify({status:r.status, mutation:r.mutation, requiredSavedSearch:{ref:r.requiredSavedSearch.ref,present:r.requiredSavedSearch.present, run:r.requiredSavedSearch.run}, preferredIndex:r.preferredIndex, missingTools:r.requiredTools.missing, blockers:r.blockers, nextActions:r.nextActions}, null, 2));'`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused CLI flow tests: 1 file / 17 tests.
+- PASS for TypeScript build.
+- PASS for full verification: scaffold verified, 85 waves, 625 project files, 38 test files, 199 tests.
+- PASS for `git diff --check`.
+- PASS for real endpoint `live-security-check`; artifacts written:
+  - `artifacts/live-security-check/environment-contract.json`;
+  - `artifacts/live-security-check/live-security-readiness.json`.
+- Real endpoint diagnostic summary:
+  - status: `BLOCKED`;
+  - exact saved search present: `false`;
+  - exact saved search run attempted: `false`;
+  - preferred `wineventlog` index present: `false`;
+  - missing required MCP tools: none;
+  - mutation: `false`.
+
+Open risks:
+
+- Real endpoint artifacts remain untracked under `artifacts/live-security-check/`.
+- The live security fail-to-pass path still requires operator-approved Splunk content setup; the code now diagnoses the gap but does not mutate Splunk to fill it.
