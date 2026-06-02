@@ -17,6 +17,11 @@ import { z } from "zod";
 
 export type ArtifactFetch = (input: string) => Promise<Response>;
 
+export interface ArtifactOption {
+  label: string;
+  path: string;
+}
+
 const hostedModelSummarySchema = z
   .object({
     status: z.enum(["invoked", "available_not_applicable", "unavailable"]),
@@ -271,6 +276,13 @@ export const normalizeArtifactBase = (value: string | null | undefined): string 
 
   return localPath.endsWith("/") ? localPath : `${localPath}/`;
 };
+
+export const defaultArtifactOptions: ArtifactOption[] = [
+  { label: "Live security proof", path: "artifacts/live-security-ui" },
+  { label: "LLM fixture proof", path: "artifacts/llm-fixture-proof" },
+  { label: "Fixture demo", path: "artifacts/fixture-demo" },
+  { label: "Hosted model proof", path: "artifacts/hosted-model-proof" }
+];
 
 export const artifactBaseFromLocation = (location: Pick<Location, "search">): string => {
   const params = new URLSearchParams(location.search);

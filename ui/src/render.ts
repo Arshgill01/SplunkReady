@@ -1,4 +1,11 @@
-import { summarizeBundle, type HostedModelProof, type HostedModelSummary, type UiArtifactBundle } from "./artifacts.js";
+import {
+  normalizeArtifactBase,
+  summarizeBundle,
+  type ArtifactOption,
+  type HostedModelProof,
+  type HostedModelSummary,
+  type UiArtifactBundle
+} from "./artifacts.js";
 import type { PolicyPatch, ReadinessReceipt, ReadinessProfile, TraceEvent, Violation } from "../../src/schemas/core.js";
 
 export type ViewId = "certification-replay" | "receipt" | "trace-timeline" | "live-connect";
@@ -12,6 +19,7 @@ export const views: Array<{ id: ViewId; label: string }> = [
 
 export interface RenderOptions {
   disabledRuleIds?: ReadonlySet<string>;
+  artifactOptions?: ArtifactOption[];
 }
 
 export const normalizeView = (value: string | undefined): ViewId =>
@@ -657,7 +665,30 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
   </main>`;
 };
 
-const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId): string => {
+const renderArtifactSelector = (bundle: UiArtifactBundle, artifactOptions: ArtifactOption[] | undefined): string => {
+  if (!artifactOptions || artifactOptions.length === 0) {
+    return "";
+  }
+
+  const currentBase = normalizeArtifactBase(bundle.artifactBase);
+  const options = artifactOptions
+    .map((option) => {
+      const optionBase = normalizeArtifactBase(option.path);
+      const selected = optionBase === currentBase ? " selected" : "";
+
+      return `<option value="${value(option.path)}"${selected}>${value(option.label)}</option>`;
+    })
+    .join("");
+
+  return `<label class="artifact-picker">
+    <span>Artifact source</span>
+    <select data-artifact-selector>
+      ${options}
+    </select>
+  </label>`;
+};
+
+const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: RenderOptions): string => {
   const summary = summarizeBundle(bundle);
 
   return `<aside class="side-rail">
@@ -673,6 +704,7 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId): string => 
         )
         .join("")}
     </nav>
+    ${renderArtifactSelector(bundle, options.artifactOptions)}
     <div class="rail-receipt">
       <strong>${value(summary.verdict)} / ${value(summary.score)}</strong>
       <span>${value(summary.mode)} / ${value(summary.contract)}</span>
@@ -703,7 +735,7 @@ const renderActiveView = (bundle: UiArtifactBundle, activeView: ViewId, options:
 
 export const renderApp = (bundle: UiArtifactBundle, activeView: ViewId, options: RenderOptions = {}): string =>
   `<div class="app-frame">
-    ${renderSidebar(bundle, activeView)}
+    ${renderSidebar(bundle, activeView, options)}
     ${renderActiveView(bundle, activeView, options)}
   </div>`;
 

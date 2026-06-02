@@ -4364,6 +4364,65 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Artifact Source Selector
+
+Scope:
+- Add a compact Vite UI selector for switching between local proof bundles.
+- Keep the interaction as artifact-source navigation only; do not turn the product into a generic dashboard or assistant.
+
+Files expected/touched:
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `ui/src/main.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added named artifact bundle presets for:
+  - live security proof;
+  - LLM fixture proof;
+  - fixture demo;
+  - hosted model proof.
+- Rendered an `Artifact source` selector in the sidebar using those presets.
+- Changing the selector updates the `?artifacts=` URL parameter and reloads the same active route against the selected bundle.
+- Added UI test coverage for the preset selector and selected live-security bundle.
+
+Browser verification:
+- Local dev server:
+  - `http://127.0.0.1:5173/?artifacts=artifacts/live-security-ui#receipt`
+- Interaction verified:
+  - initial selector value was `artifacts/live-security-ui`;
+  - selecting `artifacts/llm-fixture-proof` navigated to `?artifacts=artifacts%2Fllm-fixture-proof#receipt`;
+  - the receipt route reloaded fixture proof data and kept the policy simulator available.
+
+Product impact:
+- Developers can now jump between the live proof, fixture proof, fixture demo, and hosted-model proof bundles from the app itself.
+- The UI remains artifact-backed and factual: no claim is made unless a corresponding local receipt, trace, profile, or proof artifact exists.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 28% | Navigation polish only; no new proof capability. |
+| Platform & DX | 69% | 70% | Easier inspection of multiple proof artifacts from one local app. |
+| Security | 39% | 39% | Security proof unchanged. |
+| Best Use of MCP Server | 79% | 79% | MCP behavior unchanged. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged; live SAIA remains permission-blocked. |
+| Developer Tools | 64% | 65% | Better developer ergonomics for artifact review. |
+
+Next directions to consider in future runs:
+- Resolve live SAIA permissions once Splunk credentials/capabilities are corrected, then rerun `hosted-model-proof --mode live`.
+- Continue with core runtime improvements before spending more time on demo video or Devpost artifacts.
+- Keep artifact navigation minimal unless a real multi-agent proof bundle exists.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused UI tests, TypeScript build, production Vite build, browser verification, full repo verification, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Receipt Policy Simulator
 
 Scope:

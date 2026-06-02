@@ -4147,3 +4147,46 @@ Open risks:
 
 - `/artifacts/...` is a local Vite dev-server convenience route, not a production artifact hosting strategy.
 - The Vite dev server did not stay alive when started through this environment's detached `nohup` shell; browser verification used a temporary foreground tool session and then stopped it cleanly.
+
+## 2026-06-03 - Phase Live Artifact Source Selector
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts`
+- `npm run ui:build`
+- `npm run build`
+- `npm run build`
+- `npx vitest run tests/ui/app.test.ts`
+- `npm run ui:build`
+- `SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/live-security-ui npm run ui:dev`
+- Browser DOM check at `http://127.0.0.1:5173/?artifacts=artifacts/live-security-ui#receipt` changing `[data-artifact-selector]` from `artifacts/live-security-ui` to `artifacts/llm-fixture-proof`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for focused UI tests:
+  - 10 tests passed;
+  - new coverage asserts the artifact source selector renders from real proof bundle presets.
+- PASS for production Vite build.
+- Initial TypeScript build failed after adding the selector handler:
+  - `ui/src/main.ts(53,30): error TS18047: 'target' is possibly 'null'.`
+  - `ui/src/main.ts(53,37): error TS2339: Property 'value' does not exist on type 'EventTarget'.`
+- PASS for TypeScript build after closing over the typed selector element.
+- PASS for browser interaction:
+  - receipt route loaded from `artifacts/live-security-ui`;
+  - selector value was `artifacts/live-security-ui`;
+  - selecting `artifacts/llm-fixture-proof` changed the URL to `?artifacts=artifacts%2Fllm-fixture-proof#receipt`;
+  - the receipt view reloaded the LLM fixture proof bundle.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 710 project files;
+  - 38 test files;
+  - 210 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The selector presets are local Vite artifact paths; a missing local artifact directory still renders as a load error.
+- The selector improves inspection ergonomics only. It does not resolve the live SAIA `Action forbidden` blocker.

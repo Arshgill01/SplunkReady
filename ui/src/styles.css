@@ -119,6 +119,28 @@ code {
   border-color: var(--line);
 }
 
+.artifact-picker {
+  display: grid;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.artifact-picker span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.artifact-picker select {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 10px;
+  color: var(--text);
+  background: #282313;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
 .rail-receipt {
   display: grid;
   gap: 10px;

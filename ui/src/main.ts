@@ -3,7 +3,7 @@ import "@fontsource-variable/spline-sans-mono";
 import "@fontsource-variable/geist-mono";
 import "./styles.css";
 
-import { artifactBaseFromLocation, loadUiArtifactBundle, type UiArtifactBundle } from "./artifacts.js";
+import { artifactBaseFromLocation, defaultArtifactOptions, loadUiArtifactBundle, type UiArtifactBundle } from "./artifacts.js";
 import { normalizeView, renderApp, renderError, type ViewId } from "./render.js";
 
 const app = document.querySelector<HTMLDivElement>("#app");
@@ -37,13 +37,25 @@ const bindInteractions = (): void => {
           return;
         }
 
-        app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds });
+        app.innerHTML = renderApp(bundle, activeViewFromHash(), {
+          disabledRuleIds,
+          artifactOptions: defaultArtifactOptions
+        });
         bindInteractions();
       });
     });
   }
 
   document.querySelector("[data-run-replay]")?.addEventListener("click", markReplayRunning);
+
+  const artifactSelector = document.querySelector<HTMLSelectElement>("[data-artifact-selector]");
+  artifactSelector?.addEventListener("change", () => {
+    const nextArtifactBase = artifactSelector.value;
+    const nextUrl = new URL(window.location.href);
+
+    nextUrl.searchParams.set("artifacts", nextArtifactBase);
+    window.location.assign(`${nextUrl.pathname}${nextUrl.search}${nextUrl.hash || "#certification-replay"}`);
+  });
 
   for (const input of document.querySelectorAll<HTMLInputElement>("[data-policy-rule]")) {
     input.addEventListener("change", () => {
@@ -59,7 +71,10 @@ const bindInteractions = (): void => {
         disabledRuleIds.add(ruleId);
       }
 
-      app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds });
+      app.innerHTML = renderApp(bundle, activeViewFromHash(), {
+        disabledRuleIds,
+        artifactOptions: defaultArtifactOptions
+      });
       bindInteractions();
     });
   }
@@ -70,7 +85,7 @@ const render = (): void => {
     return;
   }
 
-  app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds });
+  app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds, artifactOptions: defaultArtifactOptions });
   bindInteractions();
 };
 

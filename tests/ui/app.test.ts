@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, it } from "vitest";
 
-import { artifactUrl, loadUiArtifactBundle, normalizeArtifactBase } from "../../ui/src/artifacts.js";
+import { artifactUrl, defaultArtifactOptions, loadUiArtifactBundle, normalizeArtifactBase } from "../../ui/src/artifacts.js";
 import { renderApp } from "../../ui/src/render.js";
 import type {
   EnvironmentContract,
@@ -395,6 +395,7 @@ describe("Vite UI artifact app", () => {
     expect(normalizeArtifactBase(undefined)).toBe("/__splunkready_artifacts/");
     expect(normalizeArtifactBase("/custom")).toBe("/custom/");
     expect(normalizeArtifactBase("artifacts/live-security-ui")).toBe("/artifacts/live-security-ui/");
+    expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/live-security-ui");
     expect(artifactUrl("/custom", "receipt-after-001.json")).toBe("/custom/receipt-after-001.json");
     expect(artifactUrl("artifacts/live-security-ui", "receipt-after-001.json")).toBe(
       "/artifacts/live-security-ui/receipt-after-001.json"
@@ -422,6 +423,26 @@ describe("Vite UI artifact app", () => {
     expect(bundle.policyPatch?.splAssistance).toHaveLength(1);
     expect(bundle.beforeTrace[0]?.toolName).toBe("splunk_run_query");
     expect(bundle.afterTrace[0]?.toolName).toBe("splunk_run_saved_search");
+  });
+
+  it("renders an artifact source selector from real proof bundle presets", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "artifacts/live-security-ui",
+      fetcherFor({
+        "environment-contract.json": contract,
+        "missions.json": [mission],
+        "receipt-after-001.json": receipt({}),
+        "trace-after.json": afterTrace,
+        "violations-after.json": []
+      })
+    );
+    const html = renderApp(bundle, "receipt", { artifactOptions: defaultArtifactOptions });
+
+    expect(html).toContain("Artifact source");
+    expect(html).toContain('data-artifact-selector');
+    expect(html).toContain('value="artifacts/live-security-ui" selected');
+    expect(html).toContain("LLM fixture proof");
+    expect(html).toContain("Hosted model proof");
   });
 
   it("renders one active app pane with SAIA-backed patch evidence", async () => {
