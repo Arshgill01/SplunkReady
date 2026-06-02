@@ -100,6 +100,7 @@ Commands:
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   live-candidates --out <dir> [--candidate-limit <n>]
+  live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--json]
   receipt   --out <dir> [--phase before|after] [--json]
   rerun     --mode fixture|live --out <dir> [--firewall] [--json]
   live-smoke --out <dir> [--require-live true|false]
@@ -387,31 +388,53 @@ const maybeWrapFirewall = (
 ): SplunkAccessAdapter =>
   options.firewall ? new SplunkFirewallGateway(adapter, contract, policy) : adapter;
 
-const compileCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
+const compileContract = async (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<EnvironmentContract> => {
   const adapter = await createSplunkAccessAdapter(options, env);
-  const contract = await compileEnvironmentContract(adapter, {
+  return compileEnvironmentContract(adapter, {
     requestId: `req-cli-${options.mode}-compile-001`,
     contractVersion: "2026.06.01",
     generatedAt
   });
-  const mission = await loadMission(options.mission);
-  const policy = compileAgentPolicy(contract, { policyVersion: "policy-2026.06.01", compiledAt });
+};
+
+const writeCompiledArtifacts = async (
+  outDir: string,
+  contract: EnvironmentContract,
+  mission: MissionDefinition,
+  versions: {
+    policyVersion: string;
+    profileVersion: string;
+  } = {
+    policyVersion: "policy-2026.06.01",
+    profileVersion: "profile-2026.06.01"
+  }
+): Promise<string[]> => {
+  const policy = compileAgentPolicy(contract, { policyVersion: versions.policyVersion, compiledAt });
   const readinessProfile = compileReadinessProfile(contract, [mission], {
-    profileVersion: "profile-2026.06.01",
+    profileVersion: versions.profileVersion,
     generatedAt: compiledAt
   });
 
-  await writeJson(join(options.out, "environment-contract.json"), contract);
-  await writeJson(join(options.out, "missions.json"), [mission]);
-  await writeJson(join(options.out, "agent-policy.json"), policy);
-  await writeJson(join(options.out, "readiness-profile.json"), readinessProfile);
+  await writeJson(join(outDir, "environment-contract.json"), contract);
+  await writeJson(join(outDir, "missions.json"), [mission]);
+  await writeJson(join(outDir, "agent-policy.json"), policy);
+  await writeJson(join(outDir, "readiness-profile.json"), readinessProfile);
 
   return [
-    join(options.out, "environment-contract.json"),
-    join(options.out, "missions.json"),
-    join(options.out, "agent-policy.json"),
-    join(options.out, "readiness-profile.json")
+    join(outDir, "environment-contract.json"),
+    join(outDir, "missions.json"),
+    join(outDir, "agent-policy.json"),
+    join(outDir, "readiness-profile.json")
   ];
+};
+
+const compileCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
+  const contract = await compileContract(options, env);
+  const mission = await loadMission(options.mission);
+  return writeCompiledArtifacts(options.out, contract, mission);
 };
 
 const liveSmokeMissingEnvFields = (env: NodeJS.ProcessEnv): string[] => {
@@ -603,6 +626,47 @@ const liveCandidatesCommand = async (options: CliOptions, env: NodeJS.ProcessEnv
   });
 
   return artifacts;
+};
+
+const liveProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
+  const liveOptions = { ...options, mode: "live" as const };
+  const contract = await compileContract(liveOptions, env);
+  const contractPath = join(options.out, "environment-contract.json");
+
+  await writeJson(contractPath, contract);
+
+  const candidateArtifacts = await liveCandidatesCommand(liveOptions, env);
+  const candidateReport = await readJson<{
+    derivedMission?: { strategy: string; reason: string; missionId?: string };
+  }>(join(options.out, "live-candidates.json"), "live candidates report");
+  const derivedMissionPath = join(options.out, "live-derived-mission.json");
+
+  if (!candidateReport.derivedMission?.missionId) {
+    throw new Error(
+      `live-proof could not derive a runnable mission. ${candidateReport.derivedMission?.reason ?? "Run live-candidates for details."}`
+    );
+  }
+
+  const mission = await loadMission(derivedMissionPath);
+  const compileArtifacts = await writeCompiledArtifacts(options.out, contract, mission, {
+    policyVersion: "live-derived-policy-2026.06.01",
+    profileVersion: "live-derived-profile-2026.06.01"
+  });
+  const runOptions = { ...liveOptions, mission: derivedMissionPath };
+  const evaluateArtifacts = await evaluateCommand(runOptions, env);
+  const receiptArtifacts = await receiptCommand(runOptions, env);
+  const rerunArtifacts = await rerunCommand(runOptions, env);
+
+  return [
+    ...new Set([
+      contractPath,
+      ...candidateArtifacts,
+      ...compileArtifacts,
+      ...evaluateArtifacts,
+      ...receiptArtifacts,
+      ...rerunArtifacts
+    ])
+  ];
 };
 
 const evaluateCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
@@ -890,6 +954,8 @@ const main = async (): Promise<void> => {
     artifacts = await llmAgentCommand(options);
   } else if (command === "live-candidates") {
     artifacts = await liveCandidatesCommand(options);
+  } else if (command === "live-proof") {
+    artifacts = await liveProofCommand(options);
   } else if (command === "receipt") {
     artifacts = await receiptCommand(options);
   } else if (command === "rerun") {

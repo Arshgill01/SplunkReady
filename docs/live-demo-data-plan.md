@@ -1,6 +1,6 @@
 # Live Demo Data Plan
 
-SplunkReady now has real live MCP connectivity and live Gemini trace execution. The remaining blocker for a passing live demo is deployment content, not adapter code.
+SplunkReady now has real live MCP connectivity, live Gemini trace execution, and a guided `live-proof` command that can derive a read-only mission from the target deployment's own inventory. The remaining blocker for a flagship live security demo is still deployment content, not adapter code.
 
 ## Current Live Finding
 
@@ -40,6 +40,27 @@ The 2026-06-02 local scan checked 12 likely live saved searches, including Monit
 
 This reinforces that the remaining blocker is live demo content, not agent behavior or adapter connectivity.
 
+## Guided Live Proof Command
+
+For a deployment that has any runnable saved-search candidate with rows, or at least `_internal` plus `splunk_run_query`, run:
+
+```bash
+set -a && source ./.splunkready-live.env && set +a
+export SPLUNKREADY_LLM_ENABLED=true
+export GEMINI_MODEL=gemini-3.1-flash-lite
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-proof --out artifacts/live-proof --candidate-limit 12
+```
+
+`live-proof` performs the live flow end to end:
+
+1. compile the live environment contract;
+2. scan bounded read-only saved-search candidates;
+3. write `live-derived-mission.json` and `live-derived-readiness-profile.json`;
+4. replace the standard mission/policy/profile artifacts with the generated mission;
+5. run evaluate -> receipt -> rerun against live mode.
+
+If a candidate saved search returns rows, the generated mission expects saved-search discovery and saved-search execution. If no saved search returns rows but `_internal` is available, the generated mission falls back to a bounded raw-row `_internal` query proof. The command does not mutate Splunk.
+
 ## Non-Mutation Rule
 
 SplunkReady must not auto-mutate Splunk. Any live demo data, saved search, app install, lookup, index, or event setup must be an operator-approved setup step outside the certification run.
@@ -72,16 +93,16 @@ Expected passing signal:
 - after trace includes `splunk_run_saved_search`;
 - final answer cites the saved-search provenance, result count, and evidence refs.
 
-## Option B: Add A Live-Compatible Mission
+## Option B: Use The Live-Derived Mission
 
 Use this when the final video should prove live execution without installing Splunk Enterprise Security content.
 
-Implementation required:
+Implementation status:
 
-1. Add a mission that targets a saved search already present in the live trial, such as `search::Errors in the last 24 hours`.
-2. Adjust the mission prompt, checks, and expected evidence to match the actual deployment content.
-3. Keep the flagship security fixture mission unchanged.
-4. Label the mission clearly as a live trial proof mission, not the flagship security investigation story.
+1. `live-candidates` now derives a saved-search mission when a candidate returns rows.
+2. `live-candidates` now derives a bounded `_internal` mission when no candidate returns rows but `_internal` and `splunk_run_query` are available.
+3. `live-proof` runs the generated mission through evaluate -> receipt -> rerun.
+4. The flagship security fixture mission remains unchanged.
 
 Tradeoff:
 
@@ -90,4 +111,4 @@ Tradeoff:
 
 ## Recommendation
 
-For prize/demo quality, use Option A. It preserves the product story: SplunkReady certifies an AI agent against the actual Splunk deployment contract before the agent is trusted in production.
+For prize/demo quality, use Option A when the final story must be lateral movement security readiness. Use `live-proof` as the pragmatic live MCP proof path when the target Splunk deployment does not yet contain the security saved search and event data.

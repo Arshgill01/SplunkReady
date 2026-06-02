@@ -90,6 +90,21 @@ npm run splunkready -- live-smoke --out artifacts/live-smoke
 
 Without live configuration, the live smoke command skips safely. With live configuration, it calls read-only MCP tools only, writes `live-smoke-contract.json` plus `live-smoke-readiness-profile.json`, and does not run searches or mutate Splunk configuration. See [docs/live-adapter.md](docs/live-adapter.md) and [docs/live-setup-checklist.md](docs/live-setup-checklist.md).
 
+To derive and certify a live mission from the target deployment's own saved-search/index inventory:
+
+```bash
+export SPLUNKREADY_LIVE_ENABLED=true
+export SPLUNKREADY_SPLUNK_MCP_URL="https://your-splunk-mcp.example"
+export SPLUNKREADY_SPLUNK_MCP_TOKEN="..."
+export SPLUNKREADY_LLM_ENABLED=true
+export GEMINI_API_KEY="..."
+export GEMINI_MODEL="gemini-3.1-flash-lite"
+npm run build
+npm run splunkready -- live-proof --out artifacts/live-proof --candidate-limit 12
+```
+
+`live-proof` compiles the live contract, scans bounded read-only saved-search candidates, writes `live-derived-mission.json`, then runs evaluate -> receipt -> rerun against that generated mission. If no saved search returns rows but `_internal` is available, it falls back to a bounded `_internal` query mission. It does not create indexes, install apps, write saved searches, or mutate Splunk.
+
 ## LLM Specimen Agent
 
 The normal fixture demo keeps the deterministic specimen as the default. To grade a real model-driven specimen trace, export a Gemini key and enable LLM mode:

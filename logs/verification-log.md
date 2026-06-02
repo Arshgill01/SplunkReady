@@ -3440,6 +3440,7 @@ Open risks:
 Commands:
 
 - `npx vitest run tests/missions/live.test.ts tests/cli/flow.test.ts && npm run build`
+- `npm run check && git diff --check`
 - `npx vitest run tests/missions/live.test.ts tests/cli/flow.test.ts && npm run build`
 - `npm run check && git diff --check`
 
@@ -3461,3 +3462,29 @@ Result:
 Open risks:
 
 - `live-candidates` now creates derived artifacts, but the operator still needs a follow-up command path to run compile/evaluate directly from those generated artifacts.
+
+## 2026-06-02 - Phase Live Guided Live Proof Command
+
+Commands:
+
+- `npx vitest run tests/missions/live.test.ts tests/cli/flow.test.ts && npm run build`
+
+Result:
+
+- PASS for focused live mission generation, `live-proof` CLI orchestration, and TypeScript build.
+- Vitest passed 2 files / 18 tests.
+- Full verification passed: scaffold verified, 85 waves, 593 project files, 38 test files, 195 tests.
+- `git diff --check` passed with no whitespace errors.
+- `tests/missions/live.test.ts` confirmed generated saved-search missions allow `splunk_run_query` as the pre-policy executable path while still expecting saved-search readiness.
+- `tests/cli/flow.test.ts` confirmed `live-proof --json`:
+  - compiles live mode through the mock MCP adapter;
+  - derives `mission-live-saved-search-readiness`;
+  - writes standard mission/policy/profile artifacts for that derived mission;
+  - produces a `NOT READY` before receipt;
+  - produces a `READY` after receipt;
+  - calls saved-search execution and SAIA explain/optimize through the mock MCP path.
+
+Open risks:
+
+- This move did not run `live-proof` against the real Splunk endpoint; it verified the command with a local mock MCP server and mock Gemini endpoint.
+- A real fresh Splunk trial may still fall back to `_internal`; that path is useful platform proof but weaker than the flagship security story.

@@ -931,6 +931,90 @@ describe("SplunkReady CLI flow", () => {
     expect(server.calls.map((call) => call.params.name)).toContain("splunk_run_saved_search");
   });
 
+  it("runs live proof end to end from a derived saved-search mission", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-proof-"));
+    const gemini = await startMockGeminiServer();
+    const mcp = await startMockMcpServer();
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: mcp.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token",
+      SPLUNKREADY_SPLUNK_APP: "search",
+      SPLUNKREADY_LLM_ENABLED: "true",
+      GEMINI_API_KEY: "test-gemini-key",
+      GEMINI_MODEL: "gemini-test",
+      SPLUNKREADY_GEMINI_ENDPOINT_BASE_URL: gemini.url
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["live-proof", "--out", outDir, "--candidate-limit", "1", "--json"], process.cwd(), env)).stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "live-proof",
+        status: "PASS",
+        artifacts: expect.arrayContaining([
+          join(outDir, "live-candidates.json"),
+          join(outDir, "live-derived-mission.json"),
+          join(outDir, "live-derived-readiness-profile.json"),
+          join(outDir, "trace-before.json"),
+          join(outDir, "receipt-before-001.json"),
+          join(outDir, "policy-patch.json"),
+          join(outDir, "trace-after.json"),
+          join(outDir, "receipt-after-001.json")
+        ])
+      });
+    } finally {
+      await gemini.close();
+      await mcp.close();
+    }
+
+    const missions = JSON.parse(await readFile(join(outDir, "missions.json"), "utf8")) as Array<{
+      id: string;
+      allowedTools: string[];
+      preferredSavedSearchRefs?: string[];
+    }>;
+    const readinessProfile = JSON.parse(await readFile(join(outDir, "readiness-profile.json"), "utf8")) as {
+      contractRef: { mode: string };
+      sourceRefs: string[];
+    };
+    const candidateReport = JSON.parse(await readFile(join(outDir, "live-candidates.json"), "utf8")) as {
+      derivedMission: { strategy: string; missionId: string };
+    };
+    const beforeReceipt = JSON.parse(await readFile(join(outDir, "receipt-before-001.json"), "utf8")) as {
+      verdict: string;
+      violations: string[];
+    };
+    const afterReceipt = JSON.parse(await readFile(join(outDir, "receipt-after-001.json"), "utf8")) as {
+      verdict: string;
+      score: number;
+    };
+
+    expect(candidateReport.derivedMission).toMatchObject({
+      strategy: "saved-search-with-evidence",
+      missionId: "mission-live-saved-search-readiness"
+    });
+    expect(missions).toEqual([
+      expect.objectContaining({
+        id: "mission-live-saved-search-readiness",
+        allowedTools: expect.arrayContaining(["splunk_run_query", "splunk_run_saved_search"]),
+        preferredSavedSearchRefs: ["SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain"]
+      })
+    ]);
+    expect(readinessProfile).toMatchObject({ contractRef: { mode: "live" } });
+    expect(readinessProfile.sourceRefs).toEqual(
+      expect.arrayContaining(["mission:mission-live-saved-search-readiness"])
+    );
+    expect(beforeReceipt.verdict).toBe("NOT READY");
+    expect(beforeReceipt.violations.length).toBeGreaterThan(0);
+    expect(afterReceipt).toMatchObject({ verdict: "READY", score: 100 });
+    expect(gemini.prompts).toHaveLength(4);
+    expect(mcp.calls.map((call) => call.params.name)).toEqual(
+      expect.arrayContaining(["splunk_run_saved_search", "saia_explain_spl", "saia_optimize_spl"])
+    );
+  });
+
   it("derives a bounded internal mission when live saved-search candidates return no rows", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-candidates-fallback-"));
     const server = await startMockMcpServer({

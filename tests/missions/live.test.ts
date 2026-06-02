@@ -56,12 +56,20 @@ describe("live mission derivation", () => {
       mission: {
         id: "mission-live-saved-search-readiness",
         expectedTools: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+        allowedTools: [
+          "splunk_get_knowledge_objects",
+          "splunk_run_saved_search",
+          "splunk_run_query",
+          "splunk_get_metadata"
+        ],
         preferredSavedSearchRefs: ["search::Errors in the last 24 hours"],
         requiresSavedSearchDiscovery: true,
         fixtures: ["live-evt-1", "live-evt-2", "live-evt-3"]
       }
     });
-    expect(derived.mission?.checks).toEqual(expect.arrayContaining(["KO-001", "KO-002", "EVD-001", "SAF-003"]));
+    expect(derived.mission?.checks).toEqual(
+      expect.arrayContaining(["SPL-001", "SPL-003", "KO-001", "KO-002", "EVD-001", "SAF-003"])
+    );
     expect(exportLiveMission(derived.mission!)).toContain('"mission-live-saved-search-readiness"');
   });
 

@@ -39,6 +39,7 @@ const savedSearchMission = (
   const allowedTools = usefulTools(contract, [
     "splunk_get_knowledge_objects",
     "splunk_run_saved_search",
+    "splunk_run_query",
     "splunk_get_metadata"
   ]);
 
@@ -58,7 +59,7 @@ const savedSearchMission = (
     allowedTools,
     forbiddenPatterns: contract.forbiddenQueryPatterns,
     requiredEvidence: [{ type: "result_count" }, { type: "evidence_refs" }, { type: "saved_search_provenance" }],
-    checks: ["SPL-001", "KO-001", "KO-002", "EVD-001", "EVD-002", "EVD-003", "SAF-002", "SAF-003"],
+    checks: ["SPL-001", "SPL-003", "KO-001", "KO-002", "EVD-001", "EVD-002", "EVD-003", "SAF-002", "SAF-003"],
     severityWeights,
     description:
       "Live-derived readiness mission generated from a read-only saved-search candidate that returned rows.",

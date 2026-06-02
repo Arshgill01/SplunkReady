@@ -72,6 +72,9 @@ Suggestion:
 - Provide examples for deriving simple read-only validation tasks from live inventory, such as "run a saved search that returned rows" or "query `_internal` with `head 10` and return raw evidence."
 - Expose candidate quality signals in MCP inventory or docs: app, saved-search name, whether it is runnable, whether it returned rows recently, and whether returned rows preserve event/provenance refs.
 
+Follow-up implementation note:
+- SplunkReady added `live-proof` to bridge this gap locally: it compiles the live contract, scans read-only saved-search candidates, derives a mission, and runs the receipt flow. This helped clarify that an official MCP onboarding path should not stop at inventory; it should also include a first runnable read-only proof task for the discovered deployment.
+
 ## MCP Server Limitations
 
 ### MCP response envelopes need normalization

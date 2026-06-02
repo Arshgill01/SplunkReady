@@ -1,6 +1,6 @@
 # Live Proof Status
 
-Status: live Splunk MCP proof exists locally, but the flagship live mission is not yet a passing readiness demo.
+Status: live Splunk MCP proof exists locally, and the codebase now includes a guided `live-proof` command for deriving a runnable live mission from deployment inventory. The flagship live security mission is still not a passing readiness demo until the live deployment contains the expected security content.
 
 ## What Is Proven
 
@@ -52,6 +52,17 @@ NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-candidates --out arti
 
 It checked 12 likely saved searches and found zero candidates with rows.
 
+After that finding, SplunkReady added a generated live proof path:
+
+```bash
+set -a && source ./.splunkready-live.env && set +a
+export SPLUNKREADY_LLM_ENABLED=true
+export GEMINI_MODEL=gemini-3.1-flash-lite
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-proof --out artifacts/live-proof --candidate-limit 12
+```
+
+The command compiles the live contract, runs the bounded candidate scan, writes `live-derived-mission.json`, then evaluates and reruns against that generated mission. In tests, this path produces normal Readiness Receipt artifacts from a saved-search candidate with rows. It has not yet been rerun against the user's real Splunk endpoint in this turn.
+
 ## Remaining Gap
 
 The live endpoint is real, but the current flagship mission is still fixture-shaped:
@@ -70,8 +81,8 @@ This is not a live adapter failure. It is a live mission/data compatibility gap.
 To produce the final live fail-to-pass demo, choose one of these paths:
 
 1. Prepare the live Splunk deployment with the security mission's expected saved search and event data, after explicit operator approval. SplunkReady must not auto-mutate Splunk.
-2. Add a live-compatible mission that targets saved searches and data already present in the trial deployment, then grade that mission end to end.
+2. Run `live-proof` against the current live endpoint and use the derived mission if the deployment can produce rows through an existing saved search or `_internal`.
 
-Until one of those is done, the honest claim is:
+Until one of those is run successfully against the real endpoint, the honest claim is:
 
-> SplunkReady has live MCP proof and live LLM trace proof, but not yet a passing live security-readiness receipt.
+> SplunkReady has live MCP proof, live LLM trace proof, and a tested live-derived proof command, but not yet a passing live security-readiness receipt.

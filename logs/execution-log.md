@@ -4223,3 +4223,61 @@ Reviewer findings:
 
 Result:
 - Focused live mission and CLI validation passed. Full verification will be recorded in the verification log after the full suite runs.
+
+## 2026-06-02 - Phase Live Guided Live Proof Command
+
+Scope:
+- Turn live-derived missions from passive artifacts into a runnable certification flow.
+- Keep live execution read-only and preserve deterministic pass/fail grading.
+- Avoid claiming a real endpoint rerun until the command is run against the user's live Splunk MCP URL.
+
+Files expected/touched:
+- `src/cli.ts`
+- `src/missions/live.ts`
+- `tests/cli/flow.test.ts`
+- `tests/missions/live.test.ts`
+- `README.md`
+- `docs/live-demo-data-plan.md`
+- `docs/live-proof-gap.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--json]`.
+- `live-proof` now:
+  - compiles the live contract;
+  - runs bounded saved-search candidate scanning;
+  - loads the generated `live-derived-mission.json`;
+  - writes standard `missions.json`, `agent-policy.json`, and `readiness-profile.json` for that generated mission;
+  - runs evaluate -> receipt -> rerun in live mode.
+- Updated generated saved-search missions to allow `splunk_run_query` as an executable pre-policy path while still expecting knowledge-object discovery and saved-search execution for readiness.
+- Added a mock MCP/Gemini CLI test proving `live-proof` produces `NOT READY` before policy and `READY` after policy from a derived saved-search mission.
+- Updated live docs and README with the new command while clearly stating that the real endpoint still needs a fresh live-proof run before claiming a passing live-derived receipt.
+
+Product impact:
+- A Splunk developer can now move from "scan my deployment" to "certify the generated mission" with one command.
+- The MCP prize story improves because live inventory and saved-search execution now feed an end-to-end receipt path, not just a diagnostic report.
+- This preserves the non-mutation rule: the command only reads inventory, runs bounded saved searches/queries, and writes local artifacts.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 24% | 25% | Live proof is now one guided product flow instead of disconnected commands. |
+| Platform & DX | 51% | 55% | Developers get an actionable live certification command from deployment discovery. |
+| Security | 28% | 28% | Flagship security still depends on live security content. |
+| Best Use of MCP Server | 69% | 73% | MCP calls now drive a full receipt flow in the tested command path. |
+| Hosted Models | 52% | 53% | The command supports Gemini-backed live agent execution and SAIA patch assistance. |
+| Developer Tools | 46% | 50% | `live-proof --json` is CI/script-friendly and produces standard artifacts. |
+
+Next directions to consider in future runs:
+- Run `live-proof` against the user's real endpoint when live env vars are available in the shell and record the result honestly.
+- If real `live-proof` falls back to `_internal`, decide whether to improve the internal mission pass path or prepare operator-approved security demo content.
+- Add a UI affordance for live-derived missions only after real artifacts exist; do not fake screenshots.
+- Continue expanding developer workflow value, especially external trace grading and CI integration, rather than adding broad QA-only waves.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused validation passed. Full verification will be recorded in the verification log after the full suite runs.
