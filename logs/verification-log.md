@@ -4658,3 +4658,54 @@ Open risks:
 - The firewall block UI is available only when the artifact bundle includes `firewall-block-before.json` or `firewall-block-after.json`.
 - The UI intentionally does not convert firewall blocks into Readiness Receipts; they remain pre-execution safety evidence.
 - Live hosted-model proof remains gated by SAIA-capable MCP access.
+
+## 2026-06-03 - Phase Live Firewall Check Command
+
+Commands:
+
+- `rg -n "firewall|proof-audit|evaluate|rerun|grade-trace|program\\.command|case .*evaluate" src tests examples package.json`
+- `sed -n '1,260p' src/cli.ts`
+- `sed -n '260,620p' src/cli.ts`
+- `sed -n '1,260p' tests/cli/flow.test.ts`
+- `sed -n '560,660p' src/cli.ts && sed -n '1440,1535p' src/cli.ts && sed -n '1628,1760p' src/cli.ts && sed -n '2100,2165p' src/cli.ts`
+- `sed -n '740,850p' tests/cli/flow.test.ts && sed -n '1520,1590p' tests/cli/flow.test.ts`
+- `sed -n '1,140p' examples/github-workflow-example.yml && sed -n '1,90p' examples/README.md`
+- `tail -80 logs/execution-log.md && tail -80 logs/verification-log.md && git log --oneline -5`
+- `rg -n "const compileCommand|const receiptCommand|const liveSecurityProofCommand|const proofAuditCommand" src/cli.ts && sed -n '650,760p' src/cli.ts && sed -n '1760,1945p' src/cli.ts`
+- `npm run build`
+- `npx vitest run tests/cli/flow.test.ts -t "firewall"`
+- `tmp=$(mktemp -d /tmp/splunkready-firewall-check-XXXXXX) && npm run splunkready -- firewall-check --out "$tmp" --json > /tmp/splunkready-firewall-check.json && cat /tmp/splunkready-firewall-check.json && node -e "const fs=require('fs'); const dir=process.argv[1]; const block=JSON.parse(fs.readFileSync(dir+'/firewall-block-before.json','utf8')); const audit=JSON.parse(fs.readFileSync(dir+'/proof-audit.json','utf8')); console.log(JSON.stringify({block:{status:block.status,code:block.code,blockedBeforeSplunk:block.blockedBeforeSplunk,mutation:block.mutation,rules:block.violations.map(v=>v.ruleId)}, audit:{status:audit.status,proofType:audit.proofType,checks:audit.checks.map(c=>c.id+':'+c.status)}}, null, 2));" "$tmp"`
+- `ruby -e 'require "psych"; Psych.load_file("examples/github-workflow-example.yml"); puts "yaml-ok"'`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for TypeScript build.
+- PASS for focused CLI tests:
+  - `tests/cli/flow.test.ts` selected by `-t "firewall"` passed;
+  - 3 selected tests passed, 20 skipped by name filter.
+- PASS for direct `firewall-check` smoke:
+  - command exited successfully with JSON `status: PASS`;
+  - artifacts included `environment-contract.json`, `missions.json`, `agent-policy.json`, `readiness-profile.json`, `firewall-block-before.json`, and `proof-audit.json`;
+  - firewall block status was `BLOCKED`;
+  - code was `FIREWALL_POLICY_BLOCKED`;
+  - `blockedBeforeSplunk` was `true`;
+  - `mutation` was `false`;
+  - deterministic rule evidence included `SPL-001` and `SPL-003`;
+  - proof audit status was `PASS`;
+  - proof audit type was `firewall-block`.
+- PASS for workflow YAML parsing.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 728 project files;
+  - 38 test files;
+  - 212 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- `firewall-check` proves the pre-execution block path for the current specimen behavior; it does not replace Readiness Receipts for full agent certification.
+- If an agent does not trigger a firewall block, the command emits normal before-phase trace artifacts and a `firewall-check.json` diagnostic instead of a strict `firewall-block` proof.
+- Live hosted-model proof remains gated by SAIA-capable MCP access.

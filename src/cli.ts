@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 import { createFixtureSplunkAccessAdapter, loadFixtureSplunkDatasetFromFile } from "./adapters/fixture.js";
@@ -142,6 +142,7 @@ const usage = `SplunkReady CLI
 Commands:
   compile   --mode fixture|live --fixture <path> --mission <path> --out <dir> [--json]
   evaluate  --mode fixture|live --out <dir> [--firewall] [--json]
+  firewall-check --mode fixture|live --out <dir> [--json]
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   hosted-model-proof --mode fixture|live --out <dir> [--json]
@@ -334,6 +335,10 @@ const exists = async (filePath: string): Promise<boolean> =>
   stat(filePath)
     .then(() => true)
     .catch(() => false);
+
+const removeOptionalFile = async (filePath: string): Promise<void> => {
+  await rm(filePath, { force: true });
+};
 
 const readOptionalPolicyPatch = async (outDir: string): Promise<PolicyPatch | undefined> => {
   const patchPath = join(outDir, "policy-patch.json");
@@ -1480,6 +1485,44 @@ const evaluateCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = pro
   ];
 };
 
+const firewallCheckCommand = async (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<string[]> => {
+  const firewallOptions: CliOptions = { ...options, firewall: true, requirePass: true };
+  await Promise.all([
+    removeOptionalFile(join(options.out, "firewall-block-before.json")),
+    removeOptionalFile(join(options.out, "firewall-block-after.json")),
+    removeOptionalFile(join(options.out, "proof-audit.json"))
+  ]);
+
+  const compileArtifacts = await compileCommand(options, env);
+
+  try {
+    const evaluateArtifacts = await evaluateCommand(firewallOptions, env);
+    const reportPath = join(options.out, "firewall-check.json");
+    await writeJson(reportPath, {
+      status: "ALLOWED",
+      phase: "before",
+      mode: options.mode,
+      mutation: false,
+      blockedBeforeSplunk: false,
+      message:
+        "The specimen completed before-phase evaluation without a firewall block. Inspect trace-before.json and violations-before.json for deterministic readiness results.",
+      artifacts: evaluateArtifacts
+    });
+    return [...compileArtifacts, ...evaluateArtifacts, reportPath];
+  } catch (error) {
+    if (!isFirewallBlockedError(error)) {
+      throw error;
+    }
+
+    const blockPath = join(options.out, "firewall-block-before.json");
+    const auditArtifacts = await proofAuditCommand(firewallOptions);
+    return [...compileArtifacts, blockPath, ...auditArtifacts];
+  }
+};
+
 const gradeTraceCommand = async (options: CliOptions): Promise<string[]> => {
   const contract = await loadContract(options.out);
   const mission = await loadMission(options.mission);
@@ -2121,6 +2164,8 @@ const main = async (): Promise<void> => {
     artifacts = await compileCommand(options);
   } else if (command === "evaluate") {
     artifacts = await evaluateCommand(options);
+  } else if (command === "firewall-check") {
+    artifacts = await firewallCheckCommand(options);
   } else if (command === "grade-trace") {
     artifacts = await gradeTraceCommand(options);
   } else if (command === "llm-agent") {

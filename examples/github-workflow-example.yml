@@ -27,6 +27,9 @@ jobs:
       - name: Build SplunkReady
         run: npm run build
 
+      - name: Prove firewall blocks unsafe SPL before Splunk
+        run: npm run splunkready -- firewall-check --mode fixture --out artifacts/ci-firewall --json
+
       - name: Compile fixture contract
         run: npm run splunkready -- compile --mode fixture --out artifacts/ci-readiness --json
 
@@ -63,7 +66,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: splunkready-ci-readiness
-          path: artifacts/ci-readiness
+          path: |
+            artifacts/ci-readiness
+            artifacts/ci-firewall
 
   live-security-proof:
     name: Live security proof gate

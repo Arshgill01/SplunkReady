@@ -4364,6 +4364,61 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Firewall Check Command
+
+Scope:
+- Make the firewall proof usable as a positive developer gate.
+- Avoid requiring CI scripts to treat a failing `evaluate --firewall` process as expected success.
+- Preserve existing `evaluate --firewall` behavior for low-level command transparency.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `examples/github-workflow-example.yml`
+- `examples/README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `firewall-check --mode fixture|live --out <dir> [--json]`.
+- The command:
+  - removes stale firewall/proof-audit artifacts from the target output directory;
+  - compiles the environment contract and agent policy;
+  - runs the before-phase specimen behind `SplunkFirewallGateway`;
+  - treats `FIREWALL_POLICY_BLOCKED` as a passing pre-execution safety proof;
+  - writes `firewall-block-before.json`;
+  - runs strict `proof-audit --require-pass` internally and writes `proof-audit.json`.
+- If no firewall block occurs, the command writes `firewall-check.json` and returns the normal before-phase trace/violation artifacts for inspection.
+- The GitHub Actions example now runs `firewall-check` in the fixture PR gate and uploads `artifacts/ci-firewall`.
+- The examples README explains the firewall gate as a CI-friendly pre-execution proof.
+
+Product impact:
+- SplunkReady now has a copyable CI command for proving unsafe SPL is blocked before any Splunk call.
+- This is a cleaner Developer Tools and Platform/DX story than a shell script that expects a failing command.
+- It keeps deterministic rules authoritative and keeps firewall evidence separate from Readiness Receipt pass/fail semantics.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 31% | 31% | No new live or visual capability. |
+| Platform & DX | 84% | 85% | CI integration now has a first-class positive firewall gate. |
+| Security | 48% | 49% | Pre-execution unsafe SPL blocking is easier to demonstrate. |
+| Best Use of MCP Server | 82% | 82% | MCP behavior unchanged. |
+| Hosted Models | 49% | 49% | SAIA remains permission-blocked. |
+| Developer Tools | 83% | 85% | Developers can consume firewall proof with one command and uploaded artifacts. |
+
+Next directions to consider in future runs:
+- Revisit live fail-to-pass options without faking an unsafe live run.
+- Rerun hosted-model proof once SAIA permissions are resolved.
+- Consider whether live proof should optionally invoke `firewall-check` before LLM evaluation for a stronger preflight story.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Targeted build, focused firewall CLI tests, direct command smoke, workflow YAML parsing, full repo verification, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Firewall Block Proof Artifacts
 
 Scope:

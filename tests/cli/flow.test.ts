@@ -822,6 +822,60 @@ describe("SplunkReady CLI flow", () => {
     );
   });
 
+  it("runs firewall-check as a passing CI-friendly pre-execution gate", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-cli-firewall-check-"));
+
+    const output = parseCliJsonOutput((await runCli(["firewall-check", "--out", outDir, "--json"])).stdout);
+
+    expect(output).toMatchObject({
+      command: "firewall-check",
+      status: "PASS",
+      artifacts: [
+        join(outDir, "environment-contract.json"),
+        join(outDir, "missions.json"),
+        join(outDir, "agent-policy.json"),
+        join(outDir, "readiness-profile.json"),
+        join(outDir, "firewall-block-before.json"),
+        join(outDir, "proof-audit.json")
+      ]
+    });
+    expect(await exists(join(outDir, "trace-before.json"))).toBe(false);
+
+    const blockReport = JSON.parse(await readFile(join(outDir, "firewall-block-before.json"), "utf8")) as {
+      status: string;
+      code: string;
+      blockedBeforeSplunk: boolean;
+      mutation: boolean;
+      violations: Array<{ ruleId: string }>;
+    };
+    const proofAudit = JSON.parse(await readFile(join(outDir, "proof-audit.json"), "utf8")) as {
+      status: string;
+      proofType: string;
+      checks: Array<{ id: string; status: string }>;
+    };
+
+    expect(blockReport).toMatchObject({
+      status: "BLOCKED",
+      code: "FIREWALL_POLICY_BLOCKED",
+      blockedBeforeSplunk: true,
+      mutation: false
+    });
+    expect(blockReport.violations.map((violation) => violation.ruleId)).toEqual(
+      expect.arrayContaining(["SPL-001", "SPL-003"])
+    );
+    expect(proofAudit).toMatchObject({
+      status: "PASS",
+      proofType: "firewall-block"
+    });
+    expect(proofAudit.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "firewall-block-loaded", status: "PASS" }),
+        expect.objectContaining({ id: "firewall-block-before-splunk", status: "PASS" }),
+        expect.objectContaining({ id: "firewall-block-query", status: "PASS" })
+      ])
+    );
+  });
+
   it("allows a compliant policy-backed rerun when rerun firewall is enabled", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-cli-rerun-firewall-"));
 
