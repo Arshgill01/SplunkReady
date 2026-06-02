@@ -460,4 +460,61 @@ describe("Gemini LLM specimen model", () => {
     expect(promptText(calls[1] ?? "{}")).toContain("splunk_run_saved_search");
     expect(promptText(calls[1] ?? "{}")).toContain("A discovery-only plan violates policy");
   });
+
+  it("does not expose mission preferred saved-search refs that are absent from the compiled contract", async () => {
+    const calls: string[] = [];
+    const fetchImpl: typeof fetch = async (_url, init) => {
+      calls.push(String(init?.body));
+
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      rationale: "No matching saved search exists in the contract.",
+                      toolCalls: [
+                        {
+                          toolName: "splunk_get_knowledge_objects",
+                          input: { types: ["saved_searches"], query: "lateral movement" }
+                        }
+                      ]
+                    })
+                  }
+                ]
+              }
+            }
+          ]
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      );
+    };
+    const { contract, mission } = await loadFixtureContext();
+    const liveLikeContract = {
+      ...contract,
+      mode: "live" as const,
+      savedSearches: contract.savedSearches.filter((savedSearch) => savedSearch.app !== "SplunkEnterpriseSecuritySuite")
+    };
+    const model = createGeminiLlmAgentModel({
+      apiKey: "test-api-key",
+      model: "gemini-test",
+      endpointBaseUrl: "https://gemini.test/v1beta",
+      fetchImpl
+    });
+
+    await model.plan({
+      mission,
+      contract: liveLikeContract,
+      contractInjected: true,
+      allowedTools: ["splunk_get_knowledge_objects", "splunk_run_saved_search"]
+    });
+
+    const parsed = JSON.parse(calls[0] ?? "{}") as { contents: Array<{ parts: Array<{ text: string }> }> };
+    const prompt = parsed.contents.flatMap((content) => content.parts).map((part) => part.text).join("\n");
+
+    expect(prompt).toContain('"preferredSavedSearchRefs":[]');
+    expect(prompt).not.toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain");
+  });
 });

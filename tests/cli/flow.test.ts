@@ -44,7 +44,11 @@ const startMockMcpServer = async () => {
             "splunk_get_user_info",
             "splunk_get_indexes",
             "splunk_get_metadata",
-            "splunk_get_knowledge_objects"
+            "splunk_get_knowledge_objects",
+            "splunk_run_query",
+            "splunk_run_saved_search",
+            "saia_explain_spl",
+            "saia_optimize_spl"
           ]
         },
         splunk_get_user_info: {
@@ -63,11 +67,30 @@ const startMockMcpServer = async () => {
             {
               id: "saved-search-live-auth",
               type: "saved_searches",
-              name: "ES - Live Auth Chain",
+              name: "ES - Lateral Movement Auth Chain",
               app: "SplunkEnterpriseSecuritySuite"
             }
           ],
           total_rows: 1
+        },
+        splunk_run_query: {
+          results: [],
+          total_rows: 0
+        },
+        splunk_run_saved_search: {
+          results: [
+            { eventRef: "live-evt-102", user: "svc-finance", dest: "win-finance-07" },
+            { eventRef: "live-evt-118", user: "svc-finance", dest: "win-finance-07" },
+            { eventRef: "live-evt-141", user: "svc-finance", dest: "win-finance-07" }
+          ],
+          total_rows: 3
+        },
+        saia_explain_spl: {
+          explanation: "The SPL uses a broad index wildcard and a non-contract field."
+        },
+        saia_optimize_spl: {
+          optimizedQuery: "| savedsearch \"ES - Lateral Movement Auth Chain\"",
+          rationale: "Prefer the validated saved search from the live contract."
         }
       };
 
@@ -150,7 +173,7 @@ const startMockGeminiServer = async () => {
                 }
               : {
                   finalAnswer:
-                    "Evidence supports the investigation: 3 result(s) from saved-search-lateral-movement, evidence evt-102, evt-118, evt-141."
+                    "Evidence supports the investigation: 3 result(s) from saved-search-lateral-movement and SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain, evidence evt-102, evt-118, evt-141, live-evt-102, live-evt-118, live-evt-141."
                 };
 
       response.writeHead(200, { "content-type": "application/json" });
@@ -500,6 +523,76 @@ describe("SplunkReady CLI flow", () => {
     });
   });
 
+  it("uses the live adapter for Gemini compile, evaluate, receipt assistance, and rerun in live mode", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-llm-cli-"));
+    const gemini = await startMockGeminiServer();
+    const mcp = await startMockMcpServer();
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: mcp.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token",
+      SPLUNKREADY_SPLUNK_APP: "search",
+      SPLUNKREADY_LLM_ENABLED: "true",
+      GEMINI_API_KEY: "test-gemini-key",
+      GEMINI_MODEL: "gemini-test",
+      SPLUNKREADY_GEMINI_ENDPOINT_BASE_URL: gemini.url
+    };
+
+    try {
+      await expect(runCli(["compile", "--mode", "live", "--out", outDir], process.cwd(), env)).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS compile")
+      });
+      await expect(runCli(["evaluate", "--mode", "live", "--out", outDir], process.cwd(), env)).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS evaluate")
+      });
+      await expect(runCli(["receipt", "--mode", "live", "--out", outDir], process.cwd(), env)).resolves.toMatchObject({
+        stdout: expect.stringContaining("policy-patch.json")
+      });
+      await expect(runCli(["rerun", "--mode", "live", "--out", outDir], process.cwd(), env)).resolves.toMatchObject({
+        stdout: expect.stringContaining("receipt-after-001.json")
+      });
+    } finally {
+      await gemini.close();
+      await mcp.close();
+    }
+
+    const contract = JSON.parse(await readFile(join(outDir, "environment-contract.json"), "utf8")) as { mode: string };
+    const beforeTrace = JSON.parse(await readFile(join(outDir, "trace-before.json"), "utf8")) as Array<{
+      toolName: string | null;
+      queryRef?: string | null;
+    }>;
+    const afterTrace = JSON.parse(await readFile(join(outDir, "trace-after.json"), "utf8")) as Array<{
+      toolName: string | null;
+      queryRef?: string | null;
+      evidenceRefs?: string[];
+    }>;
+    const afterReceipt = JSON.parse(await readFile(join(outDir, "receipt-after-001.json"), "utf8")) as {
+      verdict: string;
+      score: number;
+    };
+    const patchMarkdown = await readFile(join(outDir, "policy-patch.md"), "utf8");
+
+    expect(contract.mode).toBe("live");
+    expect(beforeTrace.map((event) => event.toolName)).toContain("splunk_run_query");
+    expect(afterTrace.map((event) => event.toolName)).toEqual([
+      "splunk_get_knowledge_objects",
+      "splunk_get_knowledge_objects",
+      "splunk_run_saved_search",
+      "splunk_run_saved_search",
+      null
+    ]);
+    expect(afterTrace.find((event) => event.toolName === "splunk_run_saved_search" && event.queryRef)).toMatchObject({
+      queryRef: "SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+      evidenceRefs: ["live-evt-102", "live-evt-118", "live-evt-141"]
+    });
+    expect(afterReceipt).toMatchObject({ verdict: "READY", score: 100 });
+    expect(patchMarkdown).toContain("SAIA Explanation:");
+    expect(patchMarkdown).toContain("SAIA Optimized Query:");
+    expect(mcp.calls.map((call) => call.params.name)).toEqual(
+      expect.arrayContaining(["splunk_run_query", "splunk_run_saved_search", "saia_explain_spl", "saia_optimize_spl"])
+    );
+  });
+
   it("rejects an externally supplied trace for the wrong mission", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-external-trace-mismatch-"));
 
@@ -596,7 +689,7 @@ describe("SplunkReady CLI flow", () => {
     };
 
     expect(contract.mode).toBe("live");
-    expect(contract.savedSearches).toEqual([{ app: "SplunkEnterpriseSecuritySuite", name: "ES - Live Auth Chain" }]);
+    expect(contract.savedSearches).toEqual([{ app: "SplunkEnterpriseSecuritySuite", name: "ES - Lateral Movement Auth Chain" }]);
     expect(profile).toMatchObject({
       contractRef: { mode: "live" },
       deploymentSignals: { savedSearchCount: 1 },

@@ -57,6 +57,7 @@ const liveSmokeNotCalledTools = readOnlySplunkToolNameSchema.options.filter(
 );
 
 interface CliOptions {
+  mode: "fixture" | "live";
   fixture: string;
   mission: string;
   out: string;
@@ -82,16 +83,17 @@ const allRules = (): GraderRule[] => [
 const usage = `SplunkReady CLI
 
 Commands:
-  compile   --fixture <path> --mission <path> --out <dir>
-  evaluate  --out <dir>
+  compile   --mode fixture|live --fixture <path> --mission <path> --out <dir>
+  evaluate  --mode fixture|live --out <dir>
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>]
-  llm-agent --out <dir> [--agent-model <model>]
+  llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   receipt   --out <dir> [--phase before|after]
-  rerun     --out <dir>
+  rerun     --mode fixture|live --out <dir>
   live-smoke --out <dir> [--require-live true|false]
-  demo      --out <dir>
+  demo      --mode fixture|live --out <dir>
 
 Defaults:
+  --mode fixture
   --fixture ${defaultFixturePath}
   --mission ${defaultMissionPath}
   --out ${defaultOutDir}
@@ -100,6 +102,7 @@ Defaults:
 const parseArgs = (argv: string[]): { command: string; options: CliOptions } => {
   const [command = "help", ...rest] = argv;
   const options: CliOptions = {
+    mode: "fixture",
     fixture: defaultFixturePath,
     mission: defaultMissionPath,
     out: defaultOutDir,
@@ -121,7 +124,13 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
 
     index += 1;
 
-    if (flag === "--fixture") {
+    if (flag === "--mode") {
+      if (value !== "fixture" && value !== "live") {
+        throw new Error("--mode must be fixture or live.");
+      }
+
+      options.mode = value;
+    } else if (flag === "--fixture") {
       options.fixture = value;
     } else if (flag === "--mission") {
       options.mission = value;
@@ -307,11 +316,25 @@ const specimenAgentDescriptor = (
   };
 };
 
-const compileCommand = async (options: CliOptions): Promise<string[]> => {
+const createSplunkAccessAdapter = async (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<SplunkAccessAdapter> => {
+  if (options.mode === "live") {
+    return createLiveSplunkAccessAdapter({
+      ...createLiveSplunkAdapterConfigFromEnv(env),
+      transport: createHttpLiveSplunkTransport()
+    });
+  }
+
   const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
-  const adapter = createFixtureSplunkAccessAdapter(fixture);
+  return createFixtureSplunkAccessAdapter(fixture);
+};
+
+const compileCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
+  const adapter = await createSplunkAccessAdapter(options, env);
   const contract = await compileEnvironmentContract(adapter, {
-    requestId: "req-cli-compile-001",
+    requestId: `req-cli-${options.mode}-compile-001`,
     contractVersion: "2026.06.01",
     generatedAt
   });
@@ -419,8 +442,7 @@ const liveSmokeCommand = async (
 };
 
 const evaluateCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
-  const adapter = createFixtureSplunkAccessAdapter(fixture);
+  const adapter = await createSplunkAccessAdapter(options, env);
   const contract = await loadContract(options.out);
   const mission = await loadMission(options.mission);
   const agent = llmEnabled(env) ? createLlmSpecimenAgent(contract, options, env) : new NaiveSpecimenAgent();
@@ -483,9 +505,8 @@ const llmAgentCommand = async (
     throw new Error("llm-agent requires GEMINI_API_KEY. No Gemini request was made and no Splunk calls were made.");
   }
 
-  const compileArtifacts = await compileCommand(options);
-  const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
-  const adapter = createFixtureSplunkAccessAdapter(fixture);
+  const compileArtifacts = await compileCommand(options, env);
+  const adapter = await createSplunkAccessAdapter(options, env);
   const contract = await loadContract(options.out);
   const mission = await loadMission(options.mission);
   const agent = createLlmSpecimenAgent(contract, options, env);
@@ -549,8 +570,7 @@ const receiptCommand = async (
   await writeText(markdownPath, generated.markdown);
 
   if (options.phase === "before" && violations.length > 0) {
-    const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
-    const adapter = createFixtureSplunkAccessAdapter(fixture);
+    const adapter = await createSplunkAccessAdapter(options, env);
     const splAssistance = await collectSplAssistance(adapter, violations);
     const patch = generatePolicyPatch({
       id: "patch-security-readiness",
@@ -572,8 +592,7 @@ const receiptCommand = async (
 };
 
 const rerunCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
-  const adapter = createFixtureSplunkAccessAdapter(fixture);
+  const adapter = await createSplunkAccessAdapter(options, env);
   const contract = await loadContract(options.out);
   const mission = await loadMission(options.mission);
   const policy = await readJson<AgentPolicy>(join(options.out, "agent-policy.json"), "agent policy");

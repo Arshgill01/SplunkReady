@@ -156,7 +156,7 @@ npm run check
 - Live mode is a read-only smoke path in this build. It validates adapter shape and environment compilation, but it does not run production searches.
 - SplunkReady never auto-mutates Splunk. Policy patches are exported for operator review.
 - LLMs may explain results or draft policy text, but deterministic grader rules decide pass/fail.
-- The default bundled specimen is deterministic TypeScript code for reproducible fixture demos. The env-gated LLM specimen uses Gemini to produce traces, but live proof still requires a real MCP endpoint and token.
+- The default bundled specimen is deterministic TypeScript code for reproducible fixture demos. The env-gated Gemini specimen now produces fixture and live traces; the remaining live gap is a passing security mission on a Splunk deployment with matching saved searches and evidence data.
 
 ## Submission Materials
 

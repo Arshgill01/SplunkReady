@@ -203,6 +203,24 @@ const normalizeKnowledgeObjects = (
 ): KnowledgeObjectSummary[] =>
   rowsFrom(value).map((row) => normalizeKnowledgeObject(requestedType, row, defaultApp));
 
+const normalizedKnowledgeObjectQuery = (query: string | undefined): string | undefined => {
+  const trimmedQuery = query?.trim();
+  return trimmedQuery ? trimmedQuery.toLowerCase() : undefined;
+};
+
+const knowledgeObjectMatchesRequest = (
+  object: KnowledgeObjectSummary,
+  input: KnowledgeObjectRequest
+): boolean => {
+  const query = normalizedKnowledgeObjectQuery(input.query);
+  const matchesApp = input.app ? object.app === input.app : true;
+  const matchesQuery = query
+    ? object.name.toLowerCase().includes(query) || object.description?.toLowerCase().includes(query) || object.id.toLowerCase().includes(query)
+    : true;
+
+  return matchesApp && matchesQuery;
+};
+
 const normalizeLiveQueryResult = (input: RunQueryRequest, value: unknown): QueryResult => {
   const rows = rowsFrom(value);
 
@@ -543,9 +561,9 @@ export const createLiveSplunkAccessAdapter = (
           )
         }))
       );
-      const objects = perType.flatMap(({ requestedType, output }) =>
-        normalizeKnowledgeObjects(requestedType, output, config.defaultApp)
-      );
+      const objects = perType
+        .flatMap(({ requestedType, output }) => normalizeKnowledgeObjects(requestedType, output, config.defaultApp))
+        .filter((object) => knowledgeObjectMatchesRequest(object, input));
 
       return {
         objects,

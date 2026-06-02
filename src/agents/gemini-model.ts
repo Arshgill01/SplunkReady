@@ -211,9 +211,25 @@ const contractSummary = (contract: EnvironmentContract): Record<string, unknown>
   evidenceRules: contract.evidenceRules
 });
 
+const contractSavedSearchRefs = (contract: EnvironmentContract): Set<string> =>
+  new Set(contract.savedSearches.map((object) => `${object.app}::${object.name}`));
+
+const availablePreferredSavedSearchRefs = (
+  mission: Parameters<LlmAgentModel["plan"]>[0]["mission"],
+  contract: EnvironmentContract,
+  contractInjected: boolean
+): string[] => {
+  if (!contractInjected) {
+    return [];
+  }
+
+  const availableRefs = contractSavedSearchRefs(contract);
+  return (mission.preferredSavedSearchRefs ?? []).filter((ref) => availableRefs.has(ref));
+};
+
 const missionSummary = (
   mission: Parameters<LlmAgentModel["plan"]>[0]["mission"],
-  options: { includePreferredSavedSearchRefs: boolean }
+  options: { preferredSavedSearchRefs: string[] }
 ): Record<string, unknown> => ({
   id: mission.id,
   title: mission.title,
@@ -223,7 +239,7 @@ const missionSummary = (
   allowedTools: mission.allowedTools,
   forbiddenPatterns: mission.forbiddenPatterns,
   requiredEvidence: mission.requiredEvidence,
-  preferredSavedSearchRefs: options.includePreferredSavedSearchRefs ? mission.preferredSavedSearchRefs : [],
+  preferredSavedSearchRefs: options.preferredSavedSearchRefs,
   requiresSavedSearchDiscovery: mission.requiresSavedSearchDiscovery,
   checks: mission.checks
 });
@@ -260,7 +276,9 @@ const planPrompt = (input: {
     "",
     `Allowed tools: ${JSON.stringify(input.allowedTools)}`,
     `Mission: ${JSON.stringify(
-      missionSummary(input.mission, { includePreferredSavedSearchRefs: input.contractInjected })
+      missionSummary(input.mission, {
+        preferredSavedSearchRefs: availablePreferredSavedSearchRefs(input.mission, input.contract, input.contractInjected)
+      })
     )}`,
     input.contractInjected
       ? `Compiled Splunk contract injected by policy: ${JSON.stringify(contractSummary(input.contract))}`
@@ -285,7 +303,9 @@ const answerPrompt = (input: {
     "Return this exact JSON shape: {\"finalAnswer\":\"...\"}",
     "",
     `Mission: ${JSON.stringify(
-      missionSummary(input.mission, { includePreferredSavedSearchRefs: input.contractInjected })
+      missionSummary(input.mission, {
+        preferredSavedSearchRefs: availablePreferredSavedSearchRefs(input.mission, input.contract, input.contractInjected)
+      })
     )}`,
     input.contractInjected
       ? `Compiled Splunk contract injected by policy: ${JSON.stringify(contractSummary(input.contract))}`

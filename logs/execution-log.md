@@ -3653,3 +3653,46 @@ Reviewer findings:
 Result:
 - PASS.
 - Move 2 now has local fixture proof that a real Gemini specimen fails without policy and reaches a `READY` receipt after policy injection.
+
+## 2026-06-02 - Phase Live Move 3 Live Gemini Trace Proof
+
+Scope:
+- Add an explicit `--mode fixture|live` CLI option so `compile`, `evaluate`, `receipt`, `rerun`, `llm-agent`, and `demo` can use the live adapter without changing default fixture behavior.
+- Keep default mode as `fixture` so normal tests and local demos do not require live Splunk credentials.
+- Exercise the full Gemini specimen path against a live-mode adapter in tests using mock MCP and Gemini servers.
+- Attempt the real live Gemini proof against the user's local Splunk MCP endpoint.
+- Update live proof documentation to distinguish live MCP proof from the remaining passing-live-mission gap.
+
+Files changed:
+- `README.md`
+- `docs/live-proof-gap.md`
+- `src/adapters/live.ts`
+- `src/agents/gemini-model.ts`
+- `src/cli.ts`
+- `tests/adapters/live.test.ts`
+- `tests/agents/llm-specimen.test.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- Live knowledge-object responses are now filtered at the adapter boundary. The real MCP endpoint ignored the `search` argument and returned 100 saved searches, so client-side filtering is required to preserve adapter semantics.
+- Gemini prompt context now includes only mission preferred saved-search refs that are present in the compiled contract. This prevents fixture-only mission preferences from leaking into live runs.
+- Real live proof ran read-only with local `NODE_TLS_REJECT_UNAUTHORIZED=0` because the local trial uses a self-signed certificate.
+- Real live proof produced live traces and receipts under `artifacts/live-proof`.
+- Sanitized real live result:
+  - contract mode `live`;
+  - 13 indexes, 100 saved searches, 0 sourcetypes in the metadata window;
+  - contract tools include inventory, `splunk_run_query`, `splunk_run_saved_search`, `saia_explain_spl`, and `saia_optimize_spl`;
+  - before policy: `NOT READY`, score `60`, violations `KO-001` and `EVD-001`;
+  - after policy: `NOT READY`, score `60`, violations `KO-001` and `EVD-001`;
+  - live execution included `splunk_get_knowledge_objects` and `splunk_run_saved_search`.
+- The remaining failure is mission/data compatibility: the live trial deployment does not expose the security mission's expected `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain` saved search or matching evidence rows.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No reviewer inbox closeout was available for this Phase Live move.
+
+Result:
+- PARTIAL.
+- Move 3 now has live MCP and live Gemini trace proof.
+- Move 3 does not yet have a passing live readiness receipt; that requires explicit operator-approved live data/saved-search preparation or a live-compatible mission.

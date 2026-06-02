@@ -147,6 +147,24 @@ describe("live Splunk adapter skeleton", () => {
 
         if (request.toolName === "splunk_get_knowledge_objects") {
           if ((request.input as { type?: string }).type === "saved_searches") {
+            if ((request.input as { search?: string }).search) {
+              return {
+                results: [
+                  {
+                    name: "ES - Lateral Movement Auth Chain",
+                    app: "SplunkEnterpriseSecuritySuite",
+                    description: "Mission preferred saved search"
+                  },
+                  {
+                    name: "Errors in the last 24 hours",
+                    app: "search",
+                    description: "Generic error report"
+                  }
+                ],
+                total_rows: 2
+              } as TOutput;
+            }
+
             return {
               results: [
                 {
@@ -228,6 +246,17 @@ describe("live Splunk adapter skeleton", () => {
           app: "SplunkEnterpriseSecuritySuite"
         })
       ])
+    });
+    await expect(
+      adapter.getKnowledgeObjects({ types: ["saved_searches"], query: "lateral movement" }, requestOptions)
+    ).resolves.toMatchObject({
+      resultCount: 1,
+      objects: [
+        expect.objectContaining({
+          type: "saved_searches",
+          name: "ES - Lateral Movement Auth Chain"
+        })
+      ]
     });
     expect(calls).toEqual(
       expect.arrayContaining([

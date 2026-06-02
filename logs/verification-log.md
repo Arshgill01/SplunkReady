@@ -3110,3 +3110,38 @@ Open risks:
 
 - This proof is fixture-mode LLM proof, not live Splunk LLM proof. Move 3 still needs the Gemini specimen run against the live adapter once live mission data/tool execution is ready.
 - Raw artifacts under `artifacts/llm-fixture-proof` are local generated outputs and remain untracked.
+
+## 2026-06-02 - Phase Live Move 3 Live Gemini Trace Proof
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts`
+- `npx vitest run tests/adapters/live.test.ts tests/adapters/fixture.test.ts tests/agents/llm-specimen.test.ts tests/cli/flow.test.ts && npm run build`
+- `npx vitest run tests/adapters/live.test.ts tests/agents/llm-specimen.test.ts tests/cli/flow.test.ts && npm run build`
+- `rm -rf artifacts/live-proof && mkdir -p artifacts/live-proof && set -a && source ./.splunkready-live.env && set +a && export SPLUNKREADY_LLM_ENABLED=true GEMINI_MODEL=gemini-3.1-flash-lite && { NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- compile --mode live --out artifacts/live-proof && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- evaluate --mode live --out artifacts/live-proof && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- receipt --mode live --out artifacts/live-proof && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- rerun --mode live --out artifacts/live-proof; } 2>&1 | tee artifacts/live-proof/terminal-proof.txt`
+- `npm run check && git diff --check`
+
+Result:
+
+- PARTIAL.
+- New live-mode CLI regression passed with mock MCP and Gemini servers.
+- Focused live adapter, LLM specimen, and CLI flow tests passed: 3 files / 26 tests.
+- TypeScript build passed.
+- Full check passed: scaffold verifier reported 85 waves and 547 project files; Vitest passed 34 files / 167 tests.
+- `git diff --check` passed.
+- Real live proof command completed all four commands and wrote `environment-contract.json`, `trace-before.json`, `receipt-before-001.json`, `policy-patch.json`, `trace-after.json`, and `receipt-after-001.json` under `artifacts/live-proof`.
+- Sanitized live artifact inspection reported:
+  - contract mode `live`;
+  - 13 indexes;
+  - 100 saved searches;
+  - 0 sourcetypes in the metadata window;
+  - MCP tools include `splunk_run_query`, `splunk_run_saved_search`, `saia_explain_spl`, and `saia_optimize_spl`;
+  - before policy: `NOT READY`, score `60`, violations `KO-001` and `EVD-001`;
+  - after policy: `NOT READY`, score `60`, violations `KO-001` and `EVD-001`;
+  - live trace executed `splunk_get_knowledge_objects` and `splunk_run_saved_search`.
+
+Open risks:
+
+- The real live trial deployment does not match the flagship security fixture mission. It lacks the expected `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain` saved search/evidence data, so the live receipt correctly remains `NOT READY`.
+- The local live proof used `NODE_TLS_REJECT_UNAUTHORIZED=0` for the self-signed trial certificate. Production/shared proof should use trusted TLS.
+- Raw `artifacts/live-proof` contents are local proof artifacts and may contain deployment-identifying inventory. Do not commit them unless the user explicitly approves a redacted artifact set.
