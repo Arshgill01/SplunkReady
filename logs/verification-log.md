@@ -3434,3 +3434,30 @@ Open risks:
 
 - Exfiltration proof is fixture-backed. It improves multi-mission credibility but does not replace the live Splunk proof path.
 - The new DNS saved searches are intentionally read-only fixture content; live mode still depends on the target Splunk deployment exposing comparable DNS/network content.
+
+## 2026-06-02 - Phase Live Live-Derived Mission Generation
+
+Commands:
+
+- `npx vitest run tests/missions/live.test.ts tests/cli/flow.test.ts && npm run build`
+- `npx vitest run tests/missions/live.test.ts tests/cli/flow.test.ts && npm run build`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused live mission derivation, CLI flow assertions, and TypeScript build.
+- Initial focused validation passed: 2 files / 16 tests.
+- Final focused validation passed after adding CLI fallback coverage: 2 files / 17 tests.
+- Full verification passed: scaffold verified, 85 waves, 593 project files, 38 test files, 194 tests.
+- `git diff --check` passed with no whitespace errors.
+- `tests/missions/live.test.ts` covered:
+  - saved-search candidate with evidence rows -> `mission-live-saved-search-readiness`;
+  - no saved-search rows -> bounded `_internal` fallback mission;
+  - no saved-search rows and no usable `_internal`/query capability -> no mission.
+- `tests/cli/flow.test.ts` covered `live-candidates` writing `live-derived-mission.json` and `live-derived-readiness-profile.json` from:
+  - a saved-search candidate with rows;
+  - a no-row saved-search scan with `_internal` query fallback.
+
+Open risks:
+
+- `live-candidates` now creates derived artifacts, but the operator still needs a follow-up command path to run compile/evaluate directly from those generated artifacts.

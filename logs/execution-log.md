@@ -4168,3 +4168,58 @@ Reviewer findings:
 
 Result:
 - PASS. Focused validation, exfiltration CLI proof, full scaffold/test verification, and diff whitespace checks passed.
+
+## 2026-06-02 - Phase Live Live-Derived Mission Generation
+
+Scope:
+- Close the practical live proof gap where MCP connectivity works but the target Splunk deployment does not contain the exact fixture Enterprise Security content.
+- Extend `live-candidates` so it can emit a runnable mission/profile from real live contract and candidate evidence.
+- Keep the grader deterministic, the live adapter read-only, and the generated mission explicitly labeled as live-derived.
+
+Files expected/touched:
+- `src/missions/live.ts`
+- `src/cli.ts`
+- `tests/missions/live.test.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/splunk-feedback.md`
+
+What changed:
+- Added live mission derivation logic that prefers a saved-search candidate with returned rows.
+- Added a bounded `_internal` query fallback mission for fresh Splunk deployments where no saved-search candidate returns rows.
+- Updated `live-candidates` to write:
+  - `live-candidates.json`
+  - `live-derived-mission.json`
+  - `live-derived-readiness-profile.json`
+- The report now records the derivation strategy, reason, mission id, and artifact paths.
+- Added mission helper tests and CLI flow assertions for saved-search mission generation.
+- Added CLI flow coverage for the `_internal` fallback path when live saved-search candidates return no rows.
+
+Product impact:
+- Live proof no longer depends entirely on a target Splunk instance having the same Enterprise Security saved search and dataset as the fixture demo.
+- The product can now generate a read-only readiness mission from discovered live Splunk capabilities, which is closer to how a developer would certify an agent against their own deployment.
+- This does not replace the flagship fixture security story; it creates a stronger path to make live proof green on ordinary Splunk trial environments.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 23% | 24% | Live proof becomes less brittle and more product-like. |
+| Platform & DX | 47% | 51% | Developers can derive certification work from their own Splunk deployment instead of hand-authoring every mission. |
+| Security | 28% | 28% | Security fixture strength unchanged; live-derived mission is platform-focused unless live security content exists. |
+| Best Use of MCP Server | 65% | 69% | MCP-discovered saved searches and live index inventory now feed mission generation. |
+| Hosted Models | 52% | 52% | SAIA behavior unchanged. |
+| Developer Tools | 42% | 46% | `live-candidates` becomes a more useful developer onboarding command. |
+
+Next directions to consider in future runs:
+- Add a command or flag to run/evaluate directly from `live-derived-mission.json` so the live-candidates output becomes a complete guided flow.
+- Build the policy simulator only if it is grounded in actual receipt/rule data and does not become a generic dashboard.
+- Build multi-agent summary only after there are multiple real artifact directories worth comparing.
+- Keep expanding around live proof, external trace grading, and developer workflow integration rather than adding more standalone QA waves.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No new reviewer inbox is expected for this move.
+
+Result:
+- Focused live mission and CLI validation passed. Full verification will be recorded in the verification log after the full suite runs.

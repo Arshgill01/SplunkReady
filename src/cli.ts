@@ -25,6 +25,7 @@ import { scoreMissionReadiness } from "./grader/scoring.js";
 import { createSplStructuralRules } from "./grader/spl.js";
 import { SplunkFirewallGateway } from "./gateway/firewall.js";
 import { parseMissionDefinition, type MissionDefinition } from "./missions/dsl.js";
+import { deriveLiveMission, type LiveSavedSearchCandidateResult } from "./missions/live.js";
 import { compileAgentPolicy, type AgentPolicy } from "./policy/compiler.js";
 import { generatePolicyPatch } from "./policy/patch.js";
 import { generateReadinessReceipt } from "./receipts/generator.js";
@@ -531,7 +532,7 @@ const liveCandidatesCommand = async (options: CliOptions, env: NodeJS.ProcessEnv
   const contract = await loadContract(options.out);
   const adapter = await createSplunkAccessAdapter(liveOptions, env);
   const candidates = sortedSavedSearchCandidates(contract.savedSearches, options.candidateLimit);
-  const results = [];
+  const results: LiveSavedSearchCandidateResult[] = [];
 
   for (const candidate of candidates) {
     try {
@@ -569,6 +570,22 @@ const liveCandidatesCommand = async (options: CliOptions, env: NodeJS.ProcessEnv
   }
 
   const reportPath = join(options.out, "live-candidates.json");
+  const derived = deriveLiveMission(contract, results);
+  const derivedMissionPath = join(options.out, "live-derived-mission.json");
+  const derivedProfilePath = join(options.out, "live-derived-readiness-profile.json");
+  const artifacts = [reportPath];
+
+  if (derived.mission) {
+    const readinessProfile = compileReadinessProfile(contract, [derived.mission], {
+      profileVersion: "live-derived-profile-2026.06.01",
+      generatedAt: compiledAt
+    });
+
+    await writeJson(derivedMissionPath, derived.mission);
+    await writeJson(derivedProfilePath, readinessProfile);
+    artifacts.push(derivedMissionPath, derivedProfilePath);
+  }
+
   await writeJson(reportPath, {
     mode: "live",
     contractId: contract.id,
@@ -576,10 +593,16 @@ const liveCandidatesCommand = async (options: CliOptions, env: NodeJS.ProcessEnv
     maxRowsPerSavedSearch: 5,
     mutation: false,
     candidates: results,
-    candidatesWithRows: results.filter((result) => typeof result.resultCount === "number" && result.resultCount > 0)
+    candidatesWithRows: results.filter((result) => typeof result.resultCount === "number" && result.resultCount > 0),
+    derivedMission: {
+      strategy: derived.strategy,
+      reason: derived.reason,
+      missionId: derived.mission?.id,
+      artifacts: derived.mission ? [derivedMissionPath, derivedProfilePath] : []
+    }
   });
 
-  return [reportPath];
+  return artifacts;
 };
 
 const evaluateCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {

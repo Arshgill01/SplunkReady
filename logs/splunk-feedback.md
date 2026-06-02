@@ -60,6 +60,18 @@ Impact:
 Suggestion:
 - Ship or document an official sample dataset and saved-search pack for MCP demos, with explicit read-only missions that can be run immediately after setup.
 
+### Live missions need a compatibility bridge from discovered content
+
+Observed while adding live-derived mission generation. The MCP inventory can prove that a deployment is reachable and read-only, but a certification mission still needs runnable content: saved searches that return rows, accessible indexes, and evidence-preserving query shapes. A fresh Splunk trial often has `_internal` data but no Enterprise Security saved searches.
+
+Impact:
+- Developers can complete MCP setup successfully and still lack a mission that demonstrates their agent against live Splunk data.
+- Without a guided derivation path, product demos drift back to fixture-only evidence even when live MCP works.
+
+Suggestion:
+- Provide examples for deriving simple read-only validation tasks from live inventory, such as "run a saved search that returned rows" or "query `_internal` with `head 10` and return raw evidence."
+- Expose candidate quality signals in MCP inventory or docs: app, saved-search name, whether it is runnable, whether it returned rows recently, and whether returned rows preserve event/provenance refs.
+
 ## MCP Server Limitations
 
 ### MCP response envelopes need normalization
@@ -116,3 +128,4 @@ Suggestion:
 - Expose readiness diagnostics for MCP server dependencies such as KVStore, installed apps, and knowledge-object inventory.
 - Include examples showing how to safely debug bearer-token auth without printing secrets.
 - Document how saved-search app context should be represented and filtered in MCP calls.
+- Provide a first-class "derive a safe live demo mission from this deployment" guide for fresh Splunk trials that have `_internal` data but no Enterprise Security content.

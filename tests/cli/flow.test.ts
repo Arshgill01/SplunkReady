@@ -27,8 +27,20 @@ const exists = async (path: string): Promise<boolean> =>
 const parseCliJsonOutput = (stdout: string): { command: string; status: string; artifacts: string[]; messages?: string[] } =>
   JSON.parse(stdout) as { command: string; status: string; artifacts: string[]; messages?: string[] };
 
-const startMockMcpServer = async () => {
+const defaultSavedSearchRows = [
+  { eventRef: "live-evt-102", user: "svc-finance", dest: "win-finance-07" },
+  { eventRef: "live-evt-118", user: "svc-finance", dest: "win-finance-07" },
+  { eventRef: "live-evt-141", user: "svc-finance", dest: "win-finance-07" }
+];
+
+const startMockMcpServer = async (
+  options: {
+    indexes?: Array<{ name: string; sensitive: boolean }>;
+    savedSearchRows?: Array<Record<string, unknown>>;
+  } = {}
+) => {
   const calls: Array<{ method: string; params: { name: string; arguments: unknown } }> = [];
+  const savedSearchRows = options.savedSearchRows ?? defaultSavedSearchRows;
   const server = createServer((request, response) => {
     let body = "";
     request.setEncoding("utf8");
@@ -60,7 +72,7 @@ const startMockMcpServer = async () => {
           defaultApp: "search",
           capabilities: ["search"]
         },
-        splunk_get_indexes: [{ name: "wineventlog", sensitive: false }],
+        splunk_get_indexes: options.indexes ?? [{ name: "wineventlog", sensitive: false }],
         splunk_get_metadata: {
           results: [{ sourcetype: "XmlWinEventLog:Security" }],
           total_rows: 1
@@ -81,12 +93,8 @@ const startMockMcpServer = async () => {
           total_rows: 0
         },
         splunk_run_saved_search: {
-          results: [
-            { eventRef: "live-evt-102", user: "svc-finance", dest: "win-finance-07" },
-            { eventRef: "live-evt-118", user: "svc-finance", dest: "win-finance-07" },
-            { eventRef: "live-evt-141", user: "svc-finance", dest: "win-finance-07" }
-          ],
-          total_rows: 3
+          results: savedSearchRows,
+          total_rows: savedSearchRows.length
         },
         saia_explain_spl: {
           explanation: "The SPL uses a broad index wildcard and a non-contract field."
@@ -872,6 +880,18 @@ describe("SplunkReady CLI flow", () => {
       maxRowsPerSavedSearch: number;
       mutation: boolean;
       candidatesWithRows: Array<{ ref: string; resultCount: number; evidenceRefs: string[] }>;
+      derivedMission: { strategy: string; missionId?: string; artifacts: string[] };
+    };
+    const derivedMission = JSON.parse(await readFile(join(outDir, "live-derived-mission.json"), "utf8")) as {
+      id: string;
+      preferredSavedSearchRefs?: string[];
+      expectedTools: string[];
+      checks: string[];
+    };
+    const derivedProfile = JSON.parse(await readFile(join(outDir, "live-derived-readiness-profile.json"), "utf8")) as {
+      contractRef: { mode: string };
+      sourceRefs: string[];
+      deploymentSignals: { savedSearchCount: number };
     };
 
     expect(report).toMatchObject({
@@ -887,6 +907,85 @@ describe("SplunkReady CLI flow", () => {
         evidenceRefs: ["live-evt-102", "live-evt-118", "live-evt-141"]
       })
     ]);
+    expect(report.derivedMission).toMatchObject({
+      strategy: "saved-search-with-evidence",
+      missionId: "mission-live-saved-search-readiness",
+      artifacts: [
+        join(outDir, "live-derived-mission.json"),
+        join(outDir, "live-derived-readiness-profile.json")
+      ]
+    });
+    expect(derivedMission).toMatchObject({
+      id: "mission-live-saved-search-readiness",
+      expectedTools: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+      preferredSavedSearchRefs: ["SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain"]
+    });
+    expect(derivedMission.checks).toEqual(expect.arrayContaining(["KO-001", "KO-002", "EVD-001", "SAF-003"]));
+    expect(derivedProfile).toMatchObject({
+      contractRef: { mode: "live" },
+      deploymentSignals: { savedSearchCount: 1 }
+    });
+    expect(derivedProfile.sourceRefs).toEqual(
+      expect.arrayContaining(["mission:mission-live-saved-search-readiness"])
+    );
+    expect(server.calls.map((call) => call.params.name)).toContain("splunk_run_saved_search");
+  });
+
+  it("derives a bounded internal mission when live saved-search candidates return no rows", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-candidates-fallback-"));
+    const server = await startMockMcpServer({
+      indexes: [
+        { name: "_internal", sensitive: false },
+        { name: "main", sensitive: false }
+      ],
+      savedSearchRows: []
+    });
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: server.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token",
+      SPLUNKREADY_SPLUNK_APP: "search"
+    };
+
+    try {
+      await expect(runCli(["compile", "--mode", "live", "--out", outDir], process.cwd(), env)).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS compile")
+      });
+      await expect(
+        runCli(["live-candidates", "--out", outDir, "--candidate-limit", "1"], process.cwd(), env)
+      ).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS live-candidates")
+      });
+    } finally {
+      await server.close();
+    }
+
+    const report = JSON.parse(await readFile(join(outDir, "live-candidates.json"), "utf8")) as {
+      candidatesWithRows: Array<{ ref: string; resultCount: number }>;
+      derivedMission: { strategy: string; missionId?: string; artifacts: string[] };
+    };
+    const derivedMission = JSON.parse(await readFile(join(outDir, "live-derived-mission.json"), "utf8")) as {
+      id: string;
+      expectedTools: string[];
+      authorizedIndexes?: string[];
+      checks: string[];
+    };
+
+    expect(report.candidatesWithRows).toEqual([]);
+    expect(report.derivedMission).toMatchObject({
+      strategy: "internal-query-fallback",
+      missionId: "mission-live-internal-query-readiness",
+      artifacts: [
+        join(outDir, "live-derived-mission.json"),
+        join(outDir, "live-derived-readiness-profile.json")
+      ]
+    });
+    expect(derivedMission).toMatchObject({
+      id: "mission-live-internal-query-readiness",
+      expectedTools: ["splunk_run_query"],
+      authorizedIndexes: ["_internal"]
+    });
+    expect(derivedMission.checks).toEqual(expect.arrayContaining(["SPL-001", "SPL-002", "SPL-004", "EVD-001", "SAF-003"]));
     expect(server.calls.map((call) => call.params.name)).toContain("splunk_run_saved_search");
   });
 });
