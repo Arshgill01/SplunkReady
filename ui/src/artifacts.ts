@@ -29,6 +29,44 @@ const hostedModelSummarySchema = z
 
 export type HostedModelSummary = z.infer<typeof hostedModelSummarySchema>;
 
+const hostedModelProofSchema = z
+  .object({
+    status: z.string().min(1),
+    mode: z.enum(["fixture", "live"]),
+    mutation: z.boolean(),
+    contract: z
+      .object({
+        id: z.string().min(1),
+        mode: z.enum(["fixture", "live"]),
+        hostedModelTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+        availableTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"]))
+      })
+      .strict(),
+    query: z.string().min(1),
+    deterministicContext: z
+      .object({
+        ruleIds: z.array(z.string().min(1)),
+        passFailAuthority: z.string().min(1),
+        purpose: z.string().min(1)
+      })
+      .strict(),
+    assistance: z
+      .object({
+        explanation: z.string().min(1),
+        optimizedQuery: z.string(),
+        rationale: z.string(),
+        warnings: z.array(z.string())
+      })
+      .strict()
+      .nullable(),
+    toolCalls: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+    error: z.string().min(1).nullable(),
+    notes: z.string().min(1)
+  })
+  .strict();
+
+export type HostedModelProof = z.infer<typeof hostedModelProofSchema>;
+
 const liveProofSummarySchema = z
   .object({
     status: z.string().min(1),
@@ -199,6 +237,7 @@ export interface UiArtifactBundle {
   liveSecurityProofSummary?: LiveSecurityProofSummary;
   liveSecurityReadiness?: LiveSecurityReadiness;
   liveSecurityKit?: LiveSecurityKit;
+  hostedModelProof?: HostedModelProof;
   beforeTrace: TraceEvent[];
   afterTrace: TraceEvent[];
   beforeViolations: Violation[];
@@ -218,6 +257,7 @@ const optionalFiles = [
   "live-security-proof-summary.json",
   "live-security-readiness.json",
   "live-security-kit.json",
+  "hosted-model-proof.json",
   "trace-before.json",
   "trace-after.json",
   "violations-before.json",
@@ -311,6 +351,7 @@ export const loadUiArtifactBundle = async (
     ),
     liveSecurityReadiness: liveSecurityReadinessSchema.optional().parse(loaded.get("live-security-readiness.json")),
     liveSecurityKit: liveSecurityKitSchema.optional().parse(loaded.get("live-security-kit.json")),
+    hostedModelProof: hostedModelProofSchema.optional().parse(loaded.get("hosted-model-proof.json")),
     beforeTrace: traceEventSchema.array().optional().parse(loaded.get("trace-before.json")) ?? [],
     afterTrace: traceEventSchema.array().optional().parse(loaded.get("trace-after.json")) ?? [],
     beforeViolations: violationSchema.array().optional().parse(loaded.get("violations-before.json")) ?? [],
@@ -367,6 +408,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
         : "kit loaded"
       : "kit not loaded",
     hostedModelStory:
+      (bundle.hostedModelProof ? `hosted proof ${bundle.hostedModelProof.status.toLowerCase()}` : undefined) ??
       bundle.liveSecurityProofSummary?.hostedModels?.status ??
       bundle.liveProofSummary?.hostedModels?.status ??
       (bundle.policyPatch?.splAssistance?.length ? "invoked" : "not loaded")

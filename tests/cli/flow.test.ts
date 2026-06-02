@@ -590,6 +590,61 @@ describe("SplunkReady CLI flow", () => {
     });
   });
 
+  it("generates hosted-model proof without executing the SPL query", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-hosted-model-proof-"));
+    const mcp = await startMockMcpServer();
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: mcp.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token"
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["hosted-model-proof", "--mode", "live", "--out", outDir, "--json"], process.cwd(), env)).stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "hosted-model-proof",
+        status: "PASS",
+        artifacts: expect.arrayContaining([join(outDir, "environment-contract.json"), join(outDir, "hosted-model-proof.json")])
+      });
+    } finally {
+      await mcp.close();
+    }
+
+    const proof = JSON.parse(await readFile(join(outDir, "hosted-model-proof.json"), "utf8")) as {
+      status: string;
+      mode: string;
+      mutation: boolean;
+      query: string;
+      deterministicContext: { ruleIds: string[]; passFailAuthority: string };
+      assistance: { explanation: string; optimizedQuery: string; rationale: string };
+      toolCalls: string[];
+    };
+
+    expect(proof).toMatchObject({
+      status: "PASS",
+      mode: "live",
+      mutation: false,
+      query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now",
+      deterministicContext: {
+        ruleIds: ["SPL-001", "SPL-003"],
+        passFailAuthority: "deterministic-rule-engine"
+      },
+      assistance: {
+        explanation: "The SPL uses a broad index wildcard and a non-contract field.",
+        optimizedQuery: "| savedsearch \"ES - Lateral Movement Auth Chain\"",
+        rationale: "Prefer the validated saved search from the live contract."
+      },
+      toolCalls: ["saia_explain_spl", "saia_optimize_spl"]
+    });
+    expect(mcp.calls.map((call) => call.params.name)).toEqual(
+      expect.arrayContaining(["saia_explain_spl", "saia_optimize_spl"])
+    );
+    expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
+  });
+
   it("uses the live adapter for Gemini compile, evaluate, receipt assistance, and rerun in live mode", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-llm-cli-"));
     const gemini = await startMockGeminiServer();
@@ -1138,6 +1193,7 @@ describe("SplunkReady CLI flow", () => {
     const proofDir = await mkdtemp(join(tmpdir(), "splunkready-ui-proof-"));
     const securityCheckDir = await mkdtemp(join(tmpdir(), "splunkready-ui-security-check-"));
     const securityKitDir = await mkdtemp(join(tmpdir(), "splunkready-ui-security-kit-"));
+    const hostedModelProofDir = await mkdtemp(join(tmpdir(), "splunkready-ui-hosted-model-proof-"));
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-ui-bundle-"));
     const server = await startMockMcpServer({
       savedSearches: [
@@ -1176,6 +1232,11 @@ describe("SplunkReady CLI flow", () => {
       await expect(runCli(["live-security-kit", "--out", securityKitDir])).resolves.toMatchObject({
         stdout: expect.stringContaining("PASS live-security-kit")
       });
+      await expect(
+        runCli(["hosted-model-proof", "--mode", "live", "--out", hostedModelProofDir], process.cwd(), env)
+      ).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS hosted-model-proof")
+      });
 
       const output = parseCliJsonOutput(
         (
@@ -1187,6 +1248,8 @@ describe("SplunkReady CLI flow", () => {
             securityCheckDir,
             "--security-kit-dir",
             securityKitDir,
+            "--hosted-model-proof-dir",
+            hostedModelProofDir,
             "--out",
             outDir,
             "--json"
@@ -1205,6 +1268,7 @@ describe("SplunkReady CLI flow", () => {
           join(outDir, "trace-after.json"),
           join(outDir, "live-security-readiness.json"),
           join(outDir, "live-security-kit.json"),
+          join(outDir, "hosted-model-proof.json"),
           join(outDir, "live-security-ui-bundle.json")
         ])
       });
@@ -1230,20 +1294,29 @@ describe("SplunkReady CLI flow", () => {
       proofDir: string;
       securityCheckDir: string;
       securityKitDir: string;
+      hostedModelProofDir: string;
       artifacts: string[];
+    };
+    const hostedModelProof = JSON.parse(await readFile(join(outDir, "hosted-model-proof.json"), "utf8")) as {
+      status: string;
+      mutation: boolean;
     };
 
     expect(bundledReceipt).toMatchObject({ verdict: "READY", score: 100 });
     expect(readiness).toMatchObject({ status: "BLOCKED", mutation: false });
     expect(kit).toMatchObject({ mutation: false, operatorActionRequired: true });
+    expect(hostedModelProof).toMatchObject({ status: "PASS", mutation: false });
     expect(summary).toMatchObject({
       status: "PASS",
       mutation: false,
       proofDir,
       securityCheckDir,
-      securityKitDir
+      securityKitDir,
+      hostedModelProofDir
     });
-    expect(summary.artifacts).toEqual(expect.arrayContaining([join(outDir, "receipt-after-001.json")]));
+    expect(summary.artifacts).toEqual(
+      expect.arrayContaining([join(outDir, "receipt-after-001.json"), join(outDir, "hosted-model-proof.json")])
+    );
   });
 
   it("runs the flagship live security proof only when the exact live readiness check is green", async () => {

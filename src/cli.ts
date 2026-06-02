@@ -56,6 +56,7 @@ const liveSmokeInventoryTools: ReadOnlySplunkToolName[] = [
   "splunk_get_knowledge_objects"
 ];
 const hostedModelToolNames: ReadOnlySplunkToolName[] = ["saia_explain_spl", "saia_optimize_spl"];
+const hostedModelProofQuery = "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now";
 const liveSmokeNotCalledTools = readOnlySplunkToolNameSchema.options.filter(
   (toolName) => !liveSmokeInventoryTools.includes(toolName)
 );
@@ -68,6 +69,7 @@ interface CliOptions {
   proofDir: string;
   securityCheckDir: string;
   securityKitDir: string;
+  hostedModelProofDir: string;
   phase: "before" | "after";
   requireLive: boolean;
   trace: string;
@@ -104,11 +106,12 @@ Commands:
   evaluate  --mode fixture|live --out <dir> [--firewall] [--json]
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
+  hosted-model-proof --mode fixture|live --out <dir> [--json]
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]
   live-security-kit --out <dir> [--json]
   live-security-proof --out <dir> [--firewall] [--json]
-  live-security-ui-bundle --out <dir> [--proof-dir <dir>] [--security-check-dir <dir>] [--security-kit-dir <dir>] [--json]
+  live-security-ui-bundle --out <dir> [--proof-dir <dir>] [--security-check-dir <dir>] [--security-kit-dir <dir>] [--hosted-model-proof-dir <dir>] [--json]
   live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--json]
   receipt   --out <dir> [--phase before|after] [--json]
   rerun     --mode fixture|live --out <dir> [--firewall] [--json]
@@ -132,6 +135,7 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     proofDir: "artifacts/live-proof",
     securityCheckDir: "artifacts/live-security-check",
     securityKitDir: "artifacts/live-security-kit",
+    hostedModelProofDir: "artifacts/hosted-model-proof",
     phase: "before",
     requireLive: false,
     trace: "",
@@ -181,6 +185,8 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       options.securityCheckDir = value;
     } else if (flag === "--security-kit-dir") {
       options.securityKitDir = value;
+    } else if (flag === "--hosted-model-proof-dir") {
+      options.hostedModelProofDir = value;
     } else if (flag === "--phase") {
       if (value !== "before" && value !== "after") {
         throw new Error("--phase must be before or after.");
@@ -431,6 +437,16 @@ const summarizeHostedModels = (
     notes:
       "SAIA explain/optimize tools were available, but this proof did not produce SPL-rule violations with query evidence."
   };
+};
+
+const formatHostedModelProofError = (error: unknown): string => {
+  const formatted = formatCliError(error);
+
+  if (formatted.includes("Action forbidden")) {
+    return "Hosted-model SAIA action forbidden. The current MCP token or Splunk user can access live read-only Splunk tools, but not saia_explain_spl/saia_optimize_spl.";
+  }
+
+  return formatted.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 };
 
 const llmEnabled = (env: NodeJS.ProcessEnv = process.env): boolean => env.SPLUNKREADY_LLM_ENABLED === "true";
@@ -997,6 +1013,7 @@ const liveSecurityUiBundleCommand = async (options: CliOptions): Promise<string[
     "live-candidates.json",
     "live-derived-mission.json",
     "live-derived-readiness-profile.json",
+    "hosted-model-proof.json",
     "score-before.json",
     "score-after.json"
   ];
@@ -1029,6 +1046,16 @@ const liveSecurityUiBundleCommand = async (options: CliOptions): Promise<string[
     await copyRequiredArtifact(options.securityKitDir, options.out, "live-security-kit.json", "live security operator kit manifest")
   );
 
+  if (!artifacts.some((artifact) => artifact.endsWith("hosted-model-proof.json"))) {
+    const hostedModelProof = await copyOptionalArtifact(options.hostedModelProofDir, options.out, "hosted-model-proof.json");
+
+    if (hostedModelProof) {
+      artifacts.push(hostedModelProof);
+    } else {
+      missingOptional.push(join(options.hostedModelProofDir, "hosted-model-proof.json"));
+    }
+  }
+
   const summaryPath = join(options.out, "live-security-ui-bundle.json");
 
   await writeJson(summaryPath, {
@@ -1037,6 +1064,7 @@ const liveSecurityUiBundleCommand = async (options: CliOptions): Promise<string[
     proofDir: options.proofDir,
     securityCheckDir: options.securityCheckDir,
     securityKitDir: options.securityKitDir,
+    hostedModelProofDir: options.hostedModelProofDir,
     artifacts,
     missingOptional
   });
@@ -1409,6 +1437,72 @@ const llmAgentCommand = async (
   ];
 };
 
+const hostedModelProofCommand = async (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<string[]> => {
+  const compileArtifacts = await compileCommand(options, env);
+  const adapter = await createSplunkAccessAdapter(options, env);
+
+  if (!adapter.explainSpl || !adapter.optimizeSpl) {
+    throw new Error("hosted-model-proof requires adapters that expose saia_explain_spl and saia_optimize_spl.");
+  }
+
+  const contract = await loadContract(options.out);
+  const callOptions = { requestId: "req-hosted-model-proof-1", missionId: "hosted-model-proof" };
+  const proofPath = join(options.out, "hosted-model-proof.json");
+  const baseProof = {
+    mode: options.mode,
+    mutation: false,
+    contract: {
+      id: contract.id,
+      mode: contract.mode,
+      hostedModelTools: hostedModelToolNames,
+      availableTools: hostedModelToolNames.filter((toolName) => contract.mcpTools.includes(toolName))
+    },
+    query: hostedModelProofQuery,
+    deterministicContext: {
+      ruleIds: ["SPL-001", "SPL-003"],
+      passFailAuthority: "deterministic-rule-engine",
+      purpose:
+        "Demonstrate hosted-model explain/optimize as advisory remediation for a deterministic SPL violation. The query is not executed."
+    },
+    toolCalls: hostedModelToolNames
+  };
+
+  try {
+    const [explanation, optimization] = await Promise.all([
+      adapter.explainSpl({ query: hostedModelProofQuery }, callOptions),
+      adapter.optimizeSpl({ query: hostedModelProofQuery }, callOptions)
+    ]);
+
+    await writeJson(proofPath, {
+      status: "PASS",
+      ...baseProof,
+      assistance: {
+        explanation: explanation.explanation,
+        optimizedQuery: optimization.optimizedQuery,
+        rationale: optimization.rationale,
+        warnings: [...explanation.warnings, ...optimization.warnings]
+      },
+      error: null,
+      notes:
+        "This proof calls hosted-model tools only. It does not run the SPL query, does not grade with an LLM, and does not mutate Splunk."
+    });
+  } catch (error) {
+    await writeJson(proofPath, {
+      status: "BLOCKED",
+      ...baseProof,
+      assistance: null,
+      error: formatHostedModelProofError(error),
+      notes:
+        "Hosted-model tools were advertised in the live contract but could not be invoked with the current MCP credentials."
+    });
+  }
+
+  return [...compileArtifacts, proofPath];
+};
+
 const receiptCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
@@ -1588,6 +1682,8 @@ const main = async (): Promise<void> => {
     artifacts = await gradeTraceCommand(options);
   } else if (command === "llm-agent") {
     artifacts = await llmAgentCommand(options);
+  } else if (command === "hosted-model-proof") {
+    artifacts = await hostedModelProofCommand(options);
   } else if (command === "live-candidates") {
     artifacts = await liveCandidatesCommand(options);
   } else if (command === "live-security-check") {

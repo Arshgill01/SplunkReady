@@ -273,6 +273,35 @@ const liveSecurityKit = {
   ]
 } as const;
 
+const hostedModelProof = {
+  status: "PASS",
+  mode: "live",
+  mutation: false,
+  contract: {
+    id: "contract-192-168-1-4",
+    mode: "live",
+    hostedModelTools: ["saia_explain_spl", "saia_optimize_spl"],
+    availableTools: ["saia_explain_spl", "saia_optimize_spl"]
+  },
+  query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now",
+  deterministicContext: {
+    ruleIds: ["SPL-001", "SPL-003"],
+    passFailAuthority: "deterministic-rule-engine",
+    purpose:
+      "Demonstrate hosted-model explain/optimize as advisory remediation for a deterministic SPL violation. The query is not executed."
+  },
+  assistance: {
+    explanation: "The SPL uses a broad index wildcard and a non-contract field.",
+    optimizedQuery: "| savedsearch \"ES - Lateral Movement Auth Chain\"",
+    rationale: "Prefer the validated saved search from the live contract.",
+    warnings: []
+  },
+  toolCalls: ["saia_explain_spl", "saia_optimize_spl"],
+  error: null,
+  notes:
+    "This proof calls hosted-model tools only. It does not run the SPL query, does not grade with an LLM, and does not mutate Splunk."
+} as const;
+
 const jsonResponse = (value: unknown): Response => new Response(JSON.stringify(value), { status: 200 });
 
 const fetcherFor = (files: Record<string, unknown>) => async (url: string): Promise<Response> => {
@@ -354,6 +383,7 @@ describe("Vite UI artifact app", () => {
         "live-security-proof-summary.json": liveSecurityProofSummary,
         "live-security-readiness.json": liveSecurityReadiness,
         "live-security-kit.json": liveSecurityKit,
+        "hosted-model-proof.json": hostedModelProof,
         "trace-before.json": beforeTrace,
         "trace-after.json": afterTrace,
         "violations-before.json": [],
@@ -381,11 +411,16 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("wineventlog / missing");
     expect(liveConnect).toContain("Operator security kit");
     expect(liveConnect).toContain("operator kit available");
+    expect(liveConnect).toContain("hosted proof pass");
     expect(liveConnect).toContain("Operator action");
     expect(liveConnect).toContain("required");
     expect(liveConnect).toContain("Hosted model assistance");
     expect(liveConnect).toContain("saia_explain_spl / saia_optimize_spl");
     expect(liveConnect).toContain("advisory only; deterministic grader decides pass/fail");
+    expect(liveConnect).toContain("Hosted model proof");
+    expect(liveConnect).toContain("Before SPL");
+    expect(liveConnect).toContain("SAIA recommended SPL");
+    expect(liveConnect).toContain("| savedsearch &quot;ES - Lateral Movement Auth Chain&quot;");
     expect(liveConnect).toContain("Mutation");
     expect(liveConnect).toContain("no");
     expect(liveConnect).toContain("artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/savedsearches.conf");

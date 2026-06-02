@@ -212,6 +212,20 @@ Suggestion:
 - Document which query shapes preserve row-level evidence refs.
 - Consider returning provenance metadata for aggregate rows, or provide a dedicated evidence-capture pattern in MCP examples.
 
+### SAIA tools use `spl` while SplunkReady's internal adapter uses `query`
+
+Observed while adding a hosted-model proof command. The internal adapter contract represents SPL strings as `{ query }`, matching `splunk_run_query` and deterministic violation evidence. The live MCP `saia_explain_spl` tool rejected that shape with `Missing required argument: spl`; the correct MCP input is `{ spl }`.
+
+Impact:
+- Developers can naturally reuse a violating query payload as SAIA input and hit a live-only argument error.
+- The mismatch is easy to miss in fixture tests unless live adapter tests assert the exact MCP payload.
+- This creates friction in the core hosted-model remediation loop: violation query -> explain -> optimize.
+
+Suggestion:
+- Document SAIA input schemas beside `splunk_run_query` examples and call out the `query` versus `spl` naming difference.
+- Consider accepting `query` as an alias for `spl`, or align tool argument names across SPL-related MCP tools.
+- Provide a canonical explain/optimize JSON-RPC example for a broad SPL query.
+
 ## Developer Experience Suggestions
 
 - Provide one local Splunk Enterprise plus MCP "happy path" with exact ports, URL shape, token instructions, and a known-good read-only smoke command.

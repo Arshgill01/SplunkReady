@@ -4007,3 +4007,60 @@ Open risks:
 
 - The flagship live proof still does not invoke SAIA because its natural LLM failure is KO/EVD rather than SPL. This is honest but should be complemented by a separate SAIA proof bundle before submission.
 - Local TLS still uses `NODE_TLS_REJECT_UNAUTHORIZED=0` for the local Splunk trial.
+
+## 2026-06-03 - Phase Live Hosted Model Proof Command
+
+Commands:
+
+- `npx vitest run tests/adapters/live.test.ts tests/cli/flow.test.ts -t "hosted-model proof|maps internal SPL assistance"`
+- `npx vitest run tests/ui/app.test.ts`
+- `npm run build`
+- `set -a; source ./.splunkready-live.env; set +a; NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- hosted-model-proof --mode live --out artifacts/hosted-model-proof --json`
+- `npm run splunkready -- hosted-model-proof --mode fixture --out artifacts/hosted-model-proof-fixture --json`
+- `npm run splunkready -- live-security-ui-bundle --proof-dir artifacts/live-security-proof --security-check-dir artifacts/live-security-proof --security-kit-dir artifacts/live-security-kit --hosted-model-proof-dir artifacts/hosted-model-proof --out artifacts/live-security-ui --json`
+- `bash "$PWCLI" open 'http://127.0.0.1:5173/#live-connect' && bash "$PWCLI" snapshot`
+- `npx vitest run tests/cli/flow.test.ts -t "hosted-model proof|bundles proof"`
+- `npx vitest run tests/adapters/live.test.ts -t "maps internal SPL assistance"`
+- `npm run check`
+- `npm run ui:build`
+- `git diff --check`
+
+Result:
+
+- PASS for live adapter mapping coverage:
+  - `saia_explain_spl` and `saia_optimize_spl` receive the MCP-required `spl` argument while SplunkReady keeps its internal `query` adapter input.
+- PASS for hosted-model proof CLI coverage:
+  - the command invokes only hosted-model assistance tools;
+  - the test asserts it does not execute `splunk_run_query`;
+  - the generated artifact keeps deterministic pass/fail authority separate from SAIA output.
+- PASS for UI artifact and render coverage:
+  - the Vite artifact loader accepts optional `hosted-model-proof.json`;
+  - Live Connect renders the hosted-model proof panel and before/recommended SPL comparison.
+- PASS for TypeScript build.
+- PASS for live hosted-model proof diagnostic:
+  - command status `PASS`;
+  - artifact status `BLOCKED`;
+  - mutation `false`;
+  - error explains that the current MCP token or Splunk user can access read-only live tools but not `saia_explain_spl` / `saia_optimize_spl`.
+- PASS for fixture hosted-model proof:
+  - artifact status `PASS`;
+  - optimized query uses `index=wineventlog` and canonical `src`.
+- PASS for refreshed Vite UI bundle:
+  - `hosted-model-proof.json` is copied into `artifacts/live-security-ui`.
+- PASS for browser snapshot:
+  - Live Connect rendered the `Hosted model proof` panel;
+  - panel showed `BLOCKED`;
+  - panel showed the clean action-forbidden explanation instead of raw MCP XML.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 700 project files;
+  - 38 test files;
+  - 208 tests.
+- PASS for production UI build.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Live hosted-model proof remains blocked until the configured MCP token or Splunk user can invoke `saia_explain_spl` and `saia_optimize_spl`.
+- Local TLS still uses `NODE_TLS_REJECT_UNAUTHORIZED=0` for the local Splunk trial.

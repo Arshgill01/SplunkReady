@@ -1,4 +1,4 @@
-import { summarizeBundle, type HostedModelSummary, type UiArtifactBundle } from "./artifacts.js";
+import { summarizeBundle, type HostedModelProof, type HostedModelSummary, type UiArtifactBundle } from "./artifacts.js";
 import type { PolicyPatch, ReadinessReceipt, TraceEvent, Violation } from "../../src/schemas/core.js";
 
 export type ViewId = "certification-replay" | "receipt" | "trace-timeline" | "live-connect";
@@ -203,6 +203,43 @@ const renderHostedModelSummary = (summary: HostedModelSummary | undefined): stri
       ["Role", "advisory only; deterministic grader decides pass/fail"],
       ["Notes", summary.notes]
     ])}
+  </section>`;
+};
+
+const renderHostedModelProof = (proof: HostedModelProof | undefined): string => {
+  if (!proof) {
+    return "";
+  }
+
+  return `<section class="panel hosted-model-proof-panel">
+    <h2>Hosted model proof</h2>
+    ${renderFactTable([
+      ["Status", proof.status],
+      ["Mode", proof.mode],
+      ["Contract", proof.contract.id],
+      ["Tool calls", proof.toolCalls.join(" / ")],
+      ["Rule context", proof.deterministicContext.ruleIds.join(" / ")],
+      ["Pass/fail authority", proof.deterministicContext.passFailAuthority],
+      ["Mutation", proof.mutation ? "yes" : "no"],
+      ["Error", proof.error ?? "none"],
+      ["Notes", proof.notes]
+    ])}
+    ${
+      proof.assistance
+        ? `<div class="saia-compare hosted-model-proof-compare">
+            <div>
+              <b>Before SPL</b>
+              ${code(proof.query)}
+            </div>
+            <div>
+              <b>SAIA recommended SPL</b>
+              ${code(proof.assistance.optimizedQuery || "n/a")}
+            </div>
+          </div>
+          <p>${value(proof.assistance.explanation)}</p>
+          <p>${value(proof.assistance.rationale)}</p>`
+        : `<p class="empty">${value(proof.error ?? "Hosted-model assistance was not returned.")}</p>`
+    }
   </section>`;
 };
 
@@ -525,6 +562,7 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
         ${renderLiveProofSummary(bundle)}
         ${renderLiveSecurityProofSummary(bundle)}
         ${renderHostedModelSummary(bundle.liveSecurityProofSummary?.hostedModels ?? bundle.liveProofSummary?.hostedModels)}
+        ${renderHostedModelProof(bundle.hostedModelProof)}
         ${renderLiveSecurityReadiness(bundle)}
         ${renderLiveSecurityKit(bundle)}
       </div>

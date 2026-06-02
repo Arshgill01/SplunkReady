@@ -255,6 +255,10 @@ const liveSavedSearchInput = (input: RunSavedSearchRequest): Record<string, unkn
   ...(input.maxRows ? { maxRows: input.maxRows } : {})
 });
 
+const liveSplAssistanceInput = (input: ExplainSplRequest | OptimizeSplRequest): Record<string, unknown> => ({
+  spl: input.query
+});
+
 const normalizeExplainSplResult = (value: unknown): ExplainSplResult => {
   const row = firstRowFrom(value);
   const explanation =
@@ -602,12 +606,18 @@ export const createLiveSplunkAccessAdapter = (
         "Live Splunk saved search executed."
       ).then((output) => normalizeLiveSavedSearchResult(input, output)),
     explainSpl: (input: ExplainSplRequest, options) =>
-      callLiveTool<ExplainSplRequest, unknown>("saia_explain_spl", input, options, "Live SPL explanation loaded.").then(
-        normalizeExplainSplResult
-      ),
+      callLiveTool<Record<string, unknown>, unknown>(
+        "saia_explain_spl",
+        liveSplAssistanceInput(input),
+        options,
+        "Live SPL explanation loaded."
+      ).then(normalizeExplainSplResult),
     optimizeSpl: (input: OptimizeSplRequest, options) =>
-      callLiveTool<OptimizeSplRequest, unknown>("saia_optimize_spl", input, options, "Live SPL optimization loaded.").then(
-        normalizeOptimizeSplResult
-      )
+      callLiveTool<Record<string, unknown>, unknown>(
+        "saia_optimize_spl",
+        liveSplAssistanceInput(input),
+        options,
+        "Live SPL optimization loaded."
+      ).then(normalizeOptimizeSplResult)
   };
 };

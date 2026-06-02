@@ -90,6 +90,44 @@ describe("live Splunk adapter skeleton", () => {
     ).resolves.toMatchObject({ resultCount: 1, evidenceRefs: ["live-evt-001"] });
   });
 
+  it("maps internal SPL assistance query input to the live MCP spl argument", async () => {
+    const calls: Array<{ toolName: string; input: unknown }> = [];
+    const transport: LiveSplunkTransport = {
+      async call<TInput, TOutput>(request: LiveSplunkTransportRequest<TInput>): Promise<TOutput> {
+        calls.push({ toolName: request.toolName, input: request.input });
+
+        if (request.toolName === "saia_explain_spl") {
+          return { explanation: "The SPL uses a broad index wildcard." } as TOutput;
+        }
+
+        if (request.toolName === "saia_optimize_spl") {
+          return { optimizedQuery: "search index=wineventlog", rationale: "Narrow to the authorized index." } as TOutput;
+        }
+
+        throw new Error(`unexpected tool ${request.toolName}`);
+      }
+    };
+    const adapter = createLiveSplunkAccessAdapter({
+      enabled: true,
+      endpointUrl: "https://splunk.example.invalid/mcp",
+      authToken: "test-token",
+      capabilities: ["saia_explain_spl", "saia_optimize_spl"],
+      transport
+    });
+    const query = "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now";
+
+    await expect(adapter.explainSpl?.({ query }, requestOptions)).resolves.toMatchObject({
+      explanation: "The SPL uses a broad index wildcard."
+    });
+    await expect(adapter.optimizeSpl?.({ query }, requestOptions)).resolves.toMatchObject({
+      optimizedQuery: "search index=wineventlog"
+    });
+    expect(calls).toEqual([
+      { toolName: "saia_explain_spl", input: { spl: query } },
+      { toolName: "saia_optimize_spl", input: { spl: query } }
+    ]);
+  });
+
   it("normalizes live Splunk MCP result envelopes at the adapter boundary", async () => {
     const calls: Array<{ toolName: string; input: unknown }> = [];
     const transport: LiveSplunkTransport = {

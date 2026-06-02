@@ -4364,6 +4364,92 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Hosted Model Proof Command
+
+Scope:
+- Add a first-class read-only proof command for Splunk hosted-model/SAIA tools.
+- Keep the flagship security fail-to-pass proof honest instead of forcing an artificial SPL violation.
+- Surface live SAIA permission blockers as artifacts rather than losing them in terminal output.
+
+Files expected/touched:
+- `src/cli.ts`
+- `src/adapters/live.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/adapters/live.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `logs/splunk-feedback.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `hosted-model-proof --mode fixture|live --out <dir> [--json]`.
+- The command:
+  - compiles the environment contract;
+  - calls only `saia_explain_spl` and `saia_optimize_spl`;
+  - never executes the SPL query;
+  - never mutates Splunk;
+  - writes `hosted-model-proof.json`.
+- Live adapter now maps SplunkReady's internal `{ query }` SPL assistance input to the live MCP SAIA `{ spl }` argument.
+- `hosted-model-proof.json` can be:
+  - `PASS` when SAIA explain/optimize returns advisory output;
+  - `BLOCKED` when the live MCP token/user lacks SAIA permission.
+- `live-security-ui-bundle` now accepts `--hosted-model-proof-dir` and copies `hosted-model-proof.json` into the Vite artifact bundle when present.
+- Live Connect now renders a `Hosted model proof` panel with:
+  - tool calls;
+  - deterministic rule context;
+  - pass/fail authority;
+  - mutation posture;
+  - before SPL and SAIA recommended SPL when available;
+  - a clean blocked message when live SAIA is forbidden.
+- `logs/splunk-feedback.md` now records the live MCP SAIA argument mismatch:
+  - internal/fixture path used `query`;
+  - live SAIA requires `spl`;
+  - documented suggestion: align or alias argument names across SPL-related MCP tools.
+
+Live result:
+- `hosted-model-proof --mode live` now produces a diagnostic artifact instead of failing the run.
+- Current local live MCP result:
+  - `status: BLOCKED`;
+  - `mutation: false`;
+  - reason: current MCP token/Splunk user can access live read-only Splunk tools, but `saia_explain_spl` / `saia_optimize_spl` return `Action forbidden`.
+
+Fixture result:
+- `hosted-model-proof --mode fixture` produces `status: PASS`.
+- Fixture optimized query:
+  - `search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now`.
+
+Product impact:
+- Hosted Models is no longer just implicit patch-path behavior; it has a dedicated proof artifact and UI surface.
+- The product can now show three states honestly:
+  - SAIA available but not applicable to the flagship proof;
+  - SAIA PASS in controlled fixture proof;
+  - SAIA BLOCKED in the current live MCP permission setup.
+- This gives us a concrete next operator action without weakening the deterministic readiness story.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 29% | More complete live-product evidence, including honest blocked state handling. |
+| Platform & DX | 70% | 72% | New command and bundle path make hosted-model capability consumable by developers. |
+| Security | 39% | 39% | Flagship security proof unchanged. |
+| Best Use of MCP Server | 79% | 80% | More MCP tool coverage and a real permission failure captured cleanly. |
+| Hosted Models | 55% | 58% | Dedicated SAIA proof command exists; live path is blocked by permission, not missing code. |
+| Developer Tools | 65% | 67% | Artifact bundle now carries hosted-model proof alongside receipts and readiness. |
+
+Next directions to consider in future runs:
+- Try a Splunk MCP token/user with permission for `saia_explain_spl` and `saia_optimize_spl`; rerun `hosted-model-proof --mode live`.
+- If live SAIA becomes green, rebuild `artifacts/live-security-ui` and verify the UI shows before SPL versus SAIA recommended SPL from live hosted models.
+- Consider a small proof selector only if switching between live security proof and hosted-model proof becomes awkward; do not turn this into a generic dashboard.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused adapter/CLI/UI tests, full repo verification, TypeScript build, UI production build, live hosted-model diagnostic, fixture hosted-model proof, browser snapshot, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Hosted Model Status Evidence
 
 Scope:
