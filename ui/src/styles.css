@@ -239,21 +239,15 @@ code {
 .replay-grid,
 .receipt-ledger {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
-.receipt-ledger {
-  align-items: start;
+.replay-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .receipt-book {
   overflow: hidden;
-}
-
-.receipt-book-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
 }
 
 .receipt-book-section {
@@ -432,6 +426,7 @@ code {
 
 .patch-panel,
 .live-proof-panel,
+.live-security-panel,
 .trace-stack {
   margin-top: 16px;
 }
@@ -519,7 +514,6 @@ code {
   .stage-line,
   .replay-grid,
   .receipt-ledger,
-  .receipt-book-grid,
   .patch-grid {
     grid-template-columns: 1fr;
   }

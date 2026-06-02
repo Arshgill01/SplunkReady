@@ -141,6 +141,36 @@ const renderLiveProofSummaryTable = (bundle: UiArtifactBundle): string => {
   ]);
 };
 
+const renderLiveSecurityReadiness = (bundle: UiArtifactBundle): string => {
+  const readiness = bundle.liveSecurityReadiness;
+
+  if (!readiness) {
+    return "";
+  }
+
+  const run = readiness.requiredSavedSearch.run;
+  const runSummary = run.attempted
+    ? `${run.resultCount ?? "n/a"} row(s), ${run.evidenceRefs.length} evidence ref(s)${
+        run.error ? `, ${run.error}` : ""
+      }`
+    : run.reason;
+
+  return `<section class="panel live-security-panel">
+    <h2>Flagship security readiness</h2>
+    ${renderFactTable([
+      ["Status", readiness.status],
+      ["Mission", `${readiness.mission.id} / ${readiness.mission.story}`],
+      ["Contract", `${readiness.contract.id} / ${readiness.contract.name}`],
+      ["Saved search", `${readiness.requiredSavedSearch.ref} / ${readiness.requiredSavedSearch.present ? "present" : "missing"}`],
+      ["Saved-search run", runSummary],
+      ["Preferred index", `${readiness.preferredIndex.name} / ${readiness.preferredIndex.present ? "present" : "missing"}`],
+      ["Missing tools", readiness.requiredTools.missing.length > 0 ? readiness.requiredTools.missing.join(" / ") : "none"],
+      ["Blockers", readiness.blockers.length > 0 ? readiness.blockers.join(" / ") : "none"],
+      ["Next actions", readiness.nextActions.join(" / ")]
+    ])}
+  </section>`;
+};
+
 const renderReplay = (bundle: UiArtifactBundle): string => {
   const before = bundle.beforeReceipt;
   const after = bundle.afterReceipt;
@@ -195,43 +225,41 @@ const renderReceipt = (bundle: UiArtifactBundle): string => {
         <h1>Readiness Receipt</h1>
       </div>
       <section class="panel receipt-book">
-        <div class="receipt-book-grid">
-          <section class="receipt-book-section">
-            <h2>Current receipt</h2>
-            ${receipt ? renderFactTable([
-              ["Receipt", receipt.id],
-              ["Verdict", receipt.verdict],
-              ["Score", receipt.score],
-              ["Contract", `${receipt.environment.id} / ${receipt.contractVersion}`],
-              ["Trace refs", receipt.traceRefs.length],
-              ["Evidence refs", receipt.evidenceRefs.length],
-              ["Violations", receipt.violations.length]
-            ]) : `<p class="empty">Receipt artifact not loaded.</p>`}
-          </section>
-          <section class="receipt-book-section">
-            <h2>Rerun comparison</h2>
-            ${renderFactTable([
-              ["Before verdict", bundle.beforeReceipt?.verdict ?? "n/a"],
-              ["After verdict", bundle.afterReceipt?.verdict ?? "n/a"],
-              ["Before score", bundle.beforeReceipt?.score ?? "n/a"],
-              ["After score", bundle.afterReceipt?.score ?? "n/a"],
-              ["Resolved violations", receipt?.rerunComparison["resolvedViolations"] ?? []]
-            ])}
-          </section>
-          <section class="receipt-book-section">
-            <h2>Evidence</h2>
-            ${renderFactTable([
-              ["Trace refs", receipt?.traceRefs.join(" / ") ?? "n/a"],
-              ["Evidence refs", receipt?.evidenceRefs.join(" / ") ?? "n/a"],
-              ["Readiness profile", bundle.readinessProfile?.id ?? "not loaded"],
-              ["Policy patch", bundle.policyPatch?.id ?? "not loaded"]
-            ])}
-          </section>
-          <section class="receipt-book-section">
-            <h2>Live proof summary</h2>
-            ${renderLiveProofSummaryTable(bundle)}
-          </section>
-        </div>
+        <section class="receipt-book-section">
+          <h2>Current receipt</h2>
+          ${receipt ? renderFactTable([
+            ["Receipt", receipt.id],
+            ["Verdict", receipt.verdict],
+            ["Score", receipt.score],
+            ["Contract", `${receipt.environment.id} / ${receipt.contractVersion}`],
+            ["Trace refs", receipt.traceRefs.length],
+            ["Evidence refs", receipt.evidenceRefs.length],
+            ["Violations", receipt.violations.length]
+          ]) : `<p class="empty">Receipt artifact not loaded.</p>`}
+        </section>
+        <section class="receipt-book-section">
+          <h2>Rerun comparison</h2>
+          ${renderFactTable([
+            ["Before verdict", bundle.beforeReceipt?.verdict ?? "n/a"],
+            ["After verdict", bundle.afterReceipt?.verdict ?? "n/a"],
+            ["Before score", bundle.beforeReceipt?.score ?? "n/a"],
+            ["After score", bundle.afterReceipt?.score ?? "n/a"],
+            ["Resolved violations", receipt?.rerunComparison["resolvedViolations"] ?? []]
+          ])}
+        </section>
+        <section class="receipt-book-section">
+          <h2>Evidence</h2>
+          ${renderFactTable([
+            ["Trace refs", receipt?.traceRefs.join(" / ") ?? "n/a"],
+            ["Evidence refs", receipt?.evidenceRefs.join(" / ") ?? "n/a"],
+            ["Readiness profile", bundle.readinessProfile?.id ?? "not loaded"],
+            ["Policy patch", bundle.policyPatch?.id ?? "not loaded"]
+          ])}
+        </section>
+        <section class="receipt-book-section">
+          <h2>Live proof summary</h2>
+          ${renderLiveProofSummaryTable(bundle)}
+        </section>
       </section>
     </section>
   </main>`;
@@ -362,6 +390,7 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
           ])}
         </section>
         ${renderLiveProofSummary(bundle)}
+        ${renderLiveSecurityReadiness(bundle)}
       </div>
     </section>
   </main>`;
@@ -388,6 +417,7 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId): string => 
       <span>${value(summary.mode)} / ${value(summary.contract)}</span>
       <span>${summary.beforeViolations} before / ${summary.afterViolations} after</span>
       <span>${value(summary.proofStory)}</span>
+      <span>${value(summary.securityStory)}</span>
     </div>
   </aside>`;
 };

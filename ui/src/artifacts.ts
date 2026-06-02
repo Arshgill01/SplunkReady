@@ -52,6 +52,72 @@ const liveProofSummarySchema = z
 
 export type LiveProofSummary = z.infer<typeof liveProofSummarySchema>;
 
+const liveSecurityReadinessSchema = z
+  .object({
+    status: z.enum(["READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF", "BLOCKED"]),
+    mode: z.literal("live"),
+    mutation: z.boolean(),
+    mission: z
+      .object({
+        id: z.string().min(1),
+        story: z.string().min(1)
+      })
+      .strict(),
+    contract: z
+      .object({
+        id: z.string().min(1),
+        name: z.string().min(1),
+        indexes: z.number().int().nonnegative(),
+        savedSearches: z.number().int().nonnegative(),
+        tools: z.number().int().nonnegative()
+      })
+      .strict(),
+    requiredTools: z
+      .object({
+        expected: z.array(z.string().min(1)),
+        missing: z.array(z.string().min(1))
+      })
+      .strict(),
+    preferredIndex: z
+      .object({
+        name: z.string().min(1),
+        present: z.boolean(),
+        sensitive: z.boolean().nullable()
+      })
+      .strict(),
+    requiredSavedSearch: z
+      .object({
+        app: z.string().min(1),
+        name: z.string().min(1),
+        ref: z.string().min(1),
+        present: z.boolean(),
+        nearbySavedSearches: z.array(z.string().min(1)),
+        run: z.union([
+          z
+            .object({
+              attempted: z.literal(false),
+              reason: z.string().min(1)
+            })
+            .strict(),
+          z
+            .object({
+              attempted: z.literal(true),
+              resultCount: z.number().int().nonnegative().nullable(),
+              evidenceRefs: z.array(z.string().min(1)),
+              warnings: z.array(z.string()),
+              error: z.string().min(1).optional()
+            })
+            .strict()
+        ])
+      })
+      .strict(),
+    blockers: z.array(z.string().min(1)),
+    nextActions: z.array(z.string().min(1))
+  })
+  .strict();
+
+export type LiveSecurityReadiness = z.infer<typeof liveSecurityReadinessSchema>;
+
 export interface UiArtifactBundle {
   artifactBase: string;
   contract?: EnvironmentContract;
@@ -63,6 +129,7 @@ export interface UiArtifactBundle {
   receipt?: ReadinessReceipt;
   policyPatch?: PolicyPatch;
   liveProofSummary?: LiveProofSummary;
+  liveSecurityReadiness?: LiveSecurityReadiness;
   beforeTrace: TraceEvent[];
   afterTrace: TraceEvent[];
   beforeViolations: Violation[];
@@ -79,6 +146,7 @@ const optionalFiles = [
   "receipt-after-001.json",
   "policy-patch.json",
   "live-proof-summary.json",
+  "live-security-readiness.json",
   "trace-before.json",
   "trace-after.json",
   "violations-before.json",
@@ -167,6 +235,7 @@ export const loadUiArtifactBundle = async (
     receipt: afterReceipt ?? beforeReceipt,
     policyPatch: policyPatchSchema.optional().parse(loaded.get("policy-patch.json")),
     liveProofSummary: liveProofSummarySchema.optional().parse(loaded.get("live-proof-summary.json")),
+    liveSecurityReadiness: liveSecurityReadinessSchema.optional().parse(loaded.get("live-security-readiness.json")),
     beforeTrace: traceEventSchema.array().optional().parse(loaded.get("trace-before.json")) ?? [],
     afterTrace: traceEventSchema.array().optional().parse(loaded.get("trace-after.json")) ?? [],
     beforeViolations: violationSchema.array().optional().parse(loaded.get("violations-before.json")) ?? [],
@@ -185,6 +254,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   traceEvents: number;
   saiaItems: number;
   proofStory: string;
+  securityStory: string;
 } => {
   const receipt = bundle.receipt;
   const contract = bundle.liveSmokeContract ?? bundle.contract;
@@ -202,6 +272,11 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
       ? "fail-to-pass"
       : bundle.liveProofSummary?.readyWithoutPatch
         ? "ready-without-patch"
-        : "not loaded"
+        : "not loaded",
+    securityStory: bundle.liveSecurityReadiness
+      ? bundle.liveSecurityReadiness.status === "BLOCKED"
+        ? "security blocked"
+        : "security ready"
+      : "security not loaded"
   };
 };

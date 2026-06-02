@@ -4362,7 +4362,7 @@ Reviewer findings:
 - Reviewer is off indefinitely per user direction.
 
 Result:
-- Focused UI tests, Vite build, TypeScript build, and Playwright browser verification passed. Full verification will be recorded in the verification log after the full suite runs.
+- Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
 ## 2026-06-02 - Phase Live Flagship Security Readiness Diagnostic
 
@@ -4431,3 +4431,69 @@ Reviewer findings:
 
 Result:
 - Focused CLI tests and TypeScript build passed. Full verification will be recorded in the verification log after the full suite runs.
+
+## 2026-06-02 - Phase Live Security Readiness in Vite UI
+
+Scope:
+- Surface the real live flagship security readiness blocker in the Vite UI.
+- Correct the receipt/live-connect layout regression that made uneven tables appear misaligned.
+
+Files expected/touched:
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- `ui/src/artifacts.ts` now loads optional `live-security-readiness.json` and summarizes it for the sidebar.
+- Live Connect now renders a `Flagship security readiness` panel from the real diagnostic artifact:
+  - exact saved search status;
+  - saved-search run status;
+  - preferred index status;
+  - missing tools;
+  - blockers and next actions.
+- Receipt and Live Connect ledger surfaces now use a single vertical stack instead of a 2x2/two-column table grid.
+- The receipt markup no longer contains a grid wrapper, so it cannot flip back into the uneven two-column layout during reloads.
+
+Browser verification:
+- Local dev server: `http://127.0.0.1:5173/`
+- Artifact directory: `artifacts/live-security-check`
+- Receipt screenshot: `output/playwright/splunkready-receipt-live-security-vertical.png`
+- Live Connect screenshot: `output/playwright/splunkready-live-security-readiness-vertical.png`
+- Snapshot confirmed:
+  - receipt sections render as one vertical ledger;
+  - Live Connect renders `Flagship security readiness`;
+  - status is `BLOCKED`;
+  - exact saved search is missing;
+  - `wineventlog` is missing;
+  - missing required MCP tools are `none`;
+  - sidebar shows `security blocked`.
+
+Product impact:
+- The UI now shows the live security blocker directly instead of requiring a developer to inspect JSON.
+- The live endpoint state is presented as readiness evidence, not as a generic dashboard or fabricated pass.
+- The uneven table-grid layout that caused visible misalignment has been removed from the affected ledger surfaces.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 27% | 27% | No new live capability, but less visual/layout risk in the demo UI. |
+| Platform & DX | 62% | 64% | The live security diagnostic is now visible in the product UI. |
+| Security | 31% | 33% | The flagship security content gap is now legible and actionable in-app. |
+| Best Use of MCP Server | 78% | 78% | MCP capability unchanged, but evidence is easier to inspect. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 57% | 59% | Developers can inspect deployment-content readiness without reading raw artifacts. |
+
+Next directions to consider in future runs:
+- Continue toward a fully green Move 3 by adding operator-owned live security content setup docs or a read-only seed-data path.
+- Consider adding a small generated setup bundle for the missing saved search/data only after confirming it does not auto-mutate Splunk.
+- Keep the Vite UI in the vertical ledger direction for dense receipt/diagnostic surfaces.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused UI tests, Vite build, TypeScript build, and Playwright browser verification passed. Full verification will be recorded in the verification log after the full suite runs.

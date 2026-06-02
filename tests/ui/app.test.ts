@@ -168,6 +168,51 @@ const liveProofSummary = {
     "The live-derived mission was already ready before policy injection; this proves live certification but not the fail-to-pass patch loop."
 };
 
+const liveSecurityReadiness = {
+  status: "BLOCKED",
+  mode: "live",
+  mutation: false,
+  mission: {
+    id: "mission-security-lateral-movement-readiness",
+    story: "security investigation readiness"
+  },
+  contract: {
+    id: "contract-192-168-1-4",
+    name: "192.168.1.4",
+    indexes: 13,
+    savedSearches: 100,
+    tools: 9
+  },
+  requiredTools: {
+    expected: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+    missing: []
+  },
+  preferredIndex: {
+    name: "wineventlog",
+    present: false,
+    sensitive: null
+  },
+  requiredSavedSearch: {
+    app: "SplunkEnterpriseSecuritySuite",
+    name: "ES - Lateral Movement Auth Chain",
+    ref: "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain",
+    present: false,
+    nearbySavedSearches: ["search::Errors in the last 24 hours"],
+    run: {
+      attempted: false,
+      reason: "Exact flagship saved search is not present in the live contract."
+    }
+  },
+  blockers: [
+    "Install or create read-only saved search SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain for the lateral-movement mission.",
+    "Confirm the deployment has an authentication/security index such as wineventlog for the flagship story."
+  ],
+  nextActions: [
+    "Install or create read-only saved search SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain for the lateral-movement mission.",
+    "Confirm the deployment has an authentication/security index such as wineventlog for the flagship story."
+  ]
+} as const;
+
 const jsonResponse = (value: unknown): Response => new Response(JSON.stringify(value), { status: 200 });
 
 const fetcherFor = (files: Record<string, unknown>) => async (url: string): Promise<Response> => {
@@ -246,6 +291,7 @@ describe("Vite UI artifact app", () => {
         "receipt-before-001.json": receipt({ id: "receipt-before-001", mode: "live", verdict: "READY", score: 100, violations: [] }),
         "receipt-after-001.json": receipt({ mode: "live" }),
         "live-proof-summary.json": liveProofSummary,
+        "live-security-readiness.json": liveSecurityReadiness,
         "trace-before.json": beforeTrace,
         "trace-after.json": afterTrace,
         "violations-before.json": [],
@@ -263,6 +309,11 @@ describe("Vite UI artifact app", () => {
     expect(replay).toContain("mission-live-internal-query-readiness");
     expect(liveConnect).toContain("Ready without patch");
     expect(liveConnect).toContain("internal-query-fallback");
+    expect(liveConnect).toContain("Flagship security readiness");
+    expect(liveConnect).toContain("BLOCKED");
+    expect(liveConnect).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain / missing");
+    expect(liveConnect).toContain("wineventlog / missing");
+    expect(liveConnect).toContain("security blocked");
   });
 
   it("keeps receipt sections inside a single aligned ledger", async () => {
@@ -283,8 +334,8 @@ describe("Vite UI artifact app", () => {
     const receiptHtml = renderApp(bundle, "receipt");
 
     expect(receiptHtml).toContain('class="panel receipt-book"');
-    expect(receiptHtml).toContain('class="receipt-book-grid"');
     expect(receiptHtml.match(/class="receipt-book-section"/g)).toHaveLength(4);
+    expect(receiptHtml).not.toContain("receipt-book-grid");
     expect(receiptHtml).not.toContain("receipt-slot");
   });
 

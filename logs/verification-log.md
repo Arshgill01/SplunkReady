@@ -3558,3 +3558,39 @@ Open risks:
 
 - Real endpoint artifacts remain untracked under `artifacts/live-security-check/`.
 - The live security fail-to-pass path still requires operator-approved Splunk content setup; the code now diagnoses the gap but does not mutate Splunk to fill it.
+
+## 2026-06-02 - Phase Live Security Readiness in Vite UI
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts && npm run ui:build && npm run build`
+- `SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/live-security-check npm run ui:dev -- --host 127.0.0.1`
+- `PWCLI=/Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh; bash "$PWCLI" open 'http://127.0.0.1:5173/#receipt' && bash "$PWCLI" snapshot && bash "$PWCLI" screenshot --filename output/playwright/splunkready-receipt-live-security-vertical.png --full-page`
+- `PWCLI=/Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh; bash "$PWCLI" open 'http://127.0.0.1:5173/#live-connect' && bash "$PWCLI" screenshot --filename output/playwright/splunkready-live-security-readiness-vertical.png --full-page`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused Vite UI app tests: 1 file / 6 tests.
+- PASS for production Vite UI build.
+- PASS for TypeScript build.
+- PASS for browser verification of `#receipt` against `artifacts/live-security-check`.
+- PASS for browser verification of `#live-connect` against `artifacts/live-security-check`.
+- PASS for full verification: scaffold verified, 85 waves, 631 project files, 38 test files, 199 tests.
+- PASS for `git diff --check`.
+- Playwright screenshots saved to:
+  - `output/playwright/splunkready-receipt-live-security-vertical.png`;
+  - `output/playwright/splunkready-live-security-readiness-vertical.png`.
+- Browser verification confirmed:
+  - receipt sections render as one vertical ledger;
+  - live-connect diagnostic sections render as a vertical ledger;
+  - live security readiness is `BLOCKED`;
+  - exact flagship saved search is missing;
+  - `wineventlog` is missing;
+  - required MCP tools are present.
+
+Open risks:
+
+- Browser screenshot artifacts remain untracked under `output/playwright/`.
+- Real endpoint artifacts remain untracked under `artifacts/live-security-check/`.
+- The live security fail-to-pass path still requires operator-approved Splunk content setup; this UI exposes the gap but does not mutate Splunk to resolve it.
