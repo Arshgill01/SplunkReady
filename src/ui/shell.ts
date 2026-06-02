@@ -735,10 +735,12 @@ const renderCriticalIssueFixPairs = (
 interface ReplayStep {
   id: string;
   label: string;
+  phase: string;
   state: string;
   metric: string;
   detail: string;
   evidence: string[];
+  diagnostics?: Violation[];
 }
 
 const uniqueStrings = (values: string[]): string[] => [...new Set(values.filter((value) => value.length > 0))];
@@ -753,6 +755,35 @@ const renderReplayEvidence = (items: string[]): string =>
     ? `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
     : `<p class="empty">No artifact evidence loaded for this stage.</p>`;
 
+const diagnosticLevel = (violation: Violation): "error" | "warning" =>
+  violation.severity === "Critical" || violation.severity === "High" ? "error" : "warning";
+
+const renderCompilerDiagnostics = (violations: Violation[]): string => {
+  if (violations.length === 0) {
+    return `<p class="empty">No deterministic rule diagnostics for this stage.</p>`;
+  }
+
+  return `<div class="diagnostic-stack" aria-label="Deterministic compiler diagnostics">
+    ${violations
+      .map((violation) => {
+        const level = diagnosticLevel(violation);
+        const evidence = truncate(JSON.stringify(violation.evidence), 260);
+
+        return `<figure class="compiler-diagnostic compiler-diagnostic-${level}">
+          <figcaption>
+            <code>${level}[${escapeHtml(violation.ruleId)}]</code>
+            <span>${escapeHtml(violation.severity)}</span>
+          </figcaption>
+          <pre><code>trace ${escapeHtml(violation.traceEventId)}
+evidence ${escapeHtml(evidence)}
+reason  ${escapeHtml(violation.reason)}
+help    ${escapeHtml(violation.suggestedPolicyPatch)}</code></pre>
+        </figure>`;
+      })
+      .join("")}
+  </div>`;
+};
+
 const renderReplayPanel = (step: ReplayStep, index: number): string => `<article
   id="replay-${escapeHtml(step.id)}"
   class="replay-panel"
@@ -762,6 +793,7 @@ const renderReplayPanel = (step: ReplayStep, index: number): string => `<article
 >
   <div class="replay-panel-head">
     <div>
+      <p class="case-phase">Case timeline phase ${escapeValue(index + 1)}</p>
       <h3>${escapeHtml(step.label)}</h3>
       <p>${escapeHtml(step.detail)}</p>
     </div>
@@ -770,6 +802,7 @@ const renderReplayPanel = (step: ReplayStep, index: number): string => `<article
       <strong>${escapeHtml(step.metric)}</strong>
     </div>
   </div>
+  ${step.diagnostics ? renderCompilerDiagnostics(step.diagnostics) : ""}
   ${renderReplayEvidence(step.evidence)}
 </article>`;
 
@@ -796,7 +829,8 @@ const renderCertificationReplay = (artifacts: UiArtifacts): string => {
   const steps: ReplayStep[] = [
     {
       id: "fail",
-      label: "Fail",
+      label: "Initial run failed",
+      phase: "Fail",
       state: beforeReceipt ? beforeReceipt.verdict : "missing",
       metric: beforeReceipt ? `${beforeReceipt.score}/100` : "n/a",
       detail: beforeReceipt
@@ -810,18 +844,21 @@ const renderCertificationReplay = (artifacts: UiArtifacts): string => {
     },
     {
       id: "rules",
-      label: "Rules",
+      label: "Deterministic rules",
+      phase: "Rules",
       state: beforeViolations.length > 0 ? "deterministic" : "clear",
       metric: `${ruleIds.length} rule id(s)`,
       detail:
         beforeViolations.length > 0
           ? "The failed trace is graded by explicit rule ids, not an LLM pass/fail judgment."
           : "No before-run violations are loaded.",
-      evidence: ruleIds.map((ruleId) => `rule: ${ruleId}`)
+      evidence: ruleIds.map((ruleId) => `rule: ${ruleId}`),
+      diagnostics: beforeViolations
     },
     {
       id: "patch",
-      label: "Patch",
+      label: "Policy patch",
+      phase: "Patch",
       state: artifacts.policyPatch?.status ?? "missing",
       metric: artifacts.policyPatch ? `${artifacts.policyPatch.rules.length} rule(s)` : "n/a",
       detail: artifacts.policyPatch
@@ -831,7 +868,8 @@ const renderCertificationReplay = (artifacts: UiArtifacts): string => {
     },
     {
       id: "rerun",
-      label: "Rerun",
+      label: "Rerun trace",
+      phase: "Rerun",
       state: afterTraceEvents.length > 0 ? "captured" : "missing",
       metric: `${afterTraceEvents.length} event(s)`,
       detail: firstPassingTool ? traceEventSummary(firstPassingTool) : "No rerun trace artifact is loaded.",
@@ -843,7 +881,8 @@ const renderCertificationReplay = (artifacts: UiArtifacts): string => {
     },
     {
       id: "pass",
-      label: "Pass",
+      label: "Receipt passed",
+      phase: "Pass",
       state: afterReceipt?.verdict ?? "missing",
       metric: afterReceipt ? `${afterReceipt.score}/100` : "n/a",
       detail: afterReceipt
@@ -858,9 +897,19 @@ const renderCertificationReplay = (artifacts: UiArtifacts): string => {
   ];
 
   return `<section id="certification-replay" class="shell-section" aria-label="Certification replay">
-    <h2>Certification replay</h2>
+    <div class="dossier-heading">
+      <div>
+        <h2>Certification replay</h2>
+        <p>Forensic Compiler Dossier generated from receipt, trace, violation, policy patch, and evidence artifacts.</p>
+      </div>
+      <dl>
+        <div><dt>Before</dt><dd><code>${escapeHtml(beforeReceipt?.id ?? "missing")}</code></dd></div>
+        <div><dt>After</dt><dd><code>${escapeHtml(afterReceipt?.id ?? "missing")}</code></dd></div>
+        <div><dt>Mode</dt><dd>${escapeHtml(artifacts.receipt.mode)}</dd></div>
+      </dl>
+    </div>
     <div class="replay-board" data-replay>
-      <div class="replay-tabs" role="tablist" aria-label="Agent Readiness Compiler stages">
+      <div class="replay-tabs case-timeline" role="tablist" aria-label="Agent Readiness Compiler stages">
         ${steps
           .map(
             (step, index) => `<button
@@ -871,7 +920,7 @@ const renderCertificationReplay = (artifacts: UiArtifacts): string => {
               aria-selected="${index === 0 ? "true" : "false"}"
               aria-controls="replay-${escapeHtml(step.id)}"
               data-replay-target="replay-${escapeHtml(step.id)}"
-            ><span>${escapeValue(index + 1)}</span>${escapeHtml(step.label)}</button>`
+            ><span>${escapeValue(index + 1)}</span><strong>${escapeHtml(step.phase)}</strong><em>${escapeHtml(step.label)}</em></button>`
           )
           .join("")}
       </div>
@@ -1175,35 +1224,72 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       color: var(--muted);
     }
 
-    .replay-board {
+    .dossier-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    .dossier-heading p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      max-width: 720px;
+    }
+
+    .dossier-heading dl {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin: 0;
       background: var(--surface);
       border: 1px solid var(--line);
     }
 
-    .replay-tabs {
+    .dossier-heading dl div {
+      min-width: 0;
+      padding: 9px 10px;
+      border-right: 1px solid var(--line);
+    }
+
+    .dossier-heading dl div:last-child {
+      border-right: 0;
+    }
+
+    .dossier-heading dd {
+      font-weight: 650;
+    }
+
+    .replay-board {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      border-bottom: 1px solid var(--line);
+      grid-template-columns: 260px minmax(0, 1fr);
+      background: #fbfaf5;
+      border: 1px solid var(--line);
+    }
+
+    .replay-tabs {
+      border-right: 1px solid var(--line);
+      background: #eeece4;
     }
 
     .replay-tab {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr);
+      column-gap: 10px;
+      row-gap: 2px;
+      align-items: start;
+      width: 100%;
       min-width: 0;
-      padding: 11px 12px;
+      padding: 13px 12px;
       border: 0;
-      border-right: 1px solid var(--line);
-      background: #eeeeea;
+      border-left: 3px solid transparent;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
       color: var(--muted);
       font: inherit;
       text-align: left;
       cursor: pointer;
       transition: background-color 0.15s ease, color 0.15s ease;
-    }
-
-    .replay-tab:last-child {
-      border-right: 0;
     }
 
     .replay-tab:hover,
@@ -1213,15 +1299,35 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     }
 
     .replay-tab span {
+      grid-row: span 2;
       display: grid;
       place-items: center;
-      width: 22px;
-      height: 22px;
-      flex: 0 0 auto;
+      width: 24px;
+      height: 24px;
       border: 1px solid var(--line);
       border-radius: 3px;
       font-size: 12px;
       font-weight: 700;
+    }
+
+    .replay-tab strong,
+    .replay-tab em {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .replay-tab strong {
+      font-weight: 700;
+    }
+
+    .replay-tab em {
+      color: var(--muted);
+      font-style: normal;
+      font-size: 12px;
+    }
+
+    .replay-tab[aria-selected="true"] {
+      border-left-color: var(--accent);
     }
 
     .replay-tab[aria-selected="true"] span {
@@ -1230,7 +1336,8 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     }
 
     .replay-panel {
-      padding: 18px;
+      padding: 18px 20px;
+      min-height: 360px;
     }
 
     .replay-panel[hidden] {
@@ -1239,7 +1346,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
     .replay-panel-head {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 160px;
+      grid-template-columns: minmax(0, 1fr) 168px;
       gap: 18px;
       align-items: start;
       margin-bottom: 14px;
@@ -1248,6 +1355,13 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     .replay-panel-head p {
       margin: 4px 0 0;
       color: var(--muted);
+    }
+
+    .case-phase {
+      margin: 0 0 4px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 650;
     }
 
     .replay-metric {
@@ -1263,6 +1377,58 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     .replay-metric strong {
       display: block;
       font-size: 20px;
+    }
+
+    .diagnostic-stack {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .compiler-diagnostic {
+      margin: 0;
+      background: #171915;
+      color: #f4f1e8;
+      border: 1px solid #303329;
+    }
+
+    .compiler-diagnostic figcaption {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 11px;
+      border-bottom: 1px solid #303329;
+    }
+
+    .compiler-diagnostic figcaption code {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .compiler-diagnostic-error figcaption code {
+      color: #ff8c73;
+    }
+
+    .compiler-diagnostic-warning figcaption code {
+      color: #e3b341;
+    }
+
+    .compiler-diagnostic figcaption span {
+      color: #beb8a9;
+      font-size: 12px;
+    }
+
+    .compiler-diagnostic pre {
+      margin: 0;
+      padding: 11px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    .compiler-diagnostic pre code {
+      color: #f4f1e8;
+      font-size: 12px;
     }
 
     .receipt-strip {
@@ -1507,9 +1673,28 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
         grid-template-columns: 1fr;
       }
 
+      .replay-board,
+      .dossier-heading,
+      .dossier-heading dl {
+        grid-template-columns: 1fr;
+      }
+
       .replay-tab {
+        border-bottom: 1px solid var(--line);
+      }
+
+      .replay-tabs {
         border-right: 0;
         border-bottom: 1px solid var(--line);
+      }
+
+      .dossier-heading dl div {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .dossier-heading dl div:last-child {
+        border-bottom: 0;
       }
     }
 
@@ -1660,21 +1845,46 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
       const replayTabs = Array.from(document.querySelectorAll("[data-replay-target]"));
       const replayPanels = Array.from(document.querySelectorAll("[data-replay-panel]"));
+      const activateReplayTab = (tab) => {
+        const targetId = tab.getAttribute("data-replay-target");
+
+        replayTabs.forEach((candidate) => {
+          candidate.setAttribute("aria-selected", candidate === tab ? "true" : "false");
+        });
+
+        replayPanels.forEach((panel) => {
+          if (panel.id === targetId) {
+            panel.removeAttribute("hidden");
+          } else {
+            panel.setAttribute("hidden", "");
+          }
+        });
+      };
+
       replayTabs.forEach((tab) => {
         tab.addEventListener("click", () => {
-          const targetId = tab.getAttribute("data-replay-target");
+          activateReplayTab(tab);
+        });
 
-          replayTabs.forEach((candidate) => {
-            candidate.setAttribute("aria-selected", candidate === tab ? "true" : "false");
-          });
+        tab.addEventListener("keydown", (event) => {
+          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+            return;
+          }
 
-          replayPanels.forEach((panel) => {
-            if (panel.id === targetId) {
-              panel.removeAttribute("hidden");
-            } else {
-              panel.setAttribute("hidden", "");
-            }
-          });
+          event.preventDefault();
+          const currentIndex = replayTabs.indexOf(tab);
+          const nextIndex =
+            event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? replayTabs.length - 1
+                : event.key === "ArrowRight"
+                  ? (currentIndex + 1) % replayTabs.length
+                  : (currentIndex - 1 + replayTabs.length) % replayTabs.length;
+          const nextTab = replayTabs[nextIndex];
+
+          nextTab.focus();
+          activateReplayTab(nextTab);
         });
       });
     });

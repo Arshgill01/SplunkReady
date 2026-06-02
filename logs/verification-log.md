@@ -2754,9 +2754,69 @@ Commands:
 - `npm run check`
 - `npm run audit:submission-copy`
 - `npm run build`
-- `tmp=$(mktemp -d /tmp/splunkready-wave80-audit-XXXXXX) && unset SPLUNK_HOST SPLUNK_TOKEN SPLUNK_USERNAME SPLUNK_PASSWORD SPLUNK_SCHEME SPLUNK_PORT && npm run splunkready -- demo --out "$tmp" >/tmp/splunkready-wave80-demo-command.log && node - <<'NODE' "$tmp" ...`
 - `npm run audit:reviewers`
 - `bash scripts/verify-scaffold.sh && git diff --check`
+
+Full artifact inspection command:
+
+```bash
+tmp=$(mktemp -d /tmp/splunkready-wave80-audit-XXXXXX) && \
+  unset SPLUNK_HOST SPLUNK_TOKEN SPLUNK_USERNAME SPLUNK_PASSWORD SPLUNK_SCHEME SPLUNK_PORT && \
+  npm run splunkready -- demo --out "$tmp" >/tmp/splunkready-wave80-demo-command.log && \
+  node - <<'NODE' "$tmp"
+const fs = require('fs');
+const path = require('path');
+const out = process.argv[2];
+const readJson = (name) => JSON.parse(fs.readFileSync(path.join(out, name), 'utf8'));
+const artifacts = fs.readdirSync(out).sort();
+const before = readJson('receipt-before-001.json');
+const after = readJson('receipt-after-001.json');
+const rehearsal = readJson('demo-rehearsal.json');
+const policyPatch = readJson('policy-patch.json');
+const violationsBefore = readJson('violations-before.json');
+const notes = fs.readFileSync(path.join(out, 'demo-rehearsal.md'), 'utf8');
+const shell = fs.readFileSync(path.join(out, 'splunkready-shell.html'), 'utf8');
+const policyMarkdown = fs.readFileSync(path.join(out, 'policy-patch.md'), 'utf8');
+const scoreValue = (receipt) => typeof receipt.score === 'number' ? receipt.score : receipt.score?.overall;
+const violationCount = (receipt) => Array.isArray(receipt.violations) ? receipt.violations.length : receipt.summary?.violationCount;
+const ruleIds = [...new Set(violationsBefore.map((violation) => violation.ruleId))].sort();
+const summary = {
+  out,
+  artifactCount: artifacts.length,
+  shellExists: fs.existsSync(path.join(out, 'splunkready-shell.html')),
+  replayRoute: rehearsal.uiRoute.endsWith('#certification-replay'),
+  notesHasReplay: notes.includes('#certification-replay'),
+  shellHasReplay: shell.includes('id="certification-replay"'),
+  shellHasRerun: shell.includes('id="rerun-receipts"'),
+  policyPatchMarkdownNoMutation:
+    policyMarkdown.includes('This patch does not change Splunk configuration.') &&
+    policyMarkdown.includes('It does not mutate Splunk.'),
+  policyPatchRules: policyPatch.rules.map((rule) => rule.id),
+  before: { id: before.id, verdict: before.verdict, score: scoreValue(before), violations: violationCount(before) },
+  after: { id: after.id, verdict: after.verdict, score: scoreValue(after), violations: violationCount(after) },
+  rehearsal: {
+    status: rehearsal.status,
+    targetSeconds: rehearsal.targetSeconds,
+    measuredSeconds: rehearsal.measuredSeconds,
+    fitsUnderThreeMinutes: rehearsal.fitsUnderThreeMinutes,
+    story: rehearsal.story,
+    uiRoute: rehearsal.uiRoute
+  },
+  ruleIds
+};
+console.log(JSON.stringify(summary, null, 2));
+if (summary.artifactCount !== 18) process.exit(10);
+if (!summary.shellExists || !summary.replayRoute || !summary.notesHasReplay || !summary.shellHasReplay || !summary.shellHasRerun) process.exit(11);
+if (!summary.policyPatchMarkdownNoMutation) process.exit(12);
+if (before.verdict !== 'NOT_READY' && before.verdict !== 'NOT READY') process.exit(13);
+if (scoreValue(before) !== 0 || violationCount(before) < 1) process.exit(14);
+if (after.verdict !== 'READY' || scoreValue(after) !== 100 || violationCount(after) !== 0) process.exit(15);
+if (rehearsal.status !== 'PASS' || rehearsal.fitsUnderThreeMinutes !== true) process.exit(16);
+for (const id of ['ANS-001', 'EVD-001', 'KO-001', 'SPL-001', 'SPL-003']) {
+  if (!ruleIds.includes(id)) process.exit(17);
+}
+NODE
+```
 
 Result:
 
@@ -2772,3 +2832,35 @@ Result:
 - Deterministic before-violation rule ids included `ANS-001`, `EVD-001`, `KO-001`, `SPL-001`, and `SPL-003`.
 - Reviewer audit passed after the main-executor resolution file: 82 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed after closeout docs/logs: 81 wave files, 418 project files.
+
+## 2026-06-01 - Wave 81 Forensic Compiler Dossier UI
+
+Commands:
+
+- `npx vitest run tests/ui/shell.test.ts`
+- `npm run build`
+- `tmp=$(mktemp -d /tmp/splunkready-wave81-ui-XXXXXX) && unset SPLUNK_HOST SPLUNK_TOKEN SPLUNK_USERNAME SPLUNK_PASSWORD SPLUNK_SCHEME SPLUNK_PORT && npm run splunkready -- demo --out "$tmp" >/tmp/splunkready-wave81-demo-command.log && printf '%s\n' "$tmp"`
+- `python3 -m http.server 41781 --bind 127.0.0.1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:41781/splunkready-shell.html#certification-replay && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e61 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval '() => JSON.stringify({selected: document.querySelector("[data-replay-target=\"replay-rules\"]")?.getAttribute("aria-selected"), rulesHidden: document.querySelector("#replay-rules")?.hasAttribute("hidden"), diagnostics: document.querySelector("#replay-rules")?.textContent?.includes("error[SPL-001]") && document.querySelector("#replay-rules")?.textContent?.includes("error[ANS-001]"), dossier: document.querySelector("#certification-replay")?.textContent?.includes("Forensic Compiler Dossier")})' --raw && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename /tmp/splunkready-wave81-forensic-dossier.png --full-page && file /tmp/splunkready-wave81-forensic-dossier.png && ls -lh /tmp/splunkready-wave81-forensic-dossier.png`
+- `npm run check`
+- `rg -n "gradient|glass|orb|hero|chat|copilot|assistant|KPI|live pulse|purple|fonts.googleapis|transform\\s*:|letter-spacing:\\s*-|box-shadow" src/ui/shell.ts tests/ui/shell.test.ts docs/antigravity-ui-concepts-211055-triage-report.md docs/waves/wave-81-forensic-compiler-dossier-ui.md`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Focused UI shell tests passed: 1 test file / 12 tests.
+- TypeScript build passed.
+- Fixture demo generation passed with live Splunk env vars unset and produced `/tmp/splunkready-wave81-ui-9SX7dS`.
+- Browser verification opened `#certification-replay`, clicked the `Rules` tab, and returned `{"selected":"true","rulesHidden":false,"diagnostics":true,"dossier":true}`.
+- Screenshot captured at `/tmp/splunkready-wave81-forensic-dossier.png`: 1280 x 8303 PNG, 1.2M.
+- Full check passed after Wave 81 docs were added: scaffold verifier reported 82 wave files and 426 project files; Vitest passed 31 test files / 143 tests.
+- Anti-slop grep returned only negative guardrail documentation/test assertions and fixture broad-query text; no source CSS hits for gradients, glass, or box shadows.
+- Reviewer audit initially failed because late Wave 80 and unknown-wave reviewer files arrived after Wave 80 was pushed.
+- The Wave 80 evidence issue was resolved by adding the full artifact-inspection command to this verification log and `wave-80-20260601-2127-main-resolution.md`.
+- The unknown-wave process issue was resolved by adding the Wave 81 contract, cleaning `.playwright-cli/`, and adding `unknown-wave-20260601-2127-main-resolution.md`.
+- `wave-81-20260601-2126-review.md` reported missing durable Wave 81 log evidence and missing screenshot citation; both were resolved by the Wave 81 log entries and `wave-81-20260602-1703-main-resolution.md`.
+- `wave-81-20260602-1703-rereview.md` passed with no findings after Wave 81 log evidence was visible.
+- Final reviewer audit passed after the Wave 81 rereview: 83 groups, 6 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the Wave 81 rereview: 82 wave files, 429 project files.

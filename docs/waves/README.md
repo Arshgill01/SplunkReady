@@ -87,3 +87,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-78-certification-replay-demo-route.md`: make the certification replay the primary fixture demo closeout route.
 - `wave-79-remote-cleanroom-after-demo-route.md`: verify the pushed branch after the Wave 78 demo-route change from a fresh remote clone.
 - `wave-80-goal-audit-after-demo-route-cleanroom.md`: refresh the prompt-to-artifact goal completion audit against the current pushed Wave 79 state without marking the overall goal complete.
+- `wave-81-forensic-compiler-dossier-ui.md`: integrate a fresh Antigravity-backed forensic compiler replay treatment without dashboard or assistant drift.

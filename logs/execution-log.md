@@ -3224,3 +3224,58 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-01 - Wave 81 Forensic Compiler Dossier UI
+
+Scope:
+- Triage the fresh 21:10 Antigravity/Gemini UI concept sidecar.
+- Integrate the selected hybrid direction as a bounded static-shell certification replay improvement.
+- Replace generic horizontal replay tabs with a case timeline and deterministic compiler diagnostics sourced from loaded violation objects.
+- Keep the UI as an artifact-backed certification harness, not a chatbot, telemetry dashboard, detection dashboard, or generic eval harness.
+
+Files changed:
+- `src/ui/shell.ts`
+- `tests/ui/shell.test.ts`
+- `docs/antigravity-ui-concepts-211055-triage-report.md`
+- `docs/waves/README.md`
+- `docs/waves/wave-81-forensic-compiler-dossier-ui.md`
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/reviewer-inbox/unknown-wave-20260601-2122-review.md`
+- `logs/reviewer-inbox/unknown-wave-20260601-2124-rereview.md`
+- `logs/reviewer-inbox/unknown-wave-20260601-2125-rereview.md`
+- `logs/reviewer-inbox/unknown-wave-20260601-2127-main-resolution.md`
+- `logs/reviewer-inbox/wave-80-20260601-2119-rereview.md`
+- `logs/reviewer-inbox/wave-80-20260601-2127-main-resolution.md`
+- `logs/reviewer-inbox/wave-81-20260601-2126-review.md`
+- `logs/reviewer-inbox/wave-81-20260602-1703-main-resolution.md`
+- `logs/reviewer-inbox/wave-81-20260602-1703-rereview.md`
+- reviewer inbox files if new Wave 81 findings arrive.
+
+Notes:
+- The sidecar produced three concepts: Audit Ledger, Forensic Proof Casefile, and Compiler Diagnostic Console.
+- The integrated direction accepts the case timeline and compiler diagnostics, but rejects fake commands, hardcoded sample facts, fake live execution, glass/purple SaaS styling, fake charts, and assistant transcript patterns.
+- `renderCertificationReplay` now renders `Fail`, `Rules`, `Patch`, `Rerun`, and `Pass` as a case timeline.
+- The Rules phase now renders compiler diagnostics such as `error[SPL-001]` from real violation severity, rule id, trace event id, evidence JSON, reason, and suggested policy patch.
+- Replay tab buttons keep the existing data hooks and now support ArrowLeft, ArrowRight, Home, and End keyboard navigation.
+- Browser verification used the generated fixture shell at `/tmp/splunkready-wave81-ui-9SX7dS/splunkready-shell.html#certification-replay`.
+- Browser verification selected the `Rules` phase and confirmed diagnostics and the dossier text were visible.
+- Screenshot artifact: `/tmp/splunkready-wave81-forensic-dossier.png` (1280 x 8303 PNG).
+- `wave-80-20260601-2119-rereview.md` reported a Medium finding because the Wave 80 verification log abbreviated the full fixture inspection command.
+- The Wave 80 finding was fixed by replacing the abbreviated command with the full copy-pasteable command and adding `wave-80-20260601-2127-main-resolution.md`.
+- `unknown-wave-20260601-2122-review.md` and `unknown-wave-20260601-2124-rereview.md` reported a High scope/process issue because UI source work was visible while Wave 80 was still blocked.
+- The unknown-wave High was fixed by resolving Wave 80, adding the Wave 81 contract, and adding `unknown-wave-20260601-2127-main-resolution.md`.
+- `wave-81-20260601-2126-review.md` reported a Medium finding for missing Wave 81 logs and a Low finding for screenshot evidence not yet tied to durable logs.
+- Both Wave 81 findings were fixed by adding the Wave 81 execution and verification log entries and `wave-81-20260602-1703-main-resolution.md`.
+- `wave-81-20260602-1703-rereview.md` passed with no findings after the Wave 81 log evidence was visible.
+- Final reviewer audit passed after the Wave 81 rereview: 83 groups, 6 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed after the Wave 81 rereview: 82 wave files, 429 project files.
+- `.playwright-cli/` local browser state was removed before closeout.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.

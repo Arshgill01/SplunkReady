@@ -448,7 +448,16 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("<strong>Rerun</strong><span>complete</span>");
     expect(html).toContain("<strong>Pass</strong><span>complete</span>");
     expect(html).toContain("Certification replay");
+    expect(html).toContain("Forensic Compiler Dossier");
+    expect(html).toContain("Case timeline phase 2");
+    expect(html).toContain("Initial run failed");
+    expect(html).toContain("Deterministic rules");
     expect(html).toContain('data-replay-target="replay-rules"');
+    expect(html).toContain("error[SPL-001]");
+    expect(html).toContain("error[EVD-001]");
+    expect(html).toContain("error[ANS-001]");
+    expect(html).toContain("trace trace-before-query");
+    expect(html).toContain("help    Use authorized indexes and validated saved searches.");
     expect(html).toContain("rule: SPL-001");
     expect(html).toContain("rule: EVD-001");
     expect(html).toContain("rule: ANS-001");
@@ -484,6 +493,8 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("tbody tr:hover td");
     expect(html).toContain('window.addEventListener("hashchange", updateActiveLink)');
     expect(html).toContain('panel.setAttribute("hidden", "")');
+    expect(html).toContain('event.key === "ArrowRight"');
+    expect(html).toContain("activateReplayTab(nextTab)");
   });
 
 
