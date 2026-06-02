@@ -4364,6 +4364,81 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Proof Audit Command
+
+Scope:
+- Add a first-class proof audit command so Phase Live evidence is mechanically classified instead of inferred from screenshots, old logs, or individual summary files.
+- Preserve deterministic grader authority and read-only Splunk posture.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `proof-audit --out <dir> [--json]`.
+- The command reads an existing proof bundle and writes `proof-audit.json`.
+- The audit report classifies:
+  - environment contract presence and schema validity;
+  - before/after receipt presence and schema validity;
+  - `NOT READY -> READY` fail-to-pass evidence;
+  - final `READY` receipt;
+  - `mutation=false` evidence across available summaries;
+  - final receipt evidence refs;
+  - flagship `live-security-proof-summary.json` readiness status;
+  - hosted-model/SAIA status as `PASS`, `WARN`, or `FAIL` evidence.
+- The CLI command itself reports `PASS` when the audit artifact is generated; the generated report carries the substantive audit status.
+
+Current proof audit evidence:
+- `artifacts/live-security-proof/proof-audit.json`:
+  - `status: PASS`;
+  - `proofType: live-security`;
+  - `mode: live`;
+  - `mutation: false`;
+  - `failToPass: true`;
+  - `readyAfterPatch: true`;
+  - `hostedModelStatus: available_not_applicable`.
+- `artifacts/live-security-ui/proof-audit.json`:
+  - `status: WARN`;
+  - `proofType: live-security`;
+  - `mode: live`;
+  - `mutation: false`;
+  - `failToPass: true`;
+  - `readyAfterPatch: true`;
+  - `hostedModelStatus: BLOCKED`;
+  - only warning check is `hosted-model-status`.
+
+Product impact:
+- SplunkReady now has a machine-readable way to distinguish:
+  - the flagship live security proof is green;
+  - bundled UI proof evidence is live-green but SAIA-blocked;
+  - missing or malformed proof bundles are not silently treated as success.
+- This reduces compaction/log drift risk because future runs can start by reading `proof-audit.json`.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 29% | Stronger mechanical proof story, but no new demo surface. |
+| Platform & DX | 72% | 74% | Developers can audit proof bundles programmatically. |
+| Security | 42% | 43% | Flagship security proof now has a direct PASS audit artifact. |
+| Best Use of MCP Server | 82% | 82% | MCP behavior unchanged, evidence quality improved. |
+| Hosted Models | 48% | 48% | Live SAIA remains permission-blocked; audit now makes that explicit. |
+| Developer Tools | 67% | 70% | Proof audit is a useful SDK/CI primitive. |
+
+Next directions to consider in future runs:
+- Add an optional strict gate flag for `proof-audit` once the report format settles.
+- Surface `proof-audit.json` in the Vite UI so the app can lead with audited proof status instead of derived UI heuristics.
+- Rerun `hosted-model-proof --mode live` after the operator fixes SAIA permissions, then regenerate the UI bundle and audit.
+- Continue core product work with evidence-backed features: proof gates, firewall policy ergonomics, richer mission coverage, and UI proof-status integration.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI proof audit test, local proof audits, full repo verification, TypeScript build, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Artifact Source Selector
 
 Scope:

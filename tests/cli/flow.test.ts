@@ -1456,6 +1456,44 @@ describe("SplunkReady CLI flow", () => {
     expect(mcp.calls.map((call) => call.params.name)).toEqual(
       expect.arrayContaining(["splunk_run_saved_search", "saia_explain_spl", "saia_optimize_spl"])
     );
+
+    const auditOutput = parseCliJsonOutput((await runCli(["proof-audit", "--out", outDir, "--json"])).stdout);
+    const audit = JSON.parse(await readFile(join(outDir, "proof-audit.json"), "utf8")) as {
+      status: string;
+      proofType: string;
+      mode: string;
+      mutation: boolean;
+      failToPass: boolean;
+      readyAfterPatch: boolean;
+      hostedModelStatus: string;
+      checks: Array<{ id: string; status: string }>;
+    };
+
+    expect(auditOutput).toMatchObject({
+      command: "proof-audit",
+      status: "PASS",
+      artifacts: [join(outDir, "proof-audit.json")]
+    });
+    expect(audit).toMatchObject({
+      status: "PASS",
+      proofType: "live-security",
+      mode: "live",
+      mutation: false,
+      failToPass: true,
+      readyAfterPatch: true,
+      hostedModelStatus: "invoked"
+    });
+    expect(audit.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "contract-loaded", status: "PASS" }),
+        expect.objectContaining({ id: "receipt-before-loaded", status: "PASS" }),
+        expect.objectContaining({ id: "receipt-after-loaded", status: "PASS" }),
+        expect.objectContaining({ id: "fail-to-pass", status: "PASS" }),
+        expect.objectContaining({ id: "mutation-false", status: "PASS" }),
+        expect.objectContaining({ id: "live-security-summary", status: "PASS" }),
+        expect.objectContaining({ id: "hosted-model-status", status: "PASS" })
+      ])
+    );
   });
 
   it("refuses flagship live security proof when readiness is blocked", async () => {

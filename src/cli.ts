@@ -88,6 +88,28 @@ interface CliOutput {
   messages?: string[];
 }
 
+type ProofAuditStatus = "PASS" | "WARN" | "FAIL";
+
+interface ProofAuditCheck {
+  id: string;
+  status: ProofAuditStatus;
+  detail: string;
+  evidence?: unknown;
+}
+
+interface ProofAuditReport {
+  status: ProofAuditStatus;
+  proofType: "live-security" | "live" | "receipt" | "unknown";
+  proofDir: string;
+  mode?: EnvironmentContract["mode"];
+  mutation?: boolean;
+  failToPass?: boolean;
+  readyAfterPatch?: boolean;
+  readyWithoutPatch?: boolean;
+  hostedModelStatus?: string;
+  checks: ProofAuditCheck[];
+}
+
 const allRules = (): GraderRule[] => [
   ...createSplStructuralRules(),
   ...createContractLookupRules(),
@@ -107,6 +129,7 @@ Commands:
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   hosted-model-proof --mode fixture|live --out <dir> [--json]
+  proof-audit --out <dir> [--json]
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]
   live-security-kit --out <dir> [--json]
@@ -253,6 +276,35 @@ const readJson = async <T>(filePath: string, label: string): Promise<T> => {
   } catch (error) {
     throw new Error(`Unable to read ${label} at ${filePath}. Run the prerequisite CLI command first.`);
   }
+};
+
+const readOptionalJson = async <T>(filePath: string): Promise<T | undefined> => {
+  if (!(await exists(filePath))) {
+    return undefined;
+  }
+
+  return JSON.parse(await readFile(filePath, "utf8")) as T;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const stringFromRecord = (value: unknown, key: string): string | undefined => {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const field = value[key];
+  return typeof field === "string" ? field : undefined;
+};
+
+const booleanFromRecord = (value: unknown, key: string): boolean | undefined => {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const field = value[key];
+  return typeof field === "boolean" ? field : undefined;
 };
 
 const exists = async (filePath: string): Promise<boolean> =>
@@ -1503,6 +1555,246 @@ const hostedModelProofCommand = async (
   return [...compileArtifacts, proofPath];
 };
 
+const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
+  const checks: ProofAuditCheck[] = [];
+  const addCheck = (check: ProofAuditCheck): void => {
+    checks.push(check);
+  };
+  const contractInput = await readOptionalJson<unknown>(join(options.out, "environment-contract.json"));
+  const beforeReceiptInput = await readOptionalJson<unknown>(join(options.out, "receipt-before-001.json"));
+  const afterReceiptInput = await readOptionalJson<unknown>(join(options.out, "receipt-after-001.json"));
+  const liveProofSummary = await readOptionalJson<unknown>(join(options.out, "live-proof-summary.json"));
+  const liveSecurityProofSummary = await readOptionalJson<unknown>(
+    join(options.out, "live-security-proof-summary.json")
+  );
+  const hostedModelProof = await readOptionalJson<unknown>(join(options.out, "hosted-model-proof.json"));
+  const contractResult = contractInput ? environmentContractSchema.safeParse(contractInput) : undefined;
+  const beforeReceiptResult = beforeReceiptInput ? readinessReceiptSchema.safeParse(beforeReceiptInput) : undefined;
+  const afterReceiptResult = afterReceiptInput ? readinessReceiptSchema.safeParse(afterReceiptInput) : undefined;
+  const contract = contractResult?.success ? contractResult.data : undefined;
+  const beforeReceipt = beforeReceiptResult?.success ? beforeReceiptResult.data : undefined;
+  const afterReceipt = afterReceiptResult?.success ? afterReceiptResult.data : undefined;
+  const proofType: ProofAuditReport["proofType"] = liveSecurityProofSummary
+    ? "live-security"
+    : liveProofSummary
+      ? "live"
+      : beforeReceipt || afterReceipt
+        ? "receipt"
+        : "unknown";
+  const failToPass =
+    booleanFromRecord(liveSecurityProofSummary, "failToPass") ??
+    booleanFromRecord(liveProofSummary, "failToPass") ??
+    (beforeReceipt && afterReceipt ? beforeReceipt.verdict === "NOT READY" && afterReceipt.verdict === "READY" : undefined);
+  const readyWithoutPatch =
+    booleanFromRecord(liveProofSummary, "readyWithoutPatch") ??
+    (beforeReceipt && afterReceipt ? beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY" : undefined);
+  const readyAfterPatch =
+    booleanFromRecord(liveSecurityProofSummary, "readyAfterPatch") ??
+    (afterReceipt ? afterReceipt.verdict === "READY" : undefined);
+  const mutationValues = [liveSecurityProofSummary, liveProofSummary, hostedModelProof]
+    .map((artifact) => booleanFromRecord(artifact, "mutation"))
+    .filter((value): value is boolean => typeof value === "boolean");
+  const mutation = mutationValues.length > 0 ? mutationValues.some((value) => value) : undefined;
+  const hostedModelStatus =
+    stringFromRecord(hostedModelProof, "status") ??
+    stringFromRecord(isRecord(liveSecurityProofSummary) ? liveSecurityProofSummary.hostedModels : undefined, "status") ??
+    stringFromRecord(isRecord(liveProofSummary) ? liveProofSummary.hostedModels : undefined, "status");
+
+  addCheck(
+    contract
+      ? {
+          id: "contract-loaded",
+          status: "PASS",
+          detail: "Environment contract is present and schema-valid.",
+          evidence: { id: contract.id, mode: contract.mode }
+        }
+      : {
+          id: "contract-loaded",
+          status: "FAIL",
+          detail: contractInput
+            ? "environment-contract.json is present but does not match the contract schema."
+            : "environment-contract.json is missing.",
+          evidence: contractResult && !contractResult.success ? contractResult.error.issues : undefined
+        }
+  );
+  addCheck(
+    beforeReceipt
+      ? {
+          id: "receipt-before-loaded",
+          status: "PASS",
+          detail: "Before receipt is present and schema-valid.",
+          evidence: { id: beforeReceipt.id, verdict: beforeReceipt.verdict, score: beforeReceipt.score }
+        }
+      : {
+          id: "receipt-before-loaded",
+          status: "FAIL",
+          detail: beforeReceiptInput
+            ? "receipt-before-001.json is present but does not match the receipt schema."
+            : "receipt-before-001.json is missing.",
+          evidence: beforeReceiptResult && !beforeReceiptResult.success ? beforeReceiptResult.error.issues : undefined
+        }
+  );
+  addCheck(
+    afterReceipt
+      ? {
+          id: "receipt-after-loaded",
+          status: "PASS",
+          detail: "After receipt is present and schema-valid.",
+          evidence: { id: afterReceipt.id, verdict: afterReceipt.verdict, score: afterReceipt.score }
+        }
+      : {
+          id: "receipt-after-loaded",
+          status: "FAIL",
+          detail: afterReceiptInput
+            ? "receipt-after-001.json is present but does not match the receipt schema."
+            : "receipt-after-001.json is missing.",
+          evidence: afterReceiptResult && !afterReceiptResult.success ? afterReceiptResult.error.issues : undefined
+        }
+  );
+  addCheck(
+    beforeReceipt
+      ? {
+          id: "before-not-ready",
+          status: beforeReceipt.verdict === "NOT READY" ? "PASS" : "WARN",
+          detail:
+            beforeReceipt.verdict === "NOT READY"
+              ? "The proof begins from a NOT READY receipt."
+              : "The before receipt is already READY; this is valid evidence but not a fail-to-pass patch loop.",
+          evidence: { verdict: beforeReceipt.verdict, score: beforeReceipt.score, violations: beforeReceipt.violations.length }
+        }
+      : {
+          id: "before-not-ready",
+          status: "FAIL",
+          detail: "Cannot verify the starting verdict without receipt-before-001.json."
+        }
+  );
+  addCheck(
+    afterReceipt
+      ? {
+          id: "after-ready",
+          status: afterReceipt.verdict === "READY" ? "PASS" : "FAIL",
+          detail:
+            afterReceipt.verdict === "READY"
+              ? "The proof ends with a READY receipt."
+              : "The after receipt is not READY.",
+          evidence: { verdict: afterReceipt.verdict, score: afterReceipt.score, violations: afterReceipt.violations.length }
+        }
+      : {
+          id: "after-ready",
+          status: "FAIL",
+          detail: "Cannot verify the final verdict without receipt-after-001.json."
+        }
+  );
+  addCheck({
+    id: "fail-to-pass",
+    status: failToPass ? "PASS" : readyWithoutPatch ? "WARN" : "FAIL",
+    detail: failToPass
+      ? "The proof demonstrates NOT READY -> READY."
+      : readyWithoutPatch
+        ? "The proof was READY before and after; useful live evidence, but not the flagship patch loop."
+        : "The proof does not demonstrate NOT READY -> READY.",
+    evidence: {
+      before: beforeReceipt ? { verdict: beforeReceipt.verdict, score: beforeReceipt.score } : null,
+      after: afterReceipt ? { verdict: afterReceipt.verdict, score: afterReceipt.score } : null
+    }
+  });
+  addCheck({
+    id: "mutation-false",
+    status: mutation === false ? "PASS" : mutation === true ? "FAIL" : "WARN",
+    detail:
+      mutation === false
+        ? "All available proof summaries declare mutation=false."
+        : mutation === true
+          ? "At least one proof artifact declares mutation=true."
+          : "No mutation field was found in the available proof summaries.",
+    evidence: { observed: mutationValues }
+  });
+  addCheck(
+    afterReceipt
+      ? {
+          id: "evidence-refs-present",
+          status: afterReceipt.evidenceRefs.length > 0 ? "PASS" : "FAIL",
+          detail:
+            afterReceipt.evidenceRefs.length > 0
+              ? "The final receipt contains evidence references."
+              : "The final receipt has no evidence references.",
+          evidence: { evidenceRefs: afterReceipt.evidenceRefs }
+        }
+      : {
+          id: "evidence-refs-present",
+          status: "FAIL",
+          detail: "Cannot verify evidence refs without receipt-after-001.json."
+        }
+  );
+  addCheck(
+    proofType === "live-security"
+      ? {
+          id: "live-security-summary",
+          status:
+            stringFromRecord(liveSecurityProofSummary, "status") === "PASS" &&
+            stringFromRecord(liveSecurityProofSummary, "readinessStatus") === "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF" &&
+            readyAfterPatch === true
+              ? "PASS"
+              : "FAIL",
+          detail:
+            "The flagship live security summary must be PASS, readiness-green, and ready after patch.",
+          evidence: {
+            status: stringFromRecord(liveSecurityProofSummary, "status"),
+            readinessStatus: stringFromRecord(liveSecurityProofSummary, "readinessStatus"),
+            readyAfterPatch
+          }
+        }
+      : {
+          id: "live-security-summary",
+          status: "WARN",
+          detail: "No live-security-proof-summary.json was found; this is not the flagship live security proof."
+        }
+  );
+  addCheck({
+    id: "hosted-model-status",
+    status:
+      hostedModelStatus === "PASS" ||
+      hostedModelStatus === "invoked" ||
+      hostedModelStatus === "available_not_applicable"
+        ? "PASS"
+        : hostedModelStatus === "BLOCKED" || !hostedModelStatus
+          ? "WARN"
+          : "WARN",
+    detail:
+      hostedModelStatus === "PASS" || hostedModelStatus === "invoked"
+        ? "Hosted-model assistance is present in the proof artifacts."
+        : hostedModelStatus === "available_not_applicable"
+          ? "Hosted-model tools are available, but this proof did not produce SPL violations requiring assistance."
+          : hostedModelStatus === "BLOCKED"
+            ? "Hosted-model proof is blocked by the current MCP credentials or entitlement."
+            : "Hosted-model status was not present in this proof bundle.",
+    evidence: { status: hostedModelStatus ?? null }
+  });
+
+  const status: ProofAuditStatus = checks.some((check) => check.status === "FAIL")
+    ? "FAIL"
+    : checks.some((check) => check.status === "WARN")
+      ? "WARN"
+      : "PASS";
+  const report: ProofAuditReport = {
+    status,
+    proofType,
+    proofDir: options.out,
+    mode: contract?.mode,
+    mutation,
+    failToPass,
+    readyAfterPatch,
+    readyWithoutPatch,
+    hostedModelStatus,
+    checks
+  };
+  const auditPath = join(options.out, "proof-audit.json");
+
+  await writeJson(auditPath, report);
+
+  return [auditPath];
+};
+
 const receiptCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
@@ -1684,6 +1976,8 @@ const main = async (): Promise<void> => {
     artifacts = await llmAgentCommand(options);
   } else if (command === "hosted-model-proof") {
     artifacts = await hostedModelProofCommand(options);
+  } else if (command === "proof-audit") {
+    artifacts = await proofAuditCommand(options);
   } else if (command === "live-candidates") {
     artifacts = await liveCandidatesCommand(options);
   } else if (command === "live-security-check") {

@@ -4282,3 +4282,71 @@ Open risks:
 
 - This is a source-of-truth documentation lock, not new runtime behavior.
 - Live hosted-model proof remains gated by SAIA-capable MCP access.
+
+## 2026-06-03 - Phase Live Proof Audit Command
+
+Commands:
+
+- `git status --short --branch`
+- `rg -n "liveSecurityProofCommand|liveProofCommand|hostedModelProofCommand|function main|usage|type CliOutput|readinessReceiptSchema|environmentContractSchema" src/cli.ts tests/cli/flow.test.ts src/schemas/core.ts`
+- `rg -n "Phase Live|Move 13|proof-audit|live-security-proof|hosted-model" logs/execution-log.md logs/verification-log.md logs/splunk-feedback.md DECISIONS.md MANIFEST.md`
+- `sed -n '1,260p' src/cli.ts`
+- `sed -n '260,380p' src/cli.ts`
+- `sed -n '1120,1325p' src/cli.ts`
+- `sed -n '1320,1435p' src/cli.ts`
+- `sed -n '1430,1720p' src/cli.ts`
+- `sed -n '1200,1485p' tests/cli/flow.test.ts`
+- `sed -n '1,140p' tests/cli/flow.test.ts`
+- `sed -n '49,230p' src/schemas/core.ts`
+- `npm run build`
+- `npx vitest run tests/cli/flow.test.ts -t "flagship live security proof|proof-audit"`
+- `npm run splunkready -- proof-audit --out artifacts/live-security-proof --json`
+- `node -e "const a=require('./artifacts/live-security-proof/proof-audit.json'); console.log(JSON.stringify({status:a.status, proofType:a.proofType, mode:a.mode, mutation:a.mutation, failToPass:a.failToPass, readyAfterPatch:a.readyAfterPatch, hostedModelStatus:a.hostedModelStatus, checks:a.checks.map(c=>[c.id,c.status])}, null, 2))"`
+- `npm run splunkready -- proof-audit --out artifacts/live-security-ui --json && node -e "const a=require('./artifacts/live-security-ui/proof-audit.json'); console.log(JSON.stringify({status:a.status, proofType:a.proofType, mode:a.mode, mutation:a.mutation, failToPass:a.failToPass, readyAfterPatch:a.readyAfterPatch, hostedModelStatus:a.hostedModelStatus, checks:a.checks.map(c=>[c.id,c.status])}, null, 2))"`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for worktree orientation:
+  - branch `splunkready-build` is aligned with `origin/splunkready-build`;
+  - tracked files were clean before this change;
+  - untracked local `artifacts/` and `output/` existed as proof/browser artifacts.
+- PASS for TypeScript build.
+- First focused CLI test run failed because the new assertion expected exact check objects while `proof-audit.json` intentionally includes `detail` and `evidence` fields.
+- PASS after tightening the test to use `expect.objectContaining` for check ID/status assertions:
+  - 2 selected CLI tests passed;
+  - 20 tests skipped by the name filter.
+- PASS for local live-security proof audit:
+  - generated `artifacts/live-security-proof/proof-audit.json`;
+  - report status `PASS`;
+  - proof type `live-security`;
+  - mode `live`;
+  - mutation `false`;
+  - fail-to-pass `true`;
+  - ready-after-patch `true`;
+  - hosted-model status `available_not_applicable`;
+  - all 10 checks `PASS`.
+- PASS for local UI bundle proof audit:
+  - generated `artifacts/live-security-ui/proof-audit.json`;
+  - report status `WARN`;
+  - proof type `live-security`;
+  - mode `live`;
+  - mutation `false`;
+  - fail-to-pass `true`;
+  - ready-after-patch `true`;
+  - hosted-model status `BLOCKED`;
+  - only warning check is `hosted-model-status`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 712 project files;
+  - 38 test files;
+  - 210 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The audit command currently writes a diagnostic `proof-audit.json`; it does not fail the process when the audit report status is `WARN` or `FAIL`.
+- Live hosted-model proof remains gated by SAIA-capable MCP access.
+- Local audit artifacts under `artifacts/` are untracked and should remain uncommitted unless a redacted artifact set is explicitly requested.
