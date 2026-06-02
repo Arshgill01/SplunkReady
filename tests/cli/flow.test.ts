@@ -1110,6 +1110,118 @@ describe("SplunkReady CLI flow", () => {
     expect(readme).toContain("live-security-check --out artifacts/live-security-check --json");
   });
 
+  it("bundles proof, live security readiness, and operator kit artifacts for the Vite UI", async () => {
+    const proofDir = await mkdtemp(join(tmpdir(), "splunkready-ui-proof-"));
+    const securityCheckDir = await mkdtemp(join(tmpdir(), "splunkready-ui-security-check-"));
+    const securityKitDir = await mkdtemp(join(tmpdir(), "splunkready-ui-security-kit-"));
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-ui-bundle-"));
+    const server = await startMockMcpServer({
+      savedSearches: [
+        {
+          id: "saved-search-errors",
+          type: "saved_searches",
+          name: "Errors in the last 24 hours",
+          app: "search"
+        }
+      ],
+      savedSearchRows: []
+    });
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: server.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token",
+      SPLUNKREADY_SPLUNK_APP: "search"
+    };
+
+    try {
+      await expect(runCli(["compile", "--out", proofDir])).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS compile")
+      });
+      await expect(runCli(["evaluate", "--out", proofDir])).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS evaluate")
+      });
+      await expect(runCli(["receipt", "--out", proofDir])).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS receipt")
+      });
+      await expect(runCli(["rerun", "--out", proofDir])).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS rerun")
+      });
+      await expect(runCli(["live-security-check", "--out", securityCheckDir], process.cwd(), env)).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS live-security-check")
+      });
+      await expect(runCli(["live-security-kit", "--out", securityKitDir])).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS live-security-kit")
+      });
+
+      const output = parseCliJsonOutput(
+        (
+          await runCli([
+            "live-security-ui-bundle",
+            "--proof-dir",
+            proofDir,
+            "--security-check-dir",
+            securityCheckDir,
+            "--security-kit-dir",
+            securityKitDir,
+            "--out",
+            outDir,
+            "--json"
+          ])
+        ).stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "live-security-ui-bundle",
+        status: "PASS",
+        artifacts: expect.arrayContaining([
+          join(outDir, "environment-contract.json"),
+          join(outDir, "receipt-before-001.json"),
+          join(outDir, "receipt-after-001.json"),
+          join(outDir, "trace-before.json"),
+          join(outDir, "trace-after.json"),
+          join(outDir, "live-security-readiness.json"),
+          join(outDir, "live-security-kit.json"),
+          join(outDir, "live-security-ui-bundle.json")
+        ])
+      });
+    } finally {
+      await server.close();
+    }
+
+    const bundledReceipt = JSON.parse(await readFile(join(outDir, "receipt-after-001.json"), "utf8")) as {
+      verdict: string;
+      score: number;
+    };
+    const readiness = JSON.parse(await readFile(join(outDir, "live-security-readiness.json"), "utf8")) as {
+      status: string;
+      mutation: boolean;
+    };
+    const kit = JSON.parse(await readFile(join(outDir, "live-security-kit.json"), "utf8")) as {
+      mutation: boolean;
+      operatorActionRequired: boolean;
+    };
+    const summary = JSON.parse(await readFile(join(outDir, "live-security-ui-bundle.json"), "utf8")) as {
+      status: string;
+      mutation: boolean;
+      proofDir: string;
+      securityCheckDir: string;
+      securityKitDir: string;
+      artifacts: string[];
+    };
+
+    expect(bundledReceipt).toMatchObject({ verdict: "READY", score: 100 });
+    expect(readiness).toMatchObject({ status: "BLOCKED", mutation: false });
+    expect(kit).toMatchObject({ mutation: false, operatorActionRequired: true });
+    expect(summary).toMatchObject({
+      status: "PASS",
+      mutation: false,
+      proofDir,
+      securityCheckDir,
+      securityKitDir
+    });
+    expect(summary.artifacts).toEqual(expect.arrayContaining([join(outDir, "receipt-after-001.json")]));
+  });
+
   it("runs live proof end to end from a derived saved-search mission", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-proof-"));
     const gemini = await startMockGeminiServer();

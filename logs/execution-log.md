@@ -4364,6 +4364,62 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-02 - Phase Live UI Artifact Bundler
+
+Scope:
+- Remove the manual `cp` step needed to inspect live proof, live security readiness, and the operator kit together in the Vite UI.
+- Fix the easy failure mode where the UI is served from `artifacts/live-security-ui` but only contains security-readiness files, causing receipt/trace views to look empty.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `docs/live-demo-data-plan.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `live-security-ui-bundle`.
+- Added CLI options:
+  - `--proof-dir`;
+  - `--security-check-dir`;
+  - `--security-kit-dir`.
+- The command copies existing receipt, trace, policy, readiness, live security, and operator-kit JSON into one UI-ready output directory.
+- The command writes `live-security-ui-bundle.json` with source directories, copied artifacts, missing optional proof artifacts, and `mutation: false`.
+- The command does not call Splunk, generate fake receipts, install apps, ingest events, or mutate any deployment.
+- Updated the live demo data plan with the reproducible bundle command and Vite invocation.
+
+Runtime note:
+- I briefly served the UI from `artifacts/live-security-ui` before the folder contained receipts/traces, which made the receipt view appear empty in the user's browser.
+- I regenerated `artifacts/live-security-ui` with the new bundler and restarted the dev server against that combined folder.
+- Active local UI URL:
+  - `http://127.0.0.1:5173/`
+
+Product impact:
+- The Vite app can now show the live proof receipt/trace data and the flagship security blocker/operator kit from one artifact base.
+- This improves the Platform/DX story by making artifact handoff reproducible instead of requiring ad hoc file copying.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 28% | No new runtime capability. |
+| Platform & DX | 69% | 70% | The live proof UI handoff is now a repeatable CLI workflow. |
+| Security | 39% | 39% | Security content still requires operator install/import. |
+| Best Use of MCP Server | 79% | 79% | MCP behavior unchanged. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 64% | 66% | A UI artifact bundler is a practical developer workflow improvement. |
+
+Next directions to consider in future runs:
+- If the operator installs/imports the kit, rerun `live-security-check`, regenerate `artifacts/live-security-ui`, and verify the UI shows a green flagship security path.
+- Consider making the Vite app detect an empty artifact base and show the exact expected bundle command.
+- Continue avoiding UI flows that imply SplunkReady installs or mutates Splunk.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI tests, TypeScript build, actual local bundle generation, DOM verification against the running Vite UI, full repo verification, and `git diff --check` passed.
+
 ## 2026-06-02 - Phase Live Flagship Security Readiness Diagnostic
 
 Scope:

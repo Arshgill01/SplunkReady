@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 import { createFixtureSplunkAccessAdapter, loadFixtureSplunkDatasetFromFile } from "./adapters/fixture.js";
@@ -63,6 +63,9 @@ interface CliOptions {
   fixture: string;
   mission: string;
   out: string;
+  proofDir: string;
+  securityCheckDir: string;
+  securityKitDir: string;
   phase: "before" | "after";
   requireLive: boolean;
   trace: string;
@@ -102,6 +105,7 @@ Commands:
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]
   live-security-kit --out <dir> [--json]
+  live-security-ui-bundle --out <dir> [--proof-dir <dir>] [--security-check-dir <dir>] [--security-kit-dir <dir>] [--json]
   live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--json]
   receipt   --out <dir> [--phase before|after] [--json]
   rerun     --mode fixture|live --out <dir> [--firewall] [--json]
@@ -122,6 +126,9 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     fixture: defaultFixturePath,
     mission: defaultMissionPath,
     out: defaultOutDir,
+    proofDir: "artifacts/live-proof",
+    securityCheckDir: "artifacts/live-security-check",
+    securityKitDir: "artifacts/live-security-kit",
     phase: "before",
     requireLive: false,
     trace: "",
@@ -165,6 +172,12 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       options.mission = value;
     } else if (flag === "--out") {
       options.out = value;
+    } else if (flag === "--proof-dir") {
+      options.proofDir = value;
+    } else if (flag === "--security-check-dir") {
+      options.securityCheckDir = value;
+    } else if (flag === "--security-kit-dir") {
+      options.securityKitDir = value;
     } else if (flag === "--phase") {
       if (value !== "before" && value !== "after") {
         throw new Error("--phase must be before or after.");
@@ -231,6 +244,37 @@ const readJson = async <T>(filePath: string, label: string): Promise<T> => {
   } catch (error) {
     throw new Error(`Unable to read ${label} at ${filePath}. Run the prerequisite CLI command first.`);
   }
+};
+
+const exists = async (filePath: string): Promise<boolean> =>
+  stat(filePath)
+    .then(() => true)
+    .catch(() => false);
+
+const copyRequiredArtifact = async (sourceDir: string, outDir: string, fileName: string, label: string): Promise<string> => {
+  const sourcePath = join(sourceDir, fileName);
+  const outPath = join(outDir, fileName);
+
+  if (!(await exists(sourcePath))) {
+    throw new Error(`Unable to read ${label} at ${sourcePath}. Run the prerequisite CLI command first.`);
+  }
+
+  await mkdir(dirname(outPath), { recursive: true });
+  await copyFile(sourcePath, outPath);
+  return outPath;
+};
+
+const copyOptionalArtifact = async (sourceDir: string, outDir: string, fileName: string): Promise<string | undefined> => {
+  const sourcePath = join(sourceDir, fileName);
+
+  if (!(await exists(sourcePath))) {
+    return undefined;
+  }
+
+  const outPath = join(outDir, fileName);
+  await mkdir(dirname(outPath), { recursive: true });
+  await copyFile(sourcePath, outPath);
+  return outPath;
 };
 
 const loadMission = async (missionPath: string): Promise<MissionDefinition> =>
@@ -842,6 +886,73 @@ const liveSecurityCheckCommand = async (options: CliOptions, env: NodeJS.Process
   return [contractPath, reportPath];
 };
 
+const liveSecurityUiBundleCommand = async (options: CliOptions): Promise<string[]> => {
+  const requiredProofFiles = [
+    "environment-contract.json",
+    "missions.json",
+    "readiness-profile.json",
+    "receipt-before-001.json",
+    "receipt-after-001.json",
+    "trace-before.json",
+    "trace-after.json",
+    "violations-before.json",
+    "violations-after.json"
+  ];
+  const optionalProofFiles = [
+    "agent-policy.json",
+    "policy-patch.json",
+    "live-proof-summary.json",
+    "live-candidates.json",
+    "live-derived-mission.json",
+    "live-derived-readiness-profile.json",
+    "score-before.json",
+    "score-after.json"
+  ];
+  const artifacts: string[] = [];
+  const missingOptional: string[] = [];
+
+  for (const fileName of requiredProofFiles) {
+    artifacts.push(await copyRequiredArtifact(options.proofDir, options.out, fileName, `live proof artifact ${fileName}`));
+  }
+
+  for (const fileName of optionalProofFiles) {
+    const copied = await copyOptionalArtifact(options.proofDir, options.out, fileName);
+
+    if (copied) {
+      artifacts.push(copied);
+    } else {
+      missingOptional.push(join(options.proofDir, fileName));
+    }
+  }
+
+  artifacts.push(
+    await copyRequiredArtifact(
+      options.securityCheckDir,
+      options.out,
+      "live-security-readiness.json",
+      "live security readiness report"
+    )
+  );
+  artifacts.push(
+    await copyRequiredArtifact(options.securityKitDir, options.out, "live-security-kit.json", "live security operator kit manifest")
+  );
+
+  const summaryPath = join(options.out, "live-security-ui-bundle.json");
+
+  await writeJson(summaryPath, {
+    status: "PASS",
+    mutation: false,
+    proofDir: options.proofDir,
+    securityCheckDir: options.securityCheckDir,
+    securityKitDir: options.securityKitDir,
+    artifacts,
+    missingOptional
+  });
+  artifacts.push(summaryPath);
+
+  return artifacts;
+};
+
 const liveCandidatesCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
   const liveOptions = { ...options, mode: "live" as const };
   const contract = await loadContract(options.out);
@@ -1281,6 +1392,8 @@ const main = async (): Promise<void> => {
     artifacts = await liveSecurityCheckCommand(options);
   } else if (command === "live-security-kit") {
     artifacts = await liveSecurityKitCommand(options);
+  } else if (command === "live-security-ui-bundle") {
+    artifacts = await liveSecurityUiBundleCommand(options);
   } else if (command === "live-proof") {
     artifacts = await liveProofCommand(options);
   } else if (command === "receipt") {

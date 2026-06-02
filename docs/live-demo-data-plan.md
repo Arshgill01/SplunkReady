@@ -111,6 +111,21 @@ The command writes local files only. It does not call Splunk and does not mutate
 
 The app directory is intentionally named `SplunkEnterpriseSecuritySuite` because the readiness contract checks the saved-search app context, not just the saved-search display name. If Enterprise Security is already installed, merge the generated stanzas through the normal Splunk admin process instead of overwriting the app.
 
+To inspect the current proof, security readiness diagnostic, and generated operator kit together in the Vite UI, create a UI bundle after running `live-proof`, `live-security-check`, and `live-security-kit`:
+
+```bash
+npm run splunkready -- live-security-ui-bundle \
+  --proof-dir artifacts/live-proof \
+  --security-check-dir artifacts/live-security-check \
+  --security-kit-dir artifacts/live-security-kit \
+  --out artifacts/live-security-ui \
+  --json
+
+SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/live-security-ui npm run ui:dev
+```
+
+The bundle command only copies existing JSON artifacts into one UI-ready directory. It does not call Splunk, generate fake receipts, install apps, or mutate the deployment.
+
 Operator-approved setup required:
 
 1. Create or install a read-only saved search named `ES - Lateral Movement Auth Chain` in app `SplunkEnterpriseSecuritySuite`.

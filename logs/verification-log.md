@@ -3661,3 +3661,33 @@ Open risks:
 
 - Combined browser artifact directory remains untracked under `artifacts/live-security-ui/`.
 - Browser screenshot artifact remains untracked under `output/playwright/`.
+
+## 2026-06-02 - Phase Live UI Artifact Bundler
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts && npm run build`
+- `npm run splunkready -- live-security-ui-bundle --proof-dir artifacts/live-proof --security-check-dir artifacts/live-security-check --security-kit-dir artifacts/live-security-kit --out artifacts/live-security-ui --json`
+- `SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/live-security-ui npm run ui:dev -- --host 127.0.0.1`
+- `node --input-type=module <<'NODE' ... Playwright DOM check for http://127.0.0.1:5173/#receipt ... NODE`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused CLI flow tests: 1 file / 19 tests.
+- PASS for TypeScript build.
+- PASS for local UI bundle generation under `artifacts/live-security-ui`.
+- PASS for browser DOM verification of `#receipt` against the regenerated combined artifact directory.
+- PASS for full verification: scaffold verified, 85 waves, 662 project files, 38 test files, 201 tests.
+- PASS for `git diff --check`.
+- Browser DOM check confirmed:
+  - `receipt-after-001` is loaded;
+  - `Trace refs` is present;
+  - `security blocked` is present;
+  - receipt sections are `Current receipt`, `Rerun comparison`, `Evidence`, and `Live proof summary`.
+
+Open risks:
+
+- Combined UI bundle remains untracked under `artifacts/live-security-ui/`.
+- Other live/generated artifacts remain untracked under `artifacts/`.
+- Browser screenshots remain untracked under `output/playwright/`.
