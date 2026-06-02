@@ -32,6 +32,7 @@ import { generateReadinessReceipt } from "./receipts/generator.js";
 import {
   readOnlySplunkToolNameSchema,
   environmentContractSchema,
+  policyPatchSchema,
   readinessReceiptSchema,
   traceEventSchema,
   type EnvironmentContract,
@@ -54,6 +55,7 @@ const liveSmokeInventoryTools: ReadOnlySplunkToolName[] = [
   "splunk_get_metadata",
   "splunk_get_knowledge_objects"
 ];
+const hostedModelToolNames: ReadOnlySplunkToolName[] = ["saia_explain_spl", "saia_optimize_spl"];
 const liveSmokeNotCalledTools = readOnlySplunkToolNameSchema.options.filter(
   (toolName) => !liveSmokeInventoryTools.includes(toolName)
 );
@@ -252,6 +254,16 @@ const exists = async (filePath: string): Promise<boolean> =>
     .then(() => true)
     .catch(() => false);
 
+const readOptionalPolicyPatch = async (outDir: string): Promise<PolicyPatch | undefined> => {
+  const patchPath = join(outDir, "policy-patch.json");
+
+  if (!(await exists(patchPath))) {
+    return undefined;
+  }
+
+  return policyPatchSchema.parse(await readJson<unknown>(patchPath, "policy patch"));
+};
+
 const copyRequiredArtifact = async (sourceDir: string, outDir: string, fileName: string, label: string): Promise<string> => {
   const sourcePath = join(sourceDir, fileName);
   const outPath = join(outDir, fileName);
@@ -372,6 +384,53 @@ const collectSplAssistance = async (
   }
 
   return assistance.length > 0 ? assistance : undefined;
+};
+
+const summarizeHostedModels = (
+  contract: EnvironmentContract,
+  policyPatch: PolicyPatch | undefined
+): {
+  status: "invoked" | "available_not_applicable" | "unavailable";
+  availableTools: ReadOnlySplunkToolName[];
+  missingTools: ReadOnlySplunkToolName[];
+  assistanceItems: number;
+  notes: string;
+} => {
+  const contractTools = new Set(contract.mcpTools);
+  const availableTools = hostedModelToolNames.filter((toolName) => contractTools.has(toolName));
+  const missingTools = hostedModelToolNames.filter((toolName) => !contractTools.has(toolName));
+  const assistanceItems = policyPatch?.splAssistance?.length ?? 0;
+
+  if (assistanceItems > 0) {
+    return {
+      status: "invoked",
+      availableTools,
+      missingTools,
+      assistanceItems,
+      notes:
+        "SAIA explain/optimize returned advisory output for SPL-rule violations. Deterministic rules remained authoritative for pass/fail."
+    };
+  }
+
+  if (missingTools.length > 0) {
+    return {
+      status: "unavailable",
+      availableTools,
+      missingTools,
+      assistanceItems,
+      notes:
+        "The contract did not expose both hosted-model tools, so no SAIA explain/optimize evidence could be collected for this proof."
+    };
+  }
+
+  return {
+    status: "available_not_applicable",
+    availableTools,
+    missingTools,
+    assistanceItems,
+    notes:
+      "SAIA explain/optimize tools were available, but this proof did not produce SPL-rule violations with query evidence."
+  };
 };
 
 const llmEnabled = (env: NodeJS.ProcessEnv = process.env): boolean => env.SPLUNKREADY_LLM_ENABLED === "true";
@@ -1098,6 +1157,8 @@ const liveProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = pr
   const afterReceipt = readinessReceiptSchema.parse(
     await readJson(join(options.out, "receipt-after-001.json"), "after receipt")
   );
+  const policyPatch = await readOptionalPolicyPatch(options.out);
+  const hostedModels = summarizeHostedModels(contract, policyPatch);
   const summaryPath = join(options.out, "live-proof-summary.json");
 
   await writeJson(summaryPath, {
@@ -1117,6 +1178,7 @@ const liveProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = pr
     },
     failToPass: beforeReceipt.verdict === "NOT READY" && afterReceipt.verdict === "READY",
     readyWithoutPatch: beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY",
+    hostedModels,
     notes:
       beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY"
         ? "The live-derived mission was already ready before policy injection; this proves live certification but not the fail-to-pass patch loop."
@@ -1169,6 +1231,9 @@ const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.Process
   const afterReceipt = readinessReceiptSchema.parse(
     await readJson(join(options.out, "receipt-after-001.json"), "after receipt")
   );
+  const contract = await loadContract(options.out);
+  const policyPatch = await readOptionalPolicyPatch(options.out);
+  const hostedModels = summarizeHostedModels(contract, policyPatch);
   const liveProofSummaryPath = join(options.out, "live-proof-summary.json");
   const securitySummaryPath = join(options.out, "live-security-proof-summary.json");
   const failToPass = beforeReceipt.verdict === "NOT READY" && afterReceipt.verdict === "READY";
@@ -1196,6 +1261,7 @@ const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.Process
     },
     failToPass,
     readyWithoutPatch: beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY",
+    hostedModels,
     notes: failToPass
       ? "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
       : "The flagship live security mission ran against live Splunk MCP tools; inspect receipts for remaining readiness state."
@@ -1220,6 +1286,7 @@ const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.Process
     },
     failToPass,
     readyAfterPatch,
+    hostedModels,
     notes: failToPass
       ? "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
       : "The flagship live security mission ran against live Splunk MCP tools; inspect receipts for remaining readiness state."

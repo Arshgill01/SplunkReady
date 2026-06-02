@@ -164,6 +164,13 @@ const liveProofSummary = {
   after: { verdict: "READY", score: 100, violations: 0 },
   failToPass: false,
   readyWithoutPatch: true,
+  hostedModels: {
+    status: "available_not_applicable",
+    availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+    missingTools: [],
+    assistanceItems: 0,
+    notes: "SAIA explain/optimize tools were available, but this proof did not produce SPL-rule violations with query evidence."
+  },
   notes:
     "The live-derived mission was already ready before policy injection; this proves live certification but not the fail-to-pass patch loop."
 };
@@ -188,6 +195,14 @@ const liveSecurityProofSummary = {
   },
   failToPass: true,
   readyAfterPatch: true,
+  hostedModels: {
+    status: "invoked",
+    availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+    missingTools: [],
+    assistanceItems: 1,
+    notes:
+      "SAIA explain/optimize returned advisory output for SPL-rule violations. Deterministic rules remained authoritative for pass/fail."
+  },
   notes:
     "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
 } as const;
@@ -368,6 +383,9 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("operator kit available");
     expect(liveConnect).toContain("Operator action");
     expect(liveConnect).toContain("required");
+    expect(liveConnect).toContain("Hosted model assistance");
+    expect(liveConnect).toContain("saia_explain_spl / saia_optimize_spl");
+    expect(liveConnect).toContain("advisory only; deterministic grader decides pass/fail");
     expect(liveConnect).toContain("Mutation");
     expect(liveConnect).toContain("no");
     expect(liveConnect).toContain("artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/savedsearches.conf");

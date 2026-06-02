@@ -1,4 +1,4 @@
-import { summarizeBundle, type UiArtifactBundle } from "./artifacts.js";
+import { summarizeBundle, type HostedModelSummary, type UiArtifactBundle } from "./artifacts.js";
 import type { PolicyPatch, ReadinessReceipt, TraceEvent, Violation } from "../../src/schemas/core.js";
 
 export type ViewId = "certification-replay" | "receipt" | "trace-timeline" | "live-connect";
@@ -183,6 +183,24 @@ const renderLiveSecurityProofSummary = (bundle: UiArtifactBundle): string => {
       ["Ready after patch", summary.readyAfterPatch ? "yes" : "no"],
       ["Evidence refs", summary.after.evidenceRefs.join(" / ")],
       ["Mutation", summary.mutation ? "yes" : "no"],
+      ["Notes", summary.notes]
+    ])}
+  </section>`;
+};
+
+const renderHostedModelSummary = (summary: HostedModelSummary | undefined): string => {
+  if (!summary) {
+    return "";
+  }
+
+  return `<section class="panel hosted-model-panel">
+    <h2>Hosted model assistance</h2>
+    ${renderFactTable([
+      ["Status", summary.status],
+      ["Available tools", summary.availableTools.length > 0 ? summary.availableTools.join(" / ") : "none"],
+      ["Missing tools", summary.missingTools.length > 0 ? summary.missingTools.join(" / ") : "none"],
+      ["SAIA items", summary.assistanceItems],
+      ["Role", "advisory only; deterministic grader decides pass/fail"],
       ["Notes", summary.notes]
     ])}
   </section>`;
@@ -506,6 +524,7 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
         </section>
         ${renderLiveProofSummary(bundle)}
         ${renderLiveSecurityProofSummary(bundle)}
+        ${renderHostedModelSummary(bundle.liveSecurityProofSummary?.hostedModels ?? bundle.liveProofSummary?.hostedModels)}
         ${renderLiveSecurityReadiness(bundle)}
         ${renderLiveSecurityKit(bundle)}
       </div>
@@ -536,6 +555,7 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId): string => 
       <span>${value(summary.proofStory)}</span>
       <span>${value(summary.securityStory)}</span>
       <span>${value(summary.kitStory)}</span>
+      <span>${value(summary.hostedModelStory)}</span>
     </div>
   </aside>`;
 };

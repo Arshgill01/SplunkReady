@@ -4364,6 +4364,73 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Hosted Model Status Evidence
+
+Scope:
+- Make hosted-model/SAIA status explicit in live proof artifacts and the Vite Live Connect view.
+- Do not invent SAIA usage when the live proof has no SPL-rule query violation.
+- Keep deterministic grader rules authoritative; hosted-model output remains advisory evidence only.
+
+Files expected/touched:
+- `src/cli.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- `live-proof-summary.json` and `live-security-proof-summary.json` now include a `hostedModels` object derived from actual proof artifacts:
+  - `status`;
+  - `availableTools`;
+  - `missingTools`;
+  - `assistanceItems`;
+  - explanatory `notes`.
+- The status is `invoked` only when `policy-patch.json` contains `splAssistance`.
+- The status is `available_not_applicable` when `saia_explain_spl` and `saia_optimize_spl` are present in the contract but the proof produced no SPL-rule violations with query evidence.
+- The Vite artifact loader validates the optional hosted-model summary.
+- Live Connect now renders a `Hosted model assistance` panel showing SAIA availability, item count, and the advisory-only role.
+- The sidebar summary now includes hosted-model status so a live-green proof does not silently hide the Hosted Models prize path.
+
+Live artifact refresh:
+- Rebuilt `dist` before rerunning the CLI so `npm run splunkready` used the updated implementation.
+- Reran `live-security-proof` against the configured live MCP endpoint.
+- Refreshed `artifacts/live-security-ui`.
+- Current live proof hosted-model state:
+  - `availableTools`: `saia_explain_spl`, `saia_optimize_spl`;
+  - `missingTools`: none;
+  - `assistanceItems`: 0;
+  - `status`: `available_not_applicable`;
+  - reason: the live fail-to-pass proof failed on KO/EVD behavior, not an SPL-rule query violation.
+
+Product impact:
+- The UI now tells the truth about Hosted Models instead of looking accidentally empty.
+- The mocked live proof test still exercises the `invoked` path, proving the summary can carry real SAIA explain/optimize evidence when SPL violations occur.
+- This strengthens the Hosted Models story without making hosted models decide readiness.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 28% | No new live capability, but less ambiguity in the proof UI. |
+| Platform & DX | 69% | 70% | Live proof artifacts now carry a clearer machine-readable hosted-model status. |
+| Security | 39% | 39% | Security behavior unchanged. |
+| Best Use of MCP Server | 79% | 79% | MCP behavior unchanged. |
+| Hosted Models | 53% | 55% | SAIA availability/non-applicability is now explicit; invoked path is tested. |
+| Developer Tools | 64% | 65% | Summary JSON is more consumable for CI/UI integrations. |
+
+Next directions to consider in future runs:
+- Generate a separate SAIA proof bundle where a real or fixture SPL-rule violation invokes hosted-model explain/optimize and can be loaded in the Vite UI.
+- Avoid forcing the flagship live security proof to produce an SPL violation just to show SAIA; that would weaken the honest fail-to-pass story.
+- Consider a small multi-artifact selector only if it helps switch between flagship live proof and SAIA proof without becoming a dashboard.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused UI/CLI tests, full repo verification, UI production build, TypeScript build, live proof refresh, UI bundle refresh, browser snapshot, screenshot, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Flagship Security Proof Green
 
 Scope:

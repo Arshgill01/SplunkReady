@@ -3947,3 +3947,63 @@ Open risks:
 
 - The live Splunk index still contains duplicate imported rows from earlier setup attempts; the generated saved search now deduplicates them for the proof path.
 - Local TLS remains a local-only self-signed certificate workaround.
+
+## 2026-06-03 - Phase Live Hosted Model Status Evidence
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts`
+- `npx vitest run tests/cli/flow.test.ts -t "runs the flagship live security proof"`
+- `npm run check`
+- `npm run ui:build`
+- `git diff --check`
+- `npm run build`
+- `set -a; source ./.splunkready-live.env; set +a; SPLUNKREADY_LLM_ENABLED=true GEMINI_MODEL=gemini-3.1-flash-lite NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-proof --out artifacts/live-security-proof --json`
+- `node -e "const fs=require('fs'); for (const f of ['artifacts/live-security-proof/live-proof-summary.json','artifacts/live-security-proof/live-security-proof-summary.json']) { const j=JSON.parse(fs.readFileSync(f,'utf8')); console.log(f); console.log(JSON.stringify(j.hostedModels,null,2)); }"`
+- `npm run splunkready -- live-security-ui-bundle --proof-dir artifacts/live-security-proof --security-check-dir artifacts/live-security-proof --security-kit-dir artifacts/live-security-kit --out artifacts/live-security-ui --json`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `bash "$PWCLI" open 'http://127.0.0.1:5173/#live-connect'`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/hosted-model-live-connect.png --full-page`
+
+Result:
+
+- PASS for focused UI tests:
+  - 8 tests passed.
+- PASS for focused flagship live security proof CLI test:
+  - 1 selected test passed;
+  - 20 tests skipped by filter;
+  - test asserts `hostedModels.status: "invoked"`, three assistance items, and SAIA tool availability in mocked live proof.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 685 project files;
+  - 38 test files;
+  - 206 tests.
+- PASS for production UI build.
+- PASS for `git diff --check`.
+- PASS for TypeScript build.
+- PASS for live security proof against the configured live MCP endpoint:
+  - command status `PASS`;
+  - generated `live-proof-summary.json`;
+  - generated `live-security-proof-summary.json`.
+- PASS for hosted-model summary inspection:
+  - both live proof summaries show `availableTools` as `saia_explain_spl` and `saia_optimize_spl`;
+  - `missingTools` is empty;
+  - `assistanceItems` is `0`;
+  - `status` is `available_not_applicable`;
+  - notes explain that the current live proof produced no SPL-rule violations with query evidence.
+- PASS for refreshed Vite UI bundle.
+- PASS for browser snapshot:
+  - sidebar shows `available_not_applicable`;
+  - Live Connect renders `Hosted model assistance`;
+  - panel shows both SAIA tool names;
+  - panel shows advisory-only role;
+  - panel shows the non-applicability explanation.
+- PASS for full-page screenshot:
+  - saved to `output/playwright/hosted-model-live-connect.png`.
+
+Open risks:
+
+- The flagship live proof still does not invoke SAIA because its natural LLM failure is KO/EVD rather than SPL. This is honest but should be complemented by a separate SAIA proof bundle before submission.
+- Local TLS still uses `NODE_TLS_REJECT_UNAUTHORIZED=0` for the local Splunk trial.

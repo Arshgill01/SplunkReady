@@ -17,6 +17,18 @@ import { z } from "zod";
 
 export type ArtifactFetch = (input: string) => Promise<Response>;
 
+const hostedModelSummarySchema = z
+  .object({
+    status: z.enum(["invoked", "available_not_applicable", "unavailable"]),
+    availableTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+    missingTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+    assistanceItems: z.number().int().nonnegative(),
+    notes: z.string().min(1)
+  })
+  .strict();
+
+export type HostedModelSummary = z.infer<typeof hostedModelSummarySchema>;
+
 const liveProofSummarySchema = z
   .object({
     status: z.string().min(1),
@@ -46,6 +58,7 @@ const liveProofSummarySchema = z
       .strict(),
     failToPass: z.boolean(),
     readyWithoutPatch: z.boolean(),
+    hostedModels: hostedModelSummarySchema.optional(),
     notes: z.string().min(1)
   })
   .strict();
@@ -76,6 +89,7 @@ const liveSecurityProofSummarySchema = z
       .strict(),
     failToPass: z.boolean(),
     readyAfterPatch: z.boolean(),
+    hostedModels: hostedModelSummarySchema.optional(),
     notes: z.string().min(1)
   })
   .strict();
@@ -317,6 +331,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   proofStory: string;
   securityStory: string;
   kitStory: string;
+  hostedModelStory: string;
 } => {
   const receipt = bundle.receipt;
   const contract = bundle.liveSmokeContract ?? bundle.contract;
@@ -350,6 +365,10 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
       ? bundle.liveSecurityKit.operatorActionRequired
         ? "operator kit available"
         : "kit loaded"
-      : "kit not loaded"
+      : "kit not loaded",
+    hostedModelStory:
+      bundle.liveSecurityProofSummary?.hostedModels?.status ??
+      bundle.liveProofSummary?.hostedModels?.status ??
+      (bundle.policyPatch?.splAssistance?.length ? "invoked" : "not loaded")
   };
 };

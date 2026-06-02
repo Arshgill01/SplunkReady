@@ -1304,12 +1304,24 @@ describe("SplunkReady CLI flow", () => {
       readyAfterPatch: boolean;
       before: { verdict: string; violations: number };
       after: { verdict: string; score: number; evidenceRefs: string[] };
+      hostedModels: {
+        status: string;
+        assistanceItems: number;
+        availableTools: string[];
+        missingTools: string[];
+      };
     };
     const uiSummary = JSON.parse(await readFile(join(outDir, "live-proof-summary.json"), "utf8")) as {
       mutation: boolean;
       derivedMission: { strategy: string; missionId: string };
       failToPass: boolean;
       readyWithoutPatch: boolean;
+      hostedModels: {
+        status: string;
+        assistanceItems: number;
+        availableTools: string[];
+        missingTools: string[];
+      };
     };
 
     expect(readiness).toMatchObject({
@@ -1345,6 +1357,12 @@ describe("SplunkReady CLI flow", () => {
           "live-evt-118",
           "live-evt-141"
         ]
+      },
+      hostedModels: {
+        status: "invoked",
+        assistanceItems: 3,
+        availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+        missingTools: []
       }
     });
     expect(uiSummary).toMatchObject({
@@ -1354,7 +1372,13 @@ describe("SplunkReady CLI flow", () => {
         missionId: "mission-security-lateral-movement-readiness"
       },
       failToPass: true,
-      readyWithoutPatch: false
+      readyWithoutPatch: false,
+      hostedModels: {
+        status: "invoked",
+        assistanceItems: 3,
+        availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+        missingTools: []
+      }
     });
     expect(mcp.calls.map((call) => call.params.name)).toEqual(
       expect.arrayContaining(["splunk_run_saved_search", "saia_explain_spl", "saia_optimize_spl"])
