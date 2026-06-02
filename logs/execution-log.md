@@ -3811,3 +3811,27 @@ Reviewer findings:
 
 Result:
 - PASS for submission-copy refresh after deterministic copy audit.
+
+## 2026-06-02 - Phase Live Move 9 Live Path Integration Tests
+
+Scope:
+- Add a dedicated live adapter integration test file that exercises the real HTTP transport against a local mock MCP server.
+- Cover MCP output envelope variants used by live servers.
+- Cover timeout behavior and ensure transport failures are wrapped as retryable `SplunkAdapterError` values.
+- Keep the suite independent of external Splunk credentials and avoid any live Splunk mutation.
+
+Files changed:
+- `tests/adapters/live.integration.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- The test server accepts JSON-RPC `tools/call` requests over local HTTP.
+- The suite verifies `result.structuredContent`, `result.output`, and `result.content[].text` extraction.
+- The suite verifies saved-search row/evidence normalization and timeout error wrapping with code `LIVE_ADAPTER_TRANSPORT_ERROR`.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No new reviewer inbox file exists for this Phase Live move.
+
+Result:
+- PASS for the live integration test slice after focused verification.

@@ -3243,3 +3243,21 @@ Result:
 Open risks:
 
 - The copy now references live MCP proof and the remaining live passing-receipt blocker; final Devpost should be updated again after operator-approved live demo content is ready.
+
+## 2026-06-02 - Phase Live Move 9 Live Path Integration Tests
+
+Commands:
+
+- `npx vitest run tests/adapters/live.integration.test.ts tests/adapters/live.test.ts`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS.
+- Focused live adapter tests passed: 2 files / 13 tests.
+- Full check passed: scaffold verifier reported 85 waves and 557 project files; Vitest passed 36 files / 177 tests.
+- `git diff --check` passed.
+
+Open risks:
+
+- These tests exercise local HTTP MCP behavior, not the user's real Splunk MCP endpoint. Real endpoint proof remains in local artifacts and still needs compatible live demo content for a passing security receipt.
