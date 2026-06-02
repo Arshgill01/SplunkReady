@@ -671,6 +671,41 @@ describe("SplunkReady CLI flow", () => {
     });
   });
 
+  it("blocks unsafe agent queries before Splunk execution when evaluate firewall is enabled", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-cli-firewall-"));
+
+    await expect(runCli(["compile", "--out", outDir])).resolves.toMatchObject({
+      stdout: expect.stringContaining("PASS compile")
+    });
+    await expect(runCli(["evaluate", "--out", outDir, "--firewall"])).rejects.toMatchObject({
+      stderr: expect.stringContaining("FIREWALL_POLICY_BLOCKED")
+    });
+    expect(await exists(join(outDir, "trace-before.json"))).toBe(false);
+  });
+
+  it("allows a compliant policy-backed rerun when rerun firewall is enabled", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-cli-rerun-firewall-"));
+
+    await expect(runCli(["compile", "--out", outDir])).resolves.toMatchObject({
+      stdout: expect.stringContaining("PASS compile")
+    });
+    await expect(runCli(["evaluate", "--out", outDir])).resolves.toMatchObject({
+      stdout: expect.stringContaining("PASS evaluate")
+    });
+    await expect(runCli(["receipt", "--out", outDir])).resolves.toMatchObject({
+      stdout: expect.stringContaining("policy-patch.json")
+    });
+    await expect(runCli(["rerun", "--out", outDir, "--firewall"])).resolves.toMatchObject({
+      stdout: expect.stringContaining("receipt-after-001.json")
+    });
+
+    const afterReceipt = JSON.parse(await readFile(join(outDir, "receipt-after-001.json"), "utf8")) as {
+      verdict: string;
+      score: number;
+    };
+    expect(afterReceipt).toMatchObject({ verdict: "READY", score: 100 });
+  });
+
   it("skips live smoke cleanly when credentials are absent", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-smoke-skip-"));
 

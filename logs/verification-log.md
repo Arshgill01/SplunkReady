@@ -3338,3 +3338,28 @@ Open risks:
 - Live artifacts are local and intentionally uncommitted.
 - `NODE_TLS_REJECT_UNAUTHORIZED=0` is still required for the local self-signed Splunk endpoint; this is acceptable for local proof but not production guidance.
 - The green live mission proves real LLM+MCP grading, but it is a platform `_internal` mission, not the flagship security fail -> patch -> pass story.
+
+## 2026-06-02 - Phase Live Move 16 Live Agent Firewall Gateway
+
+Commands:
+
+- `npx vitest run tests/gateway/firewall.test.ts tests/cli/flow.test.ts`
+- `npm run build`
+- `npm run build && npx vitest run tests/gateway/firewall.test.ts tests/cli/flow.test.ts`
+- `npx vitest run tests/gateway/firewall.test.ts tests/cli/flow.test.ts`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS after correction.
+- Initial focused run passed gateway tests but failed the CLI suite setup because TypeScript build failed in `src/gateway/firewall.ts`.
+- `npm run build` exposed TypeScript inference errors in firewall violation array construction.
+- After adding explicit `FirewallViolation[]` annotations, build passed and focused gateway/CLI tests passed: 2 files / 16 tests.
+- After adding `rerun --firewall` coverage, focused gateway/CLI tests passed: 2 files / 17 tests.
+- Full check passed: scaffold verifier reported 85 waves and 579 project files; Vitest passed 37 files / 189 tests.
+- `git diff --check` passed.
+
+Open risks:
+
+- The firewall intentionally blocks restricted/sensitive indexes without mission-specific exceptions because its constructor uses `EnvironmentContract` and `AgentPolicy`, not a mission. Mission-specific readiness remains the grader's responsibility.
+- The firewall currently protects `splunk_run_query`; saved searches are delegated as read-only validated objects. If future missions allow risky saved-search names or tokens, add saved-search policy checks.

@@ -4002,3 +4002,59 @@ Reviewer findings:
 
 Result:
 - PASS for the live-green proof path after focused tests and a successful live MCP/Gemini run.
+
+## 2026-06-02 - Phase Live Move 16 Live Agent Firewall Gateway
+
+Scope:
+- Add a pre-execution policy gateway that wraps a fixture or live `SplunkAccessAdapter`.
+- Enforce the compiled environment contract and agent policy before `splunk_run_query` reaches Splunk.
+- Keep the gateway read-only and adapter-compatible; fixture and live mode still share the same boundary after wrapping.
+- Add `--firewall` to `evaluate` and `rerun` only. Other commands remain unchanged.
+
+Files changed:
+- `src/gateway/firewall.ts`
+- `src/cli.ts`
+- `tests/gateway/firewall.test.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- Added `SplunkFirewallGateway`, a `SplunkAccessAdapter` wrapper.
+- The gateway delegates all read-only inventory, knowledge, saved-search, SAIA, and compliant query calls to the underlying adapter.
+- `runQuery` is blocked before Splunk execution when the query:
+  - contains forbidden SPL patterns or commands (`SPL-001`);
+  - references unknown indexes, sourcetypes, fields, or non-canonical field aliases (`SPL-003`);
+  - references restricted or sensitive indexes (`SPL-005`);
+  - is disallowed by the compiled policy tool allowlist (`SAF-003`).
+- Firewall blocks throw a `SplunkAdapterError` with code `FIREWALL_POLICY_BLOCKED`, preserving the CLI's existing adapter-error formatting.
+- `evaluate --firewall` now blocks the intentionally unsafe naive first query before `trace-before.json` is written.
+- `rerun --firewall` allows the compliant policy-backed fixture rerun to complete and produce a READY receipt.
+
+Product impact:
+- SplunkReady now has an enforcement-mode story, not only an after-the-fact grader.
+- This strengthens the tagline: agents can be certified and blocked before unsafe SPL reaches production Splunk.
+- The deterministic grader remains authoritative for receipts; the firewall is a pre-execution policy proxy derived from the same contract/policy spine.
+
+Estimated prize trajectory after Move 16:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 19% | 21% | Adds a concrete protective product capability beyond reporting. |
+| Platform & DX | 41% | 45% | `--firewall` turns SplunkReady into a CI/runtime gate developers can understand quickly. |
+| Security | 20% | 23% | Unsafe SPL is blocked before Splunk execution, strengthening the security story without becoming a SOC copilot. |
+| Best Use of MCP Server | 64% | 65% | Gateway protects MCP `splunk_run_query` calls, but live proof remains the bigger evidence point. |
+| Hosted Models | 45% | 45% | No SAIA/UI change in this move. |
+| Developer Tools | 36% | 39% | Adapter-compatible gateway is reusable by external agents and CI flows. |
+
+Next direction:
+- Move 14 is now the most useful follow-up if we want hosted-model evidence surfaced cleanly: render SAIA explanation/optimized SPL in the Vite UI from the existing policy patch data.
+- A live mission generator remains a possible next core move if the goal is to turn the live-green platform proof into richer live security proof without manually installing demo content.
+- Do not add more generic QA waves; next work should add visible product capability or live proof.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No new reviewer inbox file exists for this Phase Live move.
+
+Result:
+- PASS for focused gateway/CLI validation. Full verification will be recorded in the verification log after the full suite runs.

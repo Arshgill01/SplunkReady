@@ -23,6 +23,7 @@ import { runRuleEngine, type GraderRule } from "./grader/engine.js";
 import { createSavedSearchRules } from "./grader/saved-search.js";
 import { scoreMissionReadiness } from "./grader/scoring.js";
 import { createSplStructuralRules } from "./grader/spl.js";
+import { SplunkFirewallGateway } from "./gateway/firewall.js";
 import { parseMissionDefinition, type MissionDefinition } from "./missions/dsl.js";
 import { compileAgentPolicy, type AgentPolicy } from "./policy/compiler.js";
 import { generatePolicyPatch } from "./policy/patch.js";
@@ -68,6 +69,7 @@ interface CliOptions {
   agentVersion: string;
   agentModel: string;
   candidateLimit: number;
+  firewall: boolean;
   json: boolean;
 }
 
@@ -93,12 +95,12 @@ const usage = `SplunkReady CLI
 
 Commands:
   compile   --mode fixture|live --fixture <path> --mission <path> --out <dir> [--json]
-  evaluate  --mode fixture|live --out <dir> [--json]
+  evaluate  --mode fixture|live --out <dir> [--firewall] [--json]
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   live-candidates --out <dir> [--candidate-limit <n>]
   receipt   --out <dir> [--phase before|after] [--json]
-  rerun     --mode fixture|live --out <dir> [--json]
+  rerun     --mode fixture|live --out <dir> [--firewall] [--json]
   live-smoke --out <dir> [--require-live true|false]
   demo      --mode fixture|live --out <dir>
 
@@ -123,6 +125,7 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     agentVersion: "unversioned",
     agentModel: "",
     candidateLimit: 12,
+    firewall: false,
     json: false
   };
 
@@ -132,6 +135,11 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
 
     if (flag === "--json") {
       options.json = true;
+      continue;
+    }
+
+    if (flag === "--firewall") {
+      options.firewall = true;
       continue;
     }
 
@@ -370,6 +378,14 @@ const createSplunkAccessAdapter = async (
   return createFixtureSplunkAccessAdapter(fixture);
 };
 
+const maybeWrapFirewall = (
+  adapter: SplunkAccessAdapter,
+  contract: EnvironmentContract,
+  policy: AgentPolicy,
+  options: CliOptions
+): SplunkAccessAdapter =>
+  options.firewall ? new SplunkFirewallGateway(adapter, contract, policy) : adapter;
+
 const compileCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
   const adapter = await createSplunkAccessAdapter(options, env);
   const contract = await compileEnvironmentContract(adapter, {
@@ -567,9 +583,11 @@ const liveCandidatesCommand = async (options: CliOptions, env: NodeJS.ProcessEnv
 };
 
 const evaluateCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const adapter = await createSplunkAccessAdapter(options, env);
+  const baseAdapter = await createSplunkAccessAdapter(options, env);
   const contract = await loadContract(options.out);
   const mission = await loadMission(options.mission);
+  const policy = options.firewall ? await readJson<AgentPolicy>(join(options.out, "agent-policy.json"), "agent policy") : undefined;
+  const adapter = policy ? maybeWrapFirewall(baseAdapter, contract, policy, options) : baseAdapter;
   const agent = llmEnabled(env) ? createLlmSpecimenAgent(contract, options, env) : new NaiveSpecimenAgent();
   const run = await agent.run({ mission, adapter });
   const violations = gradeTrace(contract, mission, run.traceEvents);
@@ -717,10 +735,11 @@ const receiptCommand = async (
 };
 
 const rerunCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const adapter = await createSplunkAccessAdapter(options, env);
+  const baseAdapter = await createSplunkAccessAdapter(options, env);
   const contract = await loadContract(options.out);
   const mission = await loadMission(options.mission);
   const policy = await readJson<AgentPolicy>(join(options.out, "agent-policy.json"), "agent policy");
+  const adapter = maybeWrapFirewall(baseAdapter, contract, policy, options);
   const agent = llmEnabled(env) ? createLlmSpecimenAgent(contract, options, env) : new NaiveSpecimenAgent();
   const run = await agent.run({ mission, adapter, policy });
   const violations = gradeTrace(contract, mission, run.traceEvents);
