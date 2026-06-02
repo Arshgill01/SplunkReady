@@ -4482,6 +4482,58 @@ Reviewer findings:
 Result:
 - Source-of-truth docs were corrected from inspected local artifacts; verification is recorded in `logs/verification-log.md`.
 
+## 2026-06-03 - Phase Live Architecture Decision Lock
+
+Scope:
+- Close the missing Move 12 architecture lock.
+- Prevent future compactions or agents from reverting to the old fixture-first/static-shell mental model.
+
+Files expected/touched:
+- `DECISIONS.md`
+- `MANIFEST.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `D008 Real LLM Specimen`.
+- Added `D009 Live Mode Required For Flagship Proof`.
+- Added `D010 SAIA Tools Activated But Non-Authoritative`.
+- Added `D011 UI Promoted To Artifact App`.
+- Updated `MANIFEST.md` status from Wave 84 plus Phase Live Move 6 to current Phase Live implementation state.
+- Updated manifest descriptions for:
+  - green live proof status;
+  - operator-owned live setup path;
+  - Vite artifact UI.
+
+Product impact:
+- The source-of-truth architecture now matches the implementation:
+  - the LLM is the graded subject, not the grader;
+  - strict live security proof is the flagship evidence path;
+  - SAIA is advisory and non-authoritative;
+  - the Vite app is an artifact inspector, not a generic dashboard or assistant.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 28% | Architecture documentation only. |
+| Platform & DX | 71% | 72% | Fewer future regressions around the live proof and UI positioning. |
+| Security | 39% | 39% | Security runtime unchanged. |
+| Best Use of MCP Server | 79% | 79% | MCP runtime unchanged. |
+| Hosted Models | 53% | 53% | Hosted-model runtime unchanged; live SAIA entitlement remains separate. |
+| Developer Tools | 66% | 67% | Decision lock improves handoff quality and product consistency. |
+
+Next directions to consider in future runs:
+- Build the proof audit command so proof directories can be checked mechanically instead of relying on logs.
+- When the user provides SAIA-capable MCP access, rerun `hosted-model-proof --mode live` and refresh the UI bundle.
+- Keep Devpost/video/screenshots deferred until the user brings that work back into scope.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Architecture source-of-truth updated; verification is recorded in `logs/verification-log.md`.
+
 ## 2026-06-03 - Phase Live Receipt Policy Simulator
 
 Scope:

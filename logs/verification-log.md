@@ -4242,3 +4242,43 @@ Open risks:
 - The green live proof artifacts are local and untracked; do not commit them unless a redacted artifact set is explicitly requested.
 - Chronological logs still contain older blocked states by design. The new execution-log entry supersedes them.
 - Live hosted-model proof remains separate from live security proof: the local MCP identity still returns `Action forbidden` for `saia_explain_spl` / `saia_optimize_spl`.
+
+## 2026-06-03 - Phase Live Architecture Decision Lock
+
+Commands:
+
+- `git status --short --branch`
+- `sed -n '1,220p' DECISIONS.md`
+- `sed -n '1,90p' MANIFEST.md`
+- `rg -n "D008|D009|D010|D011|Phase Live|LLM specimen|live-security-proof|hosted-model-proof|Vite" DECISIONS.md MANIFEST.md docs logs/execution-log.md src/cli.ts ui package.json`
+- `rg -n "D008 Real LLM Specimen|D009 Live Mode Required For Flagship Proof|D010 SAIA Tools Activated But Non-Authoritative|D011 UI Promoted To Artifact App|implemented through Phase Live|ui/" DECISIONS.md MANIFEST.md`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for worktree orientation:
+  - branch `splunkready-build` is aligned with `origin/splunkready-build`;
+  - only local untracked `artifacts/` and `output/` existed before this documentation lock.
+- PASS for gap confirmation:
+  - `DECISIONS.md` stopped at `D007`;
+  - `MANIFEST.md` status still said Wave 84 plus Phase Live Move 6.
+- PASS for architecture lock update:
+  - `D008 Real LLM Specimen` appended;
+  - `D009 Live Mode Required For Flagship Proof` appended;
+  - `D010 SAIA Tools Activated But Non-Authoritative` appended;
+  - `D011 UI Promoted To Artifact App` appended;
+  - manifest status now describes current Phase Live implementation.
+- PASS for targeted decision/manifest assertions.
+- PASS for `git diff --check`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 710 project files;
+  - 38 test files;
+  - 210 tests.
+
+Open risks:
+
+- This is a source-of-truth documentation lock, not new runtime behavior.
+- Live hosted-model proof remains gated by SAIA-capable MCP access.

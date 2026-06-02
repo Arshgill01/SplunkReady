@@ -1,8 +1,8 @@
 # SplunkReady Scaffold Manifest
 
-Status: implemented through Wave 84 Splunk-derived readiness profile plus Phase Live Move 6 fixture expansion on `splunkready-build`.
+Status: implemented through Phase Live on `splunkready-build`: live Splunk MCP proof, Gemini-backed LLM specimen, strict flagship `live-security-proof`, Vite artifact UI, expanded fixtures, external trace SDK example, CI JSON gate, firewall gateway, policy simulator, and local proof-bundle selector.
 
-This repository turns the locked SplunkReady idea into an implemented, fixture-first certification harness that can also grade externally captured agent traces. The scaffold process remains in force for future continuation waves.
+This repository turns the locked SplunkReady idea into an implemented certification harness that can grade fixture traces, externally captured traces, and live Splunk MCP LLM-agent traces through the same contracts. The scaffold process remains in force for future continuation waves, but Phase Live decisions in `DECISIONS.md` supersede older fixture-first implementation assumptions where they conflict.
 
 ## Product Lock
 
@@ -44,10 +44,11 @@ This repository turns the locked SplunkReady idea into an implemented, fixture-f
 - `docs/grader-rule-catalog.md`: deterministic rule IDs and pass/fail boundaries.
 - `docs/golden-traces.md`: reference failure/pass traces for future tests and demo.
 - `docs/fixture-live-parity.md`: fixture/live adapter parity contract.
-- `docs/live-proof-gap.md`: current live MCP/Gemini proof status and remaining passing-live-mission gap.
-- `docs/live-demo-data-plan.md`: operator-approved options for turning live MCP/Gemini trace proof into a passing live readiness demo.
+- `docs/live-proof-gap.md`: current live MCP/Gemini proof status, including the green flagship live security proof.
+- `docs/live-demo-data-plan.md`: operator-approved setup and proof paths for live security readiness without SplunkReady mutation.
 - `docs/live-setup-checklist.md`: Phase Live checklist for producing the required real Splunk MCP live-smoke proof.
 - `docs/llm-specimen-agent.md`: env-gated Gemini specimen agent flow for model-produced traces.
+- `ui/`: Vite artifact app for inspecting proof bundles, receipts, traces, live security readiness, hosted-model status, and policy simulation.
 - `fixtures/acme-soc-dev/adapter-fixture.json`: expanded fixture deployment with security, CloudTrail, network, and platform-latency evidence paths.
 - `docs/follow-up-gap-closure-report.md`: current real/fixture/live truth table and consolidation evidence.
 - `docs/preflight-card-ui-implementation-plan.md`: Minimax-derived plan now implemented in the routed Pre-Flight Card replay UI.
