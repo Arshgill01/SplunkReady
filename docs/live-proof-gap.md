@@ -61,7 +61,19 @@ export GEMINI_MODEL=gemini-3.1-flash-lite
 NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-proof --out artifacts/live-proof --candidate-limit 12
 ```
 
-The command compiles the live contract, runs the bounded candidate scan, writes `live-derived-mission.json`, then evaluates and reruns against that generated mission. In tests, this path produces normal Readiness Receipt artifacts from a saved-search candidate with rows. It has not yet been rerun against the user's real Splunk endpoint in this turn.
+The command compiles the live contract, runs the bounded candidate scan, writes `live-derived-mission.json`, then evaluates and reruns against that generated mission. In tests, this path produces normal Readiness Receipt artifacts from a saved-search candidate with rows.
+
+The command was also rerun against the user's real Splunk MCP endpoint after implementation:
+
+- strategy: `internal-query-fallback`
+- candidates checked: `12`
+- saved-search candidates with rows: `0`
+- mission: `mission-live-internal-query-readiness`
+- before receipt: `READY`, score `100`, violations `0`
+- after receipt: `READY`, score `100`, violations `0`
+- `live-proof-summary.json`: `readyWithoutPatch: true`, `failToPass: false`
+
+This proves live certification with real MCP, Gemini, query execution, evidence refs, and receipts. It does not prove the flagship fail-to-pass patch loop because the generated `_internal` mission was already safe enough before policy injection.
 
 ## Remaining Gap
 
@@ -83,6 +95,6 @@ To produce the final live fail-to-pass demo, choose one of these paths:
 1. Prepare the live Splunk deployment with the security mission's expected saved search and event data, after explicit operator approval. SplunkReady must not auto-mutate Splunk.
 2. Run `live-proof` against the current live endpoint and use the derived mission if the deployment can produce rows through an existing saved search or `_internal`.
 
-Until one of those is run successfully against the real endpoint, the honest claim is:
+Until the security content path is run successfully against the real endpoint, the honest claim is:
 
-> SplunkReady has live MCP proof, live LLM trace proof, and a tested live-derived proof command, but not yet a passing live security-readiness receipt.
+> SplunkReady has live MCP proof, live LLM trace proof, and a passing live-derived `_internal` readiness receipt, but not yet a passing live security-readiness receipt or live fail-to-pass patch loop.

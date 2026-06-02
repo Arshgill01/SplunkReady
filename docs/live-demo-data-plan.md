@@ -57,7 +57,8 @@ NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-proof --out artifacts
 2. scan bounded read-only saved-search candidates;
 3. write `live-derived-mission.json` and `live-derived-readiness-profile.json`;
 4. replace the standard mission/policy/profile artifacts with the generated mission;
-5. run evaluate -> receipt -> rerun against live mode.
+5. run evaluate -> receipt -> rerun against live mode;
+6. write `live-proof-summary.json` with `failToPass` and `readyWithoutPatch` flags.
 
 If a candidate saved search returns rows, the generated mission expects saved-search discovery and saved-search execution. If no saved search returns rows but `_internal` is available, the generated mission falls back to a bounded raw-row `_internal` query proof. The command does not mutate Splunk.
 

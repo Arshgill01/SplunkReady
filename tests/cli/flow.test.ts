@@ -962,7 +962,8 @@ describe("SplunkReady CLI flow", () => {
           join(outDir, "receipt-before-001.json"),
           join(outDir, "policy-patch.json"),
           join(outDir, "trace-after.json"),
-          join(outDir, "receipt-after-001.json")
+          join(outDir, "receipt-after-001.json"),
+          join(outDir, "live-proof-summary.json")
         ])
       });
     } finally {
@@ -990,6 +991,14 @@ describe("SplunkReady CLI flow", () => {
       verdict: string;
       score: number;
     };
+    const summary = JSON.parse(await readFile(join(outDir, "live-proof-summary.json"), "utf8")) as {
+      mutation: boolean;
+      derivedMission: { strategy: string; missionId: string };
+      before: { verdict: string; score: number; violations: number };
+      after: { verdict: string; score: number; violations: number };
+      failToPass: boolean;
+      readyWithoutPatch: boolean;
+    };
 
     expect(candidateReport.derivedMission).toMatchObject({
       strategy: "saved-search-with-evidence",
@@ -1009,6 +1018,17 @@ describe("SplunkReady CLI flow", () => {
     expect(beforeReceipt.verdict).toBe("NOT READY");
     expect(beforeReceipt.violations.length).toBeGreaterThan(0);
     expect(afterReceipt).toMatchObject({ verdict: "READY", score: 100 });
+    expect(summary).toMatchObject({
+      mutation: false,
+      derivedMission: {
+        strategy: "saved-search-with-evidence",
+        missionId: "mission-live-saved-search-readiness"
+      },
+      before: { verdict: "NOT READY", violations: beforeReceipt.violations.length },
+      after: { verdict: "READY", score: 100, violations: 0 },
+      failToPass: true,
+      readyWithoutPatch: false
+    });
     expect(gemini.prompts).toHaveLength(4);
     expect(mcp.calls.map((call) => call.params.name)).toEqual(
       expect.arrayContaining(["splunk_run_saved_search", "saia_explain_spl", "saia_optimize_spl"])

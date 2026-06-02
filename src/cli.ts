@@ -656,6 +656,36 @@ const liveProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = pr
   const evaluateArtifacts = await evaluateCommand(runOptions, env);
   const receiptArtifacts = await receiptCommand(runOptions, env);
   const rerunArtifacts = await rerunCommand(runOptions, env);
+  const beforeReceipt = readinessReceiptSchema.parse(
+    await readJson(join(options.out, "receipt-before-001.json"), "before receipt")
+  );
+  const afterReceipt = readinessReceiptSchema.parse(
+    await readJson(join(options.out, "receipt-after-001.json"), "after receipt")
+  );
+  const summaryPath = join(options.out, "live-proof-summary.json");
+
+  await writeJson(summaryPath, {
+    status: "PASS",
+    mode: "live",
+    mutation: false,
+    derivedMission: candidateReport.derivedMission,
+    before: {
+      verdict: beforeReceipt.verdict,
+      score: beforeReceipt.score,
+      violations: beforeReceipt.violations.length
+    },
+    after: {
+      verdict: afterReceipt.verdict,
+      score: afterReceipt.score,
+      violations: afterReceipt.violations.length
+    },
+    failToPass: beforeReceipt.verdict === "NOT READY" && afterReceipt.verdict === "READY",
+    readyWithoutPatch: beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY",
+    notes:
+      beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY"
+        ? "The live-derived mission was already ready before policy injection; this proves live certification but not the fail-to-pass patch loop."
+        : "The live-derived mission exercised the receipt rerun flow."
+  });
 
   return [
     ...new Set([
@@ -664,7 +694,8 @@ const liveProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = pr
       ...compileArtifacts,
       ...evaluateArtifacts,
       ...receiptArtifacts,
-      ...rerunArtifacts
+      ...rerunArtifacts,
+      summaryPath
     ])
   ];
 };

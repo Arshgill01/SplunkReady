@@ -4252,27 +4252,39 @@ What changed:
   - runs evaluate -> receipt -> rerun in live mode.
 - Updated generated saved-search missions to allow `splunk_run_query` as an executable pre-policy path while still expecting knowledge-object discovery and saved-search execution for readiness.
 - Added a mock MCP/Gemini CLI test proving `live-proof` produces `NOT READY` before policy and `READY` after policy from a derived saved-search mission.
-- Updated live docs and README with the new command while clearly stating that the real endpoint still needs a fresh live-proof run before claiming a passing live-derived receipt.
+- Added `live-proof-summary.json` so command success is distinguished from receipt story shape (`failToPass` versus `readyWithoutPatch`).
+- Updated live docs and README with the new command and the real endpoint result.
+- Reran `live-proof` against the user's configured live endpoint after the summary artifact was added.
 
 Product impact:
 - A Splunk developer can now move from "scan my deployment" to "certify the generated mission" with one command.
 - The MCP prize story improves because live inventory and saved-search execution now feed an end-to-end receipt path, not just a diagnostic report.
 - This preserves the non-mutation rule: the command only reads inventory, runs bounded saved searches/queries, and writes local artifacts.
+- The real endpoint now has a passing live-derived `_internal` readiness receipt. It is useful proof, but explicitly labeled `readyWithoutPatch` rather than misrepresented as the flagship patch loop.
+
+Real endpoint result:
+- Output directory: `artifacts/live-proof-guided` (local, untracked).
+- Derived strategy: `internal-query-fallback`.
+- Candidates checked: `12`.
+- Saved-search candidates with rows: `0`.
+- Before receipt: `READY`, score `100`, violations `0`.
+- After receipt: `READY`, score `100`, violations `0`.
+- Summary: `readyWithoutPatch: true`, `failToPass: false`.
 
 Estimated prize trajectory after this move:
 
 | Prize | Previous estimate | Current estimate | Reason |
 | --- | ---: | ---: | --- |
-| Grand Prize | 24% | 25% | Live proof is now one guided product flow instead of disconnected commands. |
-| Platform & DX | 51% | 55% | Developers get an actionable live certification command from deployment discovery. |
+| Grand Prize | 24% | 26% | Live proof is now one guided product flow and has passed against the real endpoint, though not as a patch loop. |
+| Platform & DX | 51% | 57% | Developers get an actionable live certification command from deployment discovery, with honest summary semantics. |
 | Security | 28% | 28% | Flagship security still depends on live security content. |
-| Best Use of MCP Server | 69% | 73% | MCP calls now drive a full receipt flow in the tested command path. |
+| Best Use of MCP Server | 69% | 76% | MCP calls now drive a full receipt flow against the real endpoint. |
 | Hosted Models | 52% | 53% | The command supports Gemini-backed live agent execution and SAIA patch assistance. |
-| Developer Tools | 46% | 50% | `live-proof --json` is CI/script-friendly and produces standard artifacts. |
+| Developer Tools | 46% | 52% | `live-proof --json` is CI/script-friendly, produces standard artifacts, and labels the receipt story shape. |
 
 Next directions to consider in future runs:
-- Run `live-proof` against the user's real endpoint when live env vars are available in the shell and record the result honestly.
-- If real `live-proof` falls back to `_internal`, decide whether to improve the internal mission pass path or prepare operator-approved security demo content.
+- Prepare operator-approved security demo content if the goal is a live security fail-to-pass patch loop.
+- Consider a deliberately stricter live-derived mission profile only if it remains honest and deployment-grounded; do not force artificial failures.
 - Add a UI affordance for live-derived missions only after real artifacts exist; do not fake screenshots.
 - Continue expanding developer workflow value, especially external trace grading and CI integration, rather than adding broad QA-only waves.
 

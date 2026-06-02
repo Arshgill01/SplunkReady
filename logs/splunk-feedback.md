@@ -75,6 +75,9 @@ Suggestion:
 Follow-up implementation note:
 - SplunkReady added `live-proof` to bridge this gap locally: it compiles the live contract, scans read-only saved-search candidates, derives a mission, and runs the receipt flow. This helped clarify that an official MCP onboarding path should not stop at inventory; it should also include a first runnable read-only proof task for the discovered deployment.
 
+Real endpoint follow-up:
+- A guided `live-proof` run against the configured local endpoint checked 12 saved-search candidates and found 0 with rows, then correctly fell back to `_internal`. The fallback receipt was `READY` before and after policy injection, which is useful live proof but not the richer patch loop. A developer-facing MCP flow would benefit from "candidate returned rows recently" and "suitable for demo/certification" signals before an agent tries to build a mission around saved searches.
+
 ## MCP Server Limitations
 
 ### MCP response envelopes need normalization

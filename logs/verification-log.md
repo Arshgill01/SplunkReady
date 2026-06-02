@@ -3440,6 +3440,8 @@ Open risks:
 Commands:
 
 - `npx vitest run tests/missions/live.test.ts tests/cli/flow.test.ts && npm run build`
+- `set -a; source ./.splunkready-live.env; set +a; export SPLUNKREADY_LLM_ENABLED=true; export GEMINI_MODEL=gemini-3.1-flash-lite; NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-proof --out artifacts/live-proof-guided --candidate-limit 12 --json`
+- `npm run check && git diff --check`
 - `npm run check && git diff --check`
 - `npx vitest run tests/missions/live.test.ts tests/cli/flow.test.ts && npm run build`
 - `npm run check && git diff --check`
@@ -3473,8 +3475,17 @@ Result:
 
 - PASS for focused live mission generation, `live-proof` CLI orchestration, and TypeScript build.
 - Vitest passed 2 files / 18 tests.
-- Full verification passed: scaffold verified, 85 waves, 593 project files, 38 test files, 195 tests.
+- Initial full verification passed: scaffold verified, 85 waves, 593 project files, 38 test files, 195 tests.
+- Final full verification passed after adding `live-proof-summary.json`: scaffold verified, 85 waves, 611 project files, 38 test files, 195 tests.
 - `git diff --check` passed with no whitespace errors.
+- Real endpoint `live-proof` command passed and wrote `live-proof-summary.json`.
+- Real endpoint result:
+  - derived strategy: `internal-query-fallback`;
+  - candidates checked: `12`;
+  - saved-search candidates with rows: `0`;
+  - before receipt: `READY`, score `100`, violations `0`;
+  - after receipt: `READY`, score `100`, violations `0`;
+  - summary flags: `readyWithoutPatch: true`, `failToPass: false`.
 - `tests/missions/live.test.ts` confirmed generated saved-search missions allow `splunk_run_query` as the pre-policy executable path while still expecting saved-search readiness.
 - `tests/cli/flow.test.ts` confirmed `live-proof --json`:
   - compiles live mode through the mock MCP adapter;
@@ -3486,5 +3497,5 @@ Result:
 
 Open risks:
 
-- This move did not run `live-proof` against the real Splunk endpoint; it verified the command with a local mock MCP server and mock Gemini endpoint.
-- A real fresh Splunk trial may still fall back to `_internal`; that path is useful platform proof but weaker than the flagship security story.
+- The real endpoint fell back to `_internal`; that path is useful platform proof but weaker than the flagship security story.
+- The real endpoint did not exercise fail-to-pass because the generated `_internal` mission was already `READY` before policy injection.
