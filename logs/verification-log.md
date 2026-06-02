@@ -4109,3 +4109,41 @@ Open risks:
 
 - The policy simulator is explanatory only; official receipt verdicts still require persisted receipt artifacts.
 - Browser interaction was verified through DOM evaluation because the Playwright wrapper's text-target checkbox command treated labels as CSS selectors.
+
+## 2026-06-03 - Phase Live Friendly Artifact URLs
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts`
+- `npm run build`
+- `npm run ui:build`
+- `git diff --check`
+- `SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/live-security-ui npm run ui:dev`
+- `curl -fsS 'http://127.0.0.1:5173/artifacts/live-security-ui/receipt-after-001.json' | node -e 'let s=""; process.stdin.on("data", d=>s+=d); process.stdin.on("end", ()=>{const j=JSON.parse(s); console.log(j.id, j.verdict, j.score);})'`
+- `bash "$PWCLI" open 'http://127.0.0.1:5173/?artifacts=artifacts/live-security-ui#receipt' && bash "$PWCLI" snapshot`
+- `npm run check`
+
+Result:
+
+- PASS for focused UI tests:
+  - 9 tests passed;
+  - artifact normalization now covers `artifacts/live-security-ui` -> `/artifacts/live-security-ui/`.
+- PASS for TypeScript build.
+- PASS for production Vite build.
+- PASS for `git diff --check`.
+- PASS for direct JSON route:
+  - `/artifacts/live-security-ui/receipt-after-001.json` parsed as `receipt-after-001 READY 100`.
+- PASS for browser route:
+  - `?artifacts=artifacts/live-security-ui#receipt` loaded the Receipt view;
+  - snapshot included `Readiness Receipt`, `receipt-after-001`, and `Policy simulator`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 708 project files;
+  - 38 test files;
+  - 209 tests.
+
+Open risks:
+
+- `/artifacts/...` is a local Vite dev-server convenience route, not a production artifact hosting strategy.
+- The Vite dev server did not stay alive when started through this environment's detached `nohup` shell; browser verification used a temporary foreground tool session and then stopped it cleanly.

@@ -21,6 +21,37 @@ const contentTypeFor = (path: string): string => {
 const artifactServerPlugin = (): Plugin => ({
   name: "splunkready-artifact-server",
   configureServer(server) {
+    server.middlewares.use("/artifacts", async (request, response, next) => {
+      const root = resolve("artifacts");
+      const rawUrl = request.url ?? "/";
+      const relativePath = decodeURIComponent(rawUrl.split("?", 1)[0] ?? "")
+        .replace(/^\/+/, "")
+        .replaceAll("\\", "/");
+      const target = resolve(root, relativePath);
+
+      if (target !== root && !target.startsWith(`${root}${sep}`)) {
+        response.statusCode = 403;
+        response.end("Forbidden artifact path");
+        return;
+      }
+
+      try {
+        const file = await stat(target);
+
+        if (!file.isFile()) {
+          response.statusCode = 204;
+          response.end();
+          return;
+        }
+
+        response.setHeader("content-type", contentTypeFor(target));
+        createReadStream(target).pipe(response);
+      } catch {
+        response.statusCode = 204;
+        response.end();
+      }
+    });
+
     server.middlewares.use("/__splunkready_artifacts", async (request, response, next) => {
       const root = artifactRoot();
       const rawUrl = request.url ?? "/";

@@ -4428,6 +4428,63 @@ Reviewer findings:
 Result:
 - Focused UI tests, TypeScript build, Vite production build, browser snapshot, DOM interaction verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Friendly Artifact URLs
+
+Scope:
+- Make local Vite artifact URLs less brittle for developers inspecting generated proof bundles.
+- Fix the natural `?artifacts=artifacts/live-security-ui` URL form that previously loaded the Vite fallback HTML instead of JSON artifacts.
+
+Files expected/touched:
+- `vite.config.ts`
+- `ui/src/artifacts.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- The Vite artifact server now exposes a read-only `/artifacts/...` route backed by the repository-local `artifacts/` directory.
+- `normalizeArtifactBase("artifacts/live-security-ui")` now resolves to `/artifacts/live-security-ui/`.
+- Existing `/__splunkready_artifacts/` behavior remains intact for the configured default artifact root.
+- UI tests now cover the friendly local artifact URL normalization and generated artifact URL.
+
+Browser verification:
+- Direct JSON check:
+  - `http://127.0.0.1:5173/artifacts/live-security-ui/receipt-after-001.json`
+  - parsed as `receipt-after-001 READY 100`.
+- Browser route:
+  - `http://127.0.0.1:5173/?artifacts=artifacts/live-security-ui#receipt`
+  - loaded the Receipt view successfully.
+- The browser route rendered:
+  - `Readiness Receipt`;
+  - `receipt-after-001`;
+  - `Policy simulator`;
+  - `receipt-before-001` as the simulator base receipt.
+
+Product impact:
+- A developer can now switch local proof bundles with an understandable URL instead of knowing the internal dev-server mount path.
+- This supports future multi-artifact inspection without adding a dashboard or changing artifact semantics.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 29% | 29% | Small DX fix; no new product capability. |
+| Platform & DX | 72% | 73% | Easier local proof-bundle inspection and sharing. |
+| Security | 40% | 40% | Security behavior unchanged. |
+| Best Use of MCP Server | 79% | 79% | MCP behavior unchanged. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 67% | 68% | Artifact URL handling is clearer for local developer workflows. |
+
+Next directions to consider in future runs:
+- Rerun live hosted-model proof after the operator updates credentials/permissions.
+- Consider an explicit artifact preset selector only after we have multiple committed or generated proof bundles worth switching between.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused UI tests, TypeScript build, Vite production build, direct JSON check, browser route verification, full repo verification, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Hosted Model Proof Command
 
 Scope:

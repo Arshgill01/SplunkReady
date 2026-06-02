@@ -267,7 +267,9 @@ const optionalFiles = [
 export const normalizeArtifactBase = (value: string | null | undefined): string => {
   const fallback = "/__splunkready_artifacts/";
   const raw = value && value.trim().length > 0 ? value.trim() : fallback;
-  return raw.endsWith("/") ? raw : `${raw}/`;
+  const localPath = raw.startsWith("artifacts/") ? `/${raw}` : raw;
+
+  return localPath.endsWith("/") ? localPath : `${localPath}/`;
 };
 
 export const artifactBaseFromLocation = (location: Pick<Location, "search">): string => {

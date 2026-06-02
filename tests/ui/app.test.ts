@@ -394,7 +394,11 @@ describe("Vite UI artifact app", () => {
   it("normalizes artifact base URLs and preserves file names", () => {
     expect(normalizeArtifactBase(undefined)).toBe("/__splunkready_artifacts/");
     expect(normalizeArtifactBase("/custom")).toBe("/custom/");
+    expect(normalizeArtifactBase("artifacts/live-security-ui")).toBe("/artifacts/live-security-ui/");
     expect(artifactUrl("/custom", "receipt-after-001.json")).toBe("/custom/receipt-after-001.json");
+    expect(artifactUrl("artifacts/live-security-ui", "receipt-after-001.json")).toBe(
+      "/artifacts/live-security-ui/receipt-after-001.json"
+    );
   });
 
   it("loads and summarizes schema-backed artifacts from a configurable base", async () => {
