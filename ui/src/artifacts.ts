@@ -72,6 +72,36 @@ const hostedModelProofSchema = z
 
 export type HostedModelProof = z.infer<typeof hostedModelProofSchema>;
 
+const hostedModelDiagnosticSchema = z
+  .object({
+    status: z.enum(["PASS", "BLOCKED"]),
+    mode: z.enum(["fixture", "live"]),
+    mutation: z.boolean(),
+    proofPath: z.string().min(1),
+    contract: z
+      .object({
+        id: z.string().min(1),
+        mode: z.enum(["fixture", "live"])
+      })
+      .strict(),
+    requiredTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+    availableTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+    missingTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+    permission: z
+      .object({
+        status: z.enum(["OK", "BLOCKED"]),
+        message: z.string().min(1),
+        error: z.string().min(1).optional(),
+        requiredActions: z.array(z.string().min(1)).optional()
+      })
+      .strict(),
+    deterministicAuthority: z.string().min(1),
+    notes: z.string().min(1)
+  })
+  .strict();
+
+export type HostedModelDiagnostic = z.infer<typeof hostedModelDiagnosticSchema>;
+
 const proofAuditCheckSchema = z
   .object({
     id: z.string().min(1),
@@ -297,6 +327,7 @@ export interface UiArtifactBundle {
   liveSecurityReadiness?: LiveSecurityReadiness;
   liveSecurityKit?: LiveSecurityKit;
   hostedModelProof?: HostedModelProof;
+  hostedModelDiagnostic?: HostedModelDiagnostic;
   proofAudit?: ProofAudit;
   firewallBlock?: FirewallBlock;
   beforeTrace: TraceEvent[];
@@ -319,6 +350,7 @@ const optionalFiles = [
   "live-security-readiness.json",
   "live-security-kit.json",
   "hosted-model-proof.json",
+  "hosted-model-diagnostic.json",
   "proof-audit.json",
   "firewall-block-before.json",
   "firewall-block-after.json",
@@ -425,6 +457,7 @@ export const loadUiArtifactBundle = async (
     liveSecurityReadiness: liveSecurityReadinessSchema.optional().parse(loaded.get("live-security-readiness.json")),
     liveSecurityKit: liveSecurityKitSchema.optional().parse(loaded.get("live-security-kit.json")),
     hostedModelProof: hostedModelProofSchema.optional().parse(loaded.get("hosted-model-proof.json")),
+    hostedModelDiagnostic: hostedModelDiagnosticSchema.optional().parse(loaded.get("hosted-model-diagnostic.json")),
     proofAudit: proofAuditSchema.optional().parse(loaded.get("proof-audit.json")),
     firewallBlock: firewallBlockSchema
       .optional()
@@ -490,6 +523,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
         : "kit loaded"
       : "kit not loaded",
     hostedModelStory:
+      (bundle.hostedModelDiagnostic ? `hosted diagnostic ${bundle.hostedModelDiagnostic.status.toLowerCase()}` : undefined) ??
       (bundle.hostedModelProof ? `hosted proof ${bundle.hostedModelProof.status.toLowerCase()}` : undefined) ??
       bundle.liveSecurityProofSummary?.hostedModels?.status ??
       bundle.liveProofSummary?.hostedModels?.status ??

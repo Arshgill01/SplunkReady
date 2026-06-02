@@ -4818,3 +4818,70 @@ Open risks:
 
 - The diagnostic does not grant permission; it only proves whether the current MCP token can invoke hosted-model tools.
 - Live hosted-model proof remains blocked until the Splunk/MCP user is entitled for `saia_explain_spl` and `saia_optimize_spl`.
+
+## 2026-06-03 - Phase Live Hosted Model Diagnostic in Vite UI
+
+Commands:
+
+- `npm run build && npx vitest run tests/ui/app.test.ts tests/cli/flow.test.ts -t "live proof summaries|bundles proof"`
+- `npm run ui:build`
+- `npm run check`
+- `rm -rf artifacts/hosted-model-diagnostic-ui && npm run splunkready -- hosted-model-diagnostic --out artifacts/hosted-model-diagnostic-ui --json > /tmp/splunkready-hosted-model-diagnostic-ui.json && cat /tmp/splunkready-hosted-model-diagnostic-ui.json`
+- `npm run ui:dev -- --host 127.0.0.1 --port 5176`
+- `node --input-type=module <<'NODE'
+import { chromium } from 'playwright';
+import { mkdir } from 'node:fs/promises';
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+await page.goto('http://127.0.0.1:5176/?artifacts=artifacts/hosted-model-diagnostic-ui#live-connect', { waitUntil: 'networkidle' });
+const text = await page.locator('body').innerText();
+await mkdir('output/playwright', { recursive: true });
+await page.screenshot({ path: 'output/playwright/hosted-model-diagnostic-live-connect.png', fullPage: true });
+const required = [
+  'Hosted model diagnostic',
+  'Permission',
+  'OK',
+  'saia_explain_spl / saia_optimize_spl',
+  'deterministic-rule-engine',
+  'Hosted model proof',
+  'SAIA recommended SPL'
+];
+const missing = required.filter((item) => !text.includes(item));
+console.log(JSON.stringify({ url: page.url(), missing, screenshot: 'output/playwright/hosted-model-diagnostic-live-connect.png' }, null, 2));
+await browser.close();
+if (missing.length > 0) process.exit(1);
+NODE`
+- `git diff --check`
+
+Result:
+
+- PASS for TypeScript build.
+- PASS for focused UI and CLI tests:
+  - Live Connect renders hosted-model diagnostic content;
+  - `live-security-ui-bundle` remains green with the new optional artifact copy path.
+- PASS for Vite production build:
+  - 21 modules transformed;
+  - output written to `dist-ui`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 749 project files;
+  - 38 test files;
+  - 215 tests.
+- PASS for diagnostic artifact generation:
+  - wrote `artifacts/hosted-model-diagnostic-ui/hosted-model-diagnostic.json`;
+  - command status was `PASS`;
+  - mutation was `false`.
+- PASS for Playwright browser verification:
+  - opened `http://127.0.0.1:5176/?artifacts=artifacts/hosted-model-diagnostic-ui#live-connect`;
+  - rendered text contained hosted-model diagnostic status, permission status, required SAIA tools, deterministic authority, hosted-model proof, and SAIA recommended SPL.
+- PASS for screenshot capture:
+  - `output/playwright/hosted-model-diagnostic-live-connect.png`.
+- PASS for cleanup:
+  - Vite process on port `5176` was stopped.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The UI only shows hosted-model diagnostic state when `hosted-model-diagnostic.json` is present in the artifact bundle.
+- Live hosted-model strict proof still depends on Splunk/MCP permission for `saia_explain_spl` and `saia_optimize_spl`.

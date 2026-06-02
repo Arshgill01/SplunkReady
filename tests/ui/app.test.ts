@@ -381,6 +381,27 @@ const hostedModelProof = {
     "This proof calls hosted-model tools only. It does not run the SPL query, does not grade with an LLM, and does not mutate Splunk."
 } as const;
 
+const hostedModelDiagnostic = {
+  status: "PASS",
+  mode: "live",
+  mutation: false,
+  proofPath: "artifacts/hosted-model-proof/hosted-model-proof.json",
+  contract: {
+    id: "contract-192-168-1-4",
+    mode: "live"
+  },
+  requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
+  availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+  missingTools: [],
+  permission: {
+    status: "OK",
+    message: "The current MCP credentials can invoke saia_explain_spl and saia_optimize_spl for advisory SPL remediation."
+  },
+  deterministicAuthority: "deterministic-rule-engine",
+  notes:
+    "This diagnostic calls hosted-model helper tools only. It does not execute the SPL query, does not grade with an LLM, and does not mutate Splunk."
+} as const;
+
 const proofAudit = {
   status: "PASS",
   proofType: "live-security",
@@ -565,6 +586,7 @@ describe("Vite UI artifact app", () => {
         "live-security-readiness.json": liveSecurityReadiness,
         "live-security-kit.json": liveSecurityKit,
         "hosted-model-proof.json": hostedModelProof,
+        "hosted-model-diagnostic.json": hostedModelDiagnostic,
         "proof-audit.json": proofAudit,
         "trace-before.json": beforeTrace,
         "trace-after.json": afterTrace,
@@ -593,12 +615,16 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("wineventlog / missing");
     expect(liveConnect).toContain("Operator security kit");
     expect(liveConnect).toContain("operator kit available");
-    expect(liveConnect).toContain("hosted proof pass");
+    expect(liveConnect).toContain("hosted diagnostic pass");
     expect(liveConnect).toContain("Operator action");
     expect(liveConnect).toContain("required");
     expect(liveConnect).toContain("Hosted model assistance");
     expect(liveConnect).toContain("saia_explain_spl / saia_optimize_spl");
     expect(liveConnect).toContain("advisory only; deterministic grader decides pass/fail");
+    expect(liveConnect).toContain("Hosted model diagnostic");
+    expect(liveConnect).toContain("Permission");
+    expect(liveConnect).toContain("OK");
+    expect(liveConnect).toContain("deterministic-rule-engine");
     expect(liveConnect).toContain("Hosted model proof");
     expect(liveConnect).toContain("Proof audit");
     expect(liveConnect).toContain("live-security");

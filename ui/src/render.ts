@@ -3,6 +3,7 @@ import {
   summarizeBundle,
   type ArtifactOption,
   type FirewallBlock,
+  type HostedModelDiagnostic,
   type HostedModelProof,
   type HostedModelSummary,
   type ProofAudit,
@@ -335,6 +336,30 @@ const renderHostedModelProof = (proof: HostedModelProof | undefined): string => 
           <p>${value(proof.assistance.rationale)}</p>`
         : `<p class="empty">${value(proof.error ?? "Hosted-model assistance was not returned.")}</p>`
     }
+  </section>`;
+};
+
+const renderHostedModelDiagnostic = (diagnostic: HostedModelDiagnostic | undefined): string => {
+  if (!diagnostic) {
+    return "";
+  }
+
+  return `<section class="panel hosted-model-diagnostic-panel">
+    <h2>Hosted model diagnostic</h2>
+    ${renderFactTable([
+      ["Status", diagnostic.status],
+      ["Mode", diagnostic.mode],
+      ["Contract", diagnostic.contract.id],
+      ["Required tools", diagnostic.requiredTools.join(" / ")],
+      ["Available tools", diagnostic.availableTools.length > 0 ? diagnostic.availableTools.join(" / ") : "none"],
+      ["Missing tools", diagnostic.missingTools.length > 0 ? diagnostic.missingTools.join(" / ") : "none"],
+      ["Permission", diagnostic.permission.status],
+      ["Error", diagnostic.permission.error ?? "none"],
+      ["Required actions", diagnostic.permission.requiredActions?.join(" / ") ?? "none"],
+      ["Mutation", diagnostic.mutation ? "yes" : "no"],
+      ["Authority", diagnostic.deterministicAuthority],
+      ["Notes", diagnostic.notes]
+    ])}
   </section>`;
 };
 
@@ -739,6 +764,7 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
         ${renderLiveProofSummary(bundle)}
         ${renderLiveSecurityProofSummary(bundle)}
         ${renderHostedModelSummary(bundle.liveSecurityProofSummary?.hostedModels ?? bundle.liveProofSummary?.hostedModels)}
+        ${renderHostedModelDiagnostic(bundle.hostedModelDiagnostic)}
         ${renderHostedModelProof(bundle.hostedModelProof)}
         ${renderLiveSecurityReadiness(bundle)}
         ${renderLiveSecurityKit(bundle)}

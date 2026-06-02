@@ -1160,6 +1160,7 @@ const liveSecurityUiBundleCommand = async (options: CliOptions): Promise<string[
     "live-derived-mission.json",
     "live-derived-readiness-profile.json",
     "hosted-model-proof.json",
+    "hosted-model-diagnostic.json",
     "score-before.json",
     "score-after.json"
   ];
@@ -1199,6 +1200,20 @@ const liveSecurityUiBundleCommand = async (options: CliOptions): Promise<string[
       artifacts.push(hostedModelProof);
     } else {
       missingOptional.push(join(options.hostedModelProofDir, "hosted-model-proof.json"));
+    }
+  }
+
+  if (!artifacts.some((artifact) => artifact.endsWith("hosted-model-diagnostic.json"))) {
+    const hostedModelDiagnostic = await copyOptionalArtifact(
+      options.hostedModelProofDir,
+      options.out,
+      "hosted-model-diagnostic.json"
+    );
+
+    if (hostedModelDiagnostic) {
+      artifacts.push(hostedModelDiagnostic);
+    } else {
+      missingOptional.push(join(options.hostedModelProofDir, "hosted-model-diagnostic.json"));
     }
   }
 

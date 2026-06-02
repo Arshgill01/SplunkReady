@@ -4489,6 +4489,80 @@ Reviewer findings:
 Result:
 - TypeScript build, targeted hosted-model tests, direct diagnostic smoke, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Hosted Model Diagnostic in Vite UI
+
+Scope:
+- Surface `hosted-model-diagnostic.json` in the Vite Live Connect route.
+- Ensure the UI bundle command preserves the diagnostic artifact when it exists.
+
+Files expected/touched:
+- `src/cli.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added a schema and bundle field for `hosted-model-diagnostic.json`.
+- The sidebar summary now prefers the diagnostic state, for example `hosted diagnostic pass`.
+- Live Connect now renders a `Hosted model diagnostic` panel with:
+  - status;
+  - mode;
+  - contract;
+  - required tools;
+  - available/missing tools;
+  - permission status;
+  - required actions when present;
+  - mutation posture;
+  - deterministic authority.
+- `live-security-ui-bundle` now copies `hosted-model-diagnostic.json` from either the proof directory or `--hosted-model-proof-dir` when available.
+- UI tests now verify the diagnostic panel and the sidebar status text.
+
+Browser verification:
+- Generated local diagnostic artifacts:
+  - `artifacts/hosted-model-diagnostic-ui`.
+- Temporary local dev server:
+  - `http://127.0.0.1:5176/`.
+- Browser route:
+  - `http://127.0.0.1:5176/?artifacts=artifacts/hosted-model-diagnostic-ui#live-connect`.
+- Screenshot:
+  - `output/playwright/hosted-model-diagnostic-live-connect.png`.
+- Rendered text confirmed:
+  - `Hosted model diagnostic`;
+  - `Permission`;
+  - `OK`;
+  - `saia_explain_spl / saia_optimize_spl`;
+  - `deterministic-rule-engine`;
+  - `Hosted model proof`;
+  - `SAIA recommended SPL`.
+
+Product impact:
+- The hosted-model entitlement state is now visible in the product UI instead of buried in JSON.
+- The UI remains artifact-backed and does not imply SplunkReady mutates Splunk or uses hosted models as the grader.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 29% | 29% | Presentation clarity improves, but core proof capability unchanged. |
+| Platform & DX | 72% | 73% | The UI now shows setup diagnostics developers need to resolve hosted-model access. |
+| Security | 42% | 42% | Security proof behavior unchanged. |
+| Best Use of MCP Server | 81% | 81% | MCP core proof unchanged. |
+| Hosted Models | 55% | 57% | The hosted-model path is now visible and debuggable in the UI. |
+| Developer Tools | 68% | 69% | Artifact bundling and UI consumption are more complete. |
+
+Next directions to consider in future runs:
+- Run live `hosted-model-diagnostic --require-pass true` after SAIA permission changes.
+- Add a concise docs note for the new diagnostic command in the live setup checklist or README.
+- Continue with higher-value core product work: external trace SDK hardening, richer mission coverage, or firewall gateway polish.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- TypeScript build, targeted UI/CLI tests, Vite build, full repo verification, Playwright browser verification, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Firewall Check Command
 
 Scope:
