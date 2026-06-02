@@ -49,10 +49,10 @@ describe("readiness profile compiler", () => {
       },
       deploymentSignals: {
         mode: "fixture",
-        indexCount: 2,
+        indexCount: 6,
         restrictedIndexCount: 1,
-        sourcetypeCount: 1,
-        savedSearchCount: 4,
+        sourcetypeCount: 4,
+        savedSearchCount: 8,
         appContextCount: 2,
         dataModelCount: 1,
         queryBudgets: { maxToolCalls: 6, maxResultRows: 50, timeoutSeconds: 30 }

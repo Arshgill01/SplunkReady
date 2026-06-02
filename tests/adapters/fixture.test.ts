@@ -43,7 +43,7 @@ describe("fixture Splunk adapter", () => {
     await expect(adapter.getUserInfo(requestOptions)).resolves.toMatchObject({
       username: "fixture-user"
     });
-    await expect(adapter.getIndexes(requestOptions)).resolves.toHaveLength(2);
+    await expect(adapter.getIndexes(requestOptions)).resolves.toHaveLength(6);
     await expect(
       adapter.getMetadata({ indexes: ["wineventlog"], sourcetypes: ["XmlWinEventLog:Security"] }, requestOptions)
     ).resolves.toMatchObject({ source: "fixture" });

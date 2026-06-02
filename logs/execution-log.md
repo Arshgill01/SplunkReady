@@ -3722,3 +3722,36 @@ Notes:
 Result:
 - PASS for the scan feature.
 - The scan confirms the passing live demo remains blocked on deployment content rather than code-only selection of another existing saved search.
+
+## 2026-06-02 - Phase Live Move 6 Fixture Dataset Expansion
+
+Scope:
+- Expand the `acme-soc-dev` fixture so it reads like a small Splunk deployment rather than a single scripted trap.
+- Add additional read-only indexes, sourcetypes, saved searches, lookups, query results, and saved-search evidence rows while preserving the flagship lateral-movement trap set.
+- Add the requested `observability-latency-readiness.json` mission file around the existing latency query path.
+- Update fixture, mission, and CLI regression tests for the richer deployment profile.
+
+Files changed:
+- `fixtures/acme-soc-dev/adapter-fixture.json`
+- `fixtures/acme-soc-dev/missions/observability-latency-readiness.json`
+- `MANIFEST.md`
+- `tests/fixtures/query-results.test.ts`
+- `tests/missions/observability.test.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- Added `main`, `_internal`, `aws_cloudtrail`, and `network_traffic` indexes.
+- Added `aws:cloudtrail`, `pan:traffic`, and `splunkd` sourcetypes.
+- Added CloudTrail, network egress, platform latency, and broad CloudTrail trap saved searches.
+- Added CloudTrail/network lookup hints and secondary evidence rows.
+- Kept the lateral-movement saved-search result stable at three evidence refs so existing fixture receipts and demo expectations do not churn.
+- During focused verification, a first attempt made `src_ip` globally valid through `pan:traffic`, which weakened the flagship `SPL-003` wrong-field trap. Corrected `pan:traffic` to use `src`/`dest` before closeout.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No new reviewer inbox file exists for this Phase Live move.
+
+Result:
+- PASS for the fixture expansion slice after correction.
+- The remaining live blocker is unchanged: a passing live security receipt still needs operator-approved Splunk demo content or a live mission backed by real rows.

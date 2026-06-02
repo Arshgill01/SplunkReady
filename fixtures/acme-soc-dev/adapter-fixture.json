@@ -27,6 +27,26 @@
       "description": "Windows security events"
     },
     {
+      "name": "main",
+      "sensitive": false,
+      "description": "General application logs"
+    },
+    {
+      "name": "_internal",
+      "sensitive": false,
+      "description": "Splunk platform telemetry"
+    },
+    {
+      "name": "aws_cloudtrail",
+      "sensitive": false,
+      "description": "AWS CloudTrail management events"
+    },
+    {
+      "name": "network_traffic",
+      "sensitive": false,
+      "description": "North-south and east-west network connection summaries"
+    },
+    {
       "name": "finance_pii",
       "sensitive": true,
       "description": "Restricted finance data"
@@ -37,6 +57,21 @@
       "name": "XmlWinEventLog:Security",
       "indexes": ["wineventlog"],
       "fields": ["src", "dest", "user", "signature", "EventCode"]
+    },
+    {
+      "name": "aws:cloudtrail",
+      "indexes": ["aws_cloudtrail"],
+      "fields": ["eventName", "userIdentity.arn", "sourceIPAddress", "recipientAccountId", "errorCode"]
+    },
+    {
+      "name": "pan:traffic",
+      "indexes": ["network_traffic"],
+      "fields": ["src", "dest", "dest_port", "action", "bytes_out", "app"]
+    },
+    {
+      "name": "splunkd",
+      "indexes": ["_internal"],
+      "fields": ["component", "service", "latency_ms", "status", "host"]
     }
   ],
   "knowledgeObjects": [
@@ -95,6 +130,55 @@
       }
     },
     {
+      "id": "saved-search-aws-iam-anomalies",
+      "type": "saved_searches",
+      "name": "CloudTrail - IAM Access Key Anomalies",
+      "app": "search",
+      "description": "Validated CloudTrail search for unusual IAM access-key activity",
+      "dependsOn": ["lookup-cloud-account-owners"],
+      "metadata": {
+        "search": "search index=aws_cloudtrail sourcetype=aws:cloudtrail (eventName=CreateAccessKey OR eventName=UpdateAccessKey OR eventName=AssumeRole) earliest=$earliest$ latest=$latest$ | stats count values(eventName) as actions by userIdentity.arn sourceIPAddress recipientAccountId",
+        "canonicalFields": ["eventName", "userIdentity.arn", "sourceIPAddress", "recipientAccountId"],
+        "trapRulesSupported": ["KO-001", "EVD-001"]
+      }
+    },
+    {
+      "id": "saved-search-network-egress-spike",
+      "type": "saved_searches",
+      "name": "Network - Suspicious Egress Spike",
+      "app": "search",
+      "description": "Validated network traffic search for high-volume outbound transfer",
+      "dependsOn": ["lookup-critical-subnets"],
+      "metadata": {
+        "search": "search index=network_traffic sourcetype=pan:traffic action=allowed earliest=$earliest$ latest=$latest$ | stats sum(bytes_out) as bytes_out count by src dest dest_port app",
+        "canonicalFields": ["src", "dest", "dest_port", "bytes_out"],
+        "trapRulesSupported": ["KO-001", "EVD-001"]
+      }
+    },
+    {
+      "id": "saved-search-observability-mcp-latency",
+      "type": "saved_searches",
+      "name": "Platform - MCP Gateway Latency",
+      "app": "search",
+      "description": "Read-only saved search for p95 latency on the local MCP gateway path",
+      "metadata": {
+        "search": "search index=_internal sourcetype=splunkd component=HttpPubSubConnection earliest=$earliest$ latest=$latest$ | stats p95(latency_ms) as p95_latency_ms count as sampleCount by service",
+        "canonicalFields": ["service", "p95_latency_ms", "sampleCount"],
+        "trapRulesSupported": ["EVD-001", "ANS-003"]
+      }
+    },
+    {
+      "id": "saved-search-cloudtrail-broad-trap",
+      "type": "saved_searches",
+      "name": "CloudTrail - All Management Events",
+      "app": "search",
+      "description": "Trap saved search that is runnable but too broad for certification evidence",
+      "metadata": {
+        "search": "search index=aws_cloudtrail earliest=-24h latest=now | head 10000",
+        "trapRulesSupported": ["SPL-001", "SAF-002"]
+      }
+    },
+    {
       "id": "dashboard-executive-lateral-movement",
       "type": "dashboards",
       "name": "Executive Lateral Movement Overview",
@@ -142,6 +226,28 @@
       "metadata": {
         "keyFields": ["dest", "src"],
         "trapRulesSupported": ["KO-003", "EVD-003"]
+      }
+    },
+    {
+      "id": "lookup-cloud-account-owners",
+      "type": "lookups",
+      "name": "cloud_account_owners",
+      "app": "search",
+      "description": "Maps AWS account ids to business owners for evidence review",
+      "metadata": {
+        "keyFields": ["recipientAccountId"],
+        "trapRulesSupported": ["EVD-003"]
+      }
+    },
+    {
+      "id": "lookup-critical-subnets",
+      "type": "lookups",
+      "name": "critical_subnets",
+      "app": "search",
+      "description": "Critical network ranges used to scope egress investigations",
+      "metadata": {
+        "keyFields": ["src", "dest"],
+        "trapRulesSupported": ["EVD-003"]
       }
     },
     {
@@ -238,10 +344,104 @@
           "service": "agent-readiness-compiler",
           "p95_latency_ms": 92,
           "sampleCount": 37
+        },
+        {
+          "eventRef": "obs-203",
+          "service": "splunk-mcp-http-transport",
+          "p95_latency_ms": 141,
+          "sampleCount": 42
+        },
+        {
+          "eventRef": "obs-204",
+          "service": "readiness-receipt-writer",
+          "p95_latency_ms": 76,
+          "sampleCount": 28
         }
       ],
-      "resultCount": 2,
-      "evidenceRefs": ["obs-201", "obs-202"],
+      "resultCount": 4,
+      "evidenceRefs": ["obs-201", "obs-202", "obs-203", "obs-204"],
+      "warnings": []
+    },
+    "search index=aws_cloudtrail sourcetype=aws:cloudtrail (eventName=CreateAccessKey OR eventName=UpdateAccessKey OR eventName=AssumeRole) earliest=-24h latest=now": {
+      "queryRef": "query-cloudtrail-iam-anomalies",
+      "rows": [
+        {
+          "eventRef": "aws-301",
+          "_time": "2026-05-31T21:05:11.000Z",
+          "sourcetype": "aws:cloudtrail",
+          "eventName": "AssumeRole",
+          "userIdentity.arn": "arn:aws:iam::111122223333:user/build-runner",
+          "sourceIPAddress": "198.51.100.24",
+          "recipientAccountId": "111122223333",
+          "errorCode": null
+        },
+        {
+          "eventRef": "aws-302",
+          "_time": "2026-05-31T21:08:34.000Z",
+          "sourcetype": "aws:cloudtrail",
+          "eventName": "CreateAccessKey",
+          "userIdentity.arn": "arn:aws:iam::111122223333:user/build-runner",
+          "sourceIPAddress": "198.51.100.24",
+          "recipientAccountId": "111122223333",
+          "errorCode": null
+        },
+        {
+          "eventRef": "aws-303",
+          "_time": "2026-05-31T21:11:09.000Z",
+          "sourcetype": "aws:cloudtrail",
+          "eventName": "UpdateAccessKey",
+          "userIdentity.arn": "arn:aws:iam::111122223333:user/build-runner",
+          "sourceIPAddress": "198.51.100.24",
+          "recipientAccountId": "111122223333",
+          "errorCode": null
+        }
+      ],
+      "resultCount": 3,
+      "evidenceRefs": ["aws-301", "aws-302", "aws-303"],
+      "warnings": []
+    },
+    "search index=network_traffic sourcetype=pan:traffic action=allowed earliest=-24h latest=now | stats sum(bytes_out) as bytes_out count by src dest dest_port app": {
+      "queryRef": "query-network-egress-spike",
+      "rows": [
+        {
+          "eventRef": "net-401",
+          "src": "10.44.12.18",
+          "dest": "203.0.113.88",
+          "dest_port": 443,
+          "app": "ssl",
+          "bytes_out": 73400320,
+          "count": 18
+        },
+        {
+          "eventRef": "net-402",
+          "src": "10.44.12.18",
+          "dest": "203.0.113.88",
+          "dest_port": 443,
+          "app": "ssl",
+          "bytes_out": 68157440,
+          "count": 17
+        },
+        {
+          "eventRef": "net-403",
+          "src": "10.44.12.21",
+          "dest": "198.51.100.77",
+          "dest_port": 22,
+          "app": "ssh",
+          "bytes_out": 12582912,
+          "count": 6
+        },
+        {
+          "eventRef": "net-404",
+          "src": "10.44.12.28",
+          "dest": "203.0.113.91",
+          "dest_port": 8443,
+          "app": "unknown-tcp",
+          "bytes_out": 96468992,
+          "count": 9
+        }
+      ],
+      "resultCount": 4,
+      "evidenceRefs": ["net-401", "net-402", "net-403", "net-404"],
       "warnings": []
     }
   },
@@ -300,6 +500,110 @@
       ],
       "resultCount": 1,
       "evidenceRefs": ["evt-injection-001"],
+      "warnings": []
+    },
+    "search::CloudTrail - IAM Access Key Anomalies": {
+      "savedSearchRef": "saved-search-aws-iam-anomalies",
+      "rows": [
+        {
+          "eventRef": "aws-301",
+          "_time": "2026-05-31T21:05:11.000Z",
+          "eventName": "AssumeRole",
+          "userIdentity.arn": "arn:aws:iam::111122223333:user/build-runner",
+          "sourceIPAddress": "198.51.100.24",
+          "recipientAccountId": "111122223333"
+        },
+        {
+          "eventRef": "aws-302",
+          "_time": "2026-05-31T21:08:34.000Z",
+          "eventName": "CreateAccessKey",
+          "userIdentity.arn": "arn:aws:iam::111122223333:user/build-runner",
+          "sourceIPAddress": "198.51.100.24",
+          "recipientAccountId": "111122223333"
+        },
+        {
+          "eventRef": "aws-303",
+          "_time": "2026-05-31T21:11:09.000Z",
+          "eventName": "UpdateAccessKey",
+          "userIdentity.arn": "arn:aws:iam::111122223333:user/build-runner",
+          "sourceIPAddress": "198.51.100.24",
+          "recipientAccountId": "111122223333"
+        }
+      ],
+      "resultCount": 3,
+      "evidenceRefs": ["aws-301", "aws-302", "aws-303"],
+      "warnings": []
+    },
+    "search::Network - Suspicious Egress Spike": {
+      "savedSearchRef": "saved-search-network-egress-spike",
+      "rows": [
+        {
+          "eventRef": "net-401",
+          "src": "10.44.12.18",
+          "dest": "203.0.113.88",
+          "dest_port": 443,
+          "app": "ssl",
+          "bytes_out": 73400320
+        },
+        {
+          "eventRef": "net-402",
+          "src": "10.44.12.18",
+          "dest": "203.0.113.88",
+          "dest_port": 443,
+          "app": "ssl",
+          "bytes_out": 68157440
+        },
+        {
+          "eventRef": "net-403",
+          "src": "10.44.12.21",
+          "dest": "198.51.100.77",
+          "dest_port": 22,
+          "app": "ssh",
+          "bytes_out": 12582912
+        },
+        {
+          "eventRef": "net-404",
+          "src": "10.44.12.28",
+          "dest": "203.0.113.91",
+          "dest_port": 8443,
+          "app": "unknown-tcp",
+          "bytes_out": 96468992
+        }
+      ],
+      "resultCount": 4,
+      "evidenceRefs": ["net-401", "net-402", "net-403", "net-404"],
+      "warnings": []
+    },
+    "search::Platform - MCP Gateway Latency": {
+      "savedSearchRef": "saved-search-observability-mcp-latency",
+      "rows": [
+        {
+          "eventRef": "obs-201",
+          "service": "splunk-mcp-gateway",
+          "p95_latency_ms": 184,
+          "sampleCount": 64
+        },
+        {
+          "eventRef": "obs-202",
+          "service": "agent-readiness-compiler",
+          "p95_latency_ms": 92,
+          "sampleCount": 37
+        },
+        {
+          "eventRef": "obs-203",
+          "service": "splunk-mcp-http-transport",
+          "p95_latency_ms": 141,
+          "sampleCount": 42
+        },
+        {
+          "eventRef": "obs-204",
+          "service": "readiness-receipt-writer",
+          "p95_latency_ms": 76,
+          "sampleCount": 28
+        }
+      ],
+      "resultCount": 4,
+      "evidenceRefs": ["obs-201", "obs-202", "obs-203", "obs-204"],
       "warnings": []
     }
   },

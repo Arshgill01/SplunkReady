@@ -22,7 +22,23 @@ const collectStrings = (value: unknown): string[] => {
   return [];
 };
 
+const countSavedSearchRows = (fixture: Awaited<ReturnType<typeof loadFixtureSplunkDatasetFromFile>>) =>
+  Object.values(fixture.savedSearchResults).reduce((total, result) => total + result.rows.length, 0);
+
 describe("fixture query and saved-search results", () => {
+  it("seeds enough deployment breadth to avoid a toy fixture", async () => {
+    const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
+
+    expect(fixture.indexes.map((index) => index.name)).toEqual(
+      expect.arrayContaining(["main", "wineventlog", "_internal", "aws_cloudtrail", "network_traffic", "finance_pii"])
+    );
+    expect(fixture.sourcetypes.map((sourcetype) => sourcetype.name)).toEqual(
+      expect.arrayContaining(["XmlWinEventLog:Security", "aws:cloudtrail", "pan:traffic", "splunkd"])
+    );
+    expect(fixture.knowledgeObjects.filter((object) => object.type === "saved_searches")).toHaveLength(8);
+    expect(countSavedSearchRows(fixture)).toBeGreaterThanOrEqual(15);
+  });
+
   it("returns stable evidence rows for the correct saved-search path", async () => {
     const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
     const adapter = createFixtureSplunkAccessAdapter(fixture);
@@ -112,10 +128,40 @@ describe("fixture query and saved-search results", () => {
 
     expect(result).toMatchObject({
       queryRef: "query-observability-latency",
-      resultCount: 2,
-      evidenceRefs: ["obs-201", "obs-202"],
+      resultCount: 4,
+      evidenceRefs: ["obs-201", "obs-202", "obs-203", "obs-204"],
       warnings: []
     });
-    expect(result.rows.map((row) => row.p95_latency_ms)).toEqual([184, 92]);
+    expect(result.rows.map((row) => row.p95_latency_ms)).toEqual([184, 92, 141, 76]);
+  });
+
+  it("returns realistic secondary saved-search evidence for cloud and network paths", async () => {
+    const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
+    const adapter = createFixtureSplunkAccessAdapter(fixture);
+    const cloudResult = await adapter.runSavedSearch(
+      {
+        name: "CloudTrail - IAM Access Key Anomalies",
+        app: "search"
+      },
+      requestOptions
+    );
+    const networkResult = await adapter.runSavedSearch(
+      {
+        name: "Network - Suspicious Egress Spike",
+        app: "search"
+      },
+      requestOptions
+    );
+
+    expect(cloudResult).toMatchObject({
+      resultCount: 3,
+      evidenceRefs: ["aws-301", "aws-302", "aws-303"],
+      warnings: []
+    });
+    expect(networkResult).toMatchObject({
+      resultCount: 4,
+      evidenceRefs: ["net-401", "net-402", "net-403", "net-404"],
+      warnings: []
+    });
   });
 });

@@ -3171,3 +3171,33 @@ Result:
 Open risks:
 
 - Because no existing candidate returned rows, a passing live receipt still requires operator-approved live demo content setup or a new live mission backed by data that actually exists.
+
+## 2026-06-02 - Phase Live Move 6 Fixture Dataset Expansion
+
+Commands:
+
+- `node -e "JSON.parse(require('fs').readFileSync('fixtures/acme-soc-dev/adapter-fixture.json','utf8')); console.log('json ok')"`
+- `npx vitest run tests/fixtures/query-results.test.ts tests/fixtures/knowledge-objects.test.ts`
+- `npx vitest run tests/fixtures/query-results.test.ts tests/fixtures/knowledge-objects.test.ts tests/fixtures/traces.test.ts`
+- `npx vitest run tests/fixtures/query-results.test.ts tests/fixtures/knowledge-objects.test.ts tests/missions/observability.test.ts tests/cli/flow.test.ts`
+- `npx vitest run tests/fixtures/query-results.test.ts tests/fixtures/knowledge-objects.test.ts tests/missions/observability.test.ts tests/cli/flow.test.ts`
+- `npm run check && git diff --check`
+- `npm run check && git diff --check`
+- `npm run verify:scaffold && git diff --check`
+
+Result:
+
+- PASS after correction.
+- JSON parse check passed.
+- Initial focused fixture tests failed because expected result counts still referenced the smaller fixture; tests were updated to assert the expanded evidence.
+- Initial CLI-focused run failed because adding `src_ip` to `pan:traffic` weakened the security mission's `SPL-003` wrong-field trap and because the readiness profile saved-search count changed from `4` to `8`.
+- Corrected `pan:traffic` to use canonical `src`/`dest` fields and updated the readiness-profile assertion to `savedSearchCount: 8`.
+- Final focused fixture/mission/CLI run passed: 4 files / 22 tests.
+- Initial full check failed on stale fixture adapter and readiness-profile count assertions after the fixture expanded.
+- Final full check passed: scaffold verifier reported 85 waves and 550 project files; Vitest passed 34 files / 170 tests.
+- `git diff --check` passed.
+- Post-manifest scaffold verification passed: 85 waves and 550 project files; `git diff --check` passed.
+
+Open risks:
+
+- The live passing receipt remains blocked by live Splunk content, not by this fixture expansion.

@@ -6,7 +6,7 @@ import { createFixtureSplunkAccessAdapter, loadFixtureSplunkDatasetFromFile } fr
 import { parseMissionDefinition } from "../../src/missions/dsl.js";
 
 const fixturePath = new URL("../../fixtures/acme-soc-dev/adapter-fixture.json", import.meta.url);
-const missionPath = new URL("../../fixtures/acme-soc-dev/missions/observability-latency.json", import.meta.url);
+const missionPath = new URL("../../fixtures/acme-soc-dev/missions/observability-latency-readiness.json", import.meta.url);
 const latencyQuery =
   "search index=_internal component=HttpPubSubConnection earliest=-15m latest=now | stats p95(latency_ms) as p95_latency_ms by service";
 
@@ -17,7 +17,7 @@ describe("observability transfer mission", () => {
     const mission = await readMission();
 
     expect(mission).toMatchObject({
-      id: "mission-observability-latency",
+      id: "mission-observability-latency-readiness",
       domain: "observability",
       requestedTimeWindow: { earliest: "-15m", latest: "now" },
       expectedTools: ["splunk_run_query"],
@@ -42,14 +42,16 @@ describe("observability transfer mission", () => {
 
     expect(result).toMatchObject({
       queryRef: "query-observability-latency",
-      resultCount: 2,
-      evidenceRefs: ["obs-201", "obs-202"],
+      resultCount: 4,
+      evidenceRefs: ["obs-201", "obs-202", "obs-203", "obs-204"],
       warnings: []
     });
     expect(result.rows).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ service: "splunk-mcp-gateway", p95_latency_ms: 184 }),
-        expect.objectContaining({ service: "agent-readiness-compiler", p95_latency_ms: 92 })
+        expect.objectContaining({ service: "agent-readiness-compiler", p95_latency_ms: 92 }),
+        expect.objectContaining({ service: "splunk-mcp-http-transport", p95_latency_ms: 141 }),
+        expect.objectContaining({ service: "readiness-receipt-writer", p95_latency_ms: 76 })
       ])
     );
   });

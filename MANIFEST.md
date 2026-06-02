@@ -1,6 +1,6 @@
 # SplunkReady Scaffold Manifest
 
-Status: implemented through Wave 84 Splunk-derived readiness profile plus Phase Live Move 2 in progress on `splunkready-build`.
+Status: implemented through Wave 84 Splunk-derived readiness profile plus Phase Live Move 6 fixture expansion on `splunkready-build`.
 
 This repository turns the locked SplunkReady idea into an implemented, fixture-first certification harness that can also grade externally captured agent traces. The scaffold process remains in force for future continuation waves.
 
@@ -48,6 +48,7 @@ This repository turns the locked SplunkReady idea into an implemented, fixture-f
 - `docs/live-demo-data-plan.md`: operator-approved options for turning live MCP/Gemini trace proof into a passing live readiness demo.
 - `docs/live-setup-checklist.md`: Phase Live checklist for producing the required real Splunk MCP live-smoke proof.
 - `docs/llm-specimen-agent.md`: env-gated Gemini specimen agent flow for model-produced traces.
+- `fixtures/acme-soc-dev/adapter-fixture.json`: expanded fixture deployment with security, CloudTrail, network, and platform-latency evidence paths.
 - `docs/follow-up-gap-closure-report.md`: current real/fixture/live truth table and consolidation evidence.
 - `docs/preflight-card-ui-implementation-plan.md`: Minimax-derived plan now implemented in the routed Pre-Flight Card replay UI.
 - `docs/demo-script.md`: 3-minute final demo script.
