@@ -4364,6 +4364,67 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live GitHub Proof Gate Example
+
+Scope:
+- Update the developer-facing GitHub Actions example now that `proof-audit --require-pass true` exists.
+- Keep the default PR path fixture-only and credential-free.
+- Add an opt-in live security proof gate for repositories that configure Splunk MCP and Gemini secrets.
+- Log the forward plan while Move 4 live SAIA access is being investigated by the user.
+
+Files expected/touched:
+- `examples/github-workflow-example.yml`
+- `examples/README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Renamed the example workflow to `SplunkReady agent gates`.
+- The default `fixture-smoke` job now:
+  - compiles the fixture contract;
+  - evaluates the specimen;
+  - issues the receipt;
+  - reruns with policy;
+  - writes a diagnostic `proof-audit.json`;
+  - blocks only if the final fixture receipt is not `READY`.
+- Added an opt-in `live-security-proof` job that runs only when repo variable `SPLUNKREADY_LIVE_ENABLED` is `true`.
+- The live job expects operator-managed secrets for Splunk MCP URL/token and Gemini API key.
+- The live job runs `live-security-proof` and then gates with `proof-audit --require-pass true`.
+- `examples/README.md` now documents the fixture smoke gate, live proof gate, expected secrets, and why strict audit is reserved for complete live proof bundles.
+
+Product impact:
+- SplunkReady now has a concrete CI adoption path:
+  - no live credentials are required for ordinary PR smoke checks;
+  - live MCP proof can be turned on deliberately for protected environments;
+  - strict proof audit becomes a reusable merge gate.
+- This strengthens the Platform/DX and Developer Tools story without changing the grader or relying on LLM judgment.
+
+Plan moving forward while Move 4 is pending:
+- Treat live SAIA proof as blocked until the user's MCP permissions allow `saia_explain_spl` and `saia_optimize_spl`.
+- Continue core development that does not depend on SAIA access:
+  - harden external-agent grading and CI workflows;
+  - build policy/firewall runtime protection where it directly uses the compiled contract;
+  - avoid more fake QA waves or static documentation-only work;
+  - only revisit UI when it is tied to real proof data or a usability defect.
+- When SAIA access is available, rerun hosted-model proof, regenerate the affected artifact bundle, and decide whether strict proof audit should include hosted-model evidence for the live UI bundle.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 30% | 30% | CI polish helps credibility but does not add new live capability. |
+| Platform & DX | 79% | 81% | The example now shows a practical PR gate and opt-in live proof path. |
+| Security | 44% | 44% | Security runtime unchanged. |
+| Best Use of MCP Server | 82% | 82% | MCP behavior unchanged; live gate makes the evidence more reusable. |
+| Hosted Models | 49% | 49% | SAIA remains permission-blocked. |
+| Developer Tools | 76% | 79% | GitHub Actions plus strict proof audit is a concrete developer workflow. |
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Workflow YAML parsing, full repo verification, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Proof Audit Command
 
 Scope:

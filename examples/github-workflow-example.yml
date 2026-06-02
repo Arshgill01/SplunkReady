@@ -1,12 +1,12 @@
-name: SplunkReady agent gate
+name: SplunkReady agent gates
 
 on:
   pull_request:
   workflow_dispatch:
 
 jobs:
-  splunkready:
-    name: Certify Splunk agent trace
+  fixture-smoke:
+    name: Fixture receipt smoke gate
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -39,7 +39,10 @@ jobs:
       - name: Rerun with compiled policy
         run: npm run splunkready -- rerun --mode fixture --out artifacts/ci-readiness --json
 
-      - name: Block merge unless receipt is READY
+      - name: Write diagnostic proof audit
+        run: npm run splunkready -- proof-audit --out artifacts/ci-readiness --json
+
+      - name: Block merge unless fixture receipt is READY
         run: |
           node --input-type=module <<'NODE'
           import { readFile } from "node:fs/promises";
@@ -61,3 +64,48 @@ jobs:
         with:
           name: splunkready-ci-readiness
           path: artifacts/ci-readiness
+
+  live-security-proof:
+    name: Live security proof gate
+    runs-on: ubuntu-latest
+    if: ${{ vars.SPLUNKREADY_LIVE_ENABLED == 'true' }}
+    permissions:
+      contents: read
+    env:
+      SPLUNKREADY_LIVE_ENABLED: "true"
+      SPLUNKREADY_SPLUNK_MCP_URL: ${{ secrets.SPLUNKREADY_SPLUNK_MCP_URL }}
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: ${{ secrets.SPLUNKREADY_SPLUNK_MCP_TOKEN }}
+      SPLUNKREADY_SPLUNK_APP: ${{ vars.SPLUNKREADY_SPLUNK_APP || 'search' }}
+      SPLUNKREADY_LLM_ENABLED: "true"
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3.1-flash-lite' }}
+      NODE_TLS_REJECT_UNAUTHORIZED: ${{ vars.SPLUNKREADY_NODE_TLS_REJECT_UNAUTHORIZED || '1' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build SplunkReady
+        run: npm run build
+
+      - name: Run live security proof
+        run: npm run splunkready -- live-security-proof --out artifacts/live-security-proof --json
+
+      - name: Block merge unless live proof audit is PASS
+        run: npm run splunkready -- proof-audit --out artifacts/live-security-proof --require-pass true --json
+
+      - name: Upload live proof artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: splunkready-live-security-proof
+          path: artifacts/live-security-proof

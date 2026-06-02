@@ -4477,3 +4477,48 @@ Open risks:
 - `--require-pass true` intentionally treats hosted-model `BLOCKED` as a gate failure if that proof artifact is bundled.
 - Live hosted-model proof remains gated by SAIA-capable MCP access.
 - Local audit artifacts remain untracked evidence.
+
+## 2026-06-03 - Phase Live GitHub Proof Gate Example
+
+Commands:
+
+- `git status --short --branch`
+- `sed -n '1,220p' examples/github-workflow-example.yml`
+- `sed -n '1,220p' examples/README.md`
+- `tail -n 80 logs/execution-log.md`
+- `tail -n 80 logs/verification-log.md`
+- `rg -n "proof audit|GitHub|workflow" logs/execution-log.md logs/verification-log.md examples README.md`
+- `sed -n '3860,3935p' logs/execution-log.md`
+- `sed -n '4520,4585p' logs/execution-log.md`
+- `tail -n 80 logs/execution-log.md`
+- `ruby -e "require 'yaml'; YAML.load_file('examples/github-workflow-example.yml'); puts 'yaml-ok'"`
+- `git diff -- examples/github-workflow-example.yml examples/README.md`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for tracked worktree orientation:
+  - branch `splunkready-build` was aligned with `origin/splunkready-build`;
+  - tracked dirty files were limited to the workflow/example docs during this checkpoint;
+  - local untracked `artifacts/` and `output/` remained local evidence only.
+- PASS for workflow inspection:
+  - default `fixture-smoke` job uses fixture mode and no secrets;
+  - optional `live-security-proof` job is gated by repo variable `SPLUNKREADY_LIVE_ENABLED == 'true'`;
+  - live job uses repository secrets for Splunk MCP URL/token and Gemini API key;
+  - live job runs `proof-audit --require-pass true`.
+- PASS for YAML parsing:
+  - Ruby `YAML.load_file` parsed `examples/github-workflow-example.yml`.
+- PASS for `git diff --check`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 719 project files;
+  - 38 test files;
+  - 210 tests.
+
+Open risks:
+
+- GitHub Actions expression validity was inspected and YAML-parsed locally, but the workflow was not executed on GitHub in this run.
+- The optional live proof job will only work in GitHub after the repository owner configures the required secrets and variable.
+- Live hosted-model proof remains gated by SAIA-capable MCP access.

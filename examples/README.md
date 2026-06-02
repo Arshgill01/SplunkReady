@@ -21,3 +21,17 @@ npm run splunkready -- grade-trace \
 The grading command writes `trace-external.json`, `violations-external.json`, `score-external.json`, and `receipt-external-001.md` into `$tmp`.
 
 The checked-in `sample-receipt.md` was generated from this flow and is included as a static reference for reviewers.
+
+## CI gate example
+
+`github-workflow-example.yml` shows how a repository can use SplunkReady as a pull-request gate.
+
+The default `fixture-smoke` job runs without live Splunk credentials. It compiles the fixture contract, evaluates the specimen, issues the receipt, reruns with the compiled policy, writes a diagnostic `proof-audit.json`, and blocks the merge unless the final receipt is `READY`.
+
+The optional `live-security-proof` job is disabled unless the repository variable `SPLUNKREADY_LIVE_ENABLED` is set to `true`. It expects these secrets:
+
+- `SPLUNKREADY_SPLUNK_MCP_URL`
+- `SPLUNKREADY_SPLUNK_MCP_TOKEN`
+- `GEMINI_API_KEY`
+
+When enabled, it runs the live security proof and then enforces `proof-audit --require-pass true`. That strict gate is intended for complete live proof bundles; fixture smoke bundles remain diagnostic because they do not prove live MCP or hosted-model availability.
