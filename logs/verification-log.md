@@ -2885,3 +2885,26 @@ Result:
 - Full check passed after Wave 82 consolidation edits: scaffold verifier reported 83 waves and 442 project files; Vitest passed 31 test files / 145 tests.
 - Reviewer audit passed after `wave-82-20260602-1720-rereview.md`: 84 groups, 7 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 83 waves and 443 project files.
+
+## 2026-06-02 - Wave 83 Pre-Flight Card UI
+
+Commands:
+
+- `npx vitest run tests/ui/shell.test.ts`
+- `npm run build`
+- `npm run splunkready -- demo --out /tmp/splunkready-wave83-ui-1qu4sL`
+- Browser route verification with Playwright over `http://127.0.0.1:8783/splunkready-shell.html#certification-replay`, `#receipt`, `#mission-trace`, and `#rerun-receipts`
+- Browser fixed-rail scroll verification with Playwright over `http://127.0.0.1:8783/splunkready-shell.html#mission-trace`
+
+Result:
+
+- PASS.
+- Focused UI shell tests passed: 1 test file / 12 tests.
+- TypeScript build passed.
+- Fixture demo generation passed and produced `/tmp/splunkready-wave83-ui-1qu4sL/splunkready-shell.html`.
+- Route verification passed for `receipt`, `certification-replay`, `mission-trace`, and `rerun-receipts`: sidebar height stayed `1080`, nav height stayed `824`, link positions stayed `[149, 256, 363, 470, 578, 685, 792, 899]`, active route matched the URL hash, visible route panels had no outer card border/background, and scroll position started at `0`.
+- Fixed-rail scroll verification passed: after scrolling the Mission trace route, sidebar bounds stayed `sideTop: 0`, `sideBottom: 1080`, `navTop: 130`, and `navBottom: 954`.
+- Local preview server remained available at `http://127.0.0.1:8783/splunkready-shell.html#certification-replay` for user inspection during implementation.
+- Full check passed: scaffold verifier reported 84 waves and 451 project files; Vitest passed 31 test files / 145 tests.
+- Reviewer audit passed after `wave-83-20260602-1810-main-resolution.md`: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 84 waves and 451 project files.

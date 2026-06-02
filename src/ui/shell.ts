@@ -404,7 +404,7 @@ const renderEvidenceRuleRows = (contract: EnvironmentContract): string => {
 
 const renderContractView = (artifacts: UiArtifacts): string => {
   if (!artifacts.contract) {
-    return `<section id="contract" class="shell-section" aria-label="Environment contract">
+    return `<section id="contract" class="shell-section" data-route-panel="contract" aria-label="Environment contract">
       <h2>Environment contract</h2>
       <p class="empty">No environment-contract.json artifact loaded.</p>
     </section>`;
@@ -412,7 +412,7 @@ const renderContractView = (artifacts: UiArtifacts): string => {
 
   const { contract } = artifacts;
 
-  return `<section id="contract" class="shell-section" aria-label="Environment contract">
+  return `<section id="contract" class="shell-section" data-route-panel="contract" aria-label="Environment contract">
     <h2>Environment contract</h2>
     <div class="contract-grid">
       <div>
@@ -611,7 +611,7 @@ const renderMissionTraceView = (artifacts: UiArtifacts): string => {
   const afterViolations = artifacts.afterViolations ?? (artifacts.phase === "after" ? artifacts.violations : []);
   const hasAfterEvidence = afterTraceEvents.length > 0 || artifacts.afterReceipt !== undefined;
 
-  return `<section id="mission-trace" class="shell-section" aria-label="Mission execution and MCP trace">
+  return `<section id="mission-trace" class="shell-section" data-route-panel="mission-trace" aria-label="Mission execution and MCP trace">
     <h2>Mission and trace</h2>
     ${renderMissionList(artifacts.missions, beforeViolations, afterViolations, hasAfterEvidence)}
     <div class="trace-phases">
@@ -732,79 +732,198 @@ const renderCriticalIssueFixPairs = (
   </table>`;
 };
 
-interface ReplayStep {
-  id: string;
-  label: string;
-  phase: string;
-  state: string;
-  metric: string;
-  detail: string;
-  evidence: string[];
-  diagnostics?: Violation[];
-}
-
 const uniqueStrings = (values: string[]): string[] => [...new Set(values.filter((value) => value.length > 0))];
 
-const traceEventSummary = (event: TraceEvent | undefined): string =>
-  event
-    ? `${event.toolName ?? event.type}: ${toolInputSummary(event) || event.id}`
-    : "No trace event loaded.";
+const renderReplayCell = (label: string, value: string, options: { code?: boolean; className?: string } = {}): string =>
+  `<div class="${options.className ? `cell ${escapeHtml(options.className)}` : "cell"}">
+    <b>${escapeHtml(label)}</b>
+    ${options.code ? `<code>${escapeHtml(value)}</code>` : `<span>${escapeHtml(value)}</span>`}
+  </div>`;
 
-const renderReplayEvidence = (items: string[]): string =>
-  items.length > 0
-    ? `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
-    : `<p class="empty">No artifact evidence loaded for this stage.</p>`;
+const renderReplayTable = (rows: string, className = ""): string =>
+  `<div class="tbl${className ? ` ${escapeHtml(className)}` : ""}">${rows}</div>`;
 
-const diagnosticLevel = (violation: Violation): "error" | "warning" =>
-  violation.severity === "Critical" || violation.severity === "High" ? "error" : "warning";
-
-const renderCompilerDiagnostics = (violations: Violation[]): string => {
-  if (violations.length === 0) {
-    return `<p class="empty">No deterministic rule diagnostics for this stage.</p>`;
+const contractBudgetSummary = (contract: EnvironmentContract | undefined): string => {
+  if (!contract) {
+    return "contract not loaded";
   }
 
-  return `<div class="diagnostic-stack" aria-label="Deterministic compiler diagnostics">
-    ${violations
-      .map((violation) => {
-        const level = diagnosticLevel(violation);
-        const evidence = truncate(JSON.stringify(violation.evidence), 260);
-
-        return `<figure class="compiler-diagnostic compiler-diagnostic-${level}">
-          <figcaption>
-            <code>${level}[${escapeHtml(violation.ruleId)}]</code>
-            <span>${escapeHtml(violation.severity)}</span>
-          </figcaption>
-          <pre><code>trace ${escapeHtml(violation.traceEventId)}
-evidence ${escapeHtml(evidence)}
-reason  ${escapeHtml(violation.reason)}
-help    ${escapeHtml(violation.suggestedPolicyPatch)}</code></pre>
-        </figure>`;
-      })
-      .join("")}
-  </div>`;
+  return `${contract.queryBudgets.maxToolCalls} calls / ${contract.queryBudgets.maxResultRows} rows / ${contract.queryBudgets.timeoutSeconds}s`;
 };
 
-const renderReplayPanel = (step: ReplayStep, index: number): string => `<article
-  id="replay-${escapeHtml(step.id)}"
-  class="replay-panel"
-  data-replay-panel
-  aria-labelledby="replay-tab-${escapeHtml(step.id)}"
-  ${index === 0 ? "" : "hidden"}
+const contractSavedSearchSummary = (contract: EnvironmentContract | undefined, missions: MissionDefinition[]): string => {
+  if (!contract) {
+    return "contract not loaded";
+  }
+
+  const preferredRefs = preferredSavedSearchRefs(missions);
+  const preferred = contract.savedSearches
+    .map((savedSearch) => `${savedSearch.app}::${savedSearch.name}`)
+    .find((ref) => preferredRefs.has(ref));
+
+  return preferred ?? `${contract.savedSearches.length} saved search(es) compiled`;
+};
+
+const contractIndexSummary = (contract: EnvironmentContract | undefined, mission: MissionDefinition | undefined): string => {
+  if (!contract) {
+    return "contract not loaded";
+  }
+
+  const authorized = mission?.authorizedIndexes ?? contract.indexes.filter((index) => !index.sensitive).map((index) => index.name);
+  const restricted = contract.restrictedIndexes;
+
+  return `allow ${authorized.join(", ") || "none"} / restrict ${restricted.join(", ") || "none"}`;
+};
+
+const renderContractReplayTable = (
+  contract: EnvironmentContract | undefined,
+  missions: MissionDefinition[],
+  mission: MissionDefinition | undefined
+): string =>
+  renderReplayTable(
+    [
+      renderReplayCell("contract", contract ? `${contract.name} / ${contract.version}` : "environment-contract.json missing", {
+        code: Boolean(contract)
+      }),
+      renderReplayCell("mission", mission?.title ?? "missions.json missing"),
+      renderReplayCell("adapter mode", contract?.mode ?? "unknown"),
+      renderReplayCell("budget", contractBudgetSummary(contract)),
+      renderReplayCell("indexes", contractIndexSummary(contract, mission)),
+      renderReplayCell("saved search", contractSavedSearchSummary(contract, missions), { code: Boolean(contract) })
+    ].join(""),
+    "col-3"
+  );
+
+const traceEvidenceSummary = (event: TraceEvent): string =>
+  event.evidenceRefs.length > 0 ? event.evidenceRefs.join(", ") : "refs (none)";
+
+const renderTraceReplayTable = (events: TraceEvent[], emptyMessage: string): string => {
+  if (events.length === 0) {
+    return `<p class="empty">${escapeHtml(emptyMessage)}</p>`;
+  }
+
+  return renderReplayTable(
+    events
+      .map((event, index) => {
+        const step = event.step ?? index + 1;
+        const tool = event.toolName ?? event.type;
+        const summary = toolInputSummary(event) || event.toolOutputSummary || event.id;
+        const results = event.resultCount === null ? "results n/a" : `results ${event.resultCount}`;
+
+        return [
+          renderReplayCell(String(step).padStart(2, "0"), event.type, { className: "step" }),
+          renderReplayCell(tool, `${event.id} / ${summary}`, { code: Boolean(event.toolName) }),
+          renderReplayCell(results, traceEvidenceSummary(event))
+        ].join("");
+      })
+      .join(""),
+    "col-3"
+  );
+};
+
+const renderRuleReplayTable = (violations: Violation[], mission: MissionDefinition | undefined): string => {
+  if (violations.length === 0) {
+    return renderReplayTable(
+      [
+        renderReplayCell("rules", mission ? `${mission.checks.length} deterministic checks loaded` : "deterministic checks loaded"),
+        renderReplayCell("violations", "0 active violations in this trace"),
+        renderReplayCell("judge", "deterministic rule engine")
+      ].join(""),
+      "col-3"
+    );
+  }
+
+  return renderReplayTable(
+    violations
+      .map((violation) =>
+        [
+          renderReplayCell(violation.ruleId, violation.severity),
+          renderReplayCell(violation.traceEventId, violation.reason),
+          renderReplayCell("patch hint", violation.suggestedPolicyPatch)
+        ].join("")
+      )
+      .join(""),
+    "col-3"
+  );
+};
+
+const renderPatchReplayTable = (policyPatch: PolicyPatch | undefined): string => {
+  if (!policyPatch) {
+    return `<p class="empty">No policy-patch.json artifact loaded.</p>`;
+  }
+
+  const rows = [
+    renderReplayCell("patch", `${policyPatch.id} / ${policyPatch.status}`, { code: true }),
+    renderReplayCell("source receipt", policyPatch.sourceReceiptId, { code: true }),
+    ...policyPatch.rules.map((rule, index) =>
+      [
+        renderReplayCell(`+${index + 1}`, rule.id, { code: true }),
+        renderReplayCell("rule text", rule.text),
+        renderReplayCell("handling", "exported for review / no auto-apply")
+      ].join("")
+    )
+  ];
+
+  return renderReplayTable(rows.join(""), "col-patch");
+};
+
+const renderReceiptReplayTable = (
+  beforeReceipt: ReadinessReceipt | undefined,
+  afterReceipt: ReadinessReceipt | undefined,
+  afterViolations: Violation[],
+  afterTraceEvents: TraceEvent[]
+): string => {
+  const afterEvidenceRefs = uniqueStrings(afterTraceEvents.flatMap((event) => event.evidenceRefs));
+  const resolvedViolations = uniqueStrings(
+    afterReceipt && Array.isArray(afterReceipt.rerunComparison.resolvedViolations)
+      ? afterReceipt.rerunComparison.resolvedViolations.map((value) => String(value))
+      : []
+  );
+
+  return renderReplayTable(
+    [
+      renderReplayCell("readiness", afterReceipt ? `${afterReceipt.verdict} / ${afterReceipt.score}/100` : "rerun receipt missing"),
+      renderReplayCell(
+        "before",
+        beforeReceipt ? `${beforeReceipt.verdict} / ${beforeReceipt.score}/100 / ${beforeReceipt.criticalViolations.length} critical` : "failed receipt missing"
+      ),
+      renderReplayCell(
+        "after",
+        afterReceipt ? `${afterViolations.length} violation(s) / ${afterReceipt.criticalViolations.length} critical` : "rerun receipt missing"
+      ),
+      renderReplayCell("resolved", resolvedViolations.length > 0 ? resolvedViolations.join(", ") : "none recorded"),
+      renderReplayCell("evidence", afterEvidenceRefs.length > 0 ? afterEvidenceRefs.join(", ") : "refs (none)"),
+      renderReplayCell("receipt", afterReceipt?.id ?? "missing", { code: Boolean(afterReceipt) })
+    ].join(""),
+    "col-3"
+  );
+};
+
+const artifactFileList = (paths: UiArtifactPaths): string[] =>
+  [
+    paths.contract,
+    paths.missions,
+    paths.beforeTrace,
+    paths.beforeViolations,
+    paths.policyPatchJson,
+    paths.afterTrace,
+    paths.afterViolations,
+    paths.afterReceipt
+  ].filter((path): path is string => Boolean(path));
+
+const renderReplaySection = (id: string, mark: string, title: string, body: string, active = false): string => `<section
+  id="${escapeHtml(id)}"
+  class="replay-card-section"
+  data-replay-section
+  aria-labelledby="${escapeHtml(id)}-title"
+  ${active ? "" : "hidden"}
 >
-  <div class="replay-panel-head">
-    <div>
-      <p class="case-phase">Case timeline phase ${escapeValue(index + 1)}</p>
-      <h3>${escapeHtml(step.label)}</h3>
-      <p>${escapeHtml(step.detail)}</p>
-    </div>
-    <div class="replay-metric">
-      <span>${escapeHtml(step.state)}</span>
-      <strong>${escapeHtml(step.metric)}</strong>
-    </div>
+  <div class="replay-section-title">
+    <span>${escapeHtml(mark)}</span>
+    <h3 id="${escapeHtml(id)}-title">${escapeHtml(title)}</h3>
   </div>
-  ${step.diagnostics ? renderCompilerDiagnostics(step.diagnostics) : ""}
-  ${renderReplayEvidence(step.evidence)}
-</article>`;
+  ${body}
+</section>`;
 
 const renderCertificationReplay = (artifacts: UiArtifacts): string => {
   const beforeReceipt = artifacts.beforeReceipt ?? (artifacts.phase === "before" ? artifacts.receipt : undefined);
@@ -813,121 +932,57 @@ const renderCertificationReplay = (artifacts: UiArtifacts): string => {
   const afterTraceEvents = artifacts.afterTraceEvents ?? (artifacts.phase === "after" ? artifacts.traceEvents : []);
   const beforeViolations = artifacts.beforeViolations ?? (artifacts.phase === "before" ? artifacts.violations : []);
   const afterViolations = artifacts.afterViolations ?? (artifacts.phase === "after" ? artifacts.violations : []);
-  const firstFailingTool = beforeTraceEvents.find((event) => event.toolName) ?? beforeTraceEvents[0];
-  const firstPassingTool =
-    afterTraceEvents.find((event) => event.toolName === "splunk_run_saved_search") ??
-    afterTraceEvents.find((event) => event.toolName) ??
-    afterTraceEvents[0];
-  const ruleIds = uniqueStrings(beforeViolations.map((violation) => violation.ruleId));
-  const resolvedViolations = uniqueStrings(
-    afterReceipt && Array.isArray(afterReceipt.rerunComparison.resolvedViolations)
-      ? afterReceipt.rerunComparison.resolvedViolations.map((value) => String(value))
-      : []
-  );
-  const evidenceRefs = uniqueStrings(afterTraceEvents.flatMap((event) => event.evidenceRefs));
+  const mission = artifacts.missions[0];
+  const readinessState = afterReceipt ? `${afterReceipt.verdict} / ${afterReceipt.score}/100` : "rerun receipt missing";
+  const mutationText =
+    artifacts.receipt.mode === "fixture"
+      ? "fixture mode / no live Splunk mutation"
+      : "live mode / read-only inventory / no Splunk mutation";
+  const artifactsText = artifactFileList(artifacts.paths)
+    .map((path) => path.split("/").at(-1) ?? path)
+    .join(" / ");
 
-  const steps: ReplayStep[] = [
-    {
-      id: "fail",
-      label: "Initial run failed",
-      phase: "Fail",
-      state: beforeReceipt ? beforeReceipt.verdict : "missing",
-      metric: beforeReceipt ? `${beforeReceipt.score}/100` : "n/a",
-      detail: beforeReceipt
-        ? `${beforeReceipt.id} captured ${beforeReceipt.criticalViolations.length} critical issue(s).`
-        : "No failed receipt artifact is loaded.",
-      evidence: [
-        beforeReceipt ? `receipt: ${beforeReceipt.id}` : "",
-        firstFailingTool ? `trace: ${firstFailingTool.id}` : "",
-        firstFailingTool ? `tool: ${traceEventSummary(firstFailingTool)}` : ""
-      ].filter(Boolean)
-    },
-    {
-      id: "rules",
-      label: "Deterministic rules",
-      phase: "Rules",
-      state: beforeViolations.length > 0 ? "deterministic" : "clear",
-      metric: `${ruleIds.length} rule id(s)`,
-      detail:
-        beforeViolations.length > 0
-          ? "The failed trace is graded by explicit rule ids, not an LLM pass/fail judgment."
-          : "No before-run violations are loaded.",
-      evidence: ruleIds.map((ruleId) => `rule: ${ruleId}`),
-      diagnostics: beforeViolations
-    },
-    {
-      id: "patch",
-      label: "Policy patch",
-      phase: "Patch",
-      state: artifacts.policyPatch?.status ?? "missing",
-      metric: artifacts.policyPatch ? `${artifacts.policyPatch.rules.length} rule(s)` : "n/a",
-      detail: artifacts.policyPatch
-        ? `${artifacts.policyPatch.id} is exported for operator review.`
-        : "No policy patch artifact is loaded.",
-      evidence: artifacts.policyPatch?.rules.map((rule) => `patch: ${rule.id}`) ?? []
-    },
-    {
-      id: "rerun",
-      label: "Rerun trace",
-      phase: "Rerun",
-      state: afterTraceEvents.length > 0 ? "captured" : "missing",
-      metric: `${afterTraceEvents.length} event(s)`,
-      detail: firstPassingTool ? traceEventSummary(firstPassingTool) : "No rerun trace artifact is loaded.",
-      evidence: [
-        firstPassingTool ? `trace: ${firstPassingTool.id}` : "",
-        firstPassingTool ? `results: ${String(firstPassingTool.resultCount ?? "n/a")}` : "",
-        evidenceRefs.length > 0 ? `evidence refs: ${evidenceRefs.join(", ")}` : ""
-      ].filter(Boolean)
-    },
-    {
-      id: "pass",
-      label: "Receipt passed",
-      phase: "Pass",
-      state: afterReceipt?.verdict ?? "missing",
-      metric: afterReceipt ? `${afterReceipt.score}/100` : "n/a",
-      detail: afterReceipt
-        ? `${afterReceipt.id} resolves ${resolvedViolations.length} violation(s); after-run violations: ${afterViolations.length}.`
-        : "No rerun receipt artifact is loaded.",
-      evidence: [
-        afterReceipt ? `receipt: ${afterReceipt.id}` : "",
-        resolvedViolations.length > 0 ? `resolved: ${resolvedViolations.join(", ")}` : "",
-        afterReceipt ? `failed missions: ${afterReceipt.failedMissions.length}` : ""
-      ].filter(Boolean)
-    }
-  ];
-
-  return `<section id="certification-replay" class="shell-section" aria-label="Certification replay">
-    <div class="dossier-heading">
-      <div>
-        <h2>Certification replay</h2>
-        <p>Forensic Compiler Dossier generated from receipt, trace, violation, policy patch, and evidence artifacts.</p>
+  return `<section id="certification-replay" class="shell-section" data-route-panel="certification-replay" aria-label="Certification replay">
+    <p class="replay-invocation"><code>$ splc verify --replay --mode=${escapeHtml(artifacts.receipt.mode)} --out=${escapeHtml(artifacts.outDir)}</code></p>
+    <article class="replay-card" data-replay aria-label="Readiness Pre-Flight Card">
+      <header class="replay-card-header">
+        <div>
+          <p>SplunkReady / Agent Readiness Compiler</p>
+          <h2>Readiness Pre-Flight Card</h2>
+          <span>${escapeHtml(artifacts.receipt.agent.name)} ${escapeHtml(artifacts.receipt.agent.version)} against ${escapeHtml(artifacts.receipt.environment.name)}</span>
+        </div>
+        <strong>${escapeHtml(readinessState)}</strong>
+      </header>
+      <nav class="replay-card-rail" aria-label="Pre-flight card sections">
+        <button type="button" data-replay-target="sec-a" aria-current="true" aria-selected="true" aria-controls="sec-a"><span>A</span>Contract</button>
+        <button type="button" data-replay-target="sec-b" aria-selected="false" aria-controls="sec-b"><span>B</span>Trace A</button>
+        <button type="button" data-replay-target="sec-c" aria-selected="false" aria-controls="sec-c"><span>C</span>Rules</button>
+        <button type="button" data-replay-target="sec-d" aria-selected="false" aria-controls="sec-d"><span>D</span>Patch</button>
+        <button type="button" data-replay-target="sec-e" aria-selected="false" aria-controls="sec-e"><span>E</span>Trace B</button>
+      </nav>
+      <div class="replay-card-body">
+        ${renderReplaySection("sec-a", "A", "Contract", renderContractReplayTable(artifacts.contract, artifacts.missions, mission), true)}
+        ${renderReplaySection("sec-b", "B", "Trace A - before patch", renderTraceReplayTable(beforeTraceEvents, "No trace-before.json artifact loaded."))}
+        ${renderReplaySection("sec-c", "C", "Deterministic rules", renderRuleReplayTable(beforeViolations, mission))}
+        ${renderReplaySection("sec-d", "D", "Policy patch", renderPatchReplayTable(artifacts.policyPatch))}
+        ${renderReplaySection(
+          "sec-e",
+          "E",
+          "Trace B - after patch",
+          `${renderTraceReplayTable(afterTraceEvents, "No trace-after.json artifact loaded.")}${renderReceiptReplayTable(
+            beforeReceipt,
+            afterReceipt,
+            afterViolations,
+            afterTraceEvents
+          )}`
+        )}
       </div>
-      <dl>
-        <div><dt>Before</dt><dd><code>${escapeHtml(beforeReceipt?.id ?? "missing")}</code></dd></div>
-        <div><dt>After</dt><dd><code>${escapeHtml(afterReceipt?.id ?? "missing")}</code></dd></div>
-        <div><dt>Mode</dt><dd>${escapeHtml(artifacts.receipt.mode)}</dd></div>
-      </dl>
-    </div>
-    <div class="replay-board" data-replay>
-      <div class="replay-tabs case-timeline" role="tablist" aria-label="Agent Readiness Compiler stages">
-        ${steps
-          .map(
-            (step, index) => `<button
-              id="replay-tab-${escapeHtml(step.id)}"
-              class="replay-tab"
-              type="button"
-              role="tab"
-              aria-selected="${index === 0 ? "true" : "false"}"
-              aria-controls="replay-${escapeHtml(step.id)}"
-              data-replay-target="replay-${escapeHtml(step.id)}"
-            ><span>${escapeValue(index + 1)}</span><strong>${escapeHtml(step.phase)}</strong><em>${escapeHtml(step.label)}</em></button>`
-          )
-          .join("")}
-      </div>
-      <div class="replay-panels">
-        ${steps.map(renderReplayPanel).join("")}
-      </div>
-    </div>
+      <footer class="replay-compile">
+        <span>compiled by Agent Readiness Compiler</span>
+        <span>${escapeHtml(mutationText)}</span>
+        <code>${escapeHtml(artifactsText)}</code>
+      </footer>
+    </article>
   </section>`;
 };
 
@@ -941,7 +996,7 @@ const renderReceiptRerunView = (artifacts: UiArtifacts): string => {
   const stepClass = (complete: boolean): string => (complete ? "readiness-step readiness-step-complete" : "readiness-step");
   const stepState = (complete: boolean): string => (complete ? "complete" : "pending");
 
-  return `<section id="rerun-receipts" class="shell-section" aria-label="Readiness receipt rerun comparison">
+  return `<section id="rerun-receipts" class="shell-section" data-route-panel="rerun-receipts" aria-label="Readiness receipt rerun comparison">
     <h2>Receipts and rerun</h2>
     <div class="readiness-flow" aria-label="Readiness lifecycle">
       <div class="${stepClass(failComplete)}">
@@ -1032,22 +1087,31 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     }
 
     :root {
-      color-scheme: light;
-      --page: #f7f7f4;
-      --ink: #1f2421;
-      --muted: #646a66;
-      --line: #d7d9d2;
-      --surface: #ffffff;
-      --rail: #242622;
-      --rail-muted: #c6c8bf;
+      color-scheme: dark;
+      --page: #211d10;
+      --ink: #ebe7db;
+      --muted: #b8b0a1;
+      --line: #756f60;
+      --surface: #211d10;
+      --surface-2: #302a1c;
+      --paper: #211d10;
+      --paper-cell: #2a2300;
+      --paper-line: #756f60;
+      --rail: #211d10;
+      --rail-muted: #c9c2b5;
       --accent: #b45224;
-      --ready: #176b4d;
-      --review: #8a5a14;
-      --blocked: #a2342e;
+      --ready: #76e0bd;
+      --review: #d9aa4f;
+      --blocked: #ff8175;
+      --max-content: 100%;
     }
 
     * {
       box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
     }
 
     body {
@@ -1066,16 +1130,32 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     }
 
     .app-shell {
-      display: grid;
-      grid-template-columns: 248px minmax(0, 1fr);
       min-height: 100vh;
     }
 
     .side-nav {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 22px;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 300px;
+      height: 100vh;
+      overflow: hidden;
       background: var(--rail);
-      color: #f7f7f4;
-      border-right: 1px solid #171915;
-      padding: 24px 18px;
+      color: var(--ink);
+      border-right: 1px solid var(--paper-line);
+      padding: 26px 24px 20px;
+    }
+
+    .side-nav > div:first-child {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
     }
 
     .brand {
@@ -1086,33 +1166,84 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
     .tagline {
       color: var(--rail-muted);
-      margin: 0 0 28px;
+      margin: 0;
+    }
+
+    .side-nav nav {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      margin-top: 28px;
+      padding: 18px 0;
+      border-top: 1px solid var(--paper-line);
+      border-bottom: 1px solid var(--paper-line);
+      justify-content: space-between;
     }
 
     .side-nav a {
-      display: block;
-      color: #f7f7f4;
+      display: flex;
+      align-items: center;
+      color: var(--ink);
       text-decoration: none;
-      padding: 9px 10px;
-      border-radius: 6px;
-      margin-bottom: 4px;
+      min-height: 36px;
+      padding: 0 0 0 16px;
+      border-left: 1px solid rgba(117, 111, 96, 0.55);
       transition: background-color 0.15s ease;
     }
 
+    .side-nav a:last-child {
+      border-left: 1px solid rgba(117, 111, 96, 0.55);
+    }
+
     .side-nav a:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: transparent;
+      color: #fffaf0;
     }
 
     .side-nav a[aria-current="page"] {
-      background: #34372f;
+      background: transparent;
+      color: #fffaf0;
+      border-left-color: var(--ink);
+      font-weight: 700;
     }
 
     .side-nav a[aria-current="page"]:hover {
-      background: #34372f;
+      background: transparent;
+    }
+
+    .side-status {
+      border: 1px solid var(--paper-line);
+      border-left: 0;
+      border-right: 0;
+      padding: 10px 0 0;
+      background: transparent;
+      color: var(--rail-muted);
+    }
+
+    .side-status span {
+      display: block;
+      color: var(--ready);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .side-status code {
+      color: var(--ink);
+    }
+
+    .side-status p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .content {
       min-width: 0;
+      min-height: 100vh;
+      margin-left: 300px;
+      padding: 28px 34px;
+      background: var(--page);
     }
 
     .topbar {
@@ -1120,8 +1251,10 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       align-items: center;
       justify-content: space-between;
       gap: 24px;
-      padding: 22px 28px;
-      background: var(--surface);
+      max-width: var(--max-content);
+      margin: 0 auto;
+      padding: 0 0 24px;
+      background: transparent;
       border-bottom: 1px solid var(--line);
     }
 
@@ -1153,9 +1286,8 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
     .mode-indicator {
       border: 1px solid var(--line);
-      border-radius: 6px;
       padding: 7px 10px;
-      background: #fbfbf8;
+      background: var(--paper-cell);
       color: var(--ink);
       max-width: 360px;
     }
@@ -1185,9 +1317,8 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       gap: 10px;
       min-width: 0;
       padding: 10px 12px;
-      background: var(--surface);
+      background: transparent;
       border: 1px solid var(--line);
-      border-radius: 6px;
       color: var(--muted);
     }
 
@@ -1203,15 +1334,15 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       height: 24px;
       flex: 0 0 auto;
       border-radius: 999px;
-      background: #eeeeea;
+      background: #343020;
       color: var(--ink);
       font-weight: 700;
       font-size: 12px;
     }
 
     .readiness-step-complete .step-index {
-      background: var(--accent);
-      color: #ffffff;
+      background: var(--paper-line);
+      color: var(--ink);
     }
 
     .readiness-step strong {
@@ -1224,218 +1355,198 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       color: var(--muted);
     }
 
-    .dossier-heading {
+    .replay-invocation {
+      max-width: var(--max-content);
+      margin: 0 auto 10px;
+      color: var(--muted);
+    }
+
+    .replay-card {
+      display: flex;
+      flex-direction: column;
+      background: var(--paper);
+      color: var(--ink);
+      border: 1px solid var(--paper-line);
+      max-width: var(--max-content);
+      margin: 0 auto;
+    }
+
+    .replay-card-header {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+      grid-template-columns: minmax(0, 1fr) minmax(180px, max-content);
       gap: 18px;
-      align-items: end;
-      margin-bottom: 14px;
-    }
-
-    .dossier-heading p {
-      margin: 4px 0 0;
-      color: var(--muted);
-      max-width: 720px;
-    }
-
-    .dossier-heading dl {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      margin: 0;
-      background: var(--surface);
-      border: 1px solid var(--line);
-    }
-
-    .dossier-heading dl div {
-      min-width: 0;
-      padding: 9px 10px;
-      border-right: 1px solid var(--line);
-    }
-
-    .dossier-heading dl div:last-child {
-      border-right: 0;
-    }
-
-    .dossier-heading dd {
-      font-weight: 650;
-    }
-
-    .replay-board {
-      display: grid;
-      grid-template-columns: 260px minmax(0, 1fr);
-      background: #fbfaf5;
-      border: 1px solid var(--line);
-    }
-
-    .replay-tabs {
-      border-right: 1px solid var(--line);
-      background: #eeece4;
-    }
-
-    .replay-tab {
-      display: grid;
-      grid-template-columns: 28px minmax(0, 1fr);
-      column-gap: 10px;
-      row-gap: 2px;
       align-items: start;
-      width: 100%;
-      min-width: 0;
-      padding: 13px 12px;
-      border: 0;
-      border-left: 3px solid transparent;
-      border-bottom: 1px solid var(--line);
-      background: transparent;
-      color: var(--muted);
-      font: inherit;
-      text-align: left;
-      cursor: pointer;
-      transition: background-color 0.15s ease, color 0.15s ease;
-    }
-
-    .replay-tab:hover,
-    .replay-tab[aria-selected="true"] {
-      background: var(--surface);
+      padding: 18px 20px 16px;
+      border-bottom: 1px solid var(--paper-line);
+      background: var(--paper);
       color: var(--ink);
     }
 
-    .replay-tab span {
-      grid-row: span 2;
+    .replay-card-header p,
+    .replay-card-header span {
+      display: block;
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .replay-card-header h2 {
+      margin: 3px 0 5px;
+      font-size: 20px;
+    }
+
+    .replay-card-header strong {
+      justify-self: end;
+      padding: 7px 9px;
+      border: 1px solid var(--paper-line);
+      background: var(--paper-cell);
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .replay-card-rail {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      background: #302a1c;
+      border-bottom: 1px solid var(--paper-line);
+    }
+
+    .replay-card-rail button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      padding: 9px 10px;
+      border-right: 1px solid var(--paper-line);
+      border-top: 0;
+      border-bottom: 0;
+      border-left: 0;
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 650;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .replay-card-rail button:last-child {
+      border-right: 0;
+    }
+
+    .replay-card-rail button:hover,
+    .replay-card-rail button[aria-current="true"] {
+      background: var(--paper);
+    }
+
+    .replay-card-rail span,
+    .replay-section-title span {
       display: grid;
       place-items: center;
-      width: 24px;
-      height: 24px;
-      border: 1px solid var(--line);
-      border-radius: 3px;
+      width: 22px;
+      height: 22px;
+      flex: 0 0 auto;
+      border: 1px solid currentColor;
       font-size: 12px;
       font-weight: 700;
     }
 
-    .replay-tab strong,
-    .replay-tab em {
+    .replay-card-body {
+      flex: 1;
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    .replay-card-section {
+      padding: 18px 20px 20px;
+      border-bottom: 1px solid var(--paper-line);
+    }
+
+    .replay-section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .replay-section-title h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .tbl {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border-top: 1px solid var(--paper-line);
+      border-left: 1px solid var(--paper-line);
+      background: var(--paper-cell);
+    }
+
+    .tbl.col-3 {
+      grid-template-columns: minmax(92px, 0.55fr) minmax(0, 1.55fr) minmax(160px, 0.9fr);
+    }
+
+    .tbl.col-patch {
+      grid-template-columns: 180px minmax(0, 1.4fr) minmax(180px, 0.8fr);
+    }
+
+    .cell {
       min-width: 0;
+      padding: 9px 10px;
+      border-right: 1px solid var(--paper-line);
+      border-bottom: 1px solid var(--paper-line);
       overflow-wrap: anywhere;
     }
 
-    .replay-tab strong {
-      font-weight: 700;
-    }
-
-    .replay-tab em {
+    .cell b {
+      display: block;
+      margin-bottom: 4px;
       color: var(--muted);
-      font-style: normal;
-      font-size: 12px;
-    }
-
-    .replay-tab[aria-selected="true"] {
-      border-left-color: var(--accent);
-    }
-
-    .replay-tab[aria-selected="true"] span {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .replay-panel {
-      padding: 18px 20px;
-      min-height: 360px;
-    }
-
-    .replay-panel[hidden] {
-      display: none;
-    }
-
-    .replay-panel-head {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 168px;
-      gap: 18px;
-      align-items: start;
-      margin-bottom: 14px;
-    }
-
-    .replay-panel-head p {
-      margin: 4px 0 0;
-      color: var(--muted);
-    }
-
-    .case-phase {
-      margin: 0 0 4px;
-      color: var(--accent);
       font-size: 12px;
       font-weight: 650;
     }
 
-    .replay-metric {
-      border-left: 3px solid var(--accent);
-      padding-left: 12px;
+    .cell span {
+      display: block;
     }
 
-    .replay-metric span {
-      display: block;
+    .cell.step {
+      background: #2f2a18;
+    }
+
+    .replay-card-section .empty {
+      background: var(--paper-cell);
       color: var(--muted);
+      border-color: var(--paper-line);
     }
 
-    .replay-metric strong {
-      display: block;
-      font-size: 20px;
-    }
-
-    .diagnostic-stack {
+    .replay-compile {
       display: grid;
-      gap: 10px;
-      margin-bottom: 14px;
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 0.8fr) minmax(0, 1.6fr);
+      gap: 0;
+      background: #17130a;
+      color: var(--ink);
+      border-top: 1px solid var(--paper-line);
     }
 
-    .compiler-diagnostic {
-      margin: 0;
-      background: #171915;
-      color: #f4f1e8;
-      border: 1px solid #303329;
+    .replay-compile span,
+    .replay-compile code {
+      padding: 10px 12px;
+      border-right: 1px solid var(--paper-line);
     }
 
-    .compiler-diagnostic figcaption {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 9px 11px;
-      border-bottom: 1px solid #303329;
-    }
-
-    .compiler-diagnostic figcaption code {
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .compiler-diagnostic-error figcaption code {
-      color: #ff8c73;
-    }
-
-    .compiler-diagnostic-warning figcaption code {
-      color: #e3b341;
-    }
-
-    .compiler-diagnostic figcaption span {
-      color: #beb8a9;
-      font-size: 12px;
-    }
-
-    .compiler-diagnostic pre {
-      margin: 0;
-      padding: 11px;
-      overflow: auto;
-      white-space: pre-wrap;
-    }
-
-    .compiler-diagnostic pre code {
-      color: #f4f1e8;
-      font-size: 12px;
+    .replay-compile code {
+      color: var(--ink);
     }
 
     .receipt-strip {
       display: grid;
       grid-template-columns: 240px repeat(4, minmax(120px, 1fr));
       gap: 0;
-      background: var(--surface);
+      max-width: var(--max-content);
+      margin: 0 auto;
+      background: transparent;
       border-bottom: 1px solid var(--line);
     }
 
@@ -1472,9 +1583,17 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     }
 
     .shell-section {
-      padding: 24px 28px;
-      border-bottom: 1px solid var(--line);
-      background: var(--page);
+      padding: 32px 0 0;
+      max-width: var(--max-content);
+      margin: 0 auto;
+      border: 0;
+      background: transparent;
+    }
+
+    #certification-replay {
+      padding: 0;
+      border: 0;
+      background: transparent;
     }
 
     .section-grid {
@@ -1492,7 +1611,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     table {
       width: 100%;
       border-collapse: collapse;
-      background: var(--surface);
+      background: var(--paper);
       border: 1px solid var(--line);
     }
 
@@ -1505,7 +1624,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     }
 
     th {
-      background: #eeeeea;
+      background: var(--surface-2);
       font-weight: 650;
     }
 
@@ -1518,13 +1637,13 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     }
 
     tbody tr:hover td {
-      background: #fbfbf9;
+      background: #292515;
     }
 
     .trace-limit-row td {
       color: var(--muted);
       text-align: center;
-      background: #eeeeea;
+      background: var(--surface-2);
       font-size: 12px;
     }
 
@@ -1561,17 +1680,17 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
     .check-badge-pass {
       color: var(--ready);
-      background: #eff8f3;
+      background: #193126;
     }
 
     .check-badge-resolved {
       color: var(--muted);
-      background: #f4f5f2;
+      background: var(--surface-2);
     }
 
     .check-badge-failed {
       color: var(--blocked);
-      background: #fbefee;
+      background: #3a201b;
     }
 
     .inline-violations {
@@ -1591,7 +1710,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
     .artifact-paths {
       margin: 0;
-      background: var(--surface);
+      background: var(--paper);
       border: 1px solid var(--line);
     }
 
@@ -1619,7 +1738,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
     .empty {
       margin: 0;
       color: var(--muted);
-      background: var(--surface);
+      background: var(--paper-cell);
       border: 1px solid var(--line);
       padding: 12px;
     }
@@ -1637,19 +1756,33 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
     @media (max-width: 920px) {
       .app-shell {
-        grid-template-columns: 1fr;
+        display: block;
       }
 
       .side-nav {
+        position: static;
+        width: auto;
+        height: auto;
         border-right: 0;
-        border-bottom: 1px solid #171915;
+        border-bottom: 1px solid var(--paper-line);
+        min-height: auto;
+      }
+
+      .content {
+        margin-left: 0;
       }
 
       .receipt-strip,
       .section-grid,
       .contract-grid,
       .receipt-comparison,
-      .provenance-columns {
+      .provenance-columns,
+      .replay-card-header,
+      .replay-card-rail,
+      .tbl,
+      .tbl.col-3,
+      .tbl.col-patch,
+      .replay-compile {
         grid-template-columns: 1fr;
       }
 
@@ -1668,33 +1801,15 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
         grid-template-columns: 1fr;
       }
 
-      .replay-tabs,
-      .replay-panel-head {
-        grid-template-columns: 1fr;
+      .replay-card-header strong {
+        justify-self: start;
       }
 
-      .replay-board,
-      .dossier-heading,
-      .dossier-heading dl {
-        grid-template-columns: 1fr;
-      }
-
-      .replay-tab {
-        border-bottom: 1px solid var(--line);
-      }
-
-      .replay-tabs {
+      .replay-card-rail button,
+      .replay-compile span,
+      .replay-compile code {
         border-right: 0;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .dossier-heading dl div {
-        border-right: 0;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .dossier-heading dl div:last-child {
-        border-bottom: 0;
+        border-bottom: 1px solid var(--paper-line);
       }
     }
 
@@ -1704,7 +1819,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
       }
 
       .side-nav a,
-      .replay-tab,
+      .replay-card-rail button,
       tbody tr {
         transition: none;
       }
@@ -1714,21 +1829,28 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 <body>
   <div class="app-shell">
     <aside class="side-nav" aria-label="SplunkReady sections">
-      <div class="brand">SplunkReady</div>
-      <p class="tagline">Certify AI agents before they touch production Splunk.</p>
-      <nav>
-        <a aria-current="page" href="#receipt">Readiness Receipt</a>
-        <a href="#certification-replay">Replay</a>
-        <a href="#contract">Contract</a>
-        <a href="#mission-trace">Mission trace</a>
-        <a href="#rerun-receipts">Rerun receipts</a>
-        <a href="#provenance">Provenance</a>
-        <a href="#violations">Violations</a>
-        <a href="#artifacts">Artifacts</a>
-      </nav>
+      <div>
+        <div class="brand">SplunkReady</div>
+        <p class="tagline">Certify AI agents before they touch production Splunk.</p>
+        <nav>
+          <a aria-current="page" href="#receipt">Readiness Receipt</a>
+          <a href="#certification-replay">Replay</a>
+          <a href="#contract">Contract</a>
+          <a href="#mission-trace">Mission trace</a>
+          <a href="#rerun-receipts">Rerun receipts</a>
+          <a href="#provenance">Provenance</a>
+          <a href="#violations">Violations</a>
+          <a href="#artifacts">Artifacts</a>
+        </nav>
+      </div>
+      <div class="side-status">
+        <span>${escapeHtml(receipt.verdict)} / ${escapeValue(receipt.score)}/100</span>
+        <code>${escapeHtml(receipt.mode)} · ${escapeHtml(artifacts.phase)}</code>
+        <p>${escapeHtml(receipt.generatedBy ?? "Agent Readiness Compiler")}</p>
+      </div>
     </aside>
     <main class="content">
-      <header class="topbar">
+      <header class="topbar" data-route-panel="receipt">
         <div>
           <h1>Readiness Receipt</h1>
           <p class="subtle">Agent Readiness Compiler output for ${escapeHtml(receipt.agent.name)} ${escapeHtml(receipt.agent.version)}</p>
@@ -1739,7 +1861,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
         </div>
       </header>
 
-      <section id="receipt" class="receipt-strip" aria-label="Current agent verdict">
+      <section id="receipt" class="receipt-strip" data-route-panel="receipt" aria-label="Current agent verdict">
         <div class="verdict-cell ${verdictClass(receipt.verdict)}">
           <div class="cell-label">Current verdict</div>
           <div class="cell-value">${escapeHtml(receipt.verdict)}</div>
@@ -1764,7 +1886,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
       ${renderCertificationReplay(artifacts)}
 
-      <section class="shell-section" aria-label="Receipt identity">
+      <section class="shell-section" data-route-panel="receipt" aria-label="Receipt identity">
         <div class="section-grid">
           <div>
             <h2>${escapeHtml(receipt.id)}</h2>
@@ -1797,7 +1919,7 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
 
       ${renderMissionTraceView(artifacts)}
 
-      <section id="provenance" class="shell-section" aria-label="Trace and evidence provenance">
+      <section id="provenance" class="shell-section" data-route-panel="provenance" aria-label="Trace and evidence provenance">
         <div class="section-grid">
           <div>
             <h2>Trace events</h2>
@@ -1814,12 +1936,12 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
         </div>
       </section>
 
-      <section id="violations" class="shell-section" aria-label="Deterministic violations">
+      <section id="violations" class="shell-section" data-route-panel="violations" aria-label="Deterministic violations">
         <h2>Deterministic violations</h2>
         ${renderViolations(artifacts.violations)}
       </section>
 
-      <section id="artifacts" class="shell-section" aria-label="Loaded artifact paths">
+      <section id="artifacts" class="shell-section" data-route-panel="artifacts" aria-label="Loaded artifact paths">
         <h2>Loaded artifacts</h2>
         ${renderArtifactPaths(artifacts.paths)}
       </section>
@@ -1828,8 +1950,14 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       const links = Array.from(document.querySelectorAll(".side-nav a"));
-      const updateActiveLink = () => {
-        const activeHash = window.location.hash || "#receipt";
+      const routePanels = Array.from(document.querySelectorAll("[data-route-panel]"));
+      const validRoutes = new Set(links.map((link) => link.getAttribute("href")?.slice(1)).filter(Boolean));
+      const normalizeRoute = (hash) => {
+        const route = (hash || "#receipt").replace(/^#/, "");
+        return validRoutes.has(route) ? route : "receipt";
+      };
+      const showRoute = (route, shouldScroll = true) => {
+        const activeHash = "#" + route;
 
         links.forEach((link) => {
           if (link.getAttribute("href") === activeHash) {
@@ -1838,53 +1966,88 @@ export const renderUiShell = (artifacts: UiArtifacts): string => {
             link.removeAttribute("aria-current");
           }
         });
-      };
 
-      window.addEventListener("hashchange", updateActiveLink);
-      updateActiveLink();
-
-      const replayTabs = Array.from(document.querySelectorAll("[data-replay-target]"));
-      const replayPanels = Array.from(document.querySelectorAll("[data-replay-panel]"));
-      const activateReplayTab = (tab) => {
-        const targetId = tab.getAttribute("data-replay-target");
-
-        replayTabs.forEach((candidate) => {
-          candidate.setAttribute("aria-selected", candidate === tab ? "true" : "false");
-        });
-
-        replayPanels.forEach((panel) => {
-          if (panel.id === targetId) {
+        routePanels.forEach((panel) => {
+          if (panel.getAttribute("data-route-panel") === route) {
             panel.removeAttribute("hidden");
           } else {
             panel.setAttribute("hidden", "");
           }
         });
+
+        if (shouldScroll) {
+          window.scrollTo({ top: 0, left: 0 });
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }
       };
 
-      replayTabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-          activateReplayTab(tab);
+      links.forEach((link) => {
+        link.addEventListener("click", (event) => {
+          const route = normalizeRoute(link.getAttribute("href") || "#receipt");
+
+          event.preventDefault();
+          history.pushState(null, "", "#" + route);
+          showRoute(route);
+        });
+      });
+
+      window.addEventListener("popstate", () => {
+        showRoute(normalizeRoute(window.location.hash));
+      });
+      window.addEventListener("hashchange", () => {
+        showRoute(normalizeRoute(window.location.hash));
+      });
+      showRoute(normalizeRoute(window.location.hash), false);
+
+      const replayTargets = Array.from(document.querySelectorAll("[data-replay-target]"));
+      const replaySections = Array.from(document.querySelectorAll("[data-replay-section]"));
+      const activateReplayTarget = (target) => {
+        const targetId = target.getAttribute("data-replay-target");
+
+        replayTargets.forEach((candidate) => {
+          if (candidate === target) {
+            candidate.setAttribute("aria-current", "true");
+            candidate.setAttribute("aria-selected", "true");
+          } else {
+            candidate.removeAttribute("aria-current");
+            candidate.setAttribute("aria-selected", "false");
+          }
         });
 
-        tab.addEventListener("keydown", (event) => {
+        replaySections.forEach((section) => {
+          if (section.id === targetId) {
+            section.removeAttribute("hidden");
+          } else {
+            section.setAttribute("hidden", "");
+          }
+        });
+      };
+
+      replayTargets.forEach((target) => {
+        target.addEventListener("click", () => {
+          activateReplayTarget(target);
+        });
+
+        target.addEventListener("keydown", (event) => {
           if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
             return;
           }
 
           event.preventDefault();
-          const currentIndex = replayTabs.indexOf(tab);
+          const currentIndex = replayTargets.indexOf(target);
           const nextIndex =
             event.key === "Home"
               ? 0
               : event.key === "End"
-                ? replayTabs.length - 1
+                ? replayTargets.length - 1
                 : event.key === "ArrowRight"
-                  ? (currentIndex + 1) % replayTabs.length
-                  : (currentIndex - 1 + replayTabs.length) % replayTabs.length;
-          const nextTab = replayTabs[nextIndex];
+                  ? (currentIndex + 1) % replayTargets.length
+                  : (currentIndex - 1 + replayTargets.length) % replayTargets.length;
+          const nextTarget = replayTargets[nextIndex];
 
-          nextTab.focus();
-          activateReplayTab(nextTab);
+          nextTarget.focus();
+          activateReplayTarget(nextTarget);
         });
       });
     });

@@ -2,7 +2,7 @@
 
 ## Current State
 
-SplunkReady is implemented through Wave 82 external trace consolidation on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, static UI shell, optional read-only live smoke path, reviewer audit automation, submission guardrails, external trace grading through `grade-trace`, explicit live-proof gap documentation, and a Minimax-derived Pre-Flight Card plan for the next UI implementation.
+SplunkReady is implemented through Wave 83 Pre-Flight Card UI on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, optional read-only live smoke path, reviewer audit automation, submission guardrails, external trace grading through `grade-trace`, explicit live-proof gap documentation, and a routed static UI shell whose primary replay route is a Minimax-derived Readiness Pre-Flight Card.
 
 ## Start Here
 
@@ -52,7 +52,7 @@ Do not parallelize:
 
 ## Next Concrete Step
 
-Continue with the next narrow product wave. The highest-leverage next move is implementing `docs/preflight-card-ui-implementation-plan.md` in `src/ui/shell.ts` and `tests/ui/shell.test.ts`. Start from a clean `splunkready-build` checkout, read the latest wave file, check `logs/reviewer-inbox/`, then run the wave-specific verification. The current broad health check is:
+Continue with the next narrow product wave. Candidate next moves are bounded live-mode hardening, real-agent trace capture guidance, or demo/submission polish based on fresh reviewer findings. Start from a clean `splunkready-build` checkout, read the latest wave file, check `logs/reviewer-inbox/`, then run the wave-specific verification. The current broad health check is:
 
 ```bash
 npm run check

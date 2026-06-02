@@ -1,6 +1,6 @@
 # SplunkReady Execution Plan
 
-Status: implemented through Wave 82 external trace consolidation on `splunkready-build`; overall goal remains open until explicit user approval.
+Status: implemented through Wave 83 Pre-Flight Card UI on `splunkready-build`; overall goal remains open until explicit user approval.
 
 ## Objective
 
@@ -43,7 +43,7 @@ For each wave:
 8. Ask reviewer loop to inspect.
 9. Resolve or waive reviewer notes before next wave.
 
-After Wave 41, do not treat the original wave list as a stopping point, but do not add verification-only waves for their own sake. Prioritize product movement and proof gaps: external trace intake, honest live-proof status, real-agent trace capture, the Minimax Pre-Flight Card UI implementation, optional live-mode hardening, demo reliability, reviewer-audit automation, submission-copy guardrails, and any user-directed follow-up work. Do not mark the overall goal complete until the user explicitly approves completion.
+After Wave 41, do not treat the original wave list as a stopping point, but do not add verification-only waves for their own sake. Prioritize product movement and proof gaps: real-agent trace capture, optional live-mode hardening, demo reliability, reviewer-audit automation, submission-copy guardrails, and any user-directed follow-up work. Do not mark the overall goal complete until the user explicitly approves completion.
 
 ## Reviewer Loop
 

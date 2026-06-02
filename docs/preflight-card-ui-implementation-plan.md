@@ -10,7 +10,7 @@ Chosen prototype:
 
 ## Decision
 
-Implement the refined Pre-Flight Card as the next certification replay UI.
+Implemented in Wave 83 as the certification replay UI in `src/ui/shell.ts`.
 
 The form is a single black-on-warm-card certification artifact with sections A through E:
 
@@ -20,7 +20,7 @@ The form is a single black-on-warm-card certification artifact with sections A t
 - D Policy patch
 - E Trace B - after patch
 
-This direction is intentionally not a dashboard, terminal cosplay, chatbot, SOC copilot, or fake live view.
+This direction is intentionally not a dashboard, terminal cosplay, chatbot, SOC copilot, or fake live view. The implemented shell keeps the static artifact model, routes sidebar links to one visible top-level view at a time, and switches A-E Pre-Flight Card panes inside the replay card without changing the route.
 
 ## What To Keep From Minimax
 
@@ -32,12 +32,13 @@ This direction is intentionally not a dashboard, terminal cosplay, chatbot, SOC 
 - Compile footer below the card with mode and artifact list.
 - Negative UI guards: no fake live pulse, no real-time claims, no auto-mutate wording, no gradients, no glass, no transform hover effects, no emoji chrome.
 
-## What To Change Before Integration
+## Integration Notes
 
-- Do not copy sample trace ids or evidence ids from the prototype. Render current fixture artifacts from `loadUiArtifacts`.
-- Do not assume `src/ui/index.ts` exists; update the actual inline shell script and existing `[data-replay-target]` behavior in `src/ui/shell.ts`.
-- Do not hardcode `Agent Readiness Compiler v0.1.0`; current `package.json` version is `0.0.0`. Either omit the version or render the package version deliberately.
-- Keep existing route `splunkready-shell.html#certification-replay`.
+- Prototype sample trace ids and evidence ids were not copied; the card renders loaded contract, mission, trace, violation, policy patch, receipt, and artifact path data.
+- The integration updated the inline shell script in `src/ui/shell.ts`; no `src/ui/index.ts` boundary exists.
+- The card renders the agent name/version from the receipt artifact instead of hardcoding a compiler package version.
+- The existing route remains `splunkready-shell.html#certification-replay`.
+- The sidebar is viewport-bound so route content height cannot stretch nav spacing.
 
 ## Implementation Files
 

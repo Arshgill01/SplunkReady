@@ -3327,3 +3327,54 @@ Result:
 - Final full check passed: scaffold verifier reported 83 waves and 442 project files; Vitest passed 31 files / 145 tests.
 - Final reviewer audit passed after `wave-82-20260602-1720-rereview.md`: 84 groups, 7 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 83 waves and 443 project files.
+
+## 2026-06-02 - Wave 83 Pre-Flight Card UI
+
+Scope:
+- Implement the Minimax-derived Readiness Pre-Flight Card as the primary certification replay UI.
+- Replace the Wave 81 forensic dossier replay route with an A-E artifact card backed by loaded contract, trace, violation, policy patch, receipt, and artifact-path data.
+- Route sidebar links to one visible top-level pane at a time instead of scrolling a long shell document.
+- Keep the application shell flat and receipt-like: the Pre-Flight Card is the artifact, while non-replay panes render on the brown receipt canvas without padded outer cards.
+- Keep fixture/live honesty: no fake live state, real-time claims, auto-mutation, assistant/chatbot framing, or generic dashboard drift.
+
+Files changed:
+- `src/ui/shell.ts`
+- `tests/ui/shell.test.ts`
+- `docs/preflight-card-ui-implementation-plan.md`
+- `docs/waves/wave-83-preflight-card-ui.md`
+- `docs/waves/README.md`
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- Wave 83 reviewer inbox files and main-executor resolution.
+
+Notes:
+- `renderCertificationReplay` now renders a single `replay-card` with A Contract, B Trace A, C Rules, D Patch, and E Trace B panes.
+- A-E pane controls switch in place without changing the top-level URL route.
+- Contract rows derive from `environment-contract.json` and mission data.
+- Trace rows derive from before/after trace artifacts; rule rows derive from deterministic violation artifacts; patch rows derive from `policy-patch.json`; receipt rows derive from before/after receipts.
+- The compile footer states fixture mode and no live Splunk mutation.
+- The sidebar route script hides non-active top-level panels and resets scroll position to 0 on route changes.
+- The sidebar is viewport-bound with `position: fixed`, `width: 300px`, and `height: 100vh`, so long route content cannot stretch or move the rail while the main pane scrolls.
+- The shell palette was normalized to the brown Pre-Flight Card surface, and non-replay route panes were flattened by removing outer route-card borders/backgrounds.
+- Focused UI tests now guard against fake live/real-time/auto-mutate/dashboard/chart drift, gradients, glass, transform hover effects, negative letter spacing, emoji chrome, stale Wave 81 replay markers, old green-black shell tokens, max-width relapse, and sidebar stretch relapse.
+- Browser verification used the generated fixture shell at `http://127.0.0.1:8783/splunkready-shell.html#certification-replay`.
+- Browser screenshots were captured under `output/playwright/wave-83/` for local inspection during implementation; these are local verification artifacts and are not intended for commit.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Reviewer findings:
+- `unknown-wave-20260602-1727-review.md`: High process finding for missing active wave and High test failure were fixed by adding the Wave 83 contract and updating the focused UI tests; Medium stale replay behavior was fixed by coherent A-E pane switching.
+- `unknown-wave-20260602-1730-rereview.md`: High unscoped/unlogged finding was fixed by the Wave 83 contract and this log entry.
+- `unknown-wave-20260602-1731-rereview.md`: High unscoped/unlogged finding was fixed by Wave 83 docs/logs; Medium `.playwright-cli/` finding will be resolved by cleaning local Playwright state before closeout.
+- `unknown-wave-20260602-1745-rereview.md`: passed for prior unknown-wave cleanup.
+- `wave-83-20260602-1745-review.md`: High missing Wave 83 execution/verification logs fixed by adding this execution entry, the Wave 83 verification entry, and a main-executor resolution file.
+
+Result:
+- PASS.
+- Focused UI shell tests passed: 1 test file / 12 tests.
+- Full check passed: scaffold verifier reported 84 waves and 451 project files; Vitest passed 31 test files / 145 tests.
+- Reviewer audit passed after `wave-83-20260602-1810-main-resolution.md`: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 84 waves and 451 project files.

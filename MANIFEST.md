@@ -1,6 +1,6 @@
 # SplunkReady Scaffold Manifest
 
-Status: implemented through Wave 82 external trace consolidation on `splunkready-build`.
+Status: implemented through Wave 83 Pre-Flight Card UI on `splunkready-build`.
 
 This repository turns the locked SplunkReady idea into an implemented, fixture-first certification harness that can also grade externally captured agent traces. The scaffold process remains in force for future continuation waves.
 
@@ -46,7 +46,7 @@ This repository turns the locked SplunkReady idea into an implemented, fixture-f
 - `docs/fixture-live-parity.md`: fixture/live adapter parity contract.
 - `docs/live-proof-gap.md`: current live-unverified status and the smallest next read-only live proof command.
 - `docs/follow-up-gap-closure-report.md`: current real/fixture/live truth table and consolidation evidence.
-- `docs/preflight-card-ui-implementation-plan.md`: Minimax-derived plan for the next certification replay UI implementation.
+- `docs/preflight-card-ui-implementation-plan.md`: Minimax-derived plan now implemented in the routed Pre-Flight Card replay UI.
 - `docs/demo-script.md`: 3-minute final demo script.
 - `docs/prompts/`: copy-paste `/goal` prompts for the main executor and reviewer.
 - `references/source-grounding-matrix.md`: source evidence for major claims.
