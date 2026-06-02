@@ -3879,3 +3879,49 @@ Reviewer findings:
 
 Result:
 - PASS for the checkpoint after focused adapter/UI checks and full project verification.
+
+## 2026-06-02 - Phase Live Move 13 CI/CD JSON Gate
+
+Scope:
+- Add machine-readable `--json` output for the CI-relevant CLI commands: `compile`, `evaluate`, `receipt`, `rerun`, and `grade-trace`.
+- Preserve the existing human-readable `PASS <command>` plus `artifact <path>` output when `--json` is not provided.
+- Add a GitHub Actions example showing how SplunkReady can gate PRs by issuing a final Readiness Receipt and failing the workflow when the receipt is not `READY`.
+- Keep live Splunk credentials out of the default CI path; the example uses fixture mode so it can run in ordinary PR checks.
+
+Files changed:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `examples/github-workflow-example.yml`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- The JSON envelope is `{ command, status, artifacts, messages? }`.
+- `--json` is parsed as a standalone flag, while existing `--flag value` parsing remains unchanged.
+- The workflow performs compile -> evaluate -> receipt -> rerun and gates on `receipt-after-001.json`, avoiding a permanently failing sample workflow from the intentionally unsafe first run.
+- This is a core DX artifact, not Devpost/video polish.
+
+Estimated prize trajectory after Move 13:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 18% | 18% | No major live proof change. |
+| Platform & DX | 36% | 39% | CI gating makes SplunkReady usable as developer infrastructure. |
+| Security | 20% | 20% | Security mission behavior unchanged. |
+| Best Use of MCP Server | 60% | 60% | MCP proof unchanged. |
+| Hosted Models | 45% | 45% | Hosted-model UI/patch exposure unchanged. |
+| Developer Tools | 31% | 35% | Programmatic CLI output and GitHub Actions example strengthen SDK/tooling value. |
+
+Future expansion queue:
+- Move 3 green-path investigation: highest priority after Move 13. Determine concrete options for a fully passing live receipt without pretending the current live trial has ES/demo content. Options to evaluate include adding operator-approved demo events/searches to local Splunk, compiling a mission from real discovered live content, or using a live external trace path that grades real MCP calls against a contract aligned to the actual Splunk deployment.
+- Move 16 Live Agent Firewall Gateway: likely next product feature after the live-green plan. It turns the certification contract/policy into pre-execution protection by wrapping the adapter and blocking unsafe `runQuery` calls before Splunk is touched.
+- Move 14 SAIA in Vite UI: useful hosted-model visibility, but should be implemented after verifying current policy patch data shape and avoiding dashboard clutter.
+- Move 15 second security mission: useful if it adds a real distinct security proof, not just more fixture bulk.
+- Move 17 policy simulator: defer until the receipt UI is stable; build only if it clarifies policy tradeoffs without making the deterministic receipt look optional.
+- Move 18 multi-agent selector: defer until multiple real artifact bundles exist; avoid a generic dashboard unless it helps inspect certified agents.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No new reviewer inbox file exists for this Phase Live move.
+
+Result:
+- PASS for Move 13 after focused CLI validation and full project verification.

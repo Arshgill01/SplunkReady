@@ -1,0 +1,63 @@
+name: SplunkReady agent gate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  splunkready:
+    name: Certify Splunk agent trace
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build SplunkReady
+        run: npm run build
+
+      - name: Compile fixture contract
+        run: npm run splunkready -- compile --mode fixture --out artifacts/ci-readiness --json
+
+      - name: Evaluate specimen agent
+        run: npm run splunkready -- evaluate --mode fixture --out artifacts/ci-readiness --json
+
+      - name: Issue Readiness Receipt
+        run: npm run splunkready -- receipt --out artifacts/ci-readiness --json
+
+      - name: Rerun with compiled policy
+        run: npm run splunkready -- rerun --mode fixture --out artifacts/ci-readiness --json
+
+      - name: Block merge unless receipt is READY
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+
+          const receipt = JSON.parse(await readFile("artifacts/ci-readiness/receipt-after-001.json", "utf8"));
+
+          if (receipt.verdict !== "READY") {
+            console.error(`SplunkReady blocked this change: ${receipt.verdict} (${receipt.score}/100).`);
+            console.error(`Violations: ${(receipt.violations ?? []).join(", ") || "none"}`);
+            process.exit(1);
+          }
+
+          console.log(`SplunkReady receipt is READY (${receipt.score}/100).`);
+          NODE
+
+      - name: Upload readiness artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: splunkready-ci-readiness
+          path: artifacts/ci-readiness

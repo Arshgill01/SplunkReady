@@ -68,6 +68,14 @@ interface CliOptions {
   agentVersion: string;
   agentModel: string;
   candidateLimit: number;
+  json: boolean;
+}
+
+interface CliOutput {
+  command: string;
+  status: "PASS" | "SKIP";
+  artifacts: string[];
+  messages?: string[];
 }
 
 const allRules = (): GraderRule[] => [
@@ -84,13 +92,13 @@ const allRules = (): GraderRule[] => [
 const usage = `SplunkReady CLI
 
 Commands:
-  compile   --mode fixture|live --fixture <path> --mission <path> --out <dir>
-  evaluate  --mode fixture|live --out <dir>
-  grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>]
+  compile   --mode fixture|live --fixture <path> --mission <path> --out <dir> [--json]
+  evaluate  --mode fixture|live --out <dir> [--json]
+  grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   live-candidates --out <dir> [--candidate-limit <n>]
-  receipt   --out <dir> [--phase before|after]
-  rerun     --mode fixture|live --out <dir>
+  receipt   --out <dir> [--phase before|after] [--json]
+  rerun     --mode fixture|live --out <dir> [--json]
   live-smoke --out <dir> [--require-live true|false]
   demo      --mode fixture|live --out <dir>
 
@@ -114,12 +122,18 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     agentName: "External Splunk MCP Agent",
     agentVersion: "unversioned",
     agentModel: "",
-    candidateLimit: 12
+    candidateLimit: 12,
+    json: false
   };
 
   for (let index = 0; index < rest.length; index += 1) {
     const flag = rest[index];
     const value = rest[index + 1];
+
+    if (flag === "--json") {
+      options.json = true;
+      continue;
+    }
 
     if (!flag.startsWith("--") || !value) {
       throw new Error(`Invalid argument near ${flag}. Use --flag value syntax.\n${usage}`);
@@ -182,6 +196,21 @@ const writeJson = async (filePath: string, value: unknown): Promise<void> => {
 const writeText = async (filePath: string, value: string): Promise<void> => {
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, value.endsWith("\n") ? value : `${value}\n`, "utf8");
+};
+
+const printCliOutput = (output: CliOutput, options: CliOptions): void => {
+  if (options.json) {
+    console.log(JSON.stringify(output, null, 2));
+    return;
+  }
+
+  console.log(`${output.status} ${output.command}`);
+  for (const message of output.messages ?? []) {
+    console.log(message);
+  }
+  for (const artifact of output.artifacts) {
+    console.log(`artifact ${artifact}`);
+  }
 };
 
 const readJson = async <T>(filePath: string, label: string): Promise<T> => {
@@ -805,13 +834,7 @@ const main = async (): Promise<void> => {
 
   if (command === "live-smoke") {
     const result = await liveSmokeCommand(options);
-    console.log(`${result.status} live-smoke`);
-    for (const message of result.messages) {
-      console.log(message);
-    }
-    for (const artifact of result.artifacts) {
-      console.log(`artifact ${artifact}`);
-    }
+    printCliOutput({ command, status: result.status, artifacts: result.artifacts, messages: result.messages }, options);
     return;
   }
 
@@ -835,10 +858,7 @@ const main = async (): Promise<void> => {
     throw new Error(`Unknown command ${command}.\n${usage}`);
   }
 
-  console.log(`PASS ${command}`);
-  for (const artifact of artifacts) {
-    console.log(`artifact ${artifact}`);
-  }
+  printCliOutput({ command, status: "PASS", artifacts }, options);
 };
 
 const formatCliError = (error: unknown): string => {

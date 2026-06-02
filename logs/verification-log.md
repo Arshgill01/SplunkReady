@@ -3285,3 +3285,23 @@ Open risks:
 - `npm install --save-dev @fontsource-variable/spline-sans` reported one critical npm audit vulnerability in the dependency tree; this checkpoint did not investigate or remediate audit findings.
 - Playwright screenshot capture was attempted earlier for the typography change but local Playwright browsers were not installed, so visual verification is limited to build/tests in this checkpoint.
 - Live passing security receipt remains blocked by the need for real or operator-approved Splunk demo content that matches the mission.
+
+## 2026-06-02 - Phase Live Move 13 CI/CD JSON Gate
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS.
+- Focused CLI flow passed: 1 file / 11 tests.
+- New JSON-output test parsed actual CLI stdout for `compile`, `evaluate`, `receipt`, `grade-trace`, and `rerun`.
+- Full check passed: scaffold verifier reported 85 waves and 561 project files; Vitest passed 36 files / 178 tests.
+- `git diff --check` passed.
+
+Open risks:
+
+- The GitHub Actions example uses fixture mode by default. Live CI gating should remain opt-in because it needs operator-managed Splunk MCP credentials and target content.
+- Move 3 still needs a fully green live receipt plan against actual Splunk content; Move 13 does not close that proof gap.

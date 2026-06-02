@@ -24,6 +24,9 @@ const exists = async (path: string): Promise<boolean> =>
     .then(() => true)
     .catch(() => false);
 
+const parseCliJsonOutput = (stdout: string): { command: string; status: string; artifacts: string[]; messages?: string[] } =>
+  JSON.parse(stdout) as { command: string; status: string; artifacts: string[]; messages?: string[] };
+
 const startMockMcpServer = async () => {
   const calls: Array<{ method: string; params: { name: string; arguments: unknown } }> = [];
   const server = createServer((request, response) => {
@@ -309,6 +312,60 @@ describe("SplunkReady CLI flow", () => {
         })
       ])
     );
+  });
+
+  it("emits machine-readable JSON output for CI/CD commands", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-cli-json-"));
+
+    const compile = parseCliJsonOutput((await runCli(["compile", "--out", outDir, "--json"])).stdout);
+    expect(compile).toMatchObject({
+      command: "compile",
+      status: "PASS",
+      artifacts: expect.arrayContaining([join(outDir, "environment-contract.json")])
+    });
+
+    const evaluate = parseCliJsonOutput((await runCli(["evaluate", "--out", outDir, "--json"])).stdout);
+    expect(evaluate).toMatchObject({
+      command: "evaluate",
+      status: "PASS",
+      artifacts: expect.arrayContaining([join(outDir, "trace-before.json"), join(outDir, "violations-before.json")])
+    });
+
+    const receipt = parseCliJsonOutput((await runCli(["receipt", "--out", outDir, "--json"])).stdout);
+    expect(receipt).toMatchObject({
+      command: "receipt",
+      status: "PASS",
+      artifacts: expect.arrayContaining([join(outDir, "receipt-before-001.json"), join(outDir, "policy-patch.json")])
+    });
+
+    const gradeTrace = parseCliJsonOutput(
+      (
+        await runCli([
+          "grade-trace",
+          "--trace",
+          join(outDir, "trace-before.json"),
+          "--out",
+          outDir,
+          "--agent-name",
+          "Captured Agent",
+          "--agent-version",
+          "trace-001",
+          "--json"
+        ])
+      ).stdout
+    );
+    expect(gradeTrace).toMatchObject({
+      command: "grade-trace",
+      status: "PASS",
+      artifacts: expect.arrayContaining([join(outDir, "receipt-external-001.json")])
+    });
+
+    const rerun = parseCliJsonOutput((await runCli(["rerun", "--out", outDir, "--json"])).stdout);
+    expect(rerun).toMatchObject({
+      command: "rerun",
+      status: "PASS",
+      artifacts: expect.arrayContaining([join(outDir, "receipt-after-001.json")])
+    });
   });
 
   it("runs the clean fixture demo orchestration and writes rehearsal artifacts", async () => {
