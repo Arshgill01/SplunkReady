@@ -204,17 +204,65 @@ If self-signed certs block a local non-production deployment:
 - Prefer a trusted cert when possible.
 - For a throwaway local trial only, configure the MCP Server app's `ssl_verify` testing setting as documented by Splunk. Do not carry that setting into production.
 
-## 9. Screenshot Requirements
+## 9. Optional Hosted-Model Diagnostic
+
+After live smoke works, test whether the same MCP user can invoke Splunk AI Assistant helper tools:
+
+```bash
+rm -rf artifacts/hosted-model-diagnostic
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- hosted-model-diagnostic \
+  --mode live \
+  --out artifacts/hosted-model-diagnostic \
+  --require-pass true \
+  --json
+```
+
+Use `NODE_TLS_REJECT_UNAUTHORIZED=0` only for a local non-production Splunk trial with a self-signed certificate.
+
+Expected terminal shape when SAIA access is available:
+
+```json
+{
+  "command": "hosted-model-diagnostic",
+  "status": "PASS"
+}
+```
+
+Expected files:
+
+- `artifacts/hosted-model-diagnostic/environment-contract.json`
+- `artifacts/hosted-model-diagnostic/hosted-model-proof.json`
+- `artifacts/hosted-model-diagnostic/hosted-model-diagnostic.json`
+
+Pass criteria:
+
+- `hosted-model-diagnostic.json` has `status: "PASS"`.
+- `permission.status` is `OK`.
+- `requiredTools` includes `saia_explain_spl` and `saia_optimize_spl`.
+- `mutation` is `false`.
+- The diagnostic did not run the SPL query; it only called hosted-model helper tools.
+
+If this command fails with a hosted-model access error:
+
+- Keep the same read-only Splunk/MCP user if possible.
+- Grant that user permission or entitlement to invoke `saia_explain_spl`.
+- Grant that user permission or entitlement to invoke `saia_optimize_spl`.
+- Rerun the command with `--require-pass true`.
+
+This diagnostic is separate from grading. SAIA output may explain or optimize SPL, but deterministic SplunkReady rules still decide pass/fail.
+
+## 10. Screenshot Requirements
 
 Capture screenshots only after the live smoke passes:
 
 1. Terminal showing `PASS live-smoke`.
 2. A redacted view of `live-smoke-contract.json` showing `mode: live`, real index names, and real sourcetypes.
 3. A redacted view of `live-smoke-summary.json` showing `readOnlyToolsOnly: true` and `destructiveOperations: false`.
+4. If hosted-model access is enabled, terminal or UI showing `hosted-model-diagnostic` with `permission.status: OK`.
 
 Never include the token, full endpoint if it is sensitive, or user-identifying fields in screenshots.
 
-## 10. Move 1 Done Criteria
+## 11. Move 1 Done Criteria
 
 Move 1 is done only when all of these are true:
 
@@ -224,7 +272,7 @@ Move 1 is done only when all of these are true:
 - `artifacts/live-smoke/live-smoke-summary.json` has `readOnlyToolsOnly: true` and `destructiveOperations: false`.
 - Screenshots have been captured with secrets redacted.
 
-## 11. Current Local Proof
+## 12. Current Local Proof
 
 On 2026-06-02, the local Splunk MCP endpoint passed live smoke with the local-only self-signed certificate workaround:
 
@@ -241,3 +289,11 @@ Sanitized result:
 - sourcetype count: `0` for the `-15m` smoke metadata window
 - read-only inventory tools only: `true`
 - destructive operations: `false`
+
+On 2026-06-03, the local Splunk MCP endpoint produced a live security fail-to-pass proof, but hosted-model diagnostic proof remained blocked by SAIA permission:
+
+- before policy: `NOT READY`, score `60`, violations `2`
+- after policy: `READY`, score `100`, violations `0`
+- `failToPass`: `true`
+- `hosted-model-proof.status`: `BLOCKED`
+- blocked tools: `saia_explain_spl`, `saia_optimize_spl`

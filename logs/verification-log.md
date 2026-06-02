@@ -4885,3 +4885,25 @@ Open risks:
 
 - The UI only shows hosted-model diagnostic state when `hosted-model-diagnostic.json` is present in the artifact bundle.
 - Live hosted-model strict proof still depends on Splunk/MCP permission for `saia_explain_spl` and `saia_optimize_spl`.
+
+## 2026-06-03 - Phase Live Hosted Model Setup Documentation
+
+Commands:
+
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 756 project files;
+  - 38 test files;
+  - 215 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Documentation names the required SAIA tools, but the exact Splunk role/capability name still needs confirmation from Splunk docs or from a working entitled deployment.
+- Live hosted-model strict proof remains blocked until the current MCP user can invoke `saia_explain_spl` and `saia_optimize_spl`.

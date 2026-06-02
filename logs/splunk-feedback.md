@@ -226,6 +226,20 @@ Suggestion:
 - Consider accepting `query` as an alias for `spl`, or align tool argument names across SPL-related MCP tools.
 - Provide a canonical explain/optimize JSON-RPC example for a broad SPL query.
 
+### SAIA tools can be advertised but still forbidden for the active MCP user
+
+Observed while attaching hosted-model proof to the live security proof bundle. The live contract advertised both `saia_explain_spl` and `saia_optimize_spl`, and the same MCP token could call read-only Splunk tools successfully. Direct invocation of the SAIA tools still returned an action-forbidden error.
+
+Impact:
+- A client can see hosted-model tools in discovery/inventory and assume the current token is entitled to call them.
+- This creates a confusing split state: live Splunk proof is green, read-only MCP tools work, but hosted-model proof is blocked.
+- Developers need a separate diagnostic to distinguish missing tools, missing token, and missing SAIA entitlement.
+
+Suggestion:
+- Return a machine-readable permission status for each advertised tool, or include per-tool entitlement in the MCP tool list.
+- Document the exact Splunk role/capability/entitlement required for `saia_explain_spl` and `saia_optimize_spl`.
+- Provide a small official "SAIA MCP permission check" JSON-RPC example that does not execute a search and is safe for setup validation.
+
 ## Developer Experience Suggestions
 
 - Provide one local Splunk Enterprise plus MCP "happy path" with exact ports, URL shape, token instructions, and a known-good read-only smoke command.
@@ -234,3 +248,4 @@ Suggestion:
 - Include examples showing how to safely debug bearer-token auth without printing secrets.
 - Document how saved-search app context should be represented and filtered in MCP calls.
 - Provide a first-class "derive a safe live demo mission from this deployment" guide for fresh Splunk trials that have `_internal` data but no Enterprise Security content.
+- Document the exact hosted-model entitlement path for MCP users, not just general MCP token creation.

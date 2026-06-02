@@ -4563,6 +4563,59 @@ Reviewer findings:
 Result:
 - TypeScript build, targeted UI/CLI tests, Vite build, full repo verification, Playwright browser verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Hosted Model Setup Documentation
+
+Scope:
+- Make the SAIA permission diagnostic discoverable from live setup docs.
+- Record the Splunk developer-experience friction discovered during hosted-model proof work.
+
+Files expected/touched:
+- `docs/live-setup-checklist.md`
+- `logs/splunk-feedback.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added an optional hosted-model diagnostic section to `docs/live-setup-checklist.md`.
+- Documented the exact non-mutating command:
+  - `hosted-model-diagnostic --mode live --out artifacts/hosted-model-diagnostic --require-pass true --json`.
+- Documented expected artifacts and pass criteria:
+  - `hosted-model-diagnostic.json`;
+  - `permission.status: OK`;
+  - `requiredTools` includes `saia_explain_spl` and `saia_optimize_spl`;
+  - `mutation: false`;
+  - no SPL execution.
+- Updated screenshot requirements to include hosted-model diagnostic evidence when SAIA is enabled.
+- Added the current local proof state:
+  - live security fail-to-pass is green;
+  - hosted-model proof is blocked by SAIA permission.
+- Added a Splunk feedback entry for the confusing state where SAIA tools are advertised by the contract but forbidden for the active MCP user.
+
+Product impact:
+- Future setup work now has a direct, safe command for hosted-model entitlement validation.
+- The Splunk feedback log captures a concrete issue for the feedback prize and for product risk tracking.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 29% | 29% | Documentation clarity only. |
+| Platform & DX | 73% | 74% | Setup path is clearer and less dependent on oral context. |
+| Security | 42% | 42% | Security proof behavior unchanged. |
+| Best Use of MCP Server | 81% | 81% | MCP proof unchanged. |
+| Hosted Models | 57% | 58% | Hosted-model permission path is documented and testable. |
+| Developer Tools | 69% | 70% | Operational docs now match the diagnostic command. |
+
+Next directions to consider in future runs:
+- Once SAIA permission is fixed, run the documented strict diagnostic command and refresh live security proof.
+- Continue core work on external trace SDK hardening or richer security mission coverage.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Full repo verification passed.
+
 ## 2026-06-03 - Phase Live Firewall Check Command
 
 Scope:
