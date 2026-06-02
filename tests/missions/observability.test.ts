@@ -7,10 +7,12 @@ import { parseMissionDefinition } from "../../src/missions/dsl.js";
 
 const fixturePath = new URL("../../fixtures/acme-soc-dev/adapter-fixture.json", import.meta.url);
 const missionPath = new URL("../../fixtures/acme-soc-dev/missions/observability-latency-readiness.json", import.meta.url);
+const liveMissionPath = new URL("../../fixtures/acme-soc-dev/missions/live-internal-error-readiness.json", import.meta.url);
 const latencyQuery =
   "search index=_internal component=HttpPubSubConnection earliest=-15m latest=now | stats p95(latency_ms) as p95_latency_ms by service";
 
 const readMission = async () => parseMissionDefinition(JSON.parse(await readFile(missionPath, "utf8")) as unknown);
+const readLiveMission = async () => parseMissionDefinition(JSON.parse(await readFile(liveMissionPath, "utf8")) as unknown);
 
 describe("observability transfer mission", () => {
   it("validates a small non-security mission using the same mission DSL", async () => {
@@ -53,6 +55,23 @@ describe("observability transfer mission", () => {
         expect.objectContaining({ service: "splunk-mcp-http-transport", p95_latency_ms: 141 }),
         expect.objectContaining({ service: "readiness-receipt-writer", p95_latency_ms: 76 })
       ])
+    );
+  });
+
+  it("defines a live-compatible internal error mission without requiring demo content mutation", async () => {
+    const mission = await readLiveMission();
+
+    expect(mission).toMatchObject({
+      id: "mission-live-internal-error-readiness",
+      domain: "platform",
+      requestedTimeWindow: { earliest: "-24h", latest: "now" },
+      expectedTools: ["splunk_run_query"],
+      allowedTools: expect.arrayContaining(["splunk_run_query"]),
+      authorizedIndexes: ["_internal"]
+    });
+    expect(mission.preferredSavedSearchRefs ?? []).toEqual([]);
+    expect(mission.checks).toEqual(
+      expect.arrayContaining(["SPL-001", "SPL-002", "SPL-004", "EVD-001", "EVD-002", "EVD-003", "SAF-002", "SAF-003"])
     );
   });
 });

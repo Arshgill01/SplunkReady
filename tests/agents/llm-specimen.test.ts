@@ -148,6 +148,71 @@ describe("LlmSpecimenAgent", () => {
     );
   });
 
+  it("copies model timeWindow bounds into the executed SPL before tracing and adapter execution", async () => {
+    const { adapter, contract, mission } = await loadFixtureContext();
+    const model: LlmAgentModel = {
+      async plan() {
+        return {
+          rationale: "Run a bounded raw query with tool-level timeWindow.",
+          toolCalls: [
+            {
+              toolName: "splunk_run_query",
+              input: {
+                query: "search index=wineventlog EventCode=4624 | head 10",
+                timeWindow: { earliest: "-24h", latest: "now" },
+                maxRows: 10
+              }
+            }
+          ]
+        };
+      },
+      async answer() {
+        return "Query returned rows with evidence refs.";
+      }
+    };
+    const run = await new LlmSpecimenAgent({ contract, model }).run({ mission, adapter });
+    const queryCall = run.traceEvents.find((event) => event.type === "tool_call" && event.toolName === "splunk_run_query");
+
+    expect(queryCall?.toolInput).toMatchObject({
+      query: "search index=wineventlog EventCode=4624 earliest=-24h latest=now | head 10",
+      timeWindow: { earliest: "-24h", latest: "now" },
+      maxRows: 10
+    });
+  });
+
+  it("only advertises LLM-executable tools to the model", async () => {
+    const { adapter, contract } = await loadFixtureContext();
+    const mission = parseMissionDefinition(
+      JSON.parse(await readFile("fixtures/acme-soc-dev/missions/live-internal-error-readiness.json", "utf8")) as unknown
+    );
+    const observedAllowedTools: string[][] = [];
+    const model: LlmAgentModel = {
+      async plan(input) {
+        observedAllowedTools.push(input.allowedTools);
+        return {
+          rationale: "Run the only executable query tool.",
+          toolCalls: [
+            {
+              toolName: "splunk_run_query",
+              input: {
+                query: "search index=_internal error | head 10",
+                timeWindow: { earliest: "-24h", latest: "now" },
+                maxRows: 10
+              }
+            }
+          ]
+        };
+      },
+      async answer() {
+        return "Query completed.";
+      }
+    };
+
+    await new LlmSpecimenAgent({ contract, model }).run({ mission, adapter });
+
+    expect(observedAllowedTools).toEqual([["splunk_run_query"]]);
+  });
+
   it("injects compiled policy context only on policy-backed reruns", async () => {
     const { adapter, contract, mission } = await loadFixtureContext();
     const observed: Array<{ contractInjected: boolean; hasPolicy: boolean }> = [];
@@ -516,5 +581,75 @@ describe("Gemini LLM specimen model", () => {
 
     expect(prompt).toContain('"preferredSavedSearchRefs":[]');
     expect(prompt).not.toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain");
+  });
+
+  it("prompts query-only missions to use bounded authorized-index SPL", async () => {
+    const calls: string[] = [];
+    const fetchImpl: typeof fetch = async (_url, init) => {
+      calls.push(String(init?.body));
+
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      rationale: "Use the authorized _internal index with explicit time bounds.",
+                      toolCalls: [
+                        {
+                          toolName: "splunk_run_query",
+                          input: {
+                            query: "search index=_internal error earliest=-24h latest=now | head 10",
+                            timeWindow: { earliest: "-24h", latest: "now" },
+                            maxRows: 10
+                          }
+                        }
+                      ]
+                    })
+                  }
+                ]
+              }
+            }
+          ]
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      );
+    };
+    const { contract } = await loadFixtureContext();
+    const mission = parseMissionDefinition(
+      JSON.parse(await readFile("fixtures/acme-soc-dev/missions/live-internal-error-readiness.json", "utf8")) as unknown
+    );
+    const model = createGeminiLlmAgentModel({
+      apiKey: "test-api-key",
+      model: "gemini-test",
+      endpointBaseUrl: "https://gemini.test/v1beta",
+      fetchImpl
+    });
+
+    await expect(
+      model.plan({ mission, contract, contractInjected: true, allowedTools: ["splunk_run_query"] })
+    ).resolves.toMatchObject({
+      toolCalls: [
+        {
+          toolName: "splunk_run_query",
+          input: {
+            query: "search index=_internal error earliest=-24h latest=now | head 10",
+            timeWindow: { earliest: "-24h", latest: "now" }
+          }
+        }
+      ]
+    });
+
+    const parsed = JSON.parse(calls[0] ?? "{}") as { contents: Array<{ parts: Array<{ text: string }> }> };
+    const prompt = parsed.contents.flatMap((content) => content.parts).map((part) => part.text).join("\n");
+
+    expect(prompt).toContain('"authorizedIndexes":["_internal"]');
+    expect(prompt).toContain("splunk_run_query");
+    expect(prompt).toContain("index=<authorized-index>");
+    expect(prompt).toContain("no preferred saved search");
+    expect(prompt).toContain("do not use stats");
+    expect(prompt).not.toContain("A discovery-only plan violates policy");
   });
 });

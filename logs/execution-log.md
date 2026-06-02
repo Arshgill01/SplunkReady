@@ -3925,3 +3925,80 @@ Reviewer findings:
 
 Result:
 - PASS for Move 13 after focused CLI validation and full project verification.
+
+## 2026-06-02 - Phase Live Move 3 Green Live Proof Path
+
+Scope:
+- Investigate how to make Move 3 produce a fully green live proof without pretending the user's local Splunk trial has Enterprise Security demo content installed.
+- Preserve the existing flagship security fixture story, but add a live-compatible mission aligned to real content discovered through the configured live MCP endpoint.
+- Keep the grader deterministic and mission-scoped; the Gemini agent is the specimen being graded, not the judge.
+- Keep all live artifacts under `artifacts/live-green/` uncommitted unless the user explicitly approves committing sanitized proof artifacts later.
+
+Files changed:
+- `src/grader/engine.ts`
+- `tests/grader/engine.test.ts`
+- `src/agents/llm-specimen.ts`
+- `src/agents/gemini-model.ts`
+- `tests/agents/llm-specimen.test.ts`
+- `tests/missions/observability.test.ts`
+- `fixtures/acme-soc-dev/missions/live-internal-error-readiness.json`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/splunk-feedback.md`
+- `logs/risk-register.md`
+
+What happened:
+- A read-only live probe showed `_internal` can return real rows through the MCP adapter:
+  - `search index=_internal earliest=-24h latest=now | head 5` returned 5 rows.
+  - `search index=_internal error earliest=-24h latest=now | head 5` returned 5 rows.
+  - `search index=main earliest=-24h latest=now | head 5` returned 0 rows.
+- The existing live security/lateral-movement proof remains blocked by target content, not by the adapter: the local live Splunk trial does not expose the preferred Enterprise Security saved search or matching ES demo events.
+- A first live-compatible mission attempt failed because Gemini used `stats` aggregation and field names not present in the live contract. That exposed two product issues:
+  - `runRuleEngine` ignored `mission.checks` and evaluated every rule supplied by the caller.
+  - Gemini could provide `timeWindow` in the MCP input while omitting `earliest/latest` from the SPL string inspected by deterministic SPL rules.
+- The grader now evaluates only rules activated by `mission.checks`.
+- The LLM specimen now copies tool-level `timeWindow` bounds into the executed SPL before tracing and adapter execution.
+- The LLM specimen now advertises only tools it can actually execute, preventing Gemini from choosing mission-allowed inventory tools the runner would reject.
+- The Gemini prompt for query-only missions now explicitly asks for authorized-index, bounded, raw-event queries when evidence refs are required.
+- Added `mission-live-internal-error-readiness`, a read-only platform mission for live Splunk deployments without ES demo content.
+
+Live-green result:
+- `artifacts/live-green/receipt-before-001.json`: `READY`, score `100`, 0 violations, 10 evidence refs.
+- `artifacts/live-green/receipt-after-001.json`: `READY`, score `100`, 0 violations, 10 evidence refs.
+- The trace shows a real Gemini-planned MCP query against live Splunk:
+  - `search index=_internal log_level=ERROR earliest=-24h latest=now | head 10`
+  - The tool result returned 10 evidence refs.
+
+Important distinction:
+- This closes a green live LLM+MCP grading path.
+- It does not replace the flagship security fail -> patch -> rerun -> pass story.
+- The flagship live version still needs one of these paths:
+  - Option A: operator-approved demo content or Splunk Enterprise Security content installed in local Splunk, then rerun the lateral-movement mission unchanged.
+  - Option B: a live mission compiler that derives a security mission from discovered indexes/sourcetypes/saved searches.
+  - Option C: a sanitized external trace from a real Splunk-connected agent, graded through `grade-trace`.
+  - Option D: a Live Agent Firewall gateway that can demonstrate pre-execution blocking before Splunk is touched, then a compliant rerun.
+
+Future expansion queue:
+- Move 16 Live Agent Firewall Gateway is now the highest-leverage next feature. It turns the receipt policy into pre-execution enforcement and gives the product a real "before Splunk is touched" capability.
+- Move 14 SAIA in the Vite UI remains valuable after confirming the current policy patch data shape.
+- Move 15 second security mission should be implemented only if it adds a genuinely distinct security scenario and enough fixture/live evidence to matter.
+- Move 17 policy simulator should be built only as a receipt explanation tool; it must not imply simulated policy changes are authoritative receipts.
+- Move 18 multi-agent selector should wait until there are multiple real artifact bundles to compare.
+- After Move 16, reassess whether a live mission generator is more valuable than adding more static fixture missions.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 18% | 19% | Real live LLM+MCP green proof exists, but flagship live fail/pass proof is still incomplete. |
+| Platform & DX | 39% | 41% | Mission-scoped rules and live-compatible proof improve the certification story. |
+| Security | 20% | 20% | Flagship security live proof remains content-blocked. |
+| Best Use of MCP Server | 60% | 64% | A real Gemini-planned MCP query against live Splunk produced a READY receipt. |
+| Hosted Models | 45% | 45% | Gemini specimen is active, but SAIA explain/optimize UI/patch exposure is unchanged. |
+| Developer Tools | 35% | 36% | Mission-scoped rule execution makes the SDK/mission model more coherent. |
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No new reviewer inbox file exists for this Phase Live move.
+
+Result:
+- PASS for the live-green proof path after focused tests and a successful live MCP/Gemini run.

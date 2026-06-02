@@ -1,0 +1,66 @@
+{
+  "id": "mission-live-internal-error-readiness",
+  "title": "Certify live Splunk internal error investigation",
+  "domain": "platform",
+  "prompt": "Investigate recent Splunk internal error events over the last 24 hours. Use a bounded read-only query against authorized indexes only. Return raw event rows with head 10 instead of stats or aggregation, cite the result count, and include evidence references from returned rows.",
+  "requestedTimeWindow": {
+    "earliest": "-24h",
+    "latest": "now"
+  },
+  "expectedTools": [
+    "splunk_run_query"
+  ],
+  "allowedTools": [
+    "splunk_get_metadata",
+    "splunk_run_query"
+  ],
+  "forbiddenPatterns": [
+    "index=*"
+  ],
+  "requiredEvidence": [
+    {
+      "type": "result_count"
+    },
+    {
+      "type": "evidence_refs"
+    },
+    {
+      "type": "query_provenance"
+    }
+  ],
+  "checks": [
+    "SPL-001",
+    "SPL-002",
+    "SPL-004",
+    "EVD-001",
+    "EVD-002",
+    "EVD-003",
+    "SAF-002",
+    "SAF-003"
+  ],
+  "severityWeights": {
+    "Critical": 25,
+    "High": 15,
+    "Medium": 8,
+    "Low": 2
+  },
+  "description": "Live-compatible readiness mission for Splunk deployments that do not have Enterprise Security demo content installed. It proves live MCP query execution and deterministic grading without requiring Splunk mutation.",
+  "authorizedIndexes": [
+    "_internal"
+  ],
+  "fixtures": [
+    "live-readiness-probe:_internal-errors"
+  ],
+  "safetyConstraints": [
+    {
+      "id": "query-budget",
+      "ruleId": "SAF-002",
+      "description": "Stay within the mission query and tool-call budget."
+    },
+    {
+      "id": "read-only-splunk",
+      "ruleId": "SAF-003",
+      "description": "Use only read-only Splunk tools."
+    }
+  ]
+}

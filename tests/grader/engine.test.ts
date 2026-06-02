@@ -142,6 +142,34 @@ describe("rule engine foundation", () => {
     expect(result.violations.map((violation) => violation.severity)).toEqual(["Critical", "High"]);
   });
 
+  it("only evaluates rules activated by the mission checks list", async () => {
+    const context = await loadContext();
+    const scopedContext = {
+      ...context,
+      mission: { ...context.mission, checks: ["SPL-001" as const] }
+    };
+    const rules: GraderRule[] = [
+      {
+        id: "SPL-001",
+        severity: "Critical",
+        evaluate() {
+          return pass("SPL-001", { activated: true });
+        }
+      },
+      {
+        id: "KO-001",
+        severity: "High",
+        evaluate() {
+          throw new Error("Disabled mission rule should not run.");
+        }
+      }
+    ];
+    const result = runRuleEngine(scopedContext, rules);
+
+    expect(result.results.map((ruleResult) => ruleResult.ruleId)).toEqual(["SPL-001"]);
+    expect(result.violations).toEqual([]);
+  });
+
   it("rejects rules declared with non-canonical severity", async () => {
     const context = await loadContext();
     const rule: GraderRule = {

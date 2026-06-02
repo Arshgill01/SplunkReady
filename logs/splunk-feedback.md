@@ -38,6 +38,28 @@ Suggestion:
 - Provide a copy-pasteable curl example using a placeholder bearer token and a read-only `splunk_get_info` call.
 - Include a short guide for token scope/lifetime and the expected error body for invalid or expired credentials.
 
+### Local self-signed certificates force insecure development toggles
+
+Observed during Phase Live live-green runs. The local MCP endpoint was reachable only after setting `NODE_TLS_REJECT_UNAUTHORIZED=0` for Node-based smoke/proof commands.
+
+Impact:
+- The warning is noisy and easy to normalize, even though disabling certificate verification should never become production guidance.
+- Developers need a secure local certificate path or an explicit "local-only self-signed cert" workflow.
+
+Suggestion:
+- Provide local MCP certificate setup guidance for Node clients, including how to trust the Splunk certificate or configure a CA bundle without disabling TLS verification globally.
+
+### Empty default indexes make live demos look broken even when MCP works
+
+Observed while probing the user's live Splunk trial. `_internal` returned real rows, but `main` returned 0 rows and the Enterprise Security saved-search mission had no matching live saved search/content.
+
+Impact:
+- A fresh Splunk trial can successfully prove MCP connectivity while still failing realistic security missions because the target data/content is not installed.
+- Developers need a known-good, read-only sample data path for live MCP demos.
+
+Suggestion:
+- Ship or document an official sample dataset and saved-search pack for MCP demos, with explicit read-only missions that can be run immediately after setup.
+
 ## MCP Server Limitations
 
 ### MCP response envelopes need normalization
@@ -62,6 +84,18 @@ Impact:
 Suggestion:
 - Make app filtering prominent in MCP tool schemas and examples.
 - Return stable object identifiers that include app context.
+
+### Aggregated search results lose row-level evidence references
+
+Observed during a live Gemini run. Gemini selected a `stats count by component, message` query. The MCP query returned counts, but the resulting trace had no row-level evidence refs, causing deterministic evidence rules to fail.
+
+Impact:
+- Certification tools need stable row/event evidence references for auditability.
+- Aggregation can be useful for investigation, but it is not enough for a readiness receipt unless the agent first captures raw evidence rows or the MCP server provides provenance refs for aggregated results.
+
+Suggestion:
+- Document which query shapes preserve row-level evidence refs.
+- Consider returning provenance metadata for aggregate rows, or provide a dedicated evidence-capture pattern in MCP examples.
 
 ## Developer Experience Suggestions
 

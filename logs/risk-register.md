@@ -43,3 +43,29 @@ Status: no blocker risk remains for the current final-QA gate.
 - R005 Splunk Feature Collision: controlled. README and submission copy keep SplunkReady positioned as pre-production agent certification, not a chatbot, SOC copilot, MCP telemetry, or detection-health product.
 
 Residual risks are not blockers for Wave 41, but they remain active monitoring items for Wave 42+ continuation work.
+
+## Phase Live Risk Update - 2026-06-02
+
+### R006 Live Security Content Gap
+
+Risk: the live Splunk trial proves MCP connectivity but does not contain Enterprise Security saved searches or demo lateral-movement events, so the flagship security mission cannot yet produce a live fail -> patch -> pass receipt.
+
+Mitigation: keep the fixture security story intact; add live-compatible missions only when they are explicitly labeled; pursue either operator-approved demo content, a live mission generator, or a firewall gateway before claiming flagship live security proof.
+
+### R007 Evidence Ref Loss From Aggregation
+
+Risk: an LLM agent can choose aggregated SPL (`stats`, `chart`, `timechart`) that returns counts but no row-level evidence refs, weakening the Readiness Receipt.
+
+Mitigation: prompt query-only missions to capture raw rows first, preserve deterministic EVD rules, and consider firewall/policy checks for evidence-ref missions.
+
+### R008 Mission Rule Drift
+
+Risk: callers pass all known grader rules and accidentally evaluate rules the mission did not activate.
+
+Mitigation: `runRuleEngine` now filters by `mission.checks`; focused regression tests cover disabled rules not executing.
+
+### R009 Local TLS Workaround Normalization
+
+Risk: local proof uses `NODE_TLS_REJECT_UNAUTHORIZED=0` for a self-signed Splunk endpoint, which must not become production guidance.
+
+Mitigation: log the friction in `logs/splunk-feedback.md`; keep it local-command-only; do not bake it into code or docs as the default production path.

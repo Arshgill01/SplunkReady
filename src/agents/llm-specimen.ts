@@ -83,8 +83,35 @@ const assertAllowedTool = (
   }
 };
 
+const hasTimeModifier = (query: string, modifier: "earliest" | "latest"): boolean =>
+  new RegExp(`\\b${modifier}\\s*=`, "i").test(query);
+
+const appendTimeBounds = (query: string, timeWindow: RunQueryRequest["timeWindow"]): string => {
+  if (!timeWindow) {
+    return query;
+  }
+
+  const modifiers = [
+    hasTimeModifier(query, "earliest") ? null : `earliest=${timeWindow.earliest}`,
+    hasTimeModifier(query, "latest") ? null : `latest=${timeWindow.latest}`
+  ].filter((modifier): modifier is string => Boolean(modifier));
+
+  if (modifiers.length === 0) {
+    return query;
+  }
+
+  const pipeIndex = query.indexOf("|");
+
+  if (pipeIndex === -1) {
+    return `${query} ${modifiers.join(" ")}`;
+  }
+
+  return `${query.slice(0, pipeIndex).trimEnd()} ${modifiers.join(" ")} ${query.slice(pipeIndex).trimStart()}`;
+};
+
 const clampQueryInput = (input: RunQueryRequest, contract: EnvironmentContract): RunQueryRequest => ({
   ...input,
+  query: appendTimeBounds(input.query, input.timeWindow),
   maxRows: Math.min(input.maxRows ?? contract.queryBudgets.maxResultRows, contract.queryBudgets.maxResultRows)
 });
 
@@ -133,7 +160,9 @@ export class LlmSpecimenAgent {
 
   async run(input: SpecimenAgentInput): Promise<LlmSpecimenAgentRun> {
     const recorder = new TraceRecorder({ missionId: input.mission.id, timestamp: input.now ?? defaultNow });
-    const allowedTools = input.mission.allowedTools.filter((toolName) => this.contract.mcpTools.includes(toolName));
+    const allowedTools = input.mission.allowedTools.filter(
+      (toolName) => allowedExecutionTools.has(toolName) && this.contract.mcpTools.includes(toolName)
+    );
     const contractInjected = Boolean(input.policy);
     const plan = await this.model.plan({
       mission: input.mission,

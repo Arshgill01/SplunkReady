@@ -178,11 +178,14 @@ const assertRuleBoundary = (rule: GraderRule, result: RuleEvaluation): RuleEvalu
 };
 
 export const runRuleEngine = (context: RuleContext, rules: GraderRule[]): RuleEngineResult => {
-  const results = rules.map((rule) => {
-    graderRuleIdSchema.parse(rule.id);
-    severitySchema.parse(rule.severity);
-    return assertRuleBoundary(rule, rule.evaluate(context));
-  });
+  const enabledRuleIds = new Set(context.mission.checks);
+  const results = rules
+    .filter((rule) => enabledRuleIds.has(rule.id))
+    .map((rule) => {
+      graderRuleIdSchema.parse(rule.id);
+      severitySchema.parse(rule.severity);
+      return assertRuleBoundary(rule, rule.evaluate(context));
+    });
 
   return {
     results,

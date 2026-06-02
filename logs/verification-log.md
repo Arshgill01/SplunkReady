@@ -3305,3 +3305,36 @@ Open risks:
 
 - The GitHub Actions example uses fixture mode by default. Live CI gating should remain opt-in because it needs operator-managed Splunk MCP credentials and target content.
 - Move 3 still needs a fully green live receipt plan against actual Splunk content; Move 13 does not close that proof gap.
+
+## 2026-06-02 - Phase Live Move 3 Green Live Proof Path
+
+Commands:
+
+- `npx vitest run tests/grader/engine.test.ts tests/agents/llm-specimen.test.ts tests/missions/observability.test.ts`
+- `rm -rf artifacts/live-green && mkdir -p artifacts/live-green && npm run build >/tmp/splunkready-live-green-build.log && set -a && source ./.splunkready-live.env && set +a && export SPLUNKREADY_LLM_ENABLED=true GEMINI_MODEL=gemini-3.1-flash-lite && { NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- compile --mode live --mission fixtures/acme-soc-dev/missions/live-internal-error-readiness.json --out artifacts/live-green --json && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- evaluate --mode live --mission fixtures/acme-soc-dev/missions/live-internal-error-readiness.json --out artifacts/live-green --json && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- receipt --mode live --mission fixtures/acme-soc-dev/missions/live-internal-error-readiness.json --out artifacts/live-green --json && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- rerun --mode live --mission fixtures/acme-soc-dev/missions/live-internal-error-readiness.json --out artifacts/live-green --json; } 2>&1 | tee artifacts/live-green/terminal-proof.txt`
+- `npx vitest run tests/grader/engine.test.ts tests/agents/llm-specimen.test.ts tests/missions/observability.test.ts && npm run build`
+- `rm -rf artifacts/live-green && mkdir -p artifacts/live-green && set -a && source ./.splunkready-live.env && set +a && export SPLUNKREADY_LLM_ENABLED=true GEMINI_MODEL=gemini-3.1-flash-lite && { NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- compile --mode live --mission fixtures/acme-soc-dev/missions/live-internal-error-readiness.json --out artifacts/live-green --json && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- evaluate --mode live --mission fixtures/acme-soc-dev/missions/live-internal-error-readiness.json --out artifacts/live-green --json && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- receipt --mode live --mission fixtures/acme-soc-dev/missions/live-internal-error-readiness.json --out artifacts/live-green --json && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- rerun --mode live --mission fixtures/acme-soc-dev/missions/live-internal-error-readiness.json --out artifacts/live-green --json; } 2>&1 | tee artifacts/live-green/terminal-proof.txt`
+- `npm run check && git diff --check`
+- `npx vitest run tests/grader/engine.test.ts tests/agents/llm-specimen.test.ts tests/missions/observability.test.ts && npm run check && git diff --check`
+
+Result:
+
+- PASS after correction.
+- Initial focused tests passed: 3 files / 21 tests.
+- Initial live-green command failed before compile because `npm run build` caught a TypeScript typing issue in the new rule-engine test.
+- Focused tests plus `npm run build` passed after typing correction.
+- Final live-green run passed for `compile`, `evaluate`, `receipt`, and `rerun` using live mode, `SPLUNKREADY_LLM_ENABLED=true`, and `GEMINI_MODEL=gemini-3.1-flash-lite`.
+- Final live-green receipts:
+  - `receipt-before-001.json`: `READY`, score `100`, 0 violations, 10 evidence refs.
+  - `receipt-after-001.json`: `READY`, score `100`, 0 violations, 10 evidence refs.
+- Full check passed: scaffold verifier reported 85 waves and 577 project files; Vitest passed 36 files / 182 tests.
+- `git diff --check` passed.
+- After adding the LLM executable-tool allowlist regression, focused tests passed: 3 files / 22 tests.
+- Final full check passed: scaffold verifier reported 85 waves and 577 project files; Vitest passed 36 files / 183 tests.
+- Final `git diff --check` passed.
+
+Open risks:
+
+- Live artifacts are local and intentionally uncommitted.
+- `NODE_TLS_REJECT_UNAUTHORIZED=0` is still required for the local self-signed Splunk endpoint; this is acceptable for local proof but not production guidance.
+- The green live mission proves real LLM+MCP grading, but it is a platform `_internal` mission, not the flagship security fail -> patch -> pass story.
