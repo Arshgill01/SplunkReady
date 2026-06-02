@@ -4293,3 +4293,73 @@ Reviewer findings:
 
 Result:
 - Focused validation passed. Full verification will be recorded in the verification log after the full suite runs.
+
+## 2026-06-02 - Phase Live Live Proof Summary in Vite UI
+
+Scope:
+- Surface `live-proof-summary.json` in the Vite UI so live-derived proof is not mistaken for the flagship fail-to-pass story.
+- Keep the UI artifact-driven and avoid adding generic dashboard decoration.
+
+Files expected/touched:
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- The Vite artifact loader now parses optional `live-proof-summary.json`.
+- Sidebar summary now shows the proof story shape: `fail-to-pass`, `ready-without-patch`, or `not loaded`.
+- Replay view now renders a factual "Live proof summary" table when the artifact exists.
+- Replay stages adapt for already-ready live proof:
+  - `Certify`;
+  - `Patch not needed`;
+  - `Rerun`;
+  - `Ready`.
+- Patch evidence copy now states when no patch was exported because the before receipt was already `READY`.
+- Live Connect also renders the live proof summary when loaded.
+
+Product impact:
+- The UI no longer implies a fake failure for the real live `_internal` proof.
+- Judges/developers can distinguish a passing live certification run from the security fail-to-pass patch loop.
+- The real live proof artifact becomes visible in the product UI instead of being terminal-only evidence.
+
+Browser verification:
+- Local dev server: `http://127.0.0.1:5175/#certification-replay`
+- Follow-up receipt alignment server: `http://127.0.0.1:5173/#receipt`
+- Artifact directory: `artifacts/live-proof-guided`
+- Screenshot: `output/playwright/splunkready-live-proof-summary-fixed.png`
+- Final receipt ledger screenshot: `output/playwright/splunkready-receipt-vertical-ledger.png`
+- Snapshot confirmed:
+  - sidebar shows `ready-without-patch`;
+  - stage 1 is `Certify`, not `Fail`;
+  - stage 2 says `Patch` / `not needed`;
+  - live proof summary shows `mission-live-internal-query-readiness`;
+  - patch panel explains no policy patch was exported.
+- Receipt layout correction:
+  - rejected the 2x2 card grid because unequal section heights created visible dead areas;
+  - replaced it with one vertical receipt ledger surface;
+  - `Current receipt`, `Rerun comparison`, `Evidence`, and `Live proof summary` now render as full-width sections with internal dividers.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 26% | 26% | No new live capability, but less risk of misleading demo interpretation. |
+| Platform & DX | 57% | 59% | The UI now explains the exact proof semantics from artifacts. |
+| Security | 28% | 28% | Security content gap unchanged. |
+| Best Use of MCP Server | 76% | 77% | Real MCP proof is now visible in the UI. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 52% | 54% | Artifact consumers can inspect live proof state without reading terminal logs. |
+
+Next directions to consider in future runs:
+- Add a live security content readiness check that reports exactly which saved search/data prerequisites are missing for the flagship mission.
+- Consider UI support for comparing multiple artifact directories only after there are multiple real proof directories.
+- Do not create artificial failures in the `_internal` proof path.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused UI tests, Vite build, TypeScript build, and Playwright browser verification passed. Full verification will be recorded in the verification log after the full suite runs.

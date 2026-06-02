@@ -3499,3 +3499,31 @@ Open risks:
 
 - The real endpoint fell back to `_internal`; that path is useful platform proof but weaker than the flagship security story.
 - The real endpoint did not exercise fail-to-pass because the generated `_internal` mission was already `READY` before policy injection.
+
+## 2026-06-02 - Phase Live Live Proof Summary in Vite UI
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts && npm run ui:build && npm run build`
+- `SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/live-proof-guided npm run ui:dev -- --host 127.0.0.1`
+- `PWCLI=/Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh; mkdir -p output/playwright; bash "$PWCLI" open 'http://127.0.0.1:5173/#receipt' && bash "$PWCLI" snapshot && bash "$PWCLI" screenshot --filename output/playwright/splunkready-receipt-vertical-ledger.png --full-page`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused Vite UI app tests: 1 file / 6 tests.
+- PASS for production Vite UI build.
+- PASS for TypeScript build.
+- PASS for browser verification of `#receipt` against `artifacts/live-proof-guided`.
+- PASS for full verification: scaffold verified, 85 waves, 622 project files, 38 test files, 197 tests.
+- PASS for `git diff --check`.
+- Playwright screenshot saved to `output/playwright/splunkready-receipt-vertical-ledger.png`.
+- Browser snapshot confirmed the receipt page now renders:
+  - one receipt ledger surface;
+  - `Current receipt`, `Rerun comparison`, `Evidence`, and `Live proof summary` as sequential full-width sections;
+  - live proof story: `ready-without-patch`.
+
+Open risks:
+
+- Browser screenshot artifacts remain untracked under `output/playwright/`.
+- Live proof is still `_internal` ready-without-patch; the flagship live security fail-to-pass path remains the next major product gap.

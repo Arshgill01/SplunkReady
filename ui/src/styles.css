@@ -247,6 +247,42 @@ code {
   align-items: start;
 }
 
+.receipt-book {
+  overflow: hidden;
+}
+
+.receipt-book-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.receipt-book-section {
+  min-width: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.receipt-book-section:last-child {
+  border-bottom: 0;
+}
+
+.receipt-book-section h2 {
+  margin: 0;
+  padding: 16px 18px;
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 720;
+  border-bottom: 1px solid var(--line);
+}
+
+.receipt-book-section .fact-table tr:last-child th,
+.receipt-book-section .fact-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.receipt-book-section .empty {
+  min-height: 120px;
+}
+
 .panel {
   min-width: 0;
   border: 1px solid var(--line);
@@ -395,6 +431,7 @@ code {
 }
 
 .patch-panel,
+.live-proof-panel,
 .trace-stack {
   margin-top: 16px;
 }
@@ -482,6 +519,7 @@ code {
   .stage-line,
   .replay-grid,
   .receipt-ledger,
+  .receipt-book-grid,
   .patch-grid {
     grid-template-columns: 1fr;
   }

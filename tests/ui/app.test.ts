@@ -150,6 +150,24 @@ const policyPatch: PolicyPatch = {
   status: "exported"
 };
 
+const liveProofSummary = {
+  status: "PASS",
+  mode: "live",
+  mutation: false,
+  derivedMission: {
+    strategy: "internal-query-fallback",
+    reason: "No saved-search candidate returned rows; generated a bounded _internal query mission instead.",
+    missionId: "mission-live-internal-query-readiness",
+    artifacts: ["live-derived-mission.json"]
+  },
+  before: { verdict: "READY", score: 100, violations: 0 },
+  after: { verdict: "READY", score: 100, violations: 0 },
+  failToPass: false,
+  readyWithoutPatch: true,
+  notes:
+    "The live-derived mission was already ready before policy injection; this proves live certification but not the fail-to-pass patch loop."
+};
+
 const jsonResponse = (value: unknown): Response => new Response(JSON.stringify(value), { status: 200 });
 
 const fetcherFor = (files: Record<string, unknown>) => async (url: string): Promise<Response> => {
@@ -217,6 +235,57 @@ describe("Vite UI artifact app", () => {
     expect(trace).toContain("Before SPL");
     expect(trace).toContain("SAIA recommended SPL");
     expect(trace).toContain("search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now");
+  });
+
+  it("renders live proof summaries without implying a fake patch loop", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": { ...contract, mode: "live" },
+        "missions.json": [mission],
+        "receipt-before-001.json": receipt({ id: "receipt-before-001", mode: "live", verdict: "READY", score: 100, violations: [] }),
+        "receipt-after-001.json": receipt({ mode: "live" }),
+        "live-proof-summary.json": liveProofSummary,
+        "trace-before.json": beforeTrace,
+        "trace-after.json": afterTrace,
+        "violations-before.json": [],
+        "violations-after.json": []
+      })
+    );
+    const replay = renderApp(bundle, "certification-replay");
+    const liveConnect = renderApp(bundle, "live-connect");
+
+    expect(replay).toContain("ready-without-patch");
+    expect(replay).toContain("Certify");
+    expect(replay).toContain("not needed");
+    expect(replay).toContain("No policy patch was exported because the live-derived mission was READY before policy injection.");
+    expect(replay).toContain("Live proof summary");
+    expect(replay).toContain("mission-live-internal-query-readiness");
+    expect(liveConnect).toContain("Ready without patch");
+    expect(liveConnect).toContain("internal-query-fallback");
+  });
+
+  it("keeps receipt sections inside a single aligned ledger", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": { ...contract, mode: "live" },
+        "missions.json": [mission],
+        "receipt-before-001.json": receipt({ id: "receipt-before-001", mode: "live", verdict: "READY", score: 100, violations: [] }),
+        "receipt-after-001.json": receipt({ mode: "live" }),
+        "live-proof-summary.json": liveProofSummary,
+        "trace-before.json": beforeTrace,
+        "trace-after.json": afterTrace,
+        "violations-before.json": [],
+        "violations-after.json": []
+      })
+    );
+    const receiptHtml = renderApp(bundle, "receipt");
+
+    expect(receiptHtml).toContain('class="panel receipt-book"');
+    expect(receiptHtml).toContain('class="receipt-book-grid"');
+    expect(receiptHtml.match(/class="receipt-book-section"/g)).toHaveLength(4);
+    expect(receiptHtml).not.toContain("receipt-slot");
   });
 
   it("keeps the app styling away from generic AI dashboard patterns", async () => {

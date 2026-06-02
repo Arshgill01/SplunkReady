@@ -79,9 +79,9 @@ const renderStage = (index: number, title: string, status: string, detail: strin
     <p>${value(detail)}</p>
   </li>`;
 
-const renderPolicyPatchSummary = (policyPatch: PolicyPatch | undefined): string => {
+const renderPolicyPatchSummary = (policyPatch: PolicyPatch | undefined, emptyMessage = "Policy patch artifact not loaded."): string => {
   if (!policyPatch) {
-    return `<p class="empty">Policy patch artifact not loaded.</p>`;
+    return `<p class="empty">${value(emptyMessage)}</p>`;
   }
 
   const assistance = policyPatch.splAssistance ?? [];
@@ -109,11 +109,60 @@ const renderPolicyPatchSummary = (policyPatch: PolicyPatch | undefined): string 
   </div>`;
 };
 
+const renderLiveProofSummary = (bundle: UiArtifactBundle): string => {
+  const summary = bundle.liveProofSummary;
+
+  if (!summary) {
+    return "";
+  }
+
+  return `<section class="panel live-proof-panel">
+    <h2>Live proof summary</h2>
+    ${renderLiveProofSummaryTable(bundle)}
+  </section>`;
+};
+
+const renderLiveProofSummaryTable = (bundle: UiArtifactBundle): string => {
+  const summary = bundle.liveProofSummary;
+
+  if (!summary) {
+    return `<p class="empty">Live proof summary artifact not loaded.</p>`;
+  }
+
+  return renderFactTable([
+    ["Derived mission", summary.derivedMission.missionId ?? "n/a"],
+    ["Strategy", summary.derivedMission.strategy],
+    ["Before", `${summary.before.verdict} / ${summary.before.score}`],
+    ["After", `${summary.after.verdict} / ${summary.after.score}`],
+    ["Fail to pass", summary.failToPass ? "yes" : "no"],
+    ["Ready without patch", summary.readyWithoutPatch ? "yes" : "no"],
+    ["Mutation", summary.mutation ? "yes" : "no"],
+    ["Notes", summary.notes]
+  ]);
+};
+
 const renderReplay = (bundle: UiArtifactBundle): string => {
   const before = bundle.beforeReceipt;
   const after = bundle.afterReceipt;
   const patch = bundle.policyPatch;
+  const proof = bundle.liveProofSummary;
   const resolved = before && after ? Math.max(0, before.violations.length - after.violations.length) : 0;
+  const stages = proof?.readyWithoutPatch
+    ? [
+        ["Certify", before?.verdict ?? "missing", `${bundle.beforeTrace.length} trace event(s)`],
+        ["Patch", "not needed", "before receipt was READY"],
+        ["Rerun", after ? "complete" : "missing", `${bundle.afterTrace.length} trace event(s)`],
+        ["Ready", after?.verdict ?? "missing", `${after?.violations.length ?? 0} violation(s)`]
+      ]
+    : [
+        ["Fail", before?.verdict ?? "missing", `${bundle.beforeViolations.length} deterministic violation(s)`],
+        ["Patch", patch?.status ?? "missing", `${patch?.rules.length ?? 0} rule(s), ${patch?.splAssistance?.length ?? 0} SAIA item(s)`],
+        ["Rerun", after ? "complete" : "missing", `${bundle.afterTrace.length} trace event(s)`],
+        ["Pass", after?.verdict ?? "missing", `${resolved} resolved violation(s)`]
+      ];
+  const patchEmptyMessage = proof?.readyWithoutPatch
+    ? "No policy patch was exported because the live-derived mission was READY before policy injection."
+    : "Policy patch artifact not loaded.";
 
   return `<main class="view replay-view" data-view="certification-replay">
     <section class="workbench">
@@ -122,18 +171,16 @@ const renderReplay = (bundle: UiArtifactBundle): string => {
         <button class="replay-button" type="button" data-run-replay>Run replay</button>
       </div>
       <ol class="stage-line" aria-label="Certification replay stages">
-        ${renderStage(1, "Fail", before?.verdict ?? "missing", `${bundle.beforeViolations.length} deterministic violation(s)`)}
-        ${renderStage(2, "Patch", patch?.status ?? "missing", `${patch?.rules.length ?? 0} rule(s), ${patch?.splAssistance?.length ?? 0} SAIA item(s)`)}
-        ${renderStage(3, "Rerun", after ? "complete" : "missing", `${bundle.afterTrace.length} trace event(s)`)}
-        ${renderStage(4, "Pass", after?.verdict ?? "missing", `${resolved} resolved violation(s)`)}
+        ${stages.map(([title, status, detail], index) => renderStage(index + 1, title, status, detail)).join("")}
       </ol>
       <div class="replay-grid">
         ${renderReceiptPanel(before, "Before")}
         ${renderReceiptPanel(after, "After")}
       </div>
+      ${renderLiveProofSummary(bundle)}
       <section class="panel patch-panel">
         <h2>Patch evidence</h2>
-        ${renderPolicyPatchSummary(patch)}
+        ${renderPolicyPatchSummary(patch, patchEmptyMessage)}
       </section>
     </section>
   </main>`;
@@ -147,28 +194,45 @@ const renderReceipt = (bundle: UiArtifactBundle): string => {
       <div class="section-title">
         <h1>Readiness Receipt</h1>
       </div>
-      <div class="receipt-ledger">
-        ${renderReceiptPanel(receipt, "Current receipt")}
-        <section class="panel">
-          <h2>Rerun comparison</h2>
-          ${renderFactTable([
-            ["Before verdict", bundle.beforeReceipt?.verdict ?? "n/a"],
-            ["After verdict", bundle.afterReceipt?.verdict ?? "n/a"],
-            ["Before score", bundle.beforeReceipt?.score ?? "n/a"],
-            ["After score", bundle.afterReceipt?.score ?? "n/a"],
-            ["Resolved violations", receipt?.rerunComparison["resolvedViolations"] ?? []]
-          ])}
-        </section>
-        <section class="panel">
-          <h2>Evidence</h2>
-          ${renderFactTable([
-            ["Trace refs", receipt?.traceRefs.join(" / ") ?? "n/a"],
-            ["Evidence refs", receipt?.evidenceRefs.join(" / ") ?? "n/a"],
-            ["Readiness profile", bundle.readinessProfile?.id ?? "not loaded"],
-            ["Policy patch", bundle.policyPatch?.id ?? "not loaded"]
-          ])}
-        </section>
-      </div>
+      <section class="panel receipt-book">
+        <div class="receipt-book-grid">
+          <section class="receipt-book-section">
+            <h2>Current receipt</h2>
+            ${receipt ? renderFactTable([
+              ["Receipt", receipt.id],
+              ["Verdict", receipt.verdict],
+              ["Score", receipt.score],
+              ["Contract", `${receipt.environment.id} / ${receipt.contractVersion}`],
+              ["Trace refs", receipt.traceRefs.length],
+              ["Evidence refs", receipt.evidenceRefs.length],
+              ["Violations", receipt.violations.length]
+            ]) : `<p class="empty">Receipt artifact not loaded.</p>`}
+          </section>
+          <section class="receipt-book-section">
+            <h2>Rerun comparison</h2>
+            ${renderFactTable([
+              ["Before verdict", bundle.beforeReceipt?.verdict ?? "n/a"],
+              ["After verdict", bundle.afterReceipt?.verdict ?? "n/a"],
+              ["Before score", bundle.beforeReceipt?.score ?? "n/a"],
+              ["After score", bundle.afterReceipt?.score ?? "n/a"],
+              ["Resolved violations", receipt?.rerunComparison["resolvedViolations"] ?? []]
+            ])}
+          </section>
+          <section class="receipt-book-section">
+            <h2>Evidence</h2>
+            ${renderFactTable([
+              ["Trace refs", receipt?.traceRefs.join(" / ") ?? "n/a"],
+              ["Evidence refs", receipt?.evidenceRefs.join(" / ") ?? "n/a"],
+              ["Readiness profile", bundle.readinessProfile?.id ?? "not loaded"],
+              ["Policy patch", bundle.policyPatch?.id ?? "not loaded"]
+            ])}
+          </section>
+          <section class="receipt-book-section">
+            <h2>Live proof summary</h2>
+            ${renderLiveProofSummaryTable(bundle)}
+          </section>
+        </div>
+      </section>
     </section>
   </main>`;
 };
@@ -297,6 +361,7 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
             ["Mutation posture", "read-only adapter calls only"]
           ])}
         </section>
+        ${renderLiveProofSummary(bundle)}
       </div>
     </section>
   </main>`;
@@ -322,6 +387,7 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId): string => 
       <strong>${value(summary.verdict)} / ${value(summary.score)}</strong>
       <span>${value(summary.mode)} / ${value(summary.contract)}</span>
       <span>${summary.beforeViolations} before / ${summary.afterViolations} after</span>
+      <span>${value(summary.proofStory)}</span>
     </div>
   </aside>`;
 };

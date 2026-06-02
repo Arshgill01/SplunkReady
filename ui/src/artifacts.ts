@@ -13,8 +13,44 @@ import {
   type Violation
 } from "../../src/schemas/core.js";
 import { parseMissionDefinition, type MissionDefinition } from "../../src/missions/dsl.js";
+import { z } from "zod";
 
 export type ArtifactFetch = (input: string) => Promise<Response>;
+
+const liveProofSummarySchema = z
+  .object({
+    status: z.string().min(1),
+    mode: z.literal("live"),
+    mutation: z.boolean(),
+    derivedMission: z
+      .object({
+        strategy: z.enum(["saved-search-with-evidence", "internal-query-fallback", "none"]),
+        reason: z.string().min(1),
+        missionId: z.string().min(1).optional(),
+        artifacts: z.array(z.string().min(1)).optional()
+      })
+      .strict(),
+    before: z
+      .object({
+        verdict: z.string().min(1),
+        score: z.number().min(0).max(100),
+        violations: z.number().int().nonnegative()
+      })
+      .strict(),
+    after: z
+      .object({
+        verdict: z.string().min(1),
+        score: z.number().min(0).max(100),
+        violations: z.number().int().nonnegative()
+      })
+      .strict(),
+    failToPass: z.boolean(),
+    readyWithoutPatch: z.boolean(),
+    notes: z.string().min(1)
+  })
+  .strict();
+
+export type LiveProofSummary = z.infer<typeof liveProofSummarySchema>;
 
 export interface UiArtifactBundle {
   artifactBase: string;
@@ -26,6 +62,7 @@ export interface UiArtifactBundle {
   afterReceipt?: ReadinessReceipt;
   receipt?: ReadinessReceipt;
   policyPatch?: PolicyPatch;
+  liveProofSummary?: LiveProofSummary;
   beforeTrace: TraceEvent[];
   afterTrace: TraceEvent[];
   beforeViolations: Violation[];
@@ -41,6 +78,7 @@ const optionalFiles = [
   "receipt-before-001.json",
   "receipt-after-001.json",
   "policy-patch.json",
+  "live-proof-summary.json",
   "trace-before.json",
   "trace-after.json",
   "violations-before.json",
@@ -128,6 +166,7 @@ export const loadUiArtifactBundle = async (
     afterReceipt,
     receipt: afterReceipt ?? beforeReceipt,
     policyPatch: policyPatchSchema.optional().parse(loaded.get("policy-patch.json")),
+    liveProofSummary: liveProofSummarySchema.optional().parse(loaded.get("live-proof-summary.json")),
     beforeTrace: traceEventSchema.array().optional().parse(loaded.get("trace-before.json")) ?? [],
     afterTrace: traceEventSchema.array().optional().parse(loaded.get("trace-after.json")) ?? [],
     beforeViolations: violationSchema.array().optional().parse(loaded.get("violations-before.json")) ?? [],
@@ -145,6 +184,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   afterViolations: number;
   traceEvents: number;
   saiaItems: number;
+  proofStory: string;
 } => {
   const receipt = bundle.receipt;
   const contract = bundle.liveSmokeContract ?? bundle.contract;
@@ -157,6 +197,11 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
     beforeViolations: bundle.beforeViolations.length,
     afterViolations: bundle.afterViolations.length,
     traceEvents: bundle.beforeTrace.length + bundle.afterTrace.length,
-    saiaItems: bundle.policyPatch?.splAssistance?.length ?? 0
+    saiaItems: bundle.policyPatch?.splAssistance?.length ?? 0,
+    proofStory: bundle.liveProofSummary?.failToPass
+      ? "fail-to-pass"
+      : bundle.liveProofSummary?.readyWithoutPatch
+        ? "ready-without-patch"
+        : "not loaded"
   };
 };
