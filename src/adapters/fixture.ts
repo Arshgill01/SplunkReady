@@ -99,15 +99,29 @@ export const loadFixtureSplunkDatasetFromFile = async (filePath: string | URL): 
 
 const savedSearchKey = (input: RunSavedSearchRequest) => `${input.app}::${input.name}`;
 
-const normalizeKnowledgeObjectQuery = (rawQuery: string | undefined): string | undefined => {
+interface NormalizedKnowledgeObjectQuery {
+  app?: string;
+  term?: string;
+}
+
+const queryFilterPattern = (field: "app" | "name") =>
+  new RegExp(`(?:^|\\s)${field}\\s*=\\s*(?:"([^"]+)"|'([^']+)'|(.+?))(?=\\s+\\w+\\s*=|$)`, "i");
+
+const normalizeKnowledgeObjectQuery = (rawQuery: string | undefined): NormalizedKnowledgeObjectQuery => {
   const trimmedQuery = rawQuery?.trim();
   if (!trimmedQuery) {
-    return undefined;
+    return {};
   }
 
-  const nameFilter = trimmedQuery.match(/(?:^|\s)name\s*=\s*(?:"([^"]+)"|'([^']+)'|(.+?))(?=\s+\w+\s*=|$)/i);
-  const query = nameFilter?.[1] ?? nameFilter?.[2] ?? nameFilter?.[3] ?? trimmedQuery.replace(/["']/g, "");
-  return query.trim().toLowerCase();
+  const nameFilter = trimmedQuery.match(queryFilterPattern("name"));
+  const appFilter = trimmedQuery.match(queryFilterPattern("app"));
+  const rawTerm = nameFilter?.[1] ?? nameFilter?.[2] ?? nameFilter?.[3] ?? trimmedQuery.replace(/["']/g, "");
+  const rawApp = appFilter?.[1] ?? appFilter?.[2] ?? appFilter?.[3];
+
+  return {
+    app: rawApp?.trim(),
+    term: rawTerm.trim().toLowerCase()
+  };
 };
 
 const createContext = (
@@ -183,11 +197,12 @@ export const createFixtureSplunkAccessAdapter = (
     const context = createContext("splunk_get_knowledge_objects", options);
     await emitStart(traceHooks, context, input);
     const query = normalizeKnowledgeObjectQuery(input.query);
+    const appFilter = input.app ?? query.app;
     const objects = fixture.knowledgeObjects.filter((object) => {
       const matchesType = input.types.includes(object.type);
-      const matchesApp = input.app ? object.app === input.app : true;
-      const matchesQuery = query
-        ? object.name.toLowerCase().includes(query) || object.description?.toLowerCase().includes(query)
+      const matchesApp = appFilter ? object.app === appFilter : true;
+      const matchesQuery = query.term
+        ? object.name.toLowerCase().includes(query.term) || object.description?.toLowerCase().includes(query.term)
         : true;
       return matchesType && matchesApp && matchesQuery;
     });

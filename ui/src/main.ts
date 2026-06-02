@@ -1,3 +1,4 @@
+import "@fontsource-variable/spline-sans";
 import "@fontsource-variable/spline-sans-mono";
 import "@fontsource-variable/geist-mono";
 import "./styles.css";

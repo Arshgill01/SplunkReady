@@ -223,8 +223,10 @@ describe("Vite UI artifact app", () => {
     expect(css).not.toMatch(/glass|backdrop-filter|linear-gradient|radial-gradient|translate|letter-spacing:\s*-/i);
     expect(css).not.toMatch(/border-radius:\s*(?:1[2-9]|[2-9]\d)px/i);
     expect(css).not.toMatch(/"Avenir Next"|"Helvetica Neue"|\bAvenir\b|\bHelvetica\b|\bArial\b|\bInter\b|\bRoboto\b|"Segoe UI"/i);
+    expect(css).toContain("Spline Sans Variable");
     expect(css).toContain("Spline Sans Mono");
     expect(css).toContain("Geist Mono");
+    expect(entry).toContain("@fontsource-variable/spline-sans");
     expect(entry).toContain("@fontsource-variable/spline-sans-mono");
     expect(entry).toContain("@fontsource-variable/geist-mono");
     expect(css).not.toContain("dashboard");

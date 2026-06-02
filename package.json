@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@fontsource-variable/geist-mono": "^5.2.8",
+    "@fontsource-variable/spline-sans": "^5.2.8",
     "@fontsource-variable/spline-sans-mono": "^5.2.8",
     "@types/node": "^22.15.29",
     "typescript": "^5.8.3",

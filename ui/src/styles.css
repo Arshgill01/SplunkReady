@@ -1,8 +1,8 @@
 :root {
   color-scheme: dark;
-  font-family: "Spline Sans Mono Variable", "Spline Sans Mono", ui-monospace, monospace;
+  font-family: "Spline Sans Variable", "Spline Sans", sans-serif;
   line-height: 1.45;
-  font-weight: 430;
+  font-weight: 420;
   color: #eee8dc;
   background: #151309;
   font-synthesis: none;
@@ -133,6 +133,7 @@ code {
 }
 
 .rail-receipt span {
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
   color: var(--muted);
   font-size: 14px;
 }
@@ -296,6 +297,14 @@ code {
 .trace-table td {
   color: var(--muted);
   overflow-wrap: anywhere;
+}
+
+.fact-table td,
+.trace-table td:nth-child(2),
+.trace-table td:nth-child(4),
+.patch-rules article p {
+  font-family: "Spline Sans Mono Variable", "Spline Sans Mono", ui-monospace, monospace;
+  font-size: 0.95em;
 }
 
 .trace-table th {

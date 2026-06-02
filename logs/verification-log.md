@@ -3261,3 +3261,27 @@ Result:
 Open risks:
 
 - These tests exercise local HTTP MCP behavior, not the user's real Splunk MCP endpoint. Real endpoint proof remains in local artifacts and still needs compatible live demo content for a passing security receipt.
+
+## 2026-06-02 - Phase Live Core Polish Checkpoint
+
+Commands:
+
+- `npx vitest run tests/adapters/fixture.test.ts`
+- `npx vitest run tests/adapters/fixture.test.ts tests/adapters/live.integration.test.ts`
+- `npx vitest run tests/adapters/fixture.test.ts tests/adapters/live.integration.test.ts tests/ui/app.test.ts tests/ui/shell.test.ts && npm run ui:build && npm run check && git diff --check`
+
+Result:
+
+- PASS.
+- Initial focused fixture adapter test passed before tightening the app-filter behavior.
+- Focused adapter parity tests passed after tightening: 2 files / 9 tests.
+- Focused adapter/UI tests passed: 4 files / 25 tests.
+- Vite UI build passed and bundled the Spline Sans variable font plus existing monospace font assets.
+- Full check passed: scaffold verifier reported 85 waves and 559 project files; Vitest passed 36 files / 177 tests.
+- `git diff --check` passed.
+
+Open risks:
+
+- `npm install --save-dev @fontsource-variable/spline-sans` reported one critical npm audit vulnerability in the dependency tree; this checkpoint did not investigate or remediate audit findings.
+- Playwright screenshot capture was attempted earlier for the typography change but local Playwright browsers were not installed, so visual verification is limited to build/tests in this checkpoint.
+- Live passing security receipt remains blocked by the need for real or operator-approved Splunk demo content that matches the mission.

@@ -76,7 +76,15 @@ describe("fixture Splunk adapter", () => {
         },
         requestOptions
       )
-    ).resolves.toMatchObject({ resultCount: 2 });
+    ).resolves.toMatchObject({
+      resultCount: 1,
+      objects: [
+        expect.objectContaining({
+          app: "SplunkEnterpriseSecuritySuite",
+          name: "ES - Lateral Movement Auth Chain"
+        })
+      ]
+    });
     await expect(
       adapter.getKnowledgeObjects({ types: ["saved_searches"], query: '"lateral movement"' }, requestOptions)
     ).resolves.toMatchObject({ resultCount: 3 });

@@ -3835,3 +3835,47 @@ Reviewer findings:
 
 Result:
 - PASS for the live integration test slice after focused verification.
+
+## 2026-06-02 - Phase Live Core Polish Checkpoint
+
+Scope:
+- Review the closed side-agent fixture adapter change for knowledge-object query normalization.
+- Keep the useful `name=...` and quoted-query normalization, but tighten it so `app=...` embedded in the query filters fixture results by app context.
+- Preserve deterministic grading: this only changes fixture knowledge-object discovery, not pass/fail semantics.
+- Refine Vite UI typography by importing `@fontsource-variable/spline-sans` for the human-facing interface while retaining monospace faces for trace/code evidence.
+- Create the Splunk developer feedback log requested for Phase Live expansion work.
+
+Files changed:
+- `package.json`
+- `package-lock.json`
+- `src/adapters/fixture.ts`
+- `tests/adapters/fixture.test.ts`
+- `ui/src/main.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/splunk-feedback.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- The previous side-agent normalization was already committed in `5b21170`; current work adjusts it rather than reverting it.
+- Fixture mode now treats `name=ES - Lateral Movement Auth Chain app=SplunkEnterpriseSecuritySuite` as one app-scoped result, matching the app-context discipline used by the mission and grader.
+- `logs/splunk-feedback.md` now records Splunk setup, KVStore/app readiness, MCP envelope, token-auth, and app-context friction discovered during live integration work.
+- User direction: deprioritize demo video and Devpost artifacts for now; continue with meaningful core development and expansion moves.
+
+Estimated prize trajectory after this checkpoint:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 18% | 18% | No new live/demo proof in this checkpoint. |
+| Platform & DX | 35% | 36% | Cleaner app-scoped fixture parity and better UI typography improve product credibility. |
+| Security | 20% | 20% | Security grading unchanged. |
+| Best Use of MCP Server | 60% | 60% | Live MCP proof gap/options still need more work. |
+| Hosted Models | 45% | 45% | SAIA/UI work not changed here. |
+| Developer Tools | 30% | 31% | Feedback log and app-scoped adapter behavior improve developer-tool evidence. |
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No new reviewer inbox file exists for this Phase Live checkpoint.
+
+Result:
+- PASS for the checkpoint after focused adapter/UI checks and full project verification.
