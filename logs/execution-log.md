@@ -4433,6 +4433,62 @@ Reviewer findings:
 Result:
 - Focused LLM/CLI tests, full repo verification, live proof refresh, and `git diff --check` passed except that live `proof-audit` remains a warning for hosted-model permission.
 
+## 2026-06-03 - Phase Live Hosted Model Diagnostic Command
+
+Scope:
+- Add a narrow command to test SAIA hosted-model access independently from the full live security proof.
+- Make Move 4 permission debugging fast and explicit without rerunning the LLM fail-to-pass loop.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `hosted-model-diagnostic --mode fixture|live --out <dir> [--require-pass true|false] [--json]`.
+- The command compiles the current contract, calls the existing non-mutating hosted-model proof helper, and writes `hosted-model-diagnostic.json`.
+- The diagnostic artifact records:
+  - `status` as `PASS` or `BLOCKED`;
+  - mode and contract id;
+  - required SAIA tools;
+  - available/missing hosted-model tools from the contract;
+  - permission status and exact required actions when blocked;
+  - deterministic pass/fail authority.
+- `--require-pass true` now turns a blocked SAIA state into a failing CLI exit while preserving the diagnostic artifact on disk.
+- Added CLI tests for:
+  - successful hosted-model diagnostic;
+  - blocked hosted-model diagnostic;
+  - strict-gate failure when `--require-pass true`;
+  - proving the diagnostic does not call `splunk_run_query`.
+
+Product impact:
+- Move 4 now has a quick operational check: once Splunk/MCP permissions are adjusted, one command can prove whether `saia_explain_spl` and `saia_optimize_spl` are callable.
+- This prevents full-proof reruns from being the only feedback mechanism for hosted-model entitlement.
+- The diagnostic preserves the product boundary: SAIA output is advisory, the SPL is not executed, and SplunkReady does not mutate Splunk.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 29% | 29% | No new demo capability, but less integration friction. |
+| Platform & DX | 71% | 72% | Developers now have a clear diagnostic for hosted-model setup. |
+| Security | 42% | 42% | Security proof behavior unchanged. |
+| Best Use of MCP Server | 81% | 81% | MCP core proof unchanged. |
+| Hosted Models | 53% | 55% | The permission gap is now directly testable and CI-gateable. |
+| Developer Tools | 66% | 68% | Adds a practical setup/CI primitive around hosted-model readiness. |
+
+Next directions to consider in future runs:
+- Run `hosted-model-diagnostic --mode live --out artifacts/hosted-model-diagnostic --require-pass true --json` after SAIA permission is adjusted.
+- Surface `hosted-model-diagnostic.json` in the Vite Live Connect view alongside `hosted-model-proof.json`.
+- Continue core work on meaningful product surfaces: external trace SDK proof, richer multi-mission security fixture coverage, and firewall gateway UX.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- TypeScript build, targeted hosted-model tests, direct diagnostic smoke, full repo verification, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Firewall Check Command
 
 Scope:

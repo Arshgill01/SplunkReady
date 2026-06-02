@@ -38,6 +38,7 @@ const startMockMcpServer = async (
     indexes?: Array<{ name: string; sensitive: boolean }>;
     savedSearches?: Array<{ id: string; type: string; name: string; app: string }>;
     savedSearchRows?: Array<Record<string, unknown>>;
+    blockHostedModels?: boolean;
   } = {}
 ) => {
   const calls: Array<{ method: string; params: { name: string; arguments: unknown } }> = [];
@@ -59,6 +60,22 @@ const startMockMcpServer = async (
     request.on("end", () => {
       const parsed = JSON.parse(body) as { id: string; method: string; params: { name: string; arguments: unknown } };
       calls.push(parsed);
+
+      if (options.blockHostedModels && parsed.params.name.startsWith("saia_")) {
+        response.writeHead(200, { "content-type": "application/json" });
+        response.end(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            id: parsed.id,
+            result: {
+              isError: true,
+              content: [{ type: "text", text: `Action forbidden: ${parsed.params.name} requires Splunk AI Assistant access.` }]
+            }
+          })
+        );
+        return;
+      }
+
       const outputByToolName: Record<string, unknown> = {
         splunk_get_info: {
           mode: "live",
@@ -662,6 +679,123 @@ describe("SplunkReady CLI flow", () => {
     });
     expect(mcp.calls.map((call) => call.params.name)).toEqual(
       expect.arrayContaining(["saia_explain_spl", "saia_optimize_spl"])
+    );
+    expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
+  });
+
+  it("runs a focused hosted-model diagnostic for SAIA permission checks", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-hosted-model-diagnostic-"));
+    const mcp = await startMockMcpServer();
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: mcp.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token"
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["hosted-model-diagnostic", "--mode", "live", "--out", outDir, "--json"], process.cwd(), env))
+          .stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "hosted-model-diagnostic",
+        status: "PASS",
+        artifacts: expect.arrayContaining([
+          join(outDir, "environment-contract.json"),
+          join(outDir, "hosted-model-proof.json"),
+          join(outDir, "hosted-model-diagnostic.json")
+        ])
+      });
+    } finally {
+      await mcp.close();
+    }
+
+    const diagnostic = JSON.parse(await readFile(join(outDir, "hosted-model-diagnostic.json"), "utf8")) as {
+      status: string;
+      mode: string;
+      mutation: boolean;
+      permission: { status: string; message: string };
+      requiredTools: string[];
+      availableTools: string[];
+    };
+
+    expect(diagnostic).toMatchObject({
+      status: "PASS",
+      mode: "live",
+      mutation: false,
+      permission: {
+        status: "OK",
+        message:
+          "The current MCP credentials can invoke saia_explain_spl and saia_optimize_spl for advisory SPL remediation."
+      },
+      requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
+      availableTools: ["saia_explain_spl", "saia_optimize_spl"]
+    });
+    expect(mcp.calls.map((call) => call.params.name)).toEqual(
+      expect.arrayContaining(["saia_explain_spl", "saia_optimize_spl"])
+    );
+    expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
+  });
+
+  it("writes a blocked hosted-model diagnostic and can strict-gate SAIA access", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-hosted-model-diagnostic-blocked-"));
+    const mcp = await startMockMcpServer({ blockHostedModels: true });
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: mcp.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token"
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["hosted-model-diagnostic", "--mode", "live", "--out", outDir, "--json"], process.cwd(), env))
+          .stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "hosted-model-diagnostic",
+        status: "PASS",
+        artifacts: expect.arrayContaining([join(outDir, "hosted-model-diagnostic.json")])
+      });
+      await expect(
+        runCli(
+          ["hosted-model-diagnostic", "--mode", "live", "--out", outDir, "--require-pass", "true"],
+          process.cwd(),
+          env
+        )
+      ).rejects.toMatchObject({
+        stderr: expect.stringContaining("hosted-model-diagnostic requires SAIA access")
+      });
+    } finally {
+      await mcp.close();
+    }
+
+    const diagnostic = JSON.parse(await readFile(join(outDir, "hosted-model-diagnostic.json"), "utf8")) as {
+      status: string;
+      mutation: boolean;
+      permission: { status: string; error: string; requiredActions: string[] };
+    };
+    const proof = JSON.parse(await readFile(join(outDir, "hosted-model-proof.json"), "utf8")) as {
+      status: string;
+      assistance: null;
+    };
+
+    expect(proof).toMatchObject({ status: "BLOCKED", assistance: null });
+    expect(diagnostic).toMatchObject({
+      status: "BLOCKED",
+      mutation: false,
+      permission: {
+        status: "BLOCKED",
+        error:
+          "Hosted-model SAIA action forbidden. The current MCP token or Splunk user can access live read-only Splunk tools, but not saia_explain_spl/saia_optimize_spl."
+      }
+    });
+    expect(diagnostic.permission.requiredActions).toEqual(
+      expect.arrayContaining([
+        "Grant the Splunk/MCP user permission to invoke saia_explain_spl.",
+        "Grant the Splunk/MCP user permission to invoke saia_optimize_spl."
+      ])
     );
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
   });

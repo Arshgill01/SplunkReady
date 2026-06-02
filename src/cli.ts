@@ -146,6 +146,7 @@ Commands:
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   hosted-model-proof --mode fixture|live --out <dir> [--json]
+  hosted-model-diagnostic --mode fixture|live --out <dir> [--require-pass true|false] [--json]
   proof-audit --out <dir> [--require-pass true|false] [--json]
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]
@@ -1650,6 +1651,64 @@ const hostedModelProofCommand = async (
   return [...compileArtifacts, proofPath];
 };
 
+const hostedModelDiagnosticCommand = async (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<string[]> => {
+  const compileArtifacts = await compileCommand(options, env);
+  const adapter = await createSplunkAccessAdapter(options, env);
+  const contract = await loadContract(options.out);
+  const proofPath = await writeHostedModelProofArtifact(options, adapter, contract);
+  const proof = await readJson<unknown>(proofPath, "hosted model proof");
+  const proofStatus = stringFromRecord(proof, "status") ?? "UNKNOWN";
+  const availableTools = hostedModelToolNames.filter((toolName) => contract.mcpTools.includes(toolName));
+  const missingTools = hostedModelToolNames.filter((toolName) => !contract.mcpTools.includes(toolName));
+  const diagnosticPath = join(options.out, "hosted-model-diagnostic.json");
+  const blocked = proofStatus !== "PASS";
+
+  await writeJson(diagnosticPath, {
+    status: blocked ? "BLOCKED" : "PASS",
+    mode: options.mode,
+    mutation: false,
+    proofPath,
+    contract: {
+      id: contract.id,
+      mode: contract.mode
+    },
+    requiredTools: hostedModelToolNames,
+    availableTools,
+    missingTools,
+    permission: blocked
+      ? {
+          status: "BLOCKED",
+          message:
+            "The MCP contract advertises hosted-model tools, but the current credentials did not return advisory SAIA output.",
+          error: stringFromRecord(proof, "error") ?? "Hosted-model proof did not pass.",
+          requiredActions: [
+            "Grant the Splunk/MCP user permission to invoke saia_explain_spl.",
+            "Grant the Splunk/MCP user permission to invoke saia_optimize_spl.",
+            "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
+          ]
+        }
+      : {
+          status: "OK",
+          message:
+            "The current MCP credentials can invoke saia_explain_spl and saia_optimize_spl for advisory SPL remediation."
+        },
+    deterministicAuthority: "deterministic-rule-engine",
+    notes:
+      "This diagnostic calls hosted-model helper tools only. It does not execute the SPL query, does not grade with an LLM, and does not mutate Splunk."
+  });
+
+  if (options.requirePass && blocked) {
+    throw new Error(
+      `hosted-model-diagnostic requires SAIA access but hosted-model proof status was ${proofStatus}. See ${diagnosticPath}.`
+    );
+  }
+
+  return [...compileArtifacts, proofPath, diagnosticPath];
+};
+
 const writeHostedModelProofArtifact = async (
   options: CliOptions,
   adapter: SplunkAccessAdapter,
@@ -2215,6 +2274,8 @@ const main = async (): Promise<void> => {
     artifacts = await llmAgentCommand(options);
   } else if (command === "hosted-model-proof") {
     artifacts = await hostedModelProofCommand(options);
+  } else if (command === "hosted-model-diagnostic") {
+    artifacts = await hostedModelDiagnosticCommand(options);
   } else if (command === "proof-audit") {
     artifacts = await proofAuditCommand(options);
   } else if (command === "live-candidates") {

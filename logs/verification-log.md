@@ -4780,3 +4780,41 @@ Open risks:
 - Live hosted-model proof needs SAIA-capable MCP permission before strict `proof-audit --require-pass true` can pass for the hosted-model check.
 - `artifacts/live-security-proof-refresh` is local untracked evidence and is not intended for commit.
 - The LLM evidence ledger improves deterministic answer verification, but model behavior can still vary across real Gemini calls.
+
+## 2026-06-03 - Phase Live Hosted Model Diagnostic Command
+
+Commands:
+
+- `npm run build`
+- `npx vitest run tests/cli/flow.test.ts -t "hosted-model diagnostic|hosted-model proof"`
+- `tmp=$(mktemp -d /tmp/splunkready-hosted-diag-XXXXXX) && npm run splunkready -- hosted-model-diagnostic --out "$tmp" --json > /tmp/splunkready-hosted-diag.json && cat /tmp/splunkready-hosted-diag.json && node -e "const fs=require('fs'); const dir=process.argv[1]; const proof=JSON.parse(fs.readFileSync(dir+'/hosted-model-proof.json','utf8')); const diagnostic=JSON.parse(fs.readFileSync(dir+'/hosted-model-diagnostic.json','utf8')); console.log(JSON.stringify({proof:{status:proof.status, mutation:proof.mutation, toolCalls:proof.toolCalls}, diagnostic:{status:diagnostic.status, mutation:diagnostic.mutation, permission:diagnostic.permission.status, requiredTools:diagnostic.requiredTools}}, null, 2));" "$tmp"`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for TypeScript build.
+- PASS for focused hosted-model CLI tests:
+  - `hosted-model-proof` still writes proof without executing `splunk_run_query`;
+  - `hosted-model-diagnostic` writes a PASS artifact when SAIA is callable;
+  - `hosted-model-diagnostic` writes a BLOCKED artifact when SAIA is forbidden;
+  - `--require-pass true` fails on the blocked state.
+- PASS for direct fixture diagnostic smoke:
+  - command emitted JSON with `status: PASS`;
+  - wrote `environment-contract.json`, `missions.json`, `agent-policy.json`, `readiness-profile.json`, `hosted-model-proof.json`, and `hosted-model-diagnostic.json`;
+  - proof status was `PASS`;
+  - mutation was `false`;
+  - tool calls were `saia_explain_spl` and `saia_optimize_spl`;
+  - diagnostic permission status was `OK`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 749 project files;
+  - 38 test files;
+  - 215 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The diagnostic does not grant permission; it only proves whether the current MCP token can invoke hosted-model tools.
+- Live hosted-model proof remains blocked until the Splunk/MCP user is entitled for `saia_explain_spl` and `saia_optimize_spl`.
