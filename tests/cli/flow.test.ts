@@ -467,6 +467,7 @@ describe("SplunkReady CLI flow", () => {
       ruleId: string;
     }>;
     const afterReceipt = JSON.parse(await readFile(join(outDir, "receipt-after-001.json"), "utf8")) as {
+      agent: { name: string; version: string };
       verdict: string;
       score: number;
     };
@@ -475,6 +476,7 @@ describe("SplunkReady CLI flow", () => {
     expect(gemini.prompts[0]).toContain("no compiled Splunk contract has been injected");
     expect(gemini.prompts[2]).toContain("Compiled Splunk contract injected by policy");
     expect(gemini.prompts[2]).toContain("Compiled agent policy");
+    expect(gemini.prompts[2]).toContain("Do not stop after discovery.");
     expect(beforeTrace[0]).toMatchObject({
       type: "tool_call",
       toolName: "splunk_run_query",
@@ -491,7 +493,11 @@ describe("SplunkReady CLI flow", () => {
     expect(beforeViolations.map((violation) => violation.ruleId)).toEqual(
       expect.arrayContaining(["SPL-001", "SPL-003", "KO-001", "EVD-001", "ANS-001"])
     );
-    expect(afterReceipt).toMatchObject({ verdict: "READY", score: 100 });
+    expect(afterReceipt).toMatchObject({
+      agent: { name: "Gemini Splunk MCP Agent", version: "gemini-test" },
+      verdict: "READY",
+      score: 100
+    });
   });
 
   it("rejects an externally supplied trace for the wrong mission", async () => {

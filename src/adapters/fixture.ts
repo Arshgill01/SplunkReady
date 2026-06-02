@@ -99,6 +99,17 @@ export const loadFixtureSplunkDatasetFromFile = async (filePath: string | URL): 
 
 const savedSearchKey = (input: RunSavedSearchRequest) => `${input.app}::${input.name}`;
 
+const normalizeKnowledgeObjectQuery = (rawQuery: string | undefined): string | undefined => {
+  const trimmedQuery = rawQuery?.trim();
+  if (!trimmedQuery) {
+    return undefined;
+  }
+
+  const nameFilter = trimmedQuery.match(/(?:^|\s)name\s*=\s*(?:"([^"]+)"|'([^']+)'|(.+?))(?=\s+\w+\s*=|$)/i);
+  const query = nameFilter?.[1] ?? nameFilter?.[2] ?? nameFilter?.[3] ?? trimmedQuery.replace(/["']/g, "");
+  return query.trim().toLowerCase();
+};
+
 const createContext = (
   toolName: AdapterRequestContext["toolName"],
   options: AdapterCallOptions
@@ -171,11 +182,13 @@ export const createFixtureSplunkAccessAdapter = (
   async getKnowledgeObjects(input: KnowledgeObjectRequest, options): Promise<KnowledgeObjectResult> {
     const context = createContext("splunk_get_knowledge_objects", options);
     await emitStart(traceHooks, context, input);
-    const query = input.query?.toLowerCase();
+    const query = normalizeKnowledgeObjectQuery(input.query);
     const objects = fixture.knowledgeObjects.filter((object) => {
       const matchesType = input.types.includes(object.type);
       const matchesApp = input.app ? object.app === input.app : true;
-      const matchesQuery = query ? object.name.toLowerCase().includes(query) || object.description?.toLowerCase().includes(query) : true;
+      const matchesQuery = query
+        ? object.name.toLowerCase().includes(query) || object.description?.toLowerCase().includes(query)
+        : true;
       return matchesType && matchesApp && matchesQuery;
     });
     await emitEnd(traceHooks, context, "Fixture knowledge objects loaded.", objects.length);

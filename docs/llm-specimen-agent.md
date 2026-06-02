@@ -15,10 +15,12 @@ Export a Gemini key in the local shell:
 ```bash
 export SPLUNKREADY_LLM_ENABLED=true
 export GEMINI_API_KEY='<your-gemini-api-key>'
-export GEMINI_MODEL='gemini-2.5-flash'
+export GEMINI_MODEL='gemini-3.1-flash-lite'
 ```
 
-`GEMINI_MODEL` is optional. If omitted, SplunkReady defaults to `gemini-2.5-flash`. Tests can override the endpoint with `SPLUNKREADY_GEMINI_ENDPOINT_BASE_URL`; normal operators should leave that unset.
+`GEMINI_MODEL` is optional. If omitted, SplunkReady defaults to `gemini-3.1-flash-lite`. Tests can override the endpoint with `SPLUNKREADY_GEMINI_ENDPOINT_BASE_URL`; normal operators should leave that unset.
+
+The local Phase Live proof key exposes this model through the Gemini API as `models/gemini-3.1-flash-lite` with `generateContent`, `countTokens`, `createCachedContent`, and `batchGenerateContent` support.
 
 ## Fixture Proof Flow
 

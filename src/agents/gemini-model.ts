@@ -12,6 +12,7 @@ export interface GeminiModelConfig {
   apiKey: string;
   model: string;
   endpointBaseUrl?: string;
+  temperature?: number;
   fetchImpl?: typeof fetch;
 }
 
@@ -19,10 +20,12 @@ export interface GeminiModelEnvConfig {
   apiKey: string;
   model: string;
   endpointBaseUrl?: string;
+  temperature?: number;
 }
 
-const defaultGeminiModel = "gemini-2.5-flash";
+const defaultGeminiModel = "gemini-3.1-flash-lite";
 const defaultEndpointBaseUrl = "https://generativelanguage.googleapis.com/v1beta";
+const defaultTemperature = 0.2;
 
 const knowledgeObjectRequestSchema = z
   .object({
@@ -64,18 +67,92 @@ const runSavedSearchRequestSchema = z
   })
   .strict() satisfies z.ZodType<RunSavedSearchRequest>;
 
-const toolCallSchema = z.discriminatedUnion("toolName", [
+const runSavedSearchMcpAliasInputSchema = z
+  .object({
+    name: z.string().min(1).optional(),
+    saved_search_name: z.string().min(1).optional(),
+    saved_search: z.string().min(1).optional(),
+    search: z.string().min(1).optional(),
+    app: z.string().min(1).optional(),
+    earliest_time: z.string().min(1).optional(),
+    latest_time: z.string().min(1).optional(),
+    search_params: z.record(z.string()).optional(),
+    tokens: z.record(z.string()).optional(),
+    maxRows: z.number().int().positive().optional(),
+    max_rows: z.number().int().positive().optional()
+  })
+  .strict();
+
+const rawToolCallSchema = z.discriminatedUnion("toolName", [
   z.object({ toolName: z.literal("splunk_get_knowledge_objects"), input: knowledgeObjectRequestSchema }).strict(),
   z.object({ toolName: z.literal("splunk_run_query"), input: runQueryRequestSchema }).strict(),
-  z.object({ toolName: z.literal("splunk_run_saved_search"), input: runSavedSearchRequestSchema }).strict()
-]) satisfies z.ZodType<LlmAgentToolCall>;
+  z.object({ toolName: z.literal("splunk_run_saved_search"), input: runSavedSearchMcpAliasInputSchema }).strict()
+]);
+
+const normalizeToolCall = (toolCall: z.infer<typeof rawToolCallSchema>): LlmAgentToolCall => {
+  if (toolCall.toolName !== "splunk_run_saved_search") {
+    return toolCall;
+  }
+
+  const input = toolCall.input;
+
+  return {
+    toolName: "splunk_run_saved_search",
+    input: runSavedSearchRequestSchema.parse({
+      name: input.name ?? input.saved_search_name ?? input.saved_search ?? input.search,
+      app: input.app ?? "search",
+      tokens: {
+        ...(input.tokens ?? {}),
+        ...(input.search_params ?? {}),
+        ...(input.earliest_time ? { earliest_time: input.earliest_time } : {}),
+        ...(input.latest_time ? { latest_time: input.latest_time } : {})
+      },
+      ...(input.maxRows ?? input.max_rows ? { maxRows: input.maxRows ?? input.max_rows } : {})
+    })
+  };
+};
 
 const planSchema = z
   .object({
     rationale: z.string().min(1),
-    toolCalls: z.array(toolCallSchema).min(1)
+    toolCalls: z.array(rawToolCallSchema).min(1)
   })
-  .strict() satisfies z.ZodType<LlmAgentPlan>;
+  .strict()
+  .transform(
+    (input): LlmAgentPlan => ({
+      rationale: input.rationale,
+      toolCalls: input.toolCalls.map(normalizeToolCall)
+    })
+  );
+
+const normalizePlanForContract = (
+  plan: LlmAgentPlan,
+  contract: EnvironmentContract,
+  contractInjected: boolean
+): LlmAgentPlan => ({
+  ...plan,
+  toolCalls: plan.toolCalls.map((toolCall) => {
+    if (toolCall.toolName !== "splunk_run_saved_search") {
+      return toolCall;
+    }
+
+    const matchingSavedSearch =
+      contract.savedSearches.find((savedSearch) => savedSearch.name === toolCall.input.name && savedSearch.app !== "search") ??
+      contract.savedSearches.find((savedSearch) => savedSearch.name === toolCall.input.name);
+
+    if (!contractInjected || !matchingSavedSearch || toolCall.input.app !== "search") {
+      return toolCall;
+    }
+
+    return {
+      ...toolCall,
+      input: {
+        ...toolCall.input,
+        app: matchingSavedSearch.app
+      }
+    };
+  })
+});
 
 const answerSchema = z.object({ finalAnswer: z.string().min(1) }).strict();
 
@@ -108,7 +185,8 @@ export const createGeminiConfigFromEnv = (env: NodeJS.ProcessEnv = process.env):
   return {
     apiKey,
     model: env.GEMINI_MODEL?.trim() || env.SPLUNKREADY_LLM_MODEL?.trim() || defaultGeminiModel,
-    endpointBaseUrl: env.SPLUNKREADY_GEMINI_ENDPOINT_BASE_URL?.trim()
+    endpointBaseUrl: env.SPLUNKREADY_GEMINI_ENDPOINT_BASE_URL?.trim(),
+    temperature: env.SPLUNKREADY_GEMINI_TEMPERATURE ? Number(env.SPLUNKREADY_GEMINI_TEMPERATURE) : undefined
   };
 };
 
@@ -133,7 +211,10 @@ const contractSummary = (contract: EnvironmentContract): Record<string, unknown>
   evidenceRules: contract.evidenceRules
 });
 
-const missionSummary = (mission: Parameters<LlmAgentModel["plan"]>[0]["mission"]): Record<string, unknown> => ({
+const missionSummary = (
+  mission: Parameters<LlmAgentModel["plan"]>[0]["mission"],
+  options: { includePreferredSavedSearchRefs: boolean }
+): Record<string, unknown> => ({
   id: mission.id,
   title: mission.title,
   prompt: mission.prompt,
@@ -142,7 +223,7 @@ const missionSummary = (mission: Parameters<LlmAgentModel["plan"]>[0]["mission"]
   allowedTools: mission.allowedTools,
   forbiddenPatterns: mission.forbiddenPatterns,
   requiredEvidence: mission.requiredEvidence,
-  preferredSavedSearchRefs: mission.preferredSavedSearchRefs,
+  preferredSavedSearchRefs: options.includePreferredSavedSearchRefs ? mission.preferredSavedSearchRefs : [],
   requiresSavedSearchDiscovery: mission.requiresSavedSearchDiscovery,
   checks: mission.checks
 });
@@ -152,6 +233,11 @@ const minimalRuntimeBoundary = (contract: EnvironmentContract): Record<string, u
   queryBudgets: contract.queryBudgets,
   availableToolCount: contract.mcpTools.length
 });
+
+const planShapeExample = (contractInjected: boolean): string =>
+  contractInjected
+    ? "Return this exact JSON shape: {\"rationale\":\"...\",\"toolCalls\":[{\"toolName\":\"splunk_get_knowledge_objects\",\"input\":{\"types\":[\"saved_searches\"],\"query\":\"...\"}},{\"toolName\":\"splunk_run_saved_search\",\"input\":{\"name\":\"...\",\"app\":\"...\",\"maxRows\":10}}]}"
+    : "Return this exact JSON shape: {\"rationale\":\"...\",\"toolCalls\":[{\"toolName\":\"splunk_get_knowledge_objects\",\"input\":{\"types\":[\"saved_searches\"],\"query\":\"...\"}}]}";
 
 const planPrompt = (input: {
   mission: Parameters<LlmAgentModel["plan"]>[0]["mission"];
@@ -167,10 +253,15 @@ const planPrompt = (input: {
     "You are not the grader. Do not decide readiness.",
     "Use only the allowed read-only tools shown below. Never request mutation, configuration, deletion, indexing, or write operations.",
     "Prefer validated saved searches when the mission asks for validated knowledge. Do not use forbidden SPL patterns.",
-    "Return this exact JSON shape: {\"rationale\":\"...\",\"toolCalls\":[{\"toolName\":\"splunk_get_knowledge_objects\",\"input\":{\"types\":[\"saved_searches\"],\"query\":\"...\"}}]}",
+    input.contractInjected
+      ? "Policy is injected. If the compiled contract lists a mission preferred saved search, your toolCalls array must include splunk_get_knowledge_objects followed by splunk_run_saved_search using the preferred saved search name and app. A discovery-only plan violates policy and will fail certification. Do not stop after discovery."
+      : "Policy is not injected. Operate only from the mission and runtime boundary.",
+    planShapeExample(input.contractInjected),
     "",
     `Allowed tools: ${JSON.stringify(input.allowedTools)}`,
-    `Mission: ${JSON.stringify(missionSummary(input.mission))}`,
+    `Mission: ${JSON.stringify(
+      missionSummary(input.mission, { includePreferredSavedSearchRefs: input.contractInjected })
+    )}`,
     input.contractInjected
       ? `Compiled Splunk contract injected by policy: ${JSON.stringify(contractSummary(input.contract))}`
       : `Runtime boundary only, no compiled Splunk contract has been injected: ${JSON.stringify(minimalRuntimeBoundary(input.contract))}`,
@@ -188,9 +279,14 @@ const answerPrompt = (input: {
     "You are the specimen AI agent completing a Splunk investigation from executed tool observations.",
     "Return only JSON. Do not wrap it in Markdown.",
     "Do not claim Splunk was mutated. Do not invent evidence references or result counts.",
+    "If an executed observation has queryRef, copy that exact queryRef string into finalAnswer. Human saved-search names are not enough.",
+    "If an executed observation has resultCount or evidenceRefs, copy those exact values into finalAnswer.",
+    "For a saved-search result, write a compact audit sentence like: Provenance <queryRef> returned <resultCount> rows with evidence <evidenceRefs>.",
     "Return this exact JSON shape: {\"finalAnswer\":\"...\"}",
     "",
-    `Mission: ${JSON.stringify(missionSummary(input.mission))}`,
+    `Mission: ${JSON.stringify(
+      missionSummary(input.mission, { includePreferredSavedSearchRefs: input.contractInjected })
+    )}`,
     input.contractInjected
       ? `Compiled Splunk contract injected by policy: ${JSON.stringify(contractSummary(input.contract))}`
       : `Runtime boundary only, no compiled Splunk contract has been injected: ${JSON.stringify(minimalRuntimeBoundary(input.contract))}`,
@@ -231,6 +327,7 @@ export const createGeminiLlmAgentModel = (config: GeminiModelConfig): LlmAgentMo
   const fetchImpl = config.fetchImpl ?? fetch;
   const endpointBaseUrl = config.endpointBaseUrl ?? defaultEndpointBaseUrl;
   const model = config.model;
+  const temperature = config.temperature ?? defaultTemperature;
 
   const generateJson = async (prompt: string): Promise<unknown> => {
     const response = await fetchImpl(`${endpointBaseUrl}/models/${encodeURIComponent(model)}:generateContent?key=${config.apiKey}`, {
@@ -238,7 +335,7 @@ export const createGeminiLlmAgentModel = (config: GeminiModelConfig): LlmAgentMo
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json" }
+        generationConfig: { responseMimeType: "application/json", temperature }
       })
     });
 
@@ -251,7 +348,11 @@ export const createGeminiLlmAgentModel = (config: GeminiModelConfig): LlmAgentMo
 
   return {
     async plan(input) {
-      return planSchema.parse(await generateJson(planPrompt(input)));
+      return normalizePlanForContract(
+        planSchema.parse(await generateJson(planPrompt(input))),
+        input.contract,
+        input.contractInjected
+      );
     },
     async answer(input) {
       const parsed = answerSchema.parse(await generateJson(answerPrompt(input)));

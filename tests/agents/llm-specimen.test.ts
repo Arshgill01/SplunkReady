@@ -233,5 +233,231 @@ describe("Gemini LLM specimen model", () => {
     expect(calls).toHaveLength(2);
     expect(calls[0]?.url).toBe("https://gemini.test/v1beta/models/gemini-test:generateContent?key=test-api-key");
     expect(calls[0]?.body).toContain('"responseMimeType":"application/json"');
+    expect(calls[0]?.body).toContain('"temperature":0.2');
+  });
+
+  it("normalizes MCP-style saved-search aliases from Gemini plans", async () => {
+    let calls = 0;
+    const fetchImpl: typeof fetch = async () => {
+      calls += 1;
+      const input =
+        calls === 1
+          ? {
+              saved_search_name: "ES - Lateral Movement Auth Chain",
+              app: "SplunkEnterpriseSecuritySuite",
+              earliest_time: "-24h",
+              latest_time: "now",
+              search_params: { host: "win-finance-07" },
+              max_rows: 10
+            }
+          : {
+              saved_search: "ES - Lateral Movement Auth Chain",
+              search: "ES - Lateral Movement Auth Chain",
+              app: "SplunkEnterpriseSecuritySuite"
+            };
+
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      rationale: "Run the preferred saved search.",
+                      toolCalls: [
+                        {
+                          toolName: "splunk_run_saved_search",
+                          input
+                        }
+                      ]
+                    })
+                  }
+                ]
+              }
+            }
+          ]
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      );
+    };
+    const { contract, mission } = await loadFixtureContext();
+    const model = createGeminiLlmAgentModel({
+      apiKey: "test-api-key",
+      model: "gemini-test",
+      endpointBaseUrl: "https://gemini.test/v1beta",
+      fetchImpl
+    });
+
+    await expect(
+      model.plan({ mission, contract, contractInjected: true, allowedTools: ["splunk_run_saved_search"] })
+    ).resolves.toEqual({
+      rationale: "Run the preferred saved search.",
+      toolCalls: [
+        {
+          toolName: "splunk_run_saved_search",
+          input: {
+            name: "ES - Lateral Movement Auth Chain",
+            app: "SplunkEnterpriseSecuritySuite",
+            tokens: { earliest_time: "-24h", latest_time: "now", host: "win-finance-07" },
+            maxRows: 10
+          }
+        }
+      ]
+    });
+    await expect(
+      model.plan({ mission, contract, contractInjected: true, allowedTools: ["splunk_run_saved_search"] })
+    ).resolves.toEqual({
+      rationale: "Run the preferred saved search.",
+      toolCalls: [
+        {
+          toolName: "splunk_run_saved_search",
+          input: {
+            name: "ES - Lateral Movement Auth Chain",
+            app: "SplunkEnterpriseSecuritySuite",
+            tokens: {}
+          }
+        }
+      ]
+    });
+  });
+
+  it("requires exact observation provenance in Gemini final-answer prompts", async () => {
+    let prompt = "";
+    const fetchImpl: typeof fetch = async (_url, init) => {
+      const body = JSON.parse(String(init?.body)) as { contents: Array<{ parts: Array<{ text: string }> }> };
+      prompt = body.contents.flatMap((content) => content.parts).map((part) => part.text).join("\n");
+
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      finalAnswer:
+                        "Provenance saved-search-lateral-movement returned 3 rows with evidence evt-102, evt-118, evt-141."
+                    })
+                  }
+                ]
+              }
+            }
+          ]
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      );
+    };
+    const { contract, mission } = await loadFixtureContext();
+    const model = createGeminiLlmAgentModel({
+      apiKey: "test-api-key",
+      model: "gemini-test",
+      endpointBaseUrl: "https://gemini.test/v1beta",
+      fetchImpl
+    });
+
+    await expect(
+      model.answer({
+        mission,
+        contract,
+        contractInjected: true,
+        observations: [
+          {
+            toolName: "splunk_run_saved_search",
+            summary: "Saved search returned 3 row(s).",
+            resultCount: 3,
+            evidenceRefs: ["evt-102", "evt-118", "evt-141"],
+            queryRef: "saved-search-lateral-movement"
+          }
+        ]
+      })
+    ).resolves.toContain("saved-search-lateral-movement");
+
+    expect(prompt).toContain("copy that exact queryRef string");
+    expect(prompt).toContain("Provenance <queryRef> returned <resultCount> rows");
+    expect(prompt).toContain("saved-search-lateral-movement");
+    expect(prompt).toContain("evt-102");
+  });
+
+  it("hides preferred saved-search refs until policy is injected and only then infers known saved-search apps", async () => {
+    const calls: string[] = [];
+    const fetchImpl: typeof fetch = async (_url, init) => {
+      calls.push(String(init?.body));
+
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      rationale: "Run the saved search by name.",
+                      toolCalls: [
+                        {
+                          toolName: "splunk_run_saved_search",
+                          input: {
+                            name: "ES - Lateral Movement Auth Chain"
+                          }
+                        }
+                      ]
+                    })
+                  }
+                ]
+              }
+            }
+          ]
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      );
+    };
+    const { contract, mission } = await loadFixtureContext();
+    const model = createGeminiLlmAgentModel({
+      apiKey: "test-api-key",
+      model: "gemini-test",
+      endpointBaseUrl: "https://gemini.test/v1beta",
+      fetchImpl
+    });
+
+    await expect(
+      model.plan({ mission, contract, contractInjected: false, allowedTools: ["splunk_run_saved_search"] })
+    ).resolves.toEqual({
+      rationale: "Run the saved search by name.",
+      toolCalls: [
+        {
+          toolName: "splunk_run_saved_search",
+          input: {
+            name: "ES - Lateral Movement Auth Chain",
+            app: "search",
+            tokens: {}
+          }
+        }
+      ]
+    });
+    await expect(
+      model.plan({ mission, contract, contractInjected: true, allowedTools: ["splunk_run_saved_search"] })
+    ).resolves.toEqual({
+      rationale: "Run the saved search by name.",
+      toolCalls: [
+        {
+          toolName: "splunk_run_saved_search",
+          input: {
+            name: "ES - Lateral Movement Auth Chain",
+            app: "SplunkEnterpriseSecuritySuite",
+            tokens: {}
+          }
+        }
+      ]
+    });
+
+    const promptText = (body: string): string => {
+      const parsed = JSON.parse(body) as { contents: Array<{ parts: Array<{ text: string }> }> };
+      return parsed.contents.flatMap((content) => content.parts).map((part) => part.text).join("\n");
+    };
+
+    expect(promptText(calls[0] ?? "{}")).not.toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain");
+    expect(promptText(calls[1] ?? "{}")).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain");
+    expect(promptText(calls[1] ?? "{}")).toContain("splunk_run_saved_search");
+    expect(promptText(calls[1] ?? "{}")).toContain("A discovery-only plan violates policy");
   });
 });

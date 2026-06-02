@@ -3062,3 +3062,51 @@ Result:
 Open risks:
 
 - The bundled font assets increase the UI build size. This is accepted for demo polish.
+
+## 2026-06-02 - Phase Live Move 2 Gemini Specimen Proof Hardening
+
+Commands:
+
+- `npx vitest run tests/adapters/fixture.test.ts tests/agents/llm-specimen.test.ts tests/cli/flow.test.ts`
+- `npx vitest run tests/adapters/fixture.test.ts tests/agents/llm-specimen.test.ts tests/cli/flow.test.ts && npm run build`
+- `rm -rf artifacts/llm-fixture-proof && mkdir -p artifacts/llm-fixture-proof && set -a && source ./.splunkready-live.env && set +a && export SPLUNKREADY_LLM_ENABLED=true GEMINI_MODEL=gemini-3.1-flash-lite && { npm run splunkready -- compile --out artifacts/llm-fixture-proof && npm run splunkready -- evaluate --out artifacts/llm-fixture-proof && npm run splunkready -- receipt --out artifacts/llm-fixture-proof && npm run splunkready -- rerun --out artifacts/llm-fixture-proof; } 2>&1 | tee artifacts/llm-fixture-proof/terminal-proof.txt`
+- `node - <<'NODE'
+const fs=require('fs');
+const base='artifacts/llm-fixture-proof';
+const read=(name)=>JSON.parse(fs.readFileSync(`${base}/${name}`,'utf8'));
+const beforeReceipt=read('receipt-before-001.json');
+const afterReceipt=read('receipt-after-001.json');
+const beforeViolations=read('violations-before.json');
+const afterViolations=read('violations-after.json');
+const beforeTrace=read('trace-before.json');
+const afterTrace=read('trace-after.json');
+console.log(JSON.stringify({
+  before:{verdict:beforeReceipt.verdict, score:beforeReceipt.score, violations:beforeViolations.map(v=>v.ruleId), tools:beforeTrace.map(e=>e.toolName).filter(Boolean)},
+  after:{verdict:afterReceipt.verdict, score:afterReceipt.score, violations:afterViolations.map(v=>v.ruleId), tools:afterTrace.map(e=>e.toolName).filter(Boolean)},
+  agent: afterReceipt.agent,
+  resolved: afterReceipt.rerunComparison?.resolvedViolations?.length,
+  finalAnswer: afterTrace.find(e=>e.type==='final_answer')?.toolOutputSummary
+}, null, 2));
+NODE`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS.
+- Initial focused adapter/LLM/CLI tests passed: 3 files / 19 tests.
+- Focused adapter/LLM/CLI tests plus TypeScript build passed after final-answer prompt hardening: 3 files / 20 tests, then `tsc`.
+- Real Gemini fixture proof with `gemini-3.1-flash-lite` wrote compile, evaluate, receipt, and rerun artifacts under `artifacts/llm-fixture-proof`.
+- Receipt inspection reported:
+  - before policy: `NOT READY`, score `60`, violations `KO-001` and `EVD-001`;
+  - after policy: `READY`, score `100`, no violations;
+  - after tools: `splunk_get_knowledge_objects`, `splunk_run_saved_search`;
+  - agent: `Gemini Splunk MCP Agent`, version `gemini-3.1-flash-lite`;
+  - resolved violations: `2`;
+  - final answer cited `saved-search-lateral-movement`, result count `3`, and evidence refs `evt-102`, `evt-118`, `evt-141`.
+- Full check passed: scaffold verifier reported 85 waves and 530 project files; Vitest passed 34 files / 165 tests.
+- `git diff --check` passed.
+
+Open risks:
+
+- This proof is fixture-mode LLM proof, not live Splunk LLM proof. Move 3 still needs the Gemini specimen run against the live adapter once live mission data/tool execution is ready.
+- Raw artifacts under `artifacts/llm-fixture-proof` are local generated outputs and remain untracked.

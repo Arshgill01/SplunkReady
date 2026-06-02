@@ -291,6 +291,22 @@ const createLlmSpecimenAgent = (
   });
 };
 
+const specimenAgentDescriptor = (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): { name: string; version: string } => {
+  if (!llmEnabled(env)) {
+    return { name: "Naive SOC MCP Agent", version: "0.1.0" };
+  }
+
+  const geminiConfig = createGeminiConfigFromEnv(env);
+
+  return {
+    name: "Gemini Splunk MCP Agent",
+    version: options.agentModel || geminiConfig?.model || "gemini-3.1-flash-lite"
+  };
+};
+
 const compileCommand = async (options: CliOptions): Promise<string[]> => {
   const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
   const adapter = createFixtureSplunkAccessAdapter(fixture);
@@ -506,7 +522,10 @@ const llmAgentCommand = async (
   ];
 };
 
-const receiptCommand = async (options: CliOptions): Promise<string[]> => {
+const receiptCommand = async (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<string[]> => {
   const contract = await loadContract(options.out);
   const mission = await loadMission(options.mission);
   const traceEvents = await loadTrace(options.out, options.phase);
@@ -514,7 +533,7 @@ const receiptCommand = async (options: CliOptions): Promise<string[]> => {
   const receiptId = `receipt-${options.phase}-001`;
   const generated = generateReadinessReceipt({
     id: receiptId,
-    agent: { name: "Naive SOC MCP Agent", version: "0.1.0" },
+    agent: specimenAgentDescriptor(options, env),
     environment: contract,
     missionSuiteVersion: "security-readiness-1",
     missions: [mission],
@@ -575,7 +594,7 @@ const rerunCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = proces
     : [];
   const generated = generateReadinessReceipt({
     id: "receipt-after-001",
-    agent: { name: "Naive SOC MCP Agent", version: "0.1.0" },
+    agent: specimenAgentDescriptor(options, env),
     environment: contract,
     missionSuiteVersion: "security-readiness-1",
     missions: [mission],

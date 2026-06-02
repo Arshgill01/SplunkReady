@@ -51,6 +51,36 @@ describe("fixture Splunk adapter", () => {
       adapter.getKnowledgeObjects({ types: ["saved_searches"], query: "lateral movement" }, requestOptions)
     ).resolves.toMatchObject({ resultCount: 3 });
     await expect(
+      adapter.getKnowledgeObjects(
+        {
+          types: ["saved_searches"],
+          app: "SplunkEnterpriseSecuritySuite",
+          query: 'name="ES - Lateral Movement Auth Chain"'
+        },
+        requestOptions
+      )
+    ).resolves.toMatchObject({
+      resultCount: 1,
+      objects: [
+        expect.objectContaining({
+          app: "SplunkEnterpriseSecuritySuite",
+          name: "ES - Lateral Movement Auth Chain"
+        })
+      ]
+    });
+    await expect(
+      adapter.getKnowledgeObjects(
+        {
+          types: ["saved_searches"],
+          query: "name=ES - Lateral Movement Auth Chain app=SplunkEnterpriseSecuritySuite"
+        },
+        requestOptions
+      )
+    ).resolves.toMatchObject({ resultCount: 2 });
+    await expect(
+      adapter.getKnowledgeObjects({ types: ["saved_searches"], query: '"lateral movement"' }, requestOptions)
+    ).resolves.toMatchObject({ resultCount: 3 });
+    await expect(
       adapter.runQuery(
         { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" },
         requestOptions

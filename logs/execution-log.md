@@ -3615,3 +3615,41 @@ Result:
 - Vite production build passed with bundled WOFF2 font assets.
 - Full project check passed.
 - Local Vite server was restarted at `http://127.0.0.1:5173/` for user inspection.
+
+## 2026-06-02 - Phase Live Move 2 Gemini Specimen Proof Hardening
+
+Scope:
+- Use the user's requested Gemini model, `gemini-3.1-flash-lite`, as the default LLM specimen model.
+- Keep deterministic grading authoritative while replacing the demo specimen path with a real Gemini-backed agent when `SPLUNKREADY_LLM_ENABLED=true`.
+- Normalize Gemini MCP-style saved-search plan inputs into the existing `RunSavedSearchRequest` shape without changing CLI or grader contracts.
+- Tighten the Gemini final-answer prompt so exact trace provenance (`queryRef`), result count, and evidence refs are carried into the final answer.
+- Keep fixture/live parity after the adapter boundary by making the fixture knowledge-object adapter understand MCP-style `name=...` filters emitted by the LLM.
+
+Files changed:
+- `README.md`
+- `docs/llm-specimen-agent.md`
+- `src/adapters/fixture.ts`
+- `src/agents/gemini-model.ts`
+- `src/cli.ts`
+- `tests/adapters/fixture.test.ts`
+- `tests/agents/llm-specimen.test.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- The fixture knowledge-object query change was kept in intent but replaced with a named normalizer so quoted `name="..."` filters and trailing filters are handled deliberately.
+- The first Gemini fixture proof after saved-search normalization still failed `EVD-001` because the final answer cited the human saved-search name but not the exact machine provenance ref.
+- After prompt hardening, the fixture proof produced the intended fail-to-pass story:
+  - before policy: `NOT READY`, score `60`, violations `KO-001` and `EVD-001`;
+  - after policy: `READY`, score `100`, no violations;
+  - after tools included `splunk_get_knowledge_objects` and `splunk_run_saved_search`;
+  - final answer cited `saved-search-lateral-movement`, result count `3`, and evidence refs `evt-102`, `evt-118`, `evt-141`.
+- The Gemini API key remains in `.splunkready-live.env`; no secret was printed or committed.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No reviewer inbox closeout was available for this Phase Live move.
+
+Result:
+- PASS.
+- Move 2 now has local fixture proof that a real Gemini specimen fails without policy and reaches a `READY` receipt after policy injection.

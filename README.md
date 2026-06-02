@@ -95,7 +95,7 @@ The normal fixture demo keeps the deterministic specimen as the default. To grad
 ```bash
 export SPLUNKREADY_LLM_ENABLED=true
 export GEMINI_API_KEY="..."
-export GEMINI_MODEL="gemini-2.5-flash"
+export GEMINI_MODEL="gemini-3.1-flash-lite"
 npm run build
 npm run splunkready -- compile --out artifacts/llm-fixture-proof
 npm run splunkready -- evaluate --out artifacts/llm-fixture-proof
