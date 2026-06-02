@@ -214,6 +214,9 @@ describe("Vite UI artifact app", () => {
     expect(trace).toContain('data-view="trace-timeline"');
     expect(trace).not.toContain('data-view="certification-replay"');
     expect(trace).toContain("SPL-001");
+    expect(trace).toContain("Before SPL");
+    expect(trace).toContain("SAIA recommended SPL");
+    expect(trace).toContain("search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now");
   });
 
   it("keeps the app styling away from generic AI dashboard patterns", async () => {

@@ -275,6 +275,10 @@ code {
   table-layout: fixed;
 }
 
+.trace-table {
+  min-width: 0;
+}
+
 .fact-table th,
 .fact-table td,
 .trace-table th,
@@ -318,12 +322,24 @@ code {
 
 .trace-table td:nth-child(2),
 .trace-table th:nth-child(2) {
-  width: 270px;
+  width: 140px;
 }
 
 .trace-table td:nth-child(3),
 .trace-table th:nth-child(3) {
-  width: 180px;
+  width: 190px;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.trace-table td:nth-child(4),
+.trace-table th:nth-child(4) {
+  width: 200px;
+}
+
+.trace-table td:nth-child(5),
+.trace-table th:nth-child(5) {
+  width: 300px;
 }
 
 .trace-table td span {
@@ -338,9 +354,64 @@ code {
   font-weight: 720;
 }
 
+.finding-list {
+  display: grid;
+  gap: 14px;
+}
+
+.finding {
+  display: grid;
+  gap: 9px;
+}
+
+.finding p {
+  margin: 0;
+}
+
+.saia-compare {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border: 1px solid var(--line-soft);
+}
+
+.saia-compare div {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+}
+
+.saia-compare div + div {
+  border-top: 1px solid var(--line-soft);
+}
+
+.saia-compare b {
+  color: var(--text);
+}
+
+.saia-compare code {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
 .patch-panel,
 .trace-stack {
   margin-top: 16px;
+}
+
+.trace-stack .panel {
+  overflow: auto;
+}
+
+@media (min-width: 1500px) {
+  .saia-compare {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .saia-compare div + div {
+    border-top: 0;
+    border-left: 1px solid var(--line-soft);
+  }
 }
 
 .patch-grid {

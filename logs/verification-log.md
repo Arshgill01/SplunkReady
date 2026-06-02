@@ -3363,3 +3363,40 @@ Open risks:
 
 - The firewall intentionally blocks restricted/sensitive indexes without mission-specific exceptions because its constructor uses `EnvironmentContract` and `AgentPolicy`, not a mission. Mission-specific readiness remains the grader's responsibility.
 - The firewall currently protects `splunk_run_query`; saved searches are delegated as read-only validated objects. If future missions allow risky saved-search names or tokens, add saved-search policy checks.
+
+## 2026-06-02 - Phase Live Move 14 SAIA Evidence in Vite UI
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts && npm run ui:build`
+- `npm run ui:dev`
+- `bash "$PWCLI" open 'http://127.0.0.1:5175/#trace-timeline' && bash "$PWCLI" snapshot && mkdir -p output/playwright && bash "$PWCLI" screenshot output/playwright/splunkready-saia-trace.png`
+- `bash "$PWCLI" screenshot --help`
+- `bash "$PWCLI" screenshot --filename output/playwright/splunkready-saia-trace.png --full-page`
+- `npx vitest run tests/ui/app.test.ts && npm run ui:build`
+- `bash "$PWCLI" open 'http://127.0.0.1:5175/#trace-timeline' && bash "$PWCLI" screenshot --filename output/playwright/splunkready-saia-trace-fixed.png --full-page`
+- `npx vitest run tests/ui/app.test.ts && npm run ui:build && bash "$PWCLI" open 'http://127.0.0.1:5175/#trace-timeline' && bash "$PWCLI" screenshot --filename output/playwright/splunkready-saia-trace-readable.png --full-page`
+- `npx vitest run tests/ui/app.test.ts && npm run ui:build`
+- `bash "$PWCLI" open 'http://127.0.0.1:5175/#trace-timeline' && bash "$PWCLI" screenshot --filename output/playwright/splunkready-saia-trace-final.png --full-page`
+- `npx vitest run tests/ui/app.test.ts && npm run ui:build && bash "$PWCLI" open 'http://127.0.0.1:5175/#trace-timeline' && bash "$PWCLI" screenshot --filename output/playwright/splunkready-saia-trace-final-width.png --full-page`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS after visual correction and full verification.
+- Focused UI tests passed: 1 file / 4 tests.
+- Vite UI build passed.
+- First Playwright snapshot confirmed SAIA content rendered next to `SPL-001`, but the screenshot command used the wrong positional syntax.
+- Screenshot capture succeeded with `--filename`.
+- Visual inspection of the first screenshot found the findings comparison too narrow.
+- A wider table fix made the comparison scroll horizontally, but visual inspection showed the findings column was hidden in the normal viewport.
+- Final layout stacks SAIA comparison at ordinary viewport widths and keeps the findings column visible.
+- Final screenshot at `output/playwright/splunkready-saia-trace-final-width.png` confirmed `splunk_run_query` no longer splits across lines and SAIA evidence remains attached to the violation.
+- Full verification passed: scaffold verified, 85 waves, 589 project files, 37 test files, 189 tests.
+- `git diff --check` passed with no whitespace errors.
+
+Open risks:
+
+- Browser screenshots are local under `output/playwright/` and intentionally uncommitted.
+- The Vite UI now shows SAIA assistance when `policy-patch.json` contains `splAssistance`; live-green artifacts without a patch naturally do not show SAIA content.

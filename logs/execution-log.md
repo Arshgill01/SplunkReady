@@ -4058,3 +4058,52 @@ Reviewer findings:
 
 Result:
 - PASS for focused gateway/CLI validation. Full verification will be recorded in the verification log after the full suite runs.
+
+## 2026-06-02 - Phase Live Move 14 SAIA Evidence in Vite UI
+
+Scope:
+- Surface `policyPatch.splAssistance` inside the Vite trace experience where developers inspect violations.
+- Keep the existing brown instrument-panel visual language; do not add another generic dashboard card layer.
+- Preserve the static shell fallback and artifact loading contract.
+
+Files changed:
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- The UI now joins policy patch SAIA assistance to deterministic violations by `violationRef`.
+- Trace findings now show:
+  - violation rule ID and reason;
+  - Before SPL from violation evidence;
+  - SAIA recommended SPL from `policyPatch.splAssistance`;
+  - SAIA explanation text.
+- The comparison stacks at ordinary viewport widths and switches to side-by-side only on wide screens, avoiding the cramped table layout that hid the findings column.
+- A Playwright browser check against `http://127.0.0.1:5175/#trace-timeline` confirmed the SAIA section appears in the trace row.
+
+Product impact:
+- Hosted-model assistance is no longer buried in the patch summary; it is visible beside the exact deterministic violation it explains.
+- This improves the Hosted Models prize story without making SAIA the pass/fail judge.
+- The UI claim remains backed by real patch, trace, and violation artifacts.
+
+Estimated prize trajectory after Move 14:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 21% | 22% | The UI now makes the model-assisted patch loop more legible. |
+| Platform & DX | 45% | 46% | Developers can inspect why an SPL failed and the recommended correction in one place. |
+| Security | 23% | 24% | The unsafe SPL and corrected SPL are visually tied to the security investigation trace. |
+| Best Use of MCP Server | 65% | 65% | MCP behavior unchanged. |
+| Hosted Models | 45% | 51% | SAIA explain/optimize is now directly visible in the UI. |
+| Developer Tools | 39% | 40% | Trace-driven patch review is clearer for external users. |
+
+Next direction:
+- Continue with a meaningful core move, not generic QA. The strongest remaining candidates are a live mission generator for real Splunk content alignment or a second security mission only if it adds a distinct, evidence-rich story.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No new reviewer inbox file exists for this Phase Live move.
+
+Result:
+- PASS. Focused UI validation, browser screenshot verification, full scaffold/test verification, and diff whitespace checks passed.

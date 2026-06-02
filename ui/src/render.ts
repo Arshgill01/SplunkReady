@@ -35,6 +35,18 @@ const violationByEvent = (violations: Violation[]): Map<string, Violation[]> => 
   return grouped;
 };
 
+const splAssistanceByViolation = (
+  policyPatch: PolicyPatch | undefined
+): Map<string, NonNullable<PolicyPatch["splAssistance"]>[number]> => {
+  const grouped = new Map<string, NonNullable<PolicyPatch["splAssistance"]>[number]>();
+
+  for (const assistance of policyPatch?.splAssistance ?? []) {
+    grouped.set(assistance.violationRef, assistance);
+  }
+
+  return grouped;
+};
+
 const renderFactTable = (rows: Array<[string, unknown]>): string =>
   `<table class="fact-table"><tbody>${rows
     .map(([label, rowValue]) => `<tr><th>${value(label)}</th><td>${value(rowValue)}</td></tr>`)
@@ -173,8 +185,45 @@ const eventSummary = (event: TraceEvent): string => {
   return event.toolOutputSummary ?? event.type;
 };
 
-const renderTraceRows = (events: TraceEvent[], violations: Violation[]): string => {
+const renderFindings = (
+  violations: Violation[],
+  assistanceByViolation: Map<string, NonNullable<PolicyPatch["splAssistance"]>[number]>
+): string => {
+  if (violations.length === 0) {
+    return "None";
+  }
+
+  return `<div class="finding-list">${violations
+    .map((violation) => {
+      const assistance = assistanceByViolation.get(violation.id);
+      const beforeSpl = typeof violation.evidence["query"] === "string" ? violation.evidence["query"] : assistance?.query;
+
+      return `<article class="finding">
+        <strong>${value(violation.ruleId)}</strong>
+        <p>${value(violation.reason)}</p>
+        ${
+          assistance
+            ? `<div class="saia-compare">
+                <div>
+                  <b>Before SPL</b>
+                  ${code(beforeSpl ?? "n/a")}
+                </div>
+                <div>
+                  <b>SAIA recommended SPL</b>
+                  ${code(assistance.optimizedQuery)}
+                </div>
+              </div>
+              <p>${value(assistance.explanation)}</p>`
+            : ""
+        }
+      </article>`;
+    })
+    .join("")}</div>`;
+};
+
+const renderTraceRows = (events: TraceEvent[], violations: Violation[], policyPatch: PolicyPatch | undefined): string => {
   const groupedViolations = violationByEvent(violations);
+  const assistanceByViolation = splAssistanceByViolation(policyPatch);
 
   if (events.length === 0) {
     return `<tr><td colspan="5">Trace artifact not loaded.</td></tr>`;
@@ -188,7 +237,7 @@ const renderTraceRows = (events: TraceEvent[], violations: Violation[]): string 
         <td>${code(event.id)}<span>${value(event.type)}</span></td>
         <td>${value(event.toolName ?? event.actor)}</td>
         <td>${value(eventSummary(event))}</td>
-        <td>${eventViolations.map((violation) => `<strong>${value(violation.ruleId)}</strong>`).join("") || "None"}</td>
+        <td>${renderFindings(eventViolations, assistanceByViolation)}</td>
       </tr>`;
     })
     .join("");
@@ -205,14 +254,14 @@ const renderTraceTimeline = (bundle: UiArtifactBundle): string =>
           <h2>Before patch</h2>
           <table class="trace-table">
             <thead><tr><th>Step</th><th>Event</th><th>Tool</th><th>Input or output</th><th>Findings</th></tr></thead>
-            <tbody>${renderTraceRows(bundle.beforeTrace, bundle.beforeViolations)}</tbody>
+            <tbody>${renderTraceRows(bundle.beforeTrace, bundle.beforeViolations, bundle.policyPatch)}</tbody>
           </table>
         </section>
         <section class="panel">
           <h2>After patch</h2>
           <table class="trace-table">
             <thead><tr><th>Step</th><th>Event</th><th>Tool</th><th>Input or output</th><th>Findings</th></tr></thead>
-            <tbody>${renderTraceRows(bundle.afterTrace, bundle.afterViolations)}</tbody>
+            <tbody>${renderTraceRows(bundle.afterTrace, bundle.afterViolations, bundle.policyPatch)}</tbody>
           </table>
         </section>
       </div>
