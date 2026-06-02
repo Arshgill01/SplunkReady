@@ -259,6 +259,71 @@ describe("SplunkReady CLI flow", () => {
     expect(shell).toContain("Definitive benign conclusion is not supported by adequate evidence.");
   });
 
+  it("grades an externally supplied trace against the compiled Splunk contract", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-external-trace-"));
+
+    await expect(runCli(["compile", "--out", outDir])).resolves.toMatchObject({
+      stdout: expect.stringContaining("PASS compile")
+    });
+    await expect(runCli(["evaluate", "--out", outDir])).resolves.toMatchObject({
+      stdout: expect.stringContaining("PASS evaluate")
+    });
+    await expect(
+      runCli([
+        "grade-trace",
+        "--trace",
+        join(outDir, "trace-before.json"),
+        "--out",
+        outDir,
+        "--agent-name",
+        "Captured Agent",
+        "--agent-version",
+        "trace-001"
+      ])
+    ).resolves.toMatchObject({
+      stdout: expect.stringContaining("PASS grade-trace")
+    });
+
+    const receipt = JSON.parse(await readFile(join(outDir, "receipt-external-001.json"), "utf8")) as {
+      agent: { name: string; version: string };
+      verdict: string;
+      score: number;
+      violations: string[];
+      traceRefs: string[];
+      policyPatchSummary: unknown[];
+      notes: string;
+    };
+    const violations = JSON.parse(await readFile(join(outDir, "violations-external.json"), "utf8")) as Array<{
+      ruleId: string;
+    }>;
+    const markdown = await readFile(join(outDir, "receipt-external-001.md"), "utf8");
+
+    expect(receipt.agent).toEqual({ name: "Captured Agent", version: "trace-001" });
+    expect(receipt.verdict).toBe("NOT READY");
+    expect(receipt.score).toBe(0);
+    expect(receipt.policyPatchSummary).toEqual([]);
+    expect(receipt.traceRefs).toContain("mission-security-lateral-movement-readiness-trace-001");
+    expect(receipt.notes).toContain("externally supplied trace");
+    expect(violations.map((violation) => violation.ruleId)).toEqual(
+      expect.arrayContaining(["SPL-001", "SPL-003", "KO-001", "EVD-001", "ANS-001"])
+    );
+    expect(markdown).toContain("Captured Agent trace-001");
+    expect(markdown).toContain("deterministic rule engine decides pass/fail");
+  });
+
+  it("rejects an externally supplied trace for the wrong mission", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-external-trace-mismatch-"));
+
+    await expect(runCli(["compile", "--out", outDir])).resolves.toMatchObject({
+      stdout: expect.stringContaining("PASS compile")
+    });
+    await expect(
+      runCli(["grade-trace", "--trace", "fixtures/acme-soc-dev/traces/naive-failure.json", "--out", outDir])
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("Trace missionId mismatch")
+    });
+  });
+
   it("returns an actionable error when evaluate runs before compile", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-cli-missing-"));
 

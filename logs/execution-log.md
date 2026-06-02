@@ -3279,3 +3279,51 @@ Notes:
 
 Result:
 - PASS.
+
+## 2026-06-02 - Wave 82 External Trace Consolidation
+
+Scope:
+- Stop remote-cleanroom-only churn and close the follow-up consolidation gaps.
+- Add deterministic grading for externally supplied traces through `grade-trace`.
+- Make external-trace receipt notes visible in Markdown.
+- Document live Splunk as explicitly unverified with a no-credential skip proof.
+- Capture Minimax's refined Pre-Flight Card as the next UI implementation target.
+
+Files changed:
+- `src/cli.ts`
+- `src/receipts/generator.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `docs/demo-script.md`
+- `docs/live-proof-gap.md`
+- `docs/follow-up-gap-closure-report.md`
+- `docs/preflight-card-ui-implementation-plan.md`
+- `docs/waves/wave-82-external-trace-consolidation.md`
+- `docs/waves/README.md`
+- `docs/prompts/README.md`
+- `docs/prompts/main-executor-followup-consolidation-goal.md`
+- `docs/prompts/reviewer-followup-consolidation-goal.md`
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- Wave 82 reviewer inbox files and main-executor resolution.
+
+Notes:
+- `grade-trace` reads the compiled environment contract and selected mission from `--out`, validates the trace file with `traceEventSchema.array()`, rejects mission mismatches, and emits `trace-external.json`, `violations-external.json`, `score-external.json`, `receipt-external-001.json`, and `receipt-external-001.md`.
+- The new CLI test covers grading a trace produced by the existing `evaluate` command as an external input and rejects `fixtures/acme-soc-dev/traces/naive-failure.json` because its mission id differs from the selected flagship mission.
+- Receipt Markdown now includes `notes`, which external-trace receipts use to state that the deterministic rule engine decides pass/fail and the trace producer is outside SplunkReady.
+- README now describes the bundled specimen as deterministic fixture code and documents `grade-trace` for captured external agent traces.
+- The no-credential live proof command skipped as expected, made no live Splunk calls, and wrote no live artifacts. Details are in `docs/live-proof-gap.md`.
+- `docs/follow-up-gap-closure-report.md` separates real implemented, fixture-only, live-unverified, specimen limitation, fixture coverage, UI direction, and open risk.
+- Minimax Concept B was accepted as the next UI target in `docs/preflight-card-ui-implementation-plan.md`; the side worktree artifacts were read but not copied into tracked source.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Result:
+- PASS.
+- Final focused CLI flow test passed: 1 file / 7 tests.
+- Final full check passed: scaffold verifier reported 83 waves and 442 project files; Vitest passed 31 files / 145 tests.
+- Final reviewer audit passed after `wave-82-20260602-1720-rereview.md`: 84 groups, 7 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 83 waves and 443 project files.

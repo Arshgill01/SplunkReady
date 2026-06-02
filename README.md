@@ -10,9 +10,9 @@ Splunk is making operational data agent-ready. SplunkReady makes agents Splunk-r
 
 ## What It Does
 
-The Agent Readiness Compiler compiles a fixture or live Splunk environment into an agent contract, runs realistic missions, grades the resulting tool trace with deterministic rules, and produces a Readiness Receipt.
+The Agent Readiness Compiler compiles a fixture or live Splunk environment into an agent contract, runs realistic missions or accepts captured agent traces, grades the resulting tool trace with deterministic rules, and produces a Readiness Receipt.
 
-The flagship demo story is security investigation readiness: a naive Splunk MCP agent confidently clears possible lateral movement after using `index=*`, a stale field, and no saved search provenance. SplunkReady catches the unsafe trace, exports a reviewable policy patch, reruns the same mission, and shows a bounded pass with evidence.
+The flagship demo story is security investigation readiness: the bundled deterministic specimen confidently clears possible lateral movement after using `index=*`, a stale field, and no saved search provenance. SplunkReady catches the unsafe trace, exports a reviewable policy patch, reruns the same mission, and shows a bounded pass with evidence.
 
 ## Judge-Runnable Fixture Demo
 
@@ -48,6 +48,23 @@ Expected fixture outcome:
 - before receipt: `NOT READY`
 - after receipt: `READY`
 - visible deterministic rule IDs include `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`
+
+## Grade a Captured Agent Trace
+
+The fixture demo is reproducible, but SplunkReady is not limited to its bundled specimen. After compiling the environment contract, pass in a schema-valid trace captured from another Splunk-connected agent:
+
+```bash
+npm run build
+tmp=$(mktemp -d /tmp/splunkready-trace-XXXXXX)
+npm run splunkready -- compile --out "$tmp"
+npm run splunkready -- grade-trace \
+  --trace path/to/captured-trace.json \
+  --out "$tmp" \
+  --agent-name "Captured Agent" \
+  --agent-version "trace-001"
+```
+
+The command writes `trace-external.json`, deterministic violations, a score, and `receipt-external-001.json` / `.md`. It rejects traces whose `missionId` does not match the selected mission. The trace producer is outside SplunkReady; the deterministic rule engine remains the pass/fail authority.
 
 ## Live Mode
 
@@ -97,8 +114,8 @@ Core flow:
 
 1. Fixture or optional live MCP adapter exposes Splunk inventory through the shared adapter contract.
 2. The compiler builds an environment contract with indexes, sourcetypes, saved searches, knowledge objects, fields, app context, and query budgets.
-3. A real naive specimen agent runs security investigation missions against that contract.
-4. The trace recorder captures tool calls, evidence, results, and final answers.
+3. The harness runs the bundled deterministic specimen or ingests an externally captured agent trace.
+4. The trace recorder/schema captures tool calls, evidence, results, and final answers.
 5. Deterministic grader rules produce violations, score, verdict, and policy patch guidance.
 6. The Readiness Receipt and static UI make the evidence reviewable.
 
@@ -120,7 +137,7 @@ npm run check
 - Live mode is a read-only smoke path in this build. It validates adapter shape and environment compilation, but it does not run production searches.
 - SplunkReady never auto-mutates Splunk. Policy patches are exported for operator review.
 - LLMs may explain results or draft policy text, but deterministic grader rules decide pass/fail.
-- The specimen agent is intentionally naive, but it is not hardcoded to pass or fail.
+- The bundled specimen is deterministic TypeScript code for reproducible fixture demos. It is not a real LLM/MCP agent; use `grade-trace` for traces captured from external agents.
 
 ## Submission Materials
 

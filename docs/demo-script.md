@@ -16,7 +16,7 @@ open "$tmp/splunkready-shell.html#certification-replay"
 The demo command runs the fixture path end to end:
 
 1. compile environment contract;
-2. run the naive specimen trace;
+2. run the deterministic fixture specimen trace;
 3. generate failed Readiness Receipt and policy patch;
 4. rerun the same mission with compiled policy;
 5. generate passing Readiness Receipt;
@@ -32,7 +32,7 @@ Screen:
 
 - SplunkReady title.
 - Selected environment: `acme-soc-dev`.
-- Selected specimen agent: `Naive SOC MCP Agent`.
+- Selected specimen: deterministic `Naive SOC MCP Agent` fixture runner.
 
 Voice:
 

@@ -27,6 +27,7 @@ import {
   readOnlySplunkToolNameSchema,
   environmentContractSchema,
   readinessReceiptSchema,
+  traceEventSchema,
   type EnvironmentContract,
   type ReadOnlySplunkToolName,
   type TraceEvent,
@@ -56,6 +57,9 @@ interface CliOptions {
   out: string;
   phase: "before" | "after";
   requireLive: boolean;
+  trace: string;
+  agentName: string;
+  agentVersion: string;
 }
 
 const allRules = (): GraderRule[] => [
@@ -74,6 +78,7 @@ const usage = `SplunkReady CLI
 Commands:
   compile   --fixture <path> --mission <path> --out <dir>
   evaluate  --out <dir>
+  grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>]
   receipt   --out <dir> [--phase before|after]
   rerun     --out <dir>
   live-smoke --out <dir> [--require-live true|false]
@@ -92,7 +97,10 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     mission: defaultMissionPath,
     out: defaultOutDir,
     phase: "before",
-    requireLive: false
+    requireLive: false,
+    trace: "",
+    agentName: "External Splunk MCP Agent",
+    agentVersion: "unversioned"
   };
 
   for (let index = 0; index < rest.length; index += 1) {
@@ -123,6 +131,12 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       }
 
       options.requireLive = value === "true";
+    } else if (flag === "--trace") {
+      options.trace = value;
+    } else if (flag === "--agent-name") {
+      options.agentName = value;
+    } else if (flag === "--agent-version") {
+      options.agentVersion = value;
     } else {
       throw new Error(`Unknown option ${flag}.\n${usage}`);
     }
@@ -160,6 +174,24 @@ const loadTrace = async (outDir: string, phase: string): Promise<TraceEvent[]> =
 
 const loadViolations = async (outDir: string, phase: string): Promise<Violation[]> =>
   readJson(join(outDir, `violations-${phase}.json`), `${phase} violations`);
+
+const loadTraceFile = async (tracePath: string): Promise<TraceEvent[]> => {
+  if (!tracePath) {
+    throw new Error("grade-trace requires --trace <path>.");
+  }
+
+  return traceEventSchema.array().parse(JSON.parse(await readFile(tracePath, "utf8")) as unknown);
+};
+
+const assertTraceMatchesMission = (mission: MissionDefinition, traceEvents: TraceEvent[]): void => {
+  const mismatchedMissionIds = [...new Set(traceEvents.map((event) => event.missionId).filter((id) => id !== mission.id))];
+
+  if (mismatchedMissionIds.length > 0) {
+    throw new Error(
+      `Trace missionId mismatch. Expected ${mission.id}; found ${mismatchedMissionIds.join(", ")}.`
+    );
+  }
+};
 
 const gradeTrace = (contract: EnvironmentContract, mission: MissionDefinition, traceEvents: TraceEvent[]): Violation[] =>
   runRuleEngine({ contract, mission, traceEvents }, allRules()).violations;
@@ -279,6 +311,40 @@ const evaluateCommand = async (options: CliOptions): Promise<string[]> => {
     join(options.out, "trace-before.json"),
     join(options.out, "violations-before.json"),
     join(options.out, "score-before.json")
+  ];
+};
+
+const gradeTraceCommand = async (options: CliOptions): Promise<string[]> => {
+  const contract = await loadContract(options.out);
+  const mission = await loadMission(options.mission);
+  const traceEvents = await loadTraceFile(options.trace);
+  assertTraceMatchesMission(mission, traceEvents);
+  const violations = gradeTrace(contract, mission, traceEvents);
+  const score = scoreMissionReadiness(mission, violations);
+  const generated = generateReadinessReceipt({
+    id: "receipt-external-001",
+    agent: { name: options.agentName, version: options.agentVersion },
+    environment: contract,
+    missionSuiteVersion: "external-trace-1",
+    missions: [mission],
+    traceEvents,
+    violations,
+    notes:
+      "This receipt grades an externally supplied trace. The deterministic rule engine decides pass/fail; the trace producer is outside SplunkReady."
+  });
+
+  await writeJson(join(options.out, "trace-external.json"), traceEvents);
+  await writeJson(join(options.out, "violations-external.json"), violations);
+  await writeJson(join(options.out, "score-external.json"), score);
+  await writeText(join(options.out, "receipt-external-001.json"), generated.json);
+  await writeText(join(options.out, "receipt-external-001.md"), generated.markdown);
+
+  return [
+    join(options.out, "trace-external.json"),
+    join(options.out, "violations-external.json"),
+    join(options.out, "score-external.json"),
+    join(options.out, "receipt-external-001.json"),
+    join(options.out, "receipt-external-001.md")
   ];
 };
 
@@ -457,6 +523,8 @@ const main = async (): Promise<void> => {
     artifacts = await compileCommand(options);
   } else if (command === "evaluate") {
     artifacts = await evaluateCommand(options);
+  } else if (command === "grade-trace") {
+    artifacts = await gradeTraceCommand(options);
   } else if (command === "receipt") {
     artifacts = await receiptCommand(options);
   } else if (command === "rerun") {

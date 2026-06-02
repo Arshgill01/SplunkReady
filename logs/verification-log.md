@@ -2864,3 +2864,24 @@ Result:
 - `wave-81-20260602-1703-rereview.md` passed with no findings after Wave 81 log evidence was visible.
 - Final reviewer audit passed after the Wave 81 rereview: 83 groups, 6 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed after the Wave 81 rereview: 82 wave files, 429 project files.
+
+## 2026-06-02 - Wave 82 External Trace Consolidation
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-wave82-live-gap-XXXXXX) && unset SPLUNKREADY_LIVE_ENABLED SPLUNKREADY_SPLUNK_MCP_URL SPLUNKREADY_SPLUNK_MCP_TOKEN SPLUNK_HOST SPLUNK_TOKEN SPLUNK_USERNAME SPLUNK_PASSWORD SPLUNK_SCHEME SPLUNK_PORT && npm run splunkready -- live-smoke --out "$tmp" && printf 'out=%s\n' "$tmp" && find "$tmp" -maxdepth 1 -type f -print | sort`
+- `npm run check`
+- `git diff --check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Focused CLI flow test passed after external-trace patch-summary fix: 1 test file / 7 tests.
+- TypeScript build passed after external-trace patch-summary fix.
+- No-credential `live-smoke` skipped as expected with missing `SPLUNKREADY_LIVE_ENABLED=true`, `SPLUNKREADY_SPLUNK_MCP_URL`, and `SPLUNKREADY_SPLUNK_MCP_TOKEN`; it made no live Splunk calls and wrote no live artifacts.
+- Full check passed after Wave 82 consolidation edits: scaffold verifier reported 83 waves and 442 project files; Vitest passed 31 test files / 145 tests.
+- Reviewer audit passed after `wave-82-20260602-1720-rereview.md`: 84 groups, 7 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 83 waves and 443 project files.

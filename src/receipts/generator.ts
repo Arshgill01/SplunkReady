@@ -119,6 +119,7 @@ export const renderReceiptMarkdown = (
     `- Mission suite: ${receipt.missionSuiteVersion}`,
     `- Verdict: ${receipt.verdict}`,
     `- Score: ${receipt.score}`,
+    ...(receipt.notes ? ["", "## Notes", "", receipt.notes] : []),
     "",
     "## Score Explanation",
     "",

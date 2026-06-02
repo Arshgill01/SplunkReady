@@ -6,6 +6,19 @@ These prompts are copy-paste ready inputs for `/goal` sessions.
 
 - `main-executor-goal.md`: use for the primary implementation agent.
 - `reviewer-goal.md`: use for the continuous reviewer agent.
+- `main-executor-followup-consolidation-goal.md`: use for the Day 2 consolidation pass after the Day 1 build audit.
+- `reviewer-followup-consolidation-goal.md`: use for the reviewer that audits the Day 2 consolidation pass.
+
+## Follow-up Prompt Intent
+
+Use the follow-up consolidation prompts when the project already has substantial scaffold/build work and needs a truth pass before more implementation. These prompts are intentionally stricter than the original launch prompts:
+
+- close the current dirty wave before starting more work;
+- prove what is real, fixture-only, and live-unverified;
+- keep real Splunk/MCP claims evidence-backed;
+- address the specimen-agent credibility risk;
+- stop adding waves for their own sake;
+- get reviewer audit and verification back to green.
 
 ## Operating Model
 
@@ -33,4 +46,3 @@ logs/reviewer-inbox/wave-XX-YYYYMMDD-HHMM-rereview.md
 ```
 
 The reviewer should create new files, not append to a shared file.
-

@@ -1,8 +1,8 @@
 # SplunkReady Scaffold Manifest
 
-Status: implemented through Wave 81 continuation QA on `splunkready-build`.
+Status: implemented through Wave 82 external trace consolidation on `splunkready-build`.
 
-This repository turns the locked SplunkReady idea into an implemented, fixture-first certification harness with continuing wave-based QA through Wave 81. The scaffold process remains in force for future continuation waves.
+This repository turns the locked SplunkReady idea into an implemented, fixture-first certification harness that can also grade externally captured agent traces. The scaffold process remains in force for future continuation waves.
 
 ## Product Lock
 
@@ -44,6 +44,9 @@ This repository turns the locked SplunkReady idea into an implemented, fixture-f
 - `docs/grader-rule-catalog.md`: deterministic rule IDs and pass/fail boundaries.
 - `docs/golden-traces.md`: reference failure/pass traces for future tests and demo.
 - `docs/fixture-live-parity.md`: fixture/live adapter parity contract.
+- `docs/live-proof-gap.md`: current live-unverified status and the smallest next read-only live proof command.
+- `docs/follow-up-gap-closure-report.md`: current real/fixture/live truth table and consolidation evidence.
+- `docs/preflight-card-ui-implementation-plan.md`: Minimax-derived plan for the next certification replay UI implementation.
 - `docs/demo-script.md`: 3-minute final demo script.
 - `docs/prompts/`: copy-paste `/goal` prompts for the main executor and reviewer.
 - `references/source-grounding-matrix.md`: source evidence for major claims.
@@ -58,7 +61,7 @@ The implementation is not done until:
 
 - fixture and live modes share the same interfaces;
 - deterministic grader covers the core failure modes;
-- naive specimen agent is real, not scripted;
+- specimen behavior and external trace intake are represented honestly;
 - Readiness Receipt contains trace/evidence provenance;
 - demo loop shows fail -> compile -> patch -> rerun -> pass;
 - verification commands pass and are logged.
