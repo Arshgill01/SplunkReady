@@ -1085,6 +1085,7 @@ describe("SplunkReady CLI flow", () => {
       savedSearch: { ref: string };
       preferredIndex: string;
       sampleEvents: number;
+      generatedAt: string;
     };
     const savedSearches = await readFile(
       join(outDir, "SplunkEnterpriseSecuritySuite", "default", "savedsearches.conf"),
@@ -1093,6 +1094,11 @@ describe("SplunkReady CLI flow", () => {
     const indexes = await readFile(join(outDir, "SplunkEnterpriseSecuritySuite", "default", "indexes.conf"), "utf8");
     const sampleEvents = await readFile(join(outDir, "lateral-movement-events.csv"), "utf8");
     const readme = await readFile(join(outDir, "README.md"), "utf8");
+    const eventTimes = sampleEvents
+      .trim()
+      .split("\n")
+      .slice(1)
+      .map((line) => new Date(line.split(",", 1)[0]?.replace(" ", "T") ?? ""));
 
     expect(manifest).toMatchObject({
       mutation: false,
@@ -1101,13 +1107,25 @@ describe("SplunkReady CLI flow", () => {
       preferredIndex: "wineventlog",
       sampleEvents: 3
     });
+    expect(Date.now() - new Date(manifest.generatedAt).getTime()).toBeLessThan(24 * 60 * 60 * 1000);
     expect(savedSearches).toContain("[ES - Lateral Movement Auth Chain]");
     expect(savedSearches).toContain("index=wineventlog");
     expect(indexes).toContain("[wineventlog]");
     expect(sampleEvents).toContain("live-evt-102");
+    expect(sampleEvents).not.toContain("2026-06-02 10:");
+    expect(eventTimes).toHaveLength(3);
+    for (const eventTime of eventTimes) {
+      const ageMs = Date.now() - eventTime.getTime();
+
+      expect(Number.isNaN(eventTime.getTime())).toBe(false);
+      expect(ageMs).toBeGreaterThanOrEqual(0);
+      expect(ageMs).toBeLessThan(24 * 60 * 60 * 1000);
+    }
     expect(readme).toContain("SplunkReady generated these files locally; it did not connect to or mutate Splunk.");
     expect(readme).toContain("generated `SplunkEnterpriseSecuritySuite` app directory provides the app context");
+    expect(readme).toContain("CSV timestamps are generated at kit creation time");
     expect(readme).toContain("live-security-check --out artifacts/live-security-check --json");
+    expect(readme).toContain("live-security-proof --out artifacts/live-security-proof --json");
   });
 
   it("bundles proof, live security readiness, and operator kit artifacts for the Vite UI", async () => {

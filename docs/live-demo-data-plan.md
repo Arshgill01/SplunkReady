@@ -111,6 +111,8 @@ The command writes local files only. It does not call Splunk and does not mutate
 
 The app directory is intentionally named `SplunkEnterpriseSecuritySuite` because the readiness contract checks the saved-search app context, not just the saved-search display name. If Enterprise Security is already installed, merge the generated stanzas through the normal Splunk admin process instead of overwriting the app.
 
+The generated CSV timestamps are intentionally fresh at kit creation time so the saved search's `-24h` window returns rows. Regenerate the kit immediately before importing if the local files are stale.
+
 To inspect the current proof, security readiness diagnostic, and generated operator kit together in the Vite UI, create a UI bundle after running `live-security-proof` or `live-proof`, `live-security-check`, and `live-security-kit`:
 
 ```bash

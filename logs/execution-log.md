@@ -4432,6 +4432,68 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite production build, TypeScript build, browser runtime verification, and `git diff --check` passed before final full verification.
 
+## 2026-06-03 - Phase Live Operator Kit Fresh Evidence Window
+
+Scope:
+- Harden the operator-owned live security setup kit so it can actually make the flagship `live-security-proof` path green after approved Splunk setup.
+- Keep the certification run read-only; this change only affects locally generated setup artifacts and instructions.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `docs/live-demo-data-plan.md`
+- `logs/splunk-feedback.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- `live-security-kit` now generates lateral-movement CSV event timestamps from the current kit generation time instead of fixed `2026-06-02` timestamps.
+- `live-security-kit.json` now records the actual kit generation timestamp for this command instead of the global deterministic scaffold timestamp.
+- The generated kit README now warns operators to regenerate the kit immediately before importing if the files have been sitting around.
+- The generated kit README now points the final proof command at strict `live-security-proof --out artifacts/live-security-proof --json`, not generic `live-proof`.
+- `docs/live-demo-data-plan.md` now documents the fresh timestamp behavior.
+- `logs/splunk-feedback.md` now records the Splunk developer friction point: sample event timestamps can silently expire out of relative search windows.
+
+Why this matters:
+- The flagship saved search uses `earliest=-24h latest=now`.
+- Fixed sample timestamps could make a correctly installed saved search return zero rows, causing `live-security-check` to stay blocked even after operator setup.
+- Fresh sample rows remove that false blocker while preserving the non-mutation rule.
+
+Local generated artifacts refreshed:
+- `artifacts/live-security-kit`
+- `artifacts/live-security-ui`
+
+Browser verification:
+- `http://127.0.0.1:5173/#live-connect`
+- Confirmed:
+  - Live Connect rendered;
+  - Operator security kit rendered;
+  - generated timestamp rendered;
+  - strict proof command text was available in the refreshed artifact set;
+  - no browser console/page errors.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 29% | 30% | Removes a subtle setup failure that could derail the live flagship proof. |
+| Platform & DX | 70% | 72% | Operator kit is more reliable and self-explanatory. |
+| Security | 40% | 43% | The lateral-movement proof path is closer to a real green run. |
+| Best Use of MCP Server | 79% | 80% | Live MCP proof setup is less likely to fail from stale sample data. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 65% | 67% | Generated setup artifacts are safer for developers to consume. |
+
+Next directions to consider in future runs:
+- If the operator imports the refreshed kit into the local Splunk trial, rerun `live-security-check`, then `live-security-proof`, then re-bundle `artifacts/live-security-ui` with `--proof-dir artifacts/live-security-proof`.
+- Consider a small preflight command that validates an installed kit by checking saved-search presence, result count, and evidence refs without running the whole LLM proof.
+- Continue avoiding any command that writes to Splunk automatically.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI test, TypeScript build, local kit generation, UI bundle refresh, browser runtime check, and `git diff --check` passed before final full verification.
+
 ## 2026-06-02 - Phase Live UI Artifact Bundler
 
 Scope:

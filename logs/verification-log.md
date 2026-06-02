@@ -3791,3 +3791,47 @@ Open risks:
 
 - The browser URL still depends on the running dev server's artifact root; if the dev server is restarted without `SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/live-security-ui`, it will fall back to `artifacts/fixture-demo`.
 - The current `artifacts/live-security-ui` bundle is a blocked live-security readiness bundle, not the final green flagship proof bundle.
+
+## 2026-06-03 - Phase Live Operator Kit Fresh Evidence Window
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts -t "live security setup kit"`
+- `npm run build && rm -rf artifacts/live-security-kit && npm run splunkready -- live-security-kit --out artifacts/live-security-kit --json`
+- `git diff --check`
+- `jq -r '.generatedAt' artifacts/live-security-kit/live-security-kit.json && sed -n '1,5p' artifacts/live-security-kit/lateral-movement-events.csv`
+- `npm run splunkready -- live-security-ui-bundle --proof-dir artifacts/live-proof --security-check-dir artifacts/live-security-check --security-kit-dir artifacts/live-security-kit --out artifacts/live-security-ui --json`
+- `node - <<'NODE' ... Playwright runtime check for http://127.0.0.1:5173/#live-connect ... NODE`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused CLI kit test:
+  - 1 test passed;
+  - 20 unrelated CLI flow tests skipped by filter.
+- PASS for TypeScript build.
+- PASS for regenerated `live-security-kit` command.
+- PASS for `git diff --check`.
+- PASS for regenerated kit artifact inspection:
+  - manifest `generatedAt` was current;
+  - CSV rows were generated inside the current `-24h` search window;
+  - event refs remained `live-evt-102`, `live-evt-118`, and `live-evt-141`.
+- PASS for refreshed `live-security-ui-bundle`.
+- PASS for Playwright runtime check:
+  - Live Connect rendered;
+  - Operator security kit rendered;
+  - generated timestamp rendered;
+  - strict proof command text was available;
+  - no browser console/page errors.
+- PASS for full repo verification:
+  - scaffold verified;
+  - 85 waves;
+  - 662 project files;
+  - 38 test files;
+  - 205 tests.
+- PASS for final `git diff --check`.
+
+Open risks:
+
+- This still does not mutate Splunk. The operator must import/install the generated kit before `live-security-check` can become green on the real endpoint.
+- The refreshed generated artifacts remain untracked under `artifacts/`.

@@ -603,7 +603,39 @@ const flagshipSecuritySavedSearch = {
   ref: "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain"
 };
 
+const formatSplunkCsvTimestamp = (date: Date): string => {
+  const pad = (value: number): string => String(value).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(
+    date.getMinutes()
+  )}:${pad(date.getSeconds())}`;
+};
+
+const lateralMovementSampleRows = (now = new Date()): string[] => {
+  const offsetsMs = [21 * 60_000, 14 * 60_000, 7 * 60_000];
+  const rows = [
+    ["live-evt-102", "win-finance-07", "win-finance-07", "admin-login-02", "svc-finance", "4624", "An account was successfully logged on"],
+    ["live-evt-118", "admin-login-02", "admin-login-02", "dc-01", "svc-finance", "4672", "Special privileges assigned to new logon"],
+    ["live-evt-141", "dc-01", "dc-01", "finance-sql-03", "svc-finance", "4624", "An account was successfully logged on"]
+  ] as const;
+
+  return rows.map((row, index) =>
+    [
+      formatSplunkCsvTimestamp(new Date(now.getTime() - offsetsMs[index])),
+      row[0],
+      "XmlWinEventLog:Security",
+      row[1],
+      row[2],
+      row[3],
+      row[4],
+      row[5],
+      row[6]
+    ].join(",")
+  );
+};
+
 const liveSecurityKitCommand = async (options: CliOptions): Promise<string[]> => {
+  const kitGeneratedAt = new Date();
   const appRoot = join(options.out, flagshipSecuritySavedSearch.app);
   const appConfPath = join(appRoot, "default", "app.conf");
   const indexesPath = join(appRoot, "default", "indexes.conf");
@@ -660,9 +692,7 @@ search = search index=wineventlog sourcetype=XmlWinEventLog:Security (src="win-f
   await writeText(
     sampleEventsPath,
     `_time,eventRef,sourcetype,host,src,dest,user,EventCode,signature
-2026-06-02 10:14:08,live-evt-102,XmlWinEventLog:Security,win-finance-07,win-finance-07,admin-login-02,svc-finance,4624,An account was successfully logged on
-2026-06-02 10:16:41,live-evt-118,XmlWinEventLog:Security,admin-login-02,admin-login-02,dc-01,svc-finance,4672,Special privileges assigned to new logon
-2026-06-02 10:21:19,live-evt-141,XmlWinEventLog:Security,dc-01,dc-01,finance-sql-03,svc-finance,4624,An account was successfully logged on
+${lateralMovementSampleRows(kitGeneratedAt).join("\n")}
 `
   );
   await writeText(
@@ -677,6 +707,8 @@ This directory contains an operator-owned setup bundle for the SplunkReady flags
 - \`${flagshipSecuritySavedSearch.app}/default/props.conf\` defines CSV parsing for \`XmlWinEventLog:Security\`.
 - \`${flagshipSecuritySavedSearch.app}/default/savedsearches.conf\` defines the exact saved search \`${flagshipSecuritySavedSearch.ref}\`.
 - \`lateral-movement-events.csv\` contains three evidence rows for the \`win-finance-07\` lateral-movement story.
+
+The CSV timestamps are generated at kit creation time and are intentionally recent so the saved search's \`-24h\` window returns rows. Regenerate this kit immediately before importing data if it has been sitting around.
 
 ## Operator Setup
 
@@ -721,7 +753,7 @@ Then run the live proof:
 set -a; source ./.splunkready-live.env; set +a
 export SPLUNKREADY_LLM_ENABLED=true
 export GEMINI_MODEL=gemini-3.1-flash-lite
-NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-proof --out artifacts/live-proof --candidate-limit 12 --json
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-proof --out artifacts/live-security-proof --json
 \`\`\`
 `
   );
@@ -734,7 +766,7 @@ NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-proof --out artifacts
     preferredIndex: "wineventlog",
     sourcetype: "XmlWinEventLog:Security",
     sampleEvents: 3,
-    generatedAt,
+    generatedAt: kitGeneratedAt.toISOString(),
     artifacts: [appConfPath, indexesPath, propsPath, savedSearchesPath, sampleEventsPath, readmePath]
   });
 

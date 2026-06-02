@@ -106,6 +106,20 @@ Suggestion:
 - Return app-qualified object refs in a canonical field such as `ref` alongside `app` and `name`.
 - Provide a clean local-trial example for app-scoped saved-search setup without requiring a full Enterprise Security install.
 
+### Sample event timestamps can silently expire out of relative search windows
+
+Observed while hardening the `live-security-kit` operator setup bundle. The flagship saved search intentionally uses `earliest=-24h latest=now`, but fixed CSV timestamps can fall outside that window as soon as the generated kit gets old. The setup can look installed correctly while `live-security-check` still reports zero rows.
+
+Impact:
+- Developers may debug MCP, saved-search names, app context, or agent behavior when the real issue is stale sample data.
+- A generated local setup kit needs either fresh event timestamps or very explicit instructions to regenerate/import immediately before running the readiness diagnostic.
+- This problem is especially easy to miss because the saved search exists and runs, but returns no evidence refs.
+
+Suggestion:
+- Official sample data packs should document their intended search windows and whether timestamps are static or generated.
+- MCP demo setup guides should include a row-count verification step immediately after data import.
+- When possible, provide sample-data import commands or packs that generate current timestamps for relative-time demos.
+
 ## MCP Server Limitations
 
 ### MCP response envelopes need normalization
