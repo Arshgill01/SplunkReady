@@ -3201,3 +3201,27 @@ Result:
 Open risks:
 
 - The live passing receipt remains blocked by live Splunk content, not by this fixture expansion.
+
+## 2026-06-02 - Phase Live Move 7 External Trace SDK Example
+
+Commands:
+
+- `npm run build && node examples/capture-external-trace.js && tmp=$(mktemp -d /tmp/splunkready-external-example-XXXXXX) && npm run splunkready -- compile --out "$tmp" && npm run splunkready -- grade-trace --trace examples/sample-external-trace.json --out "$tmp" --agent-name "External MCP Agent" --agent-version "example-trace-001" && cp "$tmp/receipt-external-001.md" examples/sample-receipt.md && cp "$tmp/violations-external.json" examples/sample-violations.json && echo "$tmp"`
+- `npx vitest run tests/examples/external-trace.test.ts tests/cli/flow.test.ts`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS.
+- TypeScript build passed.
+- Example capture script wrote `examples/sample-external-trace.json`.
+- `compile` passed and wrote the fixture environment contract/readiness profile into a temp directory.
+- `grade-trace` passed against `examples/sample-external-trace.json` and generated `receipt-external-001.md`.
+- Generated sample receipt copied to `examples/sample-receipt.md`; generated violations copied to `examples/sample-violations.json`.
+- Focused tests passed: 2 files / 12 tests.
+- Full check passed: scaffold verifier reported 85 waves and 556 project files; Vitest passed 35 files / 172 tests.
+- `git diff --check` passed.
+
+Open risks:
+
+- The example is fixture-backed SDK evidence. Live external-agent proof still depends on the existing live Splunk content blocker.

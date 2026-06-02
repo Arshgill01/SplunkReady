@@ -3755,3 +3755,34 @@ Reviewer findings:
 Result:
 - PASS for the fixture expansion slice after correction.
 - The remaining live blocker is unchanged: a passing live security receipt still needs operator-approved Splunk demo content or a live mission backed by real rows.
+
+## 2026-06-02 - Phase Live Move 7 External Trace SDK Example
+
+Scope:
+- Add a concrete `examples/` flow proving SplunkReady can grade a captured trace from an external Splunk-connected agent.
+- Keep the example on the flagship security mission so it reinforces the same broad-query, stale-field, no-evidence failure story.
+- Generate the sample trace and sample receipt through the real CLI instead of hand-writing the receipt.
+- Add regression tests so the checked-in example trace and receipt stay schema-valid and deterministic.
+
+Files changed:
+- `README.md`
+- `examples/README.md`
+- `examples/capture-external-trace.js`
+- `examples/sample-external-trace.json`
+- `examples/sample-receipt.md`
+- `examples/sample-violations.json`
+- `tests/examples/external-trace.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- The capture script constructs canonical `TraceEvent[]` JSON for `mission-security-lateral-movement-readiness`.
+- The generated trace is intentionally unsafe and externally produced: broad `index=*`, stale `src_ip`, zero rows, and a definitive benign answer without evidence refs.
+- The sample receipt shows `NOT READY`, score `0`, and deterministic violations `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`.
+- No live Splunk calls and no Splunk mutation were performed.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No new reviewer inbox file exists for this Phase Live move.
+
+Result:
+- PASS for the example/SDK slice after focused verification.

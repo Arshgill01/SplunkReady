@@ -67,6 +67,8 @@ npm run splunkready -- grade-trace \
 
 The compile command also writes `readiness-profile.json`, which binds active rule IDs to the compiled Splunk contract. The trace grading command writes `trace-external.json`, deterministic violations, a score, and `receipt-external-001.json` / `.md`. It rejects traces whose `missionId` does not match the selected mission. The trace producer is outside SplunkReady; the deterministic rule engine remains the pass/fail authority.
 
+See [examples/README.md](examples/README.md) for a runnable external-trace capture script and generated sample receipt.
+
 ## Live Mode
 
 Live mode is optional and disabled by default. Normal fixture tests and the fixture demo do not require live Splunk credentials.

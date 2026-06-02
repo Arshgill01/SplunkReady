@@ -1,0 +1,70 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const outputPath = resolve(process.argv[2] ?? `${__dirname}/sample-external-trace.json`);
+
+const missionId = "mission-security-lateral-movement-readiness";
+const query = "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now";
+const timeWindow = { earliest: "-24h", latest: "now" };
+
+const traceEvents = [
+  {
+    id: "external-trace-call-001",
+    missionId,
+    timestamp: "2026-06-01T06:00:10.000Z",
+    actor: "specimen_agent",
+    type: "tool_call",
+    toolName: "splunk_run_query",
+    toolInput: { query },
+    toolOutputSummary: null,
+    queryRef: null,
+    timeWindow,
+    resultCount: null,
+    evidenceRefs: [],
+    error: null,
+    step: 1,
+    metadata: {
+      captureSource: "examples/capture-external-trace.js"
+    }
+  },
+  {
+    id: "external-trace-result-001",
+    missionId,
+    timestamp: "2026-06-01T06:00:12.000Z",
+    actor: "splunk_adapter",
+    type: "tool_result",
+    toolName: "splunk_run_query",
+    toolInput: { query },
+    toolOutputSummary: "External agent query returned zero rows.",
+    queryRef: "query-naive-lateral-movement",
+    timeWindow,
+    resultCount: 0,
+    evidenceRefs: [],
+    error: null,
+    step: 1,
+    parentId: "external-trace-call-001"
+  },
+  {
+    id: "external-trace-final-001",
+    missionId,
+    timestamp: "2026-06-01T06:00:18.000Z",
+    actor: "specimen_agent",
+    type: "final_answer",
+    toolName: null,
+    toolInput: null,
+    toolOutputSummary: "No evidence was found, so win-finance-07 is benign.",
+    queryRef: null,
+    timeWindow,
+    resultCount: 0,
+    evidenceRefs: [],
+    error: null,
+    step: 2
+  }
+];
+
+await mkdir(dirname(outputPath), { recursive: true });
+await writeFile(outputPath, `${JSON.stringify(traceEvents, null, 2)}\n`, "utf8");
+
+console.log(`wrote ${outputPath}`);
