@@ -705,7 +705,39 @@ const main = async (): Promise<void> => {
   }
 };
 
+const formatCliError = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (error && typeof error === "object") {
+    const input = error as {
+      name?: unknown;
+      code?: unknown;
+      message?: unknown;
+      context?: { toolName?: unknown };
+      cause?: unknown;
+    };
+
+    if (input.name === "SplunkAdapterError") {
+      const code = typeof input.code === "string" ? input.code : "SPLUNK_ADAPTER_ERROR";
+      const message = typeof input.message === "string" ? input.message : "Splunk adapter failed.";
+      const toolName = typeof input.context?.toolName === "string" ? input.context.toolName : "unknown_tool";
+      const causeMessage =
+        input.cause instanceof Error
+          ? ` Cause: ${input.cause.message}`
+          : input.cause && typeof input.cause === "object" && "message" in input.cause
+            ? ` Cause: ${String((input.cause as { message: unknown }).message)}`
+            : "";
+
+      return `${code} while calling ${toolName}: ${message}${causeMessage}`;
+    }
+  }
+
+  return String(error);
+};
+
 main().catch((error: unknown) => {
-  console.error(error instanceof Error ? error.message : String(error));
+  console.error(formatCliError(error));
   process.exitCode = 1;
 });

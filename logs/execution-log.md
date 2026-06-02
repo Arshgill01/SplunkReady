@@ -3546,3 +3546,72 @@ Result:
 - Full check passed: scaffold verifier reported 85 waves and 459 project files; Vitest passed 33 test files / 157 tests.
 - Reviewer audit passed: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed.
+
+## 2026-06-02 - Phase Live Move 1 Live MCP Proof
+
+Scope:
+- Close the live proof gap with the user's local Splunk MCP endpoint and encrypted MCP token.
+- Normalize the live MCP server's actual `structuredContent.results` response envelopes at the adapter boundary.
+- Preserve fixture/live parity by keeping the rest of the compiler on the existing `SplunkAccessAdapter` interface.
+- Keep the live smoke read-only: inventory tools only, no `splunk_run_query`, no saved search execution, no SAIA call, and no Splunk mutation.
+
+Files changed:
+- `src/adapters/live.ts`
+- `src/cli.ts`
+- `tests/adapters/live.test.ts`
+- `docs/live-setup-checklist.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- The token and endpoint are loaded from `.splunkready-live.env`; the file is ignored and must not be committed.
+- The local Splunk trial uses a self-signed certificate on `https://localhost:8089`, so the passing smoke command used `NODE_TLS_REJECT_UNAUTHORIZED=0` for this local command only.
+- Live MCP responses returned real Splunk inventory rows through `structuredContent.results`; `splunk_get_metadata` and `splunk_get_knowledge_objects` require singular `type` arguments.
+- The adapter now normalizes live inventory envelopes into `SplunkInfo`, `SplunkUserInfo`, `IndexSummary[]`, `MetadataResult`, and `KnowledgeObjectResult`.
+- Sanitized live result: `PASS`, `mode: live`, 13 indexes, 100 saved searches, 0 sourcetypes in the `-15m` smoke metadata window, read-only tools only, and no destructive operations.
+- No token, credential, or full endpoint was printed or committed.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No reviewer inbox closeout was available for this Phase Live move.
+
+Result:
+- PASS.
+- Move 1 is complete locally: `artifacts/live-smoke/live-smoke-contract.json`, `artifacts/live-smoke/live-smoke-readiness-profile.json`, and `artifacts/live-smoke/live-smoke-summary.json` exist and contain live Splunk inventory proof.
+
+## 2026-06-02 - Phase Live Vite UI And Typography Refresh
+
+Scope:
+- Promote the demo UI from generated HTML-only viewing to a standalone Vite app while keeping the existing shell fallback intact.
+- Load artifact JSON from a configurable local artifact base through Vite middleware.
+- Render four product views: certification replay, receipt, trace timeline, and live connect.
+- Refresh typography away from the default macOS/Avenir stack using locally bundled `Spline Sans Mono` and `Geist Mono` font assets.
+
+Files changed:
+- `.gitignore`
+- `package.json`
+- `package-lock.json`
+- `tsconfig.json`
+- `vite.config.ts`
+- `vitest.config.ts`
+- `ui/index.html`
+- `ui/src/artifacts.ts`
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- `npm run ui:dev` now serves the app from `ui/` and exposes local artifacts through `/__splunkready_artifacts/`.
+- `npm run ui:build` emits a production build to ignored `dist-ui/`.
+- Missing optional artifacts return `204`, avoiding noisy browser errors during partial proof states.
+- The UI test guards against generic dashboard styling patterns and generic fallback font stacks.
+- Generated artifact directories remain local proof output and are not staged for commit.
+
+Result:
+- PASS.
+- Focused UI tests passed.
+- Vite production build passed with bundled WOFF2 font assets.
+- Full project check passed.
+- Local Vite server was restarted at `http://127.0.0.1:5173/` for user inspection.

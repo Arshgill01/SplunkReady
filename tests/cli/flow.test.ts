@@ -55,13 +55,11 @@ const startMockMcpServer = async () => {
         },
         splunk_get_indexes: [{ name: "wineventlog", sensitive: false }],
         splunk_get_metadata: {
-          indexes: [{ name: "wineventlog", sensitive: false }],
-          sourcetypes: [{ name: "XmlWinEventLog:Security", indexes: ["wineventlog"], fields: ["src", "dest", "user"] }],
-          source: "live",
-          warnings: []
+          results: [{ sourcetype: "XmlWinEventLog:Security" }],
+          total_rows: 1
         },
         splunk_get_knowledge_objects: {
-          objects: [
+          results: [
             {
               id: "saved-search-live-auth",
               type: "saved_searches",
@@ -69,8 +67,7 @@ const startMockMcpServer = async () => {
               app: "SplunkEnterpriseSecuritySuite"
             }
           ],
-          resultCount: 1,
-          warnings: []
+          total_rows: 1
         }
       };
 
@@ -630,12 +627,28 @@ describe("SplunkReady CLI flow", () => {
       "splunk_get_user_info",
       "splunk_get_indexes",
       "splunk_get_metadata",
+      "splunk_get_knowledge_objects",
+      "splunk_get_knowledge_objects",
+      "splunk_get_knowledge_objects",
+      "splunk_get_knowledge_objects",
+      "splunk_get_knowledge_objects",
+      "splunk_get_knowledge_objects",
       "splunk_get_knowledge_objects"
     ]);
+    expect(
+      server.calls
+        .filter((call) => call.params.name === "splunk_get_knowledge_objects")
+        .map((call) => (call.params.arguments as { type?: string }).type)
+    ).toEqual(["saved_searches", "macros", "lookups", "views", "panels", "field_aliases", "data_models"]);
     expect(server.calls.every((call) => call.method === "tools/call")).toBe(true);
     expect(server.calls.find((call) => call.params.name === "splunk_get_metadata")?.params.arguments).toMatchObject({
-      indexes: ["wineventlog"],
-      timeWindow: { earliest: "-15m", latest: "now" }
+      type: "sourcetypes",
+      index: "*",
+      earliest_time: "-15m",
+      latest_time: "now"
+    });
+    expect(server.calls.find((call) => call.params.name === "splunk_get_knowledge_objects")?.params.arguments).toMatchObject({
+      type: "saved_searches"
     });
   });
 });

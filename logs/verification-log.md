@@ -3000,3 +3000,65 @@ Result:
 - `policy-patch.json` now carries structured `splAssistance` entries for SPL violations with query evidence.
 - `policy-patch.md` now includes `SAIA Explanation:` and `SAIA Optimized Query:` output.
 - Live SAIA proof remains unverified because no real Splunk MCP endpoint/token values were available.
+
+## 2026-06-02 - Phase Live Move 1 Live MCP Proof And Vite UI
+
+Commands:
+
+- `npx vitest run tests/adapters/live.test.ts`
+- `npm run build`
+- `rm -rf artifacts/live-smoke && set -a && source ./.splunkready-live.env && set +a && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-smoke --out artifacts/live-smoke --require-live true`
+- `node -e 'const fs=require("fs"); const c=JSON.parse(fs.readFileSync("artifacts/live-smoke/live-smoke-contract.json","utf8")); const s=JSON.parse(fs.readFileSync("artifacts/live-smoke/live-smoke-summary.json","utf8")); console.log(JSON.stringify({mode:c.mode,id:c.id,name:c.name,version:c.version,indexCount:c.indexes.length,indexNames:c.indexes.map(i=>i.name).slice(0,12),sourcetypeCount:c.sourcetypes.length,savedSearchCount:c.savedSearches.length,toolCount:c.mcpTools.length,tools:c.mcpTools,summary:s}, null, 2));'`
+- `npx vitest run tests/adapters/live.test.ts tests/ui/app.test.ts tests/ui/shell.test.ts`
+- `npx vitest run tests/cli/flow.test.ts`
+- `npm run ui:build`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS.
+- Focused live adapter tests passed: 1 file / 8 tests.
+- TypeScript build passed.
+- Real live smoke passed against the user's local Splunk MCP endpoint with local-only `NODE_TLS_REJECT_UNAUTHORIZED=0` for the self-signed trial certificate.
+- Live smoke wrote `artifacts/live-smoke/live-smoke-contract.json`, `artifacts/live-smoke/live-smoke-readiness-profile.json`, and `artifacts/live-smoke/live-smoke-summary.json`.
+- Sanitized live artifact inspection reported `mode: live`, 13 indexes, 100 saved searches, 0 sourcetypes in the `-15m` smoke metadata window, 5 read-only inventory tools, `readOnlyToolsOnly: true`, and `destructiveOperations: false`.
+- Focused live/UI tests passed: 3 files / 24 tests.
+- CLI flow tests passed: 1 file / 8 tests.
+- UI production build passed with Vite.
+- `git diff --check` passed.
+- Full check passed: scaffold verifier reported 85 waves and 486 project files; Vitest passed 34 files / 162 tests.
+
+Open risks:
+
+- The local Splunk smoke used a self-signed certificate workaround; production or shared deployments must use trusted TLS instead.
+- The live trial returned zero sourcetypes for the `-15m` smoke metadata window; the smoke proof still has real indexes and knowledge objects, but richer live mission proof should load/index data before Move 3.
+- The live artifacts are local proof artifacts and may contain deployment-identifying inventory. Do not commit them until the user explicitly approves their redacted form.
+
+## 2026-06-02 - Phase Live UI Typography Refresh
+
+Commands:
+
+- `npm install --save-dev @fontsource-variable/spline-sans-mono @fontsource-variable/geist-mono`
+- `npx vitest run tests/ui/app.test.ts tests/ui/shell.test.ts`
+- `npm run ui:build`
+- `npm run build`
+- `git diff --check`
+- `npm run check`
+- `npm run audit:reviewers`
+
+Result:
+
+- PASS.
+- The Vite UI now bundles `Spline Sans Mono` for the product UI and `Geist Mono` for code/data text.
+- The UI regression test now rejects generic fallback font stacks including Avenir, Helvetica, Arial, Inter, Roboto, and Segoe UI.
+- Focused UI tests passed: 2 files / 16 tests.
+- UI production build passed and emitted local WOFF2 font assets.
+- TypeScript build passed.
+- `git diff --check` passed.
+- Full check passed: scaffold verifier reported 85 waves and 494 project files; Vitest passed 34 files / 162 tests.
+- Reviewer audit passed: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+
+Open risks:
+
+- The bundled font assets increase the UI build size. This is accepted for demo polish.

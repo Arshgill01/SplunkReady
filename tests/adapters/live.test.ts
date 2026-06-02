@@ -90,6 +90,154 @@ describe("live Splunk adapter skeleton", () => {
     ).resolves.toMatchObject({ resultCount: 1, evidenceRefs: ["live-evt-001"] });
   });
 
+  it("normalizes live Splunk MCP result envelopes at the adapter boundary", async () => {
+    const calls: Array<{ toolName: string; input: unknown }> = [];
+    const transport: LiveSplunkTransport = {
+      async call<TInput, TOutput>(request: LiveSplunkTransportRequest<TInput>): Promise<TOutput> {
+        calls.push({ toolName: request.toolName, input: request.input });
+
+        if (request.toolName === "splunk_get_info") {
+          return {
+            results: [
+              {
+                version: "10.0.0",
+                serverName: "splunk-dev"
+              }
+            ],
+            total_rows: 1
+          } as TOutput;
+        }
+
+        if (request.toolName === "splunk_get_user_info") {
+          return {
+            results: [
+              {
+                username: "admin",
+                roles: "admin, power",
+                defaultApp: "search",
+                capabilitiesCount: "128"
+              }
+            ],
+            total_rows: 1
+          } as TOutput;
+        }
+
+        if (request.toolName === "splunk_get_indexes") {
+          return {
+            results: [
+              { title: "_audit", disabled: false },
+              { title: "finance_pii", disabled: false }
+            ],
+            total_rows: 2
+          } as TOutput;
+        }
+
+        if (request.toolName === "splunk_get_metadata") {
+          expect(request.input).toMatchObject({
+            type: "sourcetypes",
+            index: "*",
+            earliest_time: "-15m",
+            latest_time: "now"
+          });
+          return {
+            results: [{ sourcetype: "XmlWinEventLog:Security" }],
+            total_rows: 1
+          } as TOutput;
+        }
+
+        if (request.toolName === "splunk_get_knowledge_objects") {
+          if ((request.input as { type?: string }).type === "saved_searches") {
+            return {
+              results: [
+                {
+                  name: "ES - Lateral Movement Auth Chain",
+                  app: "SplunkEnterpriseSecuritySuite",
+                  description: "Mission preferred saved search"
+                }
+              ],
+              total_rows: 1
+            } as TOutput;
+          }
+
+          if ((request.input as { type?: string }).type === "views") {
+            return {
+              results: [
+                {
+                  name: "ES - Dashboard Lateral Movement By Source",
+                  "eai:acl.app": "SplunkEnterpriseSecuritySuite"
+                }
+              ],
+              total_rows: 1
+            } as TOutput;
+          }
+        }
+
+        throw new Error(`unexpected tool ${request.toolName}`);
+      }
+    };
+    const adapter = createLiveSplunkAccessAdapter({
+      enabled: true,
+      endpointUrl: "https://splunk.example.invalid/services/mcp",
+      authToken: "test-token",
+      capabilities: [
+        "splunk_get_info",
+        "splunk_get_user_info",
+        "splunk_get_indexes",
+        "splunk_get_metadata",
+        "splunk_get_knowledge_objects"
+      ],
+      transport
+    });
+
+    await expect(adapter.getInfo(requestOptions)).resolves.toMatchObject({
+      mode: "live",
+      deploymentName: "splunk-dev",
+      serverVersion: "10.0.0"
+    });
+    await expect(adapter.getUserInfo(requestOptions)).resolves.toMatchObject({
+      username: "admin",
+      roles: ["admin", "power"],
+      defaultApp: "search"
+    });
+    await expect(adapter.getIndexes(requestOptions)).resolves.toEqual([
+      { name: "_audit", sensitive: false, description: undefined },
+      { name: "finance_pii", sensitive: true, description: undefined }
+    ]);
+    await expect(
+      adapter.getMetadata(
+        { indexes: ["_audit"], timeWindow: { earliest: "-15m", latest: "now" } },
+        requestOptions
+      )
+    ).resolves.toMatchObject({
+      source: "live",
+      indexes: [{ name: "_audit", sensitive: false }],
+      sourcetypes: [{ name: "XmlWinEventLog:Security", indexes: ["_audit"], fields: [] }]
+    });
+    await expect(adapter.getKnowledgeObjects({ types: ["saved_searches", "dashboards"] }, requestOptions)).resolves.toMatchObject({
+      resultCount: 2,
+      warnings: ["Live MCP serves dashboards through the views knowledge-object type."],
+      objects: expect.arrayContaining([
+        expect.objectContaining({
+          type: "saved_searches",
+          name: "ES - Lateral Movement Auth Chain",
+          app: "SplunkEnterpriseSecuritySuite"
+        }),
+        expect.objectContaining({
+          type: "dashboards",
+          name: "ES - Dashboard Lateral Movement By Source",
+          app: "SplunkEnterpriseSecuritySuite"
+        })
+      ])
+    });
+    expect(calls).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ toolName: "splunk_get_metadata", input: expect.objectContaining({ type: "sourcetypes" }) }),
+        expect.objectContaining({ toolName: "splunk_get_knowledge_objects", input: expect.objectContaining({ type: "saved_searches" }) }),
+        expect.objectContaining({ toolName: "splunk_get_knowledge_objects", input: expect.objectContaining({ type: "views" }) })
+      ])
+    );
+  });
+
   it("calls MCP tools over HTTP without placing secrets in the request body", async () => {
     const fetchImpl: typeof fetch = async (_input, init) => {
       const body = JSON.parse(String(init?.body)) as {

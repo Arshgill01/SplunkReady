@@ -129,6 +129,16 @@ rm -rf artifacts/live-smoke
 npm run splunkready -- live-smoke --out artifacts/live-smoke --require-live true
 ```
 
+For a local Splunk Enterprise trial on `https://localhost:8089` with the default self-signed certificate, use this temporary local-only variant:
+
+```bash
+npm run build
+rm -rf artifacts/live-smoke
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-smoke --out artifacts/live-smoke --require-live true
+```
+
+Do not use `NODE_TLS_REJECT_UNAUTHORIZED=0` for production, shared, or internet-reachable Splunk deployments. Install or trust the Splunk certificate instead.
+
 Expected terminal shape:
 
 ```text
@@ -213,3 +223,21 @@ Move 1 is done only when all of these are true:
 - The contract has `mode: "live"` and real Splunk deployment metadata.
 - `artifacts/live-smoke/live-smoke-summary.json` has `readOnlyToolsOnly: true` and `destructiveOperations: false`.
 - Screenshots have been captured with secrets redacted.
+
+## 11. Current Local Proof
+
+On 2026-06-02, the local Splunk MCP endpoint passed live smoke with the local-only self-signed certificate workaround:
+
+```bash
+rm -rf artifacts/live-smoke && set -a && source ./.splunkready-live.env && set +a && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-smoke --out artifacts/live-smoke --require-live true
+```
+
+Sanitized result:
+
+- `status`: `PASS`
+- `mode`: `live`
+- index count: `13`
+- saved search count: `100`
+- sourcetype count: `0` for the `-15m` smoke metadata window
+- read-only inventory tools only: `true`
+- destructive operations: `false`

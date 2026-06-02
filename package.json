@@ -11,14 +11,19 @@
     "verify:scaffold": "bash scripts/verify-scaffold.sh",
     "audit:reviewers": "node scripts/audit-reviewer-inbox.mjs",
     "audit:submission-copy": "node scripts/audit-submission-copy.mjs",
-    "check": "npm run verify:scaffold && npm test"
+    "check": "npm run verify:scaffold && npm test",
+    "ui:dev": "vite --host 127.0.0.1 --config vite.config.ts",
+    "ui:build": "vite build --config vite.config.ts"
   },
   "dependencies": {
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@fontsource-variable/geist-mono": "^5.2.8",
+    "@fontsource-variable/spline-sans-mono": "^5.2.8",
     "@types/node": "^22.15.29",
     "typescript": "^5.8.3",
+    "vite": "^7.3.5",
     "vitest": "^3.2.4"
   },
   "engines": {

@@ -7,6 +7,8 @@ import {
   type ExplainSplRequest,
   type ExplainSplResult,
   type IndexSummary,
+  type KnowledgeObjectSummary,
+  type KnowledgeObjectType,
   type KnowledgeObjectRequest,
   type KnowledgeObjectResult,
   type MetadataRequest,
@@ -75,6 +77,183 @@ const parseCapabilities = (rawCapabilities: string | undefined): ReadOnlySplunkT
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+const stringValue = (value: unknown): string | undefined =>
+  typeof value === "string" && value.length > 0 ? value : undefined;
+
+const rowsFrom = (value: unknown): Array<Record<string, unknown>> => {
+  if (Array.isArray(value)) {
+    return value.filter(isRecord);
+  }
+
+  if (isRecord(value) && Array.isArray(value.results)) {
+    return value.results.filter(isRecord);
+  }
+
+  if (isRecord(value) && Array.isArray(value.rows)) {
+    return value.rows.filter(isRecord);
+  }
+
+  if (isRecord(value) && Array.isArray(value.objects)) {
+    return value.objects.filter(isRecord);
+  }
+
+  return [];
+};
+
+const firstRowFrom = (value: unknown): Record<string, unknown> => rowsFrom(value)[0] ?? (isRecord(value) ? value : {});
+
+const normalizeLiveInfo = (value: unknown, capabilities: ReadOnlySplunkToolName[] | undefined): SplunkInfo => {
+  const row = firstRowFrom(value);
+  const deploymentName = stringValue(row.serverName) ?? stringValue(row.splunk_server) ?? "live-splunk";
+
+  return {
+    mode: "live",
+    deploymentName: stringValue(row.deploymentName) ?? deploymentName,
+    serverVersion: stringValue(row.serverVersion) ?? stringValue(row.version),
+    readOnlyTools:
+      row.readOnlyTools &&
+      Array.isArray(row.readOnlyTools) &&
+      row.readOnlyTools.every((toolName) => typeof toolName === "string")
+        ? row.readOnlyTools.map((toolName) => readOnlySplunkToolNameSchema.parse(toolName))
+        : capabilities ?? readOnlySplunkToolNameSchema.options
+  };
+};
+
+const normalizeLiveUserInfo = (value: unknown): SplunkUserInfo => {
+  const row = firstRowFrom(value);
+  const roles = stringValue(row.roles)
+    ?.split(",")
+    .map((role) => role.trim())
+    .filter((role) => role.length > 0) ?? [];
+  const capabilitiesCount = stringValue(row.capabilitiesCount);
+
+  return {
+    username: stringValue(row.username) ?? "unknown-live-user",
+    roles,
+    defaultApp: stringValue(row.defaultApp),
+    capabilities: capabilitiesCount ? [`${capabilitiesCount} live capabilities reported`] : []
+  };
+};
+
+const normalizeLiveIndexes = (value: unknown): IndexSummary[] =>
+  rowsFrom(value).map((row) => {
+    const name = stringValue(row.name) ?? stringValue(row.title) ?? "unknown-index";
+
+    return {
+      name,
+      sensitive: /(?:pii|secret|credential|private)/i.test(name),
+      description: stringValue(row.description)
+    };
+  });
+
+const liveMetadataInput = (input: MetadataRequest): Record<string, unknown> => ({
+  type: "sourcetypes",
+  index: "*",
+  earliest_time: input.timeWindow?.earliest ?? "-24h",
+  latest_time: input.timeWindow?.latest ?? "now",
+  row_limit: 100
+});
+
+const normalizeLiveMetadata = (input: MetadataRequest, value: unknown): MetadataResult => {
+  const sourcetypes = rowsFrom(value)
+    .map((row) => stringValue(row.sourcetype) ?? stringValue(row.name) ?? stringValue(row.title))
+    .filter((name): name is string => Boolean(name))
+    .map((name) => ({ name, indexes: input.indexes ?? [], fields: [] }));
+
+  return {
+    indexes: (input.indexes ?? []).map((name) => ({
+      name,
+      sensitive: /(?:pii|secret|credential|private)/i.test(name)
+    })),
+    sourcetypes,
+    source: "live",
+    warnings:
+      sourcetypes.length > 0
+        ? ["Live MCP metadata provided sourcetype names; field discovery is not available from this inventory call."]
+        : ["Live MCP metadata returned no sourcetypes for the smoke-test time window."]
+  };
+};
+
+const liveKnowledgeTypeFor = (type: KnowledgeObjectType): string => (type === "dashboards" ? "views" : type);
+
+const normalizeKnowledgeObject = (
+  requestedType: KnowledgeObjectType,
+  row: Record<string, unknown>,
+  defaultApp: string | undefined
+): KnowledgeObjectSummary => {
+  const name = stringValue(row.name) ?? stringValue(row.title) ?? "unknown-knowledge-object";
+  const rawApp = stringValue(row.app) ?? stringValue(row["eai:acl.app"]);
+  const app = rawApp && rawApp !== "eai:appName" ? rawApp : (defaultApp ?? "search");
+
+  return {
+    id: `${requestedType}:${app}:${name}`,
+    type: requestedType,
+    name,
+    app,
+    description: stringValue(row.description),
+    metadata: row
+  };
+};
+
+const normalizeKnowledgeObjects = (
+  requestedType: KnowledgeObjectType,
+  value: unknown,
+  defaultApp: string | undefined
+): KnowledgeObjectSummary[] =>
+  rowsFrom(value).map((row) => normalizeKnowledgeObject(requestedType, row, defaultApp));
+
+const normalizeLiveQueryResult = (input: RunQueryRequest, value: unknown): QueryResult => {
+  const rows = rowsFrom(value);
+
+  return {
+    queryRef: input.query,
+    rows,
+    resultCount: rows.length,
+    evidenceRefs: rows
+      .map((row) => stringValue(row.eventRef) ?? stringValue(row._cd) ?? stringValue(row._raw))
+      .filter((ref): ref is string => Boolean(ref)),
+    warnings: []
+  };
+};
+
+const normalizeLiveSavedSearchResult = (input: RunSavedSearchRequest, value: unknown): SavedSearchResult => {
+  const rows = rowsFrom(value);
+
+  return {
+    savedSearchRef: `${input.app}:${input.name}`,
+    rows,
+    resultCount: rows.length,
+    evidenceRefs: rows
+      .map((row) => stringValue(row.eventRef) ?? stringValue(row._cd) ?? stringValue(row._raw))
+      .filter((ref): ref is string => Boolean(ref)),
+    warnings: []
+  };
+};
+
+const normalizeExplainSplResult = (value: unknown): ExplainSplResult => {
+  const row = firstRowFrom(value);
+  const explanation =
+    stringValue(row.explanation) ??
+    stringValue(row.answer) ??
+    stringValue(row.content) ??
+    (typeof value === "string" ? value : "Live SAIA explanation returned no text.");
+
+  return { explanation, warnings: [] };
+};
+
+const normalizeOptimizeSplResult = (value: unknown): OptimizeSplResult => {
+  const row = firstRowFrom(value);
+  const optimizedQuery =
+    stringValue(row.optimizedQuery) ??
+    stringValue(row.optimized_query) ??
+    stringValue(row.query) ??
+    stringValue(row.spl) ??
+    (typeof value === "string" ? value : "");
+  const rationale = stringValue(row.rationale) ?? stringValue(row.explanation) ?? "Live SAIA optimization returned.";
+
+  return { optimizedQuery, rationale, warnings: optimizedQuery ? [] : ["Live SAIA optimization returned no query text."] };
+};
 
 const parseTextContent = (value: string): unknown => {
   try {
@@ -327,32 +506,73 @@ export const createLiveSplunkAccessAdapter = (
   return {
     mode: "live",
     traceHooks,
-    getInfo: (options) => callLiveTool<Record<string, never>, SplunkInfo>("splunk_get_info", {}, options, "Live Splunk info loaded."),
-    getUserInfo: (options) =>
-      callLiveTool<Record<string, never>, SplunkUserInfo>("splunk_get_user_info", {}, options, "Live Splunk user info loaded."),
-    getIndexes: (options) =>
-      callLiveTool<Record<string, never>, IndexSummary[]>("splunk_get_indexes", {}, options, "Live Splunk indexes loaded."),
-    getMetadata: (input: MetadataRequest, options) =>
-      callLiveTool<MetadataRequest, MetadataResult>("splunk_get_metadata", input, options, "Live Splunk metadata loaded."),
-    getKnowledgeObjects: (input: KnowledgeObjectRequest, options) =>
-      callLiveTool<KnowledgeObjectRequest, KnowledgeObjectResult>(
-        "splunk_get_knowledge_objects",
-        input,
-        options,
-        "Live Splunk knowledge objects loaded."
+    getInfo: async (options) =>
+      normalizeLiveInfo(
+        await callLiveTool<Record<string, never>, unknown>("splunk_get_info", {}, options, "Live Splunk info loaded."),
+        config.capabilities
       ),
+    getUserInfo: (options) =>
+      callLiveTool<Record<string, never>, unknown>("splunk_get_user_info", {}, options, "Live Splunk user info loaded.").then(
+        normalizeLiveUserInfo
+      ),
+    getIndexes: (options) =>
+      callLiveTool<Record<string, never>, unknown>("splunk_get_indexes", {}, options, "Live Splunk indexes loaded.").then(
+        normalizeLiveIndexes
+      ),
+    getMetadata: (input: MetadataRequest, options) =>
+      callLiveTool<Record<string, unknown>, unknown>(
+        "splunk_get_metadata",
+        liveMetadataInput(input),
+        options,
+        "Live Splunk metadata loaded."
+      ).then((output) => normalizeLiveMetadata(input, output)),
+    getKnowledgeObjects: async (input: KnowledgeObjectRequest, options) => {
+      const perType = await Promise.all(
+        input.types.map(async (requestedType) => ({
+          requestedType,
+          output: await callLiveTool<Record<string, unknown>, unknown>(
+            "splunk_get_knowledge_objects",
+            {
+              type: liveKnowledgeTypeFor(requestedType),
+              row_limit: 100,
+              ...(input.app ? { app: input.app } : {}),
+              ...(input.query ? { search: input.query } : {})
+            },
+            options,
+            "Live Splunk knowledge objects loaded."
+          )
+        }))
+      );
+      const objects = perType.flatMap(({ requestedType, output }) =>
+        normalizeKnowledgeObjects(requestedType, output, config.defaultApp)
+      );
+
+      return {
+        objects,
+        resultCount: objects.length,
+        warnings: input.types.includes("dashboards")
+          ? ["Live MCP serves dashboards through the views knowledge-object type."]
+          : []
+      };
+    },
     runQuery: (input: RunQueryRequest, options) =>
-      callLiveTool<RunQueryRequest, QueryResult>("splunk_run_query", input, options, "Live Splunk query executed."),
+      callLiveTool<RunQueryRequest, unknown>("splunk_run_query", input, options, "Live Splunk query executed.").then(
+        (output) => normalizeLiveQueryResult(input, output)
+      ),
     runSavedSearch: (input: RunSavedSearchRequest, options) =>
-      callLiveTool<RunSavedSearchRequest, SavedSearchResult>(
+      callLiveTool<RunSavedSearchRequest, unknown>(
         "splunk_run_saved_search",
         input,
         options,
         "Live Splunk saved search executed."
-      ),
+      ).then((output) => normalizeLiveSavedSearchResult(input, output)),
     explainSpl: (input: ExplainSplRequest, options) =>
-      callLiveTool<ExplainSplRequest, ExplainSplResult>("saia_explain_spl", input, options, "Live SPL explanation loaded."),
+      callLiveTool<ExplainSplRequest, unknown>("saia_explain_spl", input, options, "Live SPL explanation loaded.").then(
+        normalizeExplainSplResult
+      ),
     optimizeSpl: (input: OptimizeSplRequest, options) =>
-      callLiveTool<OptimizeSplRequest, OptimizeSplResult>("saia_optimize_spl", input, options, "Live SPL optimization loaded.")
+      callLiveTool<OptimizeSplRequest, unknown>("saia_optimize_spl", input, options, "Live SPL optimization loaded.").then(
+        normalizeOptimizeSplResult
+      )
   };
 };
