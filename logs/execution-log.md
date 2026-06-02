@@ -3786,3 +3786,28 @@ Reviewer findings:
 
 Result:
 - PASS for the example/SDK slice after focused verification.
+
+## 2026-06-02 - Phase Live Move 8 Submission Copy Refresh
+
+Scope:
+- Update the Devpost draft so specialty prize evidence is explicit instead of buried.
+- Keep Platform & Developer Experience as the primary track while naming MCP Server, Hosted Models, and Security as secondary eligibility.
+- Add concrete MCP evidence, hosted-model/SAIA evidence, and external trace SDK evidence.
+- Preserve product boundaries: not a chatbot, not a SOC copilot, not MCP telemetry, not a detection-health dashboard, and not an LLM pass/fail judge.
+
+Files changed:
+- `docs/devpost-submission.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- Added exact read-only MCP tool names used in contracts and traces.
+- Added JSON-RPC `tools/call` request shape for the live transport.
+- Added SAIA explain/optimize usage notes while stating that deterministic rules remain authoritative for pass/fail.
+- Added an honest live-proof limitation: current live connectivity exists, but a passing flagship live security receipt needs matching saved-search/evidence content.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. No new reviewer inbox file exists for this Phase Live move.
+
+Result:
+- PASS for submission-copy refresh after deterministic copy audit.

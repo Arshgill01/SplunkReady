@@ -1806,6 +1806,7 @@ Result:
 Commands:
 
 - `npm run audit:submission-copy`
+- `npm run verify:scaffold && git diff --check`
 - `tmp=$(mktemp -d /tmp/splunkready-wave49-audit-malformed-XXXXXX) ... node scripts/audit-reviewer-inbox.mjs "$tmp" ... test "$rc" -ne 0`
 - `tmp=$(mktemp -d /tmp/splunkready-wave49-audit-missing-verdict-XXXXXX) ... node scripts/audit-reviewer-inbox.mjs "$tmp" ... test "$rc" -ne 0`
 - `tmp=$(mktemp -d /tmp/splunkready-wave49-copy-drift-XXXXXX) ... node scripts/audit-submission-copy.mjs "$tmp" ... test "$rc" -ne 0`
@@ -3225,3 +3226,20 @@ Result:
 Open risks:
 
 - The example is fixture-backed SDK evidence. Live external-agent proof still depends on the existing live Splunk content blocker.
+
+## 2026-06-02 - Phase Live Move 8 Submission Copy Refresh
+
+Commands:
+
+- `npm run audit:submission-copy`
+
+Result:
+
+- PASS.
+- Submission copy audit passed with 28 required claims.
+- Scaffold verification passed: 85 waves and 556 project files.
+- `git diff --check` passed.
+
+Open risks:
+
+- The copy now references live MCP proof and the remaining live passing-receipt blocker; final Devpost should be updated again after operator-approved live demo content is ready.
