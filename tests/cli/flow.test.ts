@@ -376,6 +376,27 @@ describe("SplunkReady CLI flow", () => {
       status: "PASS",
       artifacts: expect.arrayContaining([join(outDir, "receipt-after-001.json")])
     });
+
+    const proofAudit = parseCliJsonOutput((await runCli(["proof-audit", "--out", outDir, "--json"])).stdout);
+    const proofAuditReport = JSON.parse(await readFile(join(outDir, "proof-audit.json"), "utf8")) as {
+      status: string;
+      proofType: string;
+      failToPass: boolean;
+    };
+
+    expect(proofAudit).toMatchObject({
+      command: "proof-audit",
+      status: "PASS",
+      artifacts: [join(outDir, "proof-audit.json")]
+    });
+    expect(proofAuditReport).toMatchObject({
+      status: "WARN",
+      proofType: "receipt",
+      failToPass: true
+    });
+    await expect(runCli(["proof-audit", "--out", outDir, "--require-pass", "true"])).rejects.toMatchObject({
+      stderr: expect.stringContaining("proof-audit strict gate failed with WARN")
+    });
   });
 
   it("runs the clean fixture demo orchestration and writes rehearsal artifacts", async () => {
@@ -1494,6 +1515,10 @@ describe("SplunkReady CLI flow", () => {
         expect.objectContaining({ id: "hosted-model-status", status: "PASS" })
       ])
     );
+
+    await expect(runCli(["proof-audit", "--out", outDir, "--require-pass", "true"])).resolves.toMatchObject({
+      stdout: expect.stringContaining("PASS proof-audit")
+    });
   });
 
   it("refuses flagship live security proof when readiness is blocked", async () => {

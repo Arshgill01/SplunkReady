@@ -4426,3 +4426,54 @@ Open risks:
 
 - `artifacts/live-security-ui/proof-audit.json` remains a local untracked evidence artifact.
 - The UI correctly reports hosted-model `BLOCKED`; this will remain a warning until live SAIA permissions are fixed and the bundle is regenerated.
+
+## 2026-06-03 - Phase Live Proof Audit Strict Gate
+
+Commands:
+
+- `git status --short --branch`
+- `sed -n '160,250p' src/cli.ts`
+- `sed -n '1720,1815p' src/cli.ts`
+- `npm run build >/dev/null && npm run splunkready -- proof-audit --out artifacts/fixture-demo --json && node -e "const a=require('./artifacts/fixture-demo/proof-audit.json'); console.log(a.status, a.proofType, a.checks.map(c=>c.id+':'+c.status).join(','))"`
+- `sed -n '150,390p' tests/cli/flow.test.ts`
+- `npx vitest run tests/cli/flow.test.ts -t "machine-readable JSON|flagship live security proof"`
+- `npm run build`
+- `npm run splunkready -- proof-audit --out artifacts/live-security-proof --require-pass true --json`
+- `npm run splunkready -- proof-audit --out artifacts/live-security-ui --require-pass true --json`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for clean tracked worktree orientation:
+  - branch `splunkready-build` was aligned with `origin/splunkready-build`;
+  - only untracked local `artifacts/` and `output/` were present before this change.
+- PASS for fixture audit inspection:
+  - `artifacts/fixture-demo/proof-audit.json` status is `WARN`;
+  - proof type is `receipt`;
+  - fail-to-pass check is `PASS`;
+  - warning checks are expected for missing mutation summary, missing live-security summary, and missing hosted-model status.
+- PASS for focused CLI tests:
+  - selected test count: 3 passed, 19 skipped by name filter;
+  - diagnostic `proof-audit --json` writes a `WARN` report for fixture proof;
+  - `proof-audit --require-pass true` rejects the fixture proof with `proof-audit strict gate failed with WARN`;
+  - `proof-audit --require-pass true` accepts the generated live-security proof.
+- PASS for TypeScript build.
+- PASS for local strict gate on live-security proof:
+  - `artifacts/live-security-proof` passed strict gate.
+- PASS for local strict gate negative case:
+  - `artifacts/live-security-ui` failed strict gate with `WARN`;
+  - expected reason is the bundled hosted-model proof remains blocked by SAIA permission.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 719 project files;
+  - 38 test files;
+  - 210 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- `--require-pass true` intentionally treats hosted-model `BLOCKED` as a gate failure if that proof artifact is bundled.
+- Live hosted-model proof remains gated by SAIA-capable MCP access.
+- Local audit artifacts remain untracked evidence.

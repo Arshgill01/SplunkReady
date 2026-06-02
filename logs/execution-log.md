@@ -4518,6 +4518,66 @@ Reviewer findings:
 Result:
 - Focused UI tests, TypeScript build, Vite production build, full repo verification, browser snapshots, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Proof Audit Strict Gate
+
+Scope:
+- Turn the proof audit report into an explicit CI/DX gate without changing default diagnostic behavior.
+- Keep the command useful for both local inspection and automated blocking.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `--require-pass true|false` to `proof-audit`.
+- Default remains diagnostic:
+  - `proof-audit --out <dir>` writes `proof-audit.json` and exits successfully when the report can be generated.
+- Strict mode is a gate:
+  - `proof-audit --out <dir> --require-pass true` writes `proof-audit.json`;
+  - exits successfully only when the audit report status is `PASS`;
+  - exits nonzero for `WARN` or `FAIL` and points to the audit artifact.
+
+Current proof gate evidence:
+- `artifacts/live-security-proof`:
+  - strict gate passed;
+  - audit report status is `PASS`.
+- `artifacts/live-security-ui`:
+  - strict gate failed with `WARN`;
+  - expected reason is hosted-model/SAIA proof blocked while live security proof remains green.
+- Fixture proof:
+  - diagnostic audit writes `WARN`;
+  - strict gate rejects it because it is useful fixture evidence but not a fully audited flagship proof bundle.
+
+Product impact:
+- SplunkReady now has a clean CI primitive:
+  - proof bundles can be generated and inspected;
+  - teams can choose when to require a fully green proof before allowing an agent to advance.
+- This is stronger Platform/DX evidence than a static receipt because it can block automation.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 29% | 30% | Better end-to-end proof discipline, still no new showpiece. |
+| Platform & DX | 76% | 79% | Explicit CI gate makes SplunkReady a practical developer tool. |
+| Security | 44% | 44% | Security runtime unchanged. |
+| Best Use of MCP Server | 82% | 82% | MCP behavior unchanged. |
+| Hosted Models | 49% | 49% | SAIA remains permission-blocked. |
+| Developer Tools | 72% | 76% | `proof-audit --require-pass true` is a reusable automation gate. |
+
+Next directions to consider in future runs:
+- Update the GitHub Actions example to use `proof-audit --require-pass true`.
+- Surface strict-gate guidance in README/docs after live SAIA status is settled.
+- Continue with core product additions that strengthen external-agent grading and firewall reporting.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI tests, local strict-gate checks, full repo verification, TypeScript build, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Artifact Source Selector
 
 Scope:

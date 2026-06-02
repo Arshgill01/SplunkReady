@@ -72,6 +72,7 @@ interface CliOptions {
   hostedModelProofDir: string;
   phase: "before" | "after";
   requireLive: boolean;
+  requirePass: boolean;
   trace: string;
   agentName: string;
   agentVersion: string;
@@ -129,7 +130,7 @@ Commands:
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   hosted-model-proof --mode fixture|live --out <dir> [--json]
-  proof-audit --out <dir> [--json]
+  proof-audit --out <dir> [--require-pass true|false] [--json]
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]
   live-security-kit --out <dir> [--json]
@@ -161,6 +162,7 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     hostedModelProofDir: "artifacts/hosted-model-proof",
     phase: "before",
     requireLive: false,
+    requirePass: false,
     trace: "",
     agentName: "External Splunk MCP Agent",
     agentVersion: "unversioned",
@@ -222,6 +224,12 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       }
 
       options.requireLive = value === "true";
+    } else if (flag === "--require-pass") {
+      if (value !== "true" && value !== "false") {
+        throw new Error("--require-pass must be true or false.");
+      }
+
+      options.requirePass = value === "true";
     } else if (flag === "--trace") {
       options.trace = value;
     } else if (flag === "--agent-name") {
@@ -1791,6 +1799,10 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
   const auditPath = join(options.out, "proof-audit.json");
 
   await writeJson(auditPath, report);
+
+  if (options.requirePass && status !== "PASS") {
+    throw new Error(`proof-audit strict gate failed with ${status}. Inspect ${auditPath}.`);
+  }
 
   return [auditPath];
 };
