@@ -27,6 +27,19 @@ search:Errors in the last 24 hours
 
 That returned zero rows and no evidence refs. The deterministic grader correctly refused to issue a `READY` receipt.
 
+## Read-Only Candidate Scan
+
+SplunkReady includes a bounded read-only candidate scan for checking whether the current live deployment already has useful saved-search evidence:
+
+```bash
+set -a && source ./.splunkready-live.env && set +a
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-candidates --out artifacts/live-proof --candidate-limit 12
+```
+
+The 2026-06-02 local scan checked 12 likely live saved searches, including Monitoring Console alerts and `search::Errors in the last 24 hours`. None returned rows or evidence refs.
+
+This reinforces that the remaining blocker is live demo content, not agent behavior or adapter connectivity.
+
 ## Non-Mutation Rule
 
 SplunkReady must not auto-mutate Splunk. Any live demo data, saved search, app install, lookup, index, or event setup must be an operator-approved setup step outside the certification run.

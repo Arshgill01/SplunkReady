@@ -3696,3 +3696,29 @@ Result:
 - PARTIAL.
 - Move 3 now has live MCP and live Gemini trace proof.
 - Move 3 does not yet have a passing live readiness receipt; that requires explicit operator-approved live data/saved-search preparation or a live-compatible mission.
+
+## 2026-06-02 - Phase Live Read-Only Live Candidate Scan
+
+Scope:
+- Add a bounded read-only `live-candidates` CLI command that scans likely saved searches from the compiled live contract.
+- Keep the command capped by `--candidate-limit` and run each saved search with `maxRows: 5`.
+- Use the command against the real live contract to determine whether the current trial has any existing saved search with evidence rows.
+- Update live proof docs with the scan result.
+
+Files changed:
+- `docs/live-demo-data-plan.md`
+- `docs/live-proof-gap.md`
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- The command writes `live-candidates.json` under the selected output directory.
+- The real scan used `artifacts/live-proof/environment-contract.json` and the existing live MCP env.
+- The scan checked 12 likely saved searches and found 0 with rows/evidence refs.
+- No Splunk mutation was performed.
+
+Result:
+- PASS for the scan feature.
+- The scan confirms the passing live demo remains blocked on deployment content rather than code-only selection of another existing saved search.

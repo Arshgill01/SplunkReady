@@ -44,6 +44,14 @@ Sanitized result:
 - live execution included `splunk_get_knowledge_objects` and `splunk_run_saved_search`
 - no Splunk mutation was performed
 
+A bounded read-only candidate scan also ran:
+
+```bash
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-candidates --out artifacts/live-proof --candidate-limit 12
+```
+
+It checked 12 likely saved searches and found zero candidates with rows.
+
 ## Remaining Gap
 
 The live endpoint is real, but the current flagship mission is still fixture-shaped:
@@ -52,6 +60,7 @@ The live endpoint is real, but the current flagship mission is still fixture-sha
 - The live trial deployment did not expose that saved search in the compiled live contract.
 - The LLM therefore selected a generic live saved search, `search:Errors in the last 24 hours`.
 - That saved search returned `0` rows and no evidence refs for the lateral-movement story.
+- The candidate scan found no alternate existing saved search with rows in the current trial.
 - The deterministic grader correctly kept the receipt `NOT READY`.
 
 This is not a live adapter failure. It is a live mission/data compatibility gap.

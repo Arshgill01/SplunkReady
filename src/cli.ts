@@ -67,6 +67,7 @@ interface CliOptions {
   agentName: string;
   agentVersion: string;
   agentModel: string;
+  candidateLimit: number;
 }
 
 const allRules = (): GraderRule[] => [
@@ -87,6 +88,7 @@ Commands:
   evaluate  --mode fixture|live --out <dir>
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
+  live-candidates --out <dir> [--candidate-limit <n>]
   receipt   --out <dir> [--phase before|after]
   rerun     --mode fixture|live --out <dir>
   live-smoke --out <dir> [--require-live true|false]
@@ -111,7 +113,8 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     trace: "",
     agentName: "External Splunk MCP Agent",
     agentVersion: "unversioned",
-    agentModel: ""
+    agentModel: "",
+    candidateLimit: 12
   };
 
   for (let index = 0; index < rest.length; index += 1) {
@@ -156,6 +159,13 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       options.agentVersion = value;
     } else if (flag === "--agent-model") {
       options.agentModel = value;
+    } else if (flag === "--candidate-limit") {
+      const parsedLimit = Number(value);
+      if (!Number.isInteger(parsedLimit) || parsedLimit <= 0 || parsedLimit > 25) {
+        throw new Error("--candidate-limit must be an integer from 1 to 25.");
+      }
+
+      options.candidateLimit = parsedLimit;
     } else {
       throw new Error(`Unknown option ${flag}.\n${usage}`);
     }
@@ -439,6 +449,92 @@ const liveSmokeCommand = async (
   });
 
   return { status: "PASS", artifacts: [contractPath, profilePath, summaryPath], messages: [] };
+};
+
+const savedSearchCandidateScore = (savedSearch: EnvironmentContract["savedSearches"][number]): number => {
+  const haystack = `${savedSearch.app} ${savedSearch.name}`.toLowerCase();
+  let score = 0;
+
+  if (/\b(error|alert|auth|login|security|notable|incident|lateral)\b/.test(haystack)) {
+    score += 4;
+  }
+
+  if (savedSearch.app === "search") {
+    score += 2;
+  }
+
+  if (!/instrumentation|deploymentserver|dmc|monitoring_console/i.test(haystack)) {
+    score += 1;
+  }
+
+  return score;
+};
+
+const sortedSavedSearchCandidates = (
+  savedSearches: EnvironmentContract["savedSearches"],
+  limit: number
+): EnvironmentContract["savedSearches"] =>
+  [...savedSearches]
+    .sort((left, right) => {
+      const scoreDiff = savedSearchCandidateScore(right) - savedSearchCandidateScore(left);
+      return scoreDiff !== 0 ? scoreDiff : `${left.app}::${left.name}`.localeCompare(`${right.app}::${right.name}`);
+    })
+    .slice(0, limit);
+
+const liveCandidatesCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
+  const liveOptions = { ...options, mode: "live" as const };
+  const contract = await loadContract(options.out);
+  const adapter = await createSplunkAccessAdapter(liveOptions, env);
+  const candidates = sortedSavedSearchCandidates(contract.savedSearches, options.candidateLimit);
+  const results = [];
+
+  for (const candidate of candidates) {
+    try {
+      const result = await adapter.runSavedSearch(
+        {
+          app: candidate.app,
+          name: candidate.name,
+          maxRows: 5
+        },
+        {
+          requestId: `req-cli-live-candidates-${results.length + 1}`,
+          missionId: "live-candidate-scan"
+        }
+      );
+
+      results.push({
+        ref: `${candidate.app}::${candidate.name}`,
+        app: candidate.app,
+        name: candidate.name,
+        resultCount: result.resultCount,
+        evidenceRefs: result.evidenceRefs,
+        warnings: result.warnings
+      });
+    } catch (error) {
+      results.push({
+        ref: `${candidate.app}::${candidate.name}`,
+        app: candidate.app,
+        name: candidate.name,
+        resultCount: null,
+        evidenceRefs: [],
+        warnings: [],
+        error: formatCliError(error)
+      });
+    }
+  }
+
+  const reportPath = join(options.out, "live-candidates.json");
+  await writeJson(reportPath, {
+    mode: "live",
+    contractId: contract.id,
+    checked: results.length,
+    maxRowsPerSavedSearch: 5,
+    mutation: false,
+    candidates: results,
+    candidatesWithRows: results.filter((result) => typeof result.resultCount === "number" && result.resultCount > 0)
+  });
+
+  return [reportPath];
 };
 
 const evaluateCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
@@ -727,6 +823,8 @@ const main = async (): Promise<void> => {
     artifacts = await gradeTraceCommand(options);
   } else if (command === "llm-agent") {
     artifacts = await llmAgentCommand(options);
+  } else if (command === "live-candidates") {
+    artifacts = await liveCandidatesCommand(options);
   } else if (command === "receipt") {
     artifacts = await receiptCommand(options);
   } else if (command === "rerun") {

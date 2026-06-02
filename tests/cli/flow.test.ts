@@ -750,4 +750,51 @@ describe("SplunkReady CLI flow", () => {
       type: "saved_searches"
     });
   });
+
+  it("scans bounded live saved-search candidates without mutating Splunk", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-candidates-"));
+    const server = await startMockMcpServer();
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: server.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token",
+      SPLUNKREADY_SPLUNK_APP: "search"
+    };
+
+    try {
+      await expect(runCli(["compile", "--mode", "live", "--out", outDir], process.cwd(), env)).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS compile")
+      });
+      await expect(
+        runCli(["live-candidates", "--out", outDir, "--candidate-limit", "1"], process.cwd(), env)
+      ).resolves.toMatchObject({
+        stdout: expect.stringContaining("PASS live-candidates")
+      });
+    } finally {
+      await server.close();
+    }
+
+    const report = JSON.parse(await readFile(join(outDir, "live-candidates.json"), "utf8")) as {
+      mode: string;
+      checked: number;
+      maxRowsPerSavedSearch: number;
+      mutation: boolean;
+      candidatesWithRows: Array<{ ref: string; resultCount: number; evidenceRefs: string[] }>;
+    };
+
+    expect(report).toMatchObject({
+      mode: "live",
+      checked: 1,
+      maxRowsPerSavedSearch: 5,
+      mutation: false
+    });
+    expect(report.candidatesWithRows).toEqual([
+      expect.objectContaining({
+        ref: "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain",
+        resultCount: 3,
+        evidenceRefs: ["live-evt-102", "live-evt-118", "live-evt-141"]
+      })
+    ]);
+    expect(server.calls.map((call) => call.params.name)).toContain("splunk_run_saved_search");
+  });
 });

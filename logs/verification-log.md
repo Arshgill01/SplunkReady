@@ -3145,3 +3145,29 @@ Open risks:
 - The real live trial deployment does not match the flagship security fixture mission. It lacks the expected `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain` saved search/evidence data, so the live receipt correctly remains `NOT READY`.
 - The local live proof used `NODE_TLS_REJECT_UNAUTHORIZED=0` for the self-signed trial certificate. Production/shared proof should use trusted TLS.
 - Raw `artifacts/live-proof` contents are local proof artifacts and may contain deployment-identifying inventory. Do not commit them unless the user explicitly approves a redacted artifact set.
+
+## 2026-06-02 - Phase Live Read-Only Live Candidate Scan
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts && npm run build`
+- `set -a && source ./.splunkready-live.env && set +a && NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-candidates --out artifacts/live-proof --candidate-limit 12`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS.
+- CLI flow tests passed: 1 file / 10 tests.
+- TypeScript build passed.
+- Full check passed: scaffold verifier reported 85 waves and 549 project files; Vitest passed 34 files / 168 tests.
+- `git diff --check` passed.
+- Real live candidate scan passed and wrote `artifacts/live-proof/live-candidates.json`.
+- Sanitized real scan result:
+  - checked saved searches: `12`;
+  - candidates with rows: `0`;
+  - checked candidates included Monitoring Console alerts and `search::Errors in the last 24 hours`;
+  - no Splunk mutation was performed.
+
+Open risks:
+
+- Because no existing candidate returned rows, a passing live receipt still requires operator-approved live demo content setup or a new live mission backed by data that actually exists.
