@@ -1,10 +1,10 @@
 # Follow-up Gap Closure Report
 
-Wave: 82 - External Trace Consolidation
+Wave: 84 - Splunk-Derived Readiness Profile
 
 ## What Moved
 
-SplunkReady now accepts externally captured trace data through `grade-trace`. This addresses the highest-risk demo credibility gap: the product can grade a trace produced outside the bundled deterministic specimen, while keeping deterministic rules as the pass/fail authority.
+SplunkReady now accepts externally captured trace data through `grade-trace`, renders the Minimax-derived Pre-Flight Card UI, and emits a deployment-bound `readiness-profile.json` from fixture compile/demo flows. The profile addresses the static-rule credibility gap by binding active deterministic rule IDs to Splunk contract facts such as saved searches, restricted indexes, sourcetypes, MCP tools, evidence rules, and query budgets.
 
 ## Real Implemented
 
@@ -14,18 +14,22 @@ SplunkReady now accepts externally captured trace data through `grade-trace`. Th
 - Readiness Receipts include trace refs, evidence refs, violations, score, and verdict.
 - Fixture demo shows fail -> policy patch -> rerun -> pass.
 - `grade-trace` validates an externally supplied trace, rejects wrong-mission traces, emits violations/score, and writes an external-trace Readiness Receipt.
+- `readiness-profile.json` records deployment signals, rule bindings, contract refs, mission refs, and LLM role boundaries.
+- Live smoke now compiles `live-smoke-readiness-profile.json` when a real live MCP endpoint is configured.
+- The UI surfaces the readiness profile in the contract view and replay rules pane without fake live claims.
 
 ## Fixture-only
 
 - The bundled fail -> patch -> rerun -> pass story is fixture-backed.
 - The bundled `NaiveSpecimenAgent` is deterministic TypeScript code for reproducible local demos.
-- The current static shell is generated from fixture artifacts by default.
+- The current static shell is generated from artifact files by default.
 
 ## Live-unverified
 
 - Real Splunk Enterprise/MCP inventory has not been exercised in this branch.
 - Live saved-search availability has not been proven against a real endpoint.
 - Live mission execution is not implemented; the current live path is read-only inventory smoke.
+- `live-smoke-readiness-profile.json` is tested with a mock MCP endpoint, not a real Splunk deployment.
 
 See `docs/live-proof-gap.md` for the exact skip command, missing env vars, and smallest next read-only live command.
 
@@ -33,7 +37,9 @@ See `docs/live-proof-gap.md` for the exact skip command, missing env vars, and s
 
 The bundled specimen is useful for deterministic demonstrations, but it is not a real LLM/MCP agent. It constructs a naive broad query without policy and uses the preferred saved search when policy is present. That behavior is now documented honestly in README.
 
-The new external-trace path is the bridge for real agents: capture their Splunk MCP trace in the canonical trace schema, then run `grade-trace`.
+The external-trace path is the bridge for real agents: capture their Splunk MCP trace in the canonical trace schema, then run `grade-trace`.
+
+The next product move should be a real LLM/MCP trace runner or adapter that produces canonical `TraceEvent[]` from actual model/tool interaction. That runner may use Gemini or another model, but the Readiness Receipt pass/fail must remain deterministic.
 
 ## Fixture Coverage
 
@@ -49,21 +55,15 @@ The new external-trace path is the bridge for real agents: capture their Splunk 
 
 ## UI Direction
 
-The current Forensic Compiler Dossier UI is better than the earlier generic dashboard, but Minimax's refined Pre-Flight Card is the stronger final direction. It should replace the certification replay in the next UI implementation wave.
-
-Implementation target: `docs/preflight-card-ui-implementation-plan.md`.
+The Minimax-derived Pre-Flight Card is now implemented as the primary certification replay route. The UI remains a static artifact shell, which is acceptable for fixture reproducibility but weak for judging unless paired with real live MCP proof or a recorded agent run.
 
 ## Commands Run
 
-- `npx vitest run tests/cli/flow.test.ts` - PASS, 1 test file / 7 tests.
-- `npm run build` - PASS.
-- no-credential `live-smoke` command in `docs/live-proof-gap.md` - SKIP as expected, no live calls and no live artifacts.
-- `npm run check` - PASS, 31 test files / 145 tests.
-- `npm run audit:reviewers` - PASS, 84 groups, 7 pass-with-concerns files, 0 failing latest verdicts.
-- `bash scripts/verify-scaffold.sh && git diff --check` - PASS, 83 waves and 443 project files.
+- `npx vitest run tests/compiler/readiness-profile.test.ts tests/schemas/core.test.ts tests/cli/flow.test.ts` - PASS, 3 test files / 19 tests.
+- `npx vitest run tests/ui/shell.test.ts tests/compiler/readiness-profile.test.ts tests/schemas/core.test.ts tests/cli/flow.test.ts` - PASS, 4 test files / 31 tests.
 
 ## Open Risks
 
 - Live Splunk proof still needs user-coordinated credentials and a bounded read-only run.
-- The Pre-Flight Card is not implemented yet.
-- External traces must be produced by another agent or capture layer; SplunkReady now grades them but does not record live MCP sessions itself in this wave.
+- External traces must be produced by another agent or capture layer; SplunkReady grades them but still does not record live MCP sessions itself.
+- The bundled specimen remains deterministic TypeScript. It is honest and useful for reproducibility, but it is not the demo path that will win a live MCP prize.

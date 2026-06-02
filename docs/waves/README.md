@@ -90,3 +90,4 @@ Each wave is scoped for a single main executor and a read-only reviewer loop.
 - `wave-81-forensic-compiler-dossier-ui.md`: integrate a fresh Antigravity-backed forensic compiler replay treatment without dashboard or assistant drift.
 - `wave-82-external-trace-consolidation.md`: add external trace grading and close the live/specimen/UI consolidation gaps.
 - `wave-83-preflight-card-ui.md`: implement the Minimax-derived Pre-Flight Card replay as a routed single-card UI.
+- `wave-84-splunk-derived-readiness-profile.md`: compile deployment-bound readiness profiles from Splunk contract facts.

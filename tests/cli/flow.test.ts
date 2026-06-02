@@ -125,6 +125,7 @@ describe("SplunkReady CLI flow", () => {
       "environment-contract.json",
       "missions.json",
       "agent-policy.json",
+      "readiness-profile.json",
       "trace-before.json",
       "violations-before.json",
       "score-before.json",
@@ -147,6 +148,12 @@ describe("SplunkReady CLI flow", () => {
       toolName: string | null;
       toolInput?: { query?: string };
     }>;
+    const readinessProfile = JSON.parse(await readFile(join(outDir, "readiness-profile.json"), "utf8")) as {
+      contractRef: { id: string; mode: string };
+      deploymentSignals: { savedSearchCount: number; restrictedIndexCount: number };
+      llmUsage: { passFailAuthority: string };
+      ruleBindings: Array<{ ruleId: string; contractRefs: string[]; rationale: string }>;
+    };
     const afterTrace = JSON.parse(await readFile(join(outDir, "trace-after.json"), "utf8")) as Array<{
       toolName: string | null;
       toolInput?: { name?: string };
@@ -174,6 +181,23 @@ describe("SplunkReady CLI flow", () => {
     expect(beforeReceipt.traceRefs).toContain("mission-security-lateral-movement-readiness-trace-001");
     expect(afterReceipt).toMatchObject({ verdict: "READY", score: 100, violations: [] });
     expect(afterViolations).toEqual([]);
+    expect(readinessProfile).toMatchObject({
+      contractRef: { id: "contract-acme-soc-dev", mode: "fixture" },
+      deploymentSignals: { savedSearchCount: 4, restrictedIndexCount: 1 },
+      llmUsage: { passFailAuthority: "deterministic-rule-engine" }
+    });
+    expect(readinessProfile.ruleBindings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ruleId: "KO-001",
+          contractRefs: expect.arrayContaining(["contract-acme-soc-dev.savedSearches"])
+        }),
+        expect.objectContaining({
+          ruleId: "SAF-003",
+          contractRefs: expect.arrayContaining(["contract-acme-soc-dev.mcpTools"])
+        })
+      ])
+    );
   });
 
   it("runs the clean fixture demo orchestration and writes rehearsal artifacts", async () => {
@@ -187,6 +211,7 @@ describe("SplunkReady CLI flow", () => {
       "environment-contract.json",
       "missions.json",
       "agent-policy.json",
+      "readiness-profile.json",
       "trace-before.json",
       "violations-before.json",
       "score-before.json",
@@ -363,6 +388,7 @@ describe("SplunkReady CLI flow", () => {
       stderr: expect.stringContaining("No live Splunk calls were made and no live artifacts were written.")
     });
     expect(await exists(join(outDir, "live-smoke-contract.json"))).toBe(false);
+    expect(await exists(join(outDir, "live-smoke-readiness-profile.json"))).toBe(false);
   });
 
   it("runs live smoke against a bounded read-only MCP endpoint", async () => {
@@ -389,7 +415,16 @@ describe("SplunkReady CLI flow", () => {
       mode: string;
       savedSearches: Array<{ name: string }>;
     };
+    const profile = JSON.parse(await readFile(join(outDir, "live-smoke-readiness-profile.json"), "utf8")) as {
+      id: string;
+      contractRef: { mode: string };
+      sourceRefs: string[];
+      deploymentSignals: { savedSearchCount: number; allowedTools: string[] };
+      llmUsage: { passFailAuthority: string };
+      ruleBindings: Array<{ ruleId: string; evidence: Array<{ ref: string }> }>;
+    };
     const summary = JSON.parse(await readFile(join(outDir, "live-smoke-summary.json"), "utf8")) as {
+      readinessProfileId: string;
       allowedTools: string[];
       notCalledTools: string[];
       readOnlyToolsOnly: boolean;
@@ -398,7 +433,24 @@ describe("SplunkReady CLI flow", () => {
 
     expect(contract.mode).toBe("live");
     expect(contract.savedSearches).toEqual([{ app: "SplunkEnterpriseSecuritySuite", name: "ES - Live Auth Chain" }]);
+    expect(profile).toMatchObject({
+      contractRef: { mode: "live" },
+      deploymentSignals: { savedSearchCount: 1 },
+      llmUsage: { passFailAuthority: "deterministic-rule-engine" }
+    });
+    expect(profile.sourceRefs).toEqual(
+      expect.arrayContaining(["splunk_get_info", "splunk_get_knowledge_objects", "mission:mission-security-lateral-movement-readiness"])
+    );
+    expect(profile.ruleBindings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ruleId: "KO-001",
+          evidence: expect.arrayContaining([expect.objectContaining({ ref: "contract-acme-soc-prod.savedSearches" })])
+        })
+      ])
+    );
     expect(summary).toMatchObject({
+      readinessProfileId: profile.id,
       allowedTools: [
         "splunk_get_info",
         "splunk_get_user_info",

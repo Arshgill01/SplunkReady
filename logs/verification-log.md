@@ -2908,3 +2908,27 @@ Result:
 - Full check passed: scaffold verifier reported 84 waves and 451 project files; Vitest passed 31 test files / 145 tests.
 - Reviewer audit passed after `wave-83-20260602-1810-main-resolution.md`: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 84 waves and 451 project files.
+
+## 2026-06-02 - Wave 84 Splunk-Derived Readiness Profile
+
+Commands:
+
+- `npx vitest run tests/compiler/readiness-profile.test.ts tests/schemas/core.test.ts tests/cli/flow.test.ts`
+- `npx vitest run tests/ui/shell.test.ts tests/compiler/readiness-profile.test.ts tests/schemas/core.test.ts tests/cli/flow.test.ts`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-wave84-demo-XXXXXX) && npm run splunkready -- demo --out "$tmp" && node -e 'const fs=require("fs"), p=process.argv[1]; const profile=JSON.parse(fs.readFileSync(`${p}/readiness-profile.json`,"utf8")); const rehearsal=JSON.parse(fs.readFileSync(`${p}/demo-rehearsal.json`,"utf8")); console.log(JSON.stringify({out:p, profileId:profile.id, ruleBindings:profile.ruleBindings.length, passFailAuthority:profile.llmUsage.passFailAuthority, expectedHasProfile:rehearsal.expectedArtifacts.some(x=>x.endsWith("readiness-profile.json"))}, null, 2));' "$tmp"`
+- `tmp=$(mktemp -d /tmp/splunkready-wave84-live-gap-XXXXXX) && unset SPLUNKREADY_LIVE_ENABLED SPLUNKREADY_SPLUNK_MCP_URL SPLUNKREADY_SPLUNK_MCP_TOKEN SPLUNK_HOST SPLUNK_TOKEN SPLUNK_USERNAME SPLUNK_PASSWORD SPLUNK_SCHEME SPLUNK_PORT && npm run splunkready -- live-smoke --out "$tmp" && printf 'out=%s\n' "$tmp" && find "$tmp" -maxdepth 1 -type f -print | sort`
+- `npm run check`
+- `npm run audit:reviewers`
+- `bash scripts/verify-scaffold.sh && git diff --check`
+
+Result:
+
+- PASS.
+- Focused readiness profile/schema/CLI test passed: 3 test files / 19 tests.
+- Focused UI/profile/schema/CLI test passed: 4 test files / 31 tests.
+- TypeScript build passed.
+- Fixture demo generation passed; direct artifact inspection reported `profileId: readiness-profile-contract-acme-soc-dev-profile-2026-06-01`, `ruleBindings: 15`, `passFailAuthority: deterministic-rule-engine`, and `expectedHasProfile: true`.
+- No-credential live smoke skipped as expected with missing live env vars; it wrote no live artifacts.
+- Full check passed: scaffold verifier reported 85 waves and 454 project files; Vitest passed 32 test files / 150 tests.
+- Reviewer audit passed: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 85 waves and 454 project files.

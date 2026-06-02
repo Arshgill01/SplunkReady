@@ -4,11 +4,13 @@ import { dirname, join } from "node:path";
 import {
   environmentContractSchema,
   policyPatchSchema,
+  readinessProfileSchema,
   readinessReceiptSchema,
   traceEventSchema,
   violationSchema,
   type EnvironmentContract,
   type PolicyPatch,
+  type ReadinessProfile,
   type ReadinessReceipt,
   type TraceEvent,
   type Violation
@@ -26,6 +28,7 @@ export interface UiArtifactPaths {
   afterReceipt?: string;
   policyPatchJson?: string;
   policyPatchMarkdown?: string;
+  readinessProfile?: string;
   receipt: string;
   trace: string;
   violations: string;
@@ -40,6 +43,7 @@ export interface UiArtifacts {
   beforeReceipt?: ReadinessReceipt;
   afterReceipt?: ReadinessReceipt;
   policyPatch?: PolicyPatch;
+  readinessProfile?: ReadinessProfile;
   traceEvents: TraceEvent[];
   violations: Violation[];
   beforeTraceEvents?: TraceEvent[];
@@ -96,6 +100,14 @@ const readOptionalContract = async (path: string): Promise<EnvironmentContract |
   return environmentContractSchema.parse(await readJson(path));
 };
 
+const readOptionalReadinessProfile = async (path: string): Promise<ReadinessProfile | undefined> => {
+  if (!(await exists(path))) {
+    return undefined;
+  }
+
+  return readinessProfileSchema.parse(await readJson(path));
+};
+
 const readOptionalMissions = async (path: string): Promise<MissionDefinition[]> => {
   if (!(await exists(path))) {
     return [];
@@ -141,6 +153,7 @@ export const loadUiArtifacts = async (outDir: string): Promise<UiArtifacts> => {
   const afterReceiptPath = join(outDir, "receipt-after-001.json");
   const policyPatchPath = join(outDir, "policy-patch.json");
   const policyPatchMarkdownPath = join(outDir, "policy-patch.md");
+  const readinessProfilePath = join(outDir, "readiness-profile.json");
   const tracePath = join(outDir, `trace-${current.phase}.json`);
   const violationPath = join(outDir, `violations-${current.phase}.json`);
   const beforeTraceEvents = await readOptionalTrace(beforeTracePath);
@@ -157,6 +170,7 @@ export const loadUiArtifacts = async (outDir: string): Promise<UiArtifacts> => {
     beforeReceipt: await readOptionalReceipt(beforeReceiptPath),
     afterReceipt: await readOptionalReceipt(afterReceiptPath),
     policyPatch: await readOptionalPolicyPatch(policyPatchPath),
+    readinessProfile: await readOptionalReadinessProfile(readinessProfilePath),
     traceEvents: current.phase === "after" ? afterTraceEvents : beforeTraceEvents,
     violations: current.phase === "after" ? afterViolations : beforeViolations,
     beforeTraceEvents,
@@ -174,6 +188,7 @@ export const loadUiArtifacts = async (outDir: string): Promise<UiArtifacts> => {
       afterReceipt: afterReceiptPath,
       policyPatchJson: policyPatchPath,
       policyPatchMarkdown: policyPatchMarkdownPath,
+      readinessProfile: readinessProfilePath,
       receipt: current.path,
       trace: tracePath,
       violations: violationPath
@@ -402,6 +417,30 @@ const renderEvidenceRuleRows = (contract: EnvironmentContract): string => {
     .join("");
 };
 
+const renderReadinessProfileRows = (profile: ReadinessProfile | undefined): string => {
+  if (!profile) {
+    return `<tr><td colspan="3">No readiness-profile.json artifact loaded.</td></tr>`;
+  }
+
+  const rows = profile.ruleBindings
+    .slice(0, 8)
+    .map(
+      (binding) => `<tr>
+        <td><code>${escapeHtml(binding.ruleId)}</code><br>${escapeHtml(binding.severity)}</td>
+        <td>${escapeHtml(binding.source)}<br>${binding.contractRefs.map((ref) => `<code>${escapeHtml(ref)}</code>`).join(" ")}</td>
+        <td>${binding.evidence.map((item) => `<code>${escapeHtml(item.ref)}</code>`).join(" ")}</td>
+      </tr>`
+    )
+    .join("");
+  const hiddenCount = Math.max(0, profile.ruleBindings.length - 8);
+  const footer =
+    hiddenCount > 0
+      ? `<tr><td colspan="3">${escapeValue(hiddenCount)} additional deployment-bound rule(s) in readiness-profile.json.</td></tr>`
+      : "";
+
+  return `${rows}${footer}`;
+};
+
 const renderContractView = (artifacts: UiArtifacts): string => {
   if (!artifacts.contract) {
     return `<section id="contract" class="shell-section" data-route-panel="contract" aria-label="Environment contract">
@@ -461,6 +500,13 @@ const renderContractView = (artifacts: UiArtifacts): string => {
         <table class="stacked-table">
           <thead><tr><th>Evidence rule</th><th>Requirements</th></tr></thead>
           <tbody>${renderEvidenceRuleRows(contract)}</tbody>
+        </table>
+      </div>
+      <div>
+        <h3>Readiness profile</h3>
+        <table>
+          <thead><tr><th>Rule</th><th>Activation source</th><th>Evidence refs</th></tr></thead>
+          <tbody>${renderReadinessProfileRows(artifacts.readinessProfile)}</tbody>
         </table>
       </div>
     </div>
@@ -821,11 +867,25 @@ const renderTraceReplayTable = (events: TraceEvent[], emptyMessage: string): str
   );
 };
 
-const renderRuleReplayTable = (violations: Violation[], mission: MissionDefinition | undefined): string => {
+const renderRuleReplayTable = (
+  violations: Violation[],
+  mission: MissionDefinition | undefined,
+  readinessProfile: ReadinessProfile | undefined
+): string => {
+  const profileSummary = readinessProfile
+    ? `${readinessProfile.ruleBindings.length} deployment-bound rules`
+    : mission
+      ? `${mission.checks.length} deterministic checks loaded`
+      : "deterministic checks loaded";
+  const sourceSummary = readinessProfile
+    ? `${readinessProfile.deploymentSignals.savedSearchCount} saved searches / ${readinessProfile.deploymentSignals.restrictedIndexCount} restricted indexes`
+    : "contract profile missing";
+
   if (violations.length === 0) {
     return renderReplayTable(
       [
-        renderReplayCell("rules", mission ? `${mission.checks.length} deterministic checks loaded` : "deterministic checks loaded"),
+        renderReplayCell("rules", profileSummary),
+        renderReplayCell("profile source", sourceSummary),
         renderReplayCell("violations", "0 active violations in this trace"),
         renderReplayCell("judge", "deterministic rule engine")
       ].join(""),
@@ -834,15 +894,18 @@ const renderRuleReplayTable = (violations: Violation[], mission: MissionDefiniti
   }
 
   return renderReplayTable(
-    violations
-      .map((violation) =>
+    [
+      renderReplayCell("profile", profileSummary),
+      renderReplayCell("source", sourceSummary),
+      renderReplayCell("judge", "deterministic rule engine"),
+      ...violations.map((violation) =>
         [
           renderReplayCell(violation.ruleId, violation.severity),
           renderReplayCell(violation.traceEventId, violation.reason),
           renderReplayCell("patch hint", violation.suggestedPolicyPatch)
         ].join("")
       )
-      .join(""),
+    ].join(""),
     "col-3"
   );
 };
@@ -906,6 +969,7 @@ const artifactFileList = (paths: UiArtifactPaths): string[] =>
     paths.beforeTrace,
     paths.beforeViolations,
     paths.policyPatchJson,
+    paths.readinessProfile,
     paths.afterTrace,
     paths.afterViolations,
     paths.afterReceipt
@@ -963,7 +1027,7 @@ const renderCertificationReplay = (artifacts: UiArtifacts): string => {
       <div class="replay-card-body">
         ${renderReplaySection("sec-a", "A", "Contract", renderContractReplayTable(artifacts.contract, artifacts.missions, mission), true)}
         ${renderReplaySection("sec-b", "B", "Trace A - before patch", renderTraceReplayTable(beforeTraceEvents, "No trace-before.json artifact loaded."))}
-        ${renderReplaySection("sec-c", "C", "Deterministic rules", renderRuleReplayTable(beforeViolations, mission))}
+        ${renderReplaySection("sec-c", "C", "Deterministic rules", renderRuleReplayTable(beforeViolations, mission, artifacts.readinessProfile))}
         ${renderReplaySection("sec-d", "D", "Policy patch", renderPatchReplayTable(artifacts.policyPatch))}
         ${renderReplaySection(
           "sec-e",
@@ -1055,6 +1119,7 @@ const renderArtifactPaths = (paths: UiArtifactPaths): string =>
     ${paths.afterReceipt ? `<div><dt>After receipt</dt><dd><code>${escapeHtml(paths.afterReceipt)}</code></dd></div>` : ""}
     ${paths.policyPatchJson ? `<div><dt>Policy patch JSON</dt><dd><code>${escapeHtml(paths.policyPatchJson)}</code></dd></div>` : ""}
     ${paths.policyPatchMarkdown ? `<div><dt>Policy patch Markdown</dt><dd><code>${escapeHtml(paths.policyPatchMarkdown)}</code></dd></div>` : ""}
+    ${paths.readinessProfile ? `<div><dt>Readiness profile</dt><dd><code>${escapeHtml(paths.readinessProfile)}</code></dd></div>` : ""}
     <div><dt>Receipt</dt><dd><code>${escapeHtml(paths.receipt)}</code></dd></div>
     <div><dt>Trace</dt><dd><code>${escapeHtml(paths.trace)}</code></dd></div>
     <div><dt>Violations</dt><dd><code>${escapeHtml(paths.violations)}</code></dd></div>

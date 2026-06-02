@@ -12,13 +12,13 @@ Mitigation: deterministic checks decide pass/fail; LLMs explain and patch.
 
 Risk: demo agent is scripted to fail/pass.
 
-Mitigation: build a real naive agent and preserve trace.
+Mitigation: bundled deterministic specimen is labeled honestly; external trace grading exists; next product wave should add a real LLM/MCP trace runner and preserve canonical traces.
 
 ### R003 Fixture/Live Divergence
 
 Risk: fixture demo does not represent live MCP path.
 
-Mitigation: shared adapter interface and shared schemas.
+Mitigation: shared adapter interface, shared schemas, and Wave 84 readiness profiles compiled from the same fixture/live contract boundary.
 
 ### R004 Generic Dashboard Drift
 

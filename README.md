@@ -10,7 +10,7 @@ Splunk is making operational data agent-ready. SplunkReady makes agents Splunk-r
 
 ## What It Does
 
-The Agent Readiness Compiler compiles a fixture or live Splunk environment into an agent contract, runs realistic missions or accepts captured agent traces, grades the resulting tool trace with deterministic rules, and produces a Readiness Receipt.
+The Agent Readiness Compiler compiles a fixture or live Splunk environment into an agent contract and readiness profile, runs realistic missions or accepts captured agent traces, grades the resulting tool trace with deterministic rules, and produces a Readiness Receipt.
 
 The flagship demo story is security investigation readiness: the bundled deterministic specimen confidently clears possible lateral movement after using `index=*`, a stale field, and no saved search provenance. SplunkReady catches the unsafe trace, exports a reviewable policy patch, reruns the same mission, and shows a bounded pass with evidence.
 
@@ -33,6 +33,7 @@ The demo command writes a complete local artifact set into `$tmp`, including:
 - `splunkready-shell.html`: static Readiness Receipt UI.
 - `demo-rehearsal.json`: measured rehearsal metadata and artifact list.
 - `demo-rehearsal.md`: judge-readable demo summary.
+- `readiness-profile.json`: deployment-bound rule profile showing which Splunk contract facts activated each readiness rule.
 - before and after Readiness Receipts that show fail -> patch -> rerun -> pass.
 
 The primary closeout route is the certification replay:
@@ -64,7 +65,7 @@ npm run splunkready -- grade-trace \
   --agent-version "trace-001"
 ```
 
-The command writes `trace-external.json`, deterministic violations, a score, and `receipt-external-001.json` / `.md`. It rejects traces whose `missionId` does not match the selected mission. The trace producer is outside SplunkReady; the deterministic rule engine remains the pass/fail authority.
+The compile command also writes `readiness-profile.json`, which binds active rule IDs to the compiled Splunk contract. The trace grading command writes `trace-external.json`, deterministic violations, a score, and `receipt-external-001.json` / `.md`. It rejects traces whose `missionId` does not match the selected mission. The trace producer is outside SplunkReady; the deterministic rule engine remains the pass/fail authority.
 
 ## Live Mode
 
@@ -85,7 +86,7 @@ npm run build
 npm run splunkready -- live-smoke --out artifacts/live-smoke
 ```
 
-Without live configuration, the live smoke command skips safely. With live configuration, it calls read-only MCP tools only and does not run searches or mutate Splunk configuration. See [docs/live-adapter.md](docs/live-adapter.md).
+Without live configuration, the live smoke command skips safely. With live configuration, it calls read-only MCP tools only, writes `live-smoke-contract.json` plus `live-smoke-readiness-profile.json`, and does not run searches or mutate Splunk configuration. See [docs/live-adapter.md](docs/live-adapter.md).
 
 ## Submission Strategy
 
@@ -102,7 +103,7 @@ SplunkReady targets the Platform & Developer Experience track. The product story
 
 ## Primary Artifact
 
-The Readiness Receipt is the product artifact. It records the environment contract version, mission suite version, trace evidence, deterministic violations, score, verdict, and policy patch summary.
+The Readiness Receipt is the product artifact. It records the environment contract version, mission suite version, trace evidence, deterministic violations, score, verdict, and policy patch summary. The companion readiness profile records why the rule surface is active for this Splunk deployment.
 
 ## Architecture
 
@@ -114,10 +115,11 @@ Core flow:
 
 1. Fixture or optional live MCP adapter exposes Splunk inventory through the shared adapter contract.
 2. The compiler builds an environment contract with indexes, sourcetypes, saved searches, knowledge objects, fields, app context, and query budgets.
-3. The harness runs the bundled deterministic specimen or ingests an externally captured agent trace.
-4. The trace recorder/schema captures tool calls, evidence, results, and final answers.
-5. Deterministic grader rules produce violations, score, verdict, and policy patch guidance.
-6. The Readiness Receipt and static UI make the evidence reviewable.
+3. The compiler emits a readiness profile binding deterministic rule IDs to those Splunk contract facts.
+4. The harness runs the bundled deterministic specimen or ingests an externally captured agent trace.
+5. The trace recorder/schema captures tool calls, evidence, results, and final answers.
+6. Deterministic grader rules produce violations, score, verdict, and policy patch guidance.
+7. The Readiness Receipt and static UI make the evidence reviewable.
 
 ## Development
 

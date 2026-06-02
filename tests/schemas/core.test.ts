@@ -4,6 +4,7 @@ import type { ZodIssue } from "zod";
 import {
   environmentContractSchema,
   missionSchema,
+  readinessProfileSchema,
   readinessReceiptSchema,
   traceEventSchema
 } from "../../src/schemas/core.js";
@@ -60,11 +61,53 @@ const validReceipt = {
   rerunComparison: { beforeScore: 38, afterScore: 92 }
 };
 
+const validReadinessProfile = {
+  id: "readiness-profile-contract-acme-soc-dev-profile-2026-06-01",
+  generatedAt: "2026-06-01T06:45:00.000Z",
+  compiler: "Agent Readiness Compiler",
+  contractRef: {
+    id: "contract-acme-soc-dev",
+    name: "acme-soc-dev",
+    version: "2026.06.01",
+    mode: "fixture"
+  },
+  missionRefs: ["mission-lateral-movement"],
+  sourceRefs: ["splunk_get_info", "mission:mission-lateral-movement"],
+  deploymentSignals: {
+    mode: "fixture",
+    indexCount: 2,
+    restrictedIndexCount: 1,
+    sourcetypeCount: 1,
+    savedSearchCount: 4,
+    appContextCount: 2,
+    dataModelCount: 1,
+    allowedTools: ["splunk_get_info", "splunk_run_query"],
+    queryBudgets: { maxToolCalls: 6, maxResultRows: 50, timeoutSeconds: 30 }
+  },
+  ruleBindings: [
+    {
+      ruleId: "SPL-005",
+      severity: "High",
+      source: "splunk_contract",
+      contractRefs: ["contract-acme-soc-dev.restrictedIndexes"],
+      missionRefs: ["mission-lateral-movement"],
+      evidence: [{ ref: "contract-acme-soc-dev.restrictedIndexes", value: ["finance_pii"] }],
+      rationale: "Restricted index checks are activated by sensitive index inventory."
+    }
+  ],
+  llmUsage: {
+    passFailAuthority: "deterministic-rule-engine",
+    allowedRoles: ["explain deterministic violations"],
+    prohibitedRoles: ["decide pass/fail readiness"]
+  }
+};
+
 describe("core schemas", () => {
   it("accepts a valid mission, trace event, and receipt", () => {
     expect(missionSchema.safeParse(validMission).success).toBe(true);
     expect(traceEventSchema.safeParse(validTraceEvent).success).toBe(true);
     expect(readinessReceiptSchema.safeParse(validReceipt).success).toBe(true);
+    expect(readinessProfileSchema.safeParse(validReadinessProfile).success).toBe(true);
   });
 
   it("rejects a mission missing deterministic checks", () => {
@@ -159,5 +202,34 @@ describe("core schemas", () => {
 
     expect(result.success).toBe(false);
     expect(hasIssueAt(result.error?.issues, "allowedTools.1")).toBe(true);
+  });
+
+  it("rejects readiness profiles that make LLMs authoritative", () => {
+    const invalidProfile = {
+      ...validReadinessProfile,
+      llmUsage: { ...validReadinessProfile.llmUsage, passFailAuthority: "llm-judge" }
+    };
+
+    const result = readinessProfileSchema.safeParse(invalidProfile);
+
+    expect(result.success).toBe(false);
+    expect(hasIssueAt(result.error?.issues, "llmUsage.passFailAuthority")).toBe(true);
+  });
+
+  it("rejects readiness profile rule bindings for undeclared missions", () => {
+    const invalidProfile = {
+      ...validReadinessProfile,
+      ruleBindings: [
+        {
+          ...validReadinessProfile.ruleBindings[0],
+          missionRefs: ["mission-missing"]
+        }
+      ]
+    };
+
+    const result = readinessProfileSchema.safeParse(invalidProfile);
+
+    expect(result.success).toBe(false);
+    expect(hasIssueAt(result.error?.issues, "ruleBindings.0.missionRefs")).toBe(true);
   });
 });

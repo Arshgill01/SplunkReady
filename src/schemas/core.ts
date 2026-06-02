@@ -238,10 +238,95 @@ export const policyPatchSchema = z
   })
   .strict();
 
+export const readinessProfileSchema = z
+  .object({
+    id: idSchema,
+    generatedAt: isoTimestampSchema,
+    compiler: z.literal("Agent Readiness Compiler"),
+    contractRef: z
+      .object({
+        id: idSchema,
+        name: z.string().min(1),
+        version: z.string().min(1),
+        mode: modeSchema
+      })
+      .strict(),
+    missionRefs: stringListSchema,
+    sourceRefs: stringListSchema,
+    deploymentSignals: z
+      .object({
+        mode: modeSchema,
+        indexCount: z.number().int().nonnegative(),
+        restrictedIndexCount: z.number().int().nonnegative(),
+        sourcetypeCount: z.number().int().nonnegative(),
+        savedSearchCount: z.number().int().nonnegative(),
+        appContextCount: z.number().int().nonnegative(),
+        dataModelCount: z.number().int().nonnegative(),
+        allowedTools: readOnlyToolListSchema,
+        queryBudgets: z
+          .object({
+            maxToolCalls: z.number().int().positive(),
+            maxResultRows: z.number().int().positive(),
+            timeoutSeconds: z.number().int().positive()
+          })
+          .strict()
+      })
+      .strict(),
+    ruleBindings: z
+      .array(
+        z
+          .object({
+            ruleId: graderRuleIdSchema,
+            severity: severitySchema,
+            source: z.enum(["splunk_contract", "mission", "rule_catalog"]),
+            contractRefs: stringListSchema,
+            missionRefs: stringListSchema,
+            evidence: z
+              .array(
+                z
+                  .object({
+                    ref: z.string().min(1),
+                    value: z.unknown()
+                  })
+                  .strict()
+              )
+              .min(1),
+            rationale: z.string().min(1)
+          })
+          .strict()
+      )
+      .min(1),
+    llmUsage: z
+      .object({
+        passFailAuthority: z.literal("deterministic-rule-engine"),
+        allowedRoles: stringListSchema,
+        prohibitedRoles: stringListSchema
+      })
+      .strict(),
+    warnings: stringListSchema.optional()
+  })
+  .strict()
+  .superRefine((profile, ctx) => {
+    const declaredMissionRefs = new Set(profile.missionRefs);
+
+    for (const [index, binding] of profile.ruleBindings.entries()) {
+      for (const missionRef of binding.missionRefs) {
+        if (!declaredMissionRefs.has(missionRef)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["ruleBindings", index, "missionRefs"],
+            message: `rule binding references undeclared mission ${missionRef}`
+          });
+        }
+      }
+    }
+  });
+
 export type EnvironmentContract = z.infer<typeof environmentContractSchema>;
 export type Mission = z.infer<typeof missionSchema>;
 export type TraceEvent = z.infer<typeof traceEventSchema>;
 export type Violation = z.infer<typeof violationSchema>;
 export type ReadinessReceipt = z.infer<typeof readinessReceiptSchema>;
 export type PolicyPatch = z.infer<typeof policyPatchSchema>;
+export type ReadinessProfile = z.infer<typeof readinessProfileSchema>;
 export type ReadOnlySplunkToolName = z.infer<typeof readOnlySplunkToolNameSchema>;

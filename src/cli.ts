@@ -9,6 +9,7 @@ import {
 } from "./adapters/live.js";
 import { NaiveSpecimenAgent } from "./agents/specimen.js";
 import { compileEnvironmentContract } from "./compiler/environment.js";
+import { compileReadinessProfile } from "./compiler/readiness-profile.js";
 import { createAnswerRules } from "./grader/answer.js";
 import { createAppContextRules } from "./grader/app-context.js";
 import { createBudgetRules } from "./grader/budget.js";
@@ -206,15 +207,21 @@ const compileCommand = async (options: CliOptions): Promise<string[]> => {
   });
   const mission = await loadMission(options.mission);
   const policy = compileAgentPolicy(contract, { policyVersion: "policy-2026.06.01", compiledAt });
+  const readinessProfile = compileReadinessProfile(contract, [mission], {
+    profileVersion: "profile-2026.06.01",
+    generatedAt: compiledAt
+  });
 
   await writeJson(join(options.out, "environment-contract.json"), contract);
   await writeJson(join(options.out, "missions.json"), [mission]);
   await writeJson(join(options.out, "agent-policy.json"), policy);
+  await writeJson(join(options.out, "readiness-profile.json"), readinessProfile);
 
   return [
     join(options.out, "environment-contract.json"),
     join(options.out, "missions.json"),
-    join(options.out, "agent-policy.json")
+    join(options.out, "agent-policy.json"),
+    join(options.out, "readiness-profile.json")
   ];
 };
 
@@ -274,14 +281,22 @@ const liveSmokeCommand = async (
       timeoutSeconds: 30
     }
   });
+  const mission = await loadMission(options.mission);
+  const readinessProfile = compileReadinessProfile(contract, [mission], {
+    profileVersion: "live-smoke-profile-2026.06.01",
+    generatedAt: compiledAt
+  });
   const contractPath = join(options.out, "live-smoke-contract.json");
+  const profilePath = join(options.out, "live-smoke-readiness-profile.json");
   const summaryPath = join(options.out, "live-smoke-summary.json");
 
   await writeJson(contractPath, contract);
+  await writeJson(profilePath, readinessProfile);
   await writeJson(summaryPath, {
     status: "PASS",
     mode: contract.mode,
     contractId: contract.id,
+    readinessProfileId: readinessProfile.id,
     sourceRefs: contract.sourceRefs,
     metadataTimeWindow,
     allowedTools: liveSmokeInventoryTools,
@@ -290,7 +305,7 @@ const liveSmokeCommand = async (
     destructiveOperations: false
   });
 
-  return { status: "PASS", artifacts: [contractPath, summaryPath], messages: [] };
+  return { status: "PASS", artifacts: [contractPath, profilePath, summaryPath], messages: [] };
 };
 
 const evaluateCommand = async (options: CliOptions): Promise<string[]> => {

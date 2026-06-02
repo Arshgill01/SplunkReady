@@ -1,6 +1,6 @@
 # SplunkReady Scaffold Manifest
 
-Status: implemented through Wave 83 Pre-Flight Card UI on `splunkready-build`.
+Status: implemented through Wave 84 Splunk-derived readiness profile on `splunkready-build`.
 
 This repository turns the locked SplunkReady idea into an implemented, fixture-first certification harness that can also grade externally captured agent traces. The scaffold process remains in force for future continuation waves.
 
@@ -61,6 +61,7 @@ The implementation is not done until:
 
 - fixture and live modes share the same interfaces;
 - deterministic grader covers the core failure modes;
+- readiness profiles bind active deterministic rules to concrete Splunk contract facts;
 - specimen behavior and external trace intake are represented honestly;
 - Readiness Receipt contains trace/evidence provenance;
 - demo loop shows fail -> compile -> patch -> rerun -> pass;

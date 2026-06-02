@@ -3378,3 +3378,56 @@ Result:
 - Full check passed: scaffold verifier reported 84 waves and 451 project files; Vitest passed 31 test files / 145 tests.
 - Reviewer audit passed after `wave-83-20260602-1810-main-resolution.md`: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
 - Final scaffold verifier and `git diff --check` passed: 84 waves and 451 project files.
+
+## 2026-06-02 - Wave 84 Splunk-Derived Readiness Profile
+
+Scope:
+- Add a deployment-bound `readiness-profile.json` artifact so the deterministic rule surface is visibly compiled from Splunk contract facts instead of appearing as a static rule bundle.
+- Keep the deterministic grader as pass/fail authority while allowing LLMs only for explanation, summary, patch drafting, and safer-SPL suggestions.
+- Emit a live-smoke readiness profile from the same contract/profile compiler when a real live MCP endpoint is configured.
+- Surface the profile in the receipt shell contract view and replay rules pane without adding fake live status, charts, or dashboard framing.
+
+Files changed:
+- `src/schemas/core.ts`
+- `src/compiler/readiness-profile.ts`
+- `src/cli.ts`
+- `src/ui/shell.ts`
+- `tests/compiler/readiness-profile.test.ts`
+- `tests/schemas/core.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/shell.test.ts`
+- `README.md`
+- `docs/live-proof-gap.md`
+- `docs/follow-up-gap-closure-report.md`
+- `docs/waves/wave-84-splunk-derived-readiness-profile.md`
+- `docs/waves/README.md`
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+- `readinessProfileSchema` rejects profiles that assign pass/fail authority to an LLM.
+- `compileReadinessProfile` binds rule IDs from `docs/grader-rule-catalog.md` to contract refs such as saved searches, restricted indexes, sourcetypes, evidence rules, MCP tools, and query budgets.
+- `compile` now writes `readiness-profile.json`; `demo` includes that artifact through the compile step.
+- `live-smoke` now writes `live-smoke-readiness-profile.json` after live opt-in configuration is present.
+- The UI loader treats the profile as optional for backward compatibility, but new demo artifacts show profile evidence in the contract view and replay rules pane.
+- No live Splunk credentials were used.
+- No `update_goal` call was made.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction; no Wave 84 reviewer inbox files existed at closeout time.
+- Self-review treated R002 fake-specimen risk and R003 fixture/live divergence as still active; this wave reduces static-rule overfit but does not replace the deterministic specimen or prove a live endpoint.
+
+Result:
+- PASS.
+- Focused readiness profile/schema/CLI tests passed: 3 files / 19 tests.
+- Focused UI/profile/schema/CLI tests passed: 4 files / 31 tests.
+- TypeScript build passed.
+- Fixture demo generation passed and produced a `readiness-profile.json` artifact with 15 rule bindings and `deterministic-rule-engine` pass/fail authority.
+- No-credential live smoke skipped safely and wrote no live artifacts.
+- Full check passed: scaffold verifier reported 85 waves and 454 project files; Vitest passed 32 test files / 150 tests.
+- Reviewer audit passed with no new Wave 84 reviewer files: 85 groups, 5 pass-with-concerns files, 0 failing latest verdicts.
+- Final scaffold verifier and `git diff --check` passed: 85 waves and 454 project files.

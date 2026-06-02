@@ -5,7 +5,14 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { loadUiArtifacts, renderUiShell, writeUiShell, type UiArtifactPaths } from "../../src/ui/shell.js";
-import type { EnvironmentContract, PolicyPatch, ReadinessReceipt, TraceEvent, Violation } from "../../src/schemas/core.js";
+import type {
+  EnvironmentContract,
+  PolicyPatch,
+  ReadinessProfile,
+  ReadinessReceipt,
+  TraceEvent,
+  Violation
+} from "../../src/schemas/core.js";
 import type { MissionDefinition } from "../../src/missions/dsl.js";
 
 const artifactPaths = (outDir = "/tmp/splunkready-ui"): UiArtifactPaths => ({
@@ -19,6 +26,7 @@ const artifactPaths = (outDir = "/tmp/splunkready-ui"): UiArtifactPaths => ({
   afterReceipt: join(outDir, "receipt-after-001.json"),
   policyPatchJson: join(outDir, "policy-patch.json"),
   policyPatchMarkdown: join(outDir, "policy-patch.md"),
+  readinessProfile: join(outDir, "readiness-profile.json"),
   receipt: join(outDir, "receipt-after-001.json"),
   trace: join(outDir, "trace-after.json"),
   violations: join(outDir, "violations-after.json")
@@ -226,6 +234,66 @@ const contract = (): EnvironmentContract => ({
   forbiddenQueryPatterns: ["index=*"]
 });
 
+const readinessProfile = (): ReadinessProfile => ({
+  id: "readiness-profile-contract-acme-soc-dev-profile-2026-06-01",
+  generatedAt: "2026-06-01T06:45:00.000Z",
+  compiler: "Agent Readiness Compiler",
+  contractRef: { id: "contract-acme-soc-dev", name: "acme-soc-dev", version: "2026.06.01", mode: "fixture" },
+  missionRefs: ["mission-security-lateral-movement-readiness"],
+  sourceRefs: [
+    "splunk_get_info",
+    "splunk_get_indexes",
+    "splunk_get_metadata",
+    "splunk_get_knowledge_objects",
+    "mission:mission-security-lateral-movement-readiness"
+  ],
+  deploymentSignals: {
+    mode: "fixture",
+    indexCount: 2,
+    restrictedIndexCount: 1,
+    sourcetypeCount: 1,
+    savedSearchCount: 2,
+    appContextCount: 2,
+    dataModelCount: 1,
+    allowedTools: ["splunk_get_knowledge_objects", "splunk_run_query", "splunk_run_saved_search"],
+    queryBudgets: { maxToolCalls: 6, maxResultRows: 50, timeoutSeconds: 30 }
+  },
+  ruleBindings: [
+    {
+      ruleId: "KO-001",
+      severity: "High",
+      source: "splunk_contract",
+      contractRefs: ["contract-acme-soc-dev.savedSearches"],
+      missionRefs: ["mission-security-lateral-movement-readiness"],
+      evidence: [{ ref: "contract-acme-soc-dev.savedSearches", value: contract().savedSearches }],
+      rationale: "Saved-search discipline is activated because the mission expects saved-search execution."
+    },
+    {
+      ruleId: "SPL-005",
+      severity: "High",
+      source: "splunk_contract",
+      contractRefs: ["contract-acme-soc-dev.restrictedIndexes"],
+      missionRefs: ["mission-security-lateral-movement-readiness"],
+      evidence: [{ ref: "contract-acme-soc-dev.restrictedIndexes", value: ["finance_pii"] }],
+      rationale: "Restricted index checks are activated by sensitive index inventory."
+    },
+    {
+      ruleId: "SAF-003",
+      severity: "Critical",
+      source: "splunk_contract",
+      contractRefs: ["contract-acme-soc-dev.mcpTools"],
+      missionRefs: ["mission-security-lateral-movement-readiness"],
+      evidence: [{ ref: "contract-acme-soc-dev.mcpTools", value: contract().mcpTools }],
+      rationale: "Mutation safety is bound to the read-only Splunk MCP tools exposed by the adapter."
+    }
+  ],
+  llmUsage: {
+    passFailAuthority: "deterministic-rule-engine",
+    allowedRoles: ["explain deterministic violations"],
+    prohibitedRoles: ["decide pass/fail readiness"]
+  }
+});
+
 const mission = (): MissionDefinition => ({
   id: "mission-security-lateral-movement-readiness",
   title: "Investigate lateral movement from win-finance-07",
@@ -253,6 +321,7 @@ describe("SplunkReady UI shell", () => {
       phase: "after",
       outDir: "/tmp/splunkready-ui",
       contract: contract(),
+      readinessProfile: readinessProfile(),
       missions: [mission()],
       receipt: receipt(),
       traceEvents: [traceEvent("trace-saved-search-call")],
@@ -274,6 +343,8 @@ describe("SplunkReady UI shell", () => {
     expect(html).toContain("Evidence refs");
     expect(html).toContain("Violation refs");
     expect(html).toContain("Loaded artifacts");
+    expect(html).toContain("readiness-profile.json");
+    expect(html).toContain("deployment-bound rules");
     expect(html).not.toContain("hero");
     expect(html).not.toContain("chat");
     expect(html).not.toContain("copilot");
@@ -286,6 +357,7 @@ describe("SplunkReady UI shell", () => {
     await writeJson(join(outDir, "receipt-after-001.json"), receipt());
     await writeJson(join(outDir, "policy-patch.json"), policyPatch());
     await writeJson(join(outDir, "environment-contract.json"), contract());
+    await writeJson(join(outDir, "readiness-profile.json"), readinessProfile());
     await writeJson(join(outDir, "missions.json"), [mission()]);
     await writeJson(join(outDir, "trace-before.json"), beforeTrace());
     await writeJson(join(outDir, "violations-before.json"), [broadQueryViolation()]);
@@ -300,6 +372,7 @@ describe("SplunkReady UI shell", () => {
     expect(artifacts.afterReceipt?.score).toBe(100);
     expect(artifacts.policyPatch?.id).toBe("patch-security-readiness");
     expect(artifacts.contract?.restrictedIndexes).toEqual(["finance_pii"]);
+    expect(artifacts.readinessProfile?.ruleBindings.map((binding) => binding.ruleId)).toEqual(["KO-001", "SPL-005", "SAF-003"]);
     expect(artifacts.missions[0]?.preferredSavedSearchRefs).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain");
     expect(artifacts.traceEvents).toHaveLength(2);
     expect(artifacts.beforeTraceEvents).toHaveLength(2);

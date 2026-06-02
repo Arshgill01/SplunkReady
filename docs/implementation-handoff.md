@@ -2,7 +2,7 @@
 
 ## Current State
 
-SplunkReady is implemented through Wave 83 Pre-Flight Card UI on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, optional read-only live smoke path, reviewer audit automation, submission guardrails, external trace grading through `grade-trace`, explicit live-proof gap documentation, and a routed static UI shell whose primary replay route is a Minimax-derived Readiness Pre-Flight Card.
+SplunkReady is implemented through Wave 84 Splunk-derived readiness profile on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, optional read-only live smoke path, reviewer audit automation, submission guardrails, external trace grading through `grade-trace`, deployment-bound `readiness-profile.json` artifacts, explicit live-proof gap documentation, and a routed static UI shell whose primary replay route is a Minimax-derived Readiness Pre-Flight Card.
 
 ## Start Here
 
@@ -52,7 +52,7 @@ Do not parallelize:
 
 ## Next Concrete Step
 
-Continue with the next narrow product wave. Candidate next moves are bounded live-mode hardening, real-agent trace capture guidance, or demo/submission polish based on fresh reviewer findings. Start from a clean `splunkready-build` checkout, read the latest wave file, check `logs/reviewer-inbox/`, then run the wave-specific verification. The current broad health check is:
+Continue with the next narrow product wave. The highest-leverage next move is a real LLM/MCP specimen trace runner or live Splunk MCP proof pack, not more fixture-only QA. Start from a clean `splunkready-build` checkout, read the latest wave file, check `logs/reviewer-inbox/`, then run the wave-specific verification. The current broad health check is:
 
 ```bash
 npm run check

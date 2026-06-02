@@ -1,6 +1,6 @@
 # SplunkReady Execution Plan
 
-Status: implemented through Wave 83 Pre-Flight Card UI on `splunkready-build`; overall goal remains open until explicit user approval.
+Status: implemented through Wave 84 Splunk-derived readiness profile on `splunkready-build`; overall goal remains open until explicit user approval.
 
 ## Objective
 
@@ -20,7 +20,7 @@ The project should not be one-shot implemented. The schema and trace-grading spi
 
 - Phase 0: Control system and product lock, waves 00-04.
 - Phase 1: Schema and adapter foundations, waves 05-11.
-- Phase 2: Environment compiler and contract policy, waves 12-15.
+- Phase 2: Environment compiler, contract policy, and deployment-derived readiness profiles, waves 12-15 and Wave 84.
 - Phase 3: Mission generation, waves 16-19.
 - Phase 4: Agent harness and trace capture, waves 20-21.
 - Phase 5: Deterministic grading, waves 22-30.
@@ -43,7 +43,7 @@ For each wave:
 8. Ask reviewer loop to inspect.
 9. Resolve or waive reviewer notes before next wave.
 
-After Wave 41, do not treat the original wave list as a stopping point, but do not add verification-only waves for their own sake. Prioritize product movement and proof gaps: real-agent trace capture, optional live-mode hardening, demo reliability, reviewer-audit automation, submission-copy guardrails, and any user-directed follow-up work. Do not mark the overall goal complete until the user explicitly approves completion.
+After Wave 41, do not treat the original wave list as a stopping point, but do not add verification-only waves for their own sake. Prioritize product movement and proof gaps: real-agent trace capture, live Splunk MCP proof, deployment-derived readiness profiles, demo reliability, reviewer-audit automation, submission-copy guardrails, and any user-directed follow-up work. Do not mark the overall goal complete until the user explicitly approves completion.
 
 ## Reviewer Loop
 
@@ -87,3 +87,9 @@ Do not build all features. Build the smallest real vertical slice:
 - one receipt flow;
 - one patch/rerun path;
 - fixture mode first, live mode second.
+
+Current highest-leverage continuation work after Wave 84:
+
+- replace the bundled deterministic specimen as the only demo producer by adding a real LLM/MCP trace runner or connector;
+- run `live-smoke` against a real Splunk MCP endpoint and preserve the contract/profile proof pack;
+- update the demo video path to show real MCP calls plus deterministic receipt grading.
