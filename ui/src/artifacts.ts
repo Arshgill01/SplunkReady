@@ -225,6 +225,52 @@ const liveSecurityProofSummarySchema = z
 
 export type LiveSecurityProofSummary = z.infer<typeof liveSecurityProofSummarySchema>;
 
+const suiteProofSummarySchema = z
+  .object({
+    status: z.enum(["PASS", "FAIL"]),
+    mode: z.literal("fixture"),
+    mutation: z.literal(false),
+    suiteId: z.string().min(1),
+    missionCount: z.number().int().nonnegative(),
+    domains: z.array(z.string().min(1)),
+    totals: z
+      .object({
+        failToPass: z.number().int().nonnegative(),
+        readyAfterPatch: z.number().int().nonnegative(),
+        evidenceRefs: z.number().int().nonnegative()
+      })
+      .strict(),
+    missions: z.array(
+      z
+        .object({
+          missionId: z.string().min(1),
+          title: z.string().min(1),
+          domain: z.string().min(1),
+          artifactDir: z.string().min(1),
+          proofLoop: z.enum(["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"]),
+          before: z
+            .object({
+              verdict: z.string().min(1),
+              score: z.number().min(0).max(100),
+              violations: z.number().int().nonnegative()
+            })
+            .strict(),
+          after: z
+            .object({
+              verdict: z.string().min(1),
+              score: z.number().min(0).max(100),
+              violations: z.number().int().nonnegative(),
+              evidenceRefs: z.array(z.string().min(1))
+            })
+            .strict()
+        })
+        .strict()
+    )
+  })
+  .strict();
+
+export type SuiteProofSummary = z.infer<typeof suiteProofSummarySchema>;
+
 const liveSecurityReadinessSchema = z
   .object({
     status: z.enum(["READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF", "BLOCKED"]),
@@ -326,6 +372,7 @@ export interface UiArtifactBundle {
   policyPatch?: PolicyPatch;
   liveProofSummary?: LiveProofSummary;
   liveSecurityProofSummary?: LiveSecurityProofSummary;
+  suiteProofSummary?: SuiteProofSummary;
   liveSecurityReadiness?: LiveSecurityReadiness;
   liveSecurityKit?: LiveSecurityKit;
   hostedModelProof?: HostedModelProof;
@@ -349,6 +396,7 @@ const optionalFiles = [
   "policy-patch.json",
   "live-proof-summary.json",
   "live-security-proof-summary.json",
+  "suite-proof-summary.json",
   "live-security-readiness.json",
   "live-security-kit.json",
   "hosted-model-proof.json",
@@ -372,6 +420,7 @@ export const normalizeArtifactBase = (value: string | null | undefined): string 
 
 export const defaultArtifactOptions: ArtifactOption[] = [
   { label: "Live security proof", path: "artifacts/live-security-ui" },
+  { label: "Suite proof", path: "artifacts/suite-proof" },
   { label: "LLM fixture proof", path: "artifacts/llm-fixture-proof" },
   { label: "Fixture demo", path: "artifacts/fixture-demo" },
   { label: "Hosted model proof", path: "artifacts/hosted-model-proof" }
@@ -456,6 +505,7 @@ export const loadUiArtifactBundle = async (
     liveSecurityProofSummary: liveSecurityProofSummarySchema.optional().parse(
       loaded.get("live-security-proof-summary.json")
     ),
+    suiteProofSummary: suiteProofSummarySchema.optional().parse(loaded.get("suite-proof-summary.json")),
     liveSecurityReadiness: liveSecurityReadinessSchema.optional().parse(loaded.get("live-security-readiness.json")),
     liveSecurityKit: liveSecurityKitSchema.optional().parse(loaded.get("live-security-kit.json")),
     hostedModelProof: hostedModelProofSchema.optional().parse(loaded.get("hosted-model-proof.json")),
@@ -487,6 +537,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   hostedModelStory: string;
   auditStory: string;
   firewallStory: string;
+  suiteStory: string;
 } => {
   const receipt = bundle.receipt;
   const contract = bundle.liveSmokeContract ?? bundle.contract;
@@ -531,6 +582,9 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
       bundle.liveProofSummary?.hostedModels?.status ??
       (bundle.policyPatch?.splAssistance?.length ? "invoked" : "not loaded"),
     auditStory: bundle.proofAudit ? `audit ${bundle.proofAudit.status.toLowerCase()}` : "audit not loaded",
-    firewallStory: firewallBlock ? `${firewallBlock.phase} ${firewallBlock.toolName}` : "firewall not loaded"
+    firewallStory: firewallBlock ? `${firewallBlock.phase} ${firewallBlock.toolName}` : "firewall not loaded",
+    suiteStory: bundle.suiteProofSummary
+      ? `${bundle.suiteProofSummary.status.toLowerCase()} ${bundle.suiteProofSummary.missionCount} mission suite`
+      : "suite not loaded"
   };
 };

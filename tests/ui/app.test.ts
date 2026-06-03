@@ -481,6 +481,49 @@ const firewallProofAudit = {
   ]
 } as const;
 
+const suiteProofSummary = {
+  status: "PASS",
+  mode: "fixture",
+  mutation: false,
+  suiteId: "phase-live-multi-mission-proof",
+  missionCount: 3,
+  domains: ["observability", "security"],
+  totals: {
+    failToPass: 3,
+    readyAfterPatch: 3,
+    evidenceRefs: 15
+  },
+  missions: [
+    {
+      missionId: "mission-security-lateral-movement-readiness",
+      title: "Security Investigation Readiness",
+      domain: "security",
+      artifactDir: "artifacts/suite-proof/mission-security-lateral-movement-readiness",
+      proofLoop: "fail-to-pass",
+      before: { verdict: "NOT READY", score: 0, violations: 5 },
+      after: { verdict: "READY", score: 100, violations: 0, evidenceRefs: ["evt-102", "evt-118", "evt-141"] }
+    },
+    {
+      missionId: "mission-security-exfiltration-readiness",
+      title: "Security Exfiltration Readiness",
+      domain: "security",
+      artifactDir: "artifacts/suite-proof/mission-security-exfiltration-readiness",
+      proofLoop: "fail-to-pass",
+      before: { verdict: "NOT READY", score: 0, violations: 5 },
+      after: { verdict: "READY", score: 100, violations: 0, evidenceRefs: ["dns-301", "dns-302", "dns-303"] }
+    },
+    {
+      missionId: "mission-observability-latency-readiness",
+      title: "Observability Latency Readiness",
+      domain: "observability",
+      artifactDir: "artifacts/suite-proof/mission-observability-latency-readiness",
+      proofLoop: "fail-to-pass",
+      before: { verdict: "NOT READY", score: 50, violations: 2 },
+      after: { verdict: "READY", score: 100, violations: 0, evidenceRefs: ["obs-201", "obs-202", "obs-203", "obs-204"] }
+    }
+  ]
+} as const;
+
 const jsonResponse = (value: unknown): Response => new Response(JSON.stringify(value), { status: 200 });
 
 const fetcherFor = (files: Record<string, unknown>) => async (url: string): Promise<Response> => {
@@ -496,6 +539,7 @@ describe("Vite UI artifact app", () => {
     expect(normalizeArtifactBase("/custom")).toBe("/custom/");
     expect(normalizeArtifactBase("artifacts/live-security-ui")).toBe("/artifacts/live-security-ui/");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/live-security-ui");
+    expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/suite-proof");
     expect(artifactUrl("/custom", "receipt-after-001.json")).toBe("/custom/receipt-after-001.json");
     expect(artifactUrl("artifacts/live-security-ui", "receipt-after-001.json")).toBe(
       "/artifacts/live-security-ui/receipt-after-001.json"
@@ -543,6 +587,33 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain('value="artifacts/live-security-ui" selected');
     expect(html).toContain("LLM fixture proof");
     expect(html).toContain("Hosted model proof");
+  });
+
+  it("renders a multi-mission suite proof ledger from artifact data", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "artifacts/suite-proof",
+      fetcherFor({
+        "suite-proof-summary.json": suiteProofSummary
+      })
+    );
+    const html = renderApp(bundle, "suite-proof", { artifactOptions: defaultArtifactOptions });
+
+    expect(bundle.suiteProofSummary?.missionCount).toBe(3);
+    expect(html).toContain('data-view="suite-proof"');
+    expect(html).toContain('href="#suite-proof"');
+    expect(html).toContain('class="active">Suite</a>');
+    expect(html).toContain("Suite proof");
+    expect(html).toContain("Suite summary");
+    expect(html).toContain("Mission ledger");
+    expect(html).toContain("phase-live-multi-mission-proof");
+    expect(html).toContain("mission-security-lateral-movement-readiness");
+    expect(html).toContain("mission-security-exfiltration-readiness");
+    expect(html).toContain("mission-observability-latency-readiness");
+    expect(html).toContain("observability / security");
+    expect(html).toContain("fail-to-pass");
+    expect(html).toContain("pass 3 mission suite");
+    expect(html).toContain("artifacts/suite-proof/mission-observability-latency-readiness");
+    expect(html).not.toContain("Artifact bundle incomplete");
   });
 
   it("renders one active app pane with SAIA-backed patch evidence", async () => {

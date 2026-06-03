@@ -4364,6 +4364,78 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Suite Proof UI Ledger
+
+Scope:
+- Make the new multi-mission `suite-proof-summary.json` artifact visible in the Vite app.
+- Keep the UI artifact-backed and avoid a generic dashboard expansion.
+
+Files expected/touched:
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added schema validation and loading for optional `suite-proof-summary.json`.
+- Added `artifacts/suite-proof` as a selectable artifact source.
+- Added a `Suite` route that renders:
+  - suite status;
+  - mode;
+  - domains covered;
+  - fail-to-pass count;
+  - READY-after-patch count;
+  - evidence-ref total;
+  - mutation posture;
+  - per-mission before/after ledger rows.
+- Added a sidebar summary line for loaded suite proof artifacts.
+- Reused the existing brown ledger table system; no new decorative dashboard components were introduced.
+
+Browser verification:
+- Generated local suite artifacts:
+  - `artifacts/suite-proof`
+- Local dev server:
+  - `http://127.0.0.1:5173/?artifacts=artifacts/suite-proof#suite-proof`
+- Playwright snapshot confirmed:
+  - `Suite` navigation route is present and active;
+  - artifact selector is set to `Suite proof`;
+  - summary shows `PASS`, 3 missions, `observability / security`, 15 evidence refs, and `mutation no`;
+  - mission ledger shows all three mission ids and `fail-to-pass` proof loops.
+- Screenshot:
+  - `output/playwright/suite-proof-ledger.png`
+
+Product impact:
+- The multi-mission proof is now inspectable in the product UI, not only in terminal output.
+- This strengthens the Platform/DX story because a developer can run one suite command and review a compact certification ledger.
+- It also supports the anti-slop UI direction: every displayed claim comes from a checked artifact.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 32% | 33% | Broader proof is now visible, not just logged. |
+| Platform & DX | 78% | 81% | Multi-mission certification has a usable UI review surface. |
+| Security | 45% | 46% | The UI shows two security missions in the same proof ledger. |
+| Best Use of MCP Server | 80% | 80% | Live MCP behavior unchanged in this slice. |
+| Hosted Models | 54% | 54% | Still waiting on SAIA activation/permission. |
+| Developer Tools | 75% | 78% | CLI suite output and UI review now line up around the same artifact. |
+
+Next directions to consider in future runs:
+- Add a strict suite gate such as `suite-proof --require-fail-to-pass true` if suite artifacts will be used in CI.
+- Once SAIA permission lands, close hosted-model proof and refresh the live security proof bundle.
+- Keep Vite additions focused on proof artifacts; do not add generic charts or dashboard filler.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused TypeScript build and UI test passed after one assertion correction.
+- Vite production build passed.
+- Playwright browser smoke passed.
+- Full repo verification, Vite production build, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Multi-Mission Suite Proof
 
 Scope:

@@ -328,20 +328,24 @@ code {
 }
 
 .fact-table,
-.trace-table {
+.trace-table,
+.suite-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
-.trace-table {
+.trace-table,
+.suite-table {
   min-width: 0;
 }
 
 .fact-table th,
 .fact-table td,
 .trace-table th,
-.trace-table td {
+.trace-table td,
+.suite-table th,
+.suite-table td {
   padding: 13px 16px;
   vertical-align: top;
   text-align: left;
@@ -349,7 +353,8 @@ code {
 }
 
 .fact-table th,
-.trace-table th {
+.trace-table th,
+.suite-table th {
   width: 210px;
   color: var(--text);
   background: #312a19;
@@ -357,7 +362,8 @@ code {
 }
 
 .fact-table td,
-.trace-table td {
+.trace-table td,
+.suite-table td {
   color: var(--muted);
   overflow-wrap: anywhere;
 }
@@ -365,6 +371,7 @@ code {
 .fact-table td,
 .trace-table td:nth-child(2),
 .trace-table td:nth-child(4),
+.suite-table td,
 .patch-rules article p {
   font-family: "Spline Sans Mono Variable", "Spline Sans Mono", ui-monospace, monospace;
   font-size: 0.95em;
@@ -405,6 +412,13 @@ code {
   display: block;
   margin-top: 6px;
   color: var(--quiet);
+}
+
+.suite-table td span {
+  display: block;
+  margin-top: 6px;
+  color: var(--quiet);
+  font-family: "Spline Sans Variable", "Spline Sans", sans-serif;
 }
 
 .trace-table td strong {
@@ -461,6 +475,7 @@ code {
 .hosted-model-panel,
 .hosted-model-proof-panel,
 .proof-audit-panel,
+.suite-proof-panel,
 .trace-stack {
   margin-top: 16px;
 }

@@ -5060,3 +5060,48 @@ Result:
 Open risks:
 
 - The new suite command is fixture-only by design; live security proof remains covered by `live-security-proof`.
+
+## 2026-06-03 - Phase Live Suite Proof UI Ledger
+
+Commands:
+
+- `npm run build && npx vitest run tests/ui/app.test.ts`
+- `npm run build && npx vitest run tests/ui/app.test.ts`
+- `npm run splunkready -- suite-proof --out artifacts/suite-proof --json`
+- `command -v npx >/dev/null 2>&1 && printf 'npx available\n'`
+- `SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/suite-proof npm run ui:dev -- --host 127.0.0.1`
+- `export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"; export PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh"; bash "$PWCLI" open 'http://127.0.0.1:5173/?artifacts=artifacts/suite-proof#suite-proof' && bash "$PWCLI" snapshot`
+- `mkdir -p output/playwright && export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"; export PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh"; bash "$PWCLI" screenshot --filename output/playwright/suite-proof-ledger.png --full-page`
+- `npm run ui:build`
+
+Result:
+
+- PASS for TypeScript build.
+- FAIL for the first focused UI test run:
+  - the suite route rendered correctly;
+  - assertion expected uppercase `PASS 3 mission suite`, while the sidebar intentionally renders normalized lowercase `pass 3 mission suite`.
+- PASS after correcting the assertion:
+  - 1 test file;
+  - 12 tests passed.
+- PASS for generated suite proof artifacts:
+  - command returned `status: "PASS"`;
+  - wrote per-mission artifacts plus `suite-proof-summary.json` and `.md`.
+- PASS for Playwright browser verification:
+  - opened `http://127.0.0.1:5173/?artifacts=artifacts/suite-proof#suite-proof`;
+  - snapshot showed active `Suite` route;
+  - summary showed 3 missions, `observability / security`, 15 evidence refs, and `mutation no`;
+  - mission ledger showed lateral movement, exfiltration, and observability latency rows;
+  - screenshot saved to `output/playwright/suite-proof-ledger.png`.
+- PASS for Vite production build.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 812 project files;
+  - 38 test files;
+  - 219 tests.
+- PASS for final Vite production build.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- `artifacts/suite-proof` and `output/playwright/suite-proof-ledger.png` are local verification artifacts and remain untracked unless the user requests checked-in sanitized evidence.
