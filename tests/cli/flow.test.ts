@@ -1112,11 +1112,16 @@ describe("SplunkReady CLI flow", () => {
         href: string;
       }>;
     };
+    const manifest = JSON.parse(await readFile(join(indexDir, "ui-artifacts.json"), "utf8")) as {
+      source: string;
+      defaultArtifact: string;
+      artifacts: Array<{ label: string; path: string }>;
+    };
 
     expect(output).toMatchObject({
       command: "certification-index",
       status: "PASS",
-      artifacts: [join(indexDir, "certification-index.json")]
+      artifacts: [join(indexDir, "certification-index.json"), join(indexDir, "ui-artifacts.json")]
     });
     expect(index).toMatchObject({
       status: "FAIL",
@@ -1149,6 +1154,15 @@ describe("SplunkReady CLI flow", () => {
         })
       ])
     );
+    expect(manifest).toMatchObject({
+      source: "splunkready-ui-artifacts",
+      defaultArtifact: indexDir,
+      artifacts: [
+        { label: "Certification index", path: indexDir },
+        { label: "External MCP Agent - jsonrpc-pass-001 / PASS", path: passDir },
+        { label: "External MCP Agent - jsonrpc-fail-001 / FAIL", path: failDir }
+      ]
+    });
 
     const strictFailDir = await mkdtemp(join(tmpdir(), "splunkready-index-strict-fail-"));
     const strictFailure = await runCli([
@@ -1170,6 +1184,10 @@ describe("SplunkReady CLI flow", () => {
       status: string;
       totals: { proofs: number; ready: number; notReady: number };
     };
+    const strictFailManifest = JSON.parse(await readFile(join(strictFailDir, "ui-artifacts.json"), "utf8")) as {
+      source: string;
+      artifacts: Array<{ label: string; path: string }>;
+    };
 
     expect(strictFailure).toMatchObject({
       command: "certification-index",
@@ -1180,6 +1198,10 @@ describe("SplunkReady CLI flow", () => {
     expect(strictFailIndex).toMatchObject({
       status: "FAIL",
       totals: { proofs: 2, ready: 1, notReady: 1 }
+    });
+    expect(strictFailManifest).toMatchObject({
+      source: "splunkready-ui-artifacts",
+      artifacts: expect.arrayContaining([{ label: "Certification index", path: strictFailDir }])
     });
 
     const strictPassDir = await mkdtemp(join(tmpdir(), "splunkready-index-strict-pass-"));
@@ -1201,7 +1223,7 @@ describe("SplunkReady CLI flow", () => {
     expect(strictPassOutput).toMatchObject({
       command: "certification-index",
       status: "PASS",
-      artifacts: [join(strictPassDir, "certification-index.json")]
+      artifacts: [join(strictPassDir, "certification-index.json"), join(strictPassDir, "ui-artifacts.json")]
     });
   });
 

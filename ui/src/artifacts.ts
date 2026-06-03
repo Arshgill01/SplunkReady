@@ -22,6 +22,24 @@ export interface ArtifactOption {
   path: string;
 }
 
+const artifactOptionSchema = z
+  .object({
+    label: z.string().min(1),
+    path: z.string().min(1)
+  })
+  .strict();
+
+const uiArtifactManifestSchema = z
+  .object({
+    source: z.literal("splunkready-ui-artifacts"),
+    generatedAt: z.string().min(1),
+    defaultArtifact: z.string().min(1),
+    artifacts: z.array(artifactOptionSchema).min(1)
+  })
+  .strict();
+
+export type UiArtifactManifest = z.infer<typeof uiArtifactManifestSchema>;
+
 const hostedModelSummarySchema = z
   .object({
     status: z.enum(["invoked", "available_not_applicable", "unavailable"]),
@@ -469,6 +487,7 @@ export interface UiArtifactBundle {
   beforeViolations: Violation[];
   afterViolations: Violation[];
   externalViolations: Violation[];
+  artifactOptions?: ArtifactOption[];
   missing: string[];
 }
 
@@ -490,6 +509,7 @@ const optionalFiles = [
   "hosted-model-diagnostic.json",
   "proof-audit.json",
   "certification-index.json",
+  "ui-artifacts.json",
   "firewall-block-before.json",
   "firewall-block-after.json",
   "mcp-transcript-import.json",
@@ -610,6 +630,7 @@ export const loadUiArtifactBundle = async (
     hostedModelDiagnostic: hostedModelDiagnosticSchema.optional().parse(loaded.get("hosted-model-diagnostic.json")),
     proofAudit: proofAuditSchema.optional().parse(loaded.get("proof-audit.json")),
     certificationIndex: certificationIndexSchema.optional().parse(loaded.get("certification-index.json")),
+    artifactOptions: uiArtifactManifestSchema.optional().parse(loaded.get("ui-artifacts.json"))?.artifacts,
     firewallBlock: firewallBlockSchema
       .optional()
       .parse(loaded.get("firewall-block-before.json") ?? loaded.get("firewall-block-after.json")),

@@ -162,6 +162,16 @@ interface CertificationIndex {
   entries: CertificationIndexEntry[];
 }
 
+interface UiArtifactManifest {
+  source: "splunkready-ui-artifacts";
+  generatedAt: string;
+  defaultArtifact: string;
+  artifacts: Array<{
+    label: string;
+    path: string;
+  }>;
+}
+
 interface FirewallBlockReport {
   status: "BLOCKED";
   code: "FIREWALL_POLICY_BLOCKED";
@@ -2705,6 +2715,42 @@ const certificationIndexEntry = async (proofDir: string): Promise<CertificationI
   };
 };
 
+const uniqueUiArtifacts = (
+  artifacts: UiArtifactManifest["artifacts"]
+): UiArtifactManifest["artifacts"] => {
+  const seen = new Set<string>();
+
+  return artifacts.filter((artifact) => {
+    if (seen.has(artifact.path)) {
+      return false;
+    }
+
+    seen.add(artifact.path);
+    return true;
+  });
+};
+
+const artifactLabelForIndexEntry = (entry: CertificationIndexEntry): string => {
+  const suffixes = [entry.agent.version, entry.proofLoop, entry.status]
+    .filter((suffix) => suffix && suffix !== "n/a")
+    .join(" / ");
+
+  return suffixes ? `${entry.label} - ${suffixes}` : entry.label;
+};
+
+const uiArtifactManifestFromIndex = (options: CliOptions, entries: CertificationIndexEntry[]): UiArtifactManifest => ({
+  source: "splunkready-ui-artifacts",
+  generatedAt: compiledAt,
+  defaultArtifact: options.out,
+  artifacts: uniqueUiArtifacts([
+    { label: "Certification index", path: options.out },
+    ...entries.map((entry) => ({
+      label: artifactLabelForIndexEntry(entry),
+      path: entry.proofDir
+    }))
+  ])
+});
+
 const certificationIndexCommand = async (options: CliOptions): Promise<string[]> => {
   const proofDirs = proofDirsFromOptions(options);
 
@@ -2732,14 +2778,16 @@ const certificationIndexCommand = async (options: CliOptions): Promise<string[]>
     entries
   };
   const indexPath = join(options.out, "certification-index.json");
+  const manifestPath = join(options.out, "ui-artifacts.json");
 
   await writeJson(indexPath, index);
+  await writeJson(manifestPath, uiArtifactManifestFromIndex(options, entries));
 
   if (options.requirePass && status !== "PASS") {
     throw new Error(`certification-index strict gate failed with ${status}. Inspect ${indexPath}.`);
   }
 
-  return [indexPath];
+  return [indexPath, manifestPath];
 };
 
 const receiptCommand = async (

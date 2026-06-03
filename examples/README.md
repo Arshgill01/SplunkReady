@@ -75,7 +75,7 @@ npm run splunkready -- certification-index \
   --json
 ```
 
-`certification-index.json` does not re-grade traces. It reads each proof directory's `proof-audit.json` and Readiness Receipt, then records audit status, receipt verdict, score, evidence count, proof loop, mutation posture, and a UI link back to the source bundle. Use it as a small agent-certification ledger when several Splunk-connected agents or mission suites need to be reviewed together. In CI, `--require-pass true` turns the ledger into a merge gate: the command writes the index, then exits nonzero if any indexed proof audit is not `PASS`.
+`certification-index.json` does not re-grade traces. It reads each proof directory's `proof-audit.json` and Readiness Receipt, then records audit status, receipt verdict, score, evidence count, proof loop, mutation posture, and a UI link back to the source bundle. The command also writes `ui-artifacts.json`, so the Vite proof browser can populate its artifact selector from the same proof set. Use it as a small agent-certification ledger when several Splunk-connected agents or mission suites need to be reviewed together. In CI, `--require-pass true` turns the ledger into a merge gate: the command writes the index, then exits nonzero if any indexed proof audit is not `PASS`.
 
 ## CI gate example
 

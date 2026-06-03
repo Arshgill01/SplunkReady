@@ -3,7 +3,13 @@ import "@fontsource-variable/spline-sans-mono";
 import "@fontsource-variable/geist-mono";
 import "./styles.css";
 
-import { artifactBaseFromLocation, defaultArtifactOptions, loadUiArtifactBundle, type UiArtifactBundle } from "./artifacts.js";
+import {
+  artifactBaseFromLocation,
+  defaultArtifactOptions,
+  loadUiArtifactBundle,
+  type ArtifactOption,
+  type UiArtifactBundle
+} from "./artifacts.js";
 import { normalizeView, renderApp, renderError, type ViewId } from "./render.js";
 
 const app = document.querySelector<HTMLDivElement>("#app");
@@ -13,6 +19,7 @@ if (!app) {
 }
 
 let bundle: UiArtifactBundle | undefined;
+let artifactOptions: ArtifactOption[] = defaultArtifactOptions;
 const disabledRuleIds = new Set<string>();
 
 const activeViewFromHash = (): ViewId => normalizeView(window.location.hash.replace(/^#/, ""));
@@ -22,7 +29,7 @@ const render = (): void => {
     return;
   }
 
-  app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds, artifactOptions: defaultArtifactOptions });
+  app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds, artifactOptions });
   bindInteractions();
 };
 
@@ -41,6 +48,7 @@ const markReplayRunning = (): void => {
 const loadArtifactFromLocation = async (): Promise<void> => {
   try {
     bundle = await loadUiArtifactBundle(artifactBaseFromLocation(window.location));
+    artifactOptions = bundle.artifactOptions ?? artifactOptions;
     disabledRuleIds.clear();
     render();
 
@@ -71,7 +79,7 @@ const bindInteractions = (): void => {
 
         app.innerHTML = renderApp(bundle, activeViewFromHash(), {
           disabledRuleIds,
-          artifactOptions: defaultArtifactOptions
+          artifactOptions
         });
         bindInteractions();
       });
@@ -115,7 +123,7 @@ const bindInteractions = (): void => {
 
       app.innerHTML = renderApp(bundle, activeViewFromHash(), {
         disabledRuleIds,
-        artifactOptions: defaultArtifactOptions
+        artifactOptions
       });
       bindInteractions();
     });

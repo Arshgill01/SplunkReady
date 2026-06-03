@@ -724,6 +724,34 @@ describe("Vite UI artifact app", () => {
     expect(bundle.afterTrace[0]?.toolName).toBe("splunk_run_saved_search");
   });
 
+  it("loads artifact selector options from a generated UI manifest", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "artifacts/certification-index",
+      fetcherFor({
+        "certification-index.json": certificationIndex,
+        "ui-artifacts.json": {
+          source: "splunkready-ui-artifacts",
+          generatedAt: "2026-06-03T00:00:00.000Z",
+          defaultArtifact: "artifacts/certification-index",
+          artifacts: [
+            { label: "Certification index", path: "artifacts/certification-index" },
+            { label: "External MCP Agent - jsonrpc-pass-001 / PASS", path: "artifacts/mcp-transcript-pass" },
+            { label: "Suite proof - fail-to-pass / PASS", path: "artifacts/suite-proof" }
+          ]
+        }
+      })
+    );
+    const html = renderApp(bundle, "agent-index", { artifactOptions: bundle.artifactOptions });
+
+    expect(bundle.artifactOptions).toEqual([
+      { label: "Certification index", path: "artifacts/certification-index" },
+      { label: "External MCP Agent - jsonrpc-pass-001 / PASS", path: "artifacts/mcp-transcript-pass" },
+      { label: "Suite proof - fail-to-pass / PASS", path: "artifacts/suite-proof" }
+    ]);
+    expect(html).toContain("External MCP Agent - jsonrpc-pass-001 / PASS");
+    expect(html).toContain('value="artifacts/certification-index" selected');
+  });
+
   it("renders an artifact source selector from real proof bundle presets", async () => {
     const bundle = await loadUiArtifactBundle(
       "artifacts/live-security-ui",

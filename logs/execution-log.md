@@ -162,6 +162,69 @@ Notes:
 - Initial full `npm run check` failed because `tests/cli/flow.test.ts` build hook exceeded Vitest's default 10s timeout under the full suite. The hook timeout was raised to 30s.
 - Final `npm run check` passed: scaffold verifier reported `project files: 230` and 31 test files / 139 tests passed.
 - `git diff --check` passed.
+
+## 2026-06-03 - Phase Live Generated UI Artifact Manifest
+
+Scope:
+- Replace the Vite artifact selector's hardcoded-only behavior with a generated proof-set manifest.
+- Keep hardcoded artifact presets as a fallback for direct proof URLs and incomplete local artifact folders.
+- Avoid changing grading, receipts, Splunk adapter behavior, or live credentials.
+
+Files expected/touched:
+- `src/cli.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/main.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `README.md`
+- `examples/README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- `certification-index` now writes `ui-artifacts.json` next to `certification-index.json`.
+- The generated manifest contains the index bundle and each indexed proof directory as selector options.
+- The Vite artifact loader parses `ui-artifacts.json` when present.
+- The Vite app keeps manifest-provided selector options while navigating from the index into an individual proof receipt.
+- Documentation now states that `certification-index` writes both the ledger and the UI selector manifest.
+
+Product impact:
+- The proof browser now follows generated proof data instead of relying on a baked-in demo list.
+- A developer can run one aggregation command and get both the review ledger and a matching browser navigation model.
+- This strengthens the Platform & DX story without adding a new service, framework, or dashboard concept.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 34% | 34% | Useful polish, but not a new headline demo capability. |
+| Platform & DX | 91% | 92% | The proof browser is now driven by generated certification artifacts. |
+| Security | 44% | 44% | Security proof behavior unchanged. |
+| Best Use of MCP Server | 89% | 89% | MCP proof behavior unchanged; MCP transcript bundles are easier to browse when indexed. |
+| Hosted Models | 53% | 53% | Hosted-model behavior unchanged while SAIA activation is pending. |
+| Developer Tools | 89% | 90% | The CLI now produces a UI-ready manifest alongside the CI certification ledger. |
+
+Next directions to consider in future runs:
+- Add a proof bundle manifest/checksum if it materially improves trust in shared proof folders.
+- Once SAIA activation is available, rerun live hosted-model proof and ensure the generated manifest includes that proof bundle.
+- Consider a lightweight `ui-artifacts` standalone command only if teams need to build a selector manifest without a certification index.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused certification-index CLI tests passed.
+- Focused Vite artifact selector/index tests passed.
+- Direct CLI smoke generated and verified `ui-artifacts.json`.
+- Browser smoke verified generated selector options and option retention after proof navigation.
+- Vite production build passed.
+- Full repo verification passed:
+  - scaffold verified;
+  - 85 waves;
+  - 844 project files in the working tree including ignored local artifact smoke bundles;
+  - 38 test files;
+  - 230 tests.
+- `git diff --check` passed.
 - Late Wave 39 rereview passed with no open findings and confirmed both High findings were resolved.
 - Follow-up `npm run check` after adding late rereview passed: scaffold verifier reported `project files: 231` and 31 test files / 139 tests passed.
 

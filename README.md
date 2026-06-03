@@ -100,7 +100,7 @@ npm run splunkready -- certification-index \
   --json
 ```
 
-The command writes `certification-index.json`, a compact ledger of proof directories, audit status, receipt verdicts, scores, evidence counts, mutation posture, and UI links back to each proof bundle. It is useful when a team certifies more than one Splunk-connected agent or mission suite and needs one reviewable status file without collapsing the underlying Readiness Receipts. Use `--require-pass true` in CI to fail the job if any indexed proof audit is `WARN` or `FAIL`.
+The command writes `certification-index.json`, a compact ledger of proof directories, audit status, receipt verdicts, scores, evidence counts, mutation posture, and UI links back to each proof bundle. It also writes `ui-artifacts.json`, which lets the Vite app populate its artifact selector from the generated proof set instead of a hardcoded demo list. Use `--require-pass true` in CI to fail the job if any indexed proof audit is `WARN` or `FAIL`.
 
 ## Multi-Mission Fixture Proof
 
