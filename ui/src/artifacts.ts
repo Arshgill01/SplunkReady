@@ -231,6 +231,8 @@ const suiteProofSummarySchema = z
     mode: z.literal("fixture"),
     mutation: z.literal(false),
     suiteId: z.string().min(1),
+    suiteTitle: z.string().min(1).optional(),
+    suitePath: z.string().min(1).optional(),
     missionCount: z.number().int().nonnegative(),
     domains: z.array(z.string().min(1)),
     totals: z

@@ -428,6 +428,8 @@ const renderSuiteProof = (bundle: UiArtifactBundle): string => {
                 ["Status", summary.status],
                 ["Mode", summary.mode],
                 ["Suite", summary.suiteId],
+                ["Title", summary.suiteTitle ?? "not recorded"],
+                ["Manifest", summary.suitePath ?? "not recorded"],
                 ["Missions", summary.missionCount],
                 ["Domains", summary.domains.join(" / ")],
                 ["Fail-to-pass missions", summary.totals.failToPass],

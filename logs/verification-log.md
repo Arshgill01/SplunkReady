@@ -5137,3 +5137,36 @@ Result:
 Open risks:
 
 - The strict gate currently has a success-path integration test and invalid-argument parser coverage; no synthetic non-fail-to-pass suite fixture exists yet because the default suite is intentionally all fail-to-pass.
+
+## 2026-06-03 - Phase Live Suite Manifest Gate
+
+Commands:
+
+- `npm run build && npx vitest run tests/cli/flow.test.ts -t "multi-mission" tests/ui/app.test.ts`
+- `tmp=$(mktemp -d /tmp/splunkready-suite-manifest-XXXXXX) && npm run splunkready -- suite-proof --suite fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json --out "$tmp" --require-fail-to-pass true --json && node -e 'const fs=require("node:fs"); const s=JSON.parse(fs.readFileSync(process.argv[1]+"/suite-proof-summary.json","utf8")); console.log(JSON.stringify({out:process.argv[1],suiteId:s.suiteId,suiteTitle:s.suiteTitle,suitePath:s.suitePath,missionCount:s.missionCount,failToPass:s.totals.failToPass})); if (s.suiteId!=="phase-live-multi-mission-proof" || s.totals.failToPass !== s.missionCount) process.exit(1);' "$tmp"`
+- `npm run check && npm run ui:build && git diff --check`
+
+Result:
+
+- PASS for focused TypeScript build and targeted CLI/UI tests:
+  - 2 test files;
+  - 2 tests passed;
+  - 36 tests skipped by the focused name filter.
+- PASS for direct manifest-backed strict suite proof:
+  - suiteId `phase-live-multi-mission-proof`;
+  - suiteTitle `Phase Live multi-mission readiness proof`;
+  - suitePath `fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json`;
+  - missionCount 3;
+  - failToPass 3.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 813 project files;
+  - 38 test files;
+  - 219 tests.
+- PASS for Vite production build.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Suite manifests are parsed in the CLI with local validation rather than a shared schema module. Keep it local until another subsystem needs the suite manifest contract.

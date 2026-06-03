@@ -50,6 +50,7 @@ This repository turns the locked SplunkReady idea into an implemented certificat
 - `docs/llm-specimen-agent.md`: env-gated Gemini specimen agent flow for model-produced traces.
 - `ui/`: Vite artifact app for inspecting proof bundles, receipts, traces, live security readiness, hosted-model status, and policy simulation.
 - `fixtures/acme-soc-dev/adapter-fixture.json`: expanded fixture deployment with security, CloudTrail, network, and platform-latency evidence paths.
+- `fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json`: default multi-mission suite manifest consumed by `suite-proof`.
 - `docs/follow-up-gap-closure-report.md`: current real/fixture/live truth table and consolidation evidence.
 - `docs/preflight-card-ui-implementation-plan.md`: Minimax-derived plan now implemented in the routed Pre-Flight Card replay UI.
 - `docs/demo-script.md`: 3-minute final demo script.

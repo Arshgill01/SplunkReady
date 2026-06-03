@@ -1,0 +1,9 @@
+{
+  "id": "phase-live-multi-mission-proof",
+  "title": "Phase Live multi-mission readiness proof",
+  "missionPaths": [
+    "../missions/security-investigation-readiness.json",
+    "../missions/security-exfiltration-readiness.json",
+    "../missions/observability-latency-readiness.json"
+  ]
+}

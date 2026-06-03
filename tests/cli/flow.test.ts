@@ -1,4 +1,4 @@
-import { mkdtemp, readdir, readFile, stat } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile } from "node:child_process";
@@ -447,6 +447,8 @@ describe("SplunkReady CLI flow", () => {
       mode: string;
       mutation: boolean;
       suiteId: string;
+      suiteTitle: string;
+      suitePath: string;
       missionCount: number;
       domains: string[];
       totals: { failToPass: number; readyAfterPatch: number; evidenceRefs: number };
@@ -476,6 +478,8 @@ describe("SplunkReady CLI flow", () => {
       mode: "fixture",
       mutation: false,
       suiteId: "phase-live-multi-mission-proof",
+      suiteTitle: "Phase Live multi-mission readiness proof",
+      suitePath: "fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json",
       missionCount: 3,
       domains: ["observability", "security"],
       totals: {
@@ -497,6 +501,7 @@ describe("SplunkReady CLI flow", () => {
       expect(mission.after.evidenceRefs.length).toBeGreaterThan(0);
     }
     expect(markdown).toContain("SplunkReady Suite Proof");
+    expect(markdown).toContain("Phase Live multi-mission readiness proof");
     expect(markdown).toContain("mission-observability-latency-readiness");
 
     const strictOutDir = await mkdtemp(join(tmpdir(), "splunkready-suite-proof-strict-"));
@@ -518,6 +523,63 @@ describe("SplunkReady CLI flow", () => {
     ).rejects.toMatchObject({
       stderr: expect.stringContaining("--require-fail-to-pass must be true or false.")
     });
+
+    const customSuiteDir = await mkdtemp(join(tmpdir(), "splunkready-custom-suite-"));
+    const customSuitePath = join(customSuiteDir, "suite.json");
+
+    await writeFile(
+      customSuitePath,
+      JSON.stringify(
+        {
+          id: "custom-observability-suite",
+          title: "Custom observability proof suite",
+          missionPaths: [join(process.cwd(), "fixtures/acme-soc-dev/missions/observability-latency-readiness.json")]
+        },
+        null,
+        2
+      ),
+      "utf8"
+    );
+
+    const customOutDir = await mkdtemp(join(tmpdir(), "splunkready-suite-proof-custom-"));
+    const customOutput = parseCliJsonOutput(
+      (
+        await runCli([
+          "suite-proof",
+          "--suite",
+          customSuitePath,
+          "--out",
+          customOutDir,
+          "--require-fail-to-pass",
+          "true",
+          "--json"
+        ])
+      ).stdout
+    );
+    const customSummary = JSON.parse(await readFile(join(customOutDir, "suite-proof-summary.json"), "utf8")) as {
+      suiteId: string;
+      suiteTitle: string;
+      suitePath: string;
+      missionCount: number;
+      totals: { failToPass: number };
+      missions: Array<{ missionId: string; proofLoop: string }>;
+    };
+
+    expect(customOutput).toMatchObject({
+      command: "suite-proof",
+      status: "PASS",
+      artifacts: expect.arrayContaining([join(customOutDir, "suite-proof-summary.json")])
+    });
+    expect(customSummary).toMatchObject({
+      suiteId: "custom-observability-suite",
+      suiteTitle: "Custom observability proof suite",
+      suitePath: customSuitePath,
+      missionCount: 1,
+      totals: { failToPass: 1 }
+    });
+    expect(customSummary.missions).toMatchObject([
+      { missionId: "mission-observability-latency-readiness", proofLoop: "fail-to-pass" }
+    ]);
   });
 
   it("runs the clean fixture demo orchestration and writes rehearsal artifacts", async () => {

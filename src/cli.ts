@@ -1,5 +1,5 @@
 import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join } from "node:path";
 
 import { createFixtureSplunkAccessAdapter, loadFixtureSplunkDatasetFromFile } from "./adapters/fixture.js";
 import {
@@ -45,11 +45,7 @@ import { writeUiShell } from "./ui/shell.js";
 
 const defaultFixturePath = "fixtures/acme-soc-dev/adapter-fixture.json";
 const defaultMissionPath = "fixtures/acme-soc-dev/missions/security-investigation-readiness.json";
-const defaultSuiteMissionPaths = [
-  "fixtures/acme-soc-dev/missions/security-investigation-readiness.json",
-  "fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json",
-  "fixtures/acme-soc-dev/missions/observability-latency-readiness.json"
-];
+const defaultSuitePath = "fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json";
 const defaultOutDir = "artifacts/fixture-demo";
 const generatedAt = "2026-06-01T06:30:00.000Z";
 const compiledAt = "2026-06-01T06:45:00.000Z";
@@ -70,6 +66,7 @@ interface CliOptions {
   mode: "fixture" | "live";
   fixture: string;
   mission: string;
+  suite: string;
   out: string;
   proofDir: string;
   securityCheckDir: string;
@@ -162,7 +159,7 @@ Commands:
   live-security-proof --out <dir> [--firewall] [--json]
   live-security-ui-bundle --out <dir> [--proof-dir <dir>] [--security-check-dir <dir>] [--security-kit-dir <dir>] [--hosted-model-proof-dir <dir>] [--json]
   live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--json]
-  suite-proof --mode fixture --out <dir> [--require-fail-to-pass true|false] [--json]
+  suite-proof --mode fixture --suite <path> --out <dir> [--require-fail-to-pass true|false] [--json]
   receipt   --out <dir> [--phase before|after] [--json]
   rerun     --mode fixture|live --out <dir> [--firewall] [--json]
   live-smoke --out <dir> [--require-live true|false]
@@ -172,6 +169,7 @@ Defaults:
   --mode fixture
   --fixture ${defaultFixturePath}
   --mission ${defaultMissionPath}
+  --suite ${defaultSuitePath}
   --out ${defaultOutDir}
 `;
 
@@ -181,6 +179,7 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     mode: "fixture",
     fixture: defaultFixturePath,
     mission: defaultMissionPath,
+    suite: defaultSuitePath,
     out: defaultOutDir,
     proofDir: "artifacts/live-proof",
     securityCheckDir: "artifacts/live-security-check",
@@ -229,6 +228,8 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       options.fixture = value;
     } else if (flag === "--mission") {
       options.mission = value;
+    } else if (flag === "--suite") {
+      options.suite = value;
     } else if (flag === "--out") {
       options.out = value;
     } else if (flag === "--proof-dir") {
@@ -395,6 +396,50 @@ const copyOptionalArtifact = async (sourceDir: string, outDir: string, fileName:
 
 const loadMission = async (missionPath: string): Promise<MissionDefinition> =>
   parseMissionDefinition(JSON.parse(await readFile(missionPath, "utf8")) as unknown);
+
+interface SuiteDefinition {
+  id: string;
+  title: string;
+  missionPaths: string[];
+}
+
+const parseSuiteDefinition = (input: unknown, suitePath: string): SuiteDefinition => {
+  if (!isRecord(input)) {
+    throw new Error(`Suite manifest at ${suitePath} must be a JSON object.`);
+  }
+
+  const id = input.id;
+  const title = input.title;
+  const missionPaths = input.missionPaths;
+
+  if (typeof id !== "string" || id.trim().length === 0) {
+    throw new Error(`Suite manifest at ${suitePath} must include a non-empty id.`);
+  }
+
+  if (typeof title !== "string" || title.trim().length === 0) {
+    throw new Error(`Suite manifest at ${suitePath} must include a non-empty title.`);
+  }
+
+  if (
+    !Array.isArray(missionPaths) ||
+    missionPaths.length === 0 ||
+    missionPaths.some((missionPath) => typeof missionPath !== "string" || missionPath.trim().length === 0)
+  ) {
+    throw new Error(`Suite manifest at ${suitePath} must include a non-empty missionPaths string array.`);
+  }
+
+  return {
+    id,
+    title,
+    missionPaths: missionPaths.map((missionPath) => (missionPath as string).trim())
+  };
+};
+
+const loadSuite = async (suitePath: string): Promise<SuiteDefinition> =>
+  parseSuiteDefinition(JSON.parse(await readFile(suitePath, "utf8")) as unknown, suitePath);
+
+const suiteMissionPath = (suitePath: string, missionPath: string): string =>
+  isAbsolute(missionPath) ? missionPath : join(dirname(suitePath), missionPath);
 
 const loadContract = async (outDir: string): Promise<EnvironmentContract> =>
   environmentContractSchema.parse(await readJson(join(outDir, "environment-contract.json"), "environment contract"));
@@ -2260,10 +2305,12 @@ const suiteProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = p
     throw new Error("suite-proof currently supports fixture mode only; use live-security-proof for live Splunk evidence.");
   }
 
+  const suite = await loadSuite(options.suite);
   const missionSummaries = [];
   const artifacts: string[] = [];
 
-  for (const missionPath of defaultSuiteMissionPaths) {
+  for (const missionPathInput of suite.missionPaths) {
+    const missionPath = suiteMissionPath(options.suite, missionPathInput);
     const mission = await loadMission(missionPath);
     const missionOutDir = join(options.out, mission.id);
     const missionOptions: CliOptions = { ...options, mission: missionPath, out: missionOutDir, mode: "fixture" };
@@ -2306,7 +2353,9 @@ const suiteProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = p
     status: missionSummaries.every((mission) => mission.after.verdict === "READY") ? "PASS" : "FAIL",
     mode: "fixture",
     mutation: false,
-    suiteId: "phase-live-multi-mission-proof",
+    suiteId: suite.id,
+    suiteTitle: suite.title,
+    suitePath: options.suite,
     missionCount: missionSummaries.length,
     domains,
     totals: {
@@ -2331,6 +2380,7 @@ Generated by: Agent Readiness Compiler
 ## Summary
 
 - Status: ${summary.status}
+- Suite: ${summary.suiteTitle}
 - Mode: fixture
 - Mutation: false
 - Missions: ${summary.missionCount}

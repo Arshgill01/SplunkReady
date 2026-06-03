@@ -4364,6 +4364,59 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Suite Manifest Gate
+
+Scope:
+- Move the `suite-proof` mission list out of CLI code and into a reviewable suite manifest.
+- Keep the default suite behavior unchanged while allowing developers to pass `--suite <path>` for their own CI gates.
+
+Files expected/touched:
+- `src/cli.ts`
+- `fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `examples/README.md`
+- `examples/github-workflow-example.yml`
+- `MANIFEST.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `--suite <path>` to `suite-proof`.
+- Added the default fixture suite manifest at `fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json`.
+- `suite-proof-summary.json` now records `suiteId`, `suiteTitle`, and `suitePath`.
+- The Vite suite proof parser and renderer now accept and display suite manifest provenance.
+- CLI tests now cover both the default suite and a temporary custom suite manifest.
+- README, examples, GitHub Actions sample, and manifest docs now point to the suite manifest path.
+
+Product impact:
+- Removes a hardcoded suite mission list from the CLI path.
+- Makes strict multi-mission proof gates configurable by repository owners without changing SplunkReady code.
+- Keeps fixture/live adapter parity and deterministic pass/fail grading unchanged.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 33% | 33% | More credible product shape, but no new visual/live proof. |
+| Platform & DX | 83% | 85% | Suite certification becomes reusable developer tooling rather than a baked demo list. |
+| Security | 47% | 48% | Teams can define multiple security mission manifests without code edits. |
+| Best Use of MCP Server | 80% | 80% | MCP behavior unchanged. |
+| Hosted Models | 54% | 54% | Hosted model behavior unchanged. |
+| Developer Tools | 80% | 83% | Configurable suite manifests strengthen CI/SDK adoption. |
+
+Next directions to consider in future runs:
+- Add a schema module for suite manifests only if additional suite metadata becomes necessary.
+- Avoid building a generic dashboard; use suite manifests as the boundary for multi-agent/multi-mission views.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI/UI tests, direct manifest-backed strict `suite-proof`, full repo check, Vite production build, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Strict Suite Proof Gate
 
 Scope:
