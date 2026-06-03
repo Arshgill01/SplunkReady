@@ -1,70 +1,95 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
-  <title id="title">SplunkReady architecture diagram</title>
+  <title id="title">SplunkReady Architecture Diagram</title>
   <desc id="desc">Fixture and optional live Splunk MCP adapters feed the Agent Readiness Compiler, which produces missions, traces, deterministic grading results, policy patches, and Readiness Receipts.</desc>
   <style>
-    .bg { fill: #f7f7f4; }
-    .box { fill: #ffffff; stroke: #242622; stroke-width: 2; rx: 10; }
-    .dark { fill: #242622; stroke: #242622; stroke-width: 2; rx: 10; }
-    .accent { fill: #b45224; stroke: #8f3f19; stroke-width: 2; rx: 10; }
-    .muted { fill: #eef0ea; stroke: #7f857c; stroke-width: 2; rx: 10; }
-    .title { font: 700 28px Arial, sans-serif; fill: #1f2421; }
-    .label { font: 700 19px Arial, sans-serif; fill: #1f2421; }
-    .small { font: 400 15px Arial, sans-serif; fill: #474d49; }
-    .darkText { font: 700 19px Arial, sans-serif; fill: #ffffff; }
-    .darkSmall { font: 400 15px Arial, sans-serif; fill: #f7f7f4; }
-    .white { font: 700 19px Arial, sans-serif; fill: #ffffff; }
-    .arrow { stroke: #242622; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .bg { fill: #151309; }
+    .box { fill: #231f12; stroke: #776e59; stroke-width: 2; rx: 8; }
+    .dark-box { fill: #1f1b0d; stroke: #4d4635; stroke-width: 2; rx: 8; }
+    .accent-box { fill: #30291a; stroke: #f4b36d; stroke-width: 2.5; rx: 8; }
+    .ready-box { fill: #1f1b0d; stroke: #7ff0c8; stroke-width: 2.5; rx: 8; }
+    .title { font-family: "Spline Sans", "Segoe UI", Arial, sans-serif; font-weight: 700; font-size: 32px; fill: #f3edde; }
+    .subtitle { font-family: "Spline Sans", "Segoe UI", Arial, sans-serif; font-weight: 400; font-size: 16px; fill: #c7bcaa; }
+    .label { font-family: "Spline Sans", "Segoe UI", Arial, sans-serif; font-weight: 700; font-size: 20px; fill: #f3edde; }
+    .small { font-family: "Spline Sans", "Segoe UI", Arial, sans-serif; font-weight: 400; font-size: 14px; fill: #c7bcaa; }
+    .arrow { stroke: #c7bcaa; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
   </style>
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L0,6 L9,3 z" fill="#242622" />
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L7,3 z" fill="#c7bcaa" />
     </marker>
   </defs>
 
+  <!-- Background -->
   <rect class="bg" width="1280" height="720" />
-  <text class="title" x="64" y="62">SplunkReady: Agent Readiness Compiler</text>
-  <text class="small" x="64" y="92">Certify AI agents before they touch production Splunk.</text>
+  
+  <!-- Header -->
+  <text class="title" x="64" y="64">SplunkReady: Agent Readiness Compiler</text>
+  <text class="subtitle" x="64" y="96">Certify AI agents before they touch production Splunk.</text>
 
+  <!-- Left Column: Adapters -->
+  <!-- Fixture Adapter -->
   <rect class="box" x="64" y="140" width="230" height="92" />
   <text class="label" x="88" y="174">Fixture Adapter</text>
   <text class="small" x="88" y="202">No credentials required</text>
 
+  <!-- Live MCP Adapter -->
   <rect class="box" x="64" y="272" width="230" height="92" />
   <text class="label" x="88" y="306">Live MCP Adapter</text>
   <text class="small" x="88" y="334">Optional read-only smoke</text>
 
-  <rect class="dark" x="378" y="194" width="280" height="118" />
-  <text class="darkText" x="408" y="232">Shared Adapter Boundary</text>
-  <text class="darkSmall" x="408" y="262">Same contract after this point</text>
-  <text class="darkSmall" x="408" y="288">No Splunk auto-mutation</text>
+  <!-- Mid Column: Shared boundary & Compiler -->
+  <!-- Shared Adapter Boundary -->
+  <rect class="dark-box" x="378" y="194" width="280" height="118" />
+  <text class="label" x="408" y="232">Shared Adapter Boundary</text>
+  <text class="small" x="408" y="262">Same contract after this point</text>
+  <text class="small" x="408" y="288">No Splunk auto-mutation</text>
 
-  <rect class="accent" x="742" y="174" width="300" height="158" />
-  <text class="white" x="772" y="214">Environment Contract</text>
-  <text class="darkSmall" x="772" y="244">Indexes and sourcetypes</text>
-  <text class="darkSmall" x="772" y="270">Saved searches and fields</text>
-  <text class="darkSmall" x="772" y="296">App context and budgets</text>
+  <!-- Environment Contract -->
+  <rect class="accent-box" x="742" y="174" width="300" height="158" />
+  <text class="label" x="772" y="214">Environment Contract</text>
+  <text class="small" x="772" y="244">Indexes and sourcetypes</text>
+  <text class="small" x="772" y="270">Saved searches and fields</text>
+  <text class="small" x="772" y="296">App context and budgets</text>
 
-  <rect class="muted" x="170" y="458" width="250" height="112" />
+  <!-- Bottom Row: Runtime Certification Loop -->
+  <!-- Security Missions -->
+  <rect class="box" x="170" y="458" width="250" height="112" />
   <text class="label" x="198" y="494">Security Missions</text>
   <text class="small" x="198" y="522">Naive specimen agent</text>
   <text class="small" x="198" y="548">Real trace capture</text>
 
-  <rect class="muted" x="514" y="458" width="250" height="112" />
+  <!-- Deterministic Grader -->
+  <rect class="box" x="514" y="458" width="250" height="112" />
   <text class="label" x="542" y="494">Deterministic Grader</text>
   <text class="small" x="542" y="522">Rule IDs and evidence</text>
   <text class="small" x="542" y="548">No LLM pass/fail judging</text>
 
-  <rect class="dark" x="858" y="438" width="310" height="152" />
-  <text class="darkText" x="890" y="478">Readiness Receipt</text>
-  <text class="darkSmall" x="890" y="508">Verdict, score, violations</text>
-  <text class="darkSmall" x="890" y="534">Policy patch summary</text>
-  <text class="darkSmall" x="890" y="560">Fail -> patch -> rerun -> pass</text>
+  <!-- Readiness Receipt -->
+  <rect class="ready-box" x="858" y="438" width="310" height="152" />
+  <text class="label" x="890" y="478">Readiness Receipt</text>
+  <text class="small" x="890" y="508">Verdict, score, violations</text>
+  <text class="small" x="890" y="534">Policy patch summary</text>
+  <text class="small" x="890" y="560">Fail -> patch -> rerun -> pass</text>
 
+  <!-- Arrows & Connectors -->
+  <!-- Fixture Adapter -> Shared Boundary -->
   <path class="arrow" d="M294 186 H378" />
+  
+  <!-- Live MCP Adapter -> Shared Boundary (Curved) -->
   <path class="arrow" d="M294 318 H338 C358 318 358 253 378 253" />
+  
+  <!-- Shared Boundary -> Environment Contract -->
   <path class="arrow" d="M658 253 H742" />
-  <path class="arrow" d="M892 332 V396 C892 420 764 420 764 458" />
+  
+  <!-- Environment Contract -> Security Missions (Curved, entering top-mid vertically) -->
+  <path class="arrow" d="M842 332 V380 C842 410 295 410 295 458" />
+  
+  <!-- Environment Contract -> Deterministic Grader (Curved, entering top-mid vertically) -->
+  <path class="arrow" d="M942 332 V396 C942 420 639 420 639 458" />
+  
+  <!-- Security Missions -> Deterministic Grader -->
   <path class="arrow" d="M420 514 H514" />
+  
+  <!-- Deterministic Grader -> Readiness Receipt -->
   <path class="arrow" d="M764 514 H858" />
-  <path class="arrow" d="M892 332 V380 C892 410 420 410 420 458" />
 </svg>

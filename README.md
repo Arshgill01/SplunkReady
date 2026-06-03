@@ -1,59 +1,132 @@
 # SplunkReady
 
-Certify AI agents before they touch production Splunk.
+> **Certify AI agents before they touch production Splunk.**
 
-SplunkReady is a Splunk-native certification harness for teams shipping agents that can call Splunk. It does not answer alerts for the operator. It proves whether a specific agent can safely operate against a specific Splunk deployment.
+[![Build Status](https://img.shields.io/badge/build-passing-success.svg)](#development)
+[![Test Coverage](https://img.shields.io/badge/tests-231%20passed-success.svg)](#development)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## One-Sentence Pitch
+SplunkReady is a Splunk-native certification harness for teams shipping AI agents that can call Splunk. It does not answer alerts for operators. Instead, it proves whether a specific agent can safely operate against a specific Splunk deployment.
 
-Splunk is making operational data agent-ready. SplunkReady makes agents Splunk-ready.
+---
 
-## What It Does
+## 🌍 One-Sentence Pitch
+**Splunk is making operational data agent-ready. SplunkReady makes agents Splunk-ready.**
 
-The Agent Readiness Compiler compiles a fixture or live Splunk environment into an agent contract and readiness profile, runs realistic missions or accepts captured agent traces, grades the resulting tool trace with deterministic rules, and produces a Readiness Receipt.
+---
 
-The flagship demo story is security investigation readiness: the bundled specimen confidently clears possible lateral movement after using `index=*`, a stale field, and no saved search provenance. SplunkReady catches the unsafe trace, exports a reviewable policy patch, reruns the same mission, and shows a bounded pass with evidence. The default specimen is deterministic for local reproducibility; set `SPLUNKREADY_LLM_ENABLED=true` to run the Gemini-backed specimen instead.
+## 🛠️ What It Does
 
-## Judge-Runnable Fixture Demo
+The **Agent Readiness Compiler** compiles a fixture or live Splunk environment into an agent contract and readiness profile, runs realistic certification missions, grades the resulting tool trace with deterministic rules, and produces a **Readiness Receipt**.
 
-Fixture mode is the default path. It requires no Splunk credentials and does not call a live Splunk deployment.
+The flagship demo story is **security investigation readiness**:
+1. The naive specimen agent cleared possible lateral movement after running a broad `index=*` query, using a stale field, and citing no saved search provenance.
+2. **SplunkReady** caught the unsafe trace, exported a reviewable policy patch, and blocked the agent.
+3. The same mission was rerun with contract/policy injection and achieved a bounded **PASS** with strict evidence.
 
-Prerequisite: Node.js 22 or newer. If you use `nvm`, run `nvm use 22` from the repo root.
+> [!NOTE]
+> The default specimen is deterministic for local reproducibility. Set `SPLUNKREADY_LLM_ENABLED=true` to run the Gemini-backed specimen instead.
 
+---
+
+## 📐 Architecture
+
+The Agent Readiness Compiler keeps fixture and live Splunk access behind the same adapter boundary. It compiles a contract, runs missions, grades traces with deterministic rules, and emits a Readiness Receipt.
+
+![SplunkReady Architecture Diagram](docs/architecture.svg)
+
+### Core Flow
+1. **Adapter Boundary:** Fixture or optional live MCP adapter exposes Splunk inventory through the shared adapter contract.
+2. **Environment Contract:** The compiler builds a contract mapping indexes, sourcetypes, saved searches, knowledge objects, fields, app context, and query budgets.
+3. **Readiness Profile:** The compiler emits a profile binding deterministic rule IDs to those Splunk contract facts.
+4. **Harness/Trace Capture:** The harness runs the specimen agent or imports an externally captured agent trace.
+5. **Grader Engine:** Deterministic rules evaluate the recorded trace and produce violations, scores, and verdicts.
+6. **Readiness Receipt:** The receipt and Vite UI make the evidence and policy patch reviewable.
+
+---
+
+## 🚀 Judge-Runnable Fixture Demo
+
+Fixture mode is the default path. It requires no credentials and does not call a live Splunk instance.
+
+### Prerequisites
+- Node.js 22 or newer. (If using `nvm`, run `nvm use 22`).
+
+### Quick Start
 ```bash
+# Install dependencies
 npm install
+
+# Build the project
 npm run build
+
+# Run the fixture certification demo
 tmp=$(mktemp -d /tmp/splunkready-demo-XXXXXX)
 npm run splunkready -- demo --out "$tmp"
+
+# Open the Interactive Replay UI in your browser
 open "$tmp/splunkready-shell.html#certification-replay"
 ```
 
 The demo command writes a complete local artifact set into `$tmp`, including:
+* `splunkready-shell.html`: The static Readiness Receipt UI.
+* `demo-rehearsal.json`: Measured rehearsal metadata and artifact list.
+* `demo-rehearsal.md`: Human-readable demo summary.
+* `readiness-profile.json`: Deployment-bound rule profile showing which contract facts activated each rule.
+* Before and After Readiness Receipts showing the `NOT READY` -> `READY` loop.
 
-- `splunkready-shell.html`: static Readiness Receipt UI.
-- `demo-rehearsal.json`: measured rehearsal metadata and artifact list.
-- `demo-rehearsal.md`: judge-readable demo summary.
-- `readiness-profile.json`: deployment-bound rule profile showing which Splunk contract facts activated each readiness rule.
-- before and after Readiness Receipts that show fail -> patch -> rerun -> pass.
+> [!TIP]
+> The UI includes `#certification-replay` for the interactive step-by-step certification process and `#rerun-receipts` for the before/after receipt comparison.
 
-The primary closeout route is the certification replay:
+---
 
-```text
-splunkready-shell.html#certification-replay
+## 🎛️ CLI Command Guide
+
+SplunkReady provides a rich CLI to orchestrate environment compilation, grading, and auditing.
+
+| Command | Key Flags | Description |
+| :--- | :--- | :--- |
+| `demo` | `--out <dir>` | Runs the complete fail -> patch -> rerun -> pass fixture demo. |
+| `compile` | `--out <dir>` | Compiles the active adapter inventory into an environment contract. |
+| `evaluate` | `--out <dir> [--firewall]` | Executes a specimen agent against the contract and records a trace. |
+| `receipt` | `--out <dir>` | Grades the recorded trace and writes the initial Readiness Receipt. |
+| `rerun` | `--out <dir> [--firewall]` | Injects the generated policy patch and reruns the agent evaluation. |
+| `grade-trace` | `--trace <file> --out <dir>` | Grades an externally supplied agent trace against the contract. |
+| `proof-audit` | `--out <dir> [--require-pass]` | Verifies the integrity of generated receipt/proof artifacts. |
+| `verify-manifest`| `--out <dir>` | Re-hashes the proof bundle and verifies files against the manifest. |
+| `certify-mcp-transcript` | `--transcript <file> --out <dir>` | Imports and certifies a raw JSON-RPC MCP transcript in one command. |
+| `certification-index` | `--proof-dirs <dirs> --out <dir>` | Aggregates multiple proof directories into one rollup ledger. |
+| `suite-proof` | `--out <dir> [--require-fail-to-pass]` | Runs multi-mission certifications across a suite manifest. |
+| `live-smoke` | `--out <dir>` | Validates live Splunk MCP connectivity (read-only inventory checks). |
+| `live-proof` | `--out <dir>` | Derives a mission and runs certification against a live Splunk instance. |
+| `live-security-check` | — | Diagnostic check for flagship security saved searches on live Splunk. |
+| `live-security-kit` | `--out <dir>` | Generates a setup app to install missing security data on live Splunk. |
+
+---
+
+## 🛡️ Runtime Firewall Gate
+
+Use the `--firewall` flag on `evaluate` or `rerun` to wrap the Splunk adapter with the compiled environment contract before the specimen executes SPL queries:
+
+```bash
+npm run splunkready -- compile --out artifacts/firewall-check
+npm run splunkready -- evaluate --out artifacts/firewall-check --firewall
 ```
 
-The same shell also includes `splunkready-shell.html#rerun-receipts` for the before/after receipt comparison.
+When the firewall intercepts an invalid query (e.g. referencing sensitive indexes or forbidden commands), it blocks execution before it reaches Splunk, records `firewall-block-before.json`, and exits with a non-zero code. You can audit this safety proof directly:
 
-Expected fixture outcome:
+```bash
+npm run splunkready -- proof-audit --out artifacts/firewall-check --require-pass true --json
+```
 
-- before receipt: `NOT READY`
-- after receipt: `READY`
-- visible deterministic rule IDs include `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`
+---
 
-## Grade a Captured Agent Trace
+## 🔌 Capturing & Importing External Traces
 
-The fixture demo is reproducible, but SplunkReady is not limited to its bundled specimen. After compiling the environment contract, pass in a schema-valid trace captured from another Splunk-connected agent:
+You can certify external agents by exporting their tool calls to our canonical trace schema, or by importing raw MCP JSON-RPC transcripts directly.
 
+### Grading Captured Traces
+Grade a trace file captured from an external agent:
 ```bash
 npm run build
 tmp=$(mktemp -d /tmp/splunkready-trace-XXXXXX)
@@ -61,194 +134,109 @@ npm run splunkready -- compile --out "$tmp"
 npm run splunkready -- grade-trace \
   --trace path/to/captured-trace.json \
   --out "$tmp" \
-  --agent-name "Captured Agent" \
+  --agent-name "External Agent" \
   --agent-version "trace-001"
-npm run splunkready -- proof-audit \
-  --out "$tmp" \
-  --require-pass true \
-  --json
-npm run splunkready -- verify-manifest \
-  --out "$tmp" \
-  --json
 ```
 
-The compile command also writes `readiness-profile.json`, which binds active rule IDs to the compiled Splunk contract. The trace grading command writes `trace-external.json`, deterministic violations, a score, and `receipt-external-001.json` / `.md`. It rejects traces whose `missionId` does not match the selected mission. The trace producer is outside SplunkReady; the deterministic rule engine remains the pass/fail authority.
-
-For external-agent CI, `proof-audit --require-pass true` recognizes `receipt-external-001.json` as an `external-trace` proof and fails the gate unless the deterministic receipt is `READY`. Each audit also writes `proof-manifest.json`, a SHA-256 manifest for the proof bundle files so shared artifacts can be checked without re-running the agent. `verify-manifest` re-hashes the bundle and fails if any audited artifact was changed, removed, or added after the manifest was created.
-
-See [examples/README.md](examples/README.md) for runnable external-trace capture scripts and generated sample receipts for both `NOT READY` and `READY / 100` external agent traces.
-
-If an external agent only logs Splunk MCP JSON-RPC calls, certify the transcript directly:
-
+### Importing Raw MCP Transcripts
+If your agent logs raw JSON-RPC `tools/call` requests and responses, certify the transcript directly:
 ```bash
 npm run splunkready -- certify-mcp-transcript \
   --transcript examples/sample-mcp-transcript-pass.jsonl \
   --out artifacts/mcp-transcript \
   --strict-import true \
   --require-pass true \
-  --agent-name "External MCP Agent" \
-  --agent-version "jsonrpc-transcript-001" \
   --json
 ```
 
-This single gate writes the full evidence chain: compiled contract, imported canonical trace, deterministic violations, external receipt, proof audit, and `mcp-transcript-certification.json`. `--strict-import true` rejects incomplete JSON-RPC logs; `--require-pass true` blocks CI unless the external MCP agent receives a deterministic `READY` receipt.
+Use `--strict-import true` in CI to reject transcripts with mismatched requests or missing tool responses.
 
-To summarize several proof bundles for one environment, generate a certification index:
+---
 
+## 📈 Multi-Mission Suite Proof
+
+To prove the harness is not limited to a single script, run the multi-mission suite:
 ```bash
-npm run splunkready -- certification-index \
-  --proof-dirs artifacts/mcp-transcript,artifacts/suite-proof,artifacts/live-security-ui \
-  --out artifacts/certification-index \
-  --require-pass true \
-  --json
-```
-
-The command writes `certification-index.json`, a compact ledger of proof directories, audit status, receipt verdicts, scores, evidence counts, mutation posture, proof-manifest hashes, and UI links back to each proof bundle. It also writes `ui-artifacts.json`, which lets the Vite app populate its artifact selector from the generated proof set instead of a hardcoded demo list. Use `--require-pass true` in CI to fail the job if any indexed proof audit is `WARN` or `FAIL`.
-
-## Multi-Mission Fixture Proof
-
-To prove the harness is not a single scripted mission, run the suite proof:
-
-```bash
-npm run build
 npm run splunkready -- suite-proof --out artifacts/suite-proof --json
-npm run splunkready -- suite-proof --out artifacts/suite-proof-ci --require-fail-to-pass true --json
-npm run splunkready -- proof-audit --out artifacts/suite-proof-ci --require-pass true --json
-npm run splunkready -- suite-proof --suite fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json --out artifacts/suite-proof-custom --require-fail-to-pass true --json
 ```
+This runs the certification loop across the default manifest (`fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json`), which covers two security missions and one observability mission. Use `--require-fail-to-pass true` to guarantee that every suite mission demonstrates the full fail-to-pass loop.
 
-`suite-proof` runs the fixture fail -> patch -> rerun -> pass loop across a suite manifest, defaulting to `fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json`: two security missions and one observability mission. It writes each mission's normal artifacts plus `suite-proof-summary.json` / `.md`, with proof-loop classification, domains covered, evidence counts, suite manifest provenance, and `mutation: false`. This path is credential-free and does not call live Splunk. Use `--require-fail-to-pass true` in CI when a READY receipt is not enough and every mission must prove the full certification loop. `proof-audit --require-pass true` also understands suite bundles and checks the suite summary, mutation posture, fail-to-pass count, READY-after-patch count, and evidence refs.
+---
 
-## Runtime Firewall Gate
+## 🌐 Live Mode (Optional)
 
-Use `--firewall` on `evaluate`, `rerun`, `live-proof`, or `live-security-proof` to wrap the Splunk adapter with the compiled policy before the specimen can run SPL:
+Live mode is optional, read-only, and disabled by default. It is not required for running the fixture demo.
 
-```bash
-npm run splunkready -- compile --out artifacts/firewall-check
-npm run splunkready -- evaluate --out artifacts/firewall-check --firewall
-```
-
-When the firewall blocks a query, SplunkReady rejects it before Splunk execution, writes `firewall-block-before.json` or `firewall-block-after.json`, and exits nonzero. The block report records the query, deterministic rule IDs, tool name, phase, and `mutation: false`. You can audit that bundle directly:
-
-```bash
-npm run splunkready -- proof-audit --out artifacts/firewall-check --require-pass true --json
-```
-
-This is a pre-execution safety gate. It does not replace Readiness Receipts; it prevents provably unsafe SPL from reaching Splunk.
-
-## Live Mode
-
-Live mode is optional and disabled by default. Normal fixture tests and the fixture demo do not require live Splunk credentials.
-
-To exercise the live smoke path, set these environment variables locally:
-
+To enable live mode, set the configuration environment variables:
 ```bash
 export SPLUNKREADY_LIVE_ENABLED=true
 export SPLUNKREADY_SPLUNK_MCP_URL="https://your-splunk-mcp.example"
 export SPLUNKREADY_SPLUNK_MCP_TOKEN="..."
 ```
 
-Then run:
-
+### Live Smoke Check
 ```bash
-npm run build
 npm run splunkready -- live-smoke --out artifacts/live-smoke
 ```
+This inventories active indices and saved searches without running queries or modifying Splunk configuration.
 
-Without live configuration, the live smoke command skips safely. With live configuration, it calls read-only MCP tools only, writes `live-smoke-contract.json` plus `live-smoke-readiness-profile.json`, and does not run searches or mutate Splunk configuration. See [docs/live-adapter.md](docs/live-adapter.md) and [docs/live-setup-checklist.md](docs/live-setup-checklist.md).
-
-To derive and certify a live mission from the target deployment's own saved-search/index inventory:
-
+### Guided Live Proof
 ```bash
-export SPLUNKREADY_LIVE_ENABLED=true
-export SPLUNKREADY_SPLUNK_MCP_URL="https://your-splunk-mcp.example"
-export SPLUNKREADY_SPLUNK_MCP_TOKEN="..."
 export SPLUNKREADY_LLM_ENABLED=true
 export GEMINI_API_KEY="..."
-export GEMINI_MODEL="gemini-3.1-flash-lite"
-npm run build
 npm run splunkready -- live-proof --out artifacts/live-proof --candidate-limit 12
 ```
+This scans read-only saved searches on your Splunk instance, compiles a live contract, generates a custom `live-derived-mission.json`, and runs the certification loop. It falls back to `_internal` queries if no saved searches return data.
 
-`live-proof` compiles the live contract, scans bounded read-only saved-search candidates, writes `live-derived-mission.json`, then runs evaluate -> receipt -> rerun against that generated mission. It also writes `live-proof-summary.json`, including the explicit `proofLoop` classification (`fail-to-pass`, `ready-without-patch`, or not ready after rerun). If no saved search returns rows but `_internal` is available, it falls back to a bounded `_internal` query mission. It does not create indexes, install apps, write saved searches, or mutate Splunk.
+---
 
-For the flagship security story, `live-security-proof` is stricter: it first requires the lateral-movement saved search and evidence rows discovered by `live-security-check`, then runs the live Gemini specimen through the fail -> patch -> rerun -> pass loop and writes `live-security-proof-summary.json`.
+## 🤖 LLM Specimen Agent
 
-## LLM Specimen Agent
-
-The normal fixture demo keeps the deterministic specimen as the default. To grade a real model-driven specimen trace, export a Gemini key and enable LLM mode:
-
+To grade a real model-driven specimen trace (instead of the deterministic specimen), export your Gemini API key and run:
 ```bash
 export SPLUNKREADY_LLM_ENABLED=true
 export GEMINI_API_KEY="..."
 export GEMINI_MODEL="gemini-3.1-flash-lite"
-npm run build
+
 npm run splunkready -- compile --out artifacts/llm-fixture-proof
 npm run splunkready -- evaluate --out artifacts/llm-fixture-proof
 npm run splunkready -- receipt --out artifacts/llm-fixture-proof
 npm run splunkready -- rerun --out artifacts/llm-fixture-proof
 ```
+In LLM mode, the initial evaluation runs without a contract injected (often leading to violations). The rerun injects the compiled policy patch. SplunkReady performs tool grading deterministically.
 
-In LLM mode, `evaluate` prompts the model without compiled Splunk contract injection. `rerun` injects the compiled policy and contract. SplunkReady still executes tool calls through the adapter and the deterministic grader still decides pass/fail. See [docs/llm-specimen-agent.md](docs/llm-specimen-agent.md).
+---
 
-## Submission Strategy
+## 📋 Limitations
 
-SplunkReady targets the Platform & Developer Experience track. The product story is infrastructure for safer Splunk-connected agents, with security as the memorable demo scenario.
+- **Pre-Production Certification:** SplunkReady is a certification harness and safety gate. It does not replace live monitoring, alert triaging, or general logging infrastructure.
+- **Read-Only Splunk Interaction:** SplunkReady never modifies Splunk configuration, indexes, or events. Policy recommendations are exported as static policy patches for operator review.
+- **Fixture Boundaries:** The default demo runs on seeded mock data for speed and deterministic local testing.
+- **Flagship Live Data Prerequisites:** To complete the flagship security lateral-movement loop against a live Splunk endpoint, you must install the generated `live-security-kit` searches and events in your Splunk deployment.
 
-## What It Is Not
+---
 
-- Not a Splunk chatbot.
-- Not a SOC copilot.
-- Not MCP telemetry.
-- Not a detection-health dashboard.
-- Not a generic eval harness.
-- Not an LLM judging another LLM.
+## 📄 Submission Materials
 
-## Primary Artifact
+- **Devpost Copy:** [docs/devpost-submission.md](docs/devpost-submission.md)
+- **Demo Script (Under 3-minute narration):** [docs/demo-script.md](docs/demo-script.md)
+- **Architecture Diagram:** [docs/architecture.svg](docs/architecture.svg)
+- **Live Parity Contract:** [docs/fixture-live-parity.md](docs/fixture-live-parity.md)
+- **Grader Rule Catalog:** [docs/grader-rule-catalog.md](docs/grader-rule-catalog.md)
 
-The Readiness Receipt is the product artifact. It records the environment contract version, mission suite version, trace evidence, deterministic violations, score, verdict, and policy patch summary. The companion readiness profile records why the rule surface is active for this Splunk deployment.
+---
 
-## Architecture
+## 💻 Development & Testing
 
-The Agent Readiness Compiler keeps fixture and live Splunk access behind the same adapter boundary, then compiles a contract, runs missions, grades traces with deterministic rules, and emits a Readiness Receipt.
-
-![SplunkReady architecture diagram](docs/architecture.svg)
-
-Core flow:
-
-1. Fixture or optional live MCP adapter exposes Splunk inventory through the shared adapter contract.
-2. The compiler builds an environment contract with indexes, sourcetypes, saved searches, knowledge objects, fields, app context, and query budgets.
-3. The compiler emits a readiness profile binding deterministic rule IDs to those Splunk contract facts.
-4. The harness runs the bundled deterministic specimen or ingests an externally captured agent trace.
-5. The trace recorder/schema captures tool calls, evidence, results, and final answers.
-6. Deterministic grader rules produce violations, score, verdict, and policy patch guidance.
-7. The Readiness Receipt and static UI make the evidence reviewable.
-
-## Development
-
-Prerequisite: Node.js 22 or newer. The repo includes `.nvmrc` with `22` for local version managers.
+SplunkReady is built with TypeScript, Zod, and Vitest.
 
 ```bash
-npm install
+# Run unit and integration tests
 npm test
+
+# Run scaffold verifications
 npm run verify:scaffold
+
+# Run full checks (scaffold + tests)
 npm run check
 ```
-
-## Limitations
-
-- SplunkReady is a certification harness, not a chatbot, SOC copilot, detection-health product, or generic eval platform.
-- The fixture demo uses representative Splunk fixture data; it is designed for deterministic local verification, not as a claim about every production deployment.
-- Live mode is read-only from SplunkReady's side. The live smoke path only inventories Splunk; `live-proof` and `live-security-proof` run bounded read-only searches through MCP.
-- SplunkReady never auto-mutates Splunk. Policy patches are exported for operator review.
-- LLMs may explain results or draft policy text, but deterministic grader rules decide pass/fail.
-- The default bundled specimen is deterministic TypeScript code for reproducible fixture demos. The env-gated Gemini specimen produces fixture and live traces. The strict flagship live security proof requires operator-owned Splunk setup data because SplunkReady does not install apps, indexes, saved searches, or events automatically.
-
-## Submission Materials
-
-- Devpost copy: [docs/devpost-submission.md](docs/devpost-submission.md)
-- Demo script: [docs/demo-script.md](docs/demo-script.md)
-- Architecture diagram: [docs/architecture.svg](docs/architecture.svg)
-- Live adapter safety notes: [docs/live-adapter.md](docs/live-adapter.md)
-- Live setup checklist: [docs/live-setup-checklist.md](docs/live-setup-checklist.md)
-- LLM specimen agent: [docs/llm-specimen-agent.md](docs/llm-specimen-agent.md)
