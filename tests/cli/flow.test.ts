@@ -774,6 +774,8 @@ describe("SplunkReady CLI flow", () => {
           "examples/sample-mcp-transcript.jsonl",
           "--out",
           outDir,
+          "--strict-import",
+          "true",
           "--json"
         ])
       ).stdout
@@ -791,6 +793,8 @@ describe("SplunkReady CLI flow", () => {
       toolCalls: number;
       toolResults: number;
       finalAnswers: number;
+      unmatchedToolCalls: number;
+      strictImport: boolean;
       toolNames: string[];
       nextCommand: string;
     };
@@ -809,6 +813,8 @@ describe("SplunkReady CLI flow", () => {
       toolCalls: 1,
       toolResults: 1,
       finalAnswers: 1,
+      unmatchedToolCalls: 0,
+      strictImport: true,
       toolNames: ["splunk_run_query"]
     });
     expect(summary.nextCommand).toContain("grade-trace");
@@ -852,6 +858,37 @@ describe("SplunkReady CLI flow", () => {
     expect(receipt.verdict).toBe("NOT READY");
     expect(receipt.score).toBe(0);
     expect(receipt.violations.length).toBeGreaterThan(0);
+  });
+
+  it("rejects incomplete MCP transcripts in strict import mode", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-transcript-strict-"));
+    const transcriptPath = join(outDir, "incomplete-transcript.jsonl");
+
+    await writeFile(
+      transcriptPath,
+      `${JSON.stringify({
+        jsonrpc: "2.0",
+        id: "mcp-missing-response",
+        method: "tools/call",
+        params: {
+          name: "splunk_run_query",
+          arguments: {
+            query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now"
+          }
+        },
+        timestamp: "2026-06-01T06:00:10.000Z"
+      })}\n`,
+      "utf8"
+    );
+
+    await expect(
+      runCli(["import-mcp-transcript", "--transcript", transcriptPath, "--out", outDir, "--strict-import", "true"])
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("Strict MCP transcript import failed")
+    });
+
+    expect(await exists(join(outDir, "trace-imported.json"))).toBe(false);
+    expect(await exists(join(outDir, "mcp-transcript-import.json"))).toBe(false);
   });
 
   it("uses the Gemini-backed specimen for evaluate and rerun when LLM mode is enabled", async () => {

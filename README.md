@@ -75,6 +75,7 @@ If an external agent only logs Splunk MCP JSON-RPC calls, import the transcript 
 npm run splunkready -- import-mcp-transcript \
   --transcript examples/sample-mcp-transcript.jsonl \
   --out artifacts/mcp-transcript \
+  --strict-import true \
   --json
 npm run splunkready -- grade-trace \
   --trace artifacts/mcp-transcript/trace-imported.json \

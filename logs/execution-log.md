@@ -6794,3 +6794,54 @@ Reviewer findings:
 
 Result:
 - Focused build/test, direct CLI smoke, full repo check, Vite production build, and `git diff --check` passed.
+
+## 2026-06-03 - Phase Live Strict MCP Transcript Import
+
+Scope:
+- Make MCP transcript import usable as a CI-grade gate for external agents.
+- Preserve permissive import by default for exploratory local debugging.
+- Keep scoring and pass/fail in `grade-trace`.
+
+Files expected/touched:
+- `src/traces/mcp-transcript.ts`
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `examples/README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `--strict-import true|false` to `import-mcp-transcript`.
+- Import summaries now include `unmatchedToolCalls`.
+- Strict import fails before writing artifacts when:
+  - the transcript contains skipped/unrecognized records;
+  - a Splunk MCP tool call has no matching response.
+- README and examples now recommend `--strict-import true` for CI transcript import.
+
+Product impact:
+- External-agent grading is safer for automation: CI can reject incomplete MCP evidence before `grade-trace`.
+- The normal import path remains useful for messy local logs while teams are instrumenting agents.
+- This strengthens the Platform & DX story without adding another dashboard or changing grader semantics.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 29% | 29% | Reliability improvement, not a new demo moment. |
+| Platform & DX | 73% | 75% | Transcript import is now CI-safe for external-agent workflows. |
+| Security | 40% | 40% | Security behavior unchanged. |
+| Best Use of MCP Server | 82% | 83% | MCP transcript evidence has stricter integrity checks. |
+| Hosted Models | 53% | 53% | Hosted-model behavior unchanged while SAIA activation is pending. |
+| Developer Tools | 69% | 72% | Importer is easier to trust in automated gates. |
+
+Next directions to consider in future runs:
+- Consider a multi-transcript suite importer if users certify several external agents at once.
+- Consider rendering transcript import summaries in the Vite Suite/Receipt views.
+- Keep strict import focused on transcript integrity, not readiness scoring.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused build/test, strict CLI smoke, full repo check, Vite production build, and `git diff --check` passed.

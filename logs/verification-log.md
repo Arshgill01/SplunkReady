@@ -5257,3 +5257,40 @@ Result:
 Open risks:
 
 - The importer is intentionally permissive for wrapper shapes and skipped records. Add a strict mode later if CI users need malformed-record rejection.
+
+## 2026-06-03 - Phase Live Strict MCP Transcript Import
+
+Commands:
+
+- `npm run build && npx vitest run tests/cli/flow.test.ts -t "MCP JSON-RPC transcript"`
+- `npx vitest run tests/cli/flow.test.ts -t "MCP"`
+- `tmp=$(mktemp -d /tmp/splunkready-mcp-strict-XXXXXX) && npm run splunkready -- compile --out "$tmp" --json >/tmp/splunkready-mcp-strict-compile.json && npm run splunkready -- import-mcp-transcript --transcript examples/sample-mcp-transcript.jsonl --out "$tmp" --strict-import true --json >/tmp/splunkready-mcp-strict-import.json && node -e 'const fs=require("node:fs"); const s=JSON.parse(fs.readFileSync(process.argv[1]+"/mcp-transcript-import.json","utf8")); console.log(JSON.stringify({out:process.argv[1], strictImport:s.strictImport, skippedRecords:s.skippedRecords, unmatchedToolCalls:s.unmatchedToolCalls, importedEvents:s.importedEvents})); if (s.strictImport !== true || s.skippedRecords !== 0 || s.unmatchedToolCalls !== 0 || s.importedEvents !== 3) process.exit(1);' "$tmp"`
+- `npm run check && npm run ui:build && git diff --check`
+
+Result:
+
+- PASS for TypeScript build and first focused CLI importer test:
+  - 1 test file;
+  - 1 test passed;
+  - 27 tests skipped by the focused name filter.
+- PASS for broader MCP-focused CLI test run:
+  - 1 test file;
+  - 3 tests passed;
+  - 25 tests skipped by the focused name filter.
+- PASS for direct strict CLI smoke:
+  - strictImport `true`;
+  - skippedRecords 0;
+  - unmatchedToolCalls 0;
+  - importedEvents 3.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 815 project files;
+  - 38 test files;
+  - 221 tests.
+- PASS for Vite production build.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Strict import currently checks transcript structural integrity only. It does not judge readiness; `grade-trace` remains the required pass/fail gate.

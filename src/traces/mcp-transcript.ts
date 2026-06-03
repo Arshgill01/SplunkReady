@@ -12,6 +12,7 @@ export interface ImportedMcpTranscriptSummary {
   errors: number;
   finalAnswers: number;
   skippedRecords: number;
+  unmatchedToolCalls: number;
   toolNames: string[];
 }
 
@@ -284,6 +285,8 @@ export const importMcpTranscript = (records: unknown[], missionId: string): Impo
         continue;
       }
 
+      pending.delete(responseId);
+
       const result = record.result;
       const error = record.error ?? (isRecord(result) && result.isError === true ? result : undefined);
 
@@ -382,6 +385,7 @@ export const importMcpTranscript = (records: unknown[], missionId: string): Impo
       errors,
       finalAnswers,
       skippedRecords,
+      unmatchedToolCalls: pending.size,
       toolNames: [...toolNames].sort()
     }
   };

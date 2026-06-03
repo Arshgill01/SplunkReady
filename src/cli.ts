@@ -83,6 +83,7 @@ interface CliOptions {
   agentVersion: string;
   agentModel: string;
   candidateLimit: number;
+  strictImport: boolean;
   firewall: boolean;
   json: boolean;
 }
@@ -150,7 +151,7 @@ Commands:
   compile   --mode fixture|live --fixture <path> --mission <path> --out <dir> [--json]
   evaluate  --mode fixture|live --out <dir> [--firewall] [--json]
   firewall-check --mode fixture|live --out <dir> [--json]
-  import-mcp-transcript --transcript <path> --mission <path> --out <dir> [--json]
+  import-mcp-transcript --transcript <path> --mission <path> --out <dir> [--strict-import true|false] [--json]
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   hosted-model-proof --mode fixture|live --out <dir> [--json]
@@ -198,6 +199,7 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     agentVersion: "unversioned",
     agentModel: "",
     candidateLimit: 12,
+    strictImport: false,
     firewall: false,
     json: false
   };
@@ -268,6 +270,12 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       }
 
       options.requireFailToPass = value === "true";
+    } else if (flag === "--strict-import") {
+      if (value !== "true" && value !== "false") {
+        throw new Error("--strict-import must be true or false.");
+      }
+
+      options.strictImport = value === "true";
     } else if (flag === "--trace") {
       options.trace = value;
     } else if (flag === "--transcript") {
@@ -1725,12 +1733,26 @@ const importMcpTranscriptCommand = async (options: CliOptions): Promise<string[]
   const mission = await loadMission(options.mission);
   const records = parseMcpTranscriptRecords(await readFile(options.transcript, "utf8"));
   const imported = importMcpTranscript(records, mission.id);
+  const importFailures = [
+    imported.summary.skippedRecords > 0
+      ? `${imported.summary.skippedRecords} skipped transcript record(s)`
+      : null,
+    imported.summary.unmatchedToolCalls > 0
+      ? `${imported.summary.unmatchedToolCalls} unmatched tool call(s)`
+      : null
+  ].filter((failure): failure is string => Boolean(failure));
+
+  if (options.strictImport && importFailures.length > 0) {
+    throw new Error(`Strict MCP transcript import failed: ${importFailures.join("; ")}.`);
+  }
+
   const tracePath = join(options.out, "trace-imported.json");
   const summaryPath = join(options.out, "mcp-transcript-import.json");
 
   await writeJson(tracePath, imported.traceEvents);
   await writeJson(summaryPath, {
     ...imported.summary,
+    strictImport: options.strictImport,
     transcriptPath: options.transcript,
     outputTracePath: tracePath,
     nextCommand: `npm run splunkready -- grade-trace --trace ${tracePath} --out ${options.out} --agent-name "${options.agentName}" --agent-version "${options.agentVersion}"`

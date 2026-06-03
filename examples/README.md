@@ -51,6 +51,7 @@ npm run splunkready -- compile --out "$tmp"
 npm run splunkready -- import-mcp-transcript \
   --transcript examples/sample-mcp-transcript.jsonl \
   --out "$tmp" \
+  --strict-import true \
   --json
 npm run splunkready -- grade-trace \
   --trace "$tmp/trace-imported.json" \
@@ -59,7 +60,7 @@ npm run splunkready -- grade-trace \
   --agent-version "jsonrpc-transcript-001"
 ```
 
-The importer writes `trace-imported.json` plus `mcp-transcript-import.json`. It does not grade, score, or infer readiness; it only converts MCP call/result records into SplunkReady trace events so the deterministic `grade-trace` command remains the pass/fail authority.
+The importer writes `trace-imported.json` plus `mcp-transcript-import.json`. It does not grade, score, or infer readiness; it only converts MCP call/result records into SplunkReady trace events so the deterministic `grade-trace` command remains the pass/fail authority. Use `--strict-import true` in CI to reject transcripts with skipped records or MCP tool calls that never received a matching response.
 
 ## CI gate example
 
