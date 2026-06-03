@@ -84,9 +84,10 @@ interface CliOptions {
 
 interface CliOutput {
   command: string;
-  status: "PASS" | "SKIP";
+  status: "PASS" | "SKIP" | "FAIL";
   artifacts: string[];
   messages?: string[];
+  error?: string;
 }
 
 type ProofAuditStatus = "PASS" | "WARN" | "FAIL";
@@ -2351,6 +2352,25 @@ const formatCliError = (error: unknown): string => {
 };
 
 main().catch((error: unknown) => {
-  console.error(formatCliError(error));
+  const formattedError = formatCliError(error);
+
+  if (process.argv.includes("--json")) {
+    console.error(
+      JSON.stringify(
+        {
+          command: process.argv[2] ?? "help",
+          status: "FAIL",
+          artifacts: [],
+          error: formattedError
+        } satisfies CliOutput,
+        null,
+        2
+      )
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  console.error(formattedError);
   process.exitCode = 1;
 });

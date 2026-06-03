@@ -4957,3 +4957,37 @@ Result:
 Open risks:
 
 - The SDK example is fixture-backed; live external-agent proof remains separate from the live security proof path.
+
+## 2026-06-03 - Phase Live CI Gate JSON Failure Envelopes
+
+Commands:
+
+- `npm run build && npx vitest run tests/cli/flow.test.ts -t "JSON output|hosted-model diagnostic"`
+- `npm run check && git diff --check`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for TypeScript build.
+- PASS for focused CLI tests:
+  - 1 test file;
+  - 3 tests passed;
+  - 22 tests skipped by the focused name filter.
+- PASS coverage included:
+  - `proof-audit --require-pass true --json` emits `status: "FAIL"` on stderr when strict gating fails;
+  - `hosted-model-diagnostic --require-pass true --json` emits `status: "FAIL"` on stderr when SAIA is blocked.
+- FAIL for the first full repo check:
+  - scaffold verification passed;
+  - 37 test files passed;
+  - `tests/cli/flow.test.ts` timed out in its `beforeAll` hook after 30s while building the isolated CLI test output.
+- PASS for the second full repo check after increasing the CLI flow hook timeout:
+  - scaffold verified;
+  - 85 waves;
+  - 759 project files;
+  - 38 test files;
+  - 216 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The longer CLI flow hook timeout addresses full-suite load variance; it does not change CLI behavior.

@@ -4425,6 +4425,59 @@ Result:
 - Targeted example test passed.
 - Full repo verification and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live CI Gate JSON Failure Envelopes
+
+Scope:
+- Make SplunkReady's `--json` CLI mode useful for failed CI gates, not only successful commands.
+- Keep normal human-readable errors unchanged.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `examples/README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- CLI failures now emit a structured JSON envelope on stderr when `--json` is present:
+  - `command`;
+  - `status: "FAIL"`;
+  - empty `artifacts`;
+  - `error`.
+- Increased the CLI flow test build hook timeout from 30s to 60s after full-suite verification showed the existing `tsc` setup hook could time out under parallel load before tests ran.
+- Added regression coverage for:
+  - `proof-audit --require-pass true --json` when the proof is only `WARN`;
+  - `hosted-model-diagnostic --require-pass true --json` when SAIA is blocked.
+- Documented that CI jobs can parse `PASS`, `SKIP`, and `FAIL` envelopes.
+
+Product impact:
+- CI consumers no longer need to scrape human-readable stderr for strict gate failures.
+- This improves the Platform/DX story because SplunkReady behaves like a real PR-blocking tool.
+- The SAIA activation wait path becomes easier to automate: a blocked hosted-model diagnostic is machine-readable.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 29% | 29% | No new demo capability. |
+| Platform & DX | 72% | 74% | CI failure handling is now programmatic. |
+| Security | 40% | 40% | Runtime/security behavior unchanged. |
+| Best Use of MCP Server | 79% | 79% | MCP behavior unchanged. |
+| Hosted Models | 53% | 54% | SAIA blocked state is now cleaner for automation. |
+| Developer Tools | 68% | 71% | CLI behaves more like a reusable developer tool. |
+
+Next directions to consider in future runs:
+- Audit the GitHub Actions example after this change and consider parsing JSON stderr directly in failure-handling steps.
+- Continue live proof hardening while SAIA activation is pending.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused build and CLI tests passed.
+- First full repo check failed because the CLI flow `beforeAll` TypeScript build hook exceeded its 30s timeout before any CLI tests ran.
+- After increasing that hook timeout to 60s, full repo verification and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Hosted Model Proof Attachment and LLM Evidence Ledger
 
 Scope:

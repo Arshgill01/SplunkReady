@@ -14,7 +14,7 @@ beforeAll(async () => {
   const buildDir = join(process.cwd(), "dist", "cli-flow-test");
   await execFileAsync("npx", ["tsc", "--outDir", join(buildDir, "dist")], { cwd: process.cwd() });
   cliPath = join(buildDir, "dist", "src", "cli.js");
-}, 30_000);
+}, 60_000);
 
 const runCli = async (args: string[], cwd: string = process.cwd(), env: NodeJS.ProcessEnv = {}) =>
   execFileAsync(process.execPath, [cliPath, ...args], { cwd, env: { ...process.env, ...env } });
@@ -24,8 +24,15 @@ const exists = async (path: string): Promise<boolean> =>
     .then(() => true)
     .catch(() => false);
 
-const parseCliJsonOutput = (stdout: string): { command: string; status: string; artifacts: string[]; messages?: string[] } =>
-  JSON.parse(stdout) as { command: string; status: string; artifacts: string[]; messages?: string[] };
+interface ParsedCliJsonOutput {
+  command: string;
+  status: string;
+  artifacts: string[];
+  messages?: string[];
+  error?: string;
+}
+
+const parseCliJsonOutput = (stdout: string): ParsedCliJsonOutput => JSON.parse(stdout) as ParsedCliJsonOutput;
 
 const defaultSavedSearchRows = [
   { eventRef: "live-evt-102", user: "svc-finance", dest: "win-finance-07" },
@@ -414,6 +421,21 @@ describe("SplunkReady CLI flow", () => {
     await expect(runCli(["proof-audit", "--out", outDir, "--require-pass", "true"])).rejects.toMatchObject({
       stderr: expect.stringContaining("proof-audit strict gate failed with WARN")
     });
+
+    const jsonFailure = await runCli(["proof-audit", "--out", outDir, "--require-pass", "true", "--json"]).then(
+      () => {
+        throw new Error("Expected proof-audit strict JSON gate to fail.");
+      },
+      (error: unknown) => error as { stderr: string }
+    );
+    const failure = parseCliJsonOutput(jsonFailure.stderr);
+
+    expect(failure).toMatchObject({
+      command: "proof-audit",
+      status: "FAIL",
+      artifacts: [],
+      error: expect.stringContaining("proof-audit strict gate failed with WARN")
+    });
   });
 
   it("runs the clean fixture demo orchestration and writes rehearsal artifacts", async () => {
@@ -766,6 +788,25 @@ describe("SplunkReady CLI flow", () => {
         )
       ).rejects.toMatchObject({
         stderr: expect.stringContaining("hosted-model-diagnostic requires SAIA access")
+      });
+
+      const jsonFailure = await runCli(
+        ["hosted-model-diagnostic", "--mode", "live", "--out", outDir, "--require-pass", "true", "--json"],
+        process.cwd(),
+        env
+      ).then(
+        () => {
+          throw new Error("Expected hosted-model-diagnostic strict JSON gate to fail.");
+        },
+        (error: unknown) => error as { stderr: string }
+      );
+      const failure = parseCliJsonOutput(jsonFailure.stderr);
+
+      expect(failure).toMatchObject({
+        command: "hosted-model-diagnostic",
+        status: "FAIL",
+        artifacts: [],
+        error: expect.stringContaining("hosted-model-diagnostic requires SAIA access")
       });
     } finally {
       await mcp.close();
