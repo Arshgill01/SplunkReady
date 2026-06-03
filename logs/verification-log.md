@@ -5325,3 +5325,30 @@ Open risks:
 
 - The UI reads imported/external trace artifacts but does not create them. `import-mcp-transcript` and `grade-trace` remain the required generation path.
 - Trace actors still follow the existing schema enum; external-agent identity is represented by the receipt agent metadata and transcript import provenance.
+
+## 2026-06-03 - Phase Live External Trace Strict Audit
+
+Commands:
+
+- `npm run build && npx vitest run tests/cli/flow.test.ts -t "external trace|MCP transcript"`
+- `npm run check && npm run ui:build && git diff --check`
+
+Result:
+
+- PASS for TypeScript build and focused external/MCP CLI tests:
+  - 1 test file;
+  - 3 tests passed;
+  - 26 tests skipped by the focused name filter.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 815 project files;
+  - 38 test files;
+  - 223 tests.
+- PASS for Vite production build.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- External strict audit intentionally fails a NOT READY receipt. This is correct CI behavior, but demos should choose a READY external trace when showing a passing SDK gate.
+- `proof-audit` validates external artifact integrity and verdict; it does not re-run grading. `grade-trace` remains required before audit.

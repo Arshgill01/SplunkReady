@@ -6899,3 +6899,65 @@ Reviewer findings:
 
 Result:
 - Focused build/test, full Vite UI test file, full repo check, Vite production build, and `git diff --check` passed.
+
+## 2026-06-03 - Phase Live External Trace Strict Audit
+
+Scope:
+- Make the external trace and imported MCP transcript workflow CI-grade after grading.
+- Keep `grade-trace` responsible for deterministic scoring and `proof-audit` responsible for artifact integrity and strict gate semantics.
+- Do not touch live Splunk for this slice.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `ui/src/artifacts.ts`
+- `README.md`
+- `examples/README.md`
+- `examples/github-workflow-example.yml`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- `proof-audit` now recognizes external trace bundles through `receipt-external-001.json`.
+- Added `external-trace` proof type with checks for:
+  - schema-valid environment contract;
+  - schema-valid external receipt;
+  - non-empty schema-valid `trace-external.json`;
+  - schema-valid `violations-external.json`;
+  - receipt trace refs matching the external trace;
+  - strict `READY` external receipt gate;
+  - offline/no-mutation posture;
+  - optional MCP transcript integrity when `mcp-transcript-import.json` is present.
+- `proof-audit --require-pass true` now blocks a NOT READY external receipt and passes a READY external receipt.
+- The Vite proof-audit schema accepts `external-trace` reports.
+- README, examples README, and GitHub Actions sample now document the external-agent strict audit gate.
+
+Product impact:
+- SplunkReady can now serve as a realistic CI/CD gate for third-party Splunk MCP agents:
+  - import/capture trace;
+  - grade deterministically;
+  - strict-audit the resulting Readiness Receipt;
+  - block merges unless the external agent is READY.
+- This closes an adoption gap in the Platform & DX story because teams do not need to use SplunkReady's specimen agent to get a merge-blocking gate.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 30% | 31% | The product is less demo-only and more deployable as a real gate. |
+| Platform & DX | 78% | 82% | External-agent CI gates are now first-class and documented. |
+| Security | 41% | 42% | Security agent traces can be blocked before merge if they are NOT READY. |
+| Best Use of MCP Server | 85% | 86% | Imported MCP transcript workflows now have strict audit semantics. |
+| Hosted Models | 53% | 53% | Hosted-model behavior unchanged while SAIA activation is pending. |
+| Developer Tools | 75% | 80% | The GitHub Actions sample now demonstrates external trace gating directly. |
+
+Next directions to consider in future runs:
+- Add a multi-external-agent audit summary if several `external-trace` bundles need to be certified together.
+- Consider a single command that runs compile -> import transcript -> grade trace -> proof audit for CI ergonomics, without hiding intermediate artifacts.
+- Keep strict audit focused on artifact integrity and receipt verdict; do not duplicate grader rule logic.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused build/test, full repo check, Vite production build, and `git diff --check` passed.

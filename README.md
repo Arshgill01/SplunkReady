@@ -63,9 +63,15 @@ npm run splunkready -- grade-trace \
   --out "$tmp" \
   --agent-name "Captured Agent" \
   --agent-version "trace-001"
+npm run splunkready -- proof-audit \
+  --out "$tmp" \
+  --require-pass true \
+  --json
 ```
 
 The compile command also writes `readiness-profile.json`, which binds active rule IDs to the compiled Splunk contract. The trace grading command writes `trace-external.json`, deterministic violations, a score, and `receipt-external-001.json` / `.md`. It rejects traces whose `missionId` does not match the selected mission. The trace producer is outside SplunkReady; the deterministic rule engine remains the pass/fail authority.
+
+For external-agent CI, `proof-audit --require-pass true` recognizes `receipt-external-001.json` as an `external-trace` proof and fails the gate unless the deterministic receipt is `READY`.
 
 See [examples/README.md](examples/README.md) for runnable external-trace capture scripts and generated sample receipts for both `NOT READY` and `READY / 100` external agent traces.
 
@@ -80,6 +86,10 @@ npm run splunkready -- import-mcp-transcript \
 npm run splunkready -- grade-trace \
   --trace artifacts/mcp-transcript/trace-imported.json \
   --out artifacts/mcp-transcript
+npm run splunkready -- proof-audit \
+  --out artifacts/mcp-transcript \
+  --require-pass true \
+  --json
 ```
 
 ## Multi-Mission Fixture Proof

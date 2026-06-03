@@ -18,11 +18,12 @@ npm run splunkready -- grade-trace \
   --out "$tmp" \
   --agent-name "External MCP Agent" \
   --agent-version "example-trace-001"
+npm run splunkready -- proof-audit --out "$tmp" --json
 ```
 
 The grading command writes `trace-external.json`, `violations-external.json`, `score-external.json`, and `receipt-external-001.md` into `$tmp`.
 
-The checked-in `sample-receipt.md` was generated from this flow and is included as a static reference for reviewers. It returns `NOT READY` with deterministic violations for `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`.
+The checked-in `sample-receipt.md` was generated from this flow and is included as a static reference for reviewers. It returns `NOT READY` with deterministic violations for `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`. The proof audit classifies this as `external-trace` and reports `FAIL`; CI should use `--require-pass true` when it wants to block a merge on a NOT READY external receipt.
 
 Run the contract-aware trace:
 
@@ -36,6 +37,7 @@ npm run splunkready -- grade-trace \
   --out "$tmp" \
   --agent-name "External MCP Agent" \
   --agent-version "example-trace-pass-001"
+npm run splunkready -- proof-audit --out "$tmp" --require-pass true --json
 ```
 
 The checked-in `sample-pass-receipt.md` was generated from this flow. It returns `READY / 100` with no violations, proving the SDK path can certify an external agent trace when the trace uses validated knowledge objects and carries evidence provenance.
@@ -58,6 +60,7 @@ npm run splunkready -- grade-trace \
   --out "$tmp" \
   --agent-name "External MCP Agent" \
   --agent-version "jsonrpc-transcript-001"
+npm run splunkready -- proof-audit --out "$tmp" --require-pass true --json
 ```
 
 The importer writes `trace-imported.json` plus `mcp-transcript-import.json`. It does not grade, score, or infer readiness; it only converts MCP call/result records into SplunkReady trace events so the deterministic `grade-trace` command remains the pass/fail authority. Use `--strict-import true` in CI to reject transcripts with skipped records or MCP tool calls that never received a matching response.
@@ -71,6 +74,8 @@ The default `fixture-smoke` job runs without live Splunk credentials. It compile
 The job also runs `suite-proof --require-fail-to-pass true` against the default suite manifest, then audits that bundle with `proof-audit --require-pass true`. That stricter gate proves the security and observability fixture missions all execute the full NOT READY -> patch -> READY certification loop, rather than merely ending in a READY state. Repositories can pass `--suite <path>` to point the same gate at their own mission manifests.
 
 CLI commands that include `--json` emit structured `PASS`, `SKIP`, or `FAIL` envelopes, so CI jobs can parse failure details without scraping human-readable stderr.
+
+For externally captured traces and imported MCP transcripts, run `proof-audit --require-pass true` after `grade-trace`. The audit recognizes `receipt-external-001.json`, checks that `trace-external.json` and deterministic violations are present, verifies receipt trace refs, and fails unless the external receipt is `READY`.
 
 The same job also runs `firewall-check`. That command compiles the fixture contract, executes the before-phase specimen behind the SplunkReady firewall, treats a `FIREWALL_POLICY_BLOCKED` result as a passing pre-execution safety proof, and writes `firewall-block-before.json` plus a strict `proof-audit.json`. CI can upload those artifacts even though no unsafe query reached Splunk.
 

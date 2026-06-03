@@ -35,6 +35,7 @@ import {
   policyPatchSchema,
   readinessReceiptSchema,
   traceEventSchema,
+  violationSchema,
   type EnvironmentContract,
   type PolicyPatch,
   type ReadOnlySplunkToolName,
@@ -107,7 +108,7 @@ interface ProofAuditCheck {
 
 interface ProofAuditReport {
   status: ProofAuditStatus;
-  proofType: "live-security" | "live" | "receipt" | "firewall-block" | "suite" | "unknown";
+  proofType: "live-security" | "live" | "receipt" | "firewall-block" | "suite" | "external-trace" | "unknown";
   proofDir: string;
   mode?: EnvironmentContract["mode"];
   mutation?: boolean;
@@ -1950,6 +1951,10 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
   const contractInput = await readOptionalJson<unknown>(join(options.out, "environment-contract.json"));
   const beforeReceiptInput = await readOptionalJson<unknown>(join(options.out, "receipt-before-001.json"));
   const afterReceiptInput = await readOptionalJson<unknown>(join(options.out, "receipt-after-001.json"));
+  const externalReceiptInput = await readOptionalJson<unknown>(join(options.out, "receipt-external-001.json"));
+  const externalTraceInput = await readOptionalJson<unknown>(join(options.out, "trace-external.json"));
+  const externalViolationsInput = await readOptionalJson<unknown>(join(options.out, "violations-external.json"));
+  const mcpTranscriptImport = await readOptionalJson<unknown>(join(options.out, "mcp-transcript-import.json"));
   const liveProofSummary = await readOptionalJson<unknown>(join(options.out, "live-proof-summary.json"));
   const liveSecurityProofSummary = await readOptionalJson<unknown>(
     join(options.out, "live-security-proof-summary.json")
@@ -1962,9 +1967,17 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
   const contractResult = contractInput ? environmentContractSchema.safeParse(contractInput) : undefined;
   const beforeReceiptResult = beforeReceiptInput ? readinessReceiptSchema.safeParse(beforeReceiptInput) : undefined;
   const afterReceiptResult = afterReceiptInput ? readinessReceiptSchema.safeParse(afterReceiptInput) : undefined;
+  const externalReceiptResult = externalReceiptInput ? readinessReceiptSchema.safeParse(externalReceiptInput) : undefined;
+  const externalTraceResult = externalTraceInput ? traceEventSchema.array().safeParse(externalTraceInput) : undefined;
+  const externalViolationsResult = externalViolationsInput
+    ? violationSchema.array().safeParse(externalViolationsInput)
+    : undefined;
   const contract = contractResult?.success ? contractResult.data : undefined;
   const beforeReceipt = beforeReceiptResult?.success ? beforeReceiptResult.data : undefined;
   const afterReceipt = afterReceiptResult?.success ? afterReceiptResult.data : undefined;
+  const externalReceipt = externalReceiptResult?.success ? externalReceiptResult.data : undefined;
+  const externalTrace = externalTraceResult?.success ? externalTraceResult.data : undefined;
+  const externalViolations = externalViolationsResult?.success ? externalViolationsResult.data : undefined;
   const proofType: ProofAuditReport["proofType"] = suiteProofSummary
     ? "suite"
     : firewallBlock
@@ -1975,7 +1988,9 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
           ? "live"
           : beforeReceipt || afterReceipt
             ? "receipt"
-            : "unknown";
+            : externalReceiptInput
+              ? "external-trace"
+              : "unknown";
 
   if (proofType === "suite") {
     const summary = isRecord(suiteProofSummary) ? suiteProofSummary : undefined;
@@ -2140,6 +2155,148 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
       proofDir: options.out,
       mode: contract?.mode,
       mutation,
+      checks
+    };
+    const auditPath = join(options.out, "proof-audit.json");
+
+    await writeJson(auditPath, report);
+
+    if (options.requirePass && status !== "PASS") {
+      throw new Error(`proof-audit strict gate failed with ${status}. Inspect ${auditPath}.`);
+    }
+
+    return [auditPath];
+  }
+
+  if (proofType === "external-trace") {
+    const traceIds = new Set((externalTrace ?? []).map((event) => event.id));
+    const missingTraceRefs = externalReceipt?.traceRefs.filter((traceRef) => !traceIds.has(traceRef)) ?? [];
+    const importSummary = isRecord(mcpTranscriptImport) ? mcpTranscriptImport : undefined;
+    const importSource = stringFromRecord(importSummary, "source");
+    const importMutation = booleanFromRecord(importSummary, "mutation");
+    const skippedRecords = numberFromRecord(importSummary, "skippedRecords");
+    const unmatchedToolCalls = numberFromRecord(importSummary, "unmatchedToolCalls");
+    const strictImport = booleanFromRecord(importSummary, "strictImport");
+
+    addCheck(
+      contract
+        ? {
+            id: "contract-loaded",
+            status: "PASS",
+            detail: "Environment contract is present and schema-valid.",
+            evidence: { id: contract.id, mode: contract.mode }
+          }
+        : {
+            id: "contract-loaded",
+            status: "FAIL",
+            detail: contractInput
+              ? "environment-contract.json is present but does not match the contract schema."
+              : "environment-contract.json is missing.",
+            evidence: contractResult && !contractResult.success ? contractResult.error.issues : undefined
+          }
+    );
+    addCheck(
+      externalReceipt
+        ? {
+            id: "external-receipt-loaded",
+            status: "PASS",
+            detail: "External trace receipt is present and schema-valid.",
+            evidence: {
+              id: externalReceipt.id,
+              verdict: externalReceipt.verdict,
+              score: externalReceipt.score,
+              violations: externalReceipt.violations.length
+            }
+          }
+        : {
+            id: "external-receipt-loaded",
+            status: "FAIL",
+            detail: externalReceiptInput
+              ? "receipt-external-001.json is present but does not match the receipt schema."
+              : "receipt-external-001.json is missing.",
+            evidence: externalReceiptResult && !externalReceiptResult.success ? externalReceiptResult.error.issues : undefined
+          }
+    );
+    addCheck(
+      externalTrace
+        ? {
+            id: "external-trace-loaded",
+            status: externalTrace.length > 0 ? "PASS" : "FAIL",
+            detail: "External trace artifact is present, schema-valid, and non-empty.",
+            evidence: { traceEvents: externalTrace.length }
+          }
+        : {
+            id: "external-trace-loaded",
+            status: "FAIL",
+            detail: externalTraceInput
+              ? "trace-external.json is present but does not match the trace schema."
+              : "trace-external.json is missing.",
+            evidence: externalTraceResult && !externalTraceResult.success ? externalTraceResult.error.issues : undefined
+          }
+    );
+    addCheck(
+      externalViolations
+        ? {
+            id: "external-violations-loaded",
+            status: "PASS",
+            detail: "External deterministic violations artifact is present and schema-valid.",
+            evidence: { violations: externalViolations.length }
+          }
+        : {
+            id: "external-violations-loaded",
+            status: "FAIL",
+            detail: externalViolationsInput
+              ? "violations-external.json is present but does not match the violation schema."
+              : "violations-external.json is missing.",
+            evidence:
+              externalViolationsResult && !externalViolationsResult.success ? externalViolationsResult.error.issues : undefined
+          }
+    );
+    addCheck({
+      id: "external-receipt-trace-refs",
+      status: externalReceipt && externalTrace && missingTraceRefs.length === 0 ? "PASS" : "FAIL",
+      detail: "Every traceRef in the external receipt must exist in trace-external.json.",
+      evidence: { missingTraceRefs }
+    });
+    addCheck({
+      id: "external-verdict-ready",
+      status: externalReceipt?.verdict === "READY" ? "PASS" : "FAIL",
+      detail: "External-agent CI proof must end with a READY receipt.",
+      evidence: externalReceipt
+        ? { verdict: externalReceipt.verdict, score: externalReceipt.score, violations: externalReceipt.violations.length }
+        : null
+    });
+    addCheck({
+      id: "external-mutation-false",
+      status: importMutation === undefined || importMutation === false ? "PASS" : "FAIL",
+      detail: "External trace grading is offline; imported MCP transcripts must declare mutation=false when present.",
+      evidence: { importMutation: importMutation ?? null }
+    });
+    addCheck({
+      id: "external-mcp-transcript-integrity",
+      status:
+        !importSummary ||
+        (importSource === "mcp-jsonrpc-transcript" && skippedRecords === 0 && unmatchedToolCalls === 0)
+          ? "PASS"
+          : "FAIL",
+      detail: "Imported MCP transcript summaries must have no skipped records or unmatched tool calls.",
+      evidence: importSummary
+        ? {
+            source: importSource ?? null,
+            strictImport: strictImport ?? null,
+            skippedRecords: skippedRecords ?? null,
+            unmatchedToolCalls: unmatchedToolCalls ?? null
+          }
+        : { source: "not present" }
+    });
+
+    const status = auditStatusFromChecks(checks);
+    const report: ProofAuditReport = {
+      status,
+      proofType,
+      proofDir: options.out,
+      mode: contract?.mode ?? externalReceipt?.mode,
+      mutation: importMutation ?? false,
       checks
     };
     const auditPath = join(options.out, "proof-audit.json");

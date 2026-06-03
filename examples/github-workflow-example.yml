@@ -5,6 +5,44 @@ on:
   workflow_dispatch:
 
 jobs:
+  external-trace-sdk:
+    name: External trace SDK gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build SplunkReady
+        run: npm run build
+
+      - name: Compile fixture contract
+        run: npm run splunkready -- compile --mode fixture --out artifacts/ci-external-trace --json
+
+      - name: Grade captured external agent trace
+        run: npm run splunkready -- grade-trace --trace examples/sample-external-trace-pass.json --out artifacts/ci-external-trace --agent-name "External MCP Agent" --agent-version "ci-trace-pass" --json
+
+      - name: Block merge unless external agent receipt is READY
+        run: npm run splunkready -- proof-audit --out artifacts/ci-external-trace --require-pass true --json
+
+      - name: Upload external trace artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: splunkready-ci-external-trace
+          path: artifacts/ci-external-trace
+
   fixture-smoke:
     name: Fixture receipt smoke gate
     runs-on: ubuntu-latest

@@ -114,7 +114,7 @@ const proofAuditCheckSchema = z
 const proofAuditSchema = z
   .object({
     status: z.enum(["PASS", "WARN", "FAIL"]),
-    proofType: z.enum(["live-security", "live", "receipt", "firewall-block", "suite", "unknown"]),
+    proofType: z.enum(["live-security", "live", "receipt", "firewall-block", "suite", "external-trace", "unknown"]),
     proofDir: z.string().min(1),
     mode: z.enum(["fixture", "live"]).optional(),
     mutation: z.boolean().optional(),
