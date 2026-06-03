@@ -437,6 +437,25 @@ describe("SplunkReady CLI flow", () => {
         expect.objectContaining({ path: "receipt-after-001.json" })
       ])
     );
+    const manifestVerification = parseCliJsonOutput((await runCli(["verify-manifest", "--out", outDir, "--json"])).stdout);
+    const manifestVerificationReport = JSON.parse(await readFile(join(outDir, "proof-manifest-verification.json"), "utf8")) as {
+      status: string;
+      expectedAggregateSha256: string;
+      actualAggregateSha256: string;
+      changedFiles: Array<{ path: string }>;
+    };
+
+    expect(manifestVerification).toMatchObject({
+      command: "verify-manifest",
+      status: "PASS",
+      artifacts: [join(outDir, "proof-manifest-verification.json")]
+    });
+    expect(manifestVerificationReport).toMatchObject({
+      status: "PASS",
+      expectedAggregateSha256: proofManifest.aggregateSha256,
+      actualAggregateSha256: proofManifest.aggregateSha256,
+      changedFiles: []
+    });
     await expect(runCli(["proof-audit", "--out", outDir, "--require-pass", "true"])).rejects.toMatchObject({
       stderr: expect.stringContaining("proof-audit strict gate failed with WARN")
     });
@@ -1306,6 +1325,34 @@ describe("SplunkReady CLI flow", () => {
         expect.objectContaining({ id: "external-verdict-ready", status: "PASS" })
       ])
     );
+
+    expect(parseCliJsonOutput((await runCli(["verify-manifest", "--out", outDir, "--json"])).stdout)).toMatchObject({
+      command: "verify-manifest",
+      status: "PASS",
+      artifacts: [join(outDir, "proof-manifest-verification.json")]
+    });
+
+    await writeFile(join(outDir, "receipt-external-001.md"), "# tampered receipt\n", "utf8");
+    const manifestFailure = await runCli(["verify-manifest", "--out", outDir, "--json"]).then(
+      () => {
+        throw new Error("Expected verify-manifest to fail after tampering with receipt-external-001.md.");
+      },
+      (error: { stderr: string }) => parseCliJsonOutput(error.stderr)
+    );
+    const manifestFailureReport = JSON.parse(await readFile(join(outDir, "proof-manifest-verification.json"), "utf8")) as {
+      status: string;
+      changedFiles: Array<{ path: string }>;
+    };
+
+    expect(manifestFailure).toMatchObject({
+      command: "verify-manifest",
+      status: "FAIL",
+      error: expect.stringContaining("verify-manifest failed with FAIL")
+    });
+    expect(manifestFailureReport).toMatchObject({
+      status: "FAIL",
+      changedFiles: [expect.objectContaining({ path: "receipt-external-001.md" })]
+    });
   });
 
   it("rejects incomplete MCP transcripts in strict import mode", async () => {

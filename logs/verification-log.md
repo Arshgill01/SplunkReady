@@ -5736,3 +5736,39 @@ Open risks:
 
 - The proof manifest is currently written by `proof-audit` and summarized by `certification-index`; there is no standalone manifest verifier command yet. Add one only if external users need offline integrity checks.
 - The browser overlap probe used the running local Vite server at `127.0.0.1:5173`.
+
+## 2026-06-03 - Phase Live Proof Manifest Verification Gate
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts -t "verify-manifest|strict-audits a READY external trace proof|fixture compile"`
+- `npm run check`
+- `npm run ui:build`
+- `git diff --check`
+- Browser inspection with Zen at `http://127.0.0.1:5173/?artifacts=artifacts/live-security-ui#certification-replay`
+
+Result:
+
+- PASS for focused CLI verification:
+  - 1 test file;
+  - 2 tests passed;
+  - 31 tests skipped by focused filter.
+- The focused test covered:
+  - `verify-manifest --json` passes for a freshly audited proof bundle;
+  - `verify-manifest --json` fails after `receipt-external-001.md` is tampered;
+  - the failure report records `changedFiles: receipt-external-001.md`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 844 project files;
+  - 38 test files;
+  - 231 tests.
+- PASS for Vite production build.
+- PASS for `git diff --check`.
+- PASS for browser sidebar inspection:
+  - loaded the live security UI bundle;
+  - verified nav, artifact selector, and receipt footer render in separate sidebar zones without the reported overlap.
+
+Open risks:
+
+- Browser inspection was manual through the open Zen window, not a Playwright assertion, because Playwright is not a project dependency in this repo.

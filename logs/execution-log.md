@@ -219,6 +219,58 @@ Result:
 - Focused firewall-check regression passed.
 - Combined UI/CLI flow suite passed.
 
+## 2026-06-03 - Phase Live Proof Manifest Verification Gate
+
+Scope:
+- Turn proof manifests from passive checksum metadata into a reusable CLI integrity gate.
+- Keep verification artifact-level only; do not re-grade traces or alter deterministic pass/fail rules.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `ui/src/styles.css`
+- `README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `verify-manifest --out <proof-dir> [--json]`.
+- The command reads `proof-manifest.json`, re-hashes the current proof bundle, writes `proof-manifest-verification.json`, and fails if audited files changed, disappeared, or appeared after manifest creation.
+- Excluded `proof-manifest.json` and `proof-manifest-verification.json` from manifest hashing so verification is repeatable.
+- Added tests for a passing proof bundle and a tampered external receipt file.
+- Updated README to show `verify-manifest` in the external-agent CI flow.
+- Tightened the Vite sidebar into fixed brand, scroll-contained nav, artifact selector, and receipt footer zones after the browser showed nav/selector/status overlap at the left rail.
+
+Product impact:
+- Proof bundles now have a concrete integrity gate for CI uploads, GitHub artifacts, and reviewer handoff.
+- This strengthens the Platform/DX story without adding dashboard noise or changing grader authority.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 34% | 34% | Developer trust polish, not a new demo moment. |
+| Platform & DX | 92% | 93% | Artifact integrity is now directly enforceable. |
+| Security | 44% | 44% | Security proof behavior unchanged. |
+| Best Use of MCP Server | 89% | 89% | MCP behavior unchanged, but transcript proof bundles are safer to share. |
+| Hosted Models | 53% | 53% | Hosted-model behavior unchanged while SAIA activation is pending. |
+| Developer Tools | 90% | 92% | `verify-manifest` makes proof bundles usable in external CI/reviewer workflows. |
+
+Next directions to consider in future runs:
+- Add the verifier to the GitHub Actions example if the CI artifact upload flow starts publishing proof bundles.
+- When SAIA activation lands, run hosted-model proof, audit, manifest verification, and certification index together.
+- Keep manifest verification scoped to persisted artifacts; do not turn it into a second grader.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI tests for manifest verification passed.
+- Full repo check passed.
+- Vite production build passed.
+- `git diff --check` passed.
+- Browser inspection on `http://127.0.0.1:5173/?artifacts=artifacts/live-security-ui#certification-replay` verified the sidebar no longer overlaps.
+
 ## 2026-06-03 - Phase Live Generated UI Artifact Manifest
 
 Scope:

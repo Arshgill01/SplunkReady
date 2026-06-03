@@ -137,6 +137,27 @@ interface ProofManifest {
   files: ProofManifestFile[];
 }
 
+interface ProofManifestVerification {
+  source: "splunkready-proof-manifest-verification";
+  generatedAt: string;
+  status: "PASS" | "FAIL";
+  proofDir: string;
+  manifestPath: string;
+  expectedAggregateSha256: string;
+  actualAggregateSha256: string;
+  expectedFiles: number;
+  actualFiles: number;
+  missingFiles: string[];
+  unexpectedFiles: string[];
+  changedFiles: Array<{
+    path: string;
+    expectedSha256: string;
+    actualSha256: string;
+    expectedSizeBytes: number;
+    actualSizeBytes: number;
+  }>;
+}
+
 interface CertificationIndexEntry {
   label: string;
   proofDir: string;
@@ -230,6 +251,7 @@ Commands:
   hosted-model-proof --mode fixture|live --out <dir> [--json]
   hosted-model-diagnostic --mode fixture|live --out <dir> [--require-pass true|false] [--json]
   proof-audit --out <dir> [--require-pass true|false] [--json]
+  verify-manifest --out <dir> [--json]
   certification-index --proof-dirs <dir[,dir]> --out <dir> [--require-pass true|false] [--json]
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]
@@ -461,7 +483,7 @@ const exists = async (filePath: string): Promise<boolean> =>
     .then(() => true)
     .catch(() => false);
 
-const proofManifestExcludedFiles = new Set(["proof-manifest.json"]);
+const proofManifestExcludedFiles = new Set(["proof-manifest.json", "proof-manifest-verification.json"]);
 
 const collectProofManifestFiles = async (proofDir: string, currentDir = proofDir): Promise<string[]> => {
   const entries = await readdir(currentDir, { withFileTypes: true }).catch(() => []);
@@ -511,6 +533,52 @@ const buildProofManifest = async (proofDir: string): Promise<ProofManifest> => {
     generatedAt: compiledAt,
     proofDir,
     aggregateSha256: sha256Hex(aggregateInput),
+    files
+  };
+};
+
+const parseProofManifest = (input: unknown, label: string): ProofManifest => {
+  if (!isRecord(input)) {
+    throw new Error(`${label} is not a proof manifest object.`);
+  }
+
+  const source = stringFromRecord(input, "source");
+  const generatedAtValue = stringFromRecord(input, "generatedAt");
+  const proofDir = stringFromRecord(input, "proofDir");
+  const aggregateSha256 = stringFromRecord(input, "aggregateSha256");
+  const fileInputs = Array.isArray(input.files) ? input.files : undefined;
+
+  if (
+    source !== "splunkready-proof-manifest" ||
+    !generatedAtValue ||
+    !proofDir ||
+    !aggregateSha256 ||
+    !fileInputs
+  ) {
+    throw new Error(`${label} is missing required proof manifest fields.`);
+  }
+
+  const files = fileInputs.map((fileInput, index): ProofManifestFile => {
+    if (!isRecord(fileInput)) {
+      throw new Error(`${label} contains a non-object file entry at index ${index}.`);
+    }
+
+    const path = stringFromRecord(fileInput, "path");
+    const sizeBytes = numberFromRecord(fileInput, "sizeBytes");
+    const sha256 = stringFromRecord(fileInput, "sha256");
+
+    if (!path || sizeBytes === undefined || !sha256) {
+      throw new Error(`${label} contains an incomplete file entry at index ${index}.`);
+    }
+
+    return { path, sizeBytes, sha256 };
+  });
+
+  return {
+    source,
+    generatedAt: generatedAtValue,
+    proofDir,
+    aggregateSha256,
     files
   };
 };
@@ -2684,6 +2752,71 @@ const proofDirsFromOptions = (options: CliOptions): string[] =>
     .map((proofDir) => proofDir.trim())
     .filter((proofDir) => proofDir.length > 0);
 
+const verifyManifestCommand = async (options: CliOptions): Promise<string[]> => {
+  const manifestPath = join(options.out, "proof-manifest.json");
+  const reportPath = join(options.out, "proof-manifest-verification.json");
+  const expected = parseProofManifest(await readJson<unknown>(manifestPath, "proof manifest"), manifestPath);
+  const actual = await buildProofManifest(options.out);
+  const expectedFiles = new Map(expected.files.map((file) => [file.path, file]));
+  const actualFiles = new Map(actual.files.map((file) => [file.path, file]));
+  const missingFiles = expected.files
+    .filter((file) => !actualFiles.has(file.path))
+    .map((file) => file.path)
+    .sort();
+  const unexpectedFiles = actual.files
+    .filter((file) => !expectedFiles.has(file.path))
+    .map((file) => file.path)
+    .sort();
+  const changedFiles = expected.files
+    .flatMap((expectedFile) => {
+      const actualFile = actualFiles.get(expectedFile.path);
+
+      if (!actualFile || (actualFile.sha256 === expectedFile.sha256 && actualFile.sizeBytes === expectedFile.sizeBytes)) {
+        return [];
+      }
+
+      return [
+        {
+          path: expectedFile.path,
+          expectedSha256: expectedFile.sha256,
+          actualSha256: actualFile.sha256,
+          expectedSizeBytes: expectedFile.sizeBytes,
+          actualSizeBytes: actualFile.sizeBytes
+        }
+      ];
+    })
+    .sort((left, right) => left.path.localeCompare(right.path));
+  const status: ProofManifestVerification["status"] =
+    expected.aggregateSha256 === actual.aggregateSha256 &&
+    missingFiles.length === 0 &&
+    unexpectedFiles.length === 0 &&
+    changedFiles.length === 0
+      ? "PASS"
+      : "FAIL";
+  const report: ProofManifestVerification = {
+    source: "splunkready-proof-manifest-verification",
+    generatedAt: compiledAt,
+    status,
+    proofDir: options.out,
+    manifestPath,
+    expectedAggregateSha256: expected.aggregateSha256,
+    actualAggregateSha256: actual.aggregateSha256,
+    expectedFiles: expected.files.length,
+    actualFiles: actual.files.length,
+    missingFiles,
+    unexpectedFiles,
+    changedFiles
+  };
+
+  await writeJson(reportPath, report);
+
+  if (status !== "PASS") {
+    throw new Error(`verify-manifest failed with ${status}. Inspect ${reportPath}.`);
+  }
+
+  return [reportPath];
+};
+
 const labelFromProofDir = (proofDir: string): string => {
   const parts = proofDir.split(/[\\/]/).filter((part) => part.length > 0);
 
@@ -3194,6 +3327,8 @@ const main = async (): Promise<void> => {
     artifacts = await hostedModelDiagnosticCommand(options);
   } else if (command === "proof-audit") {
     artifacts = await proofAuditCommand(options);
+  } else if (command === "verify-manifest") {
+    artifacts = await verifyManifestCommand(options);
   } else if (command === "certification-index") {
     artifacts = await certificationIndexCommand(options);
   } else if (command === "live-candidates") {
