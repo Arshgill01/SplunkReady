@@ -626,6 +626,55 @@ const suiteProofAudit = {
   ]
 } as const;
 
+const certificationIndex = {
+  status: "FAIL",
+  source: "splunkready-certification-index",
+  mutation: false,
+  generatedAt: "2026-06-01T07:30:00.000Z",
+  proofDirs: ["artifacts/mcp-transcript-pass", "artifacts/suite-proof"],
+  totals: {
+    proofs: 2,
+    ready: 1,
+    notReady: 1,
+    pass: 1,
+    warn: 0,
+    fail: 1
+  },
+  entries: [
+    {
+      label: "External MCP Agent",
+      proofDir: "artifacts/mcp-transcript-pass",
+      proofType: "external-trace",
+      status: "PASS",
+      mode: "fixture",
+      mutation: false,
+      agent: { name: "External MCP Agent", version: "jsonrpc-pass-001" },
+      receipt: {
+        id: "receipt-external-001",
+        verdict: "READY",
+        score: 100,
+        violations: 0,
+        evidenceRefs: 6
+      },
+      proofLoop: "ready-without-patch",
+      hostedModelStatus: "not-applicable",
+      href: "?artifacts=artifacts%2Fmcp-transcript-pass#receipt"
+    },
+    {
+      label: "Phase Live multi-mission readiness proof",
+      proofDir: "artifacts/suite-proof",
+      proofType: "suite",
+      status: "FAIL",
+      mode: "fixture",
+      mutation: false,
+      agent: { name: "Phase Live multi-mission readiness proof", version: "n/a" },
+      receipt: null,
+      proofLoop: "fail-to-pass",
+      href: "?artifacts=artifacts%2Fsuite-proof#receipt"
+    }
+  ]
+} as const;
+
 const jsonResponse = (value: unknown): Response => new Response(JSON.stringify(value), { status: 200 });
 
 const fetcherFor = (files: Record<string, unknown>) => async (url: string): Promise<Response> => {
@@ -635,12 +684,15 @@ const fetcherFor = (files: Record<string, unknown>) => async (url: string): Prom
   return value === undefined ? new Response("not found", { status: 404 }) : jsonResponse(value);
 };
 
+const sidebarHtml = (html: string): string => html.match(/<aside class="side-rail">[\s\S]*?<\/aside>/)?.[0] ?? "";
+
 describe("Vite UI artifact app", () => {
   it("normalizes artifact base URLs and preserves file names", () => {
     expect(normalizeArtifactBase(undefined)).toBe("/__splunkready_artifacts/");
     expect(normalizeArtifactBase("/custom")).toBe("/custom/");
     expect(normalizeArtifactBase("artifacts/live-security-ui")).toBe("/artifacts/live-security-ui/");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/live-security-ui");
+    expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/certification-index");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/suite-proof");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/mcp-transcript");
     expect(artifactUrl("/custom", "receipt-after-001.json")).toBe("/custom/receipt-after-001.json");
@@ -689,8 +741,63 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain('data-artifact-selector');
     expect(html).toContain('value="artifacts/live-security-ui" selected');
     expect(html).toContain("LLM fixture proof");
+    expect(html).toContain("Certification index");
     expect(html).toContain("MCP transcript import");
     expect(html).toContain("Hosted model proof");
+  });
+
+  it("keeps sidebar navigation, artifact selector, and receipt footer separated", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "artifacts/live-security-ui",
+      fetcherFor({
+        "environment-contract.json": contract,
+        "missions.json": [mission],
+        "receipt-after-001.json": receipt({}),
+        "trace-after.json": afterTrace,
+        "violations-after.json": []
+      })
+    );
+    const rail = sidebarHtml(renderApp(bundle, "certification-replay", { artifactOptions: defaultArtifactOptions }));
+
+    expect(rail).toContain("<nav aria-label=\"Views\">");
+    expect(rail).toContain('class="rail-footer"');
+    expect(rail).toContain('class="artifact-picker"');
+    expect(rail).toContain('class="rail-receipt"');
+    expect(rail.indexOf('data-view-link="live-connect"')).toBeLessThan(rail.indexOf('class="rail-footer"'));
+    expect(rail.indexOf('class="artifact-picker"')).toBeLessThan(rail.indexOf('class="rail-receipt"'));
+    expect(rail).toContain("READY / 100/100");
+    expect(rail).not.toContain("not loaded");
+    expect(rail).not.toContain("security not loaded");
+    expect(rail).not.toContain("kit not loaded");
+    expect(rail).not.toContain("index not loaded");
+  });
+
+  it("loads and renders the certification index as a multi-agent proof ledger", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "artifacts/certification-index",
+      fetcherFor({
+        "certification-index.json": certificationIndex
+      })
+    );
+    const html = renderApp(bundle, "agent-index", { artifactOptions: defaultArtifactOptions });
+
+    expect(bundle.certificationIndex?.totals.proofs).toBe(2);
+    expect(html).toContain('data-view="agent-index"');
+    expect(html).toContain('href="#agent-index"');
+    expect(html).toContain('class="active">Agents</a>');
+    expect(html).toContain("Agent certification index");
+    expect(html).toContain("Index summary");
+    expect(html).toContain("Agent proofs");
+    expect(html).toContain("FAIL");
+    expect(html).toContain("External MCP Agent");
+    expect(html).toContain("jsonrpc-pass-001");
+    expect(html).toContain("Phase Live multi-mission readiness proof");
+    expect(html).toContain("ready-without-patch");
+    expect(html).toContain("fail-to-pass");
+    expect(html).toContain("?artifacts=artifacts%2Fmcp-transcript-pass#receipt");
+    expect(html).toContain("artifacts/suite-proof");
+    expect(html).toContain("fail 2 proof index");
+    expect(html).not.toContain("Artifact bundle incomplete");
   });
 
   it("loads and renders imported MCP transcript artifacts for external agents", async () => {

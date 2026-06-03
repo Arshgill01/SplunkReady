@@ -129,6 +129,59 @@ const proofAuditSchema = z
 
 export type ProofAudit = z.infer<typeof proofAuditSchema>;
 
+const certificationIndexSchema = z
+  .object({
+    status: z.enum(["PASS", "WARN", "FAIL"]),
+    source: z.literal("splunkready-certification-index"),
+    mutation: z.boolean(),
+    generatedAt: z.string().min(1),
+    proofDirs: z.array(z.string().min(1)),
+    totals: z
+      .object({
+        proofs: z.number().int().nonnegative(),
+        ready: z.number().int().nonnegative(),
+        notReady: z.number().int().nonnegative(),
+        pass: z.number().int().nonnegative(),
+        warn: z.number().int().nonnegative(),
+        fail: z.number().int().nonnegative()
+      })
+      .strict(),
+    entries: z.array(
+      z
+        .object({
+          label: z.string().min(1),
+          proofDir: z.string().min(1),
+          proofType: z.enum(["live-security", "live", "receipt", "firewall-block", "suite", "external-trace", "unknown", "missing"]),
+          status: z.enum(["PASS", "WARN", "FAIL"]),
+          mode: z.enum(["fixture", "live"]).optional(),
+          mutation: z.boolean().nullable(),
+          agent: z
+            .object({
+              name: z.string().min(1),
+              version: z.string().min(1)
+            })
+            .strict(),
+          receipt: z
+            .object({
+              id: z.string().min(1),
+              verdict: z.string().min(1),
+              score: z.number().min(0).max(100),
+              violations: z.number().int().nonnegative(),
+              evidenceRefs: z.number().int().nonnegative()
+            })
+            .strict()
+            .nullable(),
+          proofLoop: z.enum(["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"]).optional(),
+          hostedModelStatus: z.string().min(1).optional(),
+          href: z.string().min(1)
+        })
+        .strict()
+    )
+  })
+  .strict();
+
+export type CertificationIndex = z.infer<typeof certificationIndexSchema>;
+
 const firewallBlockSchema = z
   .object({
     status: z.literal("BLOCKED"),
@@ -406,6 +459,7 @@ export interface UiArtifactBundle {
   hostedModelProof?: HostedModelProof;
   hostedModelDiagnostic?: HostedModelDiagnostic;
   proofAudit?: ProofAudit;
+  certificationIndex?: CertificationIndex;
   firewallBlock?: FirewallBlock;
   mcpTranscriptImport?: McpTranscriptImport;
   beforeTrace: TraceEvent[];
@@ -435,6 +489,7 @@ const optionalFiles = [
   "hosted-model-proof.json",
   "hosted-model-diagnostic.json",
   "proof-audit.json",
+  "certification-index.json",
   "firewall-block-before.json",
   "firewall-block-after.json",
   "mcp-transcript-import.json",
@@ -457,6 +512,7 @@ export const normalizeArtifactBase = (value: string | null | undefined): string 
 
 export const defaultArtifactOptions: ArtifactOption[] = [
   { label: "Live security proof", path: "artifacts/live-security-ui" },
+  { label: "Certification index", path: "artifacts/certification-index" },
   { label: "Suite proof", path: "artifacts/suite-proof" },
   { label: "MCP transcript import", path: "artifacts/mcp-transcript" },
   { label: "LLM fixture proof", path: "artifacts/llm-fixture-proof" },
@@ -553,6 +609,7 @@ export const loadUiArtifactBundle = async (
     hostedModelProof: hostedModelProofSchema.optional().parse(loaded.get("hosted-model-proof.json")),
     hostedModelDiagnostic: hostedModelDiagnosticSchema.optional().parse(loaded.get("hosted-model-diagnostic.json")),
     proofAudit: proofAuditSchema.optional().parse(loaded.get("proof-audit.json")),
+    certificationIndex: certificationIndexSchema.optional().parse(loaded.get("certification-index.json")),
     firewallBlock: firewallBlockSchema
       .optional()
       .parse(loaded.get("firewall-block-before.json") ?? loaded.get("firewall-block-after.json")),
@@ -584,6 +641,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   auditStory: string;
   firewallStory: string;
   suiteStory: string;
+  indexStory: string;
   transcriptStory: string;
 } => {
   const receipt = bundle.receipt;
@@ -636,6 +694,9 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
     suiteStory: bundle.suiteProofSummary
       ? `${bundle.suiteProofSummary.status.toLowerCase()} ${bundle.suiteProofSummary.missionCount} mission suite`
       : "suite not loaded",
+    indexStory: bundle.certificationIndex
+      ? `${bundle.certificationIndex.status.toLowerCase()} ${bundle.certificationIndex.totals.proofs} proof index`
+      : "index not loaded",
     transcriptStory: bundle.mcpTranscriptImport
       ? `mcp import ${bundle.mcpTranscriptImport.strictImport ? "strict" : "loaded"}`
       : "mcp import not loaded"

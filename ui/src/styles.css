@@ -59,9 +59,9 @@ code {
 }
 
 .side-rail {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   min-width: 0;
   height: 100vh;
   padding: 26px 24px;
@@ -97,13 +97,15 @@ code {
   display: flex;
   flex-direction: column;
   gap: 0;
-  min-height: 0;
-  padding: 8px 0;
+  flex: 1 1 auto;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 4px 0;
 }
 
 .side-rail a {
   display: block;
-  padding: 16px 14px;
+  padding: 13px 14px;
   color: var(--text);
   text-decoration: none;
   border-top: 1px solid transparent;
@@ -117,6 +119,13 @@ code {
 .side-rail a.active {
   background: #342d12;
   border-color: var(--line);
+}
+
+.rail-footer {
+  display: grid;
+  gap: 18px;
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
 .artifact-picker {
@@ -157,7 +166,9 @@ code {
 .rail-receipt span {
   font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .view {
@@ -329,14 +340,16 @@ code {
 
 .fact-table,
 .trace-table,
-.suite-table {
+.suite-table,
+.index-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
 .trace-table,
-.suite-table {
+.suite-table,
+.index-table {
   min-width: 0;
 }
 
@@ -345,7 +358,9 @@ code {
 .trace-table th,
 .trace-table td,
 .suite-table th,
-.suite-table td {
+.suite-table td,
+.index-table th,
+.index-table td {
   padding: 13px 16px;
   vertical-align: top;
   text-align: left;
@@ -354,16 +369,22 @@ code {
 
 .fact-table th,
 .trace-table th,
-.suite-table th {
+.suite-table th,
+.index-table th {
   width: 210px;
   color: var(--text);
   background: #312a19;
   font-weight: 720;
 }
 
+.index-table th {
+  width: auto;
+}
+
 .fact-table td,
 .trace-table td,
-.suite-table td {
+.suite-table td,
+.index-table td {
   color: var(--muted);
   overflow-wrap: anywhere;
 }
@@ -372,6 +393,7 @@ code {
 .trace-table td:nth-child(2),
 .trace-table td:nth-child(4),
 .suite-table td,
+.index-table td,
 .patch-rules article p {
   font-family: "Spline Sans Mono Variable", "Spline Sans Mono", ui-monospace, monospace;
   font-size: 0.95em;
@@ -414,11 +436,21 @@ code {
   color: var(--quiet);
 }
 
-.suite-table td span {
+.suite-table td span,
+.index-table td span {
   display: block;
   margin-top: 6px;
   color: var(--quiet);
   font-family: "Spline Sans Variable", "Spline Sans", sans-serif;
+}
+
+.index-table a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.index-table a:hover {
+  text-decoration: underline;
 }
 
 .trace-table td strong {

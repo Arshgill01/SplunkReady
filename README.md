@@ -90,6 +90,17 @@ npm run splunkready -- certify-mcp-transcript \
 
 This single gate writes the full evidence chain: compiled contract, imported canonical trace, deterministic violations, external receipt, proof audit, and `mcp-transcript-certification.json`. `--strict-import true` rejects incomplete JSON-RPC logs; `--require-pass true` blocks CI unless the external MCP agent receives a deterministic `READY` receipt.
 
+To summarize several proof bundles for one environment, generate a certification index:
+
+```bash
+npm run splunkready -- certification-index \
+  --proof-dirs artifacts/mcp-transcript,artifacts/suite-proof,artifacts/live-security-ui \
+  --out artifacts/certification-index \
+  --json
+```
+
+The command writes `certification-index.json`, a compact ledger of proof directories, audit status, receipt verdicts, scores, evidence counts, mutation posture, and UI links back to each proof bundle. It is useful when a team certifies more than one Splunk-connected agent or mission suite and needs one reviewable status file without collapsing the underlying Readiness Receipts.
+
 ## Multi-Mission Fixture Proof
 
 To prove the harness is not a single scripted mission, run the suite proof:

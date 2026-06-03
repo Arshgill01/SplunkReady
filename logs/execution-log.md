@@ -7030,3 +7030,73 @@ Reviewer findings:
 
 Result:
 - Focused build/test and direct strict CLI smoke passed.
+
+## 2026-06-03 - Phase Live Certification Index
+
+Scope:
+- Add an artifact-backed certification index over multiple proof directories.
+- Show which Splunk-connected agents/proof bundles are certified, failing, or missing evidence without building a generic dashboard.
+- Preserve individual Readiness Receipts and proof audits as the source of truth.
+- Do not call live Splunk or mutate Splunk for this slice.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `README.md`
+- `examples/README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `certification-index --proof-dirs <dir[,dir]> --out <dir> [--json]`.
+- The command reads each proof directory's `proof-audit.json` and receipt artifacts, then writes `certification-index.json`.
+- The index records:
+  - proof label and directory;
+  - proof type and audit status;
+  - receipt verdict, score, violation count, and evidence count;
+  - proof loop, hosted-model status when present, mode, mutation posture, and UI link.
+- Added Vite UI support for loading `certification-index.json`.
+- Added an `Agents` view that renders the index as a compact proof ledger, with links back to each artifact bundle via `?artifacts=<proofDir>#receipt`.
+- Fixed the sidebar rail so navigation, artifact selector, and receipt telemetry are structurally separated.
+- Filtered unloaded optional artifact summaries out of the sidebar receipt footer so it does not become a wall of `not loaded` lines.
+- Added documentation in README and examples README for rolling several external-agent/MCP/suite/live proof bundles into one review artifact.
+
+Product impact:
+- SplunkReady now has an environment-level certification ledger: teams can certify several agents or proof bundles and review the status in one artifact without losing the detailed receipt trail.
+- This strengthens the Platform & DX story because the product now scales from "grade one trace" to "track the certified agents allowed to touch this Splunk deployment."
+- It also supports a cleaner demo/product narrative: individual receipts prove behavior; the certification index proves operational adoption.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 32% | 33% | Multi-agent proof status makes the product feel more complete and operational. |
+| Platform & DX | 85% | 88% | A certification ledger is a concrete developer/platform artifact, not just a single demo receipt. |
+| Security | 43% | 44% | Multiple security-agent proof bundles can now be reviewed together. |
+| Best Use of MCP Server | 88% | 89% | MCP transcript certifications can be indexed alongside live and suite proof bundles. |
+| Hosted Models | 53% | 53% | Hosted-model behavior unchanged while SAIA activation is pending. |
+| Developer Tools | 83% | 86% | CI and local workflows can now emit a machine-readable certification rollup. |
+
+Next directions to consider in future runs:
+- Add an optional CI example step that uploads `certification-index.json` after several proof jobs complete.
+- Let the Vite artifact selector jump directly from certification-index rows into loaded proof bundles and verify that behavior in browser.
+- Once SAIA activation is available, rerun live hosted-model proof and ensure indexed proof entries show hosted-model status.
+- Consider a small signed/provenance hash for proof bundles only if it supports trust in shared artifacts; avoid over-engineering.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI, UI, and sidebar regression tests passed.
+- Browser smoke verified the sidebar boxes do not overlap.
+- Full repo verification passed:
+  - scaffold verified;
+  - 85 waves;
+  - 843 project files in the working tree including ignored local artifact smoke bundles;
+  - 38 test files;
+  - 229 tests.
+- Vite production build and `git diff --check` passed.

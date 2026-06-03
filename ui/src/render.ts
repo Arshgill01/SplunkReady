@@ -2,6 +2,7 @@ import {
   normalizeArtifactBase,
   summarizeBundle,
   type ArtifactOption,
+  type CertificationIndex,
   type FirewallBlock,
   type HostedModelDiagnostic,
   type HostedModelProof,
@@ -13,13 +14,14 @@ import {
 } from "./artifacts.js";
 import type { PolicyPatch, ReadinessReceipt, ReadinessProfile, TraceEvent, Violation } from "../../src/schemas/core.js";
 
-export type ViewId = "certification-replay" | "receipt" | "trace-timeline" | "suite-proof" | "live-connect";
+export type ViewId = "certification-replay" | "receipt" | "trace-timeline" | "suite-proof" | "agent-index" | "live-connect";
 
 export const views: Array<{ id: ViewId; label: string }> = [
   { id: "certification-replay", label: "Replay" },
   { id: "receipt", label: "Receipt" },
   { id: "trace-timeline", label: "Trace" },
   { id: "suite-proof", label: "Suite" },
+  { id: "agent-index", label: "Agents" },
   { id: "live-connect", label: "Live connect" }
 ];
 
@@ -507,6 +509,80 @@ const renderSuiteProof = (bundle: UiArtifactBundle): string => {
   </main>`;
 };
 
+const renderCertificationIndexRows = (index: CertificationIndex): string =>
+  index.entries
+    .map((entry) => {
+      const receipt = entry.receipt;
+
+      return `<tr>
+        <td><a href="${value(entry.href)}">${value(entry.label)}</a><span>${value(entry.agent.version)}</span></td>
+        <td>${value(entry.status)}<span>${value(entry.proofType)}</span></td>
+        <td>${value(receipt?.verdict ?? "NO RECEIPT")}<span>${value(receipt ? `${receipt.score}/100` : "--")}</span></td>
+        <td>${value(receipt?.violations ?? "n/a")}<span>${value(receipt ? `${receipt.evidenceRefs} evidence refs` : "no receipt")}</span></td>
+        <td>${value(entry.proofLoop ?? "n/a")}<span>${value(entry.mode ?? "unknown")}</span></td>
+        <td>${code(entry.proofDir)}</td>
+      </tr>`;
+    })
+    .join("");
+
+const renderCertificationIndex = (bundle: UiArtifactBundle): string => {
+  const index = bundle.certificationIndex;
+
+  if (!index) {
+    return `<main class="view" data-view="agent-index">
+      <section class="workbench">
+        <div class="section-title"><h1>Agent certification index</h1></div>
+        <section class="panel">
+          <h2>Index artifact not loaded</h2>
+          ${renderFactTable([
+            ["Expected artifact", "certification-index.json"],
+            [
+              "Command",
+              "npm run splunkready -- certification-index --proof-dirs artifacts/live-security-ui,artifacts/mcp-transcript --out artifacts/certification-index --json"
+            ]
+          ])}
+        </section>
+      </section>
+    </main>`;
+  }
+
+  return `<main class="view" data-view="agent-index">
+    <section class="workbench">
+      <div class="section-title"><h1>Agent certification index</h1></div>
+      <div class="receipt-ledger">
+        <section class="panel">
+          <h2>Index summary</h2>
+          ${renderFactTable([
+            ["Status", index.status],
+            ["Proofs", index.totals.proofs],
+            ["Ready receipts", index.totals.ready],
+            ["Not ready receipts", index.totals.notReady],
+            ["Audit pass / warn / fail", `${index.totals.pass} / ${index.totals.warn} / ${index.totals.fail}`],
+            ["Mutation", index.mutation ? "yes" : "no"],
+            ["Generated", index.generatedAt]
+          ])}
+        </section>
+        <section class="panel">
+          <h2>Agent proofs</h2>
+          <table class="index-table">
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Audit</th>
+                <th>Receipt</th>
+                <th>Evidence</th>
+                <th>Loop</th>
+                <th>Proof dir</th>
+              </tr>
+            </thead>
+            <tbody>${renderCertificationIndexRows(index)}</tbody>
+          </table>
+        </section>
+      </div>
+    </section>
+  </main>`;
+};
+
 const renderFirewallBlock = (block: FirewallBlock | undefined): string => {
   if (!block) {
     return "";
@@ -963,8 +1039,22 @@ const renderArtifactSelector = (bundle: UiArtifactBundle, artifactOptions: Artif
   </label>`;
 };
 
+const optionalRailStories = (summary: ReturnType<typeof summarizeBundle>): string[] =>
+  [
+    summary.proofStory,
+    summary.securityStory,
+    summary.kitStory,
+    summary.hostedModelStory,
+    summary.auditStory,
+    summary.firewallStory,
+    summary.suiteStory,
+    summary.indexStory,
+    summary.transcriptStory
+  ].filter((story) => !story.includes("not loaded"));
+
 const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: RenderOptions): string => {
   const summary = summarizeBundle(bundle);
+  const optionalStories = optionalRailStories(summary);
 
   return `<aside class="side-rail">
     <div class="brand">
@@ -979,19 +1069,14 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: Re
         )
         .join("")}
     </nav>
-    ${renderArtifactSelector(bundle, options.artifactOptions)}
-    <div class="rail-receipt">
-      <strong>${value(summary.verdict)} / ${value(summary.score)}</strong>
-      <span>${value(summary.mode)} / ${value(summary.contract)}</span>
-      <span>${summary.beforeViolations} before / ${summary.afterViolations} after</span>
-      <span>${value(summary.proofStory)}</span>
-      <span>${value(summary.securityStory)}</span>
-      <span>${value(summary.kitStory)}</span>
-      <span>${value(summary.hostedModelStory)}</span>
-      <span>${value(summary.auditStory)}</span>
-      <span>${value(summary.firewallStory)}</span>
-      <span>${value(summary.suiteStory)}</span>
-      <span>${value(summary.transcriptStory)}</span>
+    <div class="rail-footer">
+      ${renderArtifactSelector(bundle, options.artifactOptions)}
+      <div class="rail-receipt">
+        <strong>${value(summary.verdict)} / ${value(summary.score)}</strong>
+        <span>${value(summary.mode)} / ${value(summary.contract)}</span>
+        <span>${summary.beforeViolations} before / ${summary.afterViolations} after</span>
+        ${optionalStories.map((story) => `<span>${value(story)}</span>`).join("")}
+      </div>
     </div>
   </aside>`;
 };
@@ -1007,6 +1092,10 @@ const renderActiveView = (bundle: UiArtifactBundle, activeView: ViewId, options:
 
   if (activeView === "suite-proof") {
     return renderSuiteProof(bundle);
+  }
+
+  if (activeView === "agent-index") {
+    return renderCertificationIndex(bundle);
   }
 
   if (activeView === "live-connect") {

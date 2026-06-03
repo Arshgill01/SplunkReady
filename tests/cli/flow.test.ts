@@ -1021,6 +1021,144 @@ describe("SplunkReady CLI flow", () => {
     expect(await exists(join(outDir, "proof-audit.json"))).toBe(true);
   });
 
+  it("builds a certification index across multiple proof directories", async () => {
+    const passDir = await mkdtemp(join(tmpdir(), "splunkready-index-pass-"));
+    const failDir = await mkdtemp(join(tmpdir(), "splunkready-index-fail-"));
+    const indexDir = await mkdtemp(join(tmpdir(), "splunkready-index-"));
+
+    const passOutput = parseCliJsonOutput(
+      (
+        await runCli([
+          "certify-mcp-transcript",
+          "--transcript",
+          "examples/sample-mcp-transcript-pass.jsonl",
+          "--out",
+          passDir,
+          "--strict-import",
+          "true",
+          "--require-pass",
+          "true",
+          "--agent-name",
+          "External MCP Agent",
+          "--agent-version",
+          "jsonrpc-pass-001",
+          "--json"
+        ])
+      ).stdout
+    );
+
+    expect(passOutput).toMatchObject({
+      command: "certify-mcp-transcript",
+      status: "PASS"
+    });
+
+    const failOutput = parseCliJsonOutput(
+      (
+        await runCli([
+          "certify-mcp-transcript",
+          "--transcript",
+          "examples/sample-mcp-transcript.jsonl",
+          "--out",
+          failDir,
+          "--strict-import",
+          "true",
+          "--agent-name",
+          "External MCP Agent",
+          "--agent-version",
+          "jsonrpc-fail-001",
+          "--json"
+        ])
+      ).stdout
+    );
+
+    expect(failOutput).toMatchObject({
+      command: "certify-mcp-transcript",
+      status: "PASS"
+    });
+
+    const output = parseCliJsonOutput(
+      (
+        await runCli([
+          "certification-index",
+          "--proof-dirs",
+          `${passDir},${failDir}`,
+          "--out",
+          indexDir,
+          "--json"
+        ])
+      ).stdout
+    );
+    const index = JSON.parse(await readFile(join(indexDir, "certification-index.json"), "utf8")) as {
+      status: string;
+      source: string;
+      mutation: boolean;
+      proofDirs: string[];
+      totals: {
+        proofs: number;
+        ready: number;
+        notReady: number;
+        pass: number;
+        warn: number;
+        fail: number;
+      };
+      entries: Array<{
+        label: string;
+        proofDir: string;
+        proofType: string;
+        status: string;
+        mutation: boolean | null;
+        agent: { name: string; version: string };
+        receipt: { id: string; verdict: string; score: number; violations: number; evidenceRefs: number } | null;
+        href: string;
+      }>;
+    };
+
+    expect(output).toMatchObject({
+      command: "certification-index",
+      status: "PASS",
+      artifacts: [join(indexDir, "certification-index.json")]
+    });
+    expect(index).toMatchObject({
+      status: "FAIL",
+      source: "splunkready-certification-index",
+      mutation: false,
+      proofDirs: [passDir, failDir],
+      totals: { proofs: 2, ready: 1, notReady: 1, pass: 1, warn: 0, fail: 1 }
+    });
+    expect(index.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "External MCP Agent",
+          proofDir: passDir,
+          proofType: "external-trace",
+          status: "PASS",
+          mutation: false,
+          agent: { name: "External MCP Agent", version: "jsonrpc-pass-001" },
+          receipt: expect.objectContaining({ id: "receipt-external-001", verdict: "READY", score: 100, violations: 0, evidenceRefs: 6 }),
+          href: `?artifacts=${encodeURIComponent(passDir)}#receipt`
+        }),
+        expect.objectContaining({
+          label: "External MCP Agent",
+          proofDir: failDir,
+          proofType: "external-trace",
+          status: "FAIL",
+          mutation: false,
+          agent: { name: "External MCP Agent", version: "jsonrpc-fail-001" },
+          receipt: expect.objectContaining({ id: "receipt-external-001", verdict: "NOT READY", score: 0 }),
+          href: `?artifacts=${encodeURIComponent(failDir)}#receipt`
+        })
+      ])
+    );
+  });
+
+  it("requires proof directories for certification index generation", async () => {
+    const indexDir = await mkdtemp(join(tmpdir(), "splunkready-index-missing-"));
+
+    await expect(runCli(["certification-index", "--out", indexDir])).rejects.toMatchObject({
+      stderr: expect.stringContaining("certification-index requires --proof-dirs <dir[,dir]>")
+    });
+  });
+
   it("strict-audits a READY external trace proof", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-external-ready-audit-"));
 

@@ -5384,3 +5384,76 @@ Open risks:
 
 - The new command certifies one transcript at a time. Multi-agent rollups should build over proof directories instead of changing this command into a dashboard.
 - The passing MCP transcript fixture is still fixture-backed. It proves the external transcript gate and deterministic grader path; live MCP proof remains handled by the separate live proof commands.
+
+## 2026-06-03 - Phase Live Certification Index
+
+Commands:
+
+- `npm run build && npx vitest run tests/cli/flow.test.ts -t "certification index|MCP JSON-RPC transcript|certifies an MCP|failed MCP transcript"`
+- `npx vitest run tests/ui/app.test.ts -t "certification index|artifact source selector"`
+- `tmp_pass=$(mktemp -d /tmp/splunkready-index-pass-XXXXXX); tmp_fail=$(mktemp -d /tmp/splunkready-index-fail-XXXXXX); tmp_index=$(mktemp -d /tmp/splunkready-index-XXXXXX); npm run splunkready -- certify-mcp-transcript --transcript examples/sample-mcp-transcript-pass.jsonl --out "$tmp_pass" --strict-import true --require-pass true --agent-name "External MCP Agent" --agent-version "jsonrpc-pass-001" --json >/tmp/splunkready-index-pass.out; npm run splunkready -- certify-mcp-transcript --transcript examples/sample-mcp-transcript.jsonl --out "$tmp_fail" --strict-import true --agent-name "External MCP Agent" --agent-version "jsonrpc-fail-001" --json >/tmp/splunkready-index-fail.out; npm run splunkready -- certification-index --proof-dirs "$tmp_pass,$tmp_fail" --out "$tmp_index" --json; node -e 'const fs=require("fs"); const path=require("path"); const index=JSON.parse(fs.readFileSync(path.join(process.argv[1],"certification-index.json"),"utf8")); if (index.status!=="FAIL" || index.totals.proofs!==2 || index.totals.ready!==1 || index.totals.notReady!==1 || index.mutation!==false) { console.error(index); process.exit(1); } console.log(`verified ${process.argv[1]} ${index.status} ${index.totals.ready}/${index.totals.proofs} ready`);' "$tmp_index"`
+- `npm run check`
+- `npm run ui:build`
+- `git diff --check`
+- `rm -rf artifacts/mcp-transcript-pass artifacts/mcp-transcript-fail artifacts/certification-index; npm run splunkready -- certify-mcp-transcript --transcript examples/sample-mcp-transcript-pass.jsonl --out artifacts/mcp-transcript-pass --strict-import true --require-pass true --agent-name "External MCP Agent" --agent-version "jsonrpc-pass-001" --json >/tmp/splunkready-index-pass.out; npm run splunkready -- certify-mcp-transcript --transcript examples/sample-mcp-transcript.jsonl --out artifacts/mcp-transcript-fail --strict-import true --agent-name "External MCP Agent" --agent-version "jsonrpc-fail-001" --json >/tmp/splunkready-index-fail.out; npm run splunkready -- certification-index --proof-dirs artifacts/mcp-transcript-pass,artifacts/mcp-transcript-fail --out artifacts/certification-index --json`
+- `npm run ui:dev`
+- `node --input-type=module -e 'import { chromium } from "playwright"; const browser = await chromium.launch(); const page = await browser.newPage({ viewport: { width: 1440, height: 900 } }); await page.goto("http://127.0.0.1:5173/?artifacts=artifacts/certification-index#agent-index", { waitUntil: "networkidle" }); const text = await page.locator("body").innerText(); for (const needle of ["Agent certification index", "Index summary", "Agent proofs", "External MCP Agent", "FAIL", "fail 2 proof index"]) { if (!text.includes(needle)) { throw new Error(`missing ${needle}`); } } const box = await page.locator("[data-view=agent-index]").boundingBox(); if (!box || box.width < 800 || box.height < 400) { throw new Error(`bad agent index box ${JSON.stringify(box)}`); } await page.screenshot({ path: "/tmp/splunkready-agent-index-smoke.png", fullPage: true }); await browser.close(); console.log("agent-index browser smoke passed");'`
+- `npx vitest run tests/ui/app.test.ts -t "sidebar navigation|certification index|artifact source selector"`
+- `npm run ui:dev`
+- `node --input-type=module -e 'import { chromium } from "playwright"; const browser = await chromium.launch(); const page = await browser.newPage({ viewport: { width: 1440, height: 900 } }); await page.goto("http://127.0.0.1:5173/?artifacts=artifacts/certification-index#agent-index", { waitUntil: "networkidle" }); await page.waitForSelector(".side-rail nav", { timeout: 5000 }); const boxes = await page.evaluate(() => { const box = (selector) => { const el = document.querySelector(selector); if (!el) return null; const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height, text: el.textContent || "" }; }; return { nav: box(".side-rail nav"), footer: box(".rail-footer"), picker: box(".artifact-picker"), receipt: box(".rail-receipt"), rail: box(".side-rail") }; }); if (!boxes.nav || !boxes.footer || !boxes.picker || !boxes.receipt || !boxes.rail) throw new Error(JSON.stringify(boxes)); if (boxes.nav.bottom > boxes.footer.top) throw new Error(`nav/footer overlap ${JSON.stringify(boxes)}`); if (boxes.picker.bottom > boxes.receipt.top) throw new Error(`picker/receipt overlap ${JSON.stringify(boxes)}`); const railText = boxes.rail.text; for (const banned of ["security not loaded", "kit not loaded", "index not loaded", "mcp import not loaded"]) { if (railText.includes(banned)) throw new Error(`sidebar still contains ${banned}`); } await page.screenshot({ path: "/tmp/splunkready-sidebar-fixed.png", fullPage: true }); await browser.close(); console.log("sidebar browser smoke passed", JSON.stringify({ navBottom: boxes.nav.bottom, footerTop: boxes.footer.top, pickerBottom: boxes.picker.bottom, receiptTop: boxes.receipt.top }));'`
+- `npm run check`
+- `npm run ui:build`
+- `git diff --check`
+
+Result:
+
+- PASS for TypeScript build and focused certification-index/MCP transcript CLI tests:
+  - 1 test file;
+  - 5 tests passed;
+  - 28 tests skipped by the focused name filter.
+- PASS for focused Vite artifact UI tests:
+  - 1 test file;
+  - 2 tests passed;
+  - 12 tests skipped by the focused name filter.
+- PASS for direct CLI smoke:
+  - generated one passing MCP transcript proof and one failing MCP transcript proof;
+  - `certification-index` returned `PASS` command status;
+  - `certification-index.json` reported overall `FAIL`, 2 proofs, 1 READY, 1 NOT READY, and `mutation: false`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 816 project files;
+  - 38 test files;
+  - 228 tests.
+- PASS for Vite production build.
+- PASS for `git diff --check`.
+- PASS for browser smoke:
+  - generated ignored `artifacts/mcp-transcript-pass`, `artifacts/mcp-transcript-fail`, and `artifacts/certification-index` bundles;
+  - served the Vite app at `http://127.0.0.1:5173/`;
+  - Playwright loaded `?artifacts=artifacts/certification-index#agent-index`;
+  - verified visible `Agent certification index`, `Index summary`, `Agent proofs`, `External MCP Agent`, `FAIL`, and `fail 2 proof index` text;
+  - wrote `/tmp/splunkready-agent-index-smoke.png`.
+- PASS for sidebar regression test:
+  - 1 test file;
+  - 3 tests passed;
+  - 12 tests skipped by the focused name filter.
+- PASS for sidebar browser overlap smoke:
+  - served the Vite app at `http://127.0.0.1:5173/`;
+  - Playwright loaded `?artifacts=artifacts/certification-index#agent-index`;
+  - verified `.side-rail nav` did not overlap `.rail-footer`;
+  - verified `.artifact-picker` did not overlap `.rail-receipt`;
+  - verified the sidebar no longer contains `security not loaded`, `kit not loaded`, `index not loaded`, or `mcp import not loaded`;
+  - wrote `/tmp/splunkready-sidebar-fixed.png`.
+- PASS for final full repo check after sidebar fix:
+  - scaffold verified;
+  - 85 waves;
+  - 843 project files in the working tree including ignored local artifact smoke bundles;
+  - 38 test files;
+  - 229 tests.
+- PASS for final Vite production build after sidebar fix.
+- PASS for final `git diff --check` after sidebar fix.
+
+Open risks:
+
+- `certification-index` summarizes proof directories; it does not re-run grading. Source proof bundles must still be generated by `grade-trace`, `certify-mcp-transcript`, `suite-proof`, live proof, or equivalent commands.
+- The Vite `Agents` view links to proof bundles by URL query parameter. Browser smoke verified rendering the index route; row-click reload behavior remains covered by the render contract rather than an end-to-end click test.

@@ -63,6 +63,19 @@ The command still writes the intermediate files: `environment-contract.json`, `t
 
 Use `--strict-import true` in CI to reject transcripts with skipped records or MCP tool calls that never received a matching response. Use `--require-pass true` to block merges unless the external MCP transcript receives a `READY` receipt.
 
+## Build a certification index
+
+After certifying one or more external traces, MCP transcripts, suite proofs, or live proof bundles, create a single review artifact:
+
+```bash
+npm run splunkready -- certification-index \
+  --proof-dirs artifacts/mcp-transcript-pass,artifacts/mcp-transcript-fail,artifacts/suite-proof \
+  --out artifacts/certification-index \
+  --json
+```
+
+`certification-index.json` does not re-grade traces. It reads each proof directory's `proof-audit.json` and Readiness Receipt, then records audit status, receipt verdict, score, evidence count, proof loop, mutation posture, and a UI link back to the source bundle. Use it as a small agent-certification ledger when several Splunk-connected agents or mission suites need to be reviewed together.
+
 ## CI gate example
 
 `github-workflow-example.yml` shows how a repository can use SplunkReady as a pull-request gate.

@@ -39,6 +39,7 @@ import {
   type EnvironmentContract,
   type PolicyPatch,
   type ReadOnlySplunkToolName,
+  type ReadinessReceipt,
   type TraceEvent,
   type Violation
 } from "./schemas/core.js";
@@ -84,6 +85,7 @@ interface CliOptions {
   agentVersion: string;
   agentModel: string;
   candidateLimit: number;
+  proofDirs: string;
   strictImport: boolean;
   firewall: boolean;
   json: boolean;
@@ -118,6 +120,46 @@ interface ProofAuditReport {
   proofLoop?: ProofLoop;
   hostedModelStatus?: string;
   checks: ProofAuditCheck[];
+}
+
+interface CertificationIndexEntry {
+  label: string;
+  proofDir: string;
+  proofType: ProofAuditReport["proofType"] | "missing";
+  status: ProofAuditStatus;
+  mode?: EnvironmentContract["mode"];
+  mutation: boolean | null;
+  agent: {
+    name: string;
+    version: string;
+  };
+  receipt: {
+    id: string;
+    verdict: string;
+    score: number;
+    violations: number;
+    evidenceRefs: number;
+  } | null;
+  proofLoop?: ProofLoop;
+  hostedModelStatus?: string;
+  href: string;
+}
+
+interface CertificationIndex {
+  status: ProofAuditStatus;
+  source: "splunkready-certification-index";
+  mutation: boolean;
+  generatedAt: string;
+  proofDirs: string[];
+  totals: {
+    proofs: number;
+    ready: number;
+    notReady: number;
+    pass: number;
+    warn: number;
+    fail: number;
+  };
+  entries: CertificationIndexEntry[];
 }
 
 interface FirewallBlockReport {
@@ -159,6 +201,7 @@ Commands:
   hosted-model-proof --mode fixture|live --out <dir> [--json]
   hosted-model-diagnostic --mode fixture|live --out <dir> [--require-pass true|false] [--json]
   proof-audit --out <dir> [--require-pass true|false] [--json]
+  certification-index --proof-dirs <dir[,dir]> --out <dir> [--json]
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]
   live-security-kit --out <dir> [--json]
@@ -201,6 +244,7 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     agentVersion: "unversioned",
     agentModel: "",
     candidateLimit: 12,
+    proofDirs: "",
     strictImport: false,
     firewall: false,
     json: false
@@ -248,6 +292,8 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       options.securityKitDir = value;
     } else if (flag === "--hosted-model-proof-dir") {
       options.hostedModelProofDir = value;
+    } else if (flag === "--proof-dirs") {
+      options.proofDirs = value;
     } else if (flag === "--phase") {
       if (value !== "before" && value !== "after") {
         throw new Error("--phase must be before or after.");
@@ -2543,6 +2589,155 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
   return [auditPath];
 };
 
+const proofDirsFromOptions = (options: CliOptions): string[] =>
+  options.proofDirs
+    .split(",")
+    .map((proofDir) => proofDir.trim())
+    .filter((proofDir) => proofDir.length > 0);
+
+const labelFromProofDir = (proofDir: string): string => {
+  const parts = proofDir.split(/[\\/]/).filter((part) => part.length > 0);
+
+  return parts.at(-1) ?? proofDir;
+};
+
+const parseProofAuditReport = (input: unknown): ProofAuditReport | undefined => {
+  if (!isRecord(input)) {
+    return undefined;
+  }
+
+  const status = stringFromRecord(input, "status");
+  const proofType = stringFromRecord(input, "proofType");
+  const proofDir = stringFromRecord(input, "proofDir");
+  const mode = stringFromRecord(input, "mode");
+  const proofLoop = stringFromRecord(input, "proofLoop");
+  const proofTypes: ProofAuditReport["proofType"][] = [
+    "live-security",
+    "live",
+    "receipt",
+    "firewall-block",
+    "suite",
+    "external-trace",
+    "unknown"
+  ];
+  const proofLoops: ProofLoop[] = ["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"];
+  const checks = Array.isArray(input.checks) ? input.checks.filter(isRecord) : undefined;
+
+  if (
+    (status !== "PASS" && status !== "WARN" && status !== "FAIL") ||
+    !proofType ||
+    !proofTypes.includes(proofType as ProofAuditReport["proofType"]) ||
+    !proofDir ||
+    !checks
+  ) {
+    return undefined;
+  }
+
+  return {
+    status,
+    proofType: proofType as ProofAuditReport["proofType"],
+    proofDir,
+    mode: mode === "fixture" || mode === "live" ? mode : undefined,
+    mutation: booleanFromRecord(input, "mutation"),
+    failToPass: booleanFromRecord(input, "failToPass"),
+    readyAfterPatch: booleanFromRecord(input, "readyAfterPatch"),
+    readyWithoutPatch: booleanFromRecord(input, "readyWithoutPatch"),
+    proofLoop: proofLoop && proofLoops.includes(proofLoop as ProofLoop) ? (proofLoop as ProofLoop) : undefined,
+    hostedModelStatus: stringFromRecord(input, "hostedModelStatus"),
+    checks: checks.map((check) => {
+      const checkStatus = stringFromRecord(check, "status");
+
+      return {
+        id: stringFromRecord(check, "id") ?? "unknown-check",
+        status:
+          checkStatus === "PASS" || checkStatus === "WARN" || checkStatus === "FAIL"
+            ? checkStatus
+            : "FAIL",
+        detail: stringFromRecord(check, "detail") ?? "No detail recorded.",
+        evidence: check.evidence
+      };
+    })
+  };
+};
+
+const receiptForIndex = async (proofDir: string): Promise<ReadinessReceipt | undefined> => {
+  const candidates = ["receipt-after-001.json", "receipt-external-001.json", "receipt-before-001.json"];
+
+  for (const fileName of candidates) {
+    const input = await readOptionalJson<unknown>(join(proofDir, fileName));
+    const result = input ? readinessReceiptSchema.safeParse(input) : undefined;
+
+    if (result?.success) {
+      return result.data;
+    }
+  }
+
+  return undefined;
+};
+
+const certificationIndexEntry = async (proofDir: string): Promise<CertificationIndexEntry> => {
+  const audit = parseProofAuditReport(await readOptionalJson<unknown>(join(proofDir, "proof-audit.json")));
+  const receipt = await receiptForIndex(proofDir);
+  const suiteSummary = await readOptionalJson<unknown>(join(proofDir, "suite-proof-summary.json"));
+  const suiteTitle = stringFromRecord(suiteSummary, "suiteTitle") ?? stringFromRecord(suiteSummary, "suiteId");
+  const label = receipt ? receipt.agent.name : suiteTitle ?? labelFromProofDir(proofDir);
+
+  return {
+    label,
+    proofDir,
+    proofType: audit?.proofType ?? "missing",
+    status: audit?.status ?? "FAIL",
+    mode: audit?.mode ?? receipt?.mode,
+    mutation: audit?.mutation ?? null,
+    agent: receipt?.agent ?? { name: label, version: "n/a" },
+    receipt: receipt
+      ? {
+          id: receipt.id,
+          verdict: receipt.verdict,
+          score: receipt.score,
+          violations: receipt.violations.length,
+          evidenceRefs: receipt.evidenceRefs.length
+        }
+      : null,
+    proofLoop: audit?.proofLoop,
+    hostedModelStatus: audit?.hostedModelStatus,
+    href: `?artifacts=${encodeURIComponent(proofDir)}#receipt`
+  };
+};
+
+const certificationIndexCommand = async (options: CliOptions): Promise<string[]> => {
+  const proofDirs = proofDirsFromOptions(options);
+
+  if (proofDirs.length === 0) {
+    throw new Error("certification-index requires --proof-dirs <dir[,dir]>.");
+  }
+
+  const entries = await Promise.all(proofDirs.map(certificationIndexEntry));
+  const totals = {
+    proofs: entries.length,
+    ready: entries.filter((entry) => entry.receipt?.verdict === "READY").length,
+    notReady: entries.filter((entry) => entry.receipt && entry.receipt.verdict !== "READY").length,
+    pass: entries.filter((entry) => entry.status === "PASS").length,
+    warn: entries.filter((entry) => entry.status === "WARN").length,
+    fail: entries.filter((entry) => entry.status === "FAIL").length
+  };
+  const status: ProofAuditStatus = totals.fail > 0 ? "FAIL" : totals.warn > 0 ? "WARN" : "PASS";
+  const index: CertificationIndex = {
+    status,
+    source: "splunkready-certification-index",
+    mutation: entries.some((entry) => entry.mutation === true),
+    generatedAt: compiledAt,
+    proofDirs,
+    totals,
+    entries
+  };
+  const indexPath = join(options.out, "certification-index.json");
+
+  await writeJson(indexPath, index);
+
+  return [indexPath];
+};
+
 const receiptCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
@@ -2857,6 +3052,8 @@ const main = async (): Promise<void> => {
     artifacts = await hostedModelDiagnosticCommand(options);
   } else if (command === "proof-audit") {
     artifacts = await proofAuditCommand(options);
+  } else if (command === "certification-index") {
+    artifacts = await certificationIndexCommand(options);
   } else if (command === "live-candidates") {
     artifacts = await liveCandidatesCommand(options);
   } else if (command === "live-security-check") {
