@@ -77,10 +77,11 @@ To prove the harness is not a single scripted mission, run the suite proof:
 npm run build
 npm run splunkready -- suite-proof --out artifacts/suite-proof --json
 npm run splunkready -- suite-proof --out artifacts/suite-proof-ci --require-fail-to-pass true --json
+npm run splunkready -- proof-audit --out artifacts/suite-proof-ci --require-pass true --json
 npm run splunkready -- suite-proof --suite fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json --out artifacts/suite-proof-custom --require-fail-to-pass true --json
 ```
 
-`suite-proof` runs the fixture fail -> patch -> rerun -> pass loop across a suite manifest, defaulting to `fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json`: two security missions and one observability mission. It writes each mission's normal artifacts plus `suite-proof-summary.json` / `.md`, with proof-loop classification, domains covered, evidence counts, suite manifest provenance, and `mutation: false`. This path is credential-free and does not call live Splunk. Use `--require-fail-to-pass true` in CI when a READY receipt is not enough and every mission must prove the full certification loop.
+`suite-proof` runs the fixture fail -> patch -> rerun -> pass loop across a suite manifest, defaulting to `fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json`: two security missions and one observability mission. It writes each mission's normal artifacts plus `suite-proof-summary.json` / `.md`, with proof-loop classification, domains covered, evidence counts, suite manifest provenance, and `mutation: false`. This path is credential-free and does not call live Splunk. Use `--require-fail-to-pass true` in CI when a READY receipt is not enough and every mission must prove the full certification loop. `proof-audit --require-pass true` also understands suite bundles and checks the suite summary, mutation posture, fail-to-pass count, READY-after-patch count, and evidence refs.
 
 ## Runtime Firewall Gate
 

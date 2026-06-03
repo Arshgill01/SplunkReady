@@ -486,6 +486,8 @@ const suiteProofSummary = {
   mode: "fixture",
   mutation: false,
   suiteId: "phase-live-multi-mission-proof",
+  suiteTitle: "Phase Live multi-mission readiness proof",
+  suitePath: "fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json",
   missionCount: 3,
   domains: ["observability", "security"],
   totals: {
@@ -520,6 +522,29 @@ const suiteProofSummary = {
       proofLoop: "fail-to-pass",
       before: { verdict: "NOT READY", score: 50, violations: 2 },
       after: { verdict: "READY", score: 100, violations: 0, evidenceRefs: ["obs-201", "obs-202", "obs-203", "obs-204"] }
+    }
+  ]
+} as const;
+
+const suiteProofAudit = {
+  status: "PASS",
+  proofType: "suite",
+  proofDir: "artifacts/suite-proof",
+  mode: "fixture",
+  mutation: false,
+  failToPass: true,
+  readyAfterPatch: true,
+  proofLoop: "fail-to-pass",
+  checks: [
+    {
+      id: "suite-summary-loaded",
+      status: "PASS",
+      detail: "Suite proof summary must be present with suite identity and mission count."
+    },
+    {
+      id: "suite-fail-to-pass",
+      status: "PASS",
+      detail: "Every mission in the suite must demonstrate NOT READY -> READY."
     }
   ]
 } as const;
@@ -593,7 +618,8 @@ describe("Vite UI artifact app", () => {
     const bundle = await loadUiArtifactBundle(
       "artifacts/suite-proof",
       fetcherFor({
-        "suite-proof-summary.json": suiteProofSummary
+        "suite-proof-summary.json": suiteProofSummary,
+        "proof-audit.json": suiteProofAudit
       })
     );
     const html = renderApp(bundle, "suite-proof", { artifactOptions: defaultArtifactOptions });
@@ -604,6 +630,11 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain('class="active">Suite</a>');
     expect(html).toContain("Suite proof");
     expect(html).toContain("Suite summary");
+    expect(html).toContain("Proof audit");
+    expect(html).toContain("suite-summary-loaded / PASS");
+    expect(html).toContain("suite-fail-to-pass / PASS");
+    expect(html).toContain("Phase Live multi-mission readiness proof");
+    expect(html).toContain("fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json");
     expect(html).toContain("Mission ledger");
     expect(html).toContain("phase-live-multi-mission-proof");
     expect(html).toContain("mission-security-lateral-movement-readiness");

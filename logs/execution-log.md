@@ -4364,6 +4364,57 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Suite Proof Audit
+
+Scope:
+- Teach `proof-audit` to recognize and strictly validate suite proof bundles.
+- Keep suite validation deterministic and based on `suite-proof-summary.json`.
+
+Files expected/touched:
+- `src/cli.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `README.md`
+- `examples/README.md`
+- `examples/github-workflow-example.yml`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- `proof-audit` now recognizes `suite-proof-summary.json` and emits `proofType: "suite"`.
+- Suite audits verify suite identity, PASS status, mutation=false, all missions fail-to-pass, all missions READY after patch, and final evidence refs.
+- The Vite proof-audit schema accepts `proofType: "suite"` and `proofLoop`, and the Suite route renders the audit panel when present.
+- The GitHub Actions example now audits `artifacts/ci-suite-proof` with `proof-audit --require-pass true`.
+- README and examples document suite audit usage.
+
+Product impact:
+- CI can now run `suite-proof --require-fail-to-pass true` and then `proof-audit --require-pass true` on the same bundle.
+- The Vite Suite route can show proof-audit evidence when `proof-audit.json` is present.
+- This unifies the proof validation story across receipt, live, firewall, and suite artifacts.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 33% | 33% | No new live/demo capability. |
+| Platform & DX | 85% | 86% | Suite proof bundles now have first-class audit semantics. |
+| Security | 48% | 48% | Security behavior unchanged; auditability improves. |
+| Best Use of MCP Server | 80% | 80% | MCP behavior unchanged. |
+| Hosted Models | 54% | 54% | Hosted model behavior unchanged. |
+| Developer Tools | 83% | 85% | One audit command can validate more proof bundle types. |
+
+Next directions to consider in future runs:
+- Keep proof-audit focused on persisted artifacts; do not turn it into a speculative scorer.
+- Consider a shared artifact schema module only if CLI/UI drift recurs.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI/UI tests, direct suite proof plus strict proof audit, full repo check, Vite production build, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Suite Manifest Gate
 
 Scope:

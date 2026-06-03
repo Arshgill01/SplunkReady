@@ -30,6 +30,9 @@ jobs:
       - name: Run multi-mission fail-to-pass suite
         run: npm run splunkready -- suite-proof --mode fixture --suite fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json --out artifacts/ci-suite-proof --require-fail-to-pass true --json
 
+      - name: Audit multi-mission suite proof
+        run: npm run splunkready -- proof-audit --out artifacts/ci-suite-proof --require-pass true --json
+
       - name: Prove firewall blocks unsafe SPL before Splunk
         run: npm run splunkready -- firewall-check --mode fixture --out artifacts/ci-firewall --json
 

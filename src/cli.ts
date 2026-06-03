@@ -104,7 +104,7 @@ interface ProofAuditCheck {
 
 interface ProofAuditReport {
   status: ProofAuditStatus;
-  proofType: "live-security" | "live" | "receipt" | "firewall-block" | "unknown";
+  proofType: "live-security" | "live" | "receipt" | "firewall-block" | "suite" | "unknown";
   proofDir: string;
   mode?: EnvironmentContract["mode"];
   mutation?: boolean;
@@ -348,6 +348,22 @@ const booleanFromRecord = (value: unknown, key: string): boolean | undefined => 
   const field = value[key];
   return typeof field === "boolean" ? field : undefined;
 };
+
+const numberFromRecord = (value: unknown, key: string): number | undefined => {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const field = value[key];
+  return typeof field === "number" ? field : undefined;
+};
+
+const auditStatusFromChecks = (checks: ProofAuditCheck[]): ProofAuditStatus =>
+  checks.some((check) => check.status === "FAIL")
+    ? "FAIL"
+    : checks.some((check) => check.status === "WARN")
+      ? "WARN"
+      : "PASS";
 
 const exists = async (filePath: string): Promise<boolean> =>
   stat(filePath)
@@ -1888,6 +1904,7 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
   const liveSecurityProofSummary = await readOptionalJson<unknown>(
     join(options.out, "live-security-proof-summary.json")
   );
+  const suiteProofSummary = await readOptionalJson<unknown>(join(options.out, "suite-proof-summary.json"));
   const hostedModelProof = await readOptionalJson<unknown>(join(options.out, "hosted-model-proof.json"));
   const firewallBlockBefore = await readOptionalJson<unknown>(join(options.out, "firewall-block-before.json"));
   const firewallBlockAfter = await readOptionalJson<unknown>(join(options.out, "firewall-block-after.json"));
@@ -1898,15 +1915,99 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
   const contract = contractResult?.success ? contractResult.data : undefined;
   const beforeReceipt = beforeReceiptResult?.success ? beforeReceiptResult.data : undefined;
   const afterReceipt = afterReceiptResult?.success ? afterReceiptResult.data : undefined;
-  const proofType: ProofAuditReport["proofType"] = firewallBlock
-    ? "firewall-block"
-    : liveSecurityProofSummary
-      ? "live-security"
-      : liveProofSummary
-        ? "live"
-        : beforeReceipt || afterReceipt
-          ? "receipt"
-          : "unknown";
+  const proofType: ProofAuditReport["proofType"] = suiteProofSummary
+    ? "suite"
+    : firewallBlock
+      ? "firewall-block"
+      : liveSecurityProofSummary
+        ? "live-security"
+        : liveProofSummary
+          ? "live"
+          : beforeReceipt || afterReceipt
+            ? "receipt"
+            : "unknown";
+
+  if (proofType === "suite") {
+    const summary = isRecord(suiteProofSummary) ? suiteProofSummary : undefined;
+    const totals = summary && isRecord(summary.totals) ? summary.totals : undefined;
+    const missions = summary && Array.isArray(summary.missions) ? summary.missions : [];
+    const suiteStatus = stringFromRecord(summary, "status");
+    const suiteId = stringFromRecord(summary, "suiteId");
+    const mode = stringFromRecord(summary, "mode");
+    const suiteMutation = booleanFromRecord(summary, "mutation");
+    const missionCount = numberFromRecord(summary, "missionCount");
+    const failToPassCount = numberFromRecord(totals, "failToPass");
+    const readyAfterPatchCount = numberFromRecord(totals, "readyAfterPatch");
+    const evidenceRefCount = numberFromRecord(totals, "evidenceRefs");
+    const missionLoops = missions.map((mission) => stringFromRecord(mission, "proofLoop"));
+    const missionIds = missions.map((mission) => stringFromRecord(mission, "missionId")).filter(Boolean);
+
+    addCheck({
+      id: "suite-summary-loaded",
+      status: summary && suiteId && missionCount !== undefined ? "PASS" : "FAIL",
+      detail: "Suite proof summary must be present with suite identity and mission count.",
+      evidence: { suiteId: suiteId ?? null, missionCount: missionCount ?? null, missionIds }
+    });
+    addCheck({
+      id: "suite-status-pass",
+      status: suiteStatus === "PASS" ? "PASS" : "FAIL",
+      detail: "Suite proof summary must report PASS.",
+      evidence: { status: suiteStatus ?? null }
+    });
+    addCheck({
+      id: "suite-mutation-false",
+      status: suiteMutation === false ? "PASS" : suiteMutation === true ? "FAIL" : "WARN",
+      detail: "Suite proof must declare mutation=false.",
+      evidence: { mutation: suiteMutation ?? null }
+    });
+    addCheck({
+      id: "suite-fail-to-pass",
+      status:
+        missionCount !== undefined &&
+        missionCount > 0 &&
+        failToPassCount === missionCount &&
+        missionLoops.every((loop) => loop === "fail-to-pass")
+          ? "PASS"
+          : "FAIL",
+      detail: "Every mission in the suite must demonstrate NOT READY -> READY.",
+      evidence: { missionCount: missionCount ?? null, failToPass: failToPassCount ?? null, missionLoops }
+    });
+    addCheck({
+      id: "suite-ready-after-patch",
+      status: missionCount !== undefined && readyAfterPatchCount === missionCount ? "PASS" : "FAIL",
+      detail: "Every mission in the suite must end READY after patch.",
+      evidence: { missionCount: missionCount ?? null, readyAfterPatch: readyAfterPatchCount ?? null }
+    });
+    addCheck({
+      id: "suite-evidence-refs-present",
+      status: evidenceRefCount !== undefined && evidenceRefCount > 0 ? "PASS" : "FAIL",
+      detail: "Suite proof must carry evidence references from final receipts.",
+      evidence: { evidenceRefs: evidenceRefCount ?? null }
+    });
+
+    const status = auditStatusFromChecks(checks);
+    const report: ProofAuditReport = {
+      status,
+      proofType,
+      proofDir: options.out,
+      mode: mode === "fixture" || mode === "live" ? mode : undefined,
+      mutation: suiteMutation,
+      failToPass: missionCount !== undefined && failToPassCount === missionCount,
+      readyAfterPatch: missionCount !== undefined && readyAfterPatchCount === missionCount,
+      proofLoop: missionLoops.every((loop) => loop === "fail-to-pass") ? "fail-to-pass" : undefined,
+      checks
+    };
+    const auditPath = join(options.out, "proof-audit.json");
+
+    await writeJson(auditPath, report);
+
+    if (options.requirePass && status !== "PASS") {
+      throw new Error(`proof-audit strict gate failed with ${status}. Inspect ${auditPath}.`);
+    }
+
+    return [auditPath];
+  }
+
   const failToPass =
     booleanFromRecord(liveSecurityProofSummary, "failToPass") ??
     booleanFromRecord(liveProofSummary, "failToPass") ??
@@ -1982,11 +2083,7 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
       evidence: { query, violationCount: violations.length }
     });
 
-    const status: ProofAuditStatus = checks.some((check) => check.status === "FAIL")
-      ? "FAIL"
-      : checks.some((check) => check.status === "WARN")
-        ? "WARN"
-        : "PASS";
+    const status = auditStatusFromChecks(checks);
     const report: ProofAuditReport = {
       status,
       proofType,
@@ -2160,11 +2257,7 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
     evidence: { status: hostedModelStatus ?? null }
   });
 
-  const status: ProofAuditStatus = checks.some((check) => check.status === "FAIL")
-    ? "FAIL"
-    : checks.some((check) => check.status === "WARN")
-      ? "WARN"
-      : "PASS";
+  const status = auditStatusFromChecks(checks);
   const report: ProofAuditReport = {
     status,
     proofType,

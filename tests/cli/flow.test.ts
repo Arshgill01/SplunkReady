@@ -504,6 +504,45 @@ describe("SplunkReady CLI flow", () => {
     expect(markdown).toContain("Phase Live multi-mission readiness proof");
     expect(markdown).toContain("mission-observability-latency-readiness");
 
+    const auditOutput = parseCliJsonOutput(
+      (await runCli(["proof-audit", "--out", outDir, "--require-pass", "true", "--json"])).stdout
+    );
+    const audit = JSON.parse(await readFile(join(outDir, "proof-audit.json"), "utf8")) as {
+      status: string;
+      proofType: string;
+      mode: string;
+      mutation: boolean;
+      failToPass: boolean;
+      readyAfterPatch: boolean;
+      proofLoop: string;
+      checks: Array<{ id: string; status: string }>;
+    };
+
+    expect(auditOutput).toMatchObject({
+      command: "proof-audit",
+      status: "PASS",
+      artifacts: [join(outDir, "proof-audit.json")]
+    });
+    expect(audit).toMatchObject({
+      status: "PASS",
+      proofType: "suite",
+      mode: "fixture",
+      mutation: false,
+      failToPass: true,
+      readyAfterPatch: true,
+      proofLoop: "fail-to-pass"
+    });
+    expect(audit.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "suite-summary-loaded", status: "PASS" }),
+        expect.objectContaining({ id: "suite-status-pass", status: "PASS" }),
+        expect.objectContaining({ id: "suite-mutation-false", status: "PASS" }),
+        expect.objectContaining({ id: "suite-fail-to-pass", status: "PASS" }),
+        expect.objectContaining({ id: "suite-ready-after-patch", status: "PASS" }),
+        expect.objectContaining({ id: "suite-evidence-refs-present", status: "PASS" })
+      ])
+    );
+
     const strictOutDir = await mkdtemp(join(tmpdir(), "splunkready-suite-proof-strict-"));
     const strictOutput = parseCliJsonOutput(
       (await runCli(["suite-proof", "--out", strictOutDir, "--require-fail-to-pass", "true", "--json"])).stdout

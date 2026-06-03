@@ -5170,3 +5170,38 @@ Result:
 Open risks:
 
 - Suite manifests are parsed in the CLI with local validation rather than a shared schema module. Keep it local until another subsystem needs the suite manifest contract.
+
+## 2026-06-03 - Phase Live Suite Proof Audit
+
+Commands:
+
+- `npm run build && npx vitest run tests/cli/flow.test.ts -t "multi-mission" tests/ui/app.test.ts`
+- `tmp=$(mktemp -d /tmp/splunkready-suite-audit-XXXXXX) && npm run splunkready -- suite-proof --suite fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json --out "$tmp" --require-fail-to-pass true --json >/tmp/splunkready-suite-audit-suite.json && npm run splunkready -- proof-audit --out "$tmp" --require-pass true --json && node -e 'const fs=require("node:fs"); const a=JSON.parse(fs.readFileSync(process.argv[1]+"/proof-audit.json","utf8")); console.log(JSON.stringify({out:process.argv[1],status:a.status,proofType:a.proofType,mode:a.mode,mutation:a.mutation,failToPass:a.failToPass,readyAfterPatch:a.readyAfterPatch,checks:a.checks.map(c=>`${c.id}:${c.status}`)})); if (a.status!=="PASS" || a.proofType!=="suite" || a.failToPass!==true) process.exit(1);' "$tmp"`
+- `npm run check && npm run ui:build && git diff --check`
+
+Result:
+
+- PASS for focused TypeScript build and targeted CLI/UI tests:
+  - 2 test files;
+  - 2 tests passed;
+  - 36 tests skipped by the focused name filter.
+- PASS for direct suite proof followed by strict proof audit:
+  - status `PASS`;
+  - proofType `suite`;
+  - mode `fixture`;
+  - mutation `false`;
+  - failToPass `true`;
+  - readyAfterPatch `true`;
+  - checks `suite-summary-loaded`, `suite-status-pass`, `suite-mutation-false`, `suite-fail-to-pass`, `suite-ready-after-patch`, and `suite-evidence-refs-present` all passed.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 813 project files;
+  - 38 test files;
+  - 219 tests.
+- PASS for Vite production build.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Suite audit is based on the persisted suite summary artifact, not by recursively re-reading every per-mission receipt. That keeps CI fast and deterministic, but the summary writer remains the trusted producer.

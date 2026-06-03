@@ -373,6 +373,7 @@ const renderProofAuditSummaryRows = (audit: ProofAudit): Array<[string, unknown]
   ["Mode", audit.mode ?? "n/a"],
   ["Fail to pass", audit.failToPass === undefined ? "n/a" : audit.failToPass ? "yes" : "no"],
   ["Ready after patch", audit.readyAfterPatch === undefined ? "n/a" : audit.readyAfterPatch ? "yes" : "no"],
+  ["Proof loop", audit.proofLoop ?? "n/a"],
   ["Mutation", audit.mutation === undefined ? "n/a" : audit.mutation ? "yes" : "no"],
   ["Hosted models", audit.hostedModelStatus ?? "not loaded"]
 ];
@@ -438,6 +439,7 @@ const renderSuiteProof = (bundle: UiArtifactBundle): string => {
                 ["Mutation", summary.mutation ? "yes" : "no"]
               ])}
             </section>
+            ${renderProofAuditPanel(bundle.proofAudit)}
             <section class="panel suite-proof-panel">
               <h2>Mission ledger</h2>
               <table class="suite-table">
