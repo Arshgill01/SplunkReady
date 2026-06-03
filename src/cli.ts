@@ -201,7 +201,7 @@ Commands:
   hosted-model-proof --mode fixture|live --out <dir> [--json]
   hosted-model-diagnostic --mode fixture|live --out <dir> [--require-pass true|false] [--json]
   proof-audit --out <dir> [--require-pass true|false] [--json]
-  certification-index --proof-dirs <dir[,dir]> --out <dir> [--json]
+  certification-index --proof-dirs <dir[,dir]> --out <dir> [--require-pass true|false] [--json]
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]
   live-security-kit --out <dir> [--json]
@@ -2734,6 +2734,10 @@ const certificationIndexCommand = async (options: CliOptions): Promise<string[]>
   const indexPath = join(options.out, "certification-index.json");
 
   await writeJson(indexPath, index);
+
+  if (options.requirePass && status !== "PASS") {
+    throw new Error(`certification-index strict gate failed with ${status}. Inspect ${indexPath}.`);
+  }
 
   return [indexPath];
 };

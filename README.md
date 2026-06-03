@@ -96,10 +96,11 @@ To summarize several proof bundles for one environment, generate a certification
 npm run splunkready -- certification-index \
   --proof-dirs artifacts/mcp-transcript,artifacts/suite-proof,artifacts/live-security-ui \
   --out artifacts/certification-index \
+  --require-pass true \
   --json
 ```
 
-The command writes `certification-index.json`, a compact ledger of proof directories, audit status, receipt verdicts, scores, evidence counts, mutation posture, and UI links back to each proof bundle. It is useful when a team certifies more than one Splunk-connected agent or mission suite and needs one reviewable status file without collapsing the underlying Readiness Receipts.
+The command writes `certification-index.json`, a compact ledger of proof directories, audit status, receipt verdicts, scores, evidence counts, mutation posture, and UI links back to each proof bundle. It is useful when a team certifies more than one Splunk-connected agent or mission suite and needs one reviewable status file without collapsing the underlying Readiness Receipts. Use `--require-pass true` in CI to fail the job if any indexed proof audit is `WARN` or `FAIL`.
 
 ## Multi-Mission Fixture Proof
 

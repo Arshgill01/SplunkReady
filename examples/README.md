@@ -69,12 +69,13 @@ After certifying one or more external traces, MCP transcripts, suite proofs, or 
 
 ```bash
 npm run splunkready -- certification-index \
-  --proof-dirs artifacts/mcp-transcript-pass,artifacts/mcp-transcript-fail,artifacts/suite-proof \
+  --proof-dirs artifacts/mcp-transcript-pass,artifacts/suite-proof \
   --out artifacts/certification-index \
+  --require-pass true \
   --json
 ```
 
-`certification-index.json` does not re-grade traces. It reads each proof directory's `proof-audit.json` and Readiness Receipt, then records audit status, receipt verdict, score, evidence count, proof loop, mutation posture, and a UI link back to the source bundle. Use it as a small agent-certification ledger when several Splunk-connected agents or mission suites need to be reviewed together.
+`certification-index.json` does not re-grade traces. It reads each proof directory's `proof-audit.json` and Readiness Receipt, then records audit status, receipt verdict, score, evidence count, proof loop, mutation posture, and a UI link back to the source bundle. Use it as a small agent-certification ledger when several Splunk-connected agents or mission suites need to be reviewed together. In CI, `--require-pass true` turns the ledger into a merge gate: the command writes the index, then exits nonzero if any indexed proof audit is not `PASS`.
 
 ## CI gate example
 
@@ -89,6 +90,8 @@ CLI commands that include `--json` emit structured `PASS`, `SKIP`, or `FAIL` env
 For externally captured traces and imported MCP transcripts, run `proof-audit --require-pass true` after `grade-trace`. The audit recognizes `receipt-external-001.json`, checks that `trace-external.json` and deterministic violations are present, verifies receipt trace refs, and fails unless the external receipt is `READY`.
 
 The same job also runs `firewall-check`. That command compiles the fixture contract, executes the before-phase specimen behind the SplunkReady firewall, treats a `FIREWALL_POLICY_BLOCKED` result as a passing pre-execution safety proof, and writes `firewall-block-before.json` plus a strict `proof-audit.json`. CI can upload those artifacts even though no unsafe query reached Splunk.
+
+When a workflow produces several proof directories, add `certification-index --require-pass true` as the final aggregation gate. That gives reviewers one `certification-index.json` file while still preserving the underlying receipts, audits, and traces.
 
 The optional `live-security-proof` job is disabled unless the repository variable `SPLUNKREADY_LIVE_ENABLED` is set to `true`. It expects these secrets:
 

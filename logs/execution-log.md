@@ -7100,3 +7100,55 @@ Result:
   - 38 test files;
   - 229 tests.
 - Vite production build and `git diff --check` passed.
+
+## 2026-06-03 - Phase Live Strict Certification Index Gate
+
+Scope:
+- Turn `certification-index` from a passive rollup into a CI-enforceable multi-proof gate.
+- Keep the command artifact-first: write `certification-index.json` even when the strict gate fails.
+- Do not re-grade traces inside the index command; rely on each proof directory's existing receipt and `proof-audit.json`.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `examples/README.md`
+- `examples/github-workflow-example.yml`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `--require-pass true|false` support to `certification-index`.
+- When strict mode is enabled, the command now writes `certification-index.json` and exits nonzero unless the aggregate index status is `PASS`.
+- Added CLI tests for:
+  - mixed pass/fail proof directories producing a strict failure;
+  - strict failure preserving the index artifact on disk;
+  - a single PASS proof directory passing the strict gate.
+- Updated README and examples README to document strict index gating.
+- Updated the GitHub Actions example with a final strict certification-index step over `artifacts/ci-suite-proof` and `artifacts/ci-firewall`.
+
+Product impact:
+- SplunkReady now has a clean environment-level merge gate: individual proof commands produce receipts and audits, then `certification-index --require-pass true` enforces that the whole indexed set is acceptable.
+- This makes the certification ledger more than UI/data presentation; it is an automation primitive for Platform & DX.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 33% | 33% | Incremental automation polish, not a new demo capability. |
+| Platform & DX | 88% | 90% | Multi-proof CI enforcement is now first-class. |
+| Security | 44% | 44% | Security proof bundles can be aggregated and blocked, but core security behavior is unchanged. |
+| Best Use of MCP Server | 89% | 89% | MCP transcript proof bundles benefit from the strict rollup, but MCP integration itself is unchanged. |
+| Hosted Models | 53% | 53% | Hosted-model behavior unchanged while SAIA activation is pending. |
+| Developer Tools | 86% | 88% | GitHub Actions now demonstrates an aggregate certification gate. |
+
+Next directions to consider in future runs:
+- Add an index detail view action that loads a selected proof bundle directly and verify the browser navigation.
+- If SAIA activation lands, run `hosted-model-diagnostic --require-pass true` and index the resulting proof status.
+- Consider adding a minimal provenance hash for each indexed proof directory only if it materially improves artifact trust.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI test, direct strict-index smoke, full repo check, and `git diff --check` passed.

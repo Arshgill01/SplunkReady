@@ -1149,6 +1149,60 @@ describe("SplunkReady CLI flow", () => {
         })
       ])
     );
+
+    const strictFailDir = await mkdtemp(join(tmpdir(), "splunkready-index-strict-fail-"));
+    const strictFailure = await runCli([
+      "certification-index",
+      "--proof-dirs",
+      `${passDir},${failDir}`,
+      "--out",
+      strictFailDir,
+      "--require-pass",
+      "true",
+      "--json"
+    ]).then(
+      () => {
+        throw new Error("Expected certification-index strict gate to fail.");
+      },
+      (error: { stderr: string }) => parseCliJsonOutput(error.stderr)
+    );
+    const strictFailIndex = JSON.parse(await readFile(join(strictFailDir, "certification-index.json"), "utf8")) as {
+      status: string;
+      totals: { proofs: number; ready: number; notReady: number };
+    };
+
+    expect(strictFailure).toMatchObject({
+      command: "certification-index",
+      status: "FAIL",
+      artifacts: [],
+      error: expect.stringContaining("certification-index strict gate failed with FAIL")
+    });
+    expect(strictFailIndex).toMatchObject({
+      status: "FAIL",
+      totals: { proofs: 2, ready: 1, notReady: 1 }
+    });
+
+    const strictPassDir = await mkdtemp(join(tmpdir(), "splunkready-index-strict-pass-"));
+    const strictPassOutput = parseCliJsonOutput(
+      (
+        await runCli([
+          "certification-index",
+          "--proof-dirs",
+          passDir,
+          "--out",
+          strictPassDir,
+          "--require-pass",
+          "true",
+          "--json"
+        ])
+      ).stdout
+    );
+
+    expect(strictPassOutput).toMatchObject({
+      command: "certification-index",
+      status: "PASS",
+      artifacts: [join(strictPassDir, "certification-index.json")]
+    });
   });
 
   it("requires proof directories for certification index generation", async () => {

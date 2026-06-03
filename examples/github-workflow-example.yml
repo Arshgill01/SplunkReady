@@ -106,6 +106,9 @@ jobs:
       - name: Prove firewall blocks unsafe SPL before Splunk
         run: npm run splunkready -- firewall-check --mode fixture --out artifacts/ci-firewall --json
 
+      - name: Build strict certification index for CI proofs
+        run: npm run splunkready -- certification-index --proof-dirs artifacts/ci-suite-proof,artifacts/ci-firewall --out artifacts/ci-certification-index --require-pass true --json
+
       - name: Compile fixture contract
         run: npm run splunkready -- compile --mode fixture --out artifacts/ci-readiness --json
 
@@ -146,6 +149,7 @@ jobs:
             artifacts/ci-readiness
             artifacts/ci-suite-proof
             artifacts/ci-firewall
+            artifacts/ci-certification-index
 
   live-security-proof:
     name: Live security proof gate
