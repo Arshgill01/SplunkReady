@@ -14,6 +14,10 @@ const missionPath = new URL(
   "../../fixtures/acme-soc-dev/missions/security-investigation-readiness.json",
   import.meta.url
 );
+const observabilityMissionPath = new URL(
+  "../../fixtures/acme-soc-dev/missions/observability-latency-readiness.json",
+  import.meta.url
+);
 const compileOptions = {
   requestId: "req-specimen-agent-001",
   contractVersion: "2026.06.01",
@@ -21,6 +25,8 @@ const compileOptions = {
 };
 
 const loadMission = async () => parseMissionDefinition(JSON.parse(await readFile(missionPath, "utf8")) as unknown);
+const loadObservabilityMission = async () =>
+  parseMissionDefinition(JSON.parse(await readFile(observabilityMissionPath, "utf8")) as unknown);
 
 describe("naive specimen agent", () => {
   it("runs a failing fixture mission naturally without contract or policy", async () => {
@@ -127,5 +133,35 @@ describe("naive specimen agent", () => {
       }
     });
     expect(run.traceEvents.map((event) => event.toolName)).not.toContain("splunk_run_saved_search");
+  });
+
+  it("uses a policy-backed bounded query for observability missions without saved-search preference", async () => {
+    const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
+    const adapter = createFixtureSplunkAccessAdapter(fixture);
+    const contract = await compileEnvironmentContract(adapter, compileOptions);
+    const policy = compileAgentPolicy(contract, {
+      policyVersion: "policy-2026.06.01",
+      compiledAt: "2026-06-01T06:45:00.000Z"
+    });
+    const mission = await loadObservabilityMission();
+    const agent = new NaiveSpecimenAgent();
+    const run = await agent.run({ mission, adapter, policy });
+
+    expect(run.traceEvents.map((event) => event.toolName)).toEqual(["splunk_run_query", "splunk_run_query", null]);
+    expect(run.traceEvents[0]).toMatchObject({
+      toolName: "splunk_run_query",
+      toolInput: {
+        query:
+          "search index=_internal component=HttpPubSubConnection earliest=-15m latest=now | stats p95(latency_ms) as p95_latency_ms by service"
+      }
+    });
+    expect(run.traceEvents[1]).toMatchObject({
+      queryRef: "query-observability-latency",
+      resultCount: 4,
+      evidenceRefs: ["obs-201", "obs-202", "obs-203", "obs-204"]
+    });
+    expect(run.finalAnswer).toContain("query-observability-latency");
+    expect(run.finalAnswer).toContain("obs-201");
+    expect(run.traceEvents.every((event) => traceEventSchema.safeParse(event).success)).toBe(true);
   });
 });

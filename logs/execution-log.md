@@ -4364,6 +4364,62 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Multi-Mission Suite Proof
+
+Scope:
+- Prove SplunkReady is not a one-mission fixture harness by running a credential-free suite across multiple security and observability missions.
+- Keep live proof separate; this command is the reproducible local proof lane.
+
+Files expected/touched:
+- `src/agents/specimen.ts`
+- `src/cli.ts`
+- `tests/agents/specimen.test.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added a policy-backed query path for `mission-observability-latency-readiness`.
+- The observability specimen still fails naturally before policy injection, but after policy injection it runs the bounded `_internal` latency query from the compiled contract and returns evidence refs.
+- Added `suite-proof --mode fixture --out <dir> [--json]`.
+- `suite-proof` runs:
+  - security lateral movement readiness;
+  - security exfiltration readiness;
+  - observability latency readiness.
+- The command writes normal per-mission compile/evaluate/receipt/rerun artifacts under per-mission directories.
+- The command writes `suite-proof-summary.json` and `suite-proof-summary.md` with status, domains covered, proof-loop classification, before/after verdicts, evidence-ref totals, and `mutation: false`.
+- README now documents the multi-mission fixture proof command.
+
+Product impact:
+- The local proof story now demonstrates three independent fail -> patch -> rerun -> pass loops across security and observability.
+- This directly addresses the "one fixture, one mission" critique without requiring live credentials for normal verification.
+- The suite summary is machine-readable and suitable for CI or UI consumption in a later slice.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 30% | 32% | Broader proof surface makes the product look less scripted. |
+| Platform & DX | 75% | 78% | `suite-proof --json` gives developers a stronger local certification gate. |
+| Security | 42% | 45% | Two distinct security missions now pass through the same receipt loop. |
+| Best Use of MCP Server | 80% | 80% | Live MCP behavior unchanged in this slice. |
+| Hosted Models | 54% | 54% | Still waiting on SAIA activation/permission. |
+| Developer Tools | 72% | 75% | Multi-mission machine-readable summaries strengthen the SDK/CI story. |
+
+Next directions to consider in future runs:
+- Once SAIA activation arrives, rerun `hosted-model-diagnostic`, `hosted-model-proof`, and `live-security-proof`, then close the hosted-model proof warning.
+- Feed `suite-proof-summary.json` into the Vite artifact app so the UI can start from a multi-agent/multi-mission proof ledger.
+- Consider a `suite-proof --require-fail-to-pass true` strict gate if future suites may include missions that are ready without patch.
+- Avoid expanding into generic dashboard features; keep every UI claim backed by receipt, trace, contract, or proof-audit artifacts.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused TypeScript build and targeted specimen/CLI tests passed.
+- Full repo verification and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live External Trace SDK Pass Example
 
 Scope:

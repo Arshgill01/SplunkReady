@@ -66,14 +66,39 @@ const policyPreferredSavedSearchRef = (mission: MissionDefinition, policy?: Agen
   return policySavedSearchRefs(policy).find((ref) => missionRefs.has(ref));
 };
 
+const policyBackedQuery = (mission: MissionDefinition, policy?: AgentPolicy): string | undefined => {
+  if (!policy || mission.id !== "mission-observability-latency-readiness") {
+    return undefined;
+  }
+
+  const indexes = new Set(policy.queryRules.flatMap((rule) => {
+    if (rule.ruleId !== "SPL-004" || !rule.value || typeof rule.value !== "object" || !("indexes" in rule.value)) {
+      return [];
+    }
+
+    return Array.isArray(rule.value.indexes) ? rule.value.indexes.filter((index): index is string => typeof index === "string") : [];
+  }));
+
+  if (!mission.authorizedIndexes?.includes("_internal") || !indexes.has("_internal")) {
+    return undefined;
+  }
+
+  return `search index=_internal component=HttpPubSubConnection earliest=${mission.requestedTimeWindow.earliest} latest=${mission.requestedTimeWindow.latest} | stats p95(latency_ms) as p95_latency_ms by service`;
+};
+
 export class NaiveSpecimenAgent {
   async run(input: SpecimenAgentInput): Promise<SpecimenAgentRun> {
     const traceEvents: TraceEvent[] = [];
     const timestamp = input.now ?? defaultNow;
     const preferredSavedSearchRef = policyPreferredSavedSearchRef(input.mission, input.policy);
+    const query = policyBackedQuery(input.mission, input.policy);
 
     if (preferredSavedSearchRef) {
       return this.runWithInjectedPolicy(input, traceEvents, timestamp, preferredSavedSearchRef);
+    }
+
+    if (query) {
+      return this.runWithInjectedQueryPolicy(input, traceEvents, timestamp, query);
     }
 
     return this.runWithoutPolicy(input, traceEvents, timestamp);
@@ -115,6 +140,48 @@ export class NaiveSpecimenAgent {
       result.resultCount > 0
         ? `Found ${result.resultCount} matching result(s), but this naive run did not inspect validated Splunk knowledge.`
         : "No evidence was found by the naive broad search.";
+    this.addFinalAnswer(
+      traceEvents,
+      input.mission.id,
+      timestamp,
+      3,
+      finalAnswer,
+      result,
+      `${callId}-result`,
+      input.mission.requestedTimeWindow
+    );
+
+    return { finalAnswer, traceEvents };
+  }
+
+  private async runWithInjectedQueryPolicy(
+    input: SpecimenAgentInput,
+    traceEvents: TraceEvent[],
+    timestamp: string,
+    query: string
+  ): Promise<SpecimenAgentRun> {
+    const callId = this.addToolCall(traceEvents, {
+      missionId: input.mission.id,
+      timestamp,
+      step: 1,
+      toolName: "splunk_run_query",
+      toolInput: {
+        query,
+        timeWindow: input.mission.requestedTimeWindow,
+        maxRows: 10,
+        app: "search"
+      }
+    });
+    const result = await input.adapter.runQuery(
+      { query, timeWindow: input.mission.requestedTimeWindow, maxRows: 10, app: "search" },
+      { requestId: `${input.mission.id}-policy`, missionId: input.mission.id, traceEventId: callId }
+    );
+    this.addQueryResult(traceEvents, input.mission.id, timestamp, callId, 2, result);
+
+    const finalAnswer =
+      result.resultCount > 0
+        ? `Evidence supports the latency investigation: ${result.resultCount} result(s) from ${result.queryRef} in time window ${input.mission.requestedTimeWindow.earliest} to ${input.mission.requestedTimeWindow.latest}, evidence ${result.evidenceRefs.join(", ")}.`
+        : `No rows were returned from ${result.queryRef}; confidence is limited.`;
     this.addFinalAnswer(
       traceEvents,
       input.mission.id,

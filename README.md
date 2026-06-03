@@ -69,6 +69,17 @@ The compile command also writes `readiness-profile.json`, which binds active rul
 
 See [examples/README.md](examples/README.md) for runnable external-trace capture scripts and generated sample receipts for both `NOT READY` and `READY / 100` external agent traces.
 
+## Multi-Mission Fixture Proof
+
+To prove the harness is not a single scripted mission, run the suite proof:
+
+```bash
+npm run build
+npm run splunkready -- suite-proof --out artifacts/suite-proof --json
+```
+
+`suite-proof` runs the fixture fail -> patch -> rerun -> pass loop across two security missions and one observability mission. It writes each mission's normal artifacts plus `suite-proof-summary.json` / `.md`, with proof-loop classification, domains covered, evidence counts, and `mutation: false`. This path is credential-free and does not call live Splunk.
+
 ## Runtime Firewall Gate
 
 Use `--firewall` on `evaluate`, `rerun`, `live-proof`, or `live-security-proof` to wrap the Splunk adapter with the compiled policy before the specimen can run SPL:

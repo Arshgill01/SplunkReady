@@ -438,6 +438,68 @@ describe("SplunkReady CLI flow", () => {
     });
   });
 
+  it("runs a multi-mission fixture proof across security and observability", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-suite-proof-"));
+
+    const output = parseCliJsonOutput((await runCli(["suite-proof", "--out", outDir, "--json"])).stdout);
+    const summary = JSON.parse(await readFile(join(outDir, "suite-proof-summary.json"), "utf8")) as {
+      status: string;
+      mode: string;
+      mutation: boolean;
+      suiteId: string;
+      missionCount: number;
+      domains: string[];
+      totals: { failToPass: number; readyAfterPatch: number; evidenceRefs: number };
+      missions: Array<{
+        missionId: string;
+        domain: string;
+        proofLoop: string;
+        before: { verdict: string; score: number; violations: number };
+        after: { verdict: string; score: number; violations: number; evidenceRefs: string[] };
+      }>;
+    };
+    const markdown = await readFile(join(outDir, "suite-proof-summary.md"), "utf8");
+
+    expect(output).toMatchObject({
+      command: "suite-proof",
+      status: "PASS",
+      artifacts: expect.arrayContaining([
+        join(outDir, "suite-proof-summary.json"),
+        join(outDir, "suite-proof-summary.md"),
+        join(outDir, "mission-security-lateral-movement-readiness", "receipt-after-001.json"),
+        join(outDir, "mission-security-exfiltration-readiness", "receipt-after-001.json"),
+        join(outDir, "mission-observability-latency-readiness", "receipt-after-001.json")
+      ])
+    });
+    expect(summary).toMatchObject({
+      status: "PASS",
+      mode: "fixture",
+      mutation: false,
+      suiteId: "phase-live-multi-mission-proof",
+      missionCount: 3,
+      domains: ["observability", "security"],
+      totals: {
+        failToPass: 3,
+        readyAfterPatch: 3,
+        evidenceRefs: 15
+      }
+    });
+    expect(summary.missions.map((mission) => mission.missionId).sort()).toEqual([
+      "mission-observability-latency-readiness",
+      "mission-security-exfiltration-readiness",
+      "mission-security-lateral-movement-readiness"
+    ]);
+    for (const mission of summary.missions) {
+      expect(mission.proofLoop).toBe("fail-to-pass");
+      expect(mission.before.verdict).toBe("NOT READY");
+      expect(mission.before.violations).toBeGreaterThan(0);
+      expect(mission.after).toMatchObject({ verdict: "READY", score: 100, violations: 0 });
+      expect(mission.after.evidenceRefs.length).toBeGreaterThan(0);
+    }
+    expect(markdown).toContain("SplunkReady Suite Proof");
+    expect(markdown).toContain("mission-observability-latency-readiness");
+  });
+
   it("runs the clean fixture demo orchestration and writes rehearsal artifacts", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-demo-"));
 

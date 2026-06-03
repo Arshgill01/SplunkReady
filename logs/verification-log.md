@@ -5022,3 +5022,41 @@ Result:
 Open risks:
 
 - Existing proof bundles generated before this slice do not contain `proofLoop`; regenerate live proof artifacts before relying on the new field in the UI.
+
+## 2026-06-03 - Phase Live Multi-Mission Suite Proof
+
+Commands:
+
+- `npm run build && npx vitest run tests/agents/specimen.test.ts tests/missions/observability.test.ts`
+- `for mission in fixtures/acme-soc-dev/missions/security-investigation-readiness.json fixtures/acme-soc-dev/missions/security-exfiltration-readiness.json fixtures/acme-soc-dev/missions/observability-latency-readiness.json; do tmp=$(mktemp -d /tmp/splunkready-mission-proof-XXXXXX); npm run splunkready -- compile --mission "$mission" --out "$tmp" >/dev/null; npm run splunkready -- evaluate --mission "$mission" --out "$tmp" >/dev/null; npm run splunkready -- receipt --mission "$mission" --out "$tmp" >/dev/null; npm run splunkready -- rerun --mission "$mission" --out "$tmp" >/dev/null; node -e 'const fs=require("node:fs"); const dir=process.argv[1]; const before=JSON.parse(fs.readFileSync(dir+"/receipt-before-001.json","utf8")); const after=JSON.parse(fs.readFileSync(dir+"/receipt-after-001.json","utf8")); console.log(JSON.stringify({mission:before.missions[0].id,before:{verdict:before.verdict,score:before.score,violations:before.violations.length},after:{verdict:after.verdict,score:after.score,violations:after.violations.length,evidenceRefs:after.evidenceRefs.length}}));' "$tmp"; done`
+- `npm run build && tmp=$(mktemp -d /tmp/splunkready-suite-proof-XXXXXX) && npm run splunkready -- suite-proof --out "$tmp" --json && node -e 'const fs=require("node:fs"); const s=JSON.parse(fs.readFileSync(process.argv[1]+"/suite-proof-summary.json","utf8")); console.log(JSON.stringify({status:s.status, missionCount:s.missionCount, domains:s.domains, totals:s.totals, loops:s.missions.map(m=>m.proofLoop)}));' "$tmp"`
+- `npm run build && npx vitest run tests/agents/specimen.test.ts tests/cli/flow.test.ts -t "multi-mission|observability"`
+
+Result:
+
+- PASS for TypeScript build and focused specimen/observability tests before adding the suite command.
+- PASS for manual public CLI probes across all three mission files:
+  - security lateral movement: `NOT READY / 0 / 5` -> `READY / 100 / 0`, 5 evidence refs;
+  - security exfiltration: `NOT READY / 0 / 5` -> `READY / 100 / 0`, 6 evidence refs;
+  - observability latency: `NOT READY / 50 / 2` -> `READY / 100 / 0`, 4 evidence refs.
+- PASS for the direct `suite-proof --json` command:
+  - status `PASS`;
+  - missionCount 3;
+  - domains `observability`, `security`;
+  - totals `failToPass: 3`, `readyAfterPatch: 3`, `evidenceRefs: 15`;
+  - proof loops all `fail-to-pass`.
+- PASS for focused TypeScript build and targeted tests:
+  - 2 test files;
+  - 2 tests passed;
+  - 28 tests skipped by the focused name filter.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 759 project files;
+  - 38 test files;
+  - 218 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The new suite command is fixture-only by design; live security proof remains covered by `live-security-proof`.
