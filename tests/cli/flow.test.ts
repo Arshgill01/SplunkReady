@@ -1679,6 +1679,7 @@ describe("SplunkReady CLI flow", () => {
       readinessStatus: string;
       failToPass: boolean;
       readyAfterPatch: boolean;
+      proofLoop: string;
       before: { verdict: string; violations: number };
       after: { verdict: string; score: number; evidenceRefs: string[] };
       hostedModels: {
@@ -1698,6 +1699,7 @@ describe("SplunkReady CLI flow", () => {
       derivedMission: { strategy: string; missionId: string };
       failToPass: boolean;
       readyWithoutPatch: boolean;
+      proofLoop: string;
       hostedModels: {
         status: string;
         assistanceItems: number;
@@ -1736,6 +1738,7 @@ describe("SplunkReady CLI flow", () => {
       readinessStatus: "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF",
       failToPass: true,
       readyAfterPatch: true,
+      proofLoop: "fail-to-pass",
       before: { verdict: "NOT READY", violations: beforeReceipt.violations.length },
       after: {
         verdict: "READY",
@@ -1762,6 +1765,7 @@ describe("SplunkReady CLI flow", () => {
       },
       failToPass: true,
       readyWithoutPatch: false,
+      proofLoop: "fail-to-pass",
       hostedModels: {
         status: "invoked",
         assistanceItems: 3,
@@ -1781,6 +1785,7 @@ describe("SplunkReady CLI flow", () => {
       mutation: boolean;
       failToPass: boolean;
       readyAfterPatch: boolean;
+      proofLoop: string;
       hostedModelStatus: string;
       checks: Array<{ id: string; status: string }>;
     };
@@ -1797,6 +1802,7 @@ describe("SplunkReady CLI flow", () => {
       mutation: false,
       failToPass: true,
       readyAfterPatch: true,
+      proofLoop: "fail-to-pass",
       hostedModelStatus: "invoked"
     });
     expect(audit.checks).toEqual(
@@ -1919,6 +1925,7 @@ describe("SplunkReady CLI flow", () => {
       after: { verdict: string; score: number; violations: number };
       failToPass: boolean;
       readyWithoutPatch: boolean;
+      proofLoop: string;
     };
 
     expect(candidateReport.derivedMission).toMatchObject({
@@ -1948,7 +1955,8 @@ describe("SplunkReady CLI flow", () => {
       before: { verdict: "NOT READY", violations: beforeReceipt.violations.length },
       after: { verdict: "READY", score: 100, violations: 0 },
       failToPass: true,
-      readyWithoutPatch: false
+      readyWithoutPatch: false,
+      proofLoop: "fail-to-pass"
     });
     expect(gemini.prompts).toHaveLength(4);
     expect(mcp.calls.map((call) => call.params.name)).toEqual(

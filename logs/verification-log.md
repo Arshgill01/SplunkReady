@@ -4991,3 +4991,34 @@ Result:
 Open risks:
 
 - The longer CLI flow hook timeout addresses full-suite load variance; it does not change CLI behavior.
+
+## 2026-06-03 - Phase Live Proof Loop Classification
+
+Commands:
+
+- `npm run build && npx vitest run tests/cli/flow.test.ts -t "live proof|live security proof|proof-audit|Vite UI" tests/ui/app.test.ts`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for TypeScript build.
+- PASS for focused CLI/UI tests:
+  - 2 test files;
+  - 15 tests passed;
+  - 21 CLI tests skipped by the focused name filter.
+- PASS coverage included:
+  - `live-proof-summary.json` has `proofLoop`;
+  - `live-security-proof-summary.json` has `proofLoop: "fail-to-pass"`;
+  - `proof-audit.json` carries `proofLoop: "fail-to-pass"`;
+  - Vite UI renders `Proof loop`, `ready-without-patch`, and `fail-to-pass` in the relevant proof panels.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 759 project files;
+  - 38 test files;
+  - 216 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Existing proof bundles generated before this slice do not contain `proofLoop`; regenerate live proof artifacts before relying on the new field in the UI.

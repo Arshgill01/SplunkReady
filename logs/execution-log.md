@@ -4478,6 +4478,60 @@ Result:
 - First full repo check failed because the CLI flow `beforeAll` TypeScript build hook exceeded its 30s timeout before any CLI tests ran.
 - After increasing that hook timeout to 60s, full repo verification and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Proof Loop Classification
+
+Scope:
+- Remove ambiguity between true flagship fail-to-pass proof and live missions that are already ready before policy injection.
+- Keep the proof classification artifact-backed and visible in CLI audit and Vite UI.
+
+Files expected/touched:
+- `src/cli.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `proofLoop` classification with values:
+  - `fail-to-pass`;
+  - `ready-without-patch`;
+  - `not-ready-after-rerun`;
+  - `mixed-verdict`.
+- `live-proof-summary.json` and `live-security-proof-summary.json` now include `proofLoop`.
+- `proof-audit.json` now carries the derived proof loop.
+- The Vite UI validates and renders `Proof loop` for live proof summaries and flagship security proof summaries.
+- README now points developers to `proofLoop` as the explicit field for interpreting live proof evidence.
+
+Product impact:
+- Judges and developers can no longer confuse a live READY -> READY run with the flagship NOT READY -> READY certification loop.
+- This is stronger evidence discipline, not UI ornamentation.
+- It directly addresses the live proof credibility risk while SAIA activation is pending.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 29% | 30% | The proof story is less ambiguous. |
+| Platform & DX | 74% | 75% | CI/audit consumers get an explicit proof classification. |
+| Security | 40% | 42% | Flagship security proof is easier to distinguish from generic live smoke. |
+| Best Use of MCP Server | 79% | 80% | Live MCP evidence is clearer. |
+| Hosted Models | 54% | 54% | Hosted-model behavior unchanged. |
+| Developer Tools | 71% | 72% | Audit artifacts are more machine-readable. |
+
+Next directions to consider in future runs:
+- If SAIA activation lands, rerun strict hosted-model diagnostics and attach the live hosted-model pass to proof/UI artifacts.
+- Otherwise, continue with runtime safety/firewall or multi-mission proof hardening.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused build and CLI/UI tests passed.
+- Full repo verification and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Hosted Model Proof Attachment and LLM Evidence Ledger
 
 Scope:

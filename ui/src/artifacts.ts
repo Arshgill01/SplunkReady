@@ -185,6 +185,7 @@ const liveProofSummarySchema = z
       .strict(),
     failToPass: z.boolean(),
     readyWithoutPatch: z.boolean(),
+    proofLoop: z.enum(["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"]),
     hostedModels: hostedModelSummarySchema.optional(),
     notes: z.string().min(1)
   })
@@ -216,6 +217,7 @@ const liveSecurityProofSummarySchema = z
       .strict(),
     failToPass: z.boolean(),
     readyAfterPatch: z.boolean(),
+    proofLoop: z.enum(["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"]),
     hostedModels: hostedModelSummarySchema.optional(),
     notes: z.string().min(1)
   })

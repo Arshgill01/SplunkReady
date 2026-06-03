@@ -243,6 +243,7 @@ const liveProofSummary = {
   after: { verdict: "READY", score: 100, violations: 0 },
   failToPass: false,
   readyWithoutPatch: true,
+  proofLoop: "ready-without-patch",
   hostedModels: {
     status: "available_not_applicable",
     availableTools: ["saia_explain_spl", "saia_optimize_spl"],
@@ -274,6 +275,7 @@ const liveSecurityProofSummary = {
   },
   failToPass: true,
   readyAfterPatch: true,
+  proofLoop: "fail-to-pass",
   hostedModels: {
     status: "invoked",
     availableTools: ["saia_explain_spl", "saia_optimize_spl"],
@@ -603,10 +605,13 @@ describe("Vite UI artifact app", () => {
     expect(replay).toContain("No policy patch was exported because the live-derived mission was READY before policy injection.");
     expect(replay).toContain("Live proof summary");
     expect(replay).toContain("mission-live-internal-query-readiness");
+    expect(liveConnect).toContain("Proof loop");
+    expect(liveConnect).toContain("ready-without-patch");
     expect(liveConnect).toContain("Ready without patch");
     expect(liveConnect).toContain("internal-query-fallback");
     expect(liveConnect).toContain("Flagship security proof");
     expect(liveConnect).toContain("READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF");
+    expect(liveConnect).toContain("fail-to-pass");
     expect(liveConnect).toContain("security fail-to-pass");
     expect(liveConnect).toContain("saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain");
     expect(liveConnect).toContain("Flagship security readiness");

@@ -108,6 +108,7 @@ interface ProofAuditReport {
   failToPass?: boolean;
   readyAfterPatch?: boolean;
   readyWithoutPatch?: boolean;
+  proofLoop?: ProofLoop;
   hostedModelStatus?: string;
   checks: ProofAuditCheck[];
 }
@@ -410,6 +411,27 @@ const assertTraceMatchesMission = (mission: MissionDefinition, traceEvents: Trac
 
 const gradeTrace = (contract: EnvironmentContract, mission: MissionDefinition, traceEvents: TraceEvent[]): Violation[] =>
   runRuleEngine({ contract, mission, traceEvents }, allRules()).violations;
+
+type ProofLoop = "fail-to-pass" | "ready-without-patch" | "not-ready-after-rerun" | "mixed-verdict";
+
+const classifyProofLoop = (
+  beforeReceipt: { verdict: string },
+  afterReceipt: { verdict: string }
+): ProofLoop => {
+  if (beforeReceipt.verdict === "NOT READY" && afterReceipt.verdict === "READY") {
+    return "fail-to-pass";
+  }
+
+  if (beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY") {
+    return "ready-without-patch";
+  }
+
+  if (afterReceipt.verdict !== "READY") {
+    return "not-ready-after-rerun";
+  }
+
+  return "mixed-verdict";
+};
 
 const splAssistanceRuleIds = new Set(["SPL-001", "SPL-003", "SPL-004"]);
 
@@ -1350,6 +1372,7 @@ const liveProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = pr
   const policyPatch = await readOptionalPolicyPatch(options.out);
   const hostedModels = summarizeHostedModels(contract, policyPatch);
   const summaryPath = join(options.out, "live-proof-summary.json");
+  const proofLoop = classifyProofLoop(beforeReceipt, afterReceipt);
 
   await writeJson(summaryPath, {
     status: "PASS",
@@ -1368,11 +1391,14 @@ const liveProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = pr
     },
     failToPass: beforeReceipt.verdict === "NOT READY" && afterReceipt.verdict === "READY",
     readyWithoutPatch: beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY",
+    proofLoop,
     hostedModels,
     notes:
-      beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY"
+      proofLoop === "ready-without-patch"
         ? "The live-derived mission was already ready before policy injection; this proves live certification but not the fail-to-pass patch loop."
-        : "The live-derived mission exercised the receipt rerun flow."
+        : proofLoop === "fail-to-pass"
+          ? "The live-derived mission exercised a NOT READY -> READY patch loop."
+          : "The live-derived mission ran against live Splunk MCP tools; inspect receipts for remaining readiness state."
   });
 
   return [
@@ -1434,6 +1460,7 @@ const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.Process
   const securitySummaryPath = join(options.out, "live-security-proof-summary.json");
   const failToPass = beforeReceipt.verdict === "NOT READY" && afterReceipt.verdict === "READY";
   const readyAfterPatch = afterReceipt.verdict === "READY";
+  const proofLoop = classifyProofLoop(beforeReceipt, afterReceipt);
 
   await writeJson(liveProofSummaryPath, {
     status: "PASS",
@@ -1457,8 +1484,9 @@ const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.Process
     },
     failToPass,
     readyWithoutPatch: beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY",
+    proofLoop,
     hostedModels,
-    notes: failToPass
+    notes: proofLoop === "fail-to-pass"
       ? "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
       : "The flagship live security mission ran against live Splunk MCP tools; inspect receipts for remaining readiness state."
   });
@@ -1482,8 +1510,9 @@ const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.Process
     },
     failToPass,
     readyAfterPatch,
+    proofLoop,
     hostedModels,
-    notes: failToPass
+    notes: proofLoop === "fail-to-pass"
       ? "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
       : "The flagship live security mission ran against live Splunk MCP tools; inspect receipts for remaining readiness state."
   });
@@ -1829,6 +1858,10 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
   const readyAfterPatch =
     booleanFromRecord(liveSecurityProofSummary, "readyAfterPatch") ??
     (afterReceipt ? afterReceipt.verdict === "READY" : undefined);
+  const proofLoop =
+    stringFromRecord(liveSecurityProofSummary, "proofLoop") ??
+    stringFromRecord(liveProofSummary, "proofLoop") ??
+    (beforeReceipt && afterReceipt ? classifyProofLoop(beforeReceipt, afterReceipt) : undefined);
   const mutationValues = [liveSecurityProofSummary, liveProofSummary, hostedModelProof, firewallBlock]
     .map((artifact) => booleanFromRecord(artifact, "mutation"))
     .filter((value): value is boolean => typeof value === "boolean");
@@ -2082,6 +2115,7 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
     failToPass,
     readyAfterPatch,
     readyWithoutPatch,
+    proofLoop: proofLoop as ProofLoop | undefined,
     hostedModelStatus,
     checks
   };
