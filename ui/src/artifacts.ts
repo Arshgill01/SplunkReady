@@ -363,6 +363,30 @@ const liveSecurityKitSchema = z
 
 export type LiveSecurityKit = z.infer<typeof liveSecurityKitSchema>;
 
+const mcpTranscriptImportSchema = z
+  .object({
+    status: z.literal("PASS"),
+    source: z.literal("mcp-jsonrpc-transcript"),
+    mutation: z.literal(false),
+    missionId: z.string().min(1),
+    recordCount: z.number().int().nonnegative(),
+    importedEvents: z.number().int().nonnegative(),
+    toolCalls: z.number().int().nonnegative(),
+    toolResults: z.number().int().nonnegative(),
+    errors: z.number().int().nonnegative(),
+    finalAnswers: z.number().int().nonnegative(),
+    skippedRecords: z.number().int().nonnegative(),
+    unmatchedToolCalls: z.number().int().nonnegative().optional(),
+    toolNames: z.array(z.string().min(1)),
+    strictImport: z.boolean().optional(),
+    transcriptPath: z.string().min(1).optional(),
+    outputTracePath: z.string().min(1).optional(),
+    nextCommand: z.string().min(1).optional()
+  })
+  .strict();
+
+export type McpTranscriptImport = z.infer<typeof mcpTranscriptImportSchema>;
+
 export interface UiArtifactBundle {
   artifactBase: string;
   contract?: EnvironmentContract;
@@ -371,6 +395,7 @@ export interface UiArtifactBundle {
   readinessProfile?: ReadinessProfile;
   beforeReceipt?: ReadinessReceipt;
   afterReceipt?: ReadinessReceipt;
+  externalReceipt?: ReadinessReceipt;
   receipt?: ReadinessReceipt;
   policyPatch?: PolicyPatch;
   liveProofSummary?: LiveProofSummary;
@@ -382,10 +407,14 @@ export interface UiArtifactBundle {
   hostedModelDiagnostic?: HostedModelDiagnostic;
   proofAudit?: ProofAudit;
   firewallBlock?: FirewallBlock;
+  mcpTranscriptImport?: McpTranscriptImport;
   beforeTrace: TraceEvent[];
   afterTrace: TraceEvent[];
+  externalTrace: TraceEvent[];
+  importedTrace: TraceEvent[];
   beforeViolations: Violation[];
   afterViolations: Violation[];
+  externalViolations: Violation[];
   missing: string[];
 }
 
@@ -396,6 +425,7 @@ const optionalFiles = [
   "readiness-profile.json",
   "receipt-before-001.json",
   "receipt-after-001.json",
+  "receipt-external-001.json",
   "policy-patch.json",
   "live-proof-summary.json",
   "live-security-proof-summary.json",
@@ -407,10 +437,14 @@ const optionalFiles = [
   "proof-audit.json",
   "firewall-block-before.json",
   "firewall-block-after.json",
+  "mcp-transcript-import.json",
   "trace-before.json",
   "trace-after.json",
+  "trace-external.json",
+  "trace-imported.json",
   "violations-before.json",
-  "violations-after.json"
+  "violations-after.json",
+  "violations-external.json"
 ] as const;
 
 export const normalizeArtifactBase = (value: string | null | undefined): string => {
@@ -424,6 +458,7 @@ export const normalizeArtifactBase = (value: string | null | undefined): string 
 export const defaultArtifactOptions: ArtifactOption[] = [
   { label: "Live security proof", path: "artifacts/live-security-ui" },
   { label: "Suite proof", path: "artifacts/suite-proof" },
+  { label: "MCP transcript import", path: "artifacts/mcp-transcript" },
   { label: "LLM fixture proof", path: "artifacts/llm-fixture-proof" },
   { label: "Fixture demo", path: "artifacts/fixture-demo" },
   { label: "Hosted model proof", path: "artifacts/hosted-model-proof" }
@@ -493,6 +528,9 @@ export const loadUiArtifactBundle = async (
   const afterReceipt = readinessReceiptSchema
     .optional()
     .parse(loaded.get("receipt-after-001.json"));
+  const externalReceipt = readinessReceiptSchema
+    .optional()
+    .parse(loaded.get("receipt-external-001.json"));
 
   return {
     artifactBase: normalizedBase,
@@ -502,7 +540,8 @@ export const loadUiArtifactBundle = async (
     readinessProfile,
     beforeReceipt,
     afterReceipt,
-    receipt: afterReceipt ?? beforeReceipt,
+    externalReceipt,
+    receipt: afterReceipt ?? beforeReceipt ?? externalReceipt,
     policyPatch: policyPatchSchema.optional().parse(loaded.get("policy-patch.json")),
     liveProofSummary: liveProofSummarySchema.optional().parse(loaded.get("live-proof-summary.json")),
     liveSecurityProofSummary: liveSecurityProofSummarySchema.optional().parse(
@@ -517,10 +556,14 @@ export const loadUiArtifactBundle = async (
     firewallBlock: firewallBlockSchema
       .optional()
       .parse(loaded.get("firewall-block-before.json") ?? loaded.get("firewall-block-after.json")),
+    mcpTranscriptImport: mcpTranscriptImportSchema.optional().parse(loaded.get("mcp-transcript-import.json")),
     beforeTrace: traceEventSchema.array().optional().parse(loaded.get("trace-before.json")) ?? [],
     afterTrace: traceEventSchema.array().optional().parse(loaded.get("trace-after.json")) ?? [],
+    externalTrace: traceEventSchema.array().optional().parse(loaded.get("trace-external.json")) ?? [],
+    importedTrace: traceEventSchema.array().optional().parse(loaded.get("trace-imported.json")) ?? [],
     beforeViolations: violationSchema.array().optional().parse(loaded.get("violations-before.json")) ?? [],
     afterViolations: violationSchema.array().optional().parse(loaded.get("violations-after.json")) ?? [],
+    externalViolations: violationSchema.array().optional().parse(loaded.get("violations-external.json")) ?? [],
     missing: missing.sort()
   };
 };
@@ -541,6 +584,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   auditStory: string;
   firewallStory: string;
   suiteStory: string;
+  transcriptStory: string;
 } => {
   const receipt = bundle.receipt;
   const contract = bundle.liveSmokeContract ?? bundle.contract;
@@ -553,7 +597,10 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
     contract: contract?.id ?? receipt?.environment.id ?? "not loaded",
     beforeViolations: bundle.beforeViolations.length,
     afterViolations: bundle.afterViolations.length,
-    traceEvents: bundle.beforeTrace.length + bundle.afterTrace.length,
+    traceEvents:
+      bundle.beforeTrace.length +
+      bundle.afterTrace.length +
+      (bundle.externalTrace.length > 0 ? bundle.externalTrace.length : bundle.importedTrace.length),
     saiaItems: bundle.policyPatch?.splAssistance?.length ?? 0,
     proofStory: firewallBlock
       ? "firewall-block"
@@ -588,6 +635,9 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
     firewallStory: firewallBlock ? `${firewallBlock.phase} ${firewallBlock.toolName}` : "firewall not loaded",
     suiteStory: bundle.suiteProofSummary
       ? `${bundle.suiteProofSummary.status.toLowerCase()} ${bundle.suiteProofSummary.missionCount} mission suite`
-      : "suite not loaded"
+      : "suite not loaded",
+    transcriptStory: bundle.mcpTranscriptImport
+      ? `mcp import ${bundle.mcpTranscriptImport.strictImport ? "strict" : "loaded"}`
+      : "mcp import not loaded"
   };
 };

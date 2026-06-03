@@ -6845,3 +6845,57 @@ Reviewer findings:
 
 Result:
 - Focused build/test, strict CLI smoke, full repo check, Vite production build, and `git diff --check` passed.
+
+## 2026-06-03 - Phase Live MCP Transcript UI Evidence
+
+Scope:
+- Make external-agent MCP transcript proof visible in the Vite UI.
+- Keep `grade-trace` as the readiness authority; UI only renders receipt, trace, violation, and transcript import artifacts.
+- Do not touch live Splunk for this slice.
+
+Files expected/touched:
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added Vite artifact support for:
+  - `receipt-external-001.json`
+  - `trace-external.json`
+  - `trace-imported.json`
+  - `violations-external.json`
+  - `mcp-transcript-import.json`
+- The UI now treats external-only MCP transcript proof bundles as complete when they contain a receipt and trace.
+- The Receipt view now renders an external agent receipt section and MCP transcript import ledger.
+- The Trace view now renders the imported/external trace table with deterministic findings.
+- The sidebar now exposes the transcript import status so MCP import proof is visible without digging through raw JSON.
+- Added UI regression coverage for schema-valid imported MCP transcript artifacts.
+
+Product impact:
+- The external-agent grading story is now demonstrable in the product UI, not just the CLI.
+- Developers can bring a raw MCP JSON-RPC transcript, import it, grade it, and show the resulting Readiness Receipt and trace evidence in the same interface.
+- This strengthens Platform & DX and MCP prize credibility without changing grader semantics or introducing UI filler.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 29% | 30% | External-agent proof is easier to see in the product experience. |
+| Platform & DX | 75% | 78% | The SDK/import flow now has a UI evidence path, not just terminal output. |
+| Security | 40% | 41% | Security traces from external agents can be inspected with violations in context. |
+| Best Use of MCP Server | 83% | 85% | MCP transcript artifacts are first-class UI evidence. |
+| Hosted Models | 53% | 53% | Hosted-model behavior unchanged while SAIA activation is pending. |
+| Developer Tools | 72% | 75% | External-agent import and grading is more usable for teams adopting the tool. |
+
+Next directions to consider in future runs:
+- Add a multi-transcript/suite view for several external MCP agents once the single-import path feels solid.
+- Consider a compact provenance export from the UI for Devpost screenshots later.
+- Keep future UI work grounded in receipt, trace, violation, policy, or live proof artifacts only.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused build/test, full Vite UI test file, full repo check, Vite production build, and `git diff --check` passed.

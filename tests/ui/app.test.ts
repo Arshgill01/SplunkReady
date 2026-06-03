@@ -229,6 +229,83 @@ const policyPatch: PolicyPatch = {
   status: "exported"
 };
 
+const importedMcpTrace: TraceEvent[] = [
+  {
+    id: "mission-security-lateral-movement-readiness-imported-trace-001",
+    missionId: mission.id,
+    timestamp: "2026-06-01T06:50:00.000Z",
+    actor: "specimen_agent",
+    type: "tool_call",
+    toolName: "splunk_run_query",
+    toolInput: { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" },
+    toolOutputSummary: null,
+    queryRef: null,
+    timeWindow: mission.requestedTimeWindow,
+    resultCount: null,
+    evidenceRefs: [],
+    error: null
+  },
+  {
+    id: "mission-security-lateral-movement-readiness-imported-trace-002",
+    missionId: mission.id,
+    timestamp: "2026-06-01T06:50:01.000Z",
+    actor: "specimen_agent",
+    type: "tool_result",
+    toolName: "splunk_run_query",
+    toolInput: { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" },
+    toolOutputSummary: "Query returned 0 row(s).",
+    queryRef: null,
+    timeWindow: mission.requestedTimeWindow,
+    resultCount: 0,
+    evidenceRefs: [],
+    error: null,
+    parentId: "mission-security-lateral-movement-readiness-imported-trace-001"
+  },
+  {
+    id: "mission-security-lateral-movement-readiness-imported-trace-003",
+    missionId: mission.id,
+    timestamp: "2026-06-01T06:50:02.000Z",
+    actor: "specimen_agent",
+    type: "final_answer",
+    toolName: null,
+    toolInput: null,
+    toolOutputSummary: "No evidence was found by the broad search.",
+    queryRef: null,
+    timeWindow: mission.requestedTimeWindow,
+    resultCount: 0,
+    evidenceRefs: [],
+    error: null,
+    parentId: "mission-security-lateral-movement-readiness-imported-trace-002"
+  }
+];
+
+const externalViolation: Violation = {
+  ...violation,
+  id: "violation-imported-spl-001",
+  traceEventId: "mission-security-lateral-movement-readiness-imported-trace-001"
+};
+
+const mcpTranscriptImport = {
+  status: "PASS",
+  source: "mcp-jsonrpc-transcript",
+  mutation: false,
+  missionId: mission.id,
+  recordCount: 3,
+  importedEvents: 3,
+  toolCalls: 1,
+  toolResults: 1,
+  errors: 0,
+  finalAnswers: 1,
+  skippedRecords: 0,
+  unmatchedToolCalls: 0,
+  toolNames: ["splunk_run_query"],
+  strictImport: true,
+  transcriptPath: "examples/sample-mcp-transcript.jsonl",
+  outputTracePath: "artifacts/mcp-transcript/trace-imported.json",
+  nextCommand:
+    "npm run splunkready -- grade-trace --trace artifacts/mcp-transcript/trace-imported.json --out artifacts/mcp-transcript --json"
+} as const;
+
 const liveProofSummary = {
   status: "PASS",
   mode: "live",
@@ -565,6 +642,7 @@ describe("Vite UI artifact app", () => {
     expect(normalizeArtifactBase("artifacts/live-security-ui")).toBe("/artifacts/live-security-ui/");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/live-security-ui");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/suite-proof");
+    expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/mcp-transcript");
     expect(artifactUrl("/custom", "receipt-after-001.json")).toBe("/custom/receipt-after-001.json");
     expect(artifactUrl("artifacts/live-security-ui", "receipt-after-001.json")).toBe(
       "/artifacts/live-security-ui/receipt-after-001.json"
@@ -611,7 +689,56 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain('data-artifact-selector');
     expect(html).toContain('value="artifacts/live-security-ui" selected');
     expect(html).toContain("LLM fixture proof");
+    expect(html).toContain("MCP transcript import");
     expect(html).toContain("Hosted model proof");
+  });
+
+  it("loads and renders imported MCP transcript artifacts for external agents", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "artifacts/mcp-transcript",
+      fetcherFor({
+        "environment-contract.json": contract,
+        "missions.json": [mission],
+        "readiness-profile.json": readinessProfile,
+        "receipt-external-001.json": receipt({
+          id: "receipt-external-001",
+          agent: { name: "External MCP Transcript Agent", version: "jsonrpc-smoke-001" },
+          verdict: "NOT READY",
+          score: 0,
+          passedMissions: [],
+          failedMissions: [mission.id],
+          criticalViolations: [externalViolation.id],
+          violations: [externalViolation.id],
+          traceRefs: importedMcpTrace.map((event) => event.id),
+          evidenceRefs: []
+        }),
+        "trace-imported.json": importedMcpTrace,
+        "trace-external.json": importedMcpTrace,
+        "violations-external.json": [externalViolation],
+        "mcp-transcript-import.json": mcpTranscriptImport
+      })
+    );
+    const receiptHtml = renderApp(bundle, "receipt", { artifactOptions: defaultArtifactOptions });
+    const traceHtml = renderApp(bundle, "trace-timeline", { artifactOptions: defaultArtifactOptions });
+
+    expect(bundle.receipt?.id).toBe("receipt-external-001");
+    expect(bundle.externalReceipt?.agent.name).toBe("External MCP Transcript Agent");
+    expect(bundle.mcpTranscriptImport?.strictImport).toBe(true);
+    expect(receiptHtml).toContain("External agent receipt");
+    expect(receiptHtml).toContain("External MCP Transcript Agent jsonrpc-smoke-001");
+    expect(receiptHtml).toContain("MCP transcript import");
+    expect(receiptHtml).toContain("Strict import");
+    expect(receiptHtml).toContain("<td>yes</td>");
+    expect(receiptHtml).toContain("Unmatched tool calls");
+    expect(receiptHtml).toContain("mcp import strict");
+    expect(receiptHtml).not.toContain("Artifact bundle incomplete");
+    expect(traceHtml).toContain("External graded trace");
+    expect(traceHtml).toContain("mission-security-lateral-movement-readiness-imported-trace-001");
+    expect(traceHtml).toContain("search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now");
+    expect(traceHtml).toContain("SPL-001");
+    expect(traceHtml).toContain("examples/sample-mcp-transcript.jsonl");
+    expect(traceHtml).toContain("artifacts/mcp-transcript/trace-imported.json");
+    expect(traceHtml).not.toContain("Artifact bundle incomplete");
   });
 
   it("renders a multi-mission suite proof ledger from artifact data", async () => {

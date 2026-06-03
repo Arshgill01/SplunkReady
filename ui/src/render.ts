@@ -6,6 +6,7 @@ import {
   type HostedModelDiagnostic,
   type HostedModelProof,
   type HostedModelSummary,
+  type McpTranscriptImport,
   type ProofAudit,
   type SuiteProofSummary,
   type UiArtifactBundle
@@ -71,7 +72,11 @@ const renderFactTable = (rows: Array<[string, unknown]>): string =>
 
 const renderProofArtifactWarning = (bundle: UiArtifactBundle): string => {
   const hasReceipt = Boolean(bundle.receipt);
-  const hasTrace = bundle.beforeTrace.length > 0 || bundle.afterTrace.length > 0;
+  const hasTrace =
+    bundle.beforeTrace.length > 0 ||
+    bundle.afterTrace.length > 0 ||
+    bundle.externalTrace.length > 0 ||
+    bundle.importedTrace.length > 0;
   const hasFirewallBlock = Boolean(bundle.firewallBlock);
 
   if ((hasReceipt && hasTrace) || hasFirewallBlock) {
@@ -89,6 +94,34 @@ const renderProofArtifactWarning = (bundle: UiArtifactBundle): string => {
         "Bundle command",
         "npm run splunkready -- live-security-ui-bundle --proof-dir artifacts/live-proof --security-check-dir artifacts/live-security-check --security-kit-dir artifacts/live-security-kit --out artifacts/live-security-ui --json"
       ]
+    ])}
+  </section>`;
+};
+
+const renderMcpTranscriptImport = (summary: McpTranscriptImport | undefined): string => {
+  if (!summary) {
+    return "";
+  }
+
+  return `<section class="panel mcp-transcript-panel">
+    <h2>MCP transcript import</h2>
+    ${renderFactTable([
+      ["Status", summary.status],
+      ["Source", summary.source],
+      ["Mission", summary.missionId],
+      ["Strict import", summary.strictImport ? "yes" : "no"],
+      ["Imported events", summary.importedEvents],
+      ["Tool calls", summary.toolCalls],
+      ["Tool results", summary.toolResults],
+      ["Final answers", summary.finalAnswers],
+      ["Errors", summary.errors],
+      ["Skipped records", summary.skippedRecords],
+      ["Unmatched tool calls", summary.unmatchedToolCalls ?? "not recorded"],
+      ["Tools", summary.toolNames.length > 0 ? summary.toolNames.join(" / ") : "none"],
+      ["Transcript", summary.transcriptPath ?? "not recorded"],
+      ["Trace", summary.outputTracePath ?? "not recorded"],
+      ["Mutation", summary.mutation ? "yes" : "no"],
+      ["Next command", summary.nextCommand ?? "grade-trace"]
     ])}
   </section>`;
 };
@@ -130,7 +163,15 @@ const activeReceiptForSimulation = (
     return { receipt: bundle.afterReceipt, violations: bundle.afterViolations };
   }
 
-  return { receipt: bundle.receipt, violations: bundle.afterViolations.length > 0 ? bundle.afterViolations : bundle.beforeViolations };
+  return {
+    receipt: bundle.receipt,
+    violations:
+      bundle.afterViolations.length > 0
+        ? bundle.afterViolations
+        : bundle.beforeViolations.length > 0
+          ? bundle.beforeViolations
+          : bundle.externalViolations
+  };
 };
 
 const ruleBindingsForSimulator = (profile: ReadinessProfile | undefined): ReadinessProfile["ruleBindings"] => {
@@ -622,6 +663,39 @@ const renderReceipt = (bundle: UiArtifactBundle, options: RenderOptions): string
             ["Resolved violations", receipt?.rerunComparison["resolvedViolations"] ?? []]
           ])}
         </section>
+        ${
+          bundle.externalReceipt
+            ? `<section class="receipt-book-section">
+                <h2>External agent receipt</h2>
+                ${renderFactTable([
+                  ["Receipt", bundle.externalReceipt.id],
+                  ["Agent", `${bundle.externalReceipt.agent.name} ${bundle.externalReceipt.agent.version}`],
+                  ["Verdict", bundle.externalReceipt.verdict],
+                  ["Score", bundle.externalReceipt.score],
+                  ["Trace refs", bundle.externalReceipt.traceRefs.length],
+                  ["Violations", bundle.externalReceipt.violations.length],
+                  ["Mode", bundle.externalReceipt.mode]
+                ])}
+              </section>`
+            : ""
+        }
+        ${
+          bundle.mcpTranscriptImport
+            ? `<section class="receipt-book-section">
+                <h2>MCP transcript import</h2>
+                ${renderFactTable([
+                  ["Mission", bundle.mcpTranscriptImport.missionId],
+                  ["Strict import", bundle.mcpTranscriptImport.strictImport ? "yes" : "no"],
+                  ["Imported events", bundle.mcpTranscriptImport.importedEvents],
+                  ["Tool calls", bundle.mcpTranscriptImport.toolCalls],
+                  ["Tool results", bundle.mcpTranscriptImport.toolResults],
+                  ["Skipped records", bundle.mcpTranscriptImport.skippedRecords],
+                  ["Unmatched tool calls", bundle.mcpTranscriptImport.unmatchedToolCalls ?? "not recorded"],
+                  ["Tools", bundle.mcpTranscriptImport.toolNames.join(" / ") || "none"]
+                ])}
+              </section>`
+            : ""
+        }
         <section class="receipt-book-section">
           <h2>Evidence</h2>
           ${renderFactTable([
@@ -777,8 +851,14 @@ const renderTraceRows = (events: TraceEvent[], violations: Violation[], policyPa
     .join("");
 };
 
-const renderTraceTimeline = (bundle: UiArtifactBundle): string =>
-  `<main class="view" data-view="trace-timeline">
+const externalTraceForDisplay = (bundle: UiArtifactBundle): TraceEvent[] =>
+  bundle.externalTrace.length > 0 ? bundle.externalTrace : bundle.importedTrace;
+
+const renderTraceTimeline = (bundle: UiArtifactBundle): string => {
+  const externalTrace = externalTraceForDisplay(bundle);
+  const externalTitle = bundle.externalTrace.length > 0 ? "External graded trace" : "Imported MCP trace";
+
+  return `<main class="view" data-view="trace-timeline">
     <section class="workbench">
       <div class="section-title">
         <h1>Trace timeline</h1>
@@ -799,9 +879,22 @@ const renderTraceTimeline = (bundle: UiArtifactBundle): string =>
             <tbody>${renderTraceRows(bundle.afterTrace, bundle.afterViolations, bundle.policyPatch)}</tbody>
           </table>
         </section>
+        ${
+          externalTrace.length > 0
+            ? `<section class="panel">
+                <h2>${value(externalTitle)}</h2>
+                <table class="trace-table">
+                  <thead><tr><th>Step</th><th>Event</th><th>Tool</th><th>Input or output</th><th>Findings</th></tr></thead>
+                  <tbody>${renderTraceRows(externalTrace, bundle.externalViolations, bundle.policyPatch)}</tbody>
+                </table>
+              </section>`
+            : ""
+        }
+        ${renderMcpTranscriptImport(bundle.mcpTranscriptImport)}
       </div>
     </section>
   </main>`;
+};
 
 const renderLiveConnect = (bundle: UiArtifactBundle): string => {
   const contract = bundle.liveSmokeContract ?? bundle.contract;
@@ -834,6 +927,7 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
         </section>
         ${renderProofAuditPanel(bundle.proofAudit)}
         ${renderFirewallBlock(bundle.firewallBlock)}
+        ${renderMcpTranscriptImport(bundle.mcpTranscriptImport)}
         ${renderLiveProofSummary(bundle)}
         ${renderLiveSecurityProofSummary(bundle)}
         ${renderHostedModelSummary(bundle.liveSecurityProofSummary?.hostedModels ?? bundle.liveProofSummary?.hostedModels)}
@@ -897,6 +991,7 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: Re
       <span>${value(summary.auditStory)}</span>
       <span>${value(summary.firewallStory)}</span>
       <span>${value(summary.suiteStory)}</span>
+      <span>${value(summary.transcriptStory)}</span>
     </div>
   </aside>`;
 };

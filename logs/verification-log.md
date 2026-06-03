@@ -5294,3 +5294,34 @@ Result:
 Open risks:
 
 - Strict import currently checks transcript structural integrity only. It does not judge readiness; `grade-trace` remains the required pass/fail gate.
+
+## 2026-06-03 - Phase Live MCP Transcript UI Evidence
+
+Commands:
+
+- `npm run build && npx vitest run tests/ui/app.test.ts -t "MCP transcript"`
+- `npx vitest run tests/ui/app.test.ts`
+- `npm run check && npm run ui:build && git diff --check`
+
+Result:
+
+- PASS for TypeScript build and focused MCP transcript UI test:
+  - 1 test file;
+  - 1 test passed;
+  - 12 tests skipped by the focused name filter.
+- PASS for full Vite UI artifact app test:
+  - 1 test file;
+  - 13 tests passed.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 815 project files;
+  - 38 test files;
+  - 222 tests.
+- PASS for Vite production build.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The UI reads imported/external trace artifacts but does not create them. `import-mcp-transcript` and `grade-trace` remain the required generation path.
+- Trace actors still follow the existing schema enum; external-agent identity is represented by the receipt agent metadata and transcript import provenance.
