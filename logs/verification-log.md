@@ -5490,3 +5490,97 @@ Result:
 Open risks:
 
 - The GitHub Actions example shows the aggregate gate over same-job artifacts. Cross-job aggregate indexes would need artifact download/merge steps in a real workflow.
+
+## 2026-06-03 - Phase Live Proof Navigation And Sidebar Repair
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts -t "sidebar navigation|certification index|artifact source selector"`
+- `npm run ui:build`
+- `npm run ui:dev`
+- `node --input-type=module <<'NODE'
+import { chromium } from "playwright";
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 492, height: 1880 } });
+await page.goto("http://127.0.0.1:5173/?artifacts=artifacts/mcp-transcript-pass#receipt", { waitUntil: "networkidle" });
+const boxes = await page.evaluate(() => {
+  const box = (selector) => {
+    const el = document.querySelector(selector);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height, text: el.textContent || "" };
+  };
+  const links = [...document.querySelectorAll(".side-rail nav a")].map((el) => {
+    const r = el.getBoundingClientRect();
+    return { text: el.textContent || "", top: r.top, bottom: r.bottom, left: r.left, right: r.right };
+  });
+  return { rail: box(".side-rail"), nav: box(".side-rail nav"), footer: box(".rail-footer"), picker: box(".artifact-picker"), receipt: box(".rail-receipt"), links };
+});
+if (!boxes.rail || !boxes.nav || !boxes.footer || !boxes.picker || !boxes.receipt) throw new Error(JSON.stringify(boxes));
+for (const link of boxes.links) {
+  const verticalOverlap = link.bottom > boxes.footer.top && link.top < boxes.footer.bottom;
+  const horizontalOverlap = link.right > boxes.footer.left && link.left < boxes.footer.right;
+  if (verticalOverlap && horizontalOverlap) throw new Error(`nav/footer link overlap ${JSON.stringify({ link, footer: boxes.footer })}`);
+}
+if (boxes.picker.bottom > boxes.receipt.top) throw new Error(`picker/receipt overlap ${JSON.stringify(boxes)}`);
+for (const banned of ["security not loaded", "kit not loaded", "index not loaded", "mcp import not loaded"]) {
+  if (boxes.rail.text.includes(banned)) throw new Error(`sidebar still contains ${banned}`);
+}
+await page.screenshot({ path: "/tmp/splunkready-sidebar-narrow.png", fullPage: true });
+await browser.close();
+console.log("narrow sidebar smoke passed", JSON.stringify({ navBottom: boxes.nav.bottom, footerTop: boxes.footer.top, pickerBottom: boxes.picker.bottom, receiptTop: boxes.receipt.top }));
+NODE`
+- `node --input-type=module <<'NODE'
+import { chromium } from "playwright";
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+await page.goto("http://127.0.0.1:5173/?artifacts=artifacts/certification-index#agent-index", { waitUntil: "networkidle" });
+await page.locator('[data-proof-artifact="artifacts/mcp-transcript-pass"]').click();
+await page.waitForURL(/artifacts=artifacts%2Fmcp-transcript-pass#receipt/);
+await page.waitForSelector('[data-view="receipt"]');
+const text = await page.locator("body").innerText();
+for (const needle of ["External agent receipt", "External MCP Agent", "jsonrpc-pass-001", "READY / 100/100"]) {
+  if (!text.includes(needle)) throw new Error(`missing ${needle}`);
+}
+if (text.includes("Agent certification index")) throw new Error("still rendering certification index after proof click");
+await page.screenshot({ path: "/tmp/splunkready-proof-index-click.png", fullPage: true });
+const url = page.url();
+await browser.close();
+console.log("proof index click smoke passed", url);
+NODE`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for focused UI renderer tests:
+  - 1 test file;
+  - 3 tests passed;
+  - 12 tests skipped by the focused name filter.
+- PASS for Vite production build.
+- PASS for narrow sidebar browser smoke:
+  - loaded `?artifacts=artifacts/mcp-transcript-pass#receipt`;
+  - verified no nav/footer link overlap;
+  - verified no picker/receipt overlap;
+  - verified the sidebar does not contain noisy `not loaded` proof-story entries;
+  - wrote `/tmp/splunkready-sidebar-narrow.png`.
+- PASS for proof-index click browser smoke:
+  - loaded `?artifacts=artifacts/certification-index#agent-index`;
+  - clicked `[data-proof-artifact="artifacts/mcp-transcript-pass"]`;
+  - verified the URL changed to `?artifacts=artifacts%2Fmcp-transcript-pass#receipt`;
+  - verified the receipt view loaded `External MCP Agent`, `jsonrpc-pass-001`, and `READY / 100/100`;
+  - wrote `/tmp/splunkready-proof-index-click.png`.
+- FAIL then fixed for `npm run check`:
+  - the first full run failed because UI tests still expected detailed proof-story strings in the sidebar.
+  - tests were updated to assert those facts in the main evidence panels instead.
+- PASS for final full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 843 project files in the working tree including ignored local artifact smoke bundles;
+  - 38 test files;
+  - 229 tests.
+- PASS for final `git diff --check`.
+
+Open risks:
+
+- Artifact source presets are still hardcoded in the Vite app. That is acceptable for the current local demo, but a generated preset manifest may be cleaner if proof bundle count keeps growing.

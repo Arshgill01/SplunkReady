@@ -795,6 +795,8 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("ready-without-patch");
     expect(html).toContain("fail-to-pass");
     expect(html).toContain("?artifacts=artifacts%2Fmcp-transcript-pass#receipt");
+    expect(html).toContain('data-proof-artifact="artifacts/mcp-transcript-pass"');
+    expect(html).toContain('data-proof-view="receipt"');
     expect(html).toContain("artifacts/suite-proof");
     expect(html).toContain("fail 2 proof index");
     expect(html).not.toContain("Artifact bundle incomplete");
@@ -876,7 +878,9 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("mission-observability-latency-readiness");
     expect(html).toContain("observability / security");
     expect(html).toContain("fail-to-pass");
-    expect(html).toContain("pass 3 mission suite");
+    expect(html).toContain("<tr><th>Status</th><td>PASS</td></tr>");
+    expect(html).toContain("<tr><th>Missions</th><td>3</td></tr>");
+    expect(html).toContain("<tr><th>Proof type</th><td>suite</td></tr>");
     expect(html).toContain("artifacts/suite-proof/mission-observability-latency-readiness");
     expect(html).not.toContain("Artifact bundle incomplete");
   });
@@ -948,21 +952,19 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("Flagship security proof");
     expect(liveConnect).toContain("READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF");
     expect(liveConnect).toContain("fail-to-pass");
-    expect(liveConnect).toContain("security fail-to-pass");
     expect(liveConnect).toContain("saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain");
     expect(liveConnect).toContain("Flagship security readiness");
     expect(liveConnect).toContain("BLOCKED");
     expect(liveConnect).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain / missing");
     expect(liveConnect).toContain("wineventlog / missing");
     expect(liveConnect).toContain("Operator security kit");
-    expect(liveConnect).toContain("operator kit available");
-    expect(liveConnect).toContain("hosted diagnostic pass");
     expect(liveConnect).toContain("Operator action");
     expect(liveConnect).toContain("required");
     expect(liveConnect).toContain("Hosted model assistance");
     expect(liveConnect).toContain("saia_explain_spl / saia_optimize_spl");
     expect(liveConnect).toContain("advisory only; deterministic grader decides pass/fail");
     expect(liveConnect).toContain("Hosted model diagnostic");
+    expect(liveConnect).toContain("hosted-model-status / PASS");
     expect(liveConnect).toContain("Permission");
     expect(liveConnect).toContain("OK");
     expect(liveConnect).toContain("deterministic-rule-engine");
@@ -971,7 +973,6 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("live-security");
     expect(liveConnect).toContain("fail-to-pass / PASS");
     expect(liveConnect).toContain("Warnings or failures");
-    expect(liveConnect).toContain("audit pass");
     expect(liveConnect).toContain("Hosted models");
     expect(liveConnect).toContain("invoked");
     expect(liveConnect).toContain("Before SPL");
@@ -1003,8 +1004,9 @@ describe("Vite UI artifact app", () => {
     expect(receipt).not.toContain("Artifact bundle incomplete");
     expect(liveConnect).toContain("Firewall block");
     expect(liveConnect).toContain("Query uses index=* and would search every index.");
-    expect(liveConnect).toContain("before splunk_run_query");
-    expect(liveConnect).toContain("audit pass");
+    expect(liveConnect).toContain("<tr><th>Phase</th><td>before</td></tr>");
+    expect(liveConnect).toContain("<tr><th>Tool</th><td>splunk_run_query</td></tr>");
+    expect(liveConnect).toContain("firewall-block-before-splunk / PASS");
   });
 
   it("shows an actionable warning when proof artifacts are missing from the UI bundle", async () => {

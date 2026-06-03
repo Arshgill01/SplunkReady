@@ -515,7 +515,7 @@ const renderCertificationIndexRows = (index: CertificationIndex): string =>
       const receipt = entry.receipt;
 
       return `<tr>
-        <td><a href="${value(entry.href)}">${value(entry.label)}</a><span>${value(entry.agent.version)}</span></td>
+        <td><a href="${value(entry.href)}" data-proof-artifact="${value(entry.proofDir)}" data-proof-view="receipt">${value(entry.label)}</a><span>${value(entry.agent.version)}</span></td>
         <td>${value(entry.status)}<span>${value(entry.proofType)}</span></td>
         <td>${value(receipt?.verdict ?? "NO RECEIPT")}<span>${value(receipt ? `${receipt.score}/100` : "--")}</span></td>
         <td>${value(receipt?.violations ?? "n/a")}<span>${value(receipt ? `${receipt.evidenceRefs} evidence refs` : "no receipt")}</span></td>
@@ -1054,7 +1054,7 @@ const optionalRailStories = (summary: ReturnType<typeof summarizeBundle>): strin
 
 const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: RenderOptions): string => {
   const summary = summarizeBundle(bundle);
-  const optionalStories = optionalRailStories(summary);
+  const railStory = optionalRailStories(summary)[0];
 
   return `<aside class="side-rail">
     <div class="brand">
@@ -1075,7 +1075,7 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: Re
         <strong>${value(summary.verdict)} / ${value(summary.score)}</strong>
         <span>${value(summary.mode)} / ${value(summary.contract)}</span>
         <span>${summary.beforeViolations} before / ${summary.afterViolations} after</span>
-        ${optionalStories.map((story) => `<span>${value(story)}</span>`).join("")}
+        ${railStory ? `<span>${value(railStory)}</span>` : ""}
       </div>
     </div>
   </aside>`;

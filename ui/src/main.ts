@@ -17,6 +17,15 @@ const disabledRuleIds = new Set<string>();
 
 const activeViewFromHash = (): ViewId => normalizeView(window.location.hash.replace(/^#/, ""));
 
+const render = (): void => {
+  if (!bundle) {
+    return;
+  }
+
+  app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds, artifactOptions: defaultArtifactOptions });
+  bindInteractions();
+};
+
 const markReplayRunning = (): void => {
   const frame = document.querySelector(".app-frame");
 
@@ -27,6 +36,29 @@ const markReplayRunning = (): void => {
   frame.classList.remove("replay-running");
   void frame.getBoundingClientRect();
   frame.classList.add("replay-running");
+};
+
+const loadArtifactFromLocation = async (): Promise<void> => {
+  try {
+    bundle = await loadUiArtifactBundle(artifactBaseFromLocation(window.location));
+    disabledRuleIds.clear();
+    render();
+
+    if (activeViewFromHash() === "certification-replay") {
+      markReplayRunning();
+    }
+  } catch (error) {
+    app.innerHTML = renderError(error instanceof Error ? error.message : String(error));
+  }
+};
+
+const navigateToArtifact = async (artifactBase: string, view: ViewId): Promise<void> => {
+  const nextUrl = new URL(window.location.href);
+
+  nextUrl.searchParams.set("artifacts", artifactBase);
+  nextUrl.hash = `#${view}`;
+  window.history.pushState(null, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+  await loadArtifactFromLocation();
 };
 
 const bindInteractions = (): void => {
@@ -48,13 +80,23 @@ const bindInteractions = (): void => {
 
   document.querySelector("[data-run-replay]")?.addEventListener("click", markReplayRunning);
 
+  for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-proof-artifact]")) {
+    link.addEventListener("click", (event) => {
+      const artifactBase = link.dataset.proofArtifact;
+      const view = normalizeView(link.dataset.proofView ?? "receipt");
+
+      if (!artifactBase) {
+        return;
+      }
+
+      event.preventDefault();
+      void navigateToArtifact(artifactBase, view);
+    });
+  }
+
   const artifactSelector = document.querySelector<HTMLSelectElement>("[data-artifact-selector]");
   artifactSelector?.addEventListener("change", () => {
-    const nextArtifactBase = artifactSelector.value;
-    const nextUrl = new URL(window.location.href);
-
-    nextUrl.searchParams.set("artifacts", nextArtifactBase);
-    window.location.assign(`${nextUrl.pathname}${nextUrl.search}${nextUrl.hash || "#certification-replay"}`);
+    void navigateToArtifact(artifactSelector.value, activeViewFromHash());
   });
 
   for (const input of document.querySelectorAll<HTMLInputElement>("[data-policy-rule]")) {
@@ -80,21 +122,9 @@ const bindInteractions = (): void => {
   }
 };
 
-const render = (): void => {
-  if (!bundle) {
-    return;
-  }
-
-  app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds, artifactOptions: defaultArtifactOptions });
-  bindInteractions();
-};
-
 window.addEventListener("hashchange", render);
+window.addEventListener("popstate", () => {
+  void loadArtifactFromLocation();
+});
 
-try {
-  bundle = await loadUiArtifactBundle(artifactBaseFromLocation(window.location));
-  render();
-  markReplayRunning();
-} catch (error) {
-  app.innerHTML = renderError(error instanceof Error ? error.message : String(error));
-}
+await loadArtifactFromLocation();

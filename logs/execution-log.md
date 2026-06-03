@@ -7152,3 +7152,63 @@ Reviewer findings:
 
 Result:
 - Focused CLI test, direct strict-index smoke, full repo check, and `git diff --check` passed.
+
+## 2026-06-03 - Phase Live Proof Navigation And Sidebar Repair
+
+Scope:
+- Fix the Vite sidebar collision reported in the narrow rail screenshot.
+- Keep the rail as navigation/status only; move detailed proof stories back to the main evidence panels.
+- Make certification-index proof rows load proof bundles in-place instead of relying on ordinary page navigation.
+
+Files expected/touched:
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `ui/src/main.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Reduced the sidebar receipt footer to verdict, mode/contract, before/after counts, and one meaningful proof story.
+- Removed noisy `not loaded` and multi-story stacks from the rail so footer content cannot collide with the last nav item.
+- Changed the sidebar rail to a three-row grid: brand, scrollable nav, compact footer.
+- Added `data-proof-artifact` and `data-proof-view` metadata to certification-index proof links.
+- Added app-native artifact navigation in `ui/src/main.ts`; proof links and the artifact selector now load bundles through the Vite app instead of forcing a full reload.
+- Updated UI tests so proof facts are asserted in the main panels rather than rail summary strings.
+
+Product impact:
+- The rail no longer looks like a broken diagnostic dump when a proof bundle has many optional artifacts.
+- The Agents index is now closer to a real developer workflow: select a proof, load its receipt, and keep the app state coherent.
+- This avoids slipping back into dashboard clutter while making the proof ledger more useful.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 33% | 34% | UI polish and proof navigation reduce demo friction. |
+| Platform & DX | 90% | 91% | Indexed proof bundles are now navigable from the web app. |
+| Security | 44% | 44% | Security proof capability unchanged. |
+| Best Use of MCP Server | 89% | 89% | MCP proof capability unchanged, but MCP transcript proofs are easier to inspect. |
+| Hosted Models | 53% | 53% | Hosted-model behavior unchanged while SAIA activation is pending. |
+| Developer Tools | 88% | 89% | Certification index is more usable as a local developer artifact. |
+
+Next directions to consider in future runs:
+- Add a small proof-bundle manifest/checksum only if it materially improves trust in shared artifacts.
+- Once SAIA activation is available, rerun the live hosted-model proof and index that proof bundle.
+- Consider making the app artifact selector configurable through a generated `ui-artifacts.json` if hardcoded presets become friction.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused UI tests passed.
+- Vite production build passed.
+- Browser smoke verified the narrow sidebar has no nav/footer or picker/receipt overlap.
+- Browser smoke verified clicking a certification-index proof row loads the proof receipt in-place.
+- Full repo verification passed:
+  - scaffold verified;
+  - 85 waves;
+  - 843 project files in the working tree including ignored local artifact smoke bundles;
+  - 38 test files;
+  - 229 tests.
+- `git diff --check` passed.
