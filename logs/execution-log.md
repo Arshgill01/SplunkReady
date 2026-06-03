@@ -6961,3 +6961,72 @@ Reviewer findings:
 
 Result:
 - Focused build/test, full repo check, Vite production build, and `git diff --check` passed.
+
+## 2026-06-03 - Phase Live MCP Transcript Certification Command
+
+Scope:
+- Turn the external MCP JSON-RPC transcript path into a one-command CI/DX gate.
+- Preserve the full evidence chain instead of hiding compile/import/grade/audit internals.
+- Keep deterministic `grade-trace` and `proof-audit` as the pass/fail authority.
+- Do not call live Splunk or mutate Splunk for this slice.
+
+Files expected/touched:
+- `src/cli.ts`
+- `src/traces/mcp-transcript.ts`
+- `tests/cli/flow.test.ts`
+- `examples/sample-mcp-transcript-pass.jsonl`
+- `examples/README.md`
+- `examples/github-workflow-example.yml`
+- `README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `certify-mcp-transcript`, a CI-oriented command that runs:
+  - `compile`;
+  - `import-mcp-transcript`;
+  - `grade-trace`;
+  - `proof-audit`;
+  - summary emission to `mcp-transcript-certification.json`.
+- The command supports `--strict-import true`, `--require-pass true`, `--agent-name`, `--agent-version`, and `--json`.
+- The command writes all intermediate artifacts:
+  - compiled contract and readiness profile;
+  - imported canonical trace;
+  - MCP transcript import summary;
+  - external trace, deterministic violations, score, and receipt;
+  - proof audit;
+  - certification summary.
+- The MCP transcript importer now preserves call time windows and carries them into corresponding result events when the response omits an explicit window.
+- Added a passing JSON-RPC MCP transcript fixture that discovers the validated saved search, runs it with app context, preserves the `-24h` to `now` window, cites saved-search provenance, and returns `READY / 100`.
+- Updated README, examples README, and GitHub Actions sample to show transcript certification as a single merge-blocking command.
+
+Product impact:
+- SplunkReady now has a stronger SDK story for real external MCP agents:
+  - a developer can capture MCP JSON-RPC logs from their own agent;
+  - run one command;
+  - receive a deterministic Readiness Receipt and strict proof audit;
+  - block CI if the transcript is incomplete or the receipt is NOT READY.
+- This directly improves Platform & DX and Best Use of MCP Server positioning because SplunkReady no longer requires external-agent adopters to manually stitch compile/import/grade/audit steps.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 31% | 32% | The product feels more executable and less like a pile of scripts. |
+| Platform & DX | 82% | 85% | One-command external MCP certification is a concrete developer workflow. |
+| Security | 42% | 43% | Security-agent MCP transcripts can now be certified as CI evidence. |
+| Best Use of MCP Server | 86% | 88% | JSON-RPC MCP transcripts are now first-class certifiable inputs. |
+| Hosted Models | 53% | 53% | Hosted-model behavior unchanged while SAIA activation is pending. |
+| Developer Tools | 80% | 83% | GitHub Actions can now gate directly on captured MCP transcripts. |
+
+Next directions to consider in future runs:
+- Build a compact multi-agent certification index over several proof directories so a team can see all certified Splunk agents at once.
+- Add a browser-visible transcript import/proof selector in the Vite UI only if it remains artifact-backed and avoids dashboard slop.
+- Once SAIA activation is available, run the live hosted-model proof and feed SAIA explanation/optimization into receipts and UI proof cards.
+- Keep future work focused on real live proof, external-agent adoption, and policy enforcement before Splunk, not internal QA churn.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused build/test and direct strict CLI smoke passed.

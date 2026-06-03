@@ -43,6 +43,38 @@ jobs:
           name: splunkready-ci-external-trace
           path: artifacts/ci-external-trace
 
+  mcp-transcript-sdk:
+    name: MCP transcript SDK gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build SplunkReady
+        run: npm run build
+
+      - name: Certify captured Splunk MCP JSON-RPC transcript
+        run: npm run splunkready -- certify-mcp-transcript --transcript examples/sample-mcp-transcript-pass.jsonl --out artifacts/ci-mcp-transcript --strict-import true --require-pass true --agent-name "External MCP Agent" --agent-version "ci-jsonrpc-transcript-pass" --json
+
+      - name: Upload MCP transcript artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: splunkready-ci-mcp-transcript
+          path: artifacts/ci-mcp-transcript
+
   fixture-smoke:
     name: Fixture receipt smoke gate
     runs-on: ubuntu-latest

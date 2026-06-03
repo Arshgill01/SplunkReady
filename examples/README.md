@@ -44,26 +44,24 @@ The checked-in `sample-pass-receipt.md` was generated from this flow. It returns
 
 ## Import an MCP JSON-RPC transcript
 
-External agents do not have to emit SplunkReady trace events directly. If an agent can log Splunk MCP JSON-RPC `tools/call` requests and responses, SplunkReady can import that transcript into the canonical trace schema first:
+External agents do not have to emit SplunkReady trace events directly. If an agent can log Splunk MCP JSON-RPC `tools/call` requests and responses, SplunkReady can certify that transcript directly:
 
 ```bash
 npm run build
 tmp=$(mktemp -d /tmp/splunkready-mcp-transcript-XXXXXX)
-npm run splunkready -- compile --out "$tmp"
-npm run splunkready -- import-mcp-transcript \
-  --transcript examples/sample-mcp-transcript.jsonl \
+npm run splunkready -- certify-mcp-transcript \
+  --transcript examples/sample-mcp-transcript-pass.jsonl \
   --out "$tmp" \
   --strict-import true \
-  --json
-npm run splunkready -- grade-trace \
-  --trace "$tmp/trace-imported.json" \
-  --out "$tmp" \
+  --require-pass true \
   --agent-name "External MCP Agent" \
-  --agent-version "jsonrpc-transcript-001"
-npm run splunkready -- proof-audit --out "$tmp" --require-pass true --json
+  --agent-version "jsonrpc-transcript-pass-001" \
+  --json
 ```
 
-The importer writes `trace-imported.json` plus `mcp-transcript-import.json`. It does not grade, score, or infer readiness; it only converts MCP call/result records into SplunkReady trace events so the deterministic `grade-trace` command remains the pass/fail authority. Use `--strict-import true` in CI to reject transcripts with skipped records or MCP tool calls that never received a matching response.
+The command still writes the intermediate files: `environment-contract.json`, `trace-imported.json`, `mcp-transcript-import.json`, `trace-external.json`, deterministic violations, `receipt-external-001.json`, `proof-audit.json`, and `mcp-transcript-certification.json`. It does not let the importer infer readiness; the imported trace is graded by the same deterministic rule engine as every other SplunkReady proof.
+
+Use `--strict-import true` in CI to reject transcripts with skipped records or MCP tool calls that never received a matching response. Use `--require-pass true` to block merges unless the external MCP transcript receives a `READY` receipt.
 
 ## CI gate example
 

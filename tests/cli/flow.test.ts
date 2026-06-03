@@ -804,6 +804,7 @@ describe("SplunkReady CLI flow", () => {
       toolName: string | null;
       parentId?: string;
       toolInput?: { query?: string } | null;
+      timeWindow?: { earliest: string; latest: string } | null;
       resultCount: number | null;
     }>;
 
@@ -822,12 +823,14 @@ describe("SplunkReady CLI flow", () => {
     expect(importedTrace[0]).toMatchObject({
       type: "tool_call",
       toolName: "splunk_run_query",
-      toolInput: { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" }
+      toolInput: { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" },
+      timeWindow: { earliest: "-24h", latest: "now" }
     });
     expect(importedTrace[1]).toMatchObject({
       type: "tool_result",
       toolName: "splunk_run_query",
       parentId: importedTrace[0].id,
+      timeWindow: { earliest: "-24h", latest: "now" },
       resultCount: 0
     });
 
@@ -886,6 +889,136 @@ describe("SplunkReady CLI flow", () => {
     await expect(runCli(["proof-audit", "--out", outDir, "--require-pass", "true"])).rejects.toMatchObject({
       stderr: expect.stringContaining("proof-audit strict gate failed with FAIL")
     });
+  });
+
+  it("certifies an MCP JSON-RPC transcript in one CI-oriented command", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-certify-pass-"));
+
+    const output = parseCliJsonOutput(
+      (
+        await runCli([
+          "certify-mcp-transcript",
+          "--transcript",
+          "examples/sample-mcp-transcript-pass.jsonl",
+          "--out",
+          outDir,
+          "--strict-import",
+          "true",
+          "--require-pass",
+          "true",
+          "--agent-name",
+          "External MCP Agent",
+          "--agent-version",
+          "jsonrpc-pass-001",
+          "--json"
+        ])
+      ).stdout
+    );
+    const summary = JSON.parse(await readFile(join(outDir, "mcp-transcript-certification.json"), "utf8")) as {
+      status: string;
+      source: string;
+      mutation: boolean;
+      receipt: { verdict: string; score: number; violations: number; evidenceRefs: number };
+      audit: { status: string; proofType: string; checks: Array<{ id: string; status: string }> };
+      artifacts: Record<string, string>;
+    };
+    const importSummary = JSON.parse(await readFile(join(outDir, "mcp-transcript-import.json"), "utf8")) as {
+      strictImport: boolean;
+      toolCalls: number;
+      toolResults: number;
+      finalAnswers: number;
+      toolNames: string[];
+    };
+    const receipt = JSON.parse(await readFile(join(outDir, "receipt-external-001.json"), "utf8")) as {
+      verdict: string;
+      score: number;
+      violations: string[];
+    };
+    const importedTrace = JSON.parse(await readFile(join(outDir, "trace-imported.json"), "utf8")) as Array<{
+      type: string;
+      toolName: string | null;
+      queryRef: string | null;
+      timeWindow: { earliest: string; latest: string } | null;
+    }>;
+
+    expect(output).toMatchObject({
+      command: "certify-mcp-transcript",
+      status: "PASS",
+      artifacts: expect.arrayContaining([
+        join(outDir, "environment-contract.json"),
+        join(outDir, "trace-imported.json"),
+        join(outDir, "trace-external.json"),
+        join(outDir, "receipt-external-001.json"),
+        join(outDir, "proof-audit.json"),
+        join(outDir, "mcp-transcript-certification.json")
+      ])
+    });
+    expect(summary).toMatchObject({
+      status: "PASS",
+      source: "mcp-jsonrpc-transcript-certification",
+      mutation: false,
+      receipt: { verdict: "READY", score: 100, violations: 0, evidenceRefs: 6 },
+      audit: { status: "PASS", proofType: "external-trace" }
+    });
+    expect(summary.audit.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "external-verdict-ready", status: "PASS" }),
+        expect.objectContaining({ id: "external-mcp-transcript-integrity", status: "PASS" })
+      ])
+    );
+    expect(importSummary).toMatchObject({
+      strictImport: true,
+      toolCalls: 2,
+      toolResults: 2,
+      finalAnswers: 1,
+      toolNames: ["splunk_get_knowledge_objects", "splunk_run_saved_search"]
+    });
+    expect(receipt).toMatchObject({ verdict: "READY", score: 100, violations: [] });
+    expect(importedTrace.find((event) => event.toolName === "splunk_run_saved_search" && event.type === "tool_result")).toMatchObject({
+      queryRef: "saved-search-lateral-movement",
+      timeWindow: { earliest: "-24h", latest: "now" }
+    });
+    expect(summary.artifacts.receipt).toBe(join(outDir, "receipt-external-001.json"));
+  });
+
+  it("keeps failed MCP transcript certification artifacts while enforcing require-pass", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-certify-fail-"));
+
+    await expect(
+      runCli([
+        "certify-mcp-transcript",
+        "--transcript",
+        "examples/sample-mcp-transcript.jsonl",
+        "--out",
+        outDir,
+        "--strict-import",
+        "true",
+        "--require-pass",
+        "true",
+        "--agent-name",
+        "External MCP Agent",
+        "--agent-version",
+        "jsonrpc-fail-001"
+      ])
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("certify-mcp-transcript strict gate failed with FAIL")
+    });
+
+    const summary = JSON.parse(await readFile(join(outDir, "mcp-transcript-certification.json"), "utf8")) as {
+      status: string;
+      receipt: { verdict: string; score: number; violations: number };
+      audit: { status: string; proofType: string };
+    };
+
+    expect(summary).toMatchObject({
+      status: "FAIL",
+      receipt: { verdict: "NOT READY", score: 0 },
+      audit: { status: "FAIL", proofType: "external-trace" }
+    });
+    expect(summary.receipt.violations).toBeGreaterThan(0);
+    expect(await exists(join(outDir, "trace-imported.json"))).toBe(true);
+    expect(await exists(join(outDir, "receipt-external-001.json"))).toBe(true);
+    expect(await exists(join(outDir, "proof-audit.json"))).toBe(true);
   });
 
   it("strict-audits a READY external trace proof", async () => {

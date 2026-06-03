@@ -221,6 +221,26 @@ const finalAnswerText = (record: Record<string, unknown>): string | undefined =>
 const isFinalAnswerRecord = (record: Record<string, unknown>): boolean =>
   record.type === "final_answer" || record.event === "final_answer" || record.kind === "final_answer";
 
+const timeWindowFromRecord = (record: Record<string, unknown>): TraceEvent["timeWindow"] => {
+  const timeWindow = recordAt(record, "timeWindow");
+  const earliest = stringValue(timeWindow?.earliest);
+  const latest = stringValue(timeWindow?.latest);
+
+  return earliest && latest ? { earliest, latest } : null;
+};
+
+const timeWindowForResult = (parent: PendingToolCall, output: unknown): TraceEvent["timeWindow"] => {
+  if (isRecord(output)) {
+    const outputWindow = timeWindowFromRecord(output);
+
+    if (outputWindow) {
+      return outputWindow;
+    }
+  }
+
+  return timeWindowFromRecord(parent.input);
+};
+
 export const importMcpTranscript = (records: unknown[], missionId: string): ImportedMcpTranscript => {
   const traceEvents: TraceEvent[] = [];
   const pending = new Map<string, PendingToolCall>();
@@ -263,7 +283,7 @@ export const importMcpTranscript = (records: unknown[], missionId: string): Impo
         toolInput: toolCall.input,
         toolOutputSummary: null,
         queryRef: null,
-        timeWindow: null,
+        timeWindow: timeWindowFromRecord(toolCall.input),
         resultCount: null,
         evidenceRefs: [],
         error: null,
@@ -322,7 +342,7 @@ export const importMcpTranscript = (records: unknown[], missionId: string): Impo
         toolInput: null,
         toolOutputSummary: outputSummaryFor(parent.toolName, output, resultCount),
         queryRef: queryRefFor(parent, output),
-        timeWindow: null,
+        timeWindow: timeWindowForResult(parent, output),
         resultCount,
         evidenceRefs,
         error: null,
@@ -353,7 +373,7 @@ export const importMcpTranscript = (records: unknown[], missionId: string): Impo
         toolInput: null,
         toolOutputSummary: text,
         queryRef: null,
-        timeWindow: null,
+        timeWindow: timeWindowFromRecord(record),
         resultCount: numberValue(record.resultCount) ?? null,
         evidenceRefs,
         error: null,

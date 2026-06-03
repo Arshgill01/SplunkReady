@@ -5352,3 +5352,35 @@ Open risks:
 
 - External strict audit intentionally fails a NOT READY receipt. This is correct CI behavior, but demos should choose a READY external trace when showing a passing SDK gate.
 - `proof-audit` validates external artifact integrity and verdict; it does not re-run grading. `grade-trace` remains required before audit.
+
+## 2026-06-03 - Phase Live MCP Transcript Certification Command
+
+Commands:
+
+- `npm run build && npx vitest run tests/cli/flow.test.ts -t "MCP JSON-RPC transcript|certifies an MCP|failed MCP transcript"`
+- `tmp=$(mktemp -d /tmp/splunkready-certify-mcp-XXXXXX); npm run splunkready -- certify-mcp-transcript --transcript examples/sample-mcp-transcript-pass.jsonl --out "$tmp" --strict-import true --require-pass true --agent-name "External MCP Agent" --agent-version "jsonrpc-pass-001" --json; node -e 'const fs=require("fs"); const dir=process.argv[1]; const s=JSON.parse(fs.readFileSync(`${dir}/mcp-transcript-certification.json`,"utf8")); if (s.status!=="PASS" || s.receipt.verdict!=="READY" || s.audit.status!=="PASS") { console.error(s); process.exit(1); } console.log(`verified ${dir}`);' "$tmp"`
+
+Result:
+
+- PASS for TypeScript build and focused MCP transcript CLI tests:
+  - 1 test file;
+  - 3 tests passed;
+  - 28 tests skipped by the focused name filter.
+- PASS for direct strict CLI smoke:
+  - `certify-mcp-transcript` returned `PASS`;
+  - `mcp-transcript-certification.json` reported `PASS`;
+  - external receipt verdict was `READY`;
+  - proof audit status was `PASS`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 816 project files;
+  - 38 test files;
+  - 225 tests.
+- PASS for Vite production build.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The new command certifies one transcript at a time. Multi-agent rollups should build over proof directories instead of changing this command into a dashboard.
+- The passing MCP transcript fixture is still fixture-backed. It proves the external transcript gate and deterministic grader path; live MCP proof remains handled by the separate live proof commands.

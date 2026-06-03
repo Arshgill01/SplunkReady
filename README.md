@@ -75,22 +75,20 @@ For external-agent CI, `proof-audit --require-pass true` recognizes `receipt-ext
 
 See [examples/README.md](examples/README.md) for runnable external-trace capture scripts and generated sample receipts for both `NOT READY` and `READY / 100` external agent traces.
 
-If an external agent only logs Splunk MCP JSON-RPC calls, import the transcript first:
+If an external agent only logs Splunk MCP JSON-RPC calls, certify the transcript directly:
 
 ```bash
-npm run splunkready -- import-mcp-transcript \
-  --transcript examples/sample-mcp-transcript.jsonl \
+npm run splunkready -- certify-mcp-transcript \
+  --transcript examples/sample-mcp-transcript-pass.jsonl \
   --out artifacts/mcp-transcript \
   --strict-import true \
-  --json
-npm run splunkready -- grade-trace \
-  --trace artifacts/mcp-transcript/trace-imported.json \
-  --out artifacts/mcp-transcript
-npm run splunkready -- proof-audit \
-  --out artifacts/mcp-transcript \
   --require-pass true \
+  --agent-name "External MCP Agent" \
+  --agent-version "jsonrpc-transcript-001" \
   --json
 ```
+
+This single gate writes the full evidence chain: compiled contract, imported canonical trace, deterministic violations, external receipt, proof audit, and `mcp-transcript-certification.json`. `--strict-import true` rejects incomplete JSON-RPC logs; `--require-pass true` blocks CI unless the external MCP agent receives a deterministic `READY` receipt.
 
 ## Multi-Mission Fixture Proof
 
