@@ -61,7 +61,7 @@ code {
 .side-rail {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 20px;
+  gap: 18px;
   min-width: 0;
   height: 100vh;
   padding: 26px 24px;
@@ -91,6 +91,15 @@ code {
   color: var(--muted);
   font-size: 15px;
   font-weight: 410;
+}
+
+.rail-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 14px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .side-rail nav {
@@ -123,8 +132,8 @@ code {
 
 .rail-footer {
   display: grid;
-  gap: 14px;
   min-width: 0;
+  max-height: 34vh;
   overflow: hidden;
 }
 
@@ -152,6 +161,7 @@ code {
 .rail-receipt {
   display: grid;
   gap: 8px;
+  min-width: 0;
   padding-top: 14px;
   border-top: 2px solid var(--line);
 }
@@ -644,6 +654,14 @@ code {
   .side-rail nav {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rail-body {
+    grid-template-rows: auto auto;
+  }
+
+  .rail-footer {
+    max-height: none;
   }
 
   .view {

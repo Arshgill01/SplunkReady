@@ -520,6 +520,7 @@ const renderCertificationIndexRows = (index: CertificationIndex): string =>
         <td>${value(receipt?.verdict ?? "NO RECEIPT")}<span>${value(receipt ? `${receipt.score}/100` : "--")}</span></td>
         <td>${value(receipt?.violations ?? "n/a")}<span>${value(receipt ? `${receipt.evidenceRefs} evidence refs` : "no receipt")}</span></td>
         <td>${value(entry.proofLoop ?? "n/a")}<span>${value(entry.mode ?? "unknown")}</span></td>
+        <td>${value(entry.manifest ? `${entry.manifest.files} files` : "n/a")}<span>${value(entry.manifest?.aggregateSha256.slice(0, 12) ?? "no manifest")}</span></td>
         <td>${code(entry.proofDir)}</td>
       </tr>`;
     })
@@ -572,6 +573,7 @@ const renderCertificationIndex = (bundle: UiArtifactBundle): string => {
                 <th>Receipt</th>
                 <th>Evidence</th>
                 <th>Loop</th>
+                <th>Manifest</th>
                 <th>Proof dir</th>
               </tr>
             </thead>
@@ -1061,16 +1063,18 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: Re
       <h1>SplunkReady</h1>
       <p>Certify AI agents before they touch production Splunk.</p>
     </div>
-    <nav aria-label="Views">
-      ${views
-        .map(
-          (view) =>
-            `<a href="#${view.id}" data-view-link="${view.id}" class="${view.id === activeView ? "active" : ""}">${view.label}</a>`
-        )
-        .join("")}
-    </nav>
-    <div class="rail-footer">
+    <div class="rail-body">
+      <nav aria-label="Views">
+        ${views
+          .map(
+            (view) =>
+              `<a href="#${view.id}" data-view-link="${view.id}" class="${view.id === activeView ? "active" : ""}">${view.label}</a>`
+          )
+          .join("")}
+      </nav>
       ${renderArtifactSelector(bundle, options.artifactOptions)}
+    </div>
+    <div class="rail-footer">
       <div class="rail-receipt">
         <strong>${value(summary.verdict)} / ${value(summary.score)}</strong>
         <span>${value(summary.mode)} / ${value(summary.contract)}</span>

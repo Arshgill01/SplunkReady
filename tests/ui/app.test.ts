@@ -658,6 +658,10 @@ const certificationIndex = {
       },
       proofLoop: "ready-without-patch",
       hostedModelStatus: "not-applicable",
+      manifest: {
+        aggregateSha256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        files: 12
+      },
       href: "?artifacts=artifacts%2Fmcp-transcript-pass#receipt"
     },
     {
@@ -670,6 +674,10 @@ const certificationIndex = {
       agent: { name: "Phase Live multi-mission readiness proof", version: "n/a" },
       receipt: null,
       proofLoop: "fail-to-pass",
+      manifest: {
+        aggregateSha256: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        files: 38
+      },
       href: "?artifacts=artifacts%2Fsuite-proof#receipt"
     }
   ]
@@ -788,10 +796,11 @@ describe("Vite UI artifact app", () => {
     const rail = sidebarHtml(renderApp(bundle, "certification-replay", { artifactOptions: defaultArtifactOptions }));
 
     expect(rail).toContain("<nav aria-label=\"Views\">");
+    expect(rail).toContain('class="rail-body"');
     expect(rail).toContain('class="rail-footer"');
     expect(rail).toContain('class="artifact-picker"');
     expect(rail).toContain('class="rail-receipt"');
-    expect(rail.indexOf('data-view-link="live-connect"')).toBeLessThan(rail.indexOf('class="rail-footer"'));
+    expect(rail.indexOf('data-view-link="live-connect"')).toBeLessThan(rail.indexOf('class="artifact-picker"'));
     expect(rail.indexOf('class="artifact-picker"')).toBeLessThan(rail.indexOf('class="rail-receipt"'));
     expect(rail).toContain("READY / 100/100");
     expect(rail).not.toContain("not loaded");
@@ -822,6 +831,8 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Phase Live multi-mission readiness proof");
     expect(html).toContain("ready-without-patch");
     expect(html).toContain("fail-to-pass");
+    expect(html).toContain("12 files");
+    expect(html).toContain("aaaaaaaaaaaa");
     expect(html).toContain("?artifacts=artifacts%2Fmcp-transcript-pass#receipt");
     expect(html).toContain('data-proof-artifact="artifacts/mcp-transcript-pass"');
     expect(html).toContain('data-proof-view="receipt"');
@@ -1009,6 +1020,32 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("Mutation");
     expect(liveConnect).toContain("no");
     expect(liveConnect).toContain("artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/savedsearches.conf");
+  });
+
+  it("loads live proof summaries that predate proof-loop artifacts", async () => {
+    const { proofLoop: _liveProofLoop, ...legacyLiveProofSummary } = liveProofSummary;
+    const { proofLoop: _securityProofLoop, ...legacySecurityProofSummary } = liveSecurityProofSummary;
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": { ...contract, mode: "live" },
+        "missions.json": [mission],
+        "receipt-before-001.json": receipt({ id: "receipt-before-001", mode: "live", verdict: "READY", score: 100, violations: [] }),
+        "receipt-after-001.json": receipt({ mode: "live" }),
+        "live-proof-summary.json": legacyLiveProofSummary,
+        "live-security-proof-summary.json": legacySecurityProofSummary,
+        "trace-before.json": beforeTrace,
+        "trace-after.json": afterTrace,
+        "violations-before.json": [],
+        "violations-after.json": []
+      })
+    );
+    const liveConnect = renderApp(bundle, "live-connect");
+
+    expect(bundle.liveProofSummary?.proofLoop).toBe("ready-without-patch");
+    expect(bundle.liveSecurityProofSummary?.proofLoop).toBe("fail-to-pass");
+    expect(liveConnect).toContain("ready-without-patch");
+    expect(liveConnect).toContain("fail-to-pass");
   });
 
   it("renders firewall block bundles as pre-execution proof", async () => {

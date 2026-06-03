@@ -163,6 +163,62 @@ Notes:
 - Final `npm run check` passed: scaffold verifier reported `project files: 230` and 31 test files / 139 tests passed.
 - `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Sidebar Stability And Proof Manifests
+
+Scope:
+- Fix the Vite sidebar overlap and empty artifact shell reported from the live UI.
+- Finish the interrupted proof-bundle manifest/checksum slice.
+- Keep the changes evidence-backed and avoid changing deterministic grading semantics.
+
+Files expected/touched:
+- `src/cli.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `README.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Reworked the Vite sidebar into separate brand, rail-body, and receipt-footer zones so nav links, artifact source, and status cannot overlap.
+- Made live proof summary parsing tolerate older artifacts that predate the `proofLoop` field by deriving the loop from existing receipt flags.
+- Added `proof-manifest.json` generation to `proof-audit`; the manifest records proof-bundle file paths, byte sizes, per-file SHA-256 hashes, and an aggregate SHA-256.
+- Added proof-manifest summaries to `certification-index.json` entries and rendered the file count plus short hash in the Vite Agents table.
+- Updated README notes for proof audits and certification indexes.
+
+Product impact:
+- The app no longer blanks on live proof bundles that lack the newer `proofLoop` field.
+- The sidebar is constrained as a navigation/status rail instead of an overflowing diagnostic dump.
+- Shared proof bundles now have lightweight provenance evidence without re-running agents or weakening deterministic grader authority.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 34% | 34% | Stability/provenance polish, not a new live capability. |
+| Platform & DX | 91% | 92% | Proof bundles are more reviewable and checksum-backed for CI/artifact handoff. |
+| Security | 44% | 44% | Security proof behavior unchanged. |
+| Best Use of MCP Server | 89% | 89% | MCP proof behavior unchanged, but MCP transcript bundles gain provenance. |
+| Hosted Models | 53% | 53% | Hosted-model behavior unchanged while SAIA activation is pending. |
+| Developer Tools | 89% | 90% | `proof-audit` now emits reusable integrity metadata for downstream tools. |
+
+Next directions to consider in future runs:
+- Once SAIA activation is available, rerun the hosted-model diagnostic/proof with strict gating and index the refreshed proof bundle.
+- Consider a `verify-manifest` command only if developers need offline integrity checks outside `certification-index`.
+- Keep UI work focused on proof inspection and avoid generic dashboard expansion.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused UI test passed.
+- Vite production build passed.
+- Playwright overlap probe passed across desktop and sidebar-crop viewports.
+- Focused firewall-check regression passed.
+- Combined UI/CLI flow suite passed.
+
 ## 2026-06-03 - Phase Live Generated UI Artifact Manifest
 
 Scope:

@@ -1,5 +1,6 @@
-import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { dirname, isAbsolute, join } from "node:path";
+import { createHash } from "node:crypto";
+import { copyFile, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, join, relative, sep } from "node:path";
 
 import { createFixtureSplunkAccessAdapter, loadFixtureSplunkDatasetFromFile } from "./adapters/fixture.js";
 import {
@@ -122,6 +123,20 @@ interface ProofAuditReport {
   checks: ProofAuditCheck[];
 }
 
+interface ProofManifestFile {
+  path: string;
+  sizeBytes: number;
+  sha256: string;
+}
+
+interface ProofManifest {
+  source: "splunkready-proof-manifest";
+  generatedAt: string;
+  proofDir: string;
+  aggregateSha256: string;
+  files: ProofManifestFile[];
+}
+
 interface CertificationIndexEntry {
   label: string;
   proofDir: string;
@@ -142,6 +157,10 @@ interface CertificationIndexEntry {
   } | null;
   proofLoop?: ProofLoop;
   hostedModelStatus?: string;
+  manifest?: {
+    aggregateSha256: string;
+    files: number;
+  };
   href: string;
 }
 
@@ -441,6 +460,70 @@ const exists = async (filePath: string): Promise<boolean> =>
   stat(filePath)
     .then(() => true)
     .catch(() => false);
+
+const proofManifestExcludedFiles = new Set(["proof-manifest.json"]);
+
+const collectProofManifestFiles = async (proofDir: string, currentDir = proofDir): Promise<string[]> => {
+  const entries = await readdir(currentDir, { withFileTypes: true }).catch(() => []);
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const filePath = join(currentDir, entry.name);
+
+      if (entry.isDirectory()) {
+        return collectProofManifestFiles(proofDir, filePath);
+      }
+
+      if (!entry.isFile() || proofManifestExcludedFiles.has(entry.name)) {
+        return [];
+      }
+
+      return [filePath];
+    })
+  );
+
+  return files.flat();
+};
+
+const proofManifestPath = (proofDir: string, filePath: string): string =>
+  relative(proofDir, filePath).split(sep).join("/");
+
+const sha256Hex = (value: string | Buffer): string => createHash("sha256").update(value).digest("hex");
+
+const buildProofManifest = async (proofDir: string): Promise<ProofManifest> => {
+  const filePaths = await collectProofManifestFiles(proofDir);
+  const files = (
+    await Promise.all(
+      filePaths.map(async (filePath) => {
+        const content = await readFile(filePath);
+
+        return {
+          path: proofManifestPath(proofDir, filePath),
+          sizeBytes: content.byteLength,
+          sha256: sha256Hex(content)
+        };
+      })
+    )
+  ).sort((left, right) => left.path.localeCompare(right.path));
+  const aggregateInput = files.map((file) => `${file.path}:${file.sizeBytes}:${file.sha256}`).join("\n");
+
+  return {
+    source: "splunkready-proof-manifest",
+    generatedAt: compiledAt,
+    proofDir,
+    aggregateSha256: sha256Hex(aggregateInput),
+    files
+  };
+};
+
+const writeProofAuditArtifacts = async (options: CliOptions, report: ProofAuditReport): Promise<string[]> => {
+  const auditPath = join(options.out, "proof-audit.json");
+  const manifestPath = join(options.out, "proof-manifest.json");
+
+  await writeJson(auditPath, report);
+  await writeJson(manifestPath, await buildProofManifest(options.out));
+
+  return [auditPath, manifestPath];
+};
 
 const removeOptionalFile = async (filePath: string): Promise<void> => {
   await rm(filePath, { force: true });
@@ -2173,14 +2256,13 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
       checks
     };
     const auditPath = join(options.out, "proof-audit.json");
-
-    await writeJson(auditPath, report);
+    const artifacts = await writeProofAuditArtifacts(options, report);
 
     if (options.requirePass && status !== "PASS") {
       throw new Error(`proof-audit strict gate failed with ${status}. Inspect ${auditPath}.`);
     }
 
-    return [auditPath];
+    return artifacts;
   }
 
   const failToPass =
@@ -2268,14 +2350,13 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
       checks
     };
     const auditPath = join(options.out, "proof-audit.json");
-
-    await writeJson(auditPath, report);
+    const artifacts = await writeProofAuditArtifacts(options, report);
 
     if (options.requirePass && status !== "PASS") {
       throw new Error(`proof-audit strict gate failed with ${status}. Inspect ${auditPath}.`);
     }
 
-    return [auditPath];
+    return artifacts;
   }
 
   if (proofType === "external-trace") {
@@ -2410,14 +2491,13 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
       checks
     };
     const auditPath = join(options.out, "proof-audit.json");
-
-    await writeJson(auditPath, report);
+    const artifacts = await writeProofAuditArtifacts(options, report);
 
     if (options.requirePass && status !== "PASS") {
       throw new Error(`proof-audit strict gate failed with ${status}. Inspect ${auditPath}.`);
     }
 
-    return [auditPath];
+    return artifacts;
   }
 
   addCheck(
@@ -2589,14 +2669,13 @@ const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
     checks
   };
   const auditPath = join(options.out, "proof-audit.json");
-
-  await writeJson(auditPath, report);
+  const artifacts = await writeProofAuditArtifacts(options, report);
 
   if (options.requirePass && status !== "PASS") {
     throw new Error(`proof-audit strict gate failed with ${status}. Inspect ${auditPath}.`);
   }
 
-  return [auditPath];
+  return artifacts;
 };
 
 const proofDirsFromOptions = (options: CliOptions): string[] =>
@@ -2687,6 +2766,10 @@ const receiptForIndex = async (proofDir: string): Promise<ReadinessReceipt | und
 
 const certificationIndexEntry = async (proofDir: string): Promise<CertificationIndexEntry> => {
   const audit = parseProofAuditReport(await readOptionalJson<unknown>(join(proofDir, "proof-audit.json")));
+  const manifestInput = await readOptionalJson<unknown>(join(proofDir, "proof-manifest.json"));
+  const manifest = isRecord(manifestInput) ? manifestInput : undefined;
+  const manifestAggregateSha256 = stringFromRecord(manifest, "aggregateSha256");
+  const manifestFiles = Array.isArray(manifest?.files) ? manifest.files.length : undefined;
   const receipt = await receiptForIndex(proofDir);
   const suiteSummary = await readOptionalJson<unknown>(join(proofDir, "suite-proof-summary.json"));
   const suiteTitle = stringFromRecord(suiteSummary, "suiteTitle") ?? stringFromRecord(suiteSummary, "suiteId");
@@ -2711,6 +2794,13 @@ const certificationIndexEntry = async (proofDir: string): Promise<CertificationI
       : null,
     proofLoop: audit?.proofLoop,
     hostedModelStatus: audit?.hostedModelStatus,
+    manifest:
+      manifestAggregateSha256 && manifestFiles !== undefined
+        ? {
+            aggregateSha256: manifestAggregateSha256,
+            files: manifestFiles
+          }
+        : undefined,
     href: `?artifacts=${encodeURIComponent(proofDir)}#receipt`
   };
 };

@@ -90,6 +90,34 @@ const hostedModelProofSchema = z
 
 export type HostedModelProof = z.infer<typeof hostedModelProofSchema>;
 
+const proofLoopSchema = z.enum(["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"]);
+
+const deriveProofLoop = ({
+  failToPass,
+  beforeVerdict,
+  afterVerdict,
+  readyWithoutPatch
+}: {
+  failToPass: boolean;
+  beforeVerdict: string;
+  afterVerdict: string;
+  readyWithoutPatch?: boolean;
+}): z.infer<typeof proofLoopSchema> => {
+  if (failToPass) {
+    return "fail-to-pass";
+  }
+
+  if (readyWithoutPatch || (beforeVerdict === "READY" && afterVerdict === "READY")) {
+    return "ready-without-patch";
+  }
+
+  if (afterVerdict !== "READY") {
+    return "not-ready-after-rerun";
+  }
+
+  return "mixed-verdict";
+};
+
 const hostedModelDiagnosticSchema = z
   .object({
     status: z.enum(["PASS", "BLOCKED"]),
@@ -139,7 +167,7 @@ const proofAuditSchema = z
     failToPass: z.boolean().optional(),
     readyAfterPatch: z.boolean().optional(),
     readyWithoutPatch: z.boolean().optional(),
-    proofLoop: z.enum(["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"]).optional(),
+    proofLoop: proofLoopSchema.optional(),
     hostedModelStatus: z.string().min(1).optional(),
     checks: z.array(proofAuditCheckSchema)
   })
@@ -189,8 +217,15 @@ const certificationIndexSchema = z
             })
             .strict()
             .nullable(),
-          proofLoop: z.enum(["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"]).optional(),
+          proofLoop: proofLoopSchema.optional(),
           hostedModelStatus: z.string().min(1).optional(),
+          manifest: z
+            .object({
+              aggregateSha256: z.string().min(1),
+              files: z.number().int().nonnegative()
+            })
+            .strict()
+            .optional(),
           href: z.string().min(1)
         })
         .strict()
@@ -257,11 +292,22 @@ const liveProofSummarySchema = z
       .strict(),
     failToPass: z.boolean(),
     readyWithoutPatch: z.boolean(),
-    proofLoop: z.enum(["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"]),
+    proofLoop: proofLoopSchema.optional(),
     hostedModels: hostedModelSummarySchema.optional(),
     notes: z.string().min(1)
   })
-  .strict();
+  .strict()
+  .transform((summary) => ({
+    ...summary,
+    proofLoop:
+      summary.proofLoop ??
+      deriveProofLoop({
+        failToPass: summary.failToPass,
+        beforeVerdict: summary.before.verdict,
+        afterVerdict: summary.after.verdict,
+        readyWithoutPatch: summary.readyWithoutPatch
+      })
+  }));
 
 export type LiveProofSummary = z.infer<typeof liveProofSummarySchema>;
 
@@ -289,11 +335,21 @@ const liveSecurityProofSummarySchema = z
       .strict(),
     failToPass: z.boolean(),
     readyAfterPatch: z.boolean(),
-    proofLoop: z.enum(["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"]),
+    proofLoop: proofLoopSchema.optional(),
     hostedModels: hostedModelSummarySchema.optional(),
     notes: z.string().min(1)
   })
-  .strict();
+  .strict()
+  .transform((summary) => ({
+    ...summary,
+    proofLoop:
+      summary.proofLoop ??
+      deriveProofLoop({
+        failToPass: summary.failToPass,
+        beforeVerdict: summary.before.verdict,
+        afterVerdict: summary.after.verdict
+      })
+  }));
 
 export type LiveSecurityProofSummary = z.infer<typeof liveSecurityProofSummarySchema>;
 
@@ -321,7 +377,7 @@ const suiteProofSummarySchema = z
           title: z.string().min(1),
           domain: z.string().min(1),
           artifactDir: z.string().min(1),
-          proofLoop: z.enum(["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"]),
+          proofLoop: proofLoopSchema,
           before: z
             .object({
               verdict: z.string().min(1),

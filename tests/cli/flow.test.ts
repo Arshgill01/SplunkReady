@@ -34,6 +34,8 @@ interface ParsedCliJsonOutput {
 
 const parseCliJsonOutput = (stdout: string): ParsedCliJsonOutput => JSON.parse(stdout) as ParsedCliJsonOutput;
 
+const proofAuditArtifacts = (outDir: string): string[] => [join(outDir, "proof-audit.json"), join(outDir, "proof-manifest.json")];
+
 const defaultSavedSearchRows = [
   { eventRef: "live-evt-102", user: "svc-finance", dest: "win-finance-07" },
   { eventRef: "live-evt-118", user: "svc-finance", dest: "win-finance-07" },
@@ -407,17 +409,34 @@ describe("SplunkReady CLI flow", () => {
       proofType: string;
       failToPass: boolean;
     };
+    const proofManifest = JSON.parse(await readFile(join(outDir, "proof-manifest.json"), "utf8")) as {
+      source: string;
+      proofDir: string;
+      aggregateSha256: string;
+      files: Array<{ path: string; sizeBytes: number; sha256: string }>;
+    };
 
     expect(proofAudit).toMatchObject({
       command: "proof-audit",
       status: "PASS",
-      artifacts: [join(outDir, "proof-audit.json")]
+      artifacts: proofAuditArtifacts(outDir)
     });
     expect(proofAuditReport).toMatchObject({
       status: "WARN",
       proofType: "receipt",
       failToPass: true
     });
+    expect(proofManifest).toMatchObject({
+      source: "splunkready-proof-manifest",
+      proofDir: outDir
+    });
+    expect(proofManifest.aggregateSha256).toMatch(/^[a-f0-9]{64}$/);
+    expect(proofManifest.files).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: "proof-audit.json" }),
+        expect.objectContaining({ path: "receipt-after-001.json" })
+      ])
+    );
     await expect(runCli(["proof-audit", "--out", outDir, "--require-pass", "true"])).rejects.toMatchObject({
       stderr: expect.stringContaining("proof-audit strict gate failed with WARN")
     });
@@ -521,7 +540,7 @@ describe("SplunkReady CLI flow", () => {
     expect(auditOutput).toMatchObject({
       command: "proof-audit",
       status: "PASS",
-      artifacts: [join(outDir, "proof-audit.json")]
+      artifacts: proofAuditArtifacts(outDir)
     });
     expect(audit).toMatchObject({
       status: "PASS",
@@ -872,7 +891,7 @@ describe("SplunkReady CLI flow", () => {
     expect(auditOutput).toMatchObject({
       command: "proof-audit",
       status: "PASS",
-      artifacts: [join(outDir, "proof-audit.json")]
+      artifacts: proofAuditArtifacts(outDir)
     });
     expect(audit).toMatchObject({
       status: "FAIL",
@@ -1109,6 +1128,7 @@ describe("SplunkReady CLI flow", () => {
         mutation: boolean | null;
         agent: { name: string; version: string };
         receipt: { id: string; verdict: string; score: number; violations: number; evidenceRefs: number } | null;
+        manifest?: { aggregateSha256: string; files: number };
         href: string;
       }>;
     };
@@ -1140,6 +1160,7 @@ describe("SplunkReady CLI flow", () => {
           mutation: false,
           agent: { name: "External MCP Agent", version: "jsonrpc-pass-001" },
           receipt: expect.objectContaining({ id: "receipt-external-001", verdict: "READY", score: 100, violations: 0, evidenceRefs: 6 }),
+          manifest: expect.objectContaining({ aggregateSha256: expect.stringMatching(/^[a-f0-9]{64}$/), files: expect.any(Number) }),
           href: `?artifacts=${encodeURIComponent(passDir)}#receipt`
         }),
         expect.objectContaining({
@@ -1150,6 +1171,7 @@ describe("SplunkReady CLI flow", () => {
           mutation: false,
           agent: { name: "External MCP Agent", version: "jsonrpc-fail-001" },
           receipt: expect.objectContaining({ id: "receipt-external-001", verdict: "NOT READY", score: 0 }),
+          manifest: expect.objectContaining({ aggregateSha256: expect.stringMatching(/^[a-f0-9]{64}$/), files: expect.any(Number) }),
           href: `?artifacts=${encodeURIComponent(failDir)}#receipt`
         })
       ])
@@ -1269,7 +1291,7 @@ describe("SplunkReady CLI flow", () => {
     expect(auditOutput).toMatchObject({
       command: "proof-audit",
       status: "PASS",
-      artifacts: [join(outDir, "proof-audit.json")]
+      artifacts: proofAuditArtifacts(outDir)
     });
     expect(audit).toMatchObject({
       status: "PASS",
@@ -1722,7 +1744,7 @@ describe("SplunkReady CLI flow", () => {
     expect(proofAuditOutput).toMatchObject({
       command: "proof-audit",
       status: "PASS",
-      artifacts: [join(outDir, "proof-audit.json")]
+      artifacts: proofAuditArtifacts(outDir)
     });
     expect(proofAudit).toMatchObject({
       status: "PASS",
@@ -1752,7 +1774,8 @@ describe("SplunkReady CLI flow", () => {
         join(outDir, "agent-policy.json"),
         join(outDir, "readiness-profile.json"),
         join(outDir, "firewall-block-before.json"),
-        join(outDir, "proof-audit.json")
+        join(outDir, "proof-audit.json"),
+        join(outDir, "proof-manifest.json")
       ]
     });
     expect(await exists(join(outDir, "trace-before.json"))).toBe(false);
@@ -2534,7 +2557,7 @@ describe("SplunkReady CLI flow", () => {
     expect(auditOutput).toMatchObject({
       command: "proof-audit",
       status: "PASS",
-      artifacts: [join(outDir, "proof-audit.json")]
+      artifacts: proofAuditArtifacts(outDir)
     });
     expect(audit).toMatchObject({
       status: "PASS",

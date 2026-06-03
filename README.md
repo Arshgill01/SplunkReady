@@ -71,7 +71,7 @@ npm run splunkready -- proof-audit \
 
 The compile command also writes `readiness-profile.json`, which binds active rule IDs to the compiled Splunk contract. The trace grading command writes `trace-external.json`, deterministic violations, a score, and `receipt-external-001.json` / `.md`. It rejects traces whose `missionId` does not match the selected mission. The trace producer is outside SplunkReady; the deterministic rule engine remains the pass/fail authority.
 
-For external-agent CI, `proof-audit --require-pass true` recognizes `receipt-external-001.json` as an `external-trace` proof and fails the gate unless the deterministic receipt is `READY`.
+For external-agent CI, `proof-audit --require-pass true` recognizes `receipt-external-001.json` as an `external-trace` proof and fails the gate unless the deterministic receipt is `READY`. Each audit also writes `proof-manifest.json`, a SHA-256 manifest for the proof bundle files so shared artifacts can be checked without re-running the agent.
 
 See [examples/README.md](examples/README.md) for runnable external-trace capture scripts and generated sample receipts for both `NOT READY` and `READY / 100` external agent traces.
 
@@ -100,7 +100,7 @@ npm run splunkready -- certification-index \
   --json
 ```
 
-The command writes `certification-index.json`, a compact ledger of proof directories, audit status, receipt verdicts, scores, evidence counts, mutation posture, and UI links back to each proof bundle. It also writes `ui-artifacts.json`, which lets the Vite app populate its artifact selector from the generated proof set instead of a hardcoded demo list. Use `--require-pass true` in CI to fail the job if any indexed proof audit is `WARN` or `FAIL`.
+The command writes `certification-index.json`, a compact ledger of proof directories, audit status, receipt verdicts, scores, evidence counts, mutation posture, proof-manifest hashes, and UI links back to each proof bundle. It also writes `ui-artifacts.json`, which lets the Vite app populate its artifact selector from the generated proof set instead of a hardcoded demo list. Use `--require-pass true` in CI to fail the job if any indexed proof audit is `WARN` or `FAIL`.
 
 ## Multi-Mission Fixture Proof
 
