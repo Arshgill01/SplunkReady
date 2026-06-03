@@ -12,7 +12,7 @@ Mitigation: deterministic checks decide pass/fail; LLMs explain and patch.
 
 Risk: demo agent is scripted to fail/pass.
 
-Mitigation: bundled deterministic specimen is labeled honestly; external trace grading exists; next product wave should add a real LLM/MCP trace runner and preserve canonical traces.
+Mitigation: bundled deterministic specimen is labeled honestly; external trace grading exists; the Gemini-backed specimen produces model-driven traces; and external agents can now import Splunk MCP JSON-RPC transcripts into canonical trace events before deterministic grading.
 
 ### R003 Fixture/Live Divergence
 

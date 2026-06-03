@@ -41,6 +41,7 @@ import {
   type TraceEvent,
   type Violation
 } from "./schemas/core.js";
+import { importMcpTranscript, parseMcpTranscriptRecords } from "./traces/mcp-transcript.js";
 import { writeUiShell } from "./ui/shell.js";
 
 const defaultFixturePath = "fixtures/acme-soc-dev/adapter-fixture.json";
@@ -77,6 +78,7 @@ interface CliOptions {
   requirePass: boolean;
   requireFailToPass: boolean;
   trace: string;
+  transcript: string;
   agentName: string;
   agentVersion: string;
   agentModel: string;
@@ -148,6 +150,7 @@ Commands:
   compile   --mode fixture|live --fixture <path> --mission <path> --out <dir> [--json]
   evaluate  --mode fixture|live --out <dir> [--firewall] [--json]
   firewall-check --mode fixture|live --out <dir> [--json]
+  import-mcp-transcript --transcript <path> --mission <path> --out <dir> [--json]
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   hosted-model-proof --mode fixture|live --out <dir> [--json]
@@ -190,6 +193,7 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     requirePass: false,
     requireFailToPass: false,
     trace: "",
+    transcript: "",
     agentName: "External Splunk MCP Agent",
     agentVersion: "unversioned",
     agentModel: "",
@@ -266,6 +270,8 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       options.requireFailToPass = value === "true";
     } else if (flag === "--trace") {
       options.trace = value;
+    } else if (flag === "--transcript") {
+      options.transcript = value;
     } else if (flag === "--agent-name") {
       options.agentName = value;
     } else if (flag === "--agent-version") {
@@ -1711,6 +1717,28 @@ const gradeTraceCommand = async (options: CliOptions): Promise<string[]> => {
   ];
 };
 
+const importMcpTranscriptCommand = async (options: CliOptions): Promise<string[]> => {
+  if (!options.transcript) {
+    throw new Error("import-mcp-transcript requires --transcript <path>.");
+  }
+
+  const mission = await loadMission(options.mission);
+  const records = parseMcpTranscriptRecords(await readFile(options.transcript, "utf8"));
+  const imported = importMcpTranscript(records, mission.id);
+  const tracePath = join(options.out, "trace-imported.json");
+  const summaryPath = join(options.out, "mcp-transcript-import.json");
+
+  await writeJson(tracePath, imported.traceEvents);
+  await writeJson(summaryPath, {
+    ...imported.summary,
+    transcriptPath: options.transcript,
+    outputTracePath: tracePath,
+    nextCommand: `npm run splunkready -- grade-trace --trace ${tracePath} --out ${options.out} --agent-name "${options.agentName}" --agent-version "${options.agentVersion}"`
+  });
+
+  return [tracePath, summaryPath];
+};
+
 const llmAgentCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
@@ -2582,6 +2610,8 @@ const main = async (): Promise<void> => {
     artifacts = await evaluateCommand(options);
   } else if (command === "firewall-check") {
     artifacts = await firewallCheckCommand(options);
+  } else if (command === "import-mcp-transcript") {
+    artifacts = await importMcpTranscriptCommand(options);
   } else if (command === "grade-trace") {
     artifacts = await gradeTraceCommand(options);
   } else if (command === "llm-agent") {

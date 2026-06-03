@@ -6737,3 +6737,60 @@ Reviewer findings:
 
 Result:
 - Tracked-artifact check and `git diff --check` passed.
+
+## 2026-06-03 - Phase Live MCP Transcript Importer
+
+Scope:
+- Make `grade-trace` practical for real external Splunk MCP agents that log JSON-RPC traffic instead of SplunkReady trace events.
+- Keep the deterministic grader as the only pass/fail authority.
+- Avoid live Splunk calls and avoid any Splunk mutation.
+
+Files expected/touched:
+- `src/traces/mcp-transcript.ts`
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `examples/sample-mcp-transcript.jsonl`
+- `examples/README.md`
+- `README.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `import-mcp-transcript --transcript <path> --out <dir>`.
+- The importer accepts JSONL or JSON-array MCP JSON-RPC transcript records for `tools/call` requests and responses.
+- It converts importable Splunk MCP tool calls/results/final answers into canonical `TraceEvent[]`.
+- It writes:
+  - `trace-imported.json`;
+  - `mcp-transcript-import.json`.
+- The import summary includes mutation posture, imported event counts, tool names, skipped records, and a ready-to-run `grade-trace` command.
+- Added a checked-in transcript sample at `examples/sample-mcp-transcript.jsonl`.
+- Documented the transcript-import flow in the top-level README and examples README.
+- Updated R002 in the risk register: external agents no longer need to manually emit SplunkReady traces if they can log MCP JSON-RPC calls.
+
+Product impact:
+- SplunkReady is now more than a self-contained harness: it can certify external Splunk MCP agents from raw MCP transcript evidence.
+- This strengthens the Platform & DX story because developers can bring their own agent logs to SplunkReady with minimal integration work.
+- It also strengthens the MCP prize story by making MCP tool-call evidence a first-class import path.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 29% | External-agent proof is more credible and less repo-internal. |
+| Platform & DX | 69% | 73% | Developers can import MCP transcripts instead of adopting a custom SDK first. |
+| Security | 39% | 40% | Security agents can be graded from captured MCP logs. |
+| Best Use of MCP Server | 79% | 82% | MCP JSON-RPC evidence is now directly consumable by the product. |
+| Hosted Models | 53% | 53% | Hosted-model behavior unchanged while SAIA activation is pending. |
+| Developer Tools | 64% | 69% | The external-agent grading workflow becomes much easier to adopt. |
+
+Next directions to consider in future runs:
+- Add a transcript import path for multi-agent proof bundles if several agents emit separate MCP logs.
+- Consider a stricter transcript importer mode that rejects skipped records for CI.
+- Keep the importer narrow: conversion only, no scoring or LLM judgement.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused build/test, direct CLI smoke, full repo check, Vite production build, and `git diff --check` passed.

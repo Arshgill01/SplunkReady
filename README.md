@@ -69,6 +69,18 @@ The compile command also writes `readiness-profile.json`, which binds active rul
 
 See [examples/README.md](examples/README.md) for runnable external-trace capture scripts and generated sample receipts for both `NOT READY` and `READY / 100` external agent traces.
 
+If an external agent only logs Splunk MCP JSON-RPC calls, import the transcript first:
+
+```bash
+npm run splunkready -- import-mcp-transcript \
+  --transcript examples/sample-mcp-transcript.jsonl \
+  --out artifacts/mcp-transcript \
+  --json
+npm run splunkready -- grade-trace \
+  --trace artifacts/mcp-transcript/trace-imported.json \
+  --out artifacts/mcp-transcript
+```
+
 ## Multi-Mission Fixture Proof
 
 To prove the harness is not a single scripted mission, run the suite proof:

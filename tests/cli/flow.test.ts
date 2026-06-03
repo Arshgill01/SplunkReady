@@ -759,6 +759,101 @@ describe("SplunkReady CLI flow", () => {
     expect(markdown).toContain("deterministic rule engine decides pass/fail");
   });
 
+  it("imports a Splunk MCP JSON-RPC transcript for external trace grading", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-transcript-"));
+
+    await expect(runCli(["compile", "--out", outDir])).resolves.toMatchObject({
+      stdout: expect.stringContaining("PASS compile")
+    });
+
+    const importOutput = parseCliJsonOutput(
+      (
+        await runCli([
+          "import-mcp-transcript",
+          "--transcript",
+          "examples/sample-mcp-transcript.jsonl",
+          "--out",
+          outDir,
+          "--json"
+        ])
+      ).stdout
+    );
+
+    expect(importOutput).toMatchObject({
+      command: "import-mcp-transcript",
+      status: "PASS",
+      artifacts: expect.arrayContaining([join(outDir, "trace-imported.json"), join(outDir, "mcp-transcript-import.json")])
+    });
+
+    const summary = JSON.parse(await readFile(join(outDir, "mcp-transcript-import.json"), "utf8")) as {
+      source: string;
+      mutation: boolean;
+      toolCalls: number;
+      toolResults: number;
+      finalAnswers: number;
+      toolNames: string[];
+      nextCommand: string;
+    };
+    const importedTrace = JSON.parse(await readFile(join(outDir, "trace-imported.json"), "utf8")) as Array<{
+      id: string;
+      type: string;
+      toolName: string | null;
+      parentId?: string;
+      toolInput?: { query?: string } | null;
+      resultCount: number | null;
+    }>;
+
+    expect(summary).toMatchObject({
+      source: "mcp-jsonrpc-transcript",
+      mutation: false,
+      toolCalls: 1,
+      toolResults: 1,
+      finalAnswers: 1,
+      toolNames: ["splunk_run_query"]
+    });
+    expect(summary.nextCommand).toContain("grade-trace");
+    expect(importedTrace).toHaveLength(3);
+    expect(importedTrace[0]).toMatchObject({
+      type: "tool_call",
+      toolName: "splunk_run_query",
+      toolInput: { query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now" }
+    });
+    expect(importedTrace[1]).toMatchObject({
+      type: "tool_result",
+      toolName: "splunk_run_query",
+      parentId: importedTrace[0].id,
+      resultCount: 0
+    });
+
+    await expect(
+      runCli([
+        "grade-trace",
+        "--trace",
+        join(outDir, "trace-imported.json"),
+        "--out",
+        outDir,
+        "--agent-name",
+        "Transcript Agent",
+        "--agent-version",
+        "jsonrpc-001"
+      ])
+    ).resolves.toMatchObject({
+      stdout: expect.stringContaining("PASS grade-trace")
+    });
+
+    const receipt = JSON.parse(await readFile(join(outDir, "receipt-external-001.json"), "utf8")) as {
+      agent: { name: string; version: string };
+      verdict: string;
+      score: number;
+      violations: string[];
+    };
+
+    expect(receipt.agent).toEqual({ name: "Transcript Agent", version: "jsonrpc-001" });
+    expect(receipt.verdict).toBe("NOT READY");
+    expect(receipt.score).toBe(0);
+    expect(receipt.violations.length).toBeGreaterThan(0);
+  });
+
   it("uses the Gemini-backed specimen for evaluate and rerun when LLM mode is enabled", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-llm-cli-"));
     const gemini = await startMockGeminiServer();

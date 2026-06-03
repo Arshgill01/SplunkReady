@@ -5222,3 +5222,38 @@ Result:
 Open risks:
 
 - Ignored generated artifacts are not committed evidence by default. Commit only intentionally redacted proof bundles later with `git add -f`.
+
+## 2026-06-03 - Phase Live MCP Transcript Importer
+
+Commands:
+
+- `npm run build && npx vitest run tests/cli/flow.test.ts -t "MCP JSON-RPC transcript"`
+- `tmp=$(mktemp -d /tmp/splunkready-mcp-import-XXXXXX) && npm run splunkready -- compile --out "$tmp" --json >/tmp/splunkready-mcp-import-compile.json && npm run splunkready -- import-mcp-transcript --transcript examples/sample-mcp-transcript.jsonl --out "$tmp" --json >/tmp/splunkready-mcp-import.json && npm run splunkready -- grade-trace --trace "$tmp/trace-imported.json" --out "$tmp" --agent-name "External MCP Transcript Agent" --agent-version "jsonrpc-smoke-001" --json >/tmp/splunkready-mcp-import-grade.json && node -e 'const fs=require("node:fs"); const summary=JSON.parse(fs.readFileSync(process.argv[1]+"/mcp-transcript-import.json","utf8")); const receipt=JSON.parse(fs.readFileSync(process.argv[1]+"/receipt-external-001.json","utf8")); console.log(JSON.stringify({out:process.argv[1], importedEvents:summary.importedEvents, toolCalls:summary.toolCalls, toolResults:summary.toolResults, finalAnswers:summary.finalAnswers, verdict:receipt.verdict, score:receipt.score, violations:receipt.violations.length})); if (summary.importedEvents !== 3 || receipt.verdict !== "NOT READY") process.exit(1);' "$tmp"`
+- `npm run check && npm run ui:build && git diff --check`
+
+Result:
+
+- PASS for TypeScript build and focused CLI importer test:
+  - 1 test file;
+  - 1 test passed;
+  - 26 tests skipped by the focused name filter.
+- PASS for direct CLI smoke:
+  - importedEvents 3;
+  - toolCalls 1;
+  - toolResults 1;
+  - finalAnswers 1;
+  - verdict `NOT READY`;
+  - score 0;
+  - violations 6.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 815 project files;
+  - 38 test files;
+  - 220 tests.
+- PASS for Vite production build.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The importer is intentionally permissive for wrapper shapes and skipped records. Add a strict mode later if CI users need malformed-record rejection.
