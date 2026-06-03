@@ -1,16 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
   <title id="title">SplunkReady Architecture Diagram</title>
-  <desc id="desc">Fixture and optional live Splunk MCP adapters feed the Agent Readiness Compiler, which produces missions, traces, deterministic grading results, policy patches, and Readiness Receipts.</desc>
+  <desc id="desc">Detailed architecture showing fixture and live Splunk MCP adapters feeding the Agent Readiness Compiler, combined with the Agent Firewall, Transcript Importer, and interactive Vite UI.</desc>
   <style>
     .bg { fill: #151309; }
     .box { fill: #231f12; stroke: #776e59; stroke-width: 2; rx: 8; }
     .dark-box { fill: #1f1b0d; stroke: #4d4635; stroke-width: 2; rx: 8; }
     .accent-box { fill: #30291a; stroke: #f4b36d; stroke-width: 2.5; rx: 8; }
     .ready-box { fill: #1f1b0d; stroke: #7ff0c8; stroke-width: 2.5; rx: 8; }
+    .firewall-box { fill: #2a1b15; stroke: #ff7d6e; stroke-width: 2.5; rx: 8; }
+    .ui-box { fill: #1a1e1b; stroke: #c7bcaa; stroke-width: 2; rx: 8; }
     .title { font-family: "Spline Sans", "Segoe UI", Arial, sans-serif; font-weight: 700; font-size: 32px; fill: #f3edde; }
     .subtitle { font-family: "Spline Sans", "Segoe UI", Arial, sans-serif; font-weight: 400; font-size: 16px; fill: #c7bcaa; }
-    .label { font-family: "Spline Sans", "Segoe UI", Arial, sans-serif; font-weight: 700; font-size: 20px; fill: #f3edde; }
-    .small { font-family: "Spline Sans", "Segoe UI", Arial, sans-serif; font-weight: 400; font-size: 14px; fill: #c7bcaa; }
+    .label { font-family: "Spline Sans", "Segoe UI", Arial, sans-serif; font-weight: 700; font-size: 18px; fill: #f3edde; }
+    .small { font-family: "Spline Sans", "Segoe UI", Arial, sans-serif; font-weight: 400; font-size: 13px; fill: #c7bcaa; }
     .arrow { stroke: #c7bcaa; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
   </style>
   <defs>
@@ -26,70 +28,135 @@
   <text class="title" x="64" y="64">SplunkReady: Agent Readiness Compiler</text>
   <text class="subtitle" x="64" y="96">Certify AI agents before they touch production Splunk.</text>
 
-  <!-- Left Column: Adapters -->
+  <!-- COLUMN 1: SOURCES -->
+  <!-- Naive Specimen Agent -->
+  <rect class="box" x="64" y="140" width="220" height="90" />
+  <text class="label" x="84" y="175">Specimen Agent</text>
+  <text class="small" x="84" y="205">Naive TS / Gemini specimen</text>
+
+  <!-- External Agent -->
+  <rect class="box" x="64" y="260" width="220" height="90" />
+  <text class="label" x="84" y="295">External Agent</text>
+  <text class="small" x="84" y="325">Third-party runtime trace</text>
+
+  <!-- MCP Transcript -->
+  <rect class="box" x="64" y="380" width="220" height="90" />
+  <text class="label" x="84" y="415">MCP Transcript</text>
+  <text class="small" x="84" y="445">Raw JSON-RPC logging</text>
+
+  <!-- COLUMN 2: INTERCEPT & IMPORT -->
+  <!-- Agent Firewall -->
+  <rect class="firewall-box" x="330" y="140" width="200" height="90" />
+  <text class="label" x="350" y="175">Agent Firewall</text>
+  <text class="small" x="350" y="205">Pre-execution SPL filter</text>
+
+  <!-- Transcript Importer -->
+  <rect class="box" x="330" y="380" width="200" height="90" />
+  <text class="label" x="350" y="415">Transcript Importer</text>
+  <text class="small" x="350" y="445">Ingests JSON-RPC logs</text>
+
+  <!-- COLUMN 3: ADAPTERS & BOUNDARY -->
   <!-- Fixture Adapter -->
-  <rect class="box" x="64" y="140" width="230" height="92" />
-  <text class="label" x="88" y="174">Fixture Adapter</text>
-  <text class="small" x="88" y="202">No credentials required</text>
+  <rect class="box" x="580" y="140" width="200" height="80" />
+  <text class="label" x="600" y="175">Fixture Adapter</text>
+  <text class="small" x="600" y="200">Seeded Splunk mock</text>
 
   <!-- Live MCP Adapter -->
-  <rect class="box" x="64" y="272" width="230" height="92" />
-  <text class="label" x="88" y="306">Live MCP Adapter</text>
-  <text class="small" x="88" y="334">Optional read-only smoke</text>
+  <rect class="box" x="580" y="250" width="200" height="80" />
+  <text class="label" x="600" y="285">Live MCP Adapter</text>
+  <text class="small" x="600" y="310">Real Splunk endpoint</text>
 
-  <!-- Mid Column: Shared boundary & Compiler -->
-  <!-- Shared Adapter Boundary -->
-  <rect class="dark-box" x="378" y="194" width="280" height="118" />
-  <text class="label" x="408" y="232">Shared Adapter Boundary</text>
-  <text class="small" x="408" y="262">Same contract after this point</text>
-  <text class="small" x="408" y="288">No Splunk auto-mutation</text>
+  <!-- Shared Adapter Contract -->
+  <rect class="dark-box" x="580" y="360" width="200" height="80" />
+  <text class="label" x="600" y="395">Shared Adapter</text>
+  <text class="small" x="600" y="420">Parity interface</text>
+
+  <!-- COLUMN 4: COMPILATION & POLICY -->
+  <!-- Contract Compiler -->
+  <rect class="box" x="830" y="140" width="200" height="80" />
+  <text class="label" x="850" y="175">Contract Compiler</text>
+  <text class="small" x="850" y="200">Automated discovery</text>
 
   <!-- Environment Contract -->
-  <rect class="accent-box" x="742" y="174" width="300" height="158" />
-  <text class="label" x="772" y="214">Environment Contract</text>
-  <text class="small" x="772" y="244">Indexes and sourcetypes</text>
-  <text class="small" x="772" y="270">Saved searches and fields</text>
-  <text class="small" x="772" y="296">App context and budgets</text>
+  <rect class="accent-box" x="830" y="250" width="200" height="90" />
+  <text class="label" x="850" y="285">Environment Contract</text>
+  <text class="small" x="850" y="315">Readiness profile schema</text>
 
-  <!-- Bottom Row: Runtime Certification Loop -->
-  <!-- Security Missions -->
-  <rect class="box" x="170" y="458" width="250" height="112" />
-  <text class="label" x="198" y="494">Security Missions</text>
-  <text class="small" x="198" y="522">Naive specimen agent</text>
-  <text class="small" x="198" y="548">Real trace capture</text>
+  <!-- Policy Patch -->
+  <rect class="box" x="830" y="370" width="200" height="90" />
+  <text class="label" x="850" y="405">Policy Patch</text>
+  <text class="small" x="850" y="435">SAIA optimized queries</text>
 
+  <!-- BOTTOM ROW: VERIFICATION & UI -->
   <!-- Deterministic Grader -->
-  <rect class="box" x="514" y="458" width="250" height="112" />
-  <text class="label" x="542" y="494">Deterministic Grader</text>
-  <text class="small" x="542" y="522">Rule IDs and evidence</text>
-  <text class="small" x="542" y="548">No LLM pass/fail judging</text>
+  <rect class="box" x="330" y="520" width="240" height="100" />
+  <text class="label" x="350" y="555">Deterministic Grader</text>
+  <text class="small" x="350" y="585">Rule engine: SPL, KO, EVD</text>
+  <text class="small" x="350" y="602">No LLM pass/fail decisions</text>
 
   <!-- Readiness Receipt -->
-  <rect class="ready-box" x="858" y="438" width="310" height="152" />
-  <text class="label" x="890" y="478">Readiness Receipt</text>
-  <text class="small" x="890" y="508">Verdict, score, violations</text>
-  <text class="small" x="890" y="534">Policy patch summary</text>
-  <text class="small" x="890" y="560">Fail -> patch -> rerun -> pass</text>
+  <rect class="ready-box" x="650" y="520" width="250" height="100" />
+  <text class="label" x="670" y="555">Readiness Receipt</text>
+  <text class="small" x="670" y="585">Verdict, score, violations</text>
+  <text class="small" x="670" y="602">Failsafe audit trail</text>
 
-  <!-- Arrows & Connectors -->
-  <!-- Fixture Adapter -> Shared Boundary -->
-  <path class="arrow" d="M294 186 H378" />
+  <!-- Vite UI Browser -->
+  <rect class="ui-box" x="970" y="520" width="240" height="100" />
+  <text class="label" x="990" y="555">Vite UI Browser</text>
+  <text class="small" x="990" y="585">Interactive Replay UI</text>
+  <text class="small" x="990" y="602">Aggregate index ledger</text>
+
+  <!-- ORTHOGONAL CONNECTOR PATHS -->
+  <!-- Specimen Agent -> Agent Firewall -->
+  <path class="arrow" d="M284 185 H330" />
   
-  <!-- Live MCP Adapter -> Shared Boundary (Curved) -->
-  <path class="arrow" d="M294 318 H338 C358 318 358 253 378 253" />
-  
-  <!-- Shared Boundary -> Environment Contract -->
-  <path class="arrow" d="M658 253 H742" />
-  
-  <!-- Environment Contract -> Security Missions (Curved, entering top-mid vertically) -->
-  <path class="arrow" d="M842 332 V380 C842 410 295 410 295 458" />
-  
-  <!-- Environment Contract -> Deterministic Grader (Curved, entering top-mid vertically) -->
-  <path class="arrow" d="M942 332 V396 C942 420 639 420 639 458" />
-  
-  <!-- Security Missions -> Deterministic Grader -->
-  <path class="arrow" d="M420 514 H514" />
-  
-  <!-- Deterministic Grader -> Readiness Receipt -->
-  <path class="arrow" d="M764 514 H858" />
+  <!-- External Agent -> Grader (Bypasses Firewall, feeds trace directly) -->
+  <path class="arrow" d="M284 305 H300 V570 H330" />
+
+  <!-- MCP Transcript -> Transcript Importer -->
+  <path class="arrow" d="M284 425 H330" />
+
+  <!-- Transcript Importer -> Grader (Ingests trace for grading) -->
+  <path class="arrow" d="M430 470 V495 H390 V520" />
+
+  <!-- Agent Firewall -> Adapters -->
+  <path class="arrow" d="M530 185 H550 V180 H580" />
+  <path class="arrow" d="M530 185 H550 V290 H580" />
+
+  <!-- Adapters -> Shared Adapter Boundary -->
+  <path class="arrow" d="M580 180 H560 V400 H580" />
+  <path class="arrow" d="M580 290 H560 V400 H580" />
+
+  <!-- Shared Adapter -> Contract Compiler -->
+  <path class="arrow" d="M780 400 H810 V180 H830" />
+
+  <!-- Contract Compiler -> Environment Contract -->
+  <path class="arrow" d="M930 220 V250" />
+
+  <!-- Environment Contract -> Agent Firewall (Policy configuration) -->
+  <path class="arrow" d="M830 295 H815 V115 H430 V140" />
+
+  <!-- Environment Contract -> Grader (Configures active rule list) -->
+  <path class="arrow" d="M930 340 V495 H450 V520" />
+
+  <!-- Agent Execution / Firewall Gateway -> Grader (Records trace) -->
+  <path class="arrow" d="M430 230 V495 H370 V520" />
+
+  <!-- Grader -> Readiness Receipt -->
+  <path class="arrow" d="M570 580 H650" />
+
+  <!-- Grader -> Policy Patch (Triggered on violations) -->
+  <path class="arrow" d="M570 580 H600 V415 H830" />
+
+  <!-- Policy Patch -> Specimen Agent (Feedback rerun loop) -->
+  <path class="arrow" d="M1030 415 H1060 V100 H174 V140" />
+
+  <!-- Readiness Receipt -> Vite UI -->
+  <path class="arrow" d="M900 580 H970" />
+
+  <!-- Environment Contract -> Vite UI -->
+  <path class="arrow" d="M1030 295 H1090 V520" />
+
+  <!-- Policy Patch -> Vite UI -->
+  <path class="arrow" d="M930 460 V490 H1090 V520" />
 </svg>
