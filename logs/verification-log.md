@@ -4907,3 +4907,53 @@ Open risks:
 
 - Documentation names the required SAIA tools, but the exact Splunk role/capability name still needs confirmation from Splunk docs or from a working entitled deployment.
 - Live hosted-model strict proof remains blocked until the current MCP user can invoke `saia_explain_spl` and `saia_optimize_spl`.
+
+## 2026-06-03 - Phase Live External Trace SDK Pass Example
+
+Commands:
+
+- `node examples/capture-external-trace.js examples/sample-external-trace-pass.json pass`
+- `npm run build`
+- `tmp=$(mktemp -d /tmp/splunkready-external-pass-XXXXXX)
+npm run splunkready -- compile --out "$tmp" >/tmp/splunkready-external-pass-compile.log
+npm run splunkready -- grade-trace --trace examples/sample-external-trace-pass.json --out "$tmp" --agent-name "External MCP Agent" --agent-version "example-trace-pass-001" >/tmp/splunkready-external-pass-grade.log
+cp "$tmp/violations-external.json" examples/sample-pass-violations.json
+cp "$tmp/receipt-external-001.md" examples/sample-pass-receipt.md
+cat /tmp/splunkready-external-pass-grade.log
+node -e 'const fs=require("node:fs"); const score=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); console.log(JSON.stringify(score));' "$tmp/score-external.json"`
+- `npx vitest run tests/examples/external-trace.test.ts`
+- `npm run check`
+- `git diff --check`
+- `node examples/capture-external-trace.js examples/sample-external-trace-pass.json pass
+npx vitest run tests/examples/external-trace.test.ts
+npm run check
+git diff --check`
+
+Result:
+
+- PASS for trace generation:
+  - wrote `examples/sample-external-trace-pass.json`.
+- PASS for TypeScript build.
+- PASS for deterministic external trace grading:
+  - command returned `PASS grade-trace`;
+  - generated pass receipt and violations artifacts;
+  - score artifact reported `READY`, score `100`, and zero violation ids.
+- PASS for focused example tests:
+  - 1 test file;
+  - 3 tests.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 759 project files;
+  - 38 test files;
+  - 216 tests.
+- PASS for `git diff --check`.
+- PASS for final rerun after argument parser tightening:
+  - regenerated `examples/sample-external-trace-pass.json`;
+  - focused example tests passed;
+  - full repo check passed with 38 test files and 216 tests;
+  - `git diff --check` passed.
+
+Open risks:
+
+- The SDK example is fixture-backed; live external-agent proof remains separate from the live security proof path.

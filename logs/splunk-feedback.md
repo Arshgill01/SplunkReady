@@ -240,6 +240,33 @@ Suggestion:
 - Document the exact Splunk role/capability/entitlement required for `saia_explain_spl` and `saia_optimize_spl`.
 - Provide a small official "SAIA MCP permission check" JSON-RPC example that does not execute a search and is safe for setup validation.
 
+### SAIA tenant-code submission can be blocked by insecure redirect/link handling
+
+Observed during Splunk AI Assistant onboarding from a local Splunk Enterprise trial. The local app generated a tenant code successfully, but the in-app submission button failed because the browser/firewall blocked the insecure `http://` submission link. Manually navigating to the secure `https://www.splunk.com/en_us/form/tenantcodesubmit.html` endpoint allowed the same tenant code to be submitted.
+
+Impact:
+- The generated tenant code was valid, but the onboarding flow appeared broken until the secure URL workaround was discovered.
+- Developers can confuse a browser/firewall block with an invalid tenant code or local Splunk configuration problem.
+- This adds friction exactly at the activation step required before MCP `saia_explain_spl` and `saia_optimize_spl` can be proven live.
+
+Suggestion:
+- Use HTTPS-only submission links in the local Splunk AI Assistant app.
+- Show the secure tenant-code submission URL directly beside the generated code.
+- Add a "copy secure submission link" control or inline fallback instructions when the submit button cannot open the target page.
+
+### SAIA activation token wait state is opaque
+
+Observed after tenant-code submission. The tenant code submission succeeded, but the developer must wait for an activation token by email before live hosted-model proof can pass. There is no local status endpoint or diagnostic that says whether the code is queued, accepted, rejected, or pending manual activation.
+
+Impact:
+- SplunkReady can prove read-only MCP and live security readiness, but hosted-model proof remains blocked until an external email arrives.
+- Developers have to decide whether to wait, retry submission, or email support contacts without machine-readable state.
+
+Suggestion:
+- Provide an activation-status check keyed by tenant code.
+- Include expected activation time ranges and escalation instructions in the onboarding UI.
+- Expose a read-only MCP diagnostic for "SAIA tenant active for this token/user" so tools can distinguish not-yet-activated from wrong-role or wrong-token states.
+
 ## Developer Experience Suggestions
 
 - Provide one local Splunk Enterprise plus MCP "happy path" with exact ports, URL shape, token instructions, and a known-good read-only smoke command.

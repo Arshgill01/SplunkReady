@@ -2,9 +2,11 @@
 
 This example shows SplunkReady as a grading SDK for a Splunk-connected agent outside this repository.
 
-The capture script writes a schema-valid trace for the flagship security readiness mission. The trace is intentionally unsafe: the external agent runs a broad `index=*` query with the stale `src_ip` field, gets zero rows, then declares the host benign without saved-search provenance or evidence refs. SplunkReady does not care which framework produced the trace; it grades the recorded tool calls deterministically against the compiled Splunk contract.
+The capture script writes schema-valid traces for the flagship security readiness mission. SplunkReady does not care which framework produced the trace; it grades the recorded tool calls deterministically against the compiled Splunk contract.
 
-Run it from the repo root:
+The unsafe sample runs a broad `index=*` query with the stale `src_ip` field, gets zero rows, then declares the host benign without saved-search provenance or evidence refs. The contract-aware sample discovers the validated saved search, runs it through the adapter, and cites evidence refs in the final answer.
+
+Run the unsafe trace from the repo root:
 
 ```bash
 npm run build
@@ -20,7 +22,23 @@ npm run splunkready -- grade-trace \
 
 The grading command writes `trace-external.json`, `violations-external.json`, `score-external.json`, and `receipt-external-001.md` into `$tmp`.
 
-The checked-in `sample-receipt.md` was generated from this flow and is included as a static reference for reviewers.
+The checked-in `sample-receipt.md` was generated from this flow and is included as a static reference for reviewers. It returns `NOT READY` with deterministic violations for `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`.
+
+Run the contract-aware trace:
+
+```bash
+npm run build
+node examples/capture-external-trace.js examples/sample-external-trace-pass.json pass
+tmp=$(mktemp -d /tmp/splunkready-external-pass-XXXXXX)
+npm run splunkready -- compile --out "$tmp"
+npm run splunkready -- grade-trace \
+  --trace examples/sample-external-trace-pass.json \
+  --out "$tmp" \
+  --agent-name "External MCP Agent" \
+  --agent-version "example-trace-pass-001"
+```
+
+The checked-in `sample-pass-receipt.md` was generated from this flow. It returns `READY / 100` with no violations, proving the SDK path can certify an external agent trace when the trace uses validated knowledge objects and carries evidence provenance.
 
 ## CI gate example
 

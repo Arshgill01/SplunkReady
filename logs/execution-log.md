@@ -4364,6 +4364,67 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live External Trace SDK Pass Example
+
+Scope:
+- Make the external trace SDK story prove both sides of certification:
+  - unsafe external traces are rejected deterministically;
+  - contract-aware external traces can earn a READY receipt.
+- Do this while hosted-model activation is pending.
+
+Files expected/touched:
+- `examples/capture-external-trace.js`
+- `examples/sample-external-trace-pass.json`
+- `examples/sample-pass-violations.json`
+- `examples/sample-pass-receipt.md`
+- `examples/README.md`
+- `README.md`
+- `tests/examples/external-trace.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/splunk-feedback.md`
+
+What changed:
+- `examples/capture-external-trace.js` now supports a `pass` mode in addition to the existing unsafe default mode.
+- Added a contract-aware external trace that:
+  - discovers validated knowledge objects with `splunk_get_knowledge_objects`;
+  - runs `ES - Lateral Movement Auth Chain` through `splunk_run_saved_search`;
+  - cites saved-search and event evidence refs in the final answer.
+- Generated checked-in pass artifacts:
+  - `examples/sample-external-trace-pass.json`;
+  - `examples/sample-pass-violations.json`;
+  - `examples/sample-pass-receipt.md`.
+- Updated example docs to show the unsafe `NOT READY` SDK path and the contract-aware `READY / 100` SDK path.
+- Updated tests so the capture script must regenerate both checked-in traces and both static receipts remain aligned with deterministic grading.
+
+Product impact:
+- SplunkReady now demonstrates useful SDK behavior for third-party Splunk agents, not just its bundled specimen.
+- This strengthens the Platform/DX and Developer Tools story: developers can feed any schema-valid MCP trace into `grade-trace` and get a receipt.
+- The sample pass receipt remains deterministic and artifact-backed; no LLM or UI claim is involved.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 29% | Slightly stronger credibility beyond the bundled demo. |
+| Platform & DX | 69% | 72% | External trace grading now shows both rejection and certification. |
+| Security | 39% | 40% | The pass trace uses the flagship lateral-movement mission with evidence refs. |
+| Best Use of MCP Server | 79% | 79% | Live MCP behavior unchanged. |
+| Hosted Models | 53% | 53% | Hosted-model activation remains pending. |
+| Developer Tools | 64% | 68% | The SDK story is now materially more useful to agent developers. |
+
+Next directions to consider in future runs:
+- Move next to CI-gate polish: ensure programmatic CLI outputs are consistent enough for a PR-blocking workflow.
+- When SAIA activation arrives, rerun `hosted-model-diagnostic --require-pass true` and attach the live proof to UI artifacts.
+- Keep UI work limited to artifact-backed proof surfaces; no generic dashboard expansion.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Targeted example test passed.
+- Full repo verification and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Hosted Model Proof Attachment and LLM Evidence Ledger
 
 Scope:
