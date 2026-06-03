@@ -27,6 +27,9 @@ jobs:
       - name: Build SplunkReady
         run: npm run build
 
+      - name: Run multi-mission fail-to-pass suite
+        run: npm run splunkready -- suite-proof --mode fixture --out artifacts/ci-suite-proof --require-fail-to-pass true --json
+
       - name: Prove firewall blocks unsafe SPL before Splunk
         run: npm run splunkready -- firewall-check --mode fixture --out artifacts/ci-firewall --json
 
@@ -68,6 +71,7 @@ jobs:
           name: splunkready-ci-readiness
           path: |
             artifacts/ci-readiness
+            artifacts/ci-suite-proof
             artifacts/ci-firewall
 
   live-security-proof:

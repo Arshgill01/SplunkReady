@@ -76,9 +76,10 @@ To prove the harness is not a single scripted mission, run the suite proof:
 ```bash
 npm run build
 npm run splunkready -- suite-proof --out artifacts/suite-proof --json
+npm run splunkready -- suite-proof --out artifacts/suite-proof-ci --require-fail-to-pass true --json
 ```
 
-`suite-proof` runs the fixture fail -> patch -> rerun -> pass loop across two security missions and one observability mission. It writes each mission's normal artifacts plus `suite-proof-summary.json` / `.md`, with proof-loop classification, domains covered, evidence counts, and `mutation: false`. This path is credential-free and does not call live Splunk.
+`suite-proof` runs the fixture fail -> patch -> rerun -> pass loop across two security missions and one observability mission. It writes each mission's normal artifacts plus `suite-proof-summary.json` / `.md`, with proof-loop classification, domains covered, evidence counts, and `mutation: false`. This path is credential-free and does not call live Splunk. Use `--require-fail-to-pass true` in CI when a READY receipt is not enough and every mission must prove the full certification loop.
 
 ## Runtime Firewall Gate
 

@@ -5105,3 +5105,35 @@ Result:
 Open risks:
 
 - `artifacts/suite-proof` and `output/playwright/suite-proof-ledger.png` are local verification artifacts and remain untracked unless the user requests checked-in sanitized evidence.
+
+## 2026-06-03 - Phase Live Strict Suite Proof Gate
+
+Commands:
+
+- `npm run build && npx vitest run tests/cli/flow.test.ts -t "multi-mission"`
+- `tmp=$(mktemp -d /tmp/splunkready-suite-proof-strict-XXXXXX) && npm run splunkready -- suite-proof --out "$tmp" --require-fail-to-pass true --json && node -e 'const fs=require("node:fs"); const s=JSON.parse(fs.readFileSync(process.argv[1]+"/suite-proof-summary.json","utf8")); console.log(JSON.stringify({out:process.argv[1],status:s.status,missionCount:s.missionCount,failToPass:s.totals.failToPass,readyAfterPatch:s.totals.readyAfterPatch,loops:s.missions.map(m=>m.proofLoop)})); if (s.totals.failToPass !== s.missionCount) process.exit(1);' "$tmp"`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused TypeScript build and CLI test:
+  - 1 test file;
+  - 1 test passed;
+  - 25 tests skipped by the focused name filter.
+- PASS for direct strict suite proof:
+  - status `PASS`;
+  - missionCount 3;
+  - failToPass 3;
+  - readyAfterPatch 3;
+  - proof loops all `fail-to-pass`.
+- PASS for full repo check:
+  - scaffold verified;
+  - 85 waves;
+  - 812 project files;
+  - 38 test files;
+  - 219 tests.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The strict gate currently has a success-path integration test and invalid-argument parser coverage; no synthetic non-fail-to-pass suite fixture exists yet because the default suite is intentionally all fail-to-pass.

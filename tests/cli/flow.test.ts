@@ -498,6 +498,26 @@ describe("SplunkReady CLI flow", () => {
     }
     expect(markdown).toContain("SplunkReady Suite Proof");
     expect(markdown).toContain("mission-observability-latency-readiness");
+
+    const strictOutDir = await mkdtemp(join(tmpdir(), "splunkready-suite-proof-strict-"));
+    const strictOutput = parseCliJsonOutput(
+      (await runCli(["suite-proof", "--out", strictOutDir, "--require-fail-to-pass", "true", "--json"])).stdout
+    );
+
+    expect(strictOutput).toMatchObject({
+      command: "suite-proof",
+      status: "PASS",
+      artifacts: expect.arrayContaining([
+        join(strictOutDir, "suite-proof-summary.json"),
+        join(strictOutDir, "suite-proof-summary.md")
+      ])
+    });
+
+    await expect(
+      runCli(["suite-proof", "--out", strictOutDir, "--require-fail-to-pass", "maybe"])
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("--require-fail-to-pass must be true or false.")
+    });
   });
 
   it("runs the clean fixture demo orchestration and writes rehearsal artifacts", async () => {

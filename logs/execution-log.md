@@ -4364,6 +4364,53 @@ Reviewer findings:
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
 
+## 2026-06-03 - Phase Live Strict Suite Proof Gate
+
+Scope:
+- Add a CI-ready strict gate for the multi-mission suite proof.
+- Keep normal `suite-proof` behavior unchanged unless the caller explicitly requires every mission to demonstrate fail-to-pass certification.
+
+Files expected/touched:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `examples/README.md`
+- `examples/github-workflow-example.yml`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `--require-fail-to-pass true|false` to `suite-proof`.
+- The strict gate fails after writing `suite-proof-summary.json` / `.md` if any suite mission ends READY without proving the full NOT READY -> patch -> READY loop.
+- The GitHub Actions example now runs the strict suite gate as a PR check and uploads `artifacts/ci-suite-proof`.
+- README and example docs now position the strict gate as the recommended CI mode for suite artifacts.
+
+Product impact:
+- This turns the suite proof from a display artifact into a stronger Developer Experience control.
+- CI can now reject shallow READY-only results and require the flagship certification loop across multiple missions.
+- The change does not affect live Splunk, mutate Splunk, or alter deterministic grading.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 33% | 33% | Core proof quality improves, but no new visible runtime capability. |
+| Platform & DX | 81% | 83% | Adds a concrete CI gate developers can adopt. |
+| Security | 46% | 47% | Security suite now requires actual fail-to-pass proof in CI. |
+| Best Use of MCP Server | 80% | 80% | MCP behavior unchanged. |
+| Hosted Models | 54% | 54% | SAIA proof remains pending activation/permission. |
+| Developer Tools | 78% | 80% | Multi-mission suite output becomes enforceable automation. |
+
+Next directions to consider in future runs:
+- Add a strict suite gate failure fixture only if a future non-fail-to-pass suite becomes configurable.
+- Continue core product work toward live proof hardening and hosted-model proof once SAIA access is active.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Focused CLI build/test, direct strict `suite-proof` command, full repo check, and `git diff --check` passed.
+
 ## 2026-06-03 - Phase Live Suite Proof UI Ledger
 
 Scope:

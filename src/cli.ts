@@ -78,6 +78,7 @@ interface CliOptions {
   phase: "before" | "after";
   requireLive: boolean;
   requirePass: boolean;
+  requireFailToPass: boolean;
   trace: string;
   agentName: string;
   agentVersion: string;
@@ -161,7 +162,7 @@ Commands:
   live-security-proof --out <dir> [--firewall] [--json]
   live-security-ui-bundle --out <dir> [--proof-dir <dir>] [--security-check-dir <dir>] [--security-kit-dir <dir>] [--hosted-model-proof-dir <dir>] [--json]
   live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--json]
-  suite-proof --mode fixture --out <dir> [--json]
+  suite-proof --mode fixture --out <dir> [--require-fail-to-pass true|false] [--json]
   receipt   --out <dir> [--phase before|after] [--json]
   rerun     --mode fixture|live --out <dir> [--firewall] [--json]
   live-smoke --out <dir> [--require-live true|false]
@@ -188,6 +189,7 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     phase: "before",
     requireLive: false,
     requirePass: false,
+    requireFailToPass: false,
     trace: "",
     agentName: "External Splunk MCP Agent",
     agentVersion: "unversioned",
@@ -255,6 +257,12 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
       }
 
       options.requirePass = value === "true";
+    } else if (flag === "--require-fail-to-pass") {
+      if (value !== "true" && value !== "false") {
+        throw new Error("--require-fail-to-pass must be true or false.");
+      }
+
+      options.requireFailToPass = value === "true";
     } else if (flag === "--trace") {
       options.trace = value;
     } else if (flag === "--agent-name") {
@@ -2343,6 +2351,12 @@ ${markdownRows}
 
   if (summary.status !== "PASS") {
     throw new Error(`suite-proof failed. Inspect ${summaryPath}.`);
+  }
+
+  if (options.requireFailToPass && summary.totals.failToPass !== summary.missionCount) {
+    throw new Error(
+      `suite-proof strict fail-to-pass gate failed: ${summary.totals.failToPass}/${summary.missionCount} missions were fail-to-pass. Inspect ${summaryPath}.`
+    );
   }
 
   return [...new Set([...artifacts, summaryPath, markdownPath])];

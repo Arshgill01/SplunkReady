@@ -46,6 +46,8 @@ The checked-in `sample-pass-receipt.md` was generated from this flow. It returns
 
 The default `fixture-smoke` job runs without live Splunk credentials. It compiles the fixture contract, evaluates the specimen, issues the receipt, reruns with the compiled policy, writes a diagnostic `proof-audit.json`, and blocks the merge unless the final receipt is `READY`.
 
+The job also runs `suite-proof --require-fail-to-pass true`. That stricter gate proves the security and observability fixture missions all execute the full NOT READY -> patch -> READY certification loop, rather than merely ending in a READY state.
+
 CLI commands that include `--json` emit structured `PASS`, `SKIP`, or `FAIL` envelopes, so CI jobs can parse failure details without scraping human-readable stderr.
 
 The same job also runs `firewall-check`. That command compiles the fixture contract, executes the before-phase specimen behind the SplunkReady firewall, treats a `FIREWALL_POLICY_BLOCKED` result as a passing pre-execution safety proof, and writes `firewall-block-before.json` plus a strict `proof-audit.json`. CI can upload those artifacts even though no unsafe query reached Splunk.
