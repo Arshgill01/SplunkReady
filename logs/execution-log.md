@@ -6696,3 +6696,44 @@ Reviewer findings:
 
 Result:
 - Focused UI tests, Vite build, TypeScript build, Playwright browser verification, full repo verification, and `git diff --check` passed.
+
+## 2026-06-03 - Phase Live Generated Artifact Ignore Cleanup
+
+Scope:
+- Keep local proof bundles, browser screenshots, and scratch output out of the long-running branch status by default.
+- Do not delete any local evidence artifacts.
+
+Files expected/touched:
+- `.gitignore`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `artifacts/` and `output/` to `.gitignore`.
+- Confirmed no tracked files currently exist under those paths before ignoring them.
+
+Product impact:
+- Verification, live proof, and browser runs can generate local evidence without making the working tree look dirty.
+- Intentional redacted proof artifacts can still be committed later with `git add -f` when needed.
+
+Estimated prize trajectory after this move:
+
+| Prize | Previous estimate | Current estimate | Reason |
+| --- | ---: | ---: | --- |
+| Grand Prize | 28% | 28% | Repo hygiene only; no runtime capability change. |
+| Platform & DX | 69% | 69% | Keeps developer verification output manageable, but does not materially change product value. |
+| Security | 39% | 39% | Security behavior unchanged. |
+| Best Use of MCP Server | 79% | 79% | MCP behavior unchanged. |
+| Hosted Models | 53% | 53% | Hosted model behavior unchanged. |
+| Developer Tools | 64% | 64% | Reduces local artifact noise for SDK/CI workflows. |
+
+Next directions to consider in future runs:
+- Continue core development while SAIA activation is pending.
+- Prefer additions that strengthen live proof, external-agent grading, and suite audit evidence.
+- Avoid reverting to QA-only waves unless a verifier exposes a real product risk.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction.
+
+Result:
+- Tracked-artifact check and `git diff --check` passed.

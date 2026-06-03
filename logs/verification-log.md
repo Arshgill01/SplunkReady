@@ -5205,3 +5205,20 @@ Result:
 Open risks:
 
 - Suite audit is based on the persisted suite summary artifact, not by recursively re-reading every per-mission receipt. That keeps CI fast and deterministic, but the summary writer remains the trusted producer.
+
+## 2026-06-03 - Phase Live Generated Artifact Ignore Cleanup
+
+Commands:
+
+- `git ls-files artifacts output`
+- `git diff --check`
+
+Result:
+
+- PASS for tracked-artifact check:
+  - no tracked files exist under `artifacts/` or `output/`.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Ignored generated artifacts are not committed evidence by default. Commit only intentionally redacted proof bundles later with `git add -f`.
