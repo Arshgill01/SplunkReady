@@ -48,13 +48,14 @@ Official rules: <https://splunk.devpost.com/rules>
 | P0 | [10](moves10.md) - reconcile README, Devpost, architecture, and claims | 1d | 06-09 | Must ship |
 | P0 | [11](moves11.md) - record a compliant video and submit feedback | 1d | 06, 10 | Must ship |
 | P0 | [12](moves12.md) - run clean-room submission and security QA | 0.5-1d | all shipped moves | Final gate |
+| P1 | [13](moves13.md) - resolve the critical Vitest development advisory | 0.5d | 04 | Must resolve or explicitly mitigate |
 
 ## Recommended Schedule
 
 1. Complete Moves 01-04 before judge-facing feature work. A certification
    harness cannot credibly optimize presentation while activated checks are
    silently ignored.
-2. Run Moves 05-09 in parallel only where file ownership does not overlap.
+2. Run Moves 05-09 and 13 in parallel only where file ownership does not overlap.
    Move 05 is the only substantial new product behavior.
 3. Freeze source behavior before Moves 10-12. Regenerate evidence and copy from
    the frozen commit.
