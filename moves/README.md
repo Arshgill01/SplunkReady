@@ -43,6 +43,10 @@ commands, or filesystem paths.
 | P2 | [18](moves18.md) Dependency advisory cleanup | 0.5d | Removes critical dev audit result. |
 | P2 | [19](moves19.md) Public proof export | 0.5-1d | Lets UI emit sanitized bundles. |
 | P3 | [20](moves20.md) Workbench packaging and run command | 0.5-1d | One command to launch the real demo app. |
+| P0 | [21](moves21.md) Submission evidence pack | 0.5-1d | Produces tracked proof judges can inspect. |
+| P0 | [22](moves22.md) README, Devpost, and root architecture | 0.5-1d | Makes public claims match evidence. |
+| P0 | [23](moves23.md) Public demo video and feedback form | 0.5-1d | Required submission artifacts stay accountable. |
+| P0 | [24](moves24.md) Clean-room submission gate | 0.5d | Final judge-path verification. |
 
 ## Non-Negotiable Boundaries
 
@@ -65,4 +69,5 @@ If time gets tight, cut in this order:
 5. Move 12 firewall/policy workbench.
 6. Move 09 SAIA if entitlement is blocked.
 
-Do not cut Moves 01-07. Those are the minimum credible interactive product.
+Do not cut Moves 01-07 or 21-24. Moves 01-07 are the minimum credible
+interactive product; Moves 21-24 are the minimum credible submission package.
