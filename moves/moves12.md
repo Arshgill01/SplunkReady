@@ -1,95 +1,50 @@
-# Move 12 - Final Clean-Room Submission Gate
+# Move 12 - Add Policy Patch And Firewall Workbench
 
 ## Goal
 
-Prove that a judge can understand, run, and verify the frozen submission without
-access to the author's local artifacts, credentials, or prior context.
+Make the safety loop visible: unsafe agent behavior creates deterministic
+violations, violations produce proposed policy additions, and rerun/firewall
+checks enforce safer behavior.
 
-## Freeze Rules
+## Scope
 
-- Freeze feature work before this move.
-- Use one source commit for README, video, evidence, and Devpost claims.
-- Only fix submission blockers after freeze; rerun all affected checks and
-  regenerate evidence when behavior changes.
+Expected files:
 
-## Clean-Room Checklist
+- workflow extraction for firewall check and policy-backed rerun if needed
+- backend jobs for firewall checks
+- UI policy patch and firewall panels
+- tests
+- logs
 
-### Official requirements
+## Plan
 
-- Public repository URL is correct and accessible.
-- Open-source license is visible.
-- Root `architecture_diagram.md`, `.pdf`, or `.png` exists.
-- README includes setup, run instructions, dependencies, and example data.
-- Devpost track is Platform & Developer Experience.
-- Public video is under three minutes and accessible while signed out.
-- Video demonstrates AI usage, project function, problem, and value.
-- Submission-period work is described.
-- Feedback form is submitted separately.
+1. Render policy patches as proposed additions with violation mapping.
+2. Show that patches are exported for review and are not applied to Splunk.
+3. Add **Run policy-backed rerun** action where the workflow supports it.
+4. Add firewall-check action for compiled policy.
+5. Show blocked SPL examples and the specific rule/policy boundary that blocked
+   them.
+6. Add clear mutation posture display.
+7. Keep all verdict/score data from receipts, not UI recalculation.
 
-### Product truth
+## Acceptance Criteria
 
-- One-command fixture demo completes fail-to-pass.
-- Before and after receipts, traces, policy artifacts, audit, and manifest agree.
-- No activated rule is silently unimplemented.
-- Fixture/live parity tests pass.
-- External transcript and trace workflows run as documented.
-- Live security and SAIA statuses match public evidence exactly.
-- Policy patch is labeled as proposed additions/exported for review; no
-  auto-mutation claim exists.
-
-### Security and public evidence
-
-- No tracked token, key, authorization header, private endpoint, private IP,
-  user path, or secret-bearing screenshot.
-- Public evidence manifests verify.
-- Stale or conflicting local artifacts are not linked.
-- Browser workflow, if shipped, accepts no credentials or arbitrary paths.
-
-## Execution Plan
-
-1. Clone the public repository into a fresh directory with no local ignored
-   files.
-2. Follow README setup and execute every judge quickstart command verbatim.
-3. Run the canonical offline verification gate twice.
-4. Run the documented external-agent workflows.
-5. Open the static receipt shell and Vite artifact app at desktop and mobile
-   widths.
-6. Verify every README/Devpost/video/evidence link from a signed-out browser.
-7. Audit tracked files and screenshots for secrets and private identifiers.
-8. Record exact command results, source commit, public URLs, conditional
-   blockers, and any explicit waiver.
-9. Do not submit while a P0 item is waived. Conditional SAIA blockage is not a
-   P0 failure if copy is accurate.
+- The UI explains how a NOT READY run becomes a READY rerun.
+- Firewall blocking can be demonstrated from UI.
+- Policy patch semantics are truthful and auditable.
+- No UI action mutates Splunk.
 
 ## Verification
 
 ```bash
-npm ci
+npx vitest run tests/gateway/firewall.test.ts tests/policy/patch.test.ts tests/cli/flow.test.ts tests/workbench tests/ui/app.test.ts
+npm run build
 npm run check
-npm run check
-npm run splunkready -- demo --out <cleanroom-demo-dir>
-npm run splunkready -- proof-audit --out <cleanroom-demo-dir> --require-pass true
-npm run splunkready -- verify-manifest --out <cleanroom-demo-dir>
-npm run audit:reviewers
-npm run audit:submission-copy
 git diff --check
-git status --short
 ```
-
-Add the exact documented external trace and MCP transcript commands from Move
-09. Run live/SAIA checks only when the required operator environment is
-available.
-
-## Acceptance Criteria
-
-- Clean clone passes all required offline commands.
-- Submission materials satisfy official rules and are internally consistent.
-- Public evidence is accessible, sanitized, and verifiable.
-- All P0 moves are complete.
-- Open risks are explicit and do not contradict claims.
 
 ## Stop Conditions
 
-- Stop submission for any stale claim, inaccessible public link, missing root
-  diagram, secret exposure, failed canonical gate, or silent rule gap.
-- Do not delete branches or perform unrelated repository cleanup in this move.
+- Stop before creating a fake before/after policy diff.
+- Stop before adding waiver flows.
+- Stop before applying policy patches to Splunk.

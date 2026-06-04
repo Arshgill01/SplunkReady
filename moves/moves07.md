@@ -1,79 +1,58 @@
-# Move 07 - Capture SAIA Proof When Entitlement Is Actually Green
+# Move 07 - Ship Executable Fixture Certification UI
 
 ## Goal
 
-Convert the already-implemented Splunk AI Assistant path into defensible public
-proof if, and only if, tenant activation plus the active MCP identity's
-entitlement succeeds before submission.
-
-## Source Truth
-
-- `saia_explain_spl` and `saia_optimize_spl` routing already exists.
-- `query` to `spl` payload mapping already exists and is tested.
-- `hosted-model-diagnostic` and `hosted-model-proof` already exist.
-- MCP tool failures may arrive in an HTTP 200 envelope; raw `curl` status is not
-  a readiness signal.
-- Receipt-integrated SAIA assistance only applies to eligible SPL violations.
-  The current live security proof's violations do not necessarily trigger it.
+Give SplunkReady a real front-end execution path: click a button, run
+certification, watch NOT READY become READY, inspect the trace, receipt, policy
+patch, proof audit, and manifest.
 
 ## Scope
 
-Expected files only after a successful diagnostic:
+Expected files:
 
-- current live/SAIA playbook documentation
-- regenerated proof artifacts used by Move 06
-- README and Devpost claims updated by Move 10
-- focused code/tests only if successful live evidence exposes a real defect
-- current wave and logs
-
-Do not add a new activation script or duplicate the existing diagnostic.
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/styles.css`
+- shared API client/types if needed
+- UI and browser tests
+- logs
 
 ## Plan
 
-1. Require credentials to be exported in the operator shell according to the
-   chosen secret-handling policy. Never echo or pass them through the UI.
-2. Run the existing non-executing diagnostic:
-
-   ```bash
-   npm run splunkready -- hosted-model-diagnostic --mode live --require-pass true --out <fresh-dir>
-   ```
-
-3. If it is blocked, record the exact sanitized status and stop this move.
-4. If it passes, run a fresh standalone hosted-model proof and verify that
-   explanation and optimization fields are non-empty and mutation is false.
-5. Rerun the flagship live security proof into one fresh output directory so
-   hosted-model status, receipts, proof audit, and manifest are atomic.
-6. Distinguish in all copy:
-   - entitlement diagnostic;
-   - standalone hosted-model proof;
-   - receipt-integrated assistance, only when an eligible SPL violation proves
-     it.
-7. Export sanitized evidence through Move 06.
+1. Add a Workbench landing view focused on the current run.
+2. Add **Run fixture certification** action connected to the backend job runner.
+3. Render phases from structured events.
+4. Refresh artifacts when the job completes.
+5. Show before and after verdicts side by side.
+6. Make violations expandable with trace/evidence references.
+7. Show policy patch as proposed additions and the policy-backed rerun path.
+8. Show proof audit and manifest status.
+9. Preserve the existing design language. No generic hero page, no decorative
+   animation, no marketing filler.
+10. Add empty, loading, failed, cancelled, and success states.
 
 ## Acceptance Criteria
 
-- Success is declared only when `hosted-model-diagnostic --require-pass true`
-  exits zero.
-- Proof output identifies the hosted tools and remains non-authoritative.
-- No claim says SAIA affected verdict or score.
-- No claim says the live security receipt contains SAIA remediation unless the
-  public receipt proves it.
-- A blocked entitlement does not block the core submission.
+- The UI can start and complete a fixture certification run.
+- The UI displays live progress from the backend.
+- The UI updates to the new artifacts without page reload.
+- No receipt, score, or violation is modified client-side.
+- The run is convincing enough to record as the primary demo flow.
 
 ## Verification
 
 ```bash
-npm run splunkready -- hosted-model-diagnostic --mode live --require-pass true --out <diagnostic-dir>
-npm run splunkready -- hosted-model-proof --mode live --out <hosted-proof-dir>
-npm run splunkready -- proof-audit --out <atomic-live-proof-dir> --require-pass true
-npm run splunkready -- verify-manifest --out <atomic-live-proof-dir>
+npx vitest run tests/ui/app.test.ts tests/ui/shell.test.ts tests/workbench
+npm run ui:build
 npm run check
 git diff --check
 ```
 
+Use browser automation to record desktop and mobile screenshots of the workflow.
+
 ## Stop Conditions
 
-- Stop when entitlement remains blocked; do not write code around an external
-  permission failure.
-- Stop before raw `curl` probes, browser tokens, or secret-bearing screenshots.
-- Stop before presenting Gemini as a Splunk-hosted model.
+- Stop before adding waiver or score override UI.
+- Stop if the UI only simulates progress.
+- Stop if failures are hidden behind generic toast text.

@@ -1,92 +1,68 @@
-# SplunkReady Reviewed Moves
+# SplunkReady Development Moves
 
 Prepared: 2026-06-04
 
-This is the reviewed execution portfolio for the June 15, 2026 Splunk Agentic
-Ops Hackathon submission. It replaces the first 18-move draft after checking
-both source reports against the repository, current proof artifacts, locked
-decisions, official rules, and six independent code-review passes.
+This is the revised, code-focused execution plan for SplunkReady. It keeps the
+correctness findings from the review, but it no longer treats submission
+paperwork as first-class engineering work. The product needs a real operator
+workbench: a local backend, executable UI workflows, live proof actions, artifact
+management, and enough CLI extraction to make that safe.
 
-## Source-Truth Corrections
+## Operating Thesis
 
-- SplunkReady is entered in **Platform & Developer Experience**. Security is
-  the flagship use case, not a second eligible track prize.
-- A project may win one Grand Prize and one bonus prize. Probability and
-  expected-value arithmetic is intentionally excluded from this plan.
-- The repository declares **19** grader rule IDs, implements **14**, and
-  activates all 19 across missions. Five activated checks are silently skipped.
-- SAIA transport, payload mapping, diagnostics, and proof commands already
-  exist. The remaining blocker is tenant plus MCP identity entitlement.
-- The flagship live security fail-to-pass proof has succeeded locally. Its
-  final judge-facing evidence still needs regeneration, redaction, and tracking.
-- SplunkReady is currently a repository-local CLI integration and CI gate, not
-  a distributable SDK or reusable GitHub Action.
-- The Vite app is a static artifact app. Vite development middleware would only
-  create a local operator workflow, not a backend in the production build.
-- `policy-patch.json` intentionally contains proposed additive rules. It is not
-  a deceptive or incomplete before/after policy diff.
-- The app must remain read-only. No move adds automated Splunk setup or other
-  Splunk write operations.
-- The official rules require a public video under three minutes, visible AI
-  usage, and a root `architecture_diagram.md`, `.pdf`, or `.png`.
+SplunkReady should demo as an **interactive certification workbench**, not as a
+static reader wrapped around a CLI. The UI must be able to start a fixture
+certification, watch the fail-to-pass loop, inspect receipts, run server-env live
+checks, certify external traces, and browse proof bundles.
 
-Official rules: <https://splunk.devpost.com/rules>
+The backend remains local and operator-owned. It may read server-side env vars
+for live mode. The browser must not submit Splunk tokens, Gemini keys, arbitrary
+commands, or filesystem paths.
 
-## Priority Order
+## Priority Map
 
-| Priority | Move | Estimate | Depends on | Ship condition |
-|---|---|---:|---|---|
-| P0 | [01](moves01.md) - fail closed on missing deterministic rules | 0.5-1d | - | Must ship |
-| P0 | [02](moves02.md) - restore catalog-to-runtime rule truth | 1.5-2.5d | 01 | Must ship or narrow claims |
-| P0 | [03](moves03.md) - fix fixture drift and fixture/live parity gaps | 0.5-1d | 01-02 | Must ship |
-| P0 | [04](moves04.md) - make the canonical verification gate honest | 0.5d | 01-03 | Must ship |
-| P1 | [05](moves05.md) - add one safe fixture certification workflow to Vite | 1.5-2.5d | 04 | Ship only while P0 remains green |
-| P1 | [06](moves06.md) - produce a current sanitized public evidence pack | 0.5-1d | 04, 08 | Must ship |
-| P1 | [07](moves07.md) - capture SAIA proof if entitlement becomes green | 0.5d | 04 | Conditional |
-| P1 | [08](moves08.md) - make live security proof reproducible without mutation | 0.5-1d | 04 | Must ship |
-| P1 | [09](moves09.md) - harden the external-agent CLI integration story | 0.5-1d | 04 | Must ship |
-| P0 | [10](moves10.md) - reconcile README, Devpost, architecture, and claims | 1d | 06-09 | Must ship |
-| P0 | [11](moves11.md) - record a compliant video and submit feedback | 1d | 06, 10 | Must ship |
-| P0 | [12](moves12.md) - run clean-room submission and security QA | 0.5-1d | all shipped moves | Final gate |
-| P1 | [13](moves13.md) - resolve the critical Vitest development advisory | 0.5d | 04 | Must resolve or explicitly mitigate |
+| Priority | Move | Estimate | Why |
+|---|---|---:|---|
+| P0 | [01](moves01.md) Fail closed on missing rules | 0.5-1d | Certification cannot silently skip checks. |
+| P0 | [02](moves02.md) Implement missing activated rules | 1.5-3d | Catalog must match runtime. |
+| P0 | [03](moves03.md) Fixture/live parity and fixture drift | 0.5-1d | Trust boundary must hold. |
+| P0 | [04](moves04.md) Workflow extraction | 1-2d | Backend/UI need reusable orchestration. |
+| P0 | [05](moves05.md) Local workbench backend | 1-2d | Turns UI from reader into app. |
+| P0 | [06](moves06.md) Job runner and artifact store | 1-2d | Makes executions observable and safe. |
+| P0 | [07](moves07.md) Executable fixture certification UI | 1.5-2.5d | Demo-critical interactive fail-to-pass loop. |
+| P1 | [08](moves08.md) Live readiness/proof actions | 1-2d | Shows real Splunk MCP from UI without browser secrets. |
+| P1 | [09](moves09.md) SAIA hosted-model workflow | 0.5-1d | Conditional but valuable. |
+| P1 | [10](moves10.md) External trace and transcript certification UI | 1-2d | Platform & DevEx story. |
+| P1 | [11](moves11.md) Proof bundle browser and comparison | 1-2d | Makes receipts and audits inspectable. |
+| P1 | [12](moves12.md) Policy patch and firewall workbench | 1-2d | Shows how failures become safer reruns. |
+| P1 | [13](moves13.md) Live security kit UX, no mutation | 0.5-1d | Reduces live demo friction safely. |
+| P1 | [14](moves14.md) Certification index from the workbench | 0.5-1d | Multi-proof ledger visible in UI. |
+| P2 | [15](moves15.md) CLI modularization around reused workflows | 1-2d | Shrinks monolith where it matters. |
+| P2 | [16](moves16.md) Browser and API test harness | 1-2d | Prevents regressions in the new app surface. |
+| P2 | [17](moves17.md) Canonical verification gate | 0.5-1d | Keeps fast-moving work honest. |
+| P2 | [18](moves18.md) Dependency advisory cleanup | 0.5d | Removes critical dev audit result. |
+| P2 | [19](moves19.md) Public proof export | 0.5-1d | Lets UI emit sanitized bundles. |
+| P3 | [20](moves20.md) Workbench packaging and run command | 0.5-1d | One command to launch the real demo app. |
 
-## Recommended Schedule
+## Non-Negotiable Boundaries
 
-1. Complete Moves 01-04 before judge-facing feature work. A certification
-   harness cannot credibly optimize presentation while activated checks are
-   silently ignored.
-2. Run Moves 05-09 and 13 in parallel only where file ownership does not overlap.
-   Move 05 is the only substantial new product behavior.
-3. Freeze source behavior before Moves 10-12. Regenerate evidence and copy from
-   the frozen commit.
-4. Treat Move 07 as opportunistic. A blocked SAIA entitlement must not delay the
-   core submission.
-5. If time runs short, cut Move 05 before cutting correctness, public evidence,
-   submission truth, video compliance, or clean-room QA.
+- Deterministic rules remain authoritative for verdicts and scores.
+- LLMs and SAIA may explain, optimize, and advise; they do not grade.
+- SplunkReady does not auto-mutate Splunk.
+- Browser clients never submit secrets or arbitrary shell commands.
+- The backend allowlists workflows; it is not a generic CLI-over-HTTP wrapper.
+- Fixture and live mode keep shared internal interfaces.
+- Policy patches are proposed additions for review, not hidden auto-application.
 
-## Explicitly Rejected Work
+## Cut Order
 
-- Full CLI decomposition before the deadline.
-- Browser entry or transport of Splunk/Gemini credentials.
-- Exposing arbitrary CLI commands or output paths over HTTP.
-- UI waivers, client-side score recalculation, or receipt mutation.
-- LLM-generated violations or semantic scoring.
-- A second generic Gemini explanation layer.
-- Automated Splunk index, app, saved-search, or event mutation.
-- Destructive branch cleanup.
-- Claims of an installable SDK, reusable GitHub Action, or successful live SAIA
-  invocation without evidence.
+If time gets tight, cut in this order:
 
-These are not blanket rejections forever. They are poor choices for the current
-deadline or conflict with locked product decisions.
+1. Move 20 packaging polish.
+2. Move 15 broader CLI modularization.
+3. Move 14 certification-index UI.
+4. Move 13 live-kit UX.
+5. Move 12 firewall/policy workbench.
+6. Move 09 SAIA if entitlement is blocked.
 
-## Definition Of Done For Each Move
-
-Each move must:
-
-1. Follow `AGENTS.md`, the current wave contract, and locked decisions.
-2. State expected files before editing and keep changes inside its scope.
-3. Add focused regression coverage for changed behavior.
-4. Run every listed verification command and record exact results.
-5. Update execution and verification logs for implementation waves.
-6. Stop when a listed stop condition is reached.
+Do not cut Moves 01-07. Those are the minimum credible interactive product.

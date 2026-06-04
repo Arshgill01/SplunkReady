@@ -1,86 +1,57 @@
-# Move 10 - Reconcile Submission Truth And Official Requirements
+# Move 10 - Add External Trace And Transcript Certification UI
 
 ## Goal
 
-Make the repository and Devpost copy concise, current, rules-compliant, and
-grounded in the public evidence pack.
-
-## Official Constraints To Lock
-
-- Track: Platform & Developer Experience.
-- Security: flagship use case, not an eligible second track prize.
-- Bonus strategy: emphasize Splunk MCP Server; claim Hosted Models only if Move
-  07 passes; do not assume multiple bonus prizes can be won.
-- Public video: under three minutes, publicly visible on YouTube/Vimeo/Youku,
-  visibly demonstrates AI usage.
-- Public open-source repository with visible license, setup, dependencies, and
-  examples.
-- Root file named `architecture_diagram.md`, `.pdf`, or `.png`.
-- Explain significant work completed during the submission period.
+Make Platform & Developer Experience visible in the app by letting users certify
+external agent traces and MCP transcripts from the workbench.
 
 ## Scope
 
 Expected files:
 
-- `README.md`
-- `docs/devpost-submission.md`
-- `architecture_diagram.md` or an allowed root equivalent
-- claim/source grounding documentation
-- stale current-state and handoff docs where they contradict final truth
-- `MANIFEST.md` only if repository state materially changes
-- current wave and logs
+- workflow extraction for `grade-trace` and `certify-mcp-transcript`
+- upload/parsing routes with size limits
+- UI import/certify view
+- example docs only as needed for the UI
+- tests
+- logs
 
 ## Plan
 
-1. Create the required root architecture diagram from the accepted architecture.
-   It must show Splunk interaction, agent/model integration, and component data
-   flow.
-2. Rewrite README opening for a five-minute judge review:
-   - literal product name and "CI for Splunk agents" category;
-   - one-command fixture demo;
-   - fail-to-pass receipt output;
-   - live MCP and security evidence;
-   - external-agent CLI integration;
-   - architecture and public evidence links.
-3. Reconcile stale claims:
-   - live security proof is green locally when supported by current evidence;
-   - SAIA live invocation is blocked or proven according to Move 07;
-   - use the actual rule implementation count;
-   - call the integration a CLI gate, not an SDK;
-   - distinguish deterministic fixture specimen from Gemini-backed specimen.
-4. Rewrite Devpost copy around the four judging criteria and official selected
-   track. Keep Security as the memorable scenario, not an ineligible award ask.
-5. Describe Splunk MCP use concretely and prioritize it as the strongest bonus
-   story.
-6. Keep Splunk Developer Tools claims conservative unless the project can show
-   actual use of Splunk's developer ecosystem rather than its own tooling.
-7. Link every important claim to Move 06 evidence or mark it conditional.
-8. Add a short "built during the submission period" narrative.
-9. Run and improve the submission-copy audit so stale conditional claims cannot
-   pass merely because expected phrases exist.
+1. Add backend jobs for:
+   - canonical `TraceEvent[]` upload;
+   - MCP JSONL transcript upload with appended final-answer record;
+   - strict import and require-pass options.
+2. Compile the required contract server-side before grading when needed.
+3. Validate uploads with existing schemas and return actionable errors.
+4. Show transcript import boundaries:
+   - known read-only MCP tools;
+   - strict import checks structure, not readiness;
+   - final answer remains producer-provided.
+5. Render the resulting receipt, violations, proof audit, and manifest in the
+   same artifact browser as fixture runs.
+6. Avoid "SDK" language unless a real package surface is built.
 
 ## Acceptance Criteria
 
-- Required root architecture file exists and is legible.
-- README quickstart works from a clean checkout.
-- Devpost copy contains no stale live-security or SAIA claim.
-- No unsupported performance, probability, coverage, or "every claim" absolute.
-- Selected track and bonus positioning follow official eligibility.
-- All evidence links are public and tracked.
+- A sample external trace can be uploaded and certified from UI.
+- A sample MCP transcript can be uploaded and certified from UI.
+- Wrong mission and malformed trace errors are understandable.
+- Resulting artifacts are auditable and persisted under the managed root.
 
 ## Verification
 
 ```bash
-npm run audit:submission-copy
-npm run audit:reviewers
+npx vitest run tests/examples/external-trace.test.ts tests/cli/flow.test.ts tests/workbench tests/ui/app.test.ts
+npm run build
 npm run check
 git diff --check
 ```
 
-Manually render and inspect the root architecture diagram and every public link.
+Use browser automation to upload the sample pass and fail artifacts.
 
 ## Stop Conditions
 
-- Stop before turning future work into present-tense evidence.
-- Stop before targeting Security or Observability as track prizes.
-- Stop before claiming live SAIA success without Move 07 evidence.
+- Stop before accepting unbounded uploads.
+- Stop before implying producer-supplied evidence is independently verified.
+- Stop before claiming an SDK.
