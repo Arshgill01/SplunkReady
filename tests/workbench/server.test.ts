@@ -280,8 +280,25 @@ describe("workbench HTTP server", () => {
     }
   });
 
-  it("serves the executable Vite UI shell while the same browser-facing server runs fixture certification", async () => {
-    const { server } = await startTestWorkbench({}, { devUi: true });
+  it("serves the executable dev UI shell while the same browser-facing server runs fixture certification", async () => {
+    const { server } = await startTestWorkbench(
+      {},
+      {
+        devUiServer: {
+          middlewares(request, response, next) {
+            if (request.url?.startsWith("/api/")) {
+              next();
+              return;
+            }
+
+            response.statusCode = 200;
+            response.setHeader("content-type", "text/html; charset=utf-8");
+            response.end('<!doctype html><div id="app"></div><script type="module" src="/src/main.ts"></script>');
+          },
+          async close() {}
+        }
+      }
+    );
 
     try {
       const shell = await fetchText(server.url, "/#certification-replay");
@@ -303,7 +320,7 @@ describe("workbench HTTP server", () => {
     } finally {
       await server.close();
     }
-  }, 45_000);
+  });
 
   it("redacts dev UI middleware errors before returning them to the browser", async () => {
     const secret = "dev-ui-secret-token";

@@ -20,12 +20,50 @@ Files changed:
 - `logs/verification-log.md`
 
 What changed:
-- Raised the workbench dev UI shell test timeout from 15 seconds to 45 seconds
-  so slower hosted runners can finish the same fixture-certification flow that
-  already passes locally.
+- Replaced real Vite middleware startup in the full-suite workbench server test
+  with a deterministic `devUiServer` stub through the existing server seam.
+- Preserved the same shared-origin behavior under test: dev UI shell requests
+  and fixture-certification API jobs are served by the same browser-facing
+  workbench server.
 
 Open blockers:
 - Hosted CI must rerun after push to confirm the branch is green again.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
+## 2026-06-05 22:20 - Move 60 LLM Specimen Proof Command
+
+Scope:
+- Responded to the competitive audit's concern that the real LLM path is hidden
+  behind manual environment flags.
+- Added a one-command proof that forces the Gemini-backed specimen for fixture
+  traces while keeping deterministic rules as the pass/fail authority.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `package.json`
+- `README.md`
+- `docs/llm-specimen-agent.md`
+- `moves/README.md`
+- `moves/moves60.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `llm-proof`, which compiles the fixture contract, runs Gemini-produced
+  pre-policy and policy-guided traces, writes before/after receipts, runs proof
+  audit, and emits `llm-proof-summary.json`.
+- Added `npm run llm-proof` as the discoverable command.
+- The summary explicitly records `llmRole: "trace-producer"` and
+  `passFailAuthority: "deterministic-rule-engine"`.
+
+Open blockers:
+- Hosted CI must pass on the previous Move 59 push before this move is pushed.
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to
   the user.

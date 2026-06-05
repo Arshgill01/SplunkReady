@@ -1771,6 +1771,68 @@ describe("SplunkReady CLI flow", () => {
     });
   });
 
+  it("runs a one-command LLM specimen proof with deterministic authority", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-llm-proof-"));
+    const gemini = await startMockGeminiServer();
+    const llmEnv = {
+      GEMINI_API_KEY: "test-gemini-key",
+      GEMINI_MODEL: "gemini-test",
+      SPLUNKREADY_GEMINI_ENDPOINT_BASE_URL: gemini.url
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["llm-proof", "--out", outDir, "--require-pass", "true", "--json"], process.cwd(), llmEnv)).stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "llm-proof",
+        status: "PASS",
+        artifacts: expect.arrayContaining([
+          join(outDir, "trace-before.json"),
+          join(outDir, "receipt-before-001.json"),
+          join(outDir, "trace-after.json"),
+          join(outDir, "receipt-after-001.json"),
+          join(outDir, "proof-audit.json"),
+          join(outDir, "llm-proof-summary.json")
+        ])
+      });
+    } finally {
+      await gemini.close();
+    }
+
+    const summary = JSON.parse(await readFile(join(outDir, "llm-proof-summary.json"), "utf8")) as {
+      status: string;
+      agent: { name: string; version: string };
+      llmRole: string;
+      passFailAuthority: string;
+      before: { verdict: string; violations: number };
+      after: { verdict: string; score: number; violations: number };
+    };
+
+    expect(gemini.prompts).toHaveLength(4);
+    expect(summary).toMatchObject({
+      status: "PASS",
+      agent: { name: "Gemini Splunk MCP Agent", version: "gemini-test" },
+      llmRole: "trace-producer",
+      passFailAuthority: "deterministic-rule-engine",
+      before: { verdict: "NOT READY", violations: 5 },
+      after: { verdict: "READY", score: 100, violations: 0 }
+    });
+  });
+
+  it("fails the one-command LLM proof before making model or Splunk calls when no Gemini key is configured", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-llm-proof-missing-key-"));
+
+    await expect(runCli(["llm-proof", "--out", outDir], process.cwd(), { GEMINI_API_KEY: "" })).rejects.toMatchObject({
+      stderr: expect.stringContaining("llm-proof requires GEMINI_API_KEY")
+    });
+
+    await expect(exists(join(outDir, "environment-contract.json"))).resolves.toBe(false);
+    await expect(exists(join(outDir, "trace-before.json"))).resolves.toBe(false);
+    await expect(exists(join(outDir, "llm-proof-summary.json"))).resolves.toBe(false);
+  });
+
   it("generates hosted-model proof without executing the SPL query", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-hosted-model-proof-"));
     const mcp = await startMockMcpServer();

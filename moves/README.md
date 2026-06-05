@@ -82,6 +82,7 @@ commands, or filesystem paths.
 | P0 | [57](moves57.md) CI verification tool install | 0.5d | Installs ripgrep in GitHub Actions so the scaffold verifier can run on hosted Ubuntu runners. |
 | P0 | [58](moves58.md) MCP resources and prompts | 0.5d | Makes the MCP certification server composable with resources, prompts, and proof coverage beyond tool calls. |
 | P0 | [59](moves59.md) Workbench CI timeout stabilization | 0.5d | Gives the Vite dev-shell workbench test enough time on hosted GitHub runners without changing product behavior. |
+| P0 | [60](moves60.md) LLM specimen proof command | 0.5d | Makes the Gemini-backed trace-producer path one-command visible while keeping deterministic grading authoritative. |
 
 ## Non-Negotiable Boundaries
 

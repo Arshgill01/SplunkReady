@@ -272,6 +272,35 @@ interface JudgeProofSummary {
   nextCommands: string[];
 }
 
+interface LlmProofSummary {
+  source: "splunkready-llm-proof";
+  status: ProofAuditStatus;
+  mode: EnvironmentContract["mode"];
+  mutation: false;
+  generatedAt: string;
+  agent: {
+    name: string;
+    version: string;
+  };
+  llmRole: "trace-producer";
+  passFailAuthority: "deterministic-rule-engine";
+  before: {
+    verdict: string;
+    score: number;
+    violations: number;
+  };
+  after: {
+    verdict: string;
+    score: number;
+    violations: number;
+  };
+  audit: {
+    status: ProofAuditStatus;
+    proofType: ProofAuditReport["proofType"];
+  };
+  artifacts: string[];
+}
+
 interface FirewallBlockReport {
   status: "BLOCKED";
   code: "FIREWALL_POLICY_BLOCKED";
@@ -309,6 +338,7 @@ Commands:
   grade-trace --trace <path> --out <dir> [--agent-name <name>] [--agent-version <version>] [--json]
   certify-mcp-transcript --transcript <path> --mission <path> --out <dir> [--strict-import true|false] [--require-pass true|false] [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
+  llm-proof --mode fixture|live --out <dir> [--agent-model <model>] [--require-pass true|false] [--json]
   hosted-model-proof --mode fixture|live --out <dir> [--json]
   hosted-model-diagnostic --mode fixture|live --out <dir> [--require-pass true|false] [--json]
   proof-audit --out <dir> [--require-pass true|false] [--json]
@@ -2232,6 +2262,84 @@ const llmAgentCommand = async (
   ];
 };
 
+const llmProofCommand = async (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<string[]> => {
+  const llmEnv = { ...env, SPLUNKREADY_LLM_ENABLED: "true" };
+  const geminiConfig = createGeminiConfigFromEnv(llmEnv);
+
+  if (!geminiConfig) {
+    throw new Error("llm-proof requires GEMINI_API_KEY. No Gemini request was made and no Splunk calls were made.");
+  }
+
+  const beforeOptions: CliOptions = { ...options, phase: "before" };
+  const afterOptions: CliOptions = { ...options, phase: "after" };
+  const compileArtifacts = await compileCommand(options, llmEnv);
+  const evaluateArtifacts = await evaluateCommand(options, llmEnv);
+  const receiptArtifacts = await receiptCommand(beforeOptions, llmEnv);
+  const rerunArtifacts = await rerunCommand(afterOptions, llmEnv);
+  const auditArtifacts = await proofAuditCommand({ ...options, requirePass: false });
+  const beforeReceipt = readinessReceiptSchema.parse(
+    await readJson(join(options.out, "receipt-before-001.json"), "before receipt")
+  );
+  const afterReceipt = readinessReceiptSchema.parse(
+    await readJson(join(options.out, "receipt-after-001.json"), "after receipt")
+  );
+  const audit = await readJson<ProofAuditReport>(join(options.out, "proof-audit.json"), "proof audit");
+  const status: ProofAuditStatus =
+    audit.status !== "FAIL" &&
+    beforeReceipt.verdict === "NOT READY" &&
+    afterReceipt.verdict === "READY" &&
+    afterReceipt.agent.name === "Gemini Splunk MCP Agent"
+      ? "PASS"
+      : "FAIL";
+  const summaryPath = join(options.out, "llm-proof-summary.json");
+  const artifacts = [
+    ...new Set([
+      ...compileArtifacts,
+      ...evaluateArtifacts,
+      ...receiptArtifacts,
+      ...rerunArtifacts,
+      ...auditArtifacts,
+      summaryPath
+    ])
+  ];
+  const summary: LlmProofSummary = {
+    source: "splunkready-llm-proof",
+    status,
+    mode: options.mode,
+    mutation: false,
+    generatedAt: compiledAt,
+    agent: afterReceipt.agent,
+    llmRole: "trace-producer",
+    passFailAuthority: "deterministic-rule-engine",
+    before: {
+      verdict: beforeReceipt.verdict,
+      score: beforeReceipt.score,
+      violations: beforeReceipt.violations.length
+    },
+    after: {
+      verdict: afterReceipt.verdict,
+      score: afterReceipt.score,
+      violations: afterReceipt.violations.length
+    },
+    audit: {
+      status: audit.status,
+      proofType: audit.proofType
+    },
+    artifacts
+  };
+
+  await writeJson(summaryPath, summary);
+
+  if (options.requirePass && status !== "PASS") {
+    throw new Error(`llm-proof strict gate failed with ${status}. Inspect ${summaryPath}.`);
+  }
+
+  return artifacts;
+};
+
 const hostedModelProofCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
@@ -3956,6 +4064,8 @@ const main = async (): Promise<void> => {
     artifacts = await certifyMcpTranscriptCommand(options);
   } else if (command === "llm-agent") {
     artifacts = await llmAgentCommand(options);
+  } else if (command === "llm-proof") {
+    artifacts = await llmProofCommand(options);
   } else if (command === "hosted-model-proof") {
     artifacts = await hostedModelProofCommand(options);
   } else if (command === "hosted-model-diagnostic") {

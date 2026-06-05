@@ -7,14 +7,18 @@ Implementation stack setup started in Wave 02. Runtime behavior is not implement
 Commands:
 
 - `npm test -- tests/workbench/server.test.ts -t "serves the executable Vite UI shell"`
+- `npm test -- tests/workbench/server.test.ts -t "serves the executable dev UI shell"`
 - `npm run check`
 
 Result:
 
-- PASS for the focused workbench server regression:
+- PASS for the initial focused workbench server regression:
   - 1 test file passed;
   - 1 selected test passed and 7 tests skipped.
-- PASS for full `npm run check`:
+- PASS for the focused deterministic dev UI middleware regression:
+  - 1 test file passed;
+  - 1 selected test passed and 7 tests skipped.
+- PASS for initial full `npm run check` before hosted rerun:
   - scaffold verified;
   - runtime contracts verified;
   - TypeScript build completed;
@@ -26,11 +30,55 @@ Result:
     0 failing latest verdicts;
   - submission copy audit passed with 28 required claims;
   - included `git diff --check` completed with no output.
+- PASS for final full `npm run check` after replacing real Vite startup with
+  deterministic dev UI middleware:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 49 test files passed;
+  - 322 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
 
 Notes:
 
 - This move did not change UI source or behavior, so Playwright was not run.
-- Hosted CI must rerun after push to confirm the branch is green again.
+- Hosted CI showed the timeout-only fix was insufficient. The follow-up patch
+  now validates the same dev UI routing contract through a deterministic
+  `devUiServer` stub instead of starting Vite inside the full suite.
+
+## 2026-06-05 - Move 60 LLM Specimen Proof Command
+
+Commands:
+
+- `npm test -- tests/cli/flow.test.ts -t "LLM specimen proof|Gemini-backed specimen|no Gemini key"`
+- `npm run check`
+
+Result:
+
+- PASS for focused LLM specimen CLI coverage:
+  - 1 test file passed;
+  - 3 selected tests passed and 36 tests skipped.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 49 test files passed;
+  - 322 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- This move did not change UI source or behavior, so Playwright was not run.
 
 ## 2026-06-01 15:36 - Wave 39 Demo Orchestration
 

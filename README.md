@@ -44,6 +44,22 @@ The `splunkready` bin resolves the bundled default fixture, mission, and suite
 paths even when it is run from outside the repository root. The package remains
 private in this repository until a registry publishing decision is made.
 
+To prove a real model-produced fixture trace while keeping deterministic
+grading authoritative, export a Gemini key and run:
+
+```bash
+export GEMINI_API_KEY="..."
+export GEMINI_MODEL="gemini-3.1-flash-lite"
+npm run llm-proof
+```
+
+`npm run llm-proof` builds the runtime, forces the Gemini-backed specimen for
+the proof run, generates a failing pre-policy trace and a passing policy-guided
+rerun trace, then writes `artifacts/llm-proof/llm-proof-summary.json`. The
+summary records `llmRole: "trace-producer"` and
+`passFailAuthority: "deterministic-rule-engine"` so the AI story is visible
+without turning the model into the judge.
+
 To prove the local MCP certification server path, run:
 
 ```bash
@@ -285,7 +301,16 @@ For the flagship security story, `live-security-proof` is stricter: it first req
 
 ## LLM Specimen Agent
 
-The normal fixture demo keeps the deterministic specimen as the default. To grade a real model-driven specimen trace, export a Gemini key and enable LLM mode:
+The normal fixture demo keeps the deterministic specimen as the default. To run
+the one-command LLM proof, export a Gemini key:
+
+```bash
+export GEMINI_API_KEY="..."
+export GEMINI_MODEL="gemini-3.1-flash-lite"
+npm run llm-proof
+```
+
+To manually step through the same model-driven specimen trace, enable LLM mode:
 
 ```bash
 export SPLUNKREADY_LLM_ENABLED=true

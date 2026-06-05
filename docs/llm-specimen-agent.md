@@ -24,7 +24,22 @@ The local Phase Live proof key exposes this model through the Gemini API as `mod
 
 ## Fixture Proof Flow
 
-This flow uses the normal fixture adapter and does not require live Splunk credentials:
+This flow uses the normal fixture adapter and does not require live Splunk
+credentials. The one-command proof is the judge-facing path:
+
+```bash
+rm -rf artifacts/llm-proof
+npm run llm-proof
+```
+
+It writes `llm-proof-summary.json` with:
+
+- `llmRole: "trace-producer"`.
+- `passFailAuthority: "deterministic-rule-engine"`.
+- before/after verdicts, scores, and violation counts.
+- the generated receipt and proof-audit artifact paths.
+
+For manual debugging, the same loop can be run step by step:
 
 ```bash
 rm -rf artifacts/llm-fixture-proof

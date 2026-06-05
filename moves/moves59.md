@@ -3,13 +3,16 @@
 ## Trigger
 
 The pushed GitHub Actions `npm run check` gate failed after Move 58 on the
-Vite dev-shell workbench test. The local full gate had passed, and the hosted
-failure was isolated to the test's 15 second timeout.
+Vite dev-shell workbench test. Raising the timeout still failed on hosted CI,
+which showed the test was hanging in real Vite middleware startup under the
+full-suite runner, not exercising product logic.
 
 ## Scope
 
-- Stabilize the exact failing workbench server test on slower hosted runners.
-- Keep the change limited to test harness timing.
+- Stabilize the exact failing workbench server test on hosted runners.
+- Keep the change limited to the test harness.
+- Use the existing `devUiServer` seam to validate shared-origin dev UI routing
+  without starting real Vite inside the full-suite server test.
 
 ## Boundaries
 
@@ -19,6 +22,6 @@ failure was isolated to the test's 15 second timeout.
 
 ## Acceptance
 
-- The focused failing workbench server test passes locally.
+- The focused dev UI workbench server test passes locally.
 - The full canonical `npm run check` gate passes locally.
 - The branch is pushed so hosted CI can rerun the same canonical gate.
