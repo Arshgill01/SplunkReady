@@ -397,3 +397,10 @@ wrappers and live CLI helper exports into `src/cli/live-commands.ts`.
 lines before Moves 87-89. Remaining CLI risk: root dispatch and hosted-model
 helper exports still live in `src/cli.ts`, so the next useful slice is a small
 command registry or moving hosted-model helper exports into the proof module.
+
+Move 90 further reduces the CLI-monolith risk by extracting root command
+dispatch into `src/cli/dispatch.ts` and moving hosted-model helper exports into
+`src/cli/proof-commands.ts`. `src/cli.ts` is now 176 lines, down from 287 lines
+before the move and 634 lines before Moves 87-90. Remaining CLI risk is no
+longer a major probability cap; package publication, hosted demo proof,
+refreshed evidence, and live/public MCP demonstration gaps are higher leverage.

@@ -18,7 +18,9 @@ import {
 } from "../workflows/certification-index.js";
 import {
   runHostedModelDiagnosticWorkflow,
-  runHostedModelProofWorkflow
+  runHostedModelProofWorkflow,
+  type HostedModelWorkflowInput,
+  type HostedModelWorkflowResult
 } from "../workflows/hosted-model-actions.js";
 import { runJudgeProofWorkflow } from "../workflows/judge-proof.js";
 import { runLlmProofWorkflow } from "../workflows/llm-proof.js";
@@ -234,4 +236,18 @@ export const runCertificationIndexFromCli = async (
     generatedAt: input.generatedAt ?? compiledAt,
     verifyInputs: input.verifyInputs ?? true
   });
+};
+
+export const runHostedModelDiagnosticFromCli = async (
+  input: HostedModelWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<HostedModelWorkflowResult> => {
+  return runHostedModelDiagnosticWorkflow({ ...input, mode: input.mode ?? "live", requirePass: false }, env);
+};
+
+export const runHostedModelProofFromCli = async (
+  input: HostedModelWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<HostedModelWorkflowResult> => {
+  return runHostedModelProofWorkflow({ ...input, mode: input.mode ?? "live" }, env);
 };

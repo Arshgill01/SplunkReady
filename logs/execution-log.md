@@ -11330,3 +11330,44 @@ Open blockers:
   move hosted-model helper exports into the proof command module.
 - This move is not a UI change and does not address hosted demo, public package
   publication, or live proof export caps.
+
+## 2026-06-06 03:20 - Move 90 CLI Dispatch Extraction
+
+Scope:
+- Continued the Minimax CLI-monolith cap work without using subagents.
+- Added `moves/moves90.md` for a focused command dispatch extraction.
+- Created `src/cli/dispatch.ts` for command routing across fixture, external,
+  proof, live, receipt, rerun, and demo commands.
+- Moved hosted-model `run*FromCli` helper exports into
+  `src/cli/proof-commands.ts`.
+- Kept `src/cli.ts` focused on entrypoint behavior, bundled path resolution,
+  output formatting, and CLI error formatting.
+- Preserved command names, flags, defaults, JSON output, unknown-command help
+  text, exported CLI workflow helpers, package bin behavior, fixture/live
+  parity, deterministic grading authority, LLM/SAIA advisory-only authority,
+  MCP behavior, and Splunk mutation boundaries.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+
+Files changed:
+- `src/cli.ts`
+- `src/cli/dispatch.ts`
+- `src/cli/proof-commands.ts`
+- `moves/README.md`
+- `moves/moves90.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `src/cli.ts` dropped from 287 lines before Move 90 to 176 lines after the
+  extraction.
+- `src/cli/dispatch.ts` now owns 104 lines of command routing.
+- `src/cli/proof-commands.ts` now owns hosted-model CLI helper exports.
+
+Open blockers:
+- The CLI entrypoint is now small enough to be reviewed directly; remaining CLI
+  work is lower leverage than package publication, hosted demo proof, refreshed
+  evidence, and live/public MCP demonstration gaps.
+- This move is not a UI change and does not address hosted demo, public package
+  publication, or live proof export caps.

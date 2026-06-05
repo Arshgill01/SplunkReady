@@ -11,52 +11,15 @@ import {
   type CliOptions,
   type CliOutput
 } from "./cli/options.js";
-import {
-  certifyMcpTranscriptCommand,
-  demoCommand,
-  gradeTraceCommand,
-  importMcpTranscriptCommand,
-  llmAgentCommand
-} from "./cli/external-commands.js";
-import {
-  certificationIndexCommand,
-  hostedModelDiagnosticCommand,
-  hostedModelProofCommand,
-  judgeProofCommand,
-  llmProofCommand,
-  mcpProofCommand,
-  proofAuditCommand,
-  suiteProofCommand,
-  verifyManifestCommand
-} from "./cli/proof-commands.js";
-import {
-  liveCandidatesCommand,
-  liveProofCommand,
-  liveSecurityCheckCommand,
-  liveSecurityKitCommand,
-  liveSecurityProofCommand,
-  liveSecurityUiBundleCommand,
-  liveSmokeCommand
-} from "./cli/live-commands.js";
-import {
-  compileCommand,
-  evaluateCommand,
-  firewallCheckCommand,
-  receiptCommand,
-  rerunCommand
-} from "./workflows/certification-actions.js";
+import { runCliCommand } from "./cli/dispatch.js";
 import { runFixtureCertificationWorkflow } from "./workflows/fixture-certification.js";
-import {
-  runHostedModelDiagnosticWorkflow,
-  runHostedModelProofWorkflow,
-  type HostedModelWorkflowInput,
-  type HostedModelWorkflowResult
-} from "./workflows/hosted-model-actions.js";
 import {
   runFirewallCheckWorkflow,
   runPolicyBackedRerunWorkflow
 } from "./workflows/policy-actions.js";
 export {
+  runHostedModelDiagnosticFromCli,
+  runHostedModelProofFromCli,
   runCertificationIndexFromCli,
   runVerifyManifestFromCli
 } from "./cli/proof-commands.js";
@@ -127,91 +90,17 @@ export const runPolicyBackedRerunFromCli = runPolicyBackedRerunWorkflow;
 
 export const runFirewallCheckFromCli = runFirewallCheckWorkflow;
 
-export const runHostedModelDiagnosticFromCli = async (
-  input: HostedModelWorkflowInput,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<HostedModelWorkflowResult> => {
-  return runHostedModelDiagnosticWorkflow({ ...input, mode: input.mode ?? "live", requirePass: false }, env);
-};
-
-export const runHostedModelProofFromCli = async (
-  input: HostedModelWorkflowInput,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<HostedModelWorkflowResult> => {
-  return runHostedModelProofWorkflow({ ...input, mode: input.mode ?? "live" }, env);
-};
-
 const main = async (): Promise<void> => {
   const { command, options: parsedOptions } = parseArgs(process.argv.slice(2));
   const options = await resolveCliInputPaths(parsedOptions);
-  let artifacts: string[];
+  const output = await runCliCommand(command, options);
 
-  if (command === "help" || command === "--help" || command === "-h") {
+  if (!output) {
     console.log(usage);
     return;
   }
 
-  if (command === "live-smoke") {
-    const result = await liveSmokeCommand(options);
-    printCliOutput({ command, status: result.status, artifacts: result.artifacts, messages: result.messages }, options);
-    return;
-  }
-
-  if (command === "compile") {
-    artifacts = await compileCommand(options);
-  } else if (command === "evaluate") {
-    artifacts = await evaluateCommand(options);
-  } else if (command === "firewall-check") {
-    artifacts = await firewallCheckCommand(options);
-  } else if (command === "import-mcp-transcript") {
-    artifacts = await importMcpTranscriptCommand(options);
-  } else if (command === "grade-trace") {
-    artifacts = await gradeTraceCommand(options);
-  } else if (command === "certify-mcp-transcript") {
-    artifacts = await certifyMcpTranscriptCommand(options);
-  } else if (command === "llm-agent") {
-    artifacts = await llmAgentCommand(options);
-  } else if (command === "llm-proof") {
-    artifacts = await llmProofCommand(options);
-  } else if (command === "hosted-model-proof") {
-    artifacts = await hostedModelProofCommand(options);
-  } else if (command === "hosted-model-diagnostic") {
-    artifacts = await hostedModelDiagnosticCommand(options);
-  } else if (command === "proof-audit") {
-    artifacts = await proofAuditCommand(options);
-  } else if (command === "verify-manifest") {
-    artifacts = await verifyManifestCommand(options);
-  } else if (command === "certification-index") {
-    artifacts = await certificationIndexCommand(options);
-  } else if (command === "judge-proof") {
-    artifacts = await judgeProofCommand(options);
-  } else if (command === "mcp-proof") {
-    artifacts = await mcpProofCommand(options);
-  } else if (command === "live-candidates") {
-    artifacts = await liveCandidatesCommand(options);
-  } else if (command === "live-security-check") {
-    artifacts = await liveSecurityCheckCommand(options);
-  } else if (command === "live-security-kit") {
-    artifacts = await liveSecurityKitCommand(options);
-  } else if (command === "live-security-proof") {
-    artifacts = await liveSecurityProofCommand(options);
-  } else if (command === "live-security-ui-bundle") {
-    artifacts = await liveSecurityUiBundleCommand(options);
-  } else if (command === "live-proof") {
-    artifacts = await liveProofCommand(options);
-  } else if (command === "suite-proof") {
-    artifacts = await suiteProofCommand(options);
-  } else if (command === "receipt") {
-    artifacts = await receiptCommand(options);
-  } else if (command === "rerun") {
-    artifacts = await rerunCommand(options);
-  } else if (command === "demo") {
-    artifacts = await demoCommand(options);
-  } else {
-    throw new Error(`Unknown command ${command}.\n${usage}`);
-  }
-
-  printCliOutput({ command, status: "PASS", artifacts }, options);
+  printCliOutput(output, options);
 };
 
 const formatCliError = (error: unknown): string => {
