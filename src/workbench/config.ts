@@ -48,7 +48,6 @@ export const healthFromConfig = (config: WorkbenchConfig) => ({
   source: config.source,
   version: config.version,
   host: config.host,
-  artifactRoot: config.artifactRoot,
   capabilities: {
     fixtureCertification: true,
     live: config.liveAvailable,

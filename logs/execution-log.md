@@ -8879,3 +8879,38 @@ Open blockers:
 - Public video URL is still intentionally deferred to the user.
 - Official feedback submission confirmation is still intentionally deferred to the user.
 - Additional cleanup/consolidation remains open after evidence capture and final product hardening.
+
+## 2026-06-05 - Move 28 Browser Health Path Privacy
+
+Context:
+- Continued development hardening after Move 27.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Targeted a concrete browser-visible privacy leak: `/api/health` included the
+  absolute workbench artifact root, which is useful to the local server but not
+  needed by the browser.
+
+Files touched:
+- `src/workbench/config.ts`
+- `tests/workbench/workbench.test.ts`
+- `tests/workbench/server.test.ts`
+- `moves/README.md`
+- `moves/moves28.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Removed `artifactRoot` from the browser-visible `healthFromConfig` payload.
+- Preserved internal `WorkbenchConfig.artifactRoot` for the server artifact
+  store and local operator terminal startup message.
+- Added pure config and real HTTP server regression checks that `/api/health`
+  does not expose:
+  - live MCP token;
+  - live MCP endpoint URL;
+  - configured artifact root;
+  - current working directory.
+- Added `moves/moves28.md` to make the privacy hardening wave explicit.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.

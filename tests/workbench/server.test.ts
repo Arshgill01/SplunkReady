@@ -89,6 +89,7 @@ describe("workbench HTTP server", () => {
 
       const { response, text, json } = await fetchJson<{
         source: string;
+        artifactRoot?: string;
         capabilities: { fixtureCertification: boolean; live: boolean };
         live: { available: boolean; missing: string[] };
       }>(server.url, "/api/health");
@@ -99,6 +100,9 @@ describe("workbench HTTP server", () => {
         capabilities: { fixtureCertification: true, live: true },
         live: { available: true, missing: [] }
       });
+      expect(json.artifactRoot).toBeUndefined();
+      expect(text).not.toContain(config.artifactRoot);
+      expect(text).not.toContain(process.cwd());
       expect(text).not.toContain(liveToken);
       expect(text).not.toContain(liveUrl);
     } finally {

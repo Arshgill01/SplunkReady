@@ -7538,3 +7538,41 @@ Open blockers:
 
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
+
+## 2026-06-05 - Move 28 Browser Health Path Privacy Verification
+
+Commands:
+
+- `npm test -- tests/workbench/workbench.test.ts tests/workbench/server.test.ts`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for focused workbench backend tests:
+  - 2 test files passed;
+  - 31 tests passed.
+- PASS for new `/api/health` regression coverage:
+  - pure health serialization does not include the live token;
+  - pure health serialization does not include the live endpoint URL;
+  - pure health serialization does not include the configured artifact root;
+  - pure health serialization does not include the current working directory;
+  - real HTTP `/api/health` response leaves `artifactRoot` undefined;
+  - real HTTP `/api/health` text does not include the configured artifact root or current working directory.
+
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 289 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for explicit final `git diff --check`.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.

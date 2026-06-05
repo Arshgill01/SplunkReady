@@ -106,6 +106,8 @@ describe("workbench backend", () => {
     expect(health).toContain("fixtureCertification");
     expect(health).toContain('"live":true');
     expect(health).toContain('"missing":[]');
+    expect(health).not.toContain(config.artifactRoot);
+    expect(health).not.toContain(process.cwd());
     expect(health).not.toContain("super-secret-token");
     expect(health).not.toContain("splunk.example.test");
   });
