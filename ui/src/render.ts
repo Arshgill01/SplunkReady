@@ -1314,14 +1314,31 @@ const renderTracePreviewFindings = (violations: Violation[]): string => {
   return `<span class="trace-preview-rule-summary">${violations.length} finding(s): ${ruleIds.map((ruleId) => code(ruleId)).join(" / ")}</span>`;
 };
 
+const shortTraceEventId = (id: string): string => {
+  const shortened = id
+    .replace(/^mission-[a-z0-9-]+-readiness-/i, "")
+    .replace(/^trace-/, "");
+
+  return shortened.length > 34 ? `${shortened.slice(0, 31)}...` : shortened;
+};
+
+const tracePhaseSummary = (events: TraceEvent[], violations: Violation[]): string => {
+  const tools = [...new Set(events.map((event) => event.toolName).filter((toolName): toolName is string => Boolean(toolName)))];
+  const evidenceRefs = events.reduce((total, event) => total + event.evidenceRefs.length, 0);
+
+  return `${events.length} event(s) / ${tools.length} tool(s) / ${violations.length} finding(s) / ${evidenceRefs} evidence ref(s)`;
+};
+
 const renderTracePreviewEvents = (
   events: TraceEvent[],
   violations: Violation[]
 ): string => {
   const groupedViolations = violationByEvent(violations);
+  const previewEvents = events.slice(0, 3);
+  const hiddenEvents = events.length - previewEvents.length;
 
   return `<ol class="trace-preview-list">
-    ${events
+    ${previewEvents
       .map((event, index) => {
         const eventViolations = groupedViolations.get(event.id) ?? [];
         const timeWindow =
@@ -1333,7 +1350,7 @@ const renderTracePreviewEvents = (
           <span class="trace-preview-step">${index + 1}</span>
           <div class="trace-preview-body">
             <div class="trace-preview-head">
-              ${code(event.id)}
+              ${code(shortTraceEventId(event.id))}
               <span>${value(event.type)}</span>
               <strong>${value(event.toolName ?? event.actor)}</strong>
             </div>
@@ -1350,6 +1367,11 @@ const renderTracePreviewEvents = (
         </li>`;
       })
       .join("")}
+    ${
+      hiddenEvents > 0
+        ? `<li class="trace-preview-more">${hiddenEvents} more event(s) in the full Trace view.</li>`
+        : ""
+    }
   </ol>`;
 };
 
@@ -1756,14 +1778,20 @@ const renderTracePreview = (bundle: UiArtifactBundle): string => {
   const traces = allTraces.filter(([, events]) => events.length > 0);
 
   return `<section class="panel trace-preview">
-    <h2>Trace timeline</h2>
+    <div class="trace-preview-header">
+      <h2>Trace preview</h2>
+      <a href="#trace-timeline">Full Trace view</a>
+    </div>
     ${
       traces.length === 0
         ? `<p class="empty">Trace artifact not loaded.</p>`
         : traces
             .map(
               ([label, events, violations]) => `<section class="trace-preview-group">
-                <h3>${value(label)}</h3>
+                <div class="trace-preview-group-head">
+                  <h3>${value(label)}</h3>
+                  <span>${value(tracePhaseSummary(events, violations))}</span>
+                </div>
                 ${renderTracePreviewEvents(events, violations)}
               </section>`
             )

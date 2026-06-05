@@ -6515,3 +6515,76 @@ Open risks:
 
 - Browser screenshots and generated fresh-kit output live under ignored `output/`; they are local verification artifacts and are not committed.
 - Live Splunk install/import/cleanup remains explicitly operator-owned and outside SplunkReady.
+
+## 2026-06-05 - Runs Trace Preview Repair
+
+Commands:
+
+- `command -v npx >/dev/null 2>&1 && echo npx-present || echo npx-missing`
+- `SPLUNKREADY_WORKBENCH_PORT=4331 npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4331/#proof-browser`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 1440 1000`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/runs-timeline-current-desktop.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 390 844`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/runs-timeline-current-mobile.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code 'async (page) => page.evaluate(() => { ... current Runs trace timeline measurements ... })'`
+- `npx tsc --noEmit`
+- `npx vitest run tests/ui/app.test.ts`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4331/#proof-browser`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 1440 1000`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code 'async (page) => page.evaluate(() => { ... fixed Runs trace preview desktop assertions ... })'`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/runs-trace-preview-after-desktop.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 390 844`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code 'async (page) => page.evaluate(() => { ... fixed Runs trace preview mobile assertions ... })'`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/runs-trace-preview-after-mobile.png --full-page`
+- `npx vitest run tests/workbench tests/ui/app.test.ts`
+- `npm run build`
+- `npm run ui:build`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for Playwright prerequisite: `npx` was available.
+- PASS for pre-fix Playwright reproduction:
+  - full embedded Runs trace panel height: `2109px`;
+  - heading: `Trace timeline`;
+  - visible preview events: `8`;
+  - horizontal overflow: `0`.
+- PASS for TypeScript validation.
+- PASS for focused UI regression test:
+  - 22 tests passed.
+- PASS for post-fix Playwright desktop 1440px:
+  - heading: `Trace preview`;
+  - full trace link: `#trace-timeline`;
+  - preview height: `929px`;
+  - visible preview events: `6`;
+  - truncation rows: `1`;
+  - embedded `Trace timeline` heading present: `false`;
+  - horizontal overflow: `0`.
+- PASS for post-fix Playwright mobile 390px:
+  - heading: `Trace preview`;
+  - preview height: `1185px`;
+  - visible preview events: `6`;
+  - truncation rows: `1`;
+  - horizontal overflow: `0`.
+- PASS for focused workbench and UI tests:
+  - 2 test files;
+  - 41 tests passed.
+- PASS for `npm run build`.
+- PASS for Vite production UI build:
+  - 21 modules transformed;
+  - production bundle written to `dist-ui`.
+- PASS for `git diff --check`.
+- PASS for canonical project gate:
+  - scaffold verified;
+  - 85 waves;
+  - 1149 project files;
+  - 41 test files;
+  - 277 tests passed.
+
+Open risks:
+
+- Browser screenshots live under ignored `output/playwright/` and are not committed.
+- This was a targeted Runs trace preview repair, not a full proof-browser redesign.

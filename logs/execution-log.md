@@ -8115,3 +8115,48 @@ Playwright evidence:
 Open risks:
 - The generated kit is intentionally local operator content. SplunkReady does not install, import, remove, or mutate Splunk content.
 - Playwright-generated workbench runs and screenshots are ignored local artifacts and are not committed.
+
+## 2026-06-05 - Runs Trace Preview Repair
+
+Context:
+- User reported that the trace timeline in the Runs section was still messed up.
+- Subagents remained disabled per user direction; all inspection, implementation, and verification were done locally.
+- The UI change was verified in a real browser with the Playwright skill wrapper before being treated as complete.
+
+Files touched:
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Changed the Runs detail from an embedded full trace timeline to a bounded `Trace preview` panel.
+- Added phase-level summaries for event count, tool count, finding count, and evidence refs.
+- Limited each trace phase preview to the first three events and added a `Full Trace view` link for complete detail.
+- Shortened long generated trace event IDs in the Runs preview while leaving the full Trace view unchanged.
+- Tightened Runs preview spacing and mobile wrapping so event rows no longer dominate the proof browser.
+- Expanded the UI regression test with a longer trace and assertions that hidden events stay out of the Runs preview.
+
+Playwright evidence:
+- Started `SPLUNKREADY_WORKBENCH_PORT=4331 npm run workbench:dev`.
+- Opened `http://127.0.0.1:4331/#proof-browser`.
+- Captured the pre-fix issue:
+  - full embedded trace panel height was `2109px`;
+  - the Runs detail rendered the heading `Trace timeline`;
+  - the panel rendered 8 visible trace events for the default proof.
+- After the fix, verified desktop 1440px and mobile 390px with Playwright:
+  - Runs detail heading is `Trace preview`;
+  - `Full Trace view` links to `#trace-timeline`;
+  - preview renders 6 visible events and 1 truncation row;
+  - the embedded Runs panel no longer has a `Trace timeline` heading;
+  - horizontal overflow is `0`.
+- Captured screenshots:
+  - `output/playwright/runs-timeline-current-desktop.png`
+  - `output/playwright/runs-timeline-current-mobile.png`
+  - `output/playwright/runs-trace-preview-after-desktop.png`
+  - `output/playwright/runs-trace-preview-after-mobile.png`
+
+Open risks:
+- The proof browser page is still long on mobile because the run ledger and proof-audit tables are intentionally visible. This fix bounds the trace section specifically; it does not redesign the whole Runs page.
+- The full trace timeline remains available in the dedicated Trace view.

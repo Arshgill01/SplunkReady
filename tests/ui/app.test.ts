@@ -1481,6 +1481,33 @@ describe("Vite UI artifact app", () => {
   });
 
   it("renders proof bundle browser filters, run summaries, receipt diff, trace timeline, and manifest audit", async () => {
+    const runAfterTrace: TraceEvent[] = [
+      ...afterTrace,
+      {
+        ...afterTrace[0],
+        id: "trace-after-result",
+        type: "tool_result",
+        parentId: "trace-after-call",
+        toolOutputSummary: "Saved search returned 3 row(s).",
+        resultCount: 3
+      },
+      {
+        ...afterTrace[0],
+        id: "trace-after-enrichment",
+        toolName: "splunk_get_knowledge_objects",
+        toolInput: { name: "ES - Lateral Movement Auth Chain" },
+        evidenceRefs: []
+      },
+      {
+        ...afterTrace[0],
+        id: "trace-after-final",
+        type: "final_answer",
+        toolName: null,
+        toolInput: null,
+        toolOutputSummary: "Evidence supports the investigation.",
+        resultCount: 3
+      }
+    ];
     const bundle = await loadUiArtifactBundle(
       "/api/artifacts/run-after",
       fetcherFor({
@@ -1498,7 +1525,7 @@ describe("Vite UI artifact app", () => {
         "proof-audit.json": proofAudit,
         "proof-manifest-verification.json": proofManifestVerification,
         "trace-before.json": beforeTrace,
-        "trace-after.json": afterTrace,
+        "trace-after.json": runAfterTrace,
         "violations-before.json": [violation],
         "violations-after.json": []
       })
@@ -1578,10 +1605,14 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("<th>Expected files</th><td>12</td>");
     expect(html).toContain("<th>Unexpected files</th><td>none</td>");
     expect(html).toContain('data-verify-manifest="run-after"');
-    expect(html).toContain("Trace timeline");
+    expect(html).toContain("Trace preview");
+    expect(html).toContain("Full Trace view");
     expect(html).toContain("trace-preview-list");
     expect(html).toContain("trace-preview-event");
     expect(html).toContain("trace-preview-rule-summary");
+    expect(html).toContain("1 more event(s) in the full Trace view.");
+    expect(html).toContain("after-enrichment");
+    expect(html).not.toContain("trace-after-final");
     expect(html).not.toContain("SAIA recommended SPL");
     expect(html).not.toContain("compact-trace-table");
     expect(html).toContain("splunk_run_query");
