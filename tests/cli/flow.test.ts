@@ -2312,6 +2312,12 @@ describe("SplunkReady CLI flow", () => {
     const report = JSON.parse(await readFile(join(outDir, "live-security-readiness.json"), "utf8")) as {
       status: string;
       mutation: boolean;
+      proofMode: { type: string; fallbackAllowed: boolean; rationale: string };
+      setupRequirements: Array<{ id: string; satisfied: boolean; operatorOwned: boolean }>;
+      fallbackPolicy: {
+        genericLiveCommand: string;
+        flagshipProofCommand: string;
+      };
       requiredTools: { missing: string[] };
       requiredSavedSearch: {
         present: boolean;
@@ -2323,6 +2329,14 @@ describe("SplunkReady CLI flow", () => {
     expect(report).toMatchObject({
       status: "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF",
       mutation: false,
+      proofMode: {
+        type: "strict-flagship-security",
+        fallbackAllowed: false
+      },
+      fallbackPolicy: {
+        genericLiveCommand: "live-proof",
+        flagshipProofCommand: "live-security-proof"
+      },
       requiredTools: { missing: [] },
       requiredSavedSearch: {
         present: true,
@@ -2333,9 +2347,18 @@ describe("SplunkReady CLI flow", () => {
         }
       }
     });
+    expect(report.proofMode.rationale).toContain("does not fall back to generic _internal proof");
+    expect(report.setupRequirements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "saved-search", satisfied: true, operatorOwned: true }),
+        expect.objectContaining({ id: "evidence-rows", satisfied: true, operatorOwned: true }),
+        expect.objectContaining({ id: "evidence-identifiers", satisfied: true, operatorOwned: true }),
+        expect.objectContaining({ id: "operator-owned-setup", satisfied: true, operatorOwned: true })
+      ])
+    );
     expect(report.nextActions).toEqual(
       expect.arrayContaining([
-        "Run live-proof with LLM mode enabled; the deployment has the saved-search evidence needed for the flagship live security path."
+        "Run live-security-proof with LLM mode enabled; the deployment has the saved-search evidence needed for the flagship live security path."
       ])
     );
     expect(server.calls.map((call) => call.params.name)).toContain("splunk_run_saved_search");
@@ -2380,6 +2403,13 @@ describe("SplunkReady CLI flow", () => {
 
     const report = JSON.parse(await readFile(join(outDir, "live-security-readiness.json"), "utf8")) as {
       status: string;
+      proofMode: { type: string; fallbackAllowed: boolean; rationale: string };
+      setupRequirements: Array<{ id: string; satisfied: boolean; operatorOwned: boolean }>;
+      fallbackPolicy: {
+        genericLiveCommand: string;
+        genericLiveDescription: string;
+        flagshipProofCommand: string;
+      };
       requiredSavedSearch: {
         present: boolean;
         nearbySavedSearches: string[];
@@ -2390,6 +2420,14 @@ describe("SplunkReady CLI flow", () => {
 
     expect(report).toMatchObject({
       status: "BLOCKED",
+      proofMode: {
+        type: "strict-flagship-security",
+        fallbackAllowed: false
+      },
+      fallbackPolicy: {
+        genericLiveCommand: "live-proof",
+        flagshipProofCommand: "live-security-proof"
+      },
       requiredSavedSearch: {
         present: false,
         nearbySavedSearches: ["search::Errors in the last 24 hours"],
@@ -2399,6 +2437,16 @@ describe("SplunkReady CLI flow", () => {
         }
       }
     });
+    expect(report.proofMode.rationale).toContain("does not fall back to generic _internal proof");
+    expect(report.fallbackPolicy.genericLiveDescription).toContain("generic live MCP evidence");
+    expect(report.setupRequirements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "saved-search", satisfied: false, operatorOwned: true }),
+        expect.objectContaining({ id: "evidence-rows", satisfied: false, operatorOwned: true }),
+        expect.objectContaining({ id: "evidence-identifiers", satisfied: false, operatorOwned: true }),
+        expect.objectContaining({ id: "operator-owned-setup", satisfied: true, operatorOwned: true })
+      ])
+    );
     expect(report.blockers).toEqual(
       expect.arrayContaining([
         "Install or create read-only saved search SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain for the lateral-movement mission."

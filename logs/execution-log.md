@@ -9474,6 +9474,48 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 20:55 - Move 47 Live Security Strict Readiness Contract
+
+Scope:
+- Responded to the competitive audit's fresh-trial flagship security concern.
+- Kept deterministic grading authoritative and did not add LLM pass/fail logic.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Used Playwright for UI verification.
+
+Files changed:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/ui/app.test.ts`
+- `README.md`
+- `docs/live-demo-data-plan.md`
+- `moves/README.md`
+- `moves/moves47.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- `live-security-check` now writes `proofMode`, `setupRequirements`, and
+  `fallbackPolicy` into `live-security-readiness.json`.
+- The strict flagship path records `fallbackAllowed: false`; generic
+  `live-proof` is documented as generic live MCP evidence, not a hidden
+  downgrade for the flagship security proof.
+- The workbench Live connect view renders strict proof mode, setup requirement
+  readiness, and the generic fallback boundary.
+- The UI artifact parser remains compatible with older readiness JSON and marks
+  missing setup requirements as legacy-not-recorded instead of failing the
+  bundle.
+- The green readiness next action now points to `live-security-proof`, not
+  generic `live-proof`.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 20:44 - Move 46 MCP Server Proof Command
 
 Scope:

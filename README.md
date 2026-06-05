@@ -229,7 +229,7 @@ npm run splunkready -- live-proof --out artifacts/live-proof --candidate-limit 1
 
 `live-proof` compiles the live contract, scans bounded read-only saved-search candidates, writes `live-derived-mission.json`, then runs evaluate -> receipt -> rerun against that generated mission. It also writes `live-proof-summary.json`, including the explicit `proofLoop` classification (`fail-to-pass`, `ready-without-patch`, or not ready after rerun). If no saved search returns rows but `_internal` is available, it falls back to a bounded `_internal` query mission. It does not create indexes, install apps, write saved searches, or mutate Splunk.
 
-For the flagship security story, `live-security-proof` is stricter: it first requires the lateral-movement saved search and evidence rows discovered by `live-security-check`, then runs the live Gemini specimen through the fail -> patch -> rerun -> pass loop and writes `live-security-proof-summary.json`.
+For the flagship security story, `live-security-proof` is stricter: it first requires the lateral-movement saved search and evidence rows discovered by `live-security-check`, then runs the live Gemini specimen through the fail -> patch -> rerun -> pass loop and writes `live-security-proof-summary.json`. The readiness JSON now records `proofMode.fallbackAllowed: false`, setup requirements, and a fallback policy. A fresh Splunk trial without the exact saved search is a clear `BLOCKED` diagnostic, not a hidden `_internal` downgrade.
 
 ## LLM Specimen Agent
 

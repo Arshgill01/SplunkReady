@@ -1204,6 +1204,25 @@ const flagshipSecuritySavedSearch = {
   ref: "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain"
 };
 
+const flagshipLiveSecuritySetupRequirements = [
+  {
+    id: "saved-search",
+    description: `Read-only saved search ${flagshipSecuritySavedSearch.ref} exists in the live contract.`
+  },
+  {
+    id: "evidence-rows",
+    description: "Saved search returns at least one row for win-finance-07 in the -24h to now mission window."
+  },
+  {
+    id: "evidence-identifiers",
+    description: "Returned rows expose stable evidence identifiers such as eventRef, _cd, _raw, or _time."
+  },
+  {
+    id: "operator-owned-setup",
+    description: "Any missing app, index, saved search, or sample event setup is performed by the operator, not SplunkReady."
+  }
+] as const;
+
 const formatSplunkCsvTimestamp = (date: Date): string => {
   const pad = (value: number): string => String(value).padStart(2, "0");
 
@@ -1493,7 +1512,7 @@ const liveSecurityCheckCommand = async (options: CliOptions, env: NodeJS.Process
 
   if (ready) {
     nextActions.push(
-      "Run live-proof with LLM mode enabled; the deployment has the saved-search evidence needed for the flagship live security path."
+      "Run live-security-proof with LLM mode enabled; the deployment has the saved-search evidence needed for the flagship live security path."
     );
   }
 
@@ -1503,9 +1522,35 @@ const liveSecurityCheckCommand = async (options: CliOptions, env: NodeJS.Process
     status: ready ? "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF" : "BLOCKED",
     mode: "live",
     mutation: false,
+    proofMode: {
+      type: "strict-flagship-security",
+      fallbackAllowed: false,
+      rationale:
+        "The flagship lateral-movement proof requires the exact saved search and row-level evidence. It does not fall back to generic _internal proof."
+    },
     mission: {
       id: "mission-security-lateral-movement-readiness",
       story: "security investigation readiness"
+    },
+    setupRequirements: flagshipLiveSecuritySetupRequirements.map((requirement) => ({
+      ...requirement,
+      satisfied:
+        requirement.id === "saved-search"
+          ? Boolean(exactSavedSearch)
+          : requirement.id === "evidence-rows"
+            ? hasRows
+            : requirement.id === "evidence-identifiers"
+              ? hasEvidenceRefs
+              : true,
+      operatorOwned: true
+    })),
+    fallbackPolicy: {
+      genericLiveCommand: "live-proof",
+      genericLiveDescription:
+        "Use live-proof only as generic live MCP evidence when the target deployment lacks flagship security content.",
+      flagshipProofCommand: "live-security-proof",
+      flagshipDescription:
+        "Use live-security-proof for the prize/demo lateral-movement story after operator-owned setup makes readiness green."
     },
     contract: {
       id: contract.id,

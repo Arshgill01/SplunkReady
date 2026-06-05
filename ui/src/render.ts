@@ -792,16 +792,23 @@ const renderLiveSecurityReadiness = (bundle: UiArtifactBundle): string => {
         run.error ? `, ${run.error}` : ""
       }`
     : run.reason;
+  const setupSummary = readiness.setupRequirements
+    .map((requirement) => `${requirement.id}: ${requirement.satisfied ? "ready" : "missing"}`)
+    .join(" / ");
+  const setupSummaryLabel = setupSummary.length > 0 ? setupSummary : "not recorded (legacy readiness artifact)";
 
   return `<section class="panel live-security-panel">
     <h2>Flagship security readiness</h2>
     ${renderFactTable([
       ["Status", readiness.status],
+      ["Proof mode", `${readiness.proofMode.type} / fallback ${readiness.proofMode.fallbackAllowed ? "allowed" : "blocked"}`],
       ["Mission", `${readiness.mission.id} / ${readiness.mission.story}`],
       ["Contract", `${readiness.contract.id} / ${readiness.contract.name}`],
       ["Saved search", `${readiness.requiredSavedSearch.ref} / ${readiness.requiredSavedSearch.present ? "present" : "missing"}`],
       ["Saved-search run", runSummary],
       ["Preferred index", `${readiness.preferredIndex.name} / ${readiness.preferredIndex.present ? "present" : "missing"}`],
+      ["Setup requirements", setupSummaryLabel],
+      ["Generic fallback", `${readiness.fallbackPolicy.genericLiveCommand} / ${readiness.fallbackPolicy.genericLiveDescription}`],
       ["Missing tools", readiness.requiredTools.missing.length > 0 ? readiness.requiredTools.missing.join(" / ") : "none"],
       ["Blockers", readiness.blockers.length > 0 ? readiness.blockers.join(" / ") : "none"],
       ["Next actions", readiness.nextActions.join(" / ")]
@@ -1272,6 +1279,12 @@ const renderReceipt = (bundle: UiArtifactBundle, options: RenderOptions): string
                     <h2>Flagship security readiness</h2>
                     ${renderFactTable([
                       ["Status", bundle.liveSecurityReadiness.status],
+                      [
+                        "Proof mode",
+                        `${bundle.liveSecurityReadiness.proofMode.type} / fallback ${
+                          bundle.liveSecurityReadiness.proofMode.fallbackAllowed ? "allowed" : "blocked"
+                        }`
+                      ],
                       ["Saved search", bundle.liveSecurityReadiness.requiredSavedSearch.ref],
                       [
                         "Saved-search run",

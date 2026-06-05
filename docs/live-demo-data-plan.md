@@ -60,6 +60,16 @@ This command is read-only. It compiles the live contract, checks for the exact s
 SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain
 ```
 
+The diagnostic is also the machine-readable contract for fresh-trial behavior:
+
+- `proofMode.type`: `strict-flagship-security`
+- `proofMode.fallbackAllowed`: `false`
+- `setupRequirements`: saved-search presence, evidence rows, evidence identifiers, and operator-owned setup boundary
+- `fallbackPolicy.genericLiveCommand`: `live-proof`
+- `fallbackPolicy.flagshipProofCommand`: `live-security-proof`
+
+If the target deployment lacks the exact saved search or row-level evidence, the flagship path reports `BLOCKED`. It does not silently fall back to `_internal`; use `live-proof` only as separate generic live MCP evidence.
+
 The initial 2026-06-02 local run wrote `artifacts/live-security-check/live-security-readiness.json` and reported:
 
 - status: `BLOCKED`

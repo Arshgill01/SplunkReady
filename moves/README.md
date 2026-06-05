@@ -69,6 +69,7 @@ commands, or filesystem paths.
 | P0 | [44](moves44.md) Runs trace preview ordering | 0.5d | Repairs scrambled trace timelines in the Runs proof browser and verifies the UI with Playwright. |
 | P0 | [45](moves45.md) Callback trace capture | 0.5d | Lets framework callback run IDs map into SplunkReady traces without adding agent-framework dependencies. |
 | P0 | [46](moves46.md) MCP server proof command | 0.5d | Makes the local SplunkReady MCP certification server one-command demonstrable without live credentials. |
+| P0 | [47](moves47.md) Live security strict readiness contract | 0.5d | Makes fresh-trial live security blockers explicit without downgrading the flagship proof to generic `_internal` evidence. |
 
 ## Non-Negotiable Boundaries
 

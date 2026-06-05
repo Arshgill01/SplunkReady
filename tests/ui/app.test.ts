@@ -375,9 +375,51 @@ const liveSecurityReadiness = {
   status: "BLOCKED",
   mode: "live",
   mutation: false,
+  proofMode: {
+    type: "strict-flagship-security",
+    fallbackAllowed: false,
+    rationale:
+      "The flagship lateral-movement proof requires the exact saved search and row-level evidence. It does not fall back to generic _internal proof."
+  },
   mission: {
     id: "mission-security-lateral-movement-readiness",
     story: "security investigation readiness"
+  },
+  setupRequirements: [
+    {
+      id: "saved-search",
+      description:
+        "Read-only saved search SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain exists in the live contract.",
+      satisfied: false,
+      operatorOwned: true
+    },
+    {
+      id: "evidence-rows",
+      description: "Saved search returns at least one row for win-finance-07 in the -24h to now mission window.",
+      satisfied: false,
+      operatorOwned: true
+    },
+    {
+      id: "evidence-identifiers",
+      description: "Returned rows expose stable evidence identifiers such as eventRef, _cd, _raw, or _time.",
+      satisfied: false,
+      operatorOwned: true
+    },
+    {
+      id: "operator-owned-setup",
+      description:
+        "Any missing app, index, saved search, or sample event setup is performed by the operator, not SplunkReady.",
+      satisfied: true,
+      operatorOwned: true
+    }
+  ],
+  fallbackPolicy: {
+    genericLiveCommand: "live-proof",
+    genericLiveDescription:
+      "Use live-proof only as generic live MCP evidence when the target deployment lacks flagship security content.",
+    flagshipProofCommand: "live-security-proof",
+    flagshipDescription:
+      "Use live-security-proof for the prize/demo lateral-movement story after operator-owned setup makes readiness green."
   },
   contract: {
     id: "contract-192-168-1-4",
@@ -1358,6 +1400,10 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain");
     expect(liveConnect).toContain("Flagship security readiness");
     expect(liveConnect).toContain("BLOCKED");
+    expect(liveConnect).toContain("strict-flagship-security / fallback blocked");
+    expect(liveConnect).toContain("saved-search: missing");
+    expect(liveConnect).toContain("operator-owned-setup: ready");
+    expect(liveConnect).toContain("live-proof / Use live-proof only as generic live MCP evidence");
     expect(liveConnect).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain / missing");
     expect(liveConnect).toContain("wineventlog / missing");
     expect(liveConnect).toContain('data-run-workflow="live-security-kit"');

@@ -433,17 +433,60 @@ const suiteProofSummarySchema = z
 
 export type SuiteProofSummary = z.infer<typeof suiteProofSummarySchema>;
 
+const defaultLiveSecurityProofMode = {
+  type: "strict-flagship-security",
+  fallbackAllowed: false,
+  rationale:
+    "The flagship lateral-movement proof requires the exact saved search and row-level evidence. It does not fall back to generic _internal proof."
+} as const;
+
+const defaultLiveSecurityFallbackPolicy = {
+  genericLiveCommand: "live-proof",
+  genericLiveDescription:
+    "Use live-proof only as generic live MCP evidence when the target deployment lacks flagship security content.",
+  flagshipProofCommand: "live-security-proof",
+  flagshipDescription:
+    "Use live-security-proof for the prize/demo lateral-movement story after operator-owned setup makes readiness green."
+} as const;
+
 const liveSecurityReadinessSchema = z
   .object({
     status: z.enum(["READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF", "BLOCKED"]),
     mode: z.literal("live"),
     mutation: z.boolean(),
+    proofMode: z
+      .object({
+        type: z.string().min(1),
+        fallbackAllowed: z.boolean(),
+        rationale: z.string().min(1)
+      })
+      .strict()
+      .default(defaultLiveSecurityProofMode),
     mission: z
       .object({
         id: z.string().min(1),
         story: z.string().min(1)
       })
       .strict(),
+    setupRequirements: z.array(
+      z
+        .object({
+          id: z.string().min(1),
+          description: z.string().min(1),
+          satisfied: z.boolean(),
+          operatorOwned: z.boolean()
+        })
+        .strict()
+    ).default([]),
+    fallbackPolicy: z
+      .object({
+        genericLiveCommand: z.string().min(1),
+        genericLiveDescription: z.string().min(1),
+        flagshipProofCommand: z.string().min(1),
+        flagshipDescription: z.string().min(1)
+      })
+      .strict()
+      .default(defaultLiveSecurityFallbackPolicy),
     contract: z
       .object({
         id: z.string().min(1),

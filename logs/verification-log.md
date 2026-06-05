@@ -8251,6 +8251,61 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 47 Live Security Strict Readiness Contract
+
+Commands:
+
+- `npm test -- tests/cli/flow.test.ts -t "flagship live security readiness|exact live security blockers"`
+- `npm test -- tests/ui/app.test.ts -t "live proof summaries"`
+- `npm run build`
+- `npm run ui:build`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `PWCLI="$HOME/.codex/skills/playwright/scripts/playwright_cli.sh"; bash "$PWCLI" resize 1440 1100 && bash "$PWCLI" open "http://127.0.0.1:4317/?artifacts=%2Fapi%2Fartifacts%2Frun-move47-live-security#live-connect" && bash "$PWCLI" snapshot && bash "$PWCLI" screenshot --filename output/playwright/move47-live-security-readiness-desktop.png --full-page`
+- `PWCLI="$HOME/.codex/skills/playwright/scripts/playwright_cli.sh"; bash "$PWCLI" resize 390 844 && bash "$PWCLI" open "http://127.0.0.1:4317/?artifacts=%2Fapi%2Fartifacts%2Frun-move47-live-security#live-connect" && bash "$PWCLI" snapshot && bash "$PWCLI" screenshot --filename output/playwright/move47-live-security-readiness-mobile.png --full-page`
+- `PWCLI="$HOME/.codex/skills/playwright/scripts/playwright_cli.sh"; bash "$PWCLI" eval "() => ({ innerWidth: window.innerWidth, innerHeight: window.innerHeight, outerWidth: window.outerWidth, outerHeight: window.outerHeight, url: location.href })"`
+- `npx --yes --package playwright node --input-type=module - <<'EOF' ... EOF`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for focused CLI readiness regressions:
+  - 1 test file passed;
+  - 2 tests passed and 34 skipped.
+- PASS for focused UI render regressions:
+  - 1 test file passed;
+  - 2 tests passed and 20 skipped.
+- PASS for `npm run build`.
+- PASS for `npm run ui:build`.
+- PASS for Playwright wrapper page load and snapshots showing:
+  - `Status BLOCKED`;
+  - `Proof mode strict-flagship-security / fallback blocked`;
+  - `Setup requirements saved-search: missing / evidence-rows: missing / evidence-identifiers: missing / operator-owned-setup: ready`;
+  - `Generic fallback live-proof / Use live-proof only as generic live MCP evidence`.
+- The Playwright wrapper resize did not persist the requested viewport and still
+  reported `1280x720`, so it was treated as insufficient for mobile visual
+  verification.
+- PASS for direct Playwright viewport assertions and screenshots:
+  - desktop `1440x1100`;
+  - mobile `390x844`;
+  - required strict proof and fallback text present in both viewports.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 45 test files passed;
+  - 307 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 28 Browser Health Path Privacy Verification
 
 Commands:
