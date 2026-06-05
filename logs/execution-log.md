@@ -9523,6 +9523,45 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 22:04 - Move 57 CI Verification Tool Install
+
+Scope:
+- Fixed the first hosted GitHub Actions failure from Move 56.
+- Run `27027100008` failed because `scripts/verify-scaffold.sh` calls `rg`, and
+  the hosted Ubuntu runner did not have ripgrep installed.
+- Added ripgrep installation to the CI workflow before `npm run check`.
+- Kept the change limited to CI setup, focused regression coverage, and logs.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source, so Playwright is not required.
+
+Files changed:
+- `.github/workflows/ci.yml`
+- `tests/examples/repository-ci-workflow.test.ts`
+- `moves/README.md`
+- `moves/moves57.md`
+- `logs/competitive-audit-2026-06-05.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- The CI workflow now runs `sudo apt-get update && sudo apt-get install -y
+  ripgrep` before the canonical gate.
+- The focused workflow regression asserts the ripgrep install remains present.
+- The failed hosted run is documented so the CI failure does not get mistaken
+  for product or test-suite failure.
+
+Open blockers:
+- The fixed workflow still needs to run green on GitHub after this commit is
+  pushed.
+- Public npm publication remains unclaimed and requires an explicit release
+  decision.
+- Hosted public demo remains unclaimed and requires an explicit deploy decision.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 21:59 - Move 56 Repository CI Canonical Gate
 
 Scope:

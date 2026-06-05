@@ -123,3 +123,7 @@ publication.
 Move 56 addresses the in-repository CI visibility gap by adding a credential-free
 GitHub Actions workflow for the canonical `npm run check` gate. It does not
 claim a green badge until GitHub has actually run the workflow.
+
+Move 57 follows up on the first hosted CI run by installing ripgrep before the
+canonical gate; the prior run failed in `scripts/verify-scaffold.sh` because
+`rg` was missing on the GitHub runner.

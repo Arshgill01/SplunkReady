@@ -79,6 +79,7 @@ commands, or filesystem paths.
 | P0 | [54](moves54.md) GitHub workflow diagnostics artifact | 0.5d | Updates CI examples to upload the action diagnostics path as a first-class artifact. |
 | P0 | [55](moves55.md) Package trace bridge exports | 0.5d | Exposes stable package subpaths and TypeScript declarations for trace bridge, callback capture, and schemas. |
 | P0 | [56](moves56.md) Repository CI canonical gate | 0.5d | Adds a credential-free GitHub Actions workflow that runs the canonical `npm run check` gate. |
+| P0 | [57](moves57.md) CI verification tool install | 0.5d | Installs ripgrep in GitHub Actions so the scaffold verifier can run on hosted Ubuntu runners. |
 
 ## Non-Negotiable Boundaries
 

@@ -13,6 +13,7 @@ describe("repository CI workflow", () => {
     expect(workflow).toContain("- splunkready-build");
     expect(workflow).toContain("node-version: 22");
     expect(workflow).toContain("run: npm ci --ignore-scripts");
+    expect(workflow).toContain("sudo apt-get install -y ripgrep");
     expect(workflow).toContain("run: npm run check");
     expect(workflow).toContain("contents: read");
     expect(workflow).not.toContain("GEMINI_API_KEY");

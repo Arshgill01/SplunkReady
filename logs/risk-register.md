@@ -202,3 +202,6 @@ follow-up risks to track:
 Move 56 reduces the CI visibility portion of the Minimax 3 audit by adding a
 repository GitHub Actions workflow that runs the canonical `npm run check` gate
 on Node 22 without live Splunk or Gemini secrets.
+
+Move 57 fixes the first hosted CI failure from that workflow: GitHub Actions did
+not have `rg`, so the workflow now installs ripgrep before the canonical gate.

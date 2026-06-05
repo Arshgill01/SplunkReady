@@ -7542,6 +7542,32 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 57 CI Verification Tool Install
+
+Commands:
+
+- `gh run list --branch splunkready-build --limit 5`
+- `gh run view 27027100008 --log-failed`
+- `npm test -- tests/examples/repository-ci-workflow.test.ts`
+- `npm run verify:scaffold && git diff --check`
+
+Result:
+
+- FAIL observed remotely before the fix: GitHub Actions run `27027100008`
+  failed in `scripts/verify-scaffold.sh` with `rg: command not found`, followed
+  by `FAIL: required term not found: SplunkReady`.
+- PASS for focused CI workflow regression: 1 file, 1 test.
+- PASS for post-fix structural check: scaffold verified 85 waves and 1728
+  project files, and `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because no UI source changed.
+- Full `npm run check` was not rerun locally for this CI-only dependency fix;
+  Move 56 already ran it locally, and the failure was isolated to a missing
+  hosted-runner binary.
+- The fixed workflow still needs to run green on GitHub after push.
+
 ## 2026-06-05 - Move 56 Repository CI Canonical Gate
 
 Commands:
