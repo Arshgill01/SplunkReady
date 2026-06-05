@@ -419,3 +419,11 @@ submission evidence. The walkthrough makes the existing Splunk MCP Server the
 read-only investigation server and SplunkReady MCP the deterministic
 certification server, with saved-search evidence refs and mutation=false. This
 still does not eliminate the live/public MCP-client screencast gap.
+
+Move 93 reduces the LLM visibility risk by making `judge-proof` include the
+Gemini-backed trace-producer proof when the operator enables
+`SPLUNKREADY_LLM_ENABLED=true` or passes `--include-llm-proof true`. The base
+suite and firewall proofs are forced back to deterministic fixture mode so LLM
+mode cannot accidentally leak into the credential-free gate. If LLM mode is
+enabled without `GEMINI_API_KEY`, `judge-proof` now reports
+`llmEvidence.status=NOT_CONFIGURED` instead of failing the base proof.

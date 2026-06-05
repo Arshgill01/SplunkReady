@@ -115,6 +115,7 @@ commands, or filesystem paths.
 | P0 | [90](moves90.md) CLI dispatch extraction | 0.5d | Extracts command routing out of the root CLI entrypoint while preserving CLI behavior. |
 | P0 | [91](moves91.md) Public demo export gate | 0.5d | Makes the credential-free public demo export a canonical verified artifact. |
 | P0 | [92](moves92.md) MCP client walkthrough evidence | 0.5d | Makes the MCP proof show an existing Splunk MCP client workflow before SplunkReady certification. |
+| P0 | [93](moves93.md) Judge proof LLM activation | 0.5d | Makes judge proof include model-produced trace evidence when LLM mode is operator-enabled. |
 
 ## Non-Negotiable Boundaries
 

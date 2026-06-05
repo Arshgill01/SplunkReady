@@ -11453,3 +11453,38 @@ Open blockers:
 - This is still captured credential-free MCP transcript evidence, not a live
   public MCP-client screencast.
 - Public npm publication and external hosted URL remain separate release gaps.
+
+## 2026-06-06 04:45 - Move 93 Judge Proof LLM Activation
+
+Scope:
+- Targeted the Minimax/user LLM visibility cap without making LLM output
+  authoritative.
+- Added `llmActivation` metadata to `judge-proof-summary.json` and Markdown.
+- Changed `judge-proof` to include the LLM proof when either
+  `--include-llm-proof true` is passed or `SPLUNKREADY_LLM_ENABLED=true` is
+  set.
+- Kept suite proof and firewall proof on deterministic fixture mode even when
+  the parent environment has LLM mode enabled.
+- Preserved the no-key fallback: with `SPLUNKREADY_LLM_ENABLED=true` and no
+  `GEMINI_API_KEY`, `judge-proof` returns PASS for the base proof and records
+  `llmEvidence.status=NOT_CONFIGURED`.
+- Updated README language so judging sessions can run the LLM-backed trace
+  producer through the main judge bundle.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+
+Files changed:
+- `src/cli/proof-commands.ts`
+- `src/workflows/judge-proof.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `moves/README.md`
+- `moves/moves93.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- This does not provide public hosted-model credentials or a live public LLM
+  run; it makes the configured path part of the main judge proof.
+- Deterministic grading remains authoritative by design.

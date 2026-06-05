@@ -9930,6 +9930,62 @@ Open blockers:
   public live MCP-client screencast.
 - Public npm publication and external hosted URL remain open release gaps.
 
+## 2026-06-06 - Move 93 Judge Proof LLM Activation
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "judge proof"`
+- `npm run build && SPLUNKREADY_LLM_ENABLED=true GEMINI_API_KEY= npm run splunkready -- judge-proof --out "$tmpdir" --json`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused judge-proof validation:
+  - 1 test file passed;
+  - 2 tests passed;
+  - 38 tests skipped by focused pattern.
+- PASS for direct LLM-enabled/no-key judge proof:
+  - command returned `PASS`;
+  - `llmActivation.policy` is `include-when-requested-or-env-enabled`;
+  - `llmActivation.enabledByEnv=true`;
+  - `llmActivation.configured=false`;
+  - `llmActivation.included=false`;
+  - `llmEvidence.status=NOT_CONFIGURED`;
+  - reason says `GEMINI_API_KEY` is not configured and no model call was made.
+- PASS for full `npm run check`:
+  - scaffold verified with 85 waves and 1986 project files;
+  - runtime contracts verified 19 rules, 4 fixture missions, and 20 evidence
+    refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 111 files;
+  - package readiness audit checked 162 dry-run packed files;
+  - package installability audit installed the package tarball and verified
+    `npx splunkready judge-proof` returned PASS;
+  - 56 test files passed;
+  - 346 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- This does not provide public hosted-model credentials or a live public LLM
+  run; it makes the configured LLM path part of the main judge proof.
+
 ## 2026-06-06 - Move 84 Package Installability Audit
 
 Commands:

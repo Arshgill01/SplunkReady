@@ -748,12 +748,24 @@ describe("SplunkReady CLI flow", () => {
   it("runs a one-command judge proof bundle", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-judge-proof-"));
 
-    const output = parseCliJsonOutput((await runCli(["judge-proof", "--out", outDir, "--json"])).stdout);
+    const output = parseCliJsonOutput(
+      (await runCli(["judge-proof", "--out", outDir, "--json"], process.cwd(), {
+        GEMINI_API_KEY: "",
+        SPLUNKREADY_LLM_ENABLED: "false"
+      })).stdout
+    );
     const summary = JSON.parse(await readFile(join(outDir, "judge-proof-summary.json"), "utf8")) as {
       source: string;
       status: string;
       mode: string;
       mutation: boolean;
+      llmActivation: {
+        policy: string;
+        includeRequested: boolean;
+        enabledByEnv: boolean;
+        configured: boolean;
+        included: boolean;
+      };
       proofDirs: { suite: string; firewall: string };
       gates: Array<{ id: string; status: string; artifacts: string[] }>;
       llmEvidence: {
@@ -807,6 +819,13 @@ describe("SplunkReady CLI flow", () => {
       status: "PASS",
       mode: "fixture",
       mutation: false,
+      llmActivation: {
+        policy: "include-when-requested-or-env-enabled",
+        includeRequested: false,
+        enabledByEnv: false,
+        configured: false,
+        included: false
+      },
       proofDirs: {
         suite: join(outDir, "suite-proof"),
         firewall: join(outDir, "firewall-check")
@@ -865,23 +884,31 @@ describe("SplunkReady CLI flow", () => {
     expect(markdown).toContain("SplunkReady Judge Proof");
     expect(markdown).toContain("certification-index.json");
     expect(markdown).toContain("LLM specimen evidence: NOT_REQUESTED");
+    expect(markdown).toContain("LLM activation: requested=false env=false configured=false included=false");
   });
 
-  it("can include the model-produced LLM proof in the judge bundle when explicitly requested", async () => {
+  it("includes the model-produced LLM proof in the judge bundle when LLM mode is enabled", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-judge-proof-llm-"));
     const gemini = await startMockGeminiServer();
     const llmEnv = {
       GEMINI_API_KEY: "test-gemini-key",
       GEMINI_MODEL: "gemini-test",
+      SPLUNKREADY_LLM_ENABLED: "true",
       SPLUNKREADY_GEMINI_ENDPOINT_BASE_URL: gemini.url
     };
 
     try {
       const output = parseCliJsonOutput(
-        (await runCli(["judge-proof", "--out", outDir, "--include-llm-proof", "true", "--json"], process.cwd(), llmEnv)).stdout
+        (await runCli(["judge-proof", "--out", outDir, "--json"], process.cwd(), llmEnv)).stdout
       );
       const summary = JSON.parse(await readFile(join(outDir, "judge-proof-summary.json"), "utf8")) as {
         status: string;
+        llmActivation: {
+          includeRequested: boolean;
+          enabledByEnv: boolean;
+          configured: boolean;
+          included: boolean;
+        };
         llmEvidence: {
           status: string;
           role: string;
@@ -904,6 +931,12 @@ describe("SplunkReady CLI flow", () => {
       });
       expect(summary).toMatchObject({
         status: "PASS",
+        llmActivation: {
+          includeRequested: false,
+          enabledByEnv: true,
+          configured: true,
+          included: true
+        },
         llmEvidence: {
           status: "PASS",
           role: "trace-producer",
@@ -923,7 +956,12 @@ describe("SplunkReady CLI flow", () => {
     const cwd = await mkdtemp(join(tmpdir(), "splunkready-packaged-cwd-"));
     const outDir = join(cwd, "proof");
 
-    const output = parseCliJsonOutput((await runCli(["judge-proof", "--out", outDir, "--json"], cwd)).stdout);
+    const output = parseCliJsonOutput(
+      (await runCli(["judge-proof", "--out", outDir, "--json"], cwd, {
+        GEMINI_API_KEY: "",
+        SPLUNKREADY_LLM_ENABLED: "false"
+      })).stdout
+    );
     const summary = JSON.parse(await readFile(join(outDir, "judge-proof-summary.json"), "utf8")) as {
       status: string;
       mode: string;

@@ -31,12 +31,16 @@ npm run judge-proof
 
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, writes `compiler-diagnostics.json` / `.md` showing deterministic rule activation and resolution from readiness profiles and receipts, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 
-The judge bundle also records an `llmEvidence` slot in `judge-proof-summary.json`.
-By default that slot is `NOT_REQUESTED` so the command stays credential-free and
-makes no model calls. To include a real Gemini-produced fixture trace in the
-same judge-facing bundle while keeping deterministic grading authoritative, run:
+The judge bundle also records `llmActivation` and `llmEvidence` in
+`judge-proof-summary.json`. With no LLM environment enabled, that evidence stays
+`NOT_REQUESTED` so the command remains credential-free and makes no model calls.
+When `SPLUNKREADY_LLM_ENABLED=true` is set, the same `judge-proof` command
+includes the Gemini-produced fixture trace in the judge-facing bundle while
+keeping deterministic grading authoritative. The convenience script below sets
+the same path up for judging sessions:
 
 ```bash
+export SPLUNKREADY_LLM_ENABLED=true
 export GEMINI_API_KEY="..."
 export GEMINI_MODEL="gemini-3.1-flash-lite"
 npm run judge-proof:llm

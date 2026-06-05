@@ -176,18 +176,24 @@ export const judgeProofCommand = async (
   }
 
   const llmEnv = { ...env, SPLUNKREADY_LLM_ENABLED: "true" };
+  const fixtureEnv = { ...env, SPLUNKREADY_LLM_ENABLED: "false" };
+  const llmProofRequested = options.includeLlmProof;
+  const llmProofEnabledByEnv = env.SPLUNKREADY_LLM_ENABLED === "true";
+  const llmProofConfigured = createGeminiConfigFromEnv(llmEnv) !== null;
   const result = await runJudgeProofWorkflow(
     {
       outDir: options.out,
       generatedAt: compiledAt,
-      includeLlmProof: options.includeLlmProof,
-      llmProofConfigured: createGeminiConfigFromEnv(llmEnv) !== null
+      includeLlmProof: llmProofRequested || llmProofEnabledByEnv,
+      llmProofRequested,
+      llmProofEnabledByEnv,
+      llmProofConfigured
     },
     {
-      suiteProof: (outDir) => suiteProofCommand({ ...options, out: outDir, mode: "fixture", requireFailToPass: true }, env),
+      suiteProof: (outDir) => suiteProofCommand({ ...options, out: outDir, mode: "fixture", requireFailToPass: true }, fixtureEnv),
       suiteAudit: (outDir) => proofAuditCommand({ ...options, out: outDir, requirePass: true }),
       suiteManifest: (outDir) => verifyManifestCommand({ ...options, out: outDir }),
-      firewallCheck: (outDir) => firewallCheckCommand({ ...options, out: outDir, mode: "fixture", requirePass: true }, env),
+      firewallCheck: (outDir) => firewallCheckCommand({ ...options, out: outDir, mode: "fixture", requirePass: true }, fixtureEnv),
       firewallManifest: (outDir) => verifyManifestCommand({ ...options, out: outDir }),
       certificationIndex: ({ proofDirs }) =>
         certificationIndexCommand({
