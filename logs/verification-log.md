@@ -7429,3 +7429,51 @@ Open blockers:
 - Public video URL is still missing.
 - Official feedback submission confirmation is still missing.
 - Local branch is still ahead of `origin/splunkready-build`; public-remote proof is incomplete until pushed.
+
+## 2026-06-05 - Move 26 Remote Clean-Room Gate Verification
+
+Commands:
+
+- `git push origin splunkready-build`
+- `git rev-parse HEAD`
+- `git ls-remote origin splunkready-build`
+- `mktemp -d /tmp/splunkready-remote-cleanroom-XXXXXX`
+- `git clone --depth 1 --branch splunkready-build git@github.com:Arshgill01/SplunkReady.git /tmp/splunkready-remote-cleanroom-Z9JDJv/SplunkReady`
+- `git rev-parse HEAD`
+- `git status --short --branch`
+- `npm ci`
+- `npm run check`
+
+Result:
+
+- PASS for pushing `splunkready-build`:
+  - remote updated from `3204e57` to `239225e`.
+- PASS for local HEAD check:
+  - `239225e7b6853cc9916c2aca84ef50c1307c4ffc`.
+- PASS for remote ref check:
+  - `origin/splunkready-build` resolves to `239225e7b6853cc9916c2aca84ef50c1307c4ffc`.
+- PASS for remote clean-room clone:
+  - clone path `/tmp/splunkready-remote-cleanroom-Z9JDJv/SplunkReady`;
+  - branch `splunkready-build`;
+  - clone HEAD `239225e7b6853cc9916c2aca84ef50c1307c4ffc`.
+- PASS for remote clean-room `npm ci`:
+  - 49 packages installed;
+  - 0 vulnerabilities.
+- PASS for remote clean-room `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 289 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for remote clean-room worktree status:
+  - `## splunkready-build...origin/splunkready-build`;
+  - no uncommitted changes.
+
+Open blockers:
+
+- Public video URL is still missing.
+- Official feedback submission confirmation is still missing.

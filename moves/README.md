@@ -47,6 +47,8 @@ commands, or filesystem paths.
 | P0 | [22](moves22.md) README, Devpost, and root architecture | 0.5-1d | Makes public claims match evidence. |
 | P0 | [23](moves23.md) Public demo video and feedback form | 0.5-1d | Required submission artifacts stay accountable. |
 | P0 | [24](moves24.md) Clean-room submission gate | 0.5d | Final judge-path verification. |
+| P0 | [25](moves25.md) Consolidate workbench UI surface | 0.5d | Keeps the final judge path clear without hiding proof instrumentation. |
+| P0 | [26](moves26.md) Remote clean-room gate and cleanup backlog | 0.5d | Proves the pushed branch works from a fresh clone and records final cleanup work. |
 
 ## Non-Negotiable Boundaries
 

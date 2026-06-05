@@ -8774,3 +8774,43 @@ Open blockers:
 - Public video URL is still missing.
 - Official feedback submission confirmation is still missing.
 - Public remote proof remains blocked until the local branch is pushed.
+
+## 2026-06-05 - Move 26 Remote Clean-Room Gate And Cleanup Backlog
+
+Context:
+- Added Move 26 after completing the original move list, per the user instruction to keep the larger goal open and continue hardening.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Pushed `splunkready-build` to `origin` before remote clean-room verification.
+
+Files touched:
+- `moves/README.md`
+- `moves/moves26.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added Move 25 and Move 26 to the moves priority map.
+- Added `moves/moves26.md` to make the next autonomous step explicit:
+  - verify the pushed branch from a fresh remote clone;
+  - keep testing/debug affordances until final evidence capture is complete;
+  - record cleanup backlog items without prematurely deleting useful instrumentation.
+- Removed the public-remote blocker caused by unpushed local commits:
+  - pushed `splunkready-build`;
+  - confirmed `origin/splunkready-build` resolves to `239225e7b6853cc9916c2aca84ef50c1307c4ffc`;
+  - cloned that pushed branch into `/tmp/splunkready-remote-cleanroom-Z9JDJv/SplunkReady`;
+  - ran the canonical gate from the remote clone.
+
+Remote clean-room findings:
+- Remote clone commit matched local committed Move 25: `239225e7b6853cc9916c2aca84ef50c1307c4ffc`.
+- Remote clone dependency install succeeded with 49 packages and 0 vulnerabilities.
+- Remote clone canonical gate passed.
+
+Cleanup backlog:
+- Keep Playwright screenshots in ignored `output/playwright/` for testing evidence only; decide at final packaging whether any screenshot belongs in tracked submission evidence.
+- Keep the broad workbench views available until the final video and public proof are captured; any final UI pruning should be a separate cleanup move after evidence capture.
+- Consider a faster already-built workbench serve command only if startup time becomes a judging or recording issue.
+
+Open blockers:
+- Public video URL is still missing.
+- Official feedback submission confirmation is still missing.
