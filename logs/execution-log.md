@@ -8814,3 +8814,68 @@ Cleanup backlog:
 Open blockers:
 - Public video URL is still missing.
 - Official feedback submission confirmation is still missing.
+
+## 2026-06-05 - Move 27 Run Browser Module Boundary
+
+Context:
+- User updated operating constraints:
+  - do not use subagents; main executor must do implementation and verification directly;
+  - UI changes must be live-tested with Playwright, not committed on unit tests alone;
+  - do not read, source, print, or commit `.splunkready*`, `.env`, or other secret-bearing files;
+  - keep the active goal open after the current move list and continue with high-leverage development hardening;
+  - defer public demo video and submission-form work to the user at the end;
+  - avoid overloading the workbench with speculative features, but keep current testing affordances until final cleanup.
+- The goal tool does not expose an append/update operation for active objective text; these conditions are logged here instead.
+- A brief local video-capture attempt was stopped after the user clarified to avoid video work. No video files were tracked.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+
+Files touched:
+- `ui/src/render.ts`
+- `ui/src/runBrowser.ts`
+- `ui/src/workbenchTypes.ts`
+- `ui/src/main.ts`
+- `moves/README.md`
+- `moves/moves27.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Extracted the Runs proof-browser implementation details from the global app renderer into `ui/src/runBrowser.ts`:
+  - managed-run filtering;
+  - run sorting;
+  - active-run matching;
+  - run list rendering;
+  - phase-level trace preview rendering.
+- Moved workbench render-state types into `ui/src/workbenchTypes.ts` so app state and workbench actions no longer import these types from the full renderer.
+- Kept `renderApp` as the public UI renderer and preserved existing proof-browser HTML hooks.
+- Added `moves/moves27.md` to make the development hardening wave explicit.
+
+Playwright evidence:
+- Started the packaged workbench on `http://127.0.0.1:4344`.
+- Ran a fresh fixture certification from the browser:
+  - run `run-2026-06-05T13-27-51-419Z-6452b6c3`;
+  - active run showed `fixture-certification / succeeded`;
+  - receipt summary showed `READY / score 100`;
+  - evidence summary showed `0 violation(s) / 5 ref(s)`.
+- Verified the Runs trace preview after the refactor:
+  - `phaseCount` 2;
+  - `beforeVisible` true;
+  - `afterVisible` true;
+  - before phase listed `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`;
+  - after phase listed `splunk_get_knowledge_objects` and `splunk_run_saved_search`;
+  - export controls remained present.
+- Desktop overflow check:
+  - viewport width `1280`;
+  - `scrollWidth` `1280`;
+  - offender count `0`.
+- Mobile overflow check:
+  - viewport width `390`;
+  - `scrollWidth` `390`;
+  - offenders `[]`;
+  - before and after trace preview phases remained present.
+
+Open blockers:
+- Public video URL is still intentionally deferred to the user.
+- Official feedback submission confirmation is still intentionally deferred to the user.
+- Additional cleanup/consolidation remains open after evidence capture and final product hardening.

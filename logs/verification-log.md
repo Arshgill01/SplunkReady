@@ -7477,3 +7477,64 @@ Open blockers:
 
 - Public video URL is still missing.
 - Official feedback submission confirmation is still missing.
+
+## 2026-06-05 - Move 27 Run Browser Module Boundary Verification
+
+Commands:
+
+- `npm test -- tests/ui/app.test.ts`
+- `npm run ui:build`
+- `SPLUNKREADY_WORKBENCH_PORT=4344 npm run workbench`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open "http://127.0.0.1:4344/#certification-replay"`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" run-code "<fixture certification, Runs view, trace preview, export control, desktop overflow check>"`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" resize 390 844`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" run-code "<mobile trace preview and overflow check>"`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for focused UI test:
+  - 1 test file passed;
+  - 22 tests passed.
+- PASS for standalone `npm run ui:build`.
+- PASS for packaged workbench startup on port `4344`.
+- PASS for Playwright browser fixture certification:
+  - run `run-2026-06-05T13-27-51-419Z-6452b6c3`;
+  - selected run URL `http://127.0.0.1:4344/?artifacts=%2Fapi%2Fartifacts%2Frun-2026-06-05T13-27-51-419Z-6452b6c3#proof-browser`;
+  - active run showed `fixture-certification / succeeded`;
+  - receipt summary showed `READY / score 100`;
+  - evidence summary showed `0 violation(s) / 5 ref(s)`.
+- PASS for Playwright Runs trace preview:
+  - `phaseCount` 2;
+  - `beforeVisible` true;
+  - `afterVisible` true;
+  - before phase showed 3 events, 5 findings, 0 evidence refs, and deterministic rule IDs `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, `ANS-001`;
+  - after phase showed 5 events, 0 findings, 8 evidence refs, and tools `splunk_get_knowledge_objects` / `splunk_run_saved_search`;
+  - export controls remained rendered.
+- PASS for desktop overflow check:
+  - viewport width `1280`;
+  - `scrollWidth` `1280`;
+  - offenders `0`.
+- PASS for mobile overflow check:
+  - viewport width `390`;
+  - `scrollWidth` `390`;
+  - offenders `[]`;
+  - before and after trace preview phases remained present.
+
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 289 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for explicit final `git diff --check`.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.

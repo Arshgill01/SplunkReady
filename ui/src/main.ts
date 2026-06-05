@@ -14,11 +14,9 @@ import {
   normalizeView,
   renderApp,
   renderError,
-  type ManifestVerificationState,
-  type ViewId,
-  type WorkbenchRenderState,
-  type WorkbenchRunSummary
+  type ViewId
 } from "./render.js";
+import type { ManifestVerificationState, WorkbenchRenderState, WorkbenchRunSummary } from "./workbenchTypes.js";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
