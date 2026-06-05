@@ -11,6 +11,7 @@ describe("repository CI workflow", () => {
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("branches:");
     expect(workflow).toContain("- splunkready-build");
+    expect(workflow).toContain("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true");
     expect(workflow).toContain("node-version: 22");
     expect(workflow).toContain("run: npm ci --ignore-scripts");
     expect(workflow).toContain("sudo apt-get install -y ripgrep");

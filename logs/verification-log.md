@@ -9442,3 +9442,42 @@ Open blockers:
 - Actual registry publication remains an explicit release action.
 - Hosted demo, refreshed submission evidence, and final reviewer-equivalent
   scrutiny remain open Minimax caps.
+## 2026-06-05 - Move 73 CI Node 24 Actions Runtime
+
+Commands:
+
+- `npx vitest run tests/examples/repository-ci-workflow.test.ts`
+- `npm run check`
+
+Result:
+
+- PASS for focused repository CI workflow regression:
+  - 1 test file passed;
+  - 1 test passed.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 148 dry-run packed files;
+  - 53 test files passed;
+  - 337 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- The workflow now sets `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`.
+- The project runtime remains `node-version: 22`.
+- Playwright was not run because this move did not change UI source or
+  behavior.
+
+Open blockers:
+
+- Hosted CI must still be watched after push to confirm the Node 20 annotation
+  is gone.
+- Hosted demo, refreshed submission evidence, and final reviewer-equivalent
+  scrutiny remain open Minimax caps.

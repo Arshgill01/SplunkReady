@@ -10554,6 +10554,38 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
+## 2026-06-05 23:58 - Move 73 CI Node 24 Actions Runtime
+
+Scope:
+- Cleaned up the remaining hosted GitHub CI warning without using subagents.
+- Opted JavaScript actions into the Node 24 runtime via
+  `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`.
+- Kept the project runtime on Node 22.
+- Preserved the canonical `npm run check` gate and credential-free CI posture.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `.github/workflows/ci.yml`
+- `tests/examples/repository-ci-workflow.test.ts`
+- `moves/README.md`
+- `moves/moves73.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- Repository CI now sets `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`.
+- The repository CI workflow regression now requires the Node 24 actions
+  runtime opt-in.
+
+Open blockers:
+- Hosted demo, refreshed submission evidence, and final reviewer-equivalent
+  scrutiny remain open Minimax caps.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
 ## 2026-06-05 23:48 - Move 71 Judge Proof LLM Evidence Slot
 
 Scope:
