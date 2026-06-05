@@ -8915,6 +8915,34 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 34 SplunkReady Secret Env Ignore
+
+Context:
+- Continued development hardening after Move 33.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- User had warned that local secrets likely live in a `.splunkready*` file.
+- Existing `.gitignore` covered `.env`, `.env.*`, and only the specific
+  `.splunkready-live.env` filename.
+
+Files touched:
+- `.gitignore`
+- `moves/README.md`
+- `moves/moves34.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Replaced the one-off `.splunkready-live.env` ignore entry with
+  `.splunkready*`.
+- Added an explicit `!.splunkready.example` exception for a future checked-in
+  example file.
+- Preserved existing `.env`, `.env.*`, and `!.env.example` behavior.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 33 Runs Trace Preview Timeline
 
 Context:

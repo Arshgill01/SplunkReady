@@ -7539,6 +7539,37 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 34 SplunkReady Secret Env Ignore Verification
+
+Commands:
+
+- `git check-ignore -v .splunkready .splunkready.local .splunkready.env .splunkready-live.env .env .env.local 2>/dev/null || true`
+- `rg --files -g '.splunkready*' -g '!artifacts' -g '!node_modules' -g '!dist' -g '!dist-ui'`
+- `git check-ignore -v .splunkready .splunkready.local .splunkready.env .splunkready-live.env .env .env.local`
+- `npm run verify:scaffold`
+- `git diff --check`
+
+Result:
+
+- PASS initial ignore probe confirmed `.env` and `.env.local` were ignored, but
+  representative `.splunkready*` names other than `.splunkready-live.env` were
+  not covered.
+- PASS filename-only search showed a local `.splunkready-live.env` path exists;
+  its contents were not read.
+- PASS final `git check-ignore`:
+  - `.splunkready`, `.splunkready.local`, `.splunkready.env`, and
+    `.splunkready-live.env` matched `.gitignore:8:.splunkready*`;
+  - `.env` matched `.gitignore:10:.env`;
+  - `.env.local` matched `.gitignore:11:.env.*`.
+- PASS `npm run verify:scaffold`: scaffold verified, 85 waves, 1736 project
+  files.
+- PASS `git diff --check` completed with no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 33 Runs Trace Preview Timeline Verification
 
 Commands:

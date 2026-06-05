@@ -5,7 +5,8 @@ dist-ui/
 artifacts/
 output/
 .playwright-cli/
-.splunkready-live.env
+.splunkready*
+!.splunkready.example
 .env
 .env.*
 !.env.example

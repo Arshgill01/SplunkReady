@@ -56,6 +56,7 @@ commands, or filesystem paths.
 | P0 | [31](moves31.md) Workbench server fallback redaction | 0.5d | Redacts server-level fallback errors before they reach the browser. |
 | P0 | [32](moves32.md) Workbench no-store responses | 0.5d | Prevents browser caching of local proof and workbench responses. |
 | P0 | [33](moves33.md) Runs trace preview timeline | 0.5d | Makes the Runs trace panel show compact ordered events instead of summary-only cards. |
+| P0 | [34](moves34.md) SplunkReady secret env ignore | 0.5d | Ensures `.splunkready*` local secret files are ignored by default. |
 
 ## Non-Negotiable Boundaries
 
