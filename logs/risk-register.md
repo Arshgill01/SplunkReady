@@ -251,3 +251,10 @@ operator-owned security kit generation, generic live proof, live security proof,
 and live security UI bundling into `src/workflows/live-actions.ts`. `src/cli.ts`
 dropped from 2,135 lines to 1,162 lines. Further CLI cleanup is still useful,
 but workflow ownership no longer depends on importing `../cli.js`.
+
+Move 70 reduces the MCP positioning gap by making `mcp-proof` explicitly emit a
+`splunkMcpBoundary` block. The proof now shows that the local SplunkReady MCP
+server is a certification interface while the certified behavior is a captured
+Splunk MCP JSON-RPC transcript containing `splunk_get_knowledge_objects` and
+`splunk_run_saved_search`, evidence refs, a generated Readiness Receipt,
+deterministic authority, and `mutation: false`.

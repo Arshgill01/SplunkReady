@@ -9294,3 +9294,53 @@ Open blockers:
   stronger Splunk MCP usage proof remain open Minimax caps.
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
+## 2026-06-05 - Move 70 MCP Boundary Proof Evidence
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "MCP server proof"`
+- `git diff --check`
+- `npm run verify:scaffold`
+- `npm run check`
+
+Result:
+
+- PASS for `npx tsc --noEmit`.
+- PASS for focused MCP proof regression:
+  - 1 test file passed;
+  - 1 test passed;
+  - 38 tests skipped by the focused pattern.
+- PASS for `git diff --check`.
+- PASS for `npm run verify:scaffold`:
+  - scaffold verified;
+  - waves: 85;
+  - project files: 1750.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 53 test files passed;
+  - 335 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- `mcp-proof-summary.json` now records `splunkMcpBoundary` with certified
+  `splunk_get_knowledge_objects`, `splunk_run_saved_search`, evidence refs,
+  the external receipt path, deterministic authority, and `mutation: false`.
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- The production UI build ran as part of `npm run check`; no UI source or
+  behavior changed in this move.
+
+Open blockers:
+
+- Optional live Splunk MCP proof remains environment-gated and operator-owned.
+- Public package publish, hosted demo, refreshed submission evidence, and
+  final reviewer-equivalent scrutiny remain open Minimax caps.

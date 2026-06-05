@@ -72,11 +72,13 @@ reads the certification posture resource, fetches a reusable transcript
 certification prompt, then certifies the checked-in passing MCP JSON-RPC
 transcript through `splunkready_certify_mcp_transcript`. It writes
 `artifacts/mcp-proof/mcp-proof-summary.json` / `.md` plus the generated
-Readiness Receipt artifacts. This is still fixture-only, credential-free, and
-non-mutating; it proves SplunkReady as an MCP certification server, not a Splunk
-search copilot. The larger MCP story remains the Splunk MCP boundary itself:
-SplunkReady grades real or captured Splunk MCP tool behavior into deployment-
-specific Readiness Receipts.
+Readiness Receipt artifacts. The summary includes a `splunkMcpBoundary` block
+that names the certified `splunk_*` tools, records saved-search execution,
+preserves evidence refs, points at the generated receipt, and states that
+deterministic rules remained authoritative. This is still fixture-only,
+credential-free, and non-mutating; it proves SplunkReady as an MCP
+certification interface for captured Splunk MCP behavior, not as a Splunk search
+copilot.
 
 For the single-mission static replay shell, run:
 
@@ -213,10 +215,10 @@ To exercise the same certification path through the stdio MCP server itself:
 npm run mcp-proof
 ```
 
-That command writes an MCP proof summary, the uploaded transcript copy,
-`trace-imported.json`, `trace-external.json`, `receipt-external-001.json`,
-`proof-audit.json`, and the transcript certification summary under
-`artifacts/mcp-proof/`.
+That command writes an MCP proof summary with explicit Splunk MCP boundary
+evidence, the uploaded transcript copy, `trace-imported.json`,
+`trace-external.json`, `receipt-external-001.json`, `proof-audit.json`, and the
+transcript certification summary under `artifacts/mcp-proof/`.
 
 To summarize several proof bundles for one environment, generate a certification index:
 

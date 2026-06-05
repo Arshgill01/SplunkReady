@@ -1258,6 +1258,19 @@ describe("SplunkReady CLI flow", () => {
       postureResource: { contents: Array<{ uri: string; text: string }> };
       transcriptPrompt: { messages: Array<{ content: { text: string } }> };
       transcriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
+      splunkMcpBoundary: {
+        status: string;
+        transcriptKind: string;
+        localMcpServerRole: string;
+        splunkMcpServerRole: string;
+        certifiedToolNames: string[];
+        splunkToolCallCount: number;
+        includesSavedSearchExecution: boolean;
+        evidenceRefs: string[];
+        receiptPath: string;
+        deterministicAuthority: boolean;
+        mutation: boolean;
+      };
       artifacts: string[];
     };
     const transcriptProofDir = join(outDir, "mcp-transcript-certification");
@@ -1290,8 +1303,21 @@ describe("SplunkReady CLI flow", () => {
         status: "PASS",
         mutation: false,
         outDir: transcriptProofDir
+      },
+      splunkMcpBoundary: {
+        status: "PASS",
+        transcriptKind: "captured-splunk-mcp-jsonrpc",
+        certifiedToolNames: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+        splunkToolCallCount: 2,
+        includesSavedSearchExecution: true,
+        evidenceRefs: ["evt-102", "evt-118", "evt-141"],
+        receiptPath: join(transcriptProofDir, "receipt-external-001.json"),
+        deterministicAuthority: true,
+        mutation: false
       }
     });
+    expect(summary.splunkMcpBoundary.localMcpServerRole).toContain("certification interface");
+    expect(summary.splunkMcpBoundary.splunkMcpServerRole).toContain("Splunk MCP Server boundary");
     expect(summary.tools.map((tool) => tool.name)).toEqual([
       "splunkready_describe_certification",
       "splunkready_certify_external_trace",

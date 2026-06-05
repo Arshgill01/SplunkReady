@@ -1,5 +1,5 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 export interface McpProofWorkflowInput {
@@ -65,6 +65,20 @@ interface McpProofSummary {
   postureResource: Record<string, unknown>;
   transcriptPrompt: Record<string, unknown>;
   transcriptCertification: Record<string, unknown>;
+  splunkMcpBoundary: {
+    status: "PASS" | "FAIL";
+    transcriptKind: "captured-splunk-mcp-jsonrpc";
+    transcriptPath: string;
+    localMcpServerRole: string;
+    splunkMcpServerRole: string;
+    certifiedToolNames: string[];
+    splunkToolCallCount: number;
+    includesSavedSearchExecution: boolean;
+    evidenceRefs: string[];
+    receiptPath: string;
+    deterministicAuthority: true;
+    mutation: false;
+  };
   artifacts: string[];
   nextCommands: string[];
 }
@@ -198,8 +212,103 @@ ${summary.prompts.map((prompt) => `- ${prompt.name} arguments=${prompt.argumentC
 
 Transcript certification: ${stringFromRecord(summary.transcriptCertification, "status")}
 
+Splunk MCP boundary: ${summary.splunkMcpBoundary.status}
+- Certified tool calls: ${summary.splunkMcpBoundary.certifiedToolNames.join(", ")}
+- Saved-search execution: ${summary.splunkMcpBoundary.includesSavedSearchExecution ? "yes" : "no"}
+- Evidence refs: ${summary.splunkMcpBoundary.evidenceRefs.join(", ")}
+- Receipt: ${summary.splunkMcpBoundary.receiptPath}
+
 Receipt: ${stringFromRecord(summary.transcriptCertification, "outDir")}/receipt-external-001.json
 `;
+
+const stringArray = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+
+const collectEvidenceRefs = (value: unknown): string[] => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return [];
+  }
+
+  const record = value as Record<string, unknown>;
+  const directRefs = stringArray(record.evidenceRefs);
+  const results = Array.isArray(record.results) ? record.results : [];
+  const resultRefs = results.flatMap((result) => {
+    if (!result || typeof result !== "object" || Array.isArray(result)) {
+      return [];
+    }
+
+    const eventRef = (result as Record<string, unknown>).eventRef;
+    return typeof eventRef === "string" ? [eventRef] : [];
+  });
+
+  return [...directRefs, ...resultRefs];
+};
+
+const readSplunkMcpBoundaryEvidence = async (
+  transcriptPath: string,
+  certificationStatus: "PASS" | "FAIL",
+  receiptPath: string
+): Promise<McpProofSummary["splunkMcpBoundary"]> => {
+  const lines = (await readFile(transcriptPath, "utf8"))
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const certifiedToolNames: string[] = [];
+  const evidenceRefs: string[] = [];
+
+  for (const line of lines) {
+    const parsed = JSON.parse(line) as unknown;
+
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      continue;
+    }
+
+    const record = parsed as Record<string, unknown>;
+
+    if (record.method === "tools/call") {
+      const params = record.params;
+      const toolName =
+        params && typeof params === "object" && !Array.isArray(params)
+          ? (params as Record<string, unknown>).name
+          : undefined;
+
+      if (typeof toolName === "string") {
+        certifiedToolNames.push(toolName);
+      }
+    }
+
+    if ("result" in record) {
+      const result = record.result;
+      const structuredContent =
+        result && typeof result === "object" && !Array.isArray(result)
+          ? (result as Record<string, unknown>).structuredContent
+          : undefined;
+      evidenceRefs.push(...collectEvidenceRefs(structuredContent));
+    }
+
+    evidenceRefs.push(...collectEvidenceRefs(record));
+  }
+
+  const uniqueToolNames = [...new Set(certifiedToolNames)];
+  const uniqueEvidenceRefs = [...new Set(evidenceRefs)];
+
+  return {
+    status: certificationStatus,
+    transcriptKind: "captured-splunk-mcp-jsonrpc",
+    transcriptPath,
+    localMcpServerRole:
+      "SplunkReady MCP exposes the Agent Readiness Compiler as a certification interface for MCP clients.",
+    splunkMcpServerRole:
+      "The captured transcript is the Splunk MCP Server boundary: an agent invoked Splunk MCP tools, then SplunkReady certified the behavior.",
+    certifiedToolNames: uniqueToolNames,
+    splunkToolCallCount: certifiedToolNames.filter((toolName) => toolName.startsWith("splunk_")).length,
+    includesSavedSearchExecution: uniqueToolNames.includes("splunk_run_saved_search"),
+    evidenceRefs: uniqueEvidenceRefs,
+    receiptPath,
+    deterministicAuthority: true,
+    mutation: false
+  };
+};
 
 export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise<McpProofWorkflowResult> => {
   const transcriptPath = input.transcriptPath ?? defaultTranscriptPath;
@@ -281,12 +390,15 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       transcriptResult,
       "splunkready_certify_mcp_transcript"
     );
+    const certificationStatus = stringFromRecord(transcriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
     const toolArtifacts = Array.isArray(transcriptCertification.artifacts)
       ? transcriptCertification.artifacts.filter((artifact): artifact is string => typeof artifact === "string")
       : [];
+    const receiptPath = join(transcriptOutDir, "receipt-external-001.json");
+    const splunkMcpBoundary = await readSplunkMcpBoundaryEvidence(transcriptPath, certificationStatus, receiptPath);
     const summary: McpProofSummary = {
       source: "splunkready-mcp-proof",
-      status: stringFromRecord(transcriptCertification, "status") === "PASS" ? "PASS" : "FAIL",
+      status: certificationStatus,
       mutation: false,
       generatedAt,
       serverPath: input.serverPath,
@@ -303,6 +415,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       postureResource,
       transcriptPrompt,
       transcriptCertification,
+      splunkMcpBoundary,
       artifacts: [summaryPath, markdownPath, ...toolArtifacts],
       nextCommands: [
         `npm run mcp`,

@@ -10470,3 +10470,41 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
+## 2026-06-05 23:37 - Move 70 MCP Boundary Proof Evidence
+
+Scope:
+- Continued the Minimax/user-directed MCP prize improvement without using
+  subagents.
+- Strengthened `mcp-proof` so it proves captured Splunk MCP behavior, not only
+  the local SplunkReady MCP server surface.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/workflows/mcp-proof.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `moves/README.md`
+- `moves/moves70.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `mcp-proof-summary.json` now includes `splunkMcpBoundary`.
+- The boundary block records the certified Splunk MCP JSON-RPC transcript path,
+  certified `splunk_*` tools, saved-search execution, evidence refs, generated
+  receipt path, deterministic authority, and `mutation: false`.
+- The MCP proof markdown now surfaces the same Splunk MCP boundary summary.
+- README copy now positions the proof as certification of captured Splunk MCP
+  behavior instead of a local-MCP-server-only demo.
+
+Open blockers:
+- The proof is still credential-free fixture evidence by default; optional live
+  Splunk MCP proof remains environment-gated and operator-owned.
+- Public package publish, hosted demo, refreshed submission evidence, and
+  final reviewer-equivalent scrutiny remain open Minimax caps.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
