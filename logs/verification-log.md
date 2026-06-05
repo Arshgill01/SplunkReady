@@ -7542,6 +7542,53 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 58 MCP Resources And Prompts
+
+Commands:
+
+- `npm test -- tests/mcp/server.test.ts tests/cli/flow.test.ts -t "MCP server|mcp-proof|one-command MCP server proof"`
+- `rm -rf artifacts/mcp-proof && npm run mcp-proof`
+- `node --input-type=module -e "import fs from 'node:fs'; const s=JSON.parse(fs.readFileSync('artifacts/mcp-proof/mcp-proof-summary.json','utf8')); console.log(JSON.stringify({status:s.status, toolCount:s.tools.length, resourceCount:s.resources.length, promptCount:s.prompts.length, resourceUris:s.resources.map(r=>r.uri), promptNames:s.prompts.map(p=>p.name), postureHasAuthority:s.postureResource.contents?.[0]?.text?.includes('deterministicAuthority'), promptHasStrict:s.transcriptPrompt.messages?.[0]?.content?.text?.includes('strictImport=true')}, null, 2));"`
+- `gh run list --branch splunkready-build --limit 3`
+- `npm run check`
+- `npm run verify:scaffold && git diff --check`
+
+Result:
+
+- PASS for focused MCP tests: 2 files passed, 9 selected tests passed, and 36
+  tests skipped by the focus filter.
+- PASS for `npm run mcp-proof`; generated `artifacts/mcp-proof` and
+  `mcp-proof-summary.json`.
+- PASS for proof summary inspection:
+  - status `PASS`;
+  - 3 tools;
+  - 4 resources;
+  - 3 prompts;
+  - posture resource includes deterministic authority;
+  - transcript prompt includes `strictImport=true`.
+- PASS for GitHub CI follow-up from Move 57: run `27027291870` completed
+  successfully after the ripgrep install fix.
+- PASS for full `npm run check`:
+  - scaffold verified: 85 waves and 1729 project files;
+  - runtime contracts verified: 19 rules, 4 fixture missions, and 20 evidence
+    refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 49 test files passed;
+  - 320 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for post-log structural check: scaffold verified 85 waves and 1729
+  project files, and `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because no UI source changed.
+- Generated `artifacts/mcp-proof` remains ignored.
+
 ## 2026-06-05 - Move 57 CI Verification Tool Install
 
 Commands:

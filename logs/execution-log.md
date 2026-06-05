@@ -9562,6 +9562,59 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 22:07 - Move 58 MCP Resources And Prompts
+
+Scope:
+- Responded to the user's and Minimax 3 audit's Best Use of MCP concern.
+- Expanded the local SplunkReady MCP certification server beyond tool calls by
+  adding discoverable resources and reusable prompts.
+- Updated `mcp-proof` so it exercises tools, resources, prompts, posture
+  resource reads, prompt retrieval, and transcript certification in one proof.
+- Reframed docs around the stronger MCP story: SplunkReady uses Splunk MCP as
+  the live/captured agent behavior boundary, and exposes its own MCP server as
+  a composable certification interface.
+- Did not add Splunk write tools.
+- Did not make prompt/LLM output authoritative for readiness.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source, so Playwright is not required.
+
+Files changed:
+- `src/mcp/server.ts`
+- `src/workflows/mcp-proof.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `examples/README.md`
+- `docs/devpost-submission.md`
+- `moves/README.md`
+- `moves/moves58.md`
+- `logs/competitive-audit-2026-06-05.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- MCP `initialize` now advertises `tools`, `resources`, and `prompts`.
+- Added resources for certification posture, passing external trace example,
+  passing MCP transcript example, and passing Readiness Receipt example.
+- Added prompts for certifying captured MCP transcripts, capturing canonical
+  SplunkReady traces, and explaining Readiness Receipts without overriding
+  deterministic verdicts.
+- `mcp-proof` now records tool/resource/prompt counts, reads the posture
+  resource, fetches the transcript certification prompt, and then certifies the
+  transcript through the MCP tool.
+- Documentation now distinguishes the local certification MCP server from the
+  primary award story: certifying real or captured Splunk MCP agent behavior.
+
+Open blockers:
+- Public npm publication remains unclaimed and requires an explicit release
+  decision.
+- Hosted public demo remains unclaimed and requires an explicit deploy decision.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 21:59 - Move 56 Repository CI Canonical Gate
 
 Scope:

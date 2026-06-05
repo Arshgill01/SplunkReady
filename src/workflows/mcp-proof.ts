@@ -52,7 +52,18 @@ interface McpProofSummary {
     destructiveHint: unknown;
     readOnlyHint: unknown;
   }>;
+  resources: Array<{
+    uri: string;
+    name: string;
+    mimeType: string;
+  }>;
+  prompts: Array<{
+    name: string;
+    argumentCount: number;
+  }>;
   describe: Record<string, unknown>;
+  postureResource: Record<string, unknown>;
+  transcriptPrompt: Record<string, unknown>;
   transcriptCertification: Record<string, unknown>;
   artifacts: string[];
   nextCommands: string[];
@@ -179,6 +190,12 @@ Mutation: ${summary.mutation ? "yes" : "no"}
 Tools:
 ${summary.tools.map((tool) => `- ${tool.name} destructive=${String(tool.destructiveHint)} readOnly=${String(tool.readOnlyHint)}`).join("\n")}
 
+Resources:
+${summary.resources.map((resource) => `- ${resource.uri} (${resource.mimeType})`).join("\n")}
+
+Prompts:
+${summary.prompts.map((prompt) => `- ${prompt.name} arguments=${prompt.argumentCount}`).join("\n")}
+
 Transcript certification: ${stringFromRecord(summary.transcriptCertification, "status")}
 
 Receipt: ${stringFromRecord(summary.transcriptCertification, "outDir")}/receipt-external-001.json
@@ -203,6 +220,17 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
     });
     client.notify("notifications/initialized");
     const toolsList = await client.request("tools/list");
+    const resourcesList = await client.request("resources/list");
+    const postureResource = await client.request("resources/read", { uri: "splunkready://certification/posture" });
+    const promptsList = await client.request("prompts/list");
+    const transcriptPrompt = await client.request("prompts/get", {
+      name: "splunkready_certify_mcp_transcript",
+      arguments: {
+        transcriptPath,
+        outDir: transcriptOutDir,
+        finalAnswer: input.finalAnswer ?? defaultFinalAnswer
+      }
+    });
     const describeResult = await client.request("tools/call", {
       name: "splunkready_describe_certification",
       arguments: {}
@@ -230,6 +258,24 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         readOnlyHint: annotations.readOnlyHint
       };
     });
+    const resources = (Array.isArray(resourcesList.resources) ? resourcesList.resources : []).map((resource) => {
+      const record = asRecord(resource, "resources/list resource");
+
+      return {
+        uri: stringFromRecord(record, "uri"),
+        name: stringFromRecord(record, "name"),
+        mimeType: stringFromRecord(record, "mimeType")
+      };
+    });
+    const prompts = (Array.isArray(promptsList.prompts) ? promptsList.prompts : []).map((prompt) => {
+      const record = asRecord(prompt, "prompts/list prompt");
+      const args = Array.isArray(record.arguments) ? record.arguments : [];
+
+      return {
+        name: stringFromRecord(record, "name"),
+        argumentCount: args.length
+      };
+    });
     const describe = extractStructuredContent(describeResult, "splunkready_describe_certification");
     const transcriptCertification = extractStructuredContent(
       transcriptResult,
@@ -251,7 +297,11 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         instructions: stringFromRecord(initialize, "instructions")
       },
       tools,
+      resources,
+      prompts,
       describe,
+      postureResource,
+      transcriptPrompt,
       transcriptCertification,
       artifacts: [summaryPath, markdownPath, ...toolArtifacts],
       nextCommands: [
@@ -269,7 +319,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       artifacts: summary.artifacts,
       mutation: false,
       messages: [
-        `Initialized MCP server ${summary.handshake.serverName} with ${summary.tools.length} certification tool(s).`,
+        `Initialized MCP server ${summary.handshake.serverName} with ${summary.tools.length} certification tool(s), ${summary.resources.length} resource(s), and ${summary.prompts.length} prompt(s).`,
         `Certified transcript ${transcriptPath} through splunkready_certify_mcp_transcript.`
       ]
     };

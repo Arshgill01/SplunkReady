@@ -127,3 +127,8 @@ claim a green badge until GitHub has actually run the workflow.
 Move 57 follows up on the first hosted CI run by installing ripgrep before the
 canonical gate; the prior run failed in `scripts/verify-scaffold.sh` because
 `rg` was missing on the GitHub runner.
+
+Move 58 responds to the "Best Use of MCP" ceiling directly: the local MCP server
+now exposes resources and prompts in addition to tools, and the docs frame the
+award story around certifying real Splunk MCP agent behavior rather than merely
+building another Splunk-adjacent MCP server.

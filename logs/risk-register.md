@@ -205,3 +205,9 @@ on Node 22 without live Splunk or Gemini secrets.
 
 Move 57 fixes the first hosted CI failure from that workflow: GitHub Actions did
 not have `rg`, so the workflow now installs ripgrep before the canonical gate.
+
+Move 58 reduces R019 by adding MCP resources and prompts to the local
+certification server and by updating the product story: SplunkReady's standout
+MCP use is certifying Splunk MCP agent behavior, while the local MCP server is a
+composable certification interface for clients that want posture resources,
+prompts, and receipts.

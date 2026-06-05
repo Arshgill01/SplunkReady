@@ -1252,7 +1252,11 @@ describe("SplunkReady CLI flow", () => {
       mutation: boolean;
       handshake: { protocolVersion: string; serverName: string; instructions: string };
       tools: Array<{ name: string; destructiveHint: boolean; readOnlyHint: boolean }>;
+      resources: Array<{ uri: string; name: string; mimeType: string }>;
+      prompts: Array<{ name: string; argumentCount: number }>;
       describe: { product: string; engine: string; mutation: boolean; deterministicAuthority: boolean };
+      postureResource: { contents: Array<{ uri: string; text: string }> };
+      transcriptPrompt: { messages: Array<{ content: { text: string } }> };
       transcriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
       artifacts: string[];
     };
@@ -1293,6 +1297,19 @@ describe("SplunkReady CLI flow", () => {
       "splunkready_certify_external_trace",
       "splunkready_certify_mcp_transcript"
     ]);
+    expect(summary.resources.map((resource) => resource.uri)).toEqual([
+      "splunkready://certification/posture",
+      "splunkready://examples/external-trace-pass",
+      "splunkready://examples/mcp-transcript-pass",
+      "splunkready://examples/pass-receipt"
+    ]);
+    expect(summary.prompts.map((prompt) => prompt.name)).toEqual([
+      "splunkready_certify_mcp_transcript",
+      "splunkready_capture_trace",
+      "splunkready_explain_receipt"
+    ]);
+    expect(summary.postureResource.contents[0].text).toContain("\"advisoryLlmOnly\": true");
+    expect(summary.transcriptPrompt.messages[0].content.text).toContain("strictImport=true");
     expect(summary.tools.every((tool) => tool.destructiveHint === false)).toBe(true);
     expect(summary.artifacts).toEqual(
       expect.arrayContaining([

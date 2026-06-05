@@ -48,6 +48,25 @@ interface McpTool {
   annotations: Record<string, unknown>;
 }
 
+interface McpResource {
+  uri: string;
+  name: string;
+  title: string;
+  description: string;
+  mimeType: string;
+}
+
+interface McpPrompt {
+  name: string;
+  title: string;
+  description: string;
+  arguments: Array<{
+    name: string;
+    description: string;
+    required: boolean;
+  }>;
+}
+
 const optionalName = z.string().trim().min(1).max(120).optional();
 
 const certifyExternalTraceSchema = z
@@ -174,6 +193,96 @@ export const splunkReadyMcpTools: McpTool[] = [
   }
 ];
 
+export const splunkReadyMcpResources: McpResource[] = [
+  {
+    uri: "splunkready://certification/posture",
+    name: "certification-posture",
+    title: "SplunkReady Certification Posture",
+    description:
+      "Machine-readable product boundary: deterministic authority, advisory LLM role, no Splunk mutation, and available certification tools.",
+    mimeType: "application/json"
+  },
+  {
+    uri: "splunkready://examples/external-trace-pass",
+    name: "external-trace-pass",
+    title: "Passing External Trace Example",
+    description: "Canonical passing SplunkReady trace JSON that MCP clients can certify with splunkready_certify_external_trace.",
+    mimeType: "application/json"
+  },
+  {
+    uri: "splunkready://examples/mcp-transcript-pass",
+    name: "mcp-transcript-pass",
+    title: "Passing MCP Transcript Example",
+    description:
+      "Passing Splunk MCP JSON-RPC transcript that MCP clients can certify with splunkready_certify_mcp_transcript.",
+    mimeType: "application/jsonl"
+  },
+  {
+    uri: "splunkready://examples/pass-receipt",
+    name: "pass-receipt",
+    title: "Passing Readiness Receipt Example",
+    description: "Markdown Readiness Receipt example showing the deterministic proof artifact MCP clients should expect.",
+    mimeType: "text/markdown"
+  }
+];
+
+export const splunkReadyMcpPrompts: McpPrompt[] = [
+  {
+    name: "splunkready_certify_mcp_transcript",
+    title: "Certify A Captured Splunk MCP Transcript",
+    description:
+      "Guide an MCP-capable agent to pass a captured Splunk JSON-RPC transcript through SplunkReady certification.",
+    arguments: [
+      {
+        name: "transcriptPath",
+        description: "Local path to the captured Splunk MCP JSONL transcript.",
+        required: true
+      },
+      {
+        name: "outDir",
+        description: "Local output directory for the Readiness Receipt bundle.",
+        required: true
+      },
+      {
+        name: "finalAnswer",
+        description: "The agent's final answer to append before grading.",
+        required: true
+      }
+    ]
+  },
+  {
+    name: "splunkready_capture_trace",
+    title: "Capture A SplunkReady Trace",
+    description:
+      "Guide a developer or agent framework to emit canonical SplunkReady trace events before deterministic grading.",
+    arguments: [
+      {
+        name: "agentName",
+        description: "Name of the agent or framework producing the trace.",
+        required: false
+      },
+      {
+        name: "missionId",
+        description: "Mission identifier to record in canonical SplunkReady trace events.",
+        required: false
+      }
+    ]
+  },
+  {
+    name: "splunkready_explain_receipt",
+    title: "Explain A Readiness Receipt",
+    description:
+      "Guide an assistant to explain a Readiness Receipt while preserving deterministic pass/fail authority.",
+    arguments: [
+      {
+        name: "receiptPath",
+        description: "Local path to a Readiness Receipt JSON or Markdown artifact.",
+        required: true
+      }
+    ]
+  }
+];
+
 const success = (id: JsonRpcId, result: unknown): JsonRpcSuccess => ({ jsonrpc: "2.0", id, result });
 const error = (id: JsonRpcId, code: number, message: string, data?: unknown): JsonRpcError => ({
   jsonrpc: "2.0",
@@ -205,8 +314,123 @@ const describeCertification = (): Record<string, unknown> => ({
   deterministicAuthority: true,
   advisoryLlmOnly: true,
   mutation: false,
-  tools: splunkReadyMcpTools.map((tool) => tool.name)
+  tools: splunkReadyMcpTools.map((tool) => tool.name),
+  resources: splunkReadyMcpResources.map((resource) => resource.uri),
+  prompts: splunkReadyMcpPrompts.map((prompt) => prompt.name)
 });
+
+const readResource = async (uri: string): Promise<Record<string, unknown>> => {
+  if (uri === "splunkready://certification/posture") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "application/json",
+          text: JSON.stringify(describeCertification(), null, 2)
+        }
+      ]
+    };
+  }
+
+  if (uri === "splunkready://examples/external-trace-pass") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "application/json",
+          text: await readFile("examples/sample-external-trace-pass.json", "utf8")
+        }
+      ]
+    };
+  }
+
+  if (uri === "splunkready://examples/mcp-transcript-pass") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "application/jsonl",
+          text: await readFile("examples/sample-mcp-transcript-pass.jsonl", "utf8")
+        }
+      ]
+    };
+  }
+
+  if (uri === "splunkready://examples/pass-receipt") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "text/markdown",
+          text: await readFile("examples/sample-pass-receipt.md", "utf8")
+        }
+      ]
+    };
+  }
+
+  throw new Error(`Unknown resource: ${uri}`);
+};
+
+const promptText = (name: string, args: Record<string, unknown>): string => {
+  if (name === "splunkready_certify_mcp_transcript") {
+    return [
+      "Certify this captured Splunk MCP transcript with SplunkReady.",
+      "",
+      `Transcript path: ${String(args.transcriptPath ?? "<transcriptPath>")}`,
+      `Output directory: ${String(args.outDir ?? "<outDir>")}`,
+      `Final answer: ${String(args.finalAnswer ?? "<finalAnswer>")}`,
+      "",
+      "Call splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.",
+      "Use the resulting Readiness Receipt as the source of truth. Deterministic rules decide READY or NOT READY; LLM output may only explain the receipt."
+    ].join("\n");
+  }
+
+  if (name === "splunkready_capture_trace") {
+    return [
+      "Capture a canonical SplunkReady trace for a Splunk-connected agent.",
+      "",
+      `Agent name: ${String(args.agentName ?? "<agentName>")}`,
+      `Mission id: ${String(args.missionId ?? "mission-security-lateral-movement-readiness")}`,
+      "",
+      "Record each Splunk tool call, tool result, evidence ref, query ref, and final answer.",
+      "Then certify the trace with splunkready_certify_external_trace. Do not use an LLM to decide pass/fail."
+    ].join("\n");
+  }
+
+  if (name === "splunkready_explain_receipt") {
+    return [
+      "Explain this SplunkReady Readiness Receipt for an engineering reviewer.",
+      "",
+      `Receipt path: ${String(args.receiptPath ?? "<receiptPath>")}`,
+      "",
+      "Summarize the deterministic verdict, active rules, trace refs, evidence refs, and policy patch implications.",
+      "Do not override or reinterpret the receipt verdict; deterministic grading is authoritative."
+    ].join("\n");
+  }
+
+  throw new Error(`Unknown prompt: ${name}`);
+};
+
+const getPrompt = (name: string, args: Record<string, unknown>): Record<string, unknown> => {
+  const prompt = splunkReadyMcpPrompts.find((candidate) => candidate.name === name);
+
+  if (!prompt) {
+    throw new Error(`Unknown prompt: ${name}`);
+  }
+
+  return {
+    description: prompt.description,
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: promptText(name, args)
+        }
+      }
+    ]
+  };
+};
 
 const callTool = async (name: string, args: unknown, env: NodeJS.ProcessEnv): Promise<Record<string, unknown>> => {
   if (name === "splunkready_describe_certification") {
@@ -322,7 +546,11 @@ export const handleMcpMessage = async (
   if (request.method === "initialize") {
     return success(request.id, {
       protocolVersion,
-      capabilities: { tools: { listChanged: false } },
+      capabilities: {
+        tools: { listChanged: false },
+        resources: { listChanged: false },
+        prompts: { listChanged: false }
+      },
       serverInfo: {
         name: "splunkready",
         title: "SplunkReady Agent Readiness Compiler",
@@ -339,6 +567,53 @@ export const handleMcpMessage = async (
 
   if (request.method === "tools/list") {
     return success(request.id, { tools: splunkReadyMcpTools });
+  }
+
+  if (request.method === "resources/list") {
+    return success(request.id, { resources: splunkReadyMcpResources });
+  }
+
+  if (request.method === "resources/read") {
+    const parsed = z
+      .object({
+        uri: z.string().trim().min(1)
+      })
+      .strict()
+      .safeParse(request.params ?? {});
+
+    if (!parsed.success) {
+      return error(request.id, -32602, zodMessage(parsed));
+    }
+
+    try {
+      return success(request.id, await readResource(parsed.data.uri));
+    } catch (caught) {
+      return error(request.id, -32602, redactUnknownError(caught, env));
+    }
+  }
+
+  if (request.method === "prompts/list") {
+    return success(request.id, { prompts: splunkReadyMcpPrompts });
+  }
+
+  if (request.method === "prompts/get") {
+    const parsed = z
+      .object({
+        name: z.string().trim().min(1),
+        arguments: z.record(z.unknown()).optional().default({})
+      })
+      .strict()
+      .safeParse(request.params ?? {});
+
+    if (!parsed.success) {
+      return error(request.id, -32602, zodMessage(parsed));
+    }
+
+    try {
+      return success(request.id, getPrompt(parsed.data.name, parsed.data.arguments));
+    } catch (caught) {
+      return error(request.id, -32602, redactUnknownError(caught, env));
+    }
   }
 
   if (request.method === "tools/call") {

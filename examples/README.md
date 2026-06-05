@@ -160,7 +160,7 @@ trace reaches the deterministic grader.
 
 ## Run SplunkReady as an MCP server
 
-SplunkReady can also run as a local MCP server so MCP clients can invoke the Agent Readiness Compiler directly. This is not a Splunk search copilot and it does not mutate Splunk. It exposes certification tools that grade local traces and transcripts into Readiness Receipts.
+SplunkReady can also run as a local MCP server so MCP clients can invoke the Agent Readiness Compiler directly. This is not a Splunk search copilot and it does not mutate Splunk. It exposes certification tools, resources, and prompts that help agents grade local traces and Splunk MCP transcripts into Readiness Receipts.
 
 Build and launch the stdio server:
 
@@ -175,7 +175,9 @@ npm run mcp-proof
 ```
 
 The proof command starts the built stdio server as a local MCP client would,
-negotiates `initialize`, lists tools, calls the describe tool, and certifies
+negotiates `initialize`, lists tools/resources/prompts, reads
+`splunkready://certification/posture`, fetches the reusable
+`splunkready_certify_mcp_transcript` prompt, and certifies
 `examples/sample-mcp-transcript-pass.jsonl` through
 `splunkready_certify_mcp_transcript`. It writes
 `artifacts/mcp-proof/mcp-proof-summary.json` and the generated receipt bundle.
@@ -195,6 +197,19 @@ The server exposes these tools:
 - `splunkready_describe_certification`: returns the product posture, no-mutation boundary, and deterministic grading authority.
 - `splunkready_certify_external_trace`: grades a local SplunkReady trace JSON file and writes `trace-external.json`, deterministic violations, score, receipt, and proof audit artifacts.
 - `splunkready_certify_mcp_transcript`: imports a local Splunk MCP JSONL transcript, appends the producer final answer, and writes the same deterministic certification artifacts.
+
+The server exposes these resources:
+
+- `splunkready://certification/posture`: product boundary, deterministic authority, advisory-only LLM role, no-mutation posture, and available MCP surface.
+- `splunkready://examples/external-trace-pass`: passing canonical SplunkReady trace JSON.
+- `splunkready://examples/mcp-transcript-pass`: passing Splunk MCP JSON-RPC transcript.
+- `splunkready://examples/pass-receipt`: passing Readiness Receipt example.
+
+The server exposes these prompts:
+
+- `splunkready_certify_mcp_transcript`: instructs an MCP-capable agent to certify a captured Splunk MCP JSONL transcript.
+- `splunkready_capture_trace`: instructs a framework or client to emit canonical SplunkReady trace events.
+- `splunkready_explain_receipt`: instructs an assistant to explain a receipt without overriding deterministic verdicts.
 
 Example `splunkready_certify_external_trace` arguments:
 

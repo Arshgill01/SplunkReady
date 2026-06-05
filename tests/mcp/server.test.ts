@@ -4,7 +4,12 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { handleMcpMessage, splunkReadyMcpTools } from "../../src/mcp/server.js";
+import {
+  handleMcpMessage,
+  splunkReadyMcpPrompts,
+  splunkReadyMcpResources,
+  splunkReadyMcpTools
+} from "../../src/mcp/server.js";
 
 const sampleTracePath = new URL("../../examples/sample-external-trace-pass.json", import.meta.url);
 
@@ -31,7 +36,11 @@ describe("SplunkReady MCP server", () => {
 
     expect(result).toMatchObject({
       protocolVersion: "2025-06-18",
-      capabilities: { tools: { listChanged: false } },
+      capabilities: {
+        tools: { listChanged: false },
+        resources: { listChanged: false },
+        prompts: { listChanged: false }
+      },
       serverInfo: {
         name: "splunkready",
         title: "SplunkReady Agent Readiness Compiler",
@@ -53,6 +62,67 @@ describe("SplunkReady MCP server", () => {
       "splunkready_certify_mcp_transcript"
     ]);
     expect(splunkReadyMcpTools.every((tool) => tool.annotations.destructiveHint === false)).toBe(true);
+  });
+
+  it("lists and reads composable certification resources", async () => {
+    const listResponse = await handleMcpMessage({ jsonrpc: "2.0", id: "resources", method: "resources/list" });
+    const listResult = resultOf(listResponse);
+
+    expect(listResult.resources).toEqual(splunkReadyMcpResources);
+    expect(splunkReadyMcpResources.map((resource) => resource.uri)).toEqual([
+      "splunkready://certification/posture",
+      "splunkready://examples/external-trace-pass",
+      "splunkready://examples/mcp-transcript-pass",
+      "splunkready://examples/pass-receipt"
+    ]);
+
+    const readResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "resource-read",
+      method: "resources/read",
+      params: { uri: "splunkready://certification/posture" }
+    });
+    const readResult = resultOf(readResponse);
+    const contents = readResult.contents as Array<Record<string, unknown>>;
+
+    expect(contents[0]).toMatchObject({
+      uri: "splunkready://certification/posture",
+      mimeType: "application/json"
+    });
+    expect(String(contents[0].text)).toContain("\"deterministicAuthority\": true");
+    expect(String(contents[0].text)).toContain("\"mutation\": false");
+  });
+
+  it("lists and returns reusable MCP certification prompts", async () => {
+    const listResponse = await handleMcpMessage({ jsonrpc: "2.0", id: "prompts", method: "prompts/list" });
+    const listResult = resultOf(listResponse);
+
+    expect(listResult.prompts).toEqual(splunkReadyMcpPrompts);
+    expect(splunkReadyMcpPrompts.map((prompt) => prompt.name)).toEqual([
+      "splunkready_certify_mcp_transcript",
+      "splunkready_capture_trace",
+      "splunkready_explain_receipt"
+    ]);
+
+    const getResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "prompt-get",
+      method: "prompts/get",
+      params: {
+        name: "splunkready_certify_mcp_transcript",
+        arguments: {
+          transcriptPath: "examples/sample-mcp-transcript-pass.jsonl",
+          outDir: "artifacts/mcp-prompt-proof",
+          finalAnswer: "Evidence refs support the conclusion."
+        }
+      }
+    });
+    const getResult = resultOf(getResponse);
+    const messages = getResult.messages as Array<{ content: { text: string } }>;
+
+    expect(messages[0].content.text).toContain("splunkready_certify_mcp_transcript");
+    expect(messages[0].content.text).toContain("strictImport=true");
+    expect(messages[0].content.text).toContain("Deterministic rules decide READY or NOT READY");
   });
 
   it("certifies an external trace through tools/call", async () => {

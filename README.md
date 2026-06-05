@@ -51,13 +51,16 @@ npm run mcp-proof
 ```
 
 `npm run mcp-proof` starts the built SplunkReady stdio MCP server, negotiates
-`initialize`, lists non-destructive certification tools, calls
-`splunkready_describe_certification`, then certifies the checked-in passing MCP
-JSON-RPC transcript through `splunkready_certify_mcp_transcript`. It writes
+`initialize`, lists non-destructive certification tools, resources, and prompts,
+reads the certification posture resource, fetches a reusable transcript
+certification prompt, then certifies the checked-in passing MCP JSON-RPC
+transcript through `splunkready_certify_mcp_transcript`. It writes
 `artifacts/mcp-proof/mcp-proof-summary.json` / `.md` plus the generated
 Readiness Receipt artifacts. This is still fixture-only, credential-free, and
 non-mutating; it proves SplunkReady as an MCP certification server, not a Splunk
-search copilot.
+search copilot. The larger MCP story remains the Splunk MCP boundary itself:
+SplunkReady grades real or captured Splunk MCP tool behavior into deployment-
+specific Readiness Receipts.
 
 For the single-mission static replay shell, run:
 
