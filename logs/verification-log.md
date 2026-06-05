@@ -2,6 +2,36 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-05 - Move 59 Workbench CI Timeout Stabilization
+
+Commands:
+
+- `npm test -- tests/workbench/server.test.ts -t "serves the executable Vite UI shell"`
+- `npm run check`
+
+Result:
+
+- PASS for the focused workbench server regression:
+  - 1 test file passed;
+  - 1 selected test passed and 7 tests skipped.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 49 test files passed;
+  - 320 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- This move did not change UI source or behavior, so Playwright was not run.
+- Hosted CI must rerun after push to confirm the branch is green again.
+
 ## 2026-06-01 15:36 - Wave 39 Demo Orchestration
 
 Commands:

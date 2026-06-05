@@ -2,6 +2,34 @@
 
 Implementation stack setup started in Wave 02. Product runtime behavior is not implemented yet.
 
+## 2026-06-05 22:12 - Move 59 Workbench CI Timeout Stabilization
+
+Scope:
+- Fixed the hosted GitHub Actions failure after Move 58.
+- Kept the patch to the exact Vite dev-shell workbench test that timed out in
+  CI; product behavior and UI source were unchanged.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `tests/workbench/server.test.ts`
+- `moves/README.md`
+- `moves/moves59.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Raised the workbench dev UI shell test timeout from 15 seconds to 45 seconds
+  so slower hosted runners can finish the same fixture-certification flow that
+  already passes locally.
+
+Open blockers:
+- Hosted CI must rerun after push to confirm the branch is green again.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 Future entries must use:
 
 ```text

@@ -303,7 +303,7 @@ describe("workbench HTTP server", () => {
     } finally {
       await server.close();
     }
-  }, 15_000);
+  }, 45_000);
 
   it("redacts dev UI middleware errors before returning them to the browser", async () => {
     const secret = "dev-ui-secret-token";
