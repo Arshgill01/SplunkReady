@@ -30,6 +30,15 @@ import {
   verifyManifestCommand
 } from "./cli/proof-commands.js";
 import {
+  liveCandidatesCommand,
+  liveProofCommand,
+  liveSecurityCheckCommand,
+  liveSecurityKitCommand,
+  liveSecurityProofCommand,
+  liveSecurityUiBundleCommand,
+  liveSmokeCommand
+} from "./cli/live-commands.js";
+import {
   compileCommand,
   evaluateCommand,
   firewallCheckCommand,
@@ -37,20 +46,6 @@ import {
   rerunCommand
 } from "./workflows/certification-actions.js";
 import { runFixtureCertificationWorkflow } from "./workflows/fixture-certification.js";
-import type {
-  LiveActionWorkflowInput,
-  LiveActionWorkflowResult
-} from "./workflows/live-actions.js";
-import {
-  runLiveCandidatesWorkflow,
-  runLiveProofWorkflow,
-  runLiveSecurityKitWorkflow,
-  runLiveSecurityProofArtifacts,
-  runLiveSecurityProofWorkflow,
-  runLiveSecurityReadinessWorkflow,
-  runLiveSecurityUiBundleWorkflow,
-  runLiveSmokeWorkflow
-} from "./workflows/live-actions.js";
 import {
   runHostedModelDiagnosticWorkflow,
   runHostedModelProofWorkflow,
@@ -65,6 +60,13 @@ export {
   runCertificationIndexFromCli,
   runVerifyManifestFromCli
 } from "./cli/proof-commands.js";
+export {
+  runLiveCandidatesFromCli,
+  runLiveSecurityKitFromCli,
+  runLiveSecurityProofFromCli,
+  runLiveSecurityReadinessFromCli,
+  runLiveSmokeFromCli
+} from "./cli/live-commands.js";
 
 const printCliOutput = (output: CliOutput, options: CliOptions): void => {
   if (options.json) {
@@ -125,40 +127,6 @@ export const runPolicyBackedRerunFromCli = runPolicyBackedRerunWorkflow;
 
 export const runFirewallCheckFromCli = runFirewallCheckWorkflow;
 
-export const runLiveSmokeFromCli = async (
-  input: LiveActionWorkflowInput,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<LiveActionWorkflowResult> => {
-  return runLiveSmokeWorkflow({ ...input, requireLive: input.requireLive ?? true }, env);
-};
-
-export const runLiveCandidatesFromCli = async (
-  input: LiveActionWorkflowInput,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<LiveActionWorkflowResult> => {
-  return runLiveCandidatesWorkflow({ ...input, compileFirst: input.compileFirst ?? true }, env);
-};
-
-export const runLiveSecurityReadinessFromCli = async (
-  input: LiveActionWorkflowInput,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<LiveActionWorkflowResult> => {
-  return runLiveSecurityReadinessWorkflow(input, env);
-};
-
-export const runLiveSecurityKitFromCli = async (
-  input: LiveActionWorkflowInput
-): Promise<LiveActionWorkflowResult> => {
-  return runLiveSecurityKitWorkflow(input);
-};
-
-export const runLiveSecurityProofFromCli = async (
-  input: LiveActionWorkflowInput,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<LiveActionWorkflowResult> => {
-  return runLiveSecurityProofWorkflow({ ...input, requirePass: input.requirePass ?? true }, env);
-};
-
 export const runHostedModelDiagnosticFromCli = async (
   input: HostedModelWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
@@ -184,12 +152,7 @@ const main = async (): Promise<void> => {
   }
 
   if (command === "live-smoke") {
-    const result = await runLiveSmokeWorkflow({
-      outDir: options.out,
-      fixturePath: options.fixture,
-      missionPath: options.mission,
-      requireLive: options.requireLive
-    });
+    const result = await liveSmokeCommand(options);
     printCliOutput({ command, status: result.status, artifacts: result.artifacts, messages: result.messages }, options);
     return;
   }
@@ -225,60 +188,17 @@ const main = async (): Promise<void> => {
   } else if (command === "mcp-proof") {
     artifacts = await mcpProofCommand(options);
   } else if (command === "live-candidates") {
-    artifacts = (
-      await runLiveCandidatesWorkflow({
-        outDir: options.out,
-        fixturePath: options.fixture,
-        missionPath: options.mission,
-        candidateLimit: options.candidateLimit,
-        compileFirst: false,
-        firewall: options.firewall,
-        agentModel: options.agentModel
-      })
-    ).artifacts;
+    artifacts = await liveCandidatesCommand(options);
   } else if (command === "live-security-check") {
-    artifacts = (
-      await runLiveSecurityReadinessWorkflow({
-        outDir: options.out,
-        fixturePath: options.fixture,
-        missionPath: options.mission,
-        firewall: options.firewall,
-        agentModel: options.agentModel
-      })
-    ).artifacts;
+    artifacts = await liveSecurityCheckCommand(options);
   } else if (command === "live-security-kit") {
-    artifacts = (await runLiveSecurityKitWorkflow({ outDir: options.out })).artifacts;
+    artifacts = await liveSecurityKitCommand(options);
   } else if (command === "live-security-proof") {
-    artifacts = await runLiveSecurityProofArtifacts({
-      outDir: options.out,
-      fixturePath: options.fixture,
-      missionPath: options.mission,
-      firewall: options.firewall,
-      agentModel: options.agentModel,
-      requirePass: options.requirePass
-    });
+    artifacts = await liveSecurityProofCommand(options);
   } else if (command === "live-security-ui-bundle") {
-    artifacts = (
-      await runLiveSecurityUiBundleWorkflow({
-        outDir: options.out,
-        proofDir: options.proofDir,
-        securityCheckDir: options.securityCheckDir,
-        securityKitDir: options.securityKitDir,
-        hostedModelProofDir: options.hostedModelProofDir
-      })
-    ).artifacts;
+    artifacts = await liveSecurityUiBundleCommand(options);
   } else if (command === "live-proof") {
-    artifacts = (
-      await runLiveProofWorkflow({
-        outDir: options.out,
-        fixturePath: options.fixture,
-        missionPath: options.mission,
-        candidateLimit: options.candidateLimit,
-        firewall: options.firewall,
-        agentModel: options.agentModel,
-        requirePass: options.requirePass
-      })
-    ).artifacts;
+    artifacts = await liveProofCommand(options);
   } else if (command === "suite-proof") {
     artifacts = await suiteProofCommand(options);
   } else if (command === "receipt") {

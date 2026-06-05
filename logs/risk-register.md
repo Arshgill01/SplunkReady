@@ -390,3 +390,10 @@ captured transcript, LLM-agent, and demo command wrappers into
 lines before the move and 634 lines before Moves 87-88. Remaining CLI risk:
 root dispatch and live command orchestration still live in `src/cli.ts`, so the
 next useful slice is live command extraction or a small command registry.
+
+Move 89 further reduces the CLI-monolith risk by extracting live-mode command
+wrappers and live CLI helper exports into `src/cli/live-commands.ts`.
+`src/cli.ts` is now 287 lines, down from 367 lines before the move and 634
+lines before Moves 87-89. Remaining CLI risk: root dispatch and hosted-model
+helper exports still live in `src/cli.ts`, so the next useful slice is a small
+command registry or moving hosted-model helper exports into the proof module.

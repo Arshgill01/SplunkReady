@@ -111,6 +111,7 @@ commands, or filesystem paths.
 | P0 | [86](moves86.md) CLI option parser extraction | 0.5d | Extracts CLI defaults, usage, option types, and argument parsing out of the command executor. |
 | P0 | [87](moves87.md) CLI proof command extraction | 0.5d | Extracts proof-oriented command wrappers out of the root CLI executor while preserving proof behavior. |
 | P0 | [88](moves88.md) CLI external command extraction | 0.5d | Extracts external trace, transcript, LLM-agent, and demo command wrappers out of the root CLI executor. |
+| P0 | [89](moves89.md) CLI live command extraction | 0.5d | Extracts live-mode command wrappers and live CLI helper exports out of the root CLI executor. |
 
 ## Non-Negotiable Boundaries
 

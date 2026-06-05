@@ -11292,3 +11292,41 @@ Open blockers:
   a small command registry.
 - This move is not a UI change and does not address hosted demo, public package
   publication, or live proof export caps.
+
+## 2026-06-06 03:00 - Move 89 CLI Live Command Extraction
+
+Scope:
+- Continued the Minimax CLI-monolith cap work without using subagents.
+- Added `moves/moves89.md` for a focused live command extraction.
+- Created `src/cli/live-commands.ts` for `live-smoke`, `live-candidates`,
+  `live-security-check`, `live-security-kit`, `live-security-proof`,
+  `live-security-ui-bundle`, and `live-proof` command wrappers.
+- Moved live `run*FromCli` helper exports out of `src/cli.ts`.
+- Preserved `live-smoke` status/message handling and kept command names,
+  flags, defaults, JSON output, package bin behavior, fixture/live parity,
+  strict live security behavior, deterministic grading authority, MCP behavior,
+  and Splunk mutation boundaries unchanged.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+
+Files changed:
+- `src/cli.ts`
+- `src/cli/live-commands.ts`
+- `moves/README.md`
+- `moves/moves89.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `src/cli.ts` dropped from 367 lines before Move 89 to 287 lines after the
+  extraction.
+- `src/cli/live-commands.ts` now owns 125 lines of live-mode command
+  orchestration and live CLI helper exports.
+
+Open blockers:
+- Root CLI dispatch and hosted-model helper exports still remain in
+  `src/cli.ts`; future modularization can extract a small command registry or
+  move hosted-model helper exports into the proof command module.
+- This move is not a UI change and does not address hosted demo, public package
+  publication, or live proof export caps.
