@@ -9474,6 +9474,48 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 21:20 - Move 50 Package CLI Default Asset Resolution
+
+Scope:
+- Responded to the user's competitive audit around Developer Tools and Platform
+  & Developer Experience friction.
+- Logged the audit in `logs/competitive-audit-2026-06-05.md` so the strategy
+  survives context compaction.
+- Added npm package bin metadata for a local/package-style `splunkready`
+  command after build while keeping the package private.
+- Added bundled default input resolution so fixture, mission, suite, trace, and
+  transcript paths can resolve from repository/package assets when the CLI runs
+  outside the repository root.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `package.json`
+- `README.md`
+- `moves/README.md`
+- `moves/moves50.md`
+- `logs/competitive-audit-2026-06-05.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added the CLI shebang needed for npm bin execution.
+- Added package `bin` and narrowed package `files` to runtime `dist/src`,
+  examples, fixtures, README, and action metadata.
+- Added a regression proving `judge-proof` runs from a temporary directory
+  outside the repository root with bundled defaults.
+- Documented local `npm link` usage without claiming registry publication.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 21:11 - Move 49 GitHub Action Job Summary
 
 Scope:

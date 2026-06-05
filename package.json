@@ -4,6 +4,16 @@
   "private": true,
   "type": "module",
   "description": "Splunk-native certification harness for AI agents before they touch production Splunk.",
+  "bin": {
+    "splunkready": "dist/src/cli.js"
+  },
+  "files": [
+    "action.yml",
+    "dist/src",
+    "examples",
+    "fixtures",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc --outDir dist",
     "splunkready": "node dist/src/cli.js",

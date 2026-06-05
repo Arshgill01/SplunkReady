@@ -763,6 +763,40 @@ describe("SplunkReady CLI flow", () => {
     expect(markdown).toContain("certification-index.json");
   });
 
+  it("runs judge proof from outside the repository root with bundled defaults", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "splunkready-packaged-cwd-"));
+    const outDir = join(cwd, "proof");
+
+    const output = parseCliJsonOutput((await runCli(["judge-proof", "--out", outDir, "--json"], cwd)).stdout);
+    const summary = JSON.parse(await readFile(join(outDir, "judge-proof-summary.json"), "utf8")) as {
+      status: string;
+      mode: string;
+      mutation: boolean;
+      gates: Array<{ id: string; status: string }>;
+    };
+
+    expect(output).toMatchObject({
+      command: "judge-proof",
+      status: "PASS",
+      artifacts: expect.arrayContaining([
+        join(outDir, "suite-proof", "suite-proof-summary.json"),
+        join(outDir, "firewall-check", "firewall-block-before.json"),
+        join(outDir, "judge-proof-summary.json")
+      ])
+    });
+    expect(summary).toMatchObject({
+      status: "PASS",
+      mode: "fixture",
+      mutation: false
+    });
+    expect(summary.gates).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "suite-proof", status: "PASS" }),
+        expect.objectContaining({ id: "certification-index", status: "PASS" })
+      ])
+    );
+  }, 90_000);
+
   it("runs the clean fixture demo orchestration and writes rehearsal artifacts", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-demo-"));
 

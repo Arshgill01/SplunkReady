@@ -72,6 +72,7 @@ commands, or filesystem paths.
 | P0 | [47](moves47.md) Live security strict readiness contract | 0.5d | Makes fresh-trial live security blockers explicit without downgrading the flagship proof to generic `_internal` evidence. |
 | P0 | [48](moves48.md) Composite GitHub Action gate | 0.5d | Turns the credential-free transcript, trace, and judge proof gates into one reusable GitHub Actions step. |
 | P0 | [49](moves49.md) GitHub Action job summary | 0.5d | Writes deterministic proof status and artifact links into the GitHub Actions job summary. |
+| P0 | [50](moves50.md) Package CLI default asset resolution | 0.5d | Lets a local/package-style `splunkready` command run fixture judge proof from outside the repository root. |
 
 ## Non-Negotiable Boundaries
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { createHash } from "node:crypto";
 import { copyFile, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, sep } from "node:path";
@@ -541,6 +543,39 @@ const exists = async (filePath: string): Promise<boolean> =>
   stat(filePath)
     .then(() => true)
     .catch(() => false);
+
+const resolveBundledInputPath = async (inputPath: string): Promise<string> => {
+  if (!inputPath || isAbsolute(inputPath) || (await exists(inputPath))) {
+    return inputPath;
+  }
+
+  let currentDir = dirname(fileURLToPath(import.meta.url));
+
+  while (true) {
+    const candidatePath = join(currentDir, inputPath);
+
+    if (await exists(candidatePath)) {
+      return candidatePath;
+    }
+
+    const parentDir = dirname(currentDir);
+
+    if (parentDir === currentDir) {
+      return inputPath;
+    }
+
+    currentDir = parentDir;
+  }
+};
+
+const resolveCliInputPaths = async (options: CliOptions): Promise<CliOptions> => ({
+  ...options,
+  fixture: await resolveBundledInputPath(options.fixture),
+  mission: await resolveBundledInputPath(options.mission),
+  suite: await resolveBundledInputPath(options.suite),
+  trace: options.trace ? await resolveBundledInputPath(options.trace) : options.trace,
+  transcript: options.transcript ? await resolveBundledInputPath(options.transcript) : options.transcript
+});
 
 const proofManifestExcludedFiles = new Set(["proof-manifest.json", "proof-manifest-verification.json"]);
 
@@ -3882,7 +3917,8 @@ export const runCertificationIndexFromCli = async (
 };
 
 const main = async (): Promise<void> => {
-  const { command, options } = parseArgs(process.argv.slice(2));
+  const { command, options: parsedOptions } = parseArgs(process.argv.slice(2));
+  const options = await resolveCliInputPaths(parsedOptions);
   let artifacts: string[];
 
   if (command === "help" || command === "--help" || command === "-h") {

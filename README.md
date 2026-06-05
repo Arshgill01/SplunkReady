@@ -31,6 +31,19 @@ npm run judge-proof
 
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 
+For local package-style use after a clone, build once and link the checked-out
+package:
+
+```bash
+npm run build
+npm link
+splunkready judge-proof --out artifacts/judge-proof --json
+```
+
+The `splunkready` bin resolves the bundled default fixture, mission, and suite
+paths even when it is run from outside the repository root. The package remains
+private in this repository until a registry publishing decision is made.
+
 To prove the local MCP certification server path, run:
 
 ```bash

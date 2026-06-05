@@ -129,3 +129,25 @@ Mitigation: keep shrinking the path from agent run to Readiness Receipt. Priorit
 Risk: judges in a Best Use of MCP category may expect a useful MCP server, not only MCP-shaped trace validation.
 
 Mitigation: keep the SplunkReady MCP server scoped to certification and receipt generation, but make that path visible and testable. The MCP story should be that an agent can ask a local server to certify traces and produce Readiness Receipts through the Agent Readiness Compiler, not that SplunkReady is a Splunk search copilot. `npm run mcp-proof` now starts the stdio MCP server, negotiates tools, and certifies a passing MCP transcript into a Readiness Receipt without live credentials or mutation.
+
+## Competitive Audit Update - 2026-06-05
+
+Logged source: `logs/competitive-audit-2026-06-05.md`.
+
+The latest user audit lowers competitive confidence for Platform & Developer
+Experience, Best Use of MCP Server, and Developer Tools. The audit reinforces
+three active risks already tracked here:
+
+- R014 Determinism Perceived As Boring: do not weaken deterministic pass/fail;
+  instead, present it as compiler-grade proof with visible rule activation,
+  evidence refs, and advisory explanations.
+- R015 Flagship Live Security Data Gap: keep strict `live-security-proof`
+  separate from generic live fallback; a fresh Splunk trial is not enough unless
+  operator-owned security data and saved-search setup are present.
+- R018/R019 Developer Workflow and MCP Positioning Friction: continue reducing
+  setup friction through package-style CLI execution, CI gates, MCP server
+  proof, and thin trace capture integrations.
+
+Move 50 addresses one concrete Developer Tools gap: the local/package-style
+`splunkready` bin can run the fixture judge proof from outside the repository
+root by resolving bundled default fixture assets.
