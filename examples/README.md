@@ -48,7 +48,7 @@ External agents do not need to hand-shape SplunkReady trace JSON. Use the depend
 
 ```ts
 import { writeFile } from "node:fs/promises";
-import { createSplunkReadyTraceBridge } from "../dist/src/integrations/agent-trace-bridge.js";
+import { createSplunkReadyTraceBridge } from "splunkready/trace-bridge";
 
 const bridge = createSplunkReadyTraceBridge({
   missionId: "mission-security-lateral-movement-readiness"
@@ -114,7 +114,7 @@ that shape. It keeps a local map from framework run IDs to canonical trace event
 IDs, then emits the same external trace payload as the lower-level bridge.
 
 ```ts
-import { createSplunkReadyCallbackTraceCapture } from "../dist/src/integrations/callback-trace-capture.js";
+import { createSplunkReadyCallbackTraceCapture } from "splunkready/callback-trace-capture";
 
 const capture = createSplunkReadyCallbackTraceCapture({
   missionId: "mission-security-lateral-movement-readiness"

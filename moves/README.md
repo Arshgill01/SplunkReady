@@ -77,6 +77,7 @@ commands, or filesystem paths.
 | P0 | [52](moves52.md) GitHub Action diagnostics output | 0.5d | Exposes compiler diagnostics/readiness profile paths directly in CI outputs and job summaries. |
 | P0 | [53](moves53.md) Runs trace preview layout | 0.5d | Stabilizes the Runs trace preview lanes for long metadata, wrapped findings, and hidden-event rows. |
 | P0 | [54](moves54.md) GitHub workflow diagnostics artifact | 0.5d | Updates CI examples to upload the action diagnostics path as a first-class artifact. |
+| P0 | [55](moves55.md) Package trace bridge exports | 0.5d | Exposes stable package subpaths and TypeScript declarations for trace bridge, callback capture, and schemas. |
 
 ## Non-Negotiable Boundaries
 

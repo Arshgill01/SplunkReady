@@ -9474,6 +9474,55 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 21:55 - Move 55 Package Trace Bridge Exports
+
+Scope:
+- Responded to the competitive audit's native-agent integration and package
+  friction concerns.
+- Added stable package subpath exports for existing trace capture helpers rather
+  than introducing framework dependencies.
+- Enabled TypeScript declaration emit so package consumers get stable helper and
+  schema types.
+- Logged the Minimax 3 audit follow-ups without silently publishing or deploying
+  public services.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source, so Playwright is not required.
+
+Files changed:
+- `package.json`
+- `tsconfig.json`
+- `examples/README.md`
+- `tests/package/package-exports.test.ts`
+- `moves/README.md`
+- `moves/moves55.md`
+- `logs/competitive-audit-2026-06-05.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `splunkready/trace-bridge`,
+  `splunkready/callback-trace-capture`, and `splunkready/schemas` package
+  exports.
+- Generated declaration files into `dist/src` through `tsc` declaration emit.
+- Updated external trace examples to use stable package imports instead of deep
+  `dist/src/...` paths.
+- Added a package-export regression that symlinks the repo into a temporary
+  consumer project and imports the public subpaths through Node's package
+  resolver.
+- Logged the Minimax 3 audit's concrete follow-up gaps: package publication,
+  hosted demo, stale evidence pack, reviewer coverage, MCP resources/prompts,
+  CLI modularization, CI workflow visibility, and official rubric capture.
+
+Open blockers:
+- Public npm publication remains unclaimed and requires an explicit release
+  decision.
+- Hosted public demo remains unclaimed and requires an explicit deploy decision.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 21:50 - Move 54 GitHub Workflow Diagnostics Artifact
 
 Scope:

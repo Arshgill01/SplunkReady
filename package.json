@@ -7,6 +7,21 @@
   "bin": {
     "splunkready": "dist/src/cli.js"
   },
+  "exports": {
+    "./trace-bridge": {
+      "types": "./dist/src/integrations/agent-trace-bridge.d.ts",
+      "import": "./dist/src/integrations/agent-trace-bridge.js"
+    },
+    "./callback-trace-capture": {
+      "types": "./dist/src/integrations/callback-trace-capture.d.ts",
+      "import": "./dist/src/integrations/callback-trace-capture.js"
+    },
+    "./schemas": {
+      "types": "./dist/src/schemas/core.d.ts",
+      "import": "./dist/src/schemas/core.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "action.yml",
     "dist/src",

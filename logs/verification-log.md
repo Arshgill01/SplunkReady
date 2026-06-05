@@ -7542,6 +7542,47 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 55 Package Trace Bridge Exports
+
+Commands:
+
+- `npm run build`
+- `npm test -- tests/package/package-exports.test.ts`
+- `npm pack --dry-run`
+- `rm -rf .playwright-cli && git status --short --ignored .playwright-cli`
+- `npm run check`
+- `npm run verify:scaffold && git diff --check`
+
+Result:
+
+- PASS for `npm run build`; TypeScript emitted JavaScript and declaration files.
+- PASS for focused package-export regression: 1 file, 1 test.
+- PASS for `npm pack --dry-run`; the dry-run tarball contents include
+  `dist/src/integrations/agent-trace-bridge.d.ts`,
+  `dist/src/integrations/callback-trace-capture.d.ts`, and
+  `dist/src/schemas/core.d.ts`.
+- PASS for generated Playwright cache cleanup; `.playwright-cli/` no longer
+  appears in ignored status output.
+- PASS for full `npm run check`:
+  - scaffold verified: 85 waves and 1724 project files;
+  - runtime contracts verified: 19 rules, 4 fixture missions, and 20 evidence
+    refs;
+  - TypeScript build completed with declarations;
+  - production UI build completed;
+  - 48 test files passed;
+  - 317 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for post-log structural check: scaffold verified 85 waves and 1724
+  project files, and `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because no UI source changed.
+
 ## 2026-06-05 - Move 54 GitHub Workflow Diagnostics Artifact
 
 Commands:

@@ -74,3 +74,48 @@ LLM-judging-LLM. Instead:
 - Framework-specific adapters should remain thin and dependency-light unless
   there is strong evidence that a heavy integration materially improves judge or
   developer workflow.
+
+## Minimax 3 Audit Addendum
+
+Source: user-provided Minimax 3 read-only audit during the same hardening pass.
+
+### Current State Claims To Consider
+
+- The core engine is strong: fixture/live adapter parity, deterministic rules,
+  Readiness Receipts, no Splunk auto-mutation, and the live security proof path
+  are real engineering strengths.
+- Internal quality confidence should be scored lower than earlier optimistic
+  numbers if stale submission evidence, private package status, and missing
+  public demo access are counted honestly.
+- The audit estimates the project is capped more by shipping friction than by
+  engine weakness: judges cannot currently run `npx splunkready`, click a hosted
+  workbench, or inspect a refreshed evidence pack containing the latest moves.
+- The deterministic-rules posture should be protected, but the presentation must
+  continue making it feel like compiler-grade proof rather than a plain static
+  rule table.
+
+### High-Leverage Follow-Ups
+
+- Prepare for public package installation, but do not publish silently. Actual
+  npm publication changes the release surface and needs an explicit release
+  decision.
+- Prepare for a hosted workbench path, but do not deploy silently. External
+  hosting should be a separate release action with clear artifact and redaction
+  boundaries.
+- Refresh the tracked submission evidence after the latest workbench, MCP proof,
+  GitHub Action, compiler diagnostics, and strict live-security readiness work.
+- Add an in-repo CI workflow that exercises the canonical gate, so the composite
+  action is not only documented but also backed by a visible green path.
+- Add MCP resources and prompts if targeting Best Use of MCP, while preserving
+  the certification-only scope and avoiding Splunk write tools.
+- Revisit CLI modularization around reused workflow modules because
+  `src/cli.ts` is still the clearest production-maintainability debt.
+- Capture the official hackathon judging criteria in a tracked document before
+  treating any probability table as calibrated.
+
+### Immediate Move Response
+
+Move 55 addresses one concrete native-integration gap from this audit by
+exposing stable package subpaths and generated declarations for the trace bridge,
+callback capture helper, and schema imports. It does not claim public npm
+publication.

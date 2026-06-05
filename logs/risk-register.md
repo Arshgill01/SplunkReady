@@ -167,3 +167,34 @@ the dashboard with Playwright on desktop and narrow viewports.
 Move 54 reduces R018 developer workflow friction by updating the GitHub workflow
 example and docs to upload the composite action's `diagnostics-path` artifact
 directly, instead of requiring CI users to know the proof directory layout.
+
+Move 55 reduces R013/R018 by exposing stable package subpaths for
+`splunkready/trace-bridge`, `splunkready/callback-trace-capture`, and
+`splunkready/schemas`, with generated TypeScript declarations verified through a
+temp consumer project and `npm pack --dry-run`.
+
+### Minimax 3 Audit Follow-Up - 2026-06-05
+
+Logged source: user-provided Minimax 3 read-only audit in chat.
+
+The audit agrees the engine is real and defensible, but lowers competitive
+confidence because the latest work is not fully packaged for judges. Concrete
+follow-up risks to track:
+
+- Public installability remains capped while `package.json` is `private: true`;
+  do not claim `npx splunkready` until publication is explicit and verified.
+- A hosted, clickable workbench URL would reduce judge abandonment, but public
+  deploy is an external release action and should be treated separately from
+  local verification.
+- The tracked `submission-evidence/` pack is stale relative to the later
+  workbench, MCP proof, GitHub Action, compiler diagnostics, and strict live
+  security readiness surfaces.
+- The latest competitive-audit moves need reviewer-equivalent scrutiny even
+  though subagents are currently disabled by user instruction.
+- `src/cli.ts` remains a large monolith despite the older modularization goal;
+  this is production-quality debt, not an engine correctness blocker.
+- The MCP server is functional but narrow; resources and reusable prompts would
+  make the MCP story more composable without turning SplunkReady into a Splunk
+  copilot.
+- Official hackathon criteria are not tracked in-repo, so probability estimates
+  remain rubric assumptions until anchored to the published criteria.
