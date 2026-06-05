@@ -9473,3 +9473,37 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
+
+## 2026-06-05 20:38 - Move 45 Callback Trace Capture
+
+Scope:
+- Responded to the competitive audit's native-agent integration concern.
+- Added a small callback-run capture helper instead of adding heavy framework
+  dependencies or changing the trace schema.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/integrations/callback-trace-capture.ts`
+- `tests/integrations/callback-trace-capture.test.ts`
+- `examples/README.md`
+- `moves/README.md`
+- `moves/moves45.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `createSplunkReadyCallbackTraceCapture`, a dependency-free wrapper that
+  maps framework callback `runId` values to SplunkReady trace event IDs.
+- Preserved parent links for tool results and final answers while preventing
+  duplicate or unmatched tool-end/error callbacks.
+- Added real external-certification workflow coverage for a callback-captured
+  `READY / 100` trace.
+- Documented LangChain, AutoGen, CrewAI, LlamaIndex, custom MCP client, and
+  custom wrapper callback mappings in `examples/README.md`.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.

@@ -106,6 +106,58 @@ npm run splunkready -- proof-audit --out "$tmp" --require-pass true --json
 
 The bridge is not a second grader. It only records tool calls, adapter results, errors, and final answers in the canonical trace schema. The deterministic rule engine still decides readiness.
 
+### Callback run ID capture
+
+Many agent frameworks expose callback run IDs instead of asking callers to carry
+SplunkReady parent trace IDs. Use `createSplunkReadyCallbackTraceCapture` for
+that shape. It keeps a local map from framework run IDs to canonical trace event
+IDs, then emits the same external trace payload as the lower-level bridge.
+
+```ts
+import { createSplunkReadyCallbackTraceCapture } from "../dist/src/integrations/callback-trace-capture.js";
+
+const capture = createSplunkReadyCallbackTraceCapture({
+  missionId: "mission-security-lateral-movement-readiness"
+});
+
+capture.onToolStart({
+  runId: "langchain-run-knowledge-001",
+  toolName: "splunk_get_knowledge_objects",
+  toolInput: {
+    types: ["saved_searches", "macros", "lookups"],
+    query: "lateral movement",
+    app: "SplunkEnterpriseSecuritySuite"
+  }
+});
+
+capture.onToolEnd({
+  runId: "langchain-run-knowledge-001",
+  outputSummary: "Found the validated lateral-movement saved search and supporting objects.",
+  resultCount: 3,
+  evidenceRefs: ["saved-search-lateral-movement", "macro-security-content-ctime", "lookup-asset-lookup"]
+});
+
+capture.onFinalAnswer({
+  outputSummary: "The answer cites saved-search-lateral-movement and supporting evidence rows.",
+  resultCount: 3,
+  evidenceRefs: ["evt-102", "evt-118", "evt-141"]
+});
+```
+
+Mapping examples:
+
+| Runtime shape | SplunkReady callback |
+|---|---|
+| LangChain `handleToolStart` / `handleToolEnd` with `runId` | `onToolStart({ runId, toolName, toolInput })` then `onToolEnd({ runId, ... })` |
+| AutoGen tool wrapper before/after a Splunk tool call | Use the wrapper invocation ID as `runId`. |
+| CrewAI tool `run()` wrapper | Generate one run ID before calling the tool, then end or error that same run ID. |
+| LlamaIndex tool handler | Use the tool call ID from the handler context as `runId`. |
+| Custom MCP client | Use the JSON-RPC request `id` as `runId`, or use `certify-mcp-transcript` directly if the client already logs request/response JSONL. |
+
+The capture helper rejects tool-end and tool-error callbacks that do not have a
+matching open tool start event. That catches broken instrumentation before a
+trace reaches the deterministic grader.
+
 ## Run SplunkReady as an MCP server
 
 SplunkReady can also run as a local MCP server so MCP clients can invoke the Agent Readiness Compiler directly. This is not a Splunk search copilot and it does not mutate Splunk. It exposes certification tools that grade local traces and transcripts into Readiness Receipts.

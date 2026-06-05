@@ -7587,6 +7587,35 @@ Result:
   - included `git diff --check` completed with no output.
 - PASS for final explicit `git diff --check` after log update.
 
+## 2026-06-05 - Move 45 Callback Trace Capture Verification
+
+Commands:
+
+- `npm test -- tests/integrations/callback-trace-capture.test.ts && npm run build`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for focused callback capture integration test:
+  - 1 test file passed;
+  - 2 tests passed;
+  - a callback-captured trace certified through the real external trace workflow
+    as `READY / 100`.
+- PASS for `npm run build`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 45 test files passed;
+  - 306 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for final explicit `git diff --check` after log update.
+
 ## 2026-06-05 - Move 40 Artifact Symlink Read Guard Verification
 
 Commands:
