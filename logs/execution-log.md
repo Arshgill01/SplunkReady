@@ -11793,3 +11793,34 @@ Open blockers:
 - Future npm releases still need a version bump before publish.
 - Hosted CI passed after push:
   - CI run `27042127046` completed successfully for commit `37014e0`.
+
+## 2026-06-06 03:29 - Move 102 Published Package Submission Claim Guard
+
+Scope:
+- Tightened `audit:submission-copy` so the published npm package claim is
+  machine-checked, not only recorded in the claim ledger.
+- Added audit checks for:
+  - README npm package link;
+  - README clean-folder `npx -y splunkready@0.1.0 judge-proof --out
+    ./judge-proof --json` command;
+  - Devpost clean-folder `npx` command;
+  - claim-ledger published npm package row;
+  - claim-ledger npm package page;
+  - claim-ledger published-package smoke command.
+- Added focused script tests that pass with the npm package claim present and
+  fail when the claim-ledger row is removed.
+- The real submission-copy audit now checks 34 required claims.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `moves/README.md`
+- `moves/moves102.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 102.

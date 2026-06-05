@@ -124,6 +124,7 @@ commands, or filesystem paths.
 | P0 | [99](moves99.md) Public judge proof LLM evidence surface | 0.5d | Makes hosted public demo exports include credential-free judge proof and visible LLM-evidence authority boundaries. |
 | P0 | [100](moves100.md) Published package judge smoke | 0.5d | Converts the completed npm publish into clean-folder npx proof, README/Devpost install copy, and claim-ledger evidence. |
 | P0 | [101](moves101.md) Published version release preflight | 0.5d | Makes the npm release preflight report the current published version as verified instead of failing stale availability checks. |
+| P0 | [102](moves102.md) Published package submission claim guard | 0.5d | Extends the submission-copy audit so README, Devpost, and claim-ledger npm package claims are machine-checked. |
 
 ## Non-Negotiable Boundaries
 

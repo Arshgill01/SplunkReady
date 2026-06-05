@@ -9805,6 +9805,57 @@ Open blockers:
 
 - Future npm releases still need a version bump before publish.
 
+## 2026-06-06 - Move 102 Published Package Submission Claim Guard
+
+Commands:
+
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `npm run check`
+- `npm run verify:scaffold`
+- `git diff --check`
+
+Result:
+
+- PASS for focused submission-copy audit tests:
+  - 1 test file passed;
+  - 2 tests passed.
+- PASS for real `npm run audit:submission-copy`:
+  - audited 34 required claims;
+  - new checked claims include README npm package link, README/Devpost clean
+    `npx` proof commands, and claim-ledger published npm package evidence.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 182 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and returned
+    `PASS` from `npx splunkready judge-proof`;
+  - 58 test files passed;
+  - 353 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 34 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for final scaffold verification after log edits:
+  - waves: 85;
+  - project files: 2077.
+- PASS for standalone diff whitespace:
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- Did not run `npm publish`.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI needs to run after push for Move 102.
+
 ## 2026-06-06 - Move 97 Static Hosted Demo Request Hygiene
 
 Commands:

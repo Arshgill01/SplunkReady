@@ -7,7 +7,8 @@ const files = {
   readme: readFileSync(join(rootDir, "README.md"), "utf8"),
   devpost: readFileSync(join(rootDir, "docs/devpost-submission.md"), "utf8"),
   demo: readFileSync(join(rootDir, "docs/demo-script.md"), "utf8"),
-  liveAdapter: readFileSync(join(rootDir, "docs/live-adapter.md"), "utf8")
+  liveAdapter: readFileSync(join(rootDir, "docs/live-adapter.md"), "utf8"),
+  claimLedger: readFileSync(join(rootDir, "submission-evidence/claim-ledger.md"), "utf8")
 };
 
 const checks = [
@@ -32,6 +33,12 @@ const checks = [
   ["Devpost flagship story", files.devpost, "security investigation readiness"],
   ["Devpost no credentials", files.devpost, "requires no live Splunk credentials"],
   ["Devpost no mutation", files.devpost, "does not mutate Splunk"],
+  ["README npm package link", files.readme, "https://www.npmjs.com/package/splunkready"],
+  ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json"],
+  ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json"],
+  ["Claim ledger published npm package", files.claimLedger, "The package is published on npm and judge-runnable from a clean folder."],
+  ["Claim ledger npm package page", files.claimLedger, "https://www.npmjs.com/package/splunkready"],
+  ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json"],
   ["Demo no LLM vibes", files.demo, "not another LLM judging vibes"],
   ["Demo no mutation", files.demo, "does not mutate Splunk"],
   ["Demo route", files.demo, "splunkready-shell.html#rerun-receipts"],
