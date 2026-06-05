@@ -86,17 +86,21 @@ npm run mcp-proof
 
 `npm run mcp-proof` starts the built SplunkReady stdio MCP server, negotiates
 `initialize`, lists non-destructive certification tools, resources, and prompts,
-reads the certification posture resource, fetches a reusable transcript
-certification prompt, then certifies the checked-in passing MCP JSON-RPC
-transcript through `splunkready_certify_mcp_transcript`. It writes
+reads the certification posture resource and MCP-client configuration, fetches
+reusable transcript and Splunk MCP certification-loop prompts, then certifies
+the checked-in passing MCP JSON-RPC transcript through
+`splunkready_certify_mcp_transcript`. It writes
 `artifacts/mcp-proof/mcp-proof-summary.json` / `.md` plus the generated
 Readiness Receipt artifacts. The summary includes a `splunkMcpBoundary` block
 that names the certified `splunk_*` tools, records saved-search execution,
 preserves evidence refs, points at the generated receipt, and states that
-deterministic rules remained authoritative. This is still fixture-only,
-credential-free, and non-mutating; it proves SplunkReady as an MCP
-certification interface for captured Splunk MCP behavior, not as a Splunk search
-copilot.
+deterministic rules remained authoritative. It also includes an
+`agentDrivenWorkflow` block showing the intended loop: an MCP client
+investigates with Splunk MCP, captures the JSON-RPC transcript, calls
+SplunkReady MCP for certification, then explains the Readiness Receipt without
+overriding it. This is still fixture-only, credential-free, and non-mutating; it
+proves SplunkReady as an MCP certification interface for captured Splunk MCP
+behavior, not as a Splunk search copilot.
 
 For the single-mission static replay shell, run:
 

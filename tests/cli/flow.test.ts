@@ -1327,8 +1327,19 @@ describe("SplunkReady CLI flow", () => {
       prompts: Array<{ name: string; argumentCount: number }>;
       describe: { product: string; engine: string; mutation: boolean; deterministicAuthority: boolean };
       postureResource: { contents: Array<{ uri: string; text: string }> };
+      clientConfigResource: { contents: Array<{ uri: string; text: string }> };
+      certificationLoopResource: { contents: Array<{ uri: string; text: string }> };
       transcriptPrompt: { messages: Array<{ content: { text: string } }> };
+      certificationLoopPrompt: { messages: Array<{ content: { text: string } }> };
       transcriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
+      agentDrivenWorkflow: {
+        status: string;
+        splunkMcpServerRole: string;
+        splunkReadyMcpServerRole: string;
+        stages: string[];
+        deterministicAuthority: boolean;
+        mutation: boolean;
+      };
       splunkMcpBoundary: {
         status: string;
         transcriptKind: string;
@@ -1375,6 +1386,11 @@ describe("SplunkReady CLI flow", () => {
         mutation: false,
         outDir: transcriptProofDir
       },
+      agentDrivenWorkflow: {
+        status: "PASS",
+        deterministicAuthority: true,
+        mutation: false
+      },
       splunkMcpBoundary: {
         status: "PASS",
         transcriptKind: "captured-splunk-mcp-jsonrpc",
@@ -1398,15 +1414,24 @@ describe("SplunkReady CLI flow", () => {
       "splunkready://certification/posture",
       "splunkready://examples/external-trace-pass",
       "splunkready://examples/mcp-transcript-pass",
-      "splunkready://examples/pass-receipt"
+      "splunkready://examples/pass-receipt",
+      "splunkready://client-config/stdio",
+      "splunkready://workflows/splunk-mcp-certification-loop"
     ]);
     expect(summary.prompts.map((prompt) => prompt.name)).toEqual([
       "splunkready_certify_mcp_transcript",
       "splunkready_capture_trace",
-      "splunkready_explain_receipt"
+      "splunkready_explain_receipt",
+      "splunkready_splunk_mcp_certification_loop"
     ]);
     expect(summary.postureResource.contents[0].text).toContain("\"advisoryLlmOnly\": true");
+    expect(summary.clientConfigResource.contents[0].text).toContain("\"splunkready\"");
+    expect(summary.certificationLoopResource.contents[0].text).toContain("Splunk MCP Certification Loop");
     expect(summary.transcriptPrompt.messages[0].content.text).toContain("strictImport=true");
+    expect(summary.certificationLoopPrompt.messages[0].content.text).toContain("Splunk MCP server: splunk");
+    expect(summary.agentDrivenWorkflow.splunkMcpServerRole).toContain("read-only investigation");
+    expect(summary.agentDrivenWorkflow.splunkReadyMcpServerRole).toContain("deterministic certification");
+    expect(summary.agentDrivenWorkflow.stages).toHaveLength(4);
     expect(summary.tools.every((tool) => tool.destructiveHint === false)).toBe(true);
     expect(summary.artifacts).toEqual(
       expect.arrayContaining([

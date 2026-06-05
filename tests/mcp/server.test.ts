@@ -73,7 +73,9 @@ describe("SplunkReady MCP server", () => {
       "splunkready://certification/posture",
       "splunkready://examples/external-trace-pass",
       "splunkready://examples/mcp-transcript-pass",
-      "splunkready://examples/pass-receipt"
+      "splunkready://examples/pass-receipt",
+      "splunkready://client-config/stdio",
+      "splunkready://workflows/splunk-mcp-certification-loop"
     ]);
 
     const readResponse = await handleMcpMessage({
@@ -91,6 +93,18 @@ describe("SplunkReady MCP server", () => {
     });
     expect(String(contents[0].text)).toContain("\"deterministicAuthority\": true");
     expect(String(contents[0].text)).toContain("\"mutation\": false");
+
+    const workflowResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "workflow-read",
+      method: "resources/read",
+      params: { uri: "splunkready://workflows/splunk-mcp-certification-loop" }
+    });
+    const workflowResult = resultOf(workflowResponse);
+    const workflowContents = workflowResult.contents as Array<Record<string, unknown>>;
+
+    expect(String(workflowContents[0].text)).toContain("Use the configured Splunk MCP Server");
+    expect(String(workflowContents[0].text)).toContain("splunkready_certify_mcp_transcript");
   });
 
   it("lists and returns reusable MCP certification prompts", async () => {
@@ -101,7 +115,8 @@ describe("SplunkReady MCP server", () => {
     expect(splunkReadyMcpPrompts.map((prompt) => prompt.name)).toEqual([
       "splunkready_certify_mcp_transcript",
       "splunkready_capture_trace",
-      "splunkready_explain_receipt"
+      "splunkready_explain_receipt",
+      "splunkready_splunk_mcp_certification_loop"
     ]);
 
     const getResponse = await handleMcpMessage({
@@ -123,6 +138,26 @@ describe("SplunkReady MCP server", () => {
     expect(messages[0].content.text).toContain("splunkready_certify_mcp_transcript");
     expect(messages[0].content.text).toContain("strictImport=true");
     expect(messages[0].content.text).toContain("Deterministic rules decide READY or NOT READY");
+
+    const loopResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "prompt-loop",
+      method: "prompts/get",
+      params: {
+        name: "splunkready_splunk_mcp_certification_loop",
+        arguments: {
+          splunkMcpServerName: "splunk",
+          transcriptPath: "artifacts/splunk-mcp/transcript.jsonl",
+          outDir: "artifacts/splunk-mcp/certification"
+        }
+      }
+    });
+    const loopResult = resultOf(loopResponse);
+    const loopMessages = loopResult.messages as Array<{ content: { text: string } }>;
+
+    expect(loopMessages[0].content.text).toContain("Splunk MCP server: splunk");
+    expect(loopMessages[0].content.text).toContain("Preserve the JSON-RPC transcript");
+    expect(loopMessages[0].content.text).toContain("Readiness Receipt as the authoritative verdict");
   });
 
   it("certifies an external trace through tools/call", async () => {

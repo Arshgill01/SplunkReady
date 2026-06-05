@@ -9541,3 +9541,63 @@ Open blockers:
 - Hosted CI must still be watched after push.
 - Hosted demo, refreshed submission evidence, stronger MCP category surface,
   and final reviewer-equivalent scrutiny remain open Minimax caps.
+## 2026-06-06 - Move 75 MCP Client Certification Loop
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/mcp/server.test.ts tests/cli/flow.test.ts --testNamePattern "MCP server|mcp-proof|one-command MCP"`
+- `npm run check`
+- `npm run mcp-proof`
+- `node -e 'const fs=require("fs"); const s=JSON.parse(fs.readFileSync("artifacts/mcp-proof/mcp-proof-summary.json","utf8")); console.log(JSON.stringify({status:s.status, resources:s.resources.map(r=>r.uri), prompts:s.prompts.map(p=>p.name), agentDrivenWorkflow:s.agentDrivenWorkflow, splunkMcpBoundary:s.splunkMcpBoundary}, null, 2));'`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused MCP handler and CLI proof validation:
+  - 2 test files passed;
+  - 9 tests passed;
+  - 39 tests skipped by focused pattern.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 150 dry-run packed files;
+  - 54 test files passed;
+  - 339 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for direct `npm run mcp-proof`:
+  - command returned `status: "PASS"`;
+  - wrote `artifacts/mcp-proof/mcp-proof-summary.json`;
+  - wrote generated Readiness Receipt artifacts under
+    `artifacts/mcp-proof/mcp-transcript-certification/`.
+- PASS for generated MCP proof summary inspection:
+  - resources include `splunkready://client-config/stdio` and
+    `splunkready://workflows/splunk-mcp-certification-loop`;
+  - prompts include `splunkready_splunk_mcp_certification_loop`;
+  - `agentDrivenWorkflow.status` is `PASS`;
+  - `splunkMcpBoundary` certifies `splunk_get_knowledge_objects` and
+    `splunk_run_saved_search`;
+  - saved-search execution is true;
+  - evidence refs are `evt-102`, `evt-118`, and `evt-141`;
+  - deterministic authority is true;
+  - mutation is false.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Hosted demo, refreshed submission evidence, public package publication, and
+  live proof export remain open Minimax caps.

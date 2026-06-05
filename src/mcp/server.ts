@@ -225,6 +225,22 @@ export const splunkReadyMcpResources: McpResource[] = [
     title: "Passing Readiness Receipt Example",
     description: "Markdown Readiness Receipt example showing the deterministic proof artifact MCP clients should expect.",
     mimeType: "text/markdown"
+  },
+  {
+    uri: "splunkready://client-config/stdio",
+    name: "stdio-client-config",
+    title: "Stdio MCP Client Configuration",
+    description:
+      "Reusable command configuration for MCP clients that want to call the local SplunkReady certification server.",
+    mimeType: "application/json"
+  },
+  {
+    uri: "splunkready://workflows/splunk-mcp-certification-loop",
+    name: "splunk-mcp-certification-loop",
+    title: "Splunk MCP Certification Loop",
+    description:
+      "Agent workflow showing how Splunk MCP investigation calls become a captured transcript and deterministic Readiness Receipt.",
+    mimeType: "text/markdown"
   }
 ];
 
@@ -279,6 +295,29 @@ export const splunkReadyMcpPrompts: McpPrompt[] = [
       {
         name: "receiptPath",
         description: "Local path to a Readiness Receipt JSON or Markdown artifact.",
+        required: true
+      }
+    ]
+  },
+  {
+    name: "splunkready_splunk_mcp_certification_loop",
+    title: "Run A Splunk MCP Certification Loop",
+    description:
+      "Guide an MCP-capable agent to investigate through Splunk MCP, preserve the JSON-RPC transcript, and certify it with SplunkReady.",
+    arguments: [
+      {
+        name: "splunkMcpServerName",
+        description: "Name of the configured Splunk MCP server the agent should use for read-only investigation calls.",
+        required: false
+      },
+      {
+        name: "transcriptPath",
+        description: "Local path where the MCP client should preserve the Splunk MCP JSONL transcript.",
+        required: true
+      },
+      {
+        name: "outDir",
+        description: "Local output directory for the deterministic Readiness Receipt bundle.",
         required: true
       }
     ]
@@ -370,6 +409,51 @@ const readResource = async (uri: string): Promise<Record<string, unknown>> => {
     };
   }
 
+  if (uri === "splunkready://client-config/stdio") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "application/json",
+          text: JSON.stringify(
+            {
+              mcpServers: {
+                splunkready: {
+                  command: "npm",
+                  args: ["run", "mcp"],
+                  cwd: "/path/to/SplunkReady"
+                }
+              }
+            },
+            null,
+            2
+          )
+        }
+      ]
+    };
+  }
+
+  if (uri === "splunkready://workflows/splunk-mcp-certification-loop") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "text/markdown",
+          text: [
+            "# Splunk MCP Certification Loop",
+            "",
+            "1. Use the configured Splunk MCP Server for read-only investigation calls such as knowledge-object lookup and saved-search execution.",
+            "2. Preserve the MCP JSON-RPC request/response transcript as JSONL. Do not include tokens or environment files.",
+            "3. Call `splunkready_certify_mcp_transcript` with `strictImport=true` and `requirePass=true`.",
+            "4. Treat the generated Readiness Receipt as the source of truth. Deterministic rules decide READY or NOT READY; LLM output may only explain the receipt.",
+            "",
+            "SplunkReady does not replace Splunk MCP and does not mutate Splunk. It certifies captured Splunk MCP behavior for this deployment."
+          ].join("\n")
+        }
+      ]
+    };
+  }
+
   throw new Error(`Unknown resource: ${uri}`);
 };
 
@@ -407,6 +491,21 @@ const promptText = (name: string, args: Record<string, unknown>): string => {
       "",
       "Summarize the deterministic verdict, active rules, trace refs, evidence refs, and policy patch implications.",
       "Do not override or reinterpret the receipt verdict; deterministic grading is authoritative."
+    ].join("\n");
+  }
+
+  if (name === "splunkready_splunk_mcp_certification_loop") {
+    return [
+      "Run a Splunk MCP investigation loop and certify it with SplunkReady.",
+      "",
+      `Splunk MCP server: ${String(args.splunkMcpServerName ?? "splunk")}`,
+      `Transcript path: ${String(args.transcriptPath ?? "<transcriptPath>")}`,
+      `Output directory: ${String(args.outDir ?? "<outDir>")}`,
+      "",
+      "Use Splunk MCP only for read-only investigation actions. Prefer saved searches and knowledge objects when the deployment exposes them.",
+      "Preserve the JSON-RPC transcript of the Splunk MCP tool calls and responses.",
+      "Then call splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.",
+      "Use the Readiness Receipt as the authoritative verdict; LLM or assistant text may only explain the deterministic result."
     ].join("\n");
   }
 

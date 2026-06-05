@@ -10670,3 +10670,45 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
+## 2026-06-06 00:11 - Move 75 MCP Client Certification Loop
+
+Scope:
+- Continued the Minimax/user-directed MCP competitiveness work without using
+  subagents.
+- Reframed the local SplunkReady MCP server as a certification interface while
+  making the Splunk MCP Server the investigation boundary.
+- Did not change deterministic grading authority; the generated Readiness
+  Receipt remains the pass/fail source of truth.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/mcp/server.ts`
+- `src/workflows/mcp-proof.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `examples/README.md`
+- `moves/README.md`
+- `moves/moves75.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- Added `splunkready://client-config/stdio` as a reusable MCP client
+  configuration resource.
+- Added `splunkready://workflows/splunk-mcp-certification-loop` as the
+  workflow resource for using Splunk MCP read-only investigation calls,
+  preserving the transcript, and certifying through SplunkReady.
+- Added `splunkready_splunk_mcp_certification_loop` as a reusable MCP prompt.
+- Updated `mcp-proof` to read those resources/prompts and emit an
+  `agentDrivenWorkflow` block.
+- Updated README/example MCP copy so the category story is Splunk MCP usage plus
+  deterministic SplunkReady certification, not replacing Splunk MCP.
+
+Open blockers:
+- This improves the MCP category artifact, but live proof pack export and a
+  hosted/clickable demo remain open probability caps.
+- Public package publication remains an explicit release action.

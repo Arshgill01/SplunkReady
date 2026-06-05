@@ -287,3 +287,12 @@ aggregation, fail-to-pass summary generation, and compiler diagnostics into
 lines. Remaining CLI-owned orchestration still includes the standalone
 `llm-agent` command and small command adapters, but the major proof bundle
 orchestration is now workflow-owned.
+
+Move 75 reduces the MCP award-positioning risk by making `mcp-proof` show a
+complete agent-driven MCP loop: an MCP client discovers SplunkReady posture and
+stdio configuration, uses Splunk MCP for read-only investigation, preserves the
+captured JSON-RPC transcript, then calls SplunkReady MCP to generate a
+deterministic Readiness Receipt. This does not add Splunk write actions and does
+not make LLM/MCP output authoritative. Remaining MCP risk: the strongest public
+story still needs exported live/captured proof evidence and a judge-visible demo
+surface.

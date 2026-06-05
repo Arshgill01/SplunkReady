@@ -176,8 +176,10 @@ npm run mcp-proof
 
 The proof command starts the built stdio server as a local MCP client would,
 negotiates `initialize`, lists tools/resources/prompts, reads
-`splunkready://certification/posture`, fetches the reusable
-`splunkready_certify_mcp_transcript` prompt, and certifies
+`splunkready://certification/posture`, reads the stdio client configuration and
+Splunk MCP certification-loop resource, fetches the reusable
+`splunkready_certify_mcp_transcript` and
+`splunkready_splunk_mcp_certification_loop` prompts, and certifies
 `examples/sample-mcp-transcript-pass.jsonl` through
 `splunkready_certify_mcp_transcript`. It writes
 `artifacts/mcp-proof/mcp-proof-summary.json` and the generated receipt bundle.
@@ -204,12 +206,15 @@ The server exposes these resources:
 - `splunkready://examples/external-trace-pass`: passing canonical SplunkReady trace JSON.
 - `splunkready://examples/mcp-transcript-pass`: passing Splunk MCP JSON-RPC transcript.
 - `splunkready://examples/pass-receipt`: passing Readiness Receipt example.
+- `splunkready://client-config/stdio`: reusable local MCP client command configuration.
+- `splunkready://workflows/splunk-mcp-certification-loop`: workflow for using Splunk MCP for read-only investigation, preserving the transcript, and certifying it through SplunkReady.
 
 The server exposes these prompts:
 
 - `splunkready_certify_mcp_transcript`: instructs an MCP-capable agent to certify a captured Splunk MCP JSONL transcript.
 - `splunkready_capture_trace`: instructs a framework or client to emit canonical SplunkReady trace events.
 - `splunkready_explain_receipt`: instructs an assistant to explain a receipt without overriding deterministic verdicts.
+- `splunkready_splunk_mcp_certification_loop`: instructs an MCP-capable agent to use Splunk MCP for read-only investigation, preserve the JSON-RPC transcript, and then request deterministic certification from SplunkReady.
 
 Example `splunkready_certify_external_trace` arguments:
 

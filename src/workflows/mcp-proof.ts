@@ -63,8 +63,19 @@ interface McpProofSummary {
   }>;
   describe: Record<string, unknown>;
   postureResource: Record<string, unknown>;
+  clientConfigResource: Record<string, unknown>;
+  certificationLoopResource: Record<string, unknown>;
   transcriptPrompt: Record<string, unknown>;
+  certificationLoopPrompt: Record<string, unknown>;
   transcriptCertification: Record<string, unknown>;
+  agentDrivenWorkflow: {
+    status: "PASS" | "FAIL";
+    splunkMcpServerRole: string;
+    splunkReadyMcpServerRole: string;
+    stages: string[];
+    deterministicAuthority: true;
+    mutation: false;
+  };
   splunkMcpBoundary: {
     status: "PASS" | "FAIL";
     transcriptKind: "captured-splunk-mcp-jsonrpc";
@@ -210,6 +221,9 @@ ${summary.resources.map((resource) => `- ${resource.uri} (${resource.mimeType})`
 Prompts:
 ${summary.prompts.map((prompt) => `- ${prompt.name} arguments=${prompt.argumentCount}`).join("\n")}
 
+Agent-driven workflow: ${summary.agentDrivenWorkflow.status}
+${summary.agentDrivenWorkflow.stages.map((stage) => `- ${stage}`).join("\n")}
+
 Transcript certification: ${stringFromRecord(summary.transcriptCertification, "status")}
 
 Splunk MCP boundary: ${summary.splunkMcpBoundary.status}
@@ -331,6 +345,10 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
     const toolsList = await client.request("tools/list");
     const resourcesList = await client.request("resources/list");
     const postureResource = await client.request("resources/read", { uri: "splunkready://certification/posture" });
+    const clientConfigResource = await client.request("resources/read", { uri: "splunkready://client-config/stdio" });
+    const certificationLoopResource = await client.request("resources/read", {
+      uri: "splunkready://workflows/splunk-mcp-certification-loop"
+    });
     const promptsList = await client.request("prompts/list");
     const transcriptPrompt = await client.request("prompts/get", {
       name: "splunkready_certify_mcp_transcript",
@@ -338,6 +356,14 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         transcriptPath,
         outDir: transcriptOutDir,
         finalAnswer: input.finalAnswer ?? defaultFinalAnswer
+      }
+    });
+    const certificationLoopPrompt = await client.request("prompts/get", {
+      name: "splunkready_splunk_mcp_certification_loop",
+      arguments: {
+        splunkMcpServerName: "splunk",
+        transcriptPath,
+        outDir: transcriptOutDir
       }
     });
     const describeResult = await client.request("tools/call", {
@@ -396,6 +422,26 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       : [];
     const receiptPath = join(transcriptOutDir, "receipt-external-001.json");
     const splunkMcpBoundary = await readSplunkMcpBoundaryEvidence(transcriptPath, certificationStatus, receiptPath);
+    const agentDrivenWorkflow: McpProofSummary["agentDrivenWorkflow"] = {
+      status:
+        certificationStatus === "PASS" &&
+        splunkMcpBoundary.includesSavedSearchExecution &&
+        splunkMcpBoundary.splunkToolCallCount > 0
+          ? "PASS"
+          : "FAIL",
+      splunkMcpServerRole:
+        "Splunk MCP performs the read-only investigation actions and returns operational data to the agent.",
+      splunkReadyMcpServerRole:
+        "SplunkReady MCP gives the agent posture resources, reusable prompts, and deterministic certification tools for the captured transcript.",
+      stages: [
+        "MCP client discovers SplunkReady certification posture and stdio configuration.",
+        "Agent investigates through Splunk MCP read-only tools and preserves the JSON-RPC transcript.",
+        "Agent calls SplunkReady MCP to certify the captured Splunk MCP transcript.",
+        "Agent explains the generated Readiness Receipt without overriding the deterministic verdict."
+      ],
+      deterministicAuthority: true,
+      mutation: false
+    };
     const summary: McpProofSummary = {
       source: "splunkready-mcp-proof",
       status: certificationStatus,
@@ -413,8 +459,12 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       prompts,
       describe,
       postureResource,
+      clientConfigResource,
+      certificationLoopResource,
       transcriptPrompt,
+      certificationLoopPrompt,
       transcriptCertification,
+      agentDrivenWorkflow,
       splunkMcpBoundary,
       artifacts: [summaryPath, markdownPath, ...toolArtifacts],
       nextCommands: [
