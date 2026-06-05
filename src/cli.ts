@@ -3395,6 +3395,86 @@ export const runHostedModelProofFromCli = async (
   return { status, outDir: input.outDir, artifacts, mutation: false, messages: [] };
 };
 
+export interface ExternalTraceCertificationWorkflowInput {
+  outDir: string;
+  tracePath: string;
+  requirePass?: boolean;
+  agentName?: string;
+  agentVersion?: string;
+}
+
+export interface McpTranscriptCertificationWorkflowInput {
+  outDir: string;
+  transcriptPath: string;
+  strictImport?: boolean;
+  requirePass?: boolean;
+  agentName?: string;
+  agentVersion?: string;
+}
+
+export interface ExternalCertificationWorkflowResult {
+  status: "PASS" | "FAIL";
+  outDir: string;
+  artifacts: string[];
+  mutation: false;
+  messages: string[];
+}
+
+const receiptStatusFromArtifact = async (artifactPath: string): Promise<"PASS" | "FAIL"> => {
+  const receipt = readinessReceiptSchema.parse(await readJson(artifactPath, "external certification receipt"));
+
+  return receipt.verdict === "READY" ? "PASS" : "FAIL";
+};
+
+export const runExternalTraceCertificationFromCli = async (
+  input: ExternalTraceCertificationWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<ExternalCertificationWorkflowResult> => {
+  const options = defaultCliOptions({
+    mode: "fixture",
+    out: input.outDir,
+    trace: input.tracePath,
+    requirePass: input.requirePass ?? false,
+    agentName: input.agentName ?? "External Splunk MCP Agent",
+    agentVersion: input.agentVersion ?? "uploaded-trace"
+  });
+  const compileArtifacts = await compileCommand(options, env);
+  const gradeArtifacts = await gradeTraceCommand(options);
+  const auditArtifacts = await proofAuditCommand(options);
+  const status = await receiptStatusFromArtifact(join(input.outDir, "receipt-external-001.json"));
+
+  if (options.requirePass && status !== "PASS") {
+    throw new Error("external-trace-certification strict gate failed with FAIL. Inspect receipt-external-001.json.");
+  }
+
+  return {
+    status,
+    outDir: input.outDir,
+    artifacts: [...new Set([...compileArtifacts, ...gradeArtifacts, ...auditArtifacts])],
+    mutation: false,
+    messages: []
+  };
+};
+
+export const runMcpTranscriptCertificationFromCli = async (
+  input: McpTranscriptCertificationWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<ExternalCertificationWorkflowResult> => {
+  const options = defaultCliOptions({
+    mode: "fixture",
+    out: input.outDir,
+    transcript: input.transcriptPath,
+    strictImport: input.strictImport ?? true,
+    requirePass: input.requirePass ?? false,
+    agentName: input.agentName ?? "External MCP Transcript Agent",
+    agentVersion: input.agentVersion ?? "uploaded-jsonrpc-transcript"
+  });
+  const artifacts = await certifyMcpTranscriptCommand(options, env);
+  const status = await receiptStatusFromArtifact(join(input.outDir, "receipt-external-001.json"));
+
+  return { status, outDir: input.outDir, artifacts, mutation: false, messages: [] };
+};
+
 const main = async (): Promise<void> => {
   const { command, options } = parseArgs(process.argv.slice(2));
   let artifacts: string[];

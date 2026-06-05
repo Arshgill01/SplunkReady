@@ -7782,3 +7782,70 @@ Result:
 - Canonical build/check gate passed.
 - Vite production UI build passed.
 - `git diff --check` passed.
+
+## 2026-06-05 - Move 10 External Trace And Transcript Certification UI
+
+Scope:
+- Add workbench upload jobs for external canonical trace certification and MCP JSONL transcript certification.
+- Reuse the existing Agent Readiness Compiler CLI paths for contract compilation, deterministic grading, receipt generation, proof audit, and proof manifest creation.
+- Add an Import view that lets an operator upload sample pass/fail trace artifacts and sample MCP transcripts from the browser.
+- Keep upload handling bounded and server-owned; no arbitrary output paths, SPL commands, credentials, or producer-evidence overclaim.
+
+Files expected/touched:
+- `src/workflows/external-certification.ts`
+- `src/cli.ts`
+- `src/workbench/events.ts`
+- `src/workbench/jobs.ts`
+- `src/workbench/routes.ts`
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/workbench/workbench.test.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `src/workflows/external-certification.ts` with strict payload parsers and backend workflow entrypoints for:
+  - `external-trace-certification`;
+  - `mcp-transcript-certification`.
+- Added CLI-facing exports for external trace and MCP transcript certification so the workbench calls the same compile/grade/audit paths as the existing CLI commands.
+- Extended the workbench route allowlist and job runner to accept only the two new fixed upload job names.
+- Kept uploads bounded by the existing workbench `maxRequestBytes` limit and wrote uploaded content only inside the allocated managed run directory.
+- Added server-side MCP final-answer appending. The appended record carries producer text plus evidence refs, result count, and time window inferred from the uploaded transcript.
+- Added the Import UI view with file inputs for:
+  - canonical TraceEvent JSON;
+  - MCP JSONL transcript plus producer-provided final answer.
+- Added trust-boundary copy in the Import UI:
+  - external traces are producer-supplied;
+  - strict MCP import checks structure, not independent readiness;
+  - final answer remains producer-provided;
+  - mutation is false.
+- Added tests for successful external trace upload, malformed trace rejection before job allocation, successful MCP transcript upload/certification, and rendered Import view boundaries.
+
+Playwright evidence:
+- Opened `http://127.0.0.1:4317/#import-certification` and confirmed both upload forms, boundary text, and workbench artifact state rendered in the browser.
+- Uploaded `examples/sample-external-trace-pass.json` through the Trace JSON file input and clicked `Certify trace`.
+  - Browser navigated to `/api/artifacts/run-*#receipt`.
+  - Receipt rendered `receipt-external-001`, `READY`, score `100`, zero violations, and proof audit `PASS`.
+- Uploaded `examples/sample-external-trace.json` through the same browser flow.
+  - Receipt rendered `NOT READY`, score `0`, five violations, and proof audit `FAIL`.
+- Uploaded `examples/sample-mcp-transcript-pass.jsonl` through the Transcript JSONL file input and clicked `Certify transcript`.
+  - First browser attempt produced `NOT READY` because the default final-answer text did not cite `saved-search-lateral-movement`; deterministic `EVD-001` caught the missing provenance.
+  - Updated the default producer final-answer text to cite `saved-search-lateral-movement`, result count, time window, and evidence refs.
+  - Re-ran the browser upload; receipt rendered `READY`, score `100`, zero violations, strict import details, evidence refs, and proof audit `PASS`.
+
+Reviewer findings:
+- Subagents are disabled per user direction; no reviewer loop was run for this slice.
+
+Open risks:
+- The Import view certifies supplied artifacts; it does not independently verify that the external producer actually observed the referenced Splunk evidence.
+- Upload parsing is JSON body based and bounded by `maxRequestBytes`; larger external evidence packages would need an explicit design before support.
+
+Result:
+- Focused Move 10 backend/UI verification passed.
+- Required Move 10 command set passed.
+- Canonical build/check gate passed.
+- Vite production UI build passed.
+- `git diff --check` passed.
+- Playwright browser upload checks passed for external trace PASS, external trace FAIL, and MCP transcript PASS after the browser-discovered provenance copy fix.

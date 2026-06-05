@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -276,6 +276,102 @@ describe("workbench backend", () => {
     expect(completed.events.map((event) => event.message)).toEqual(
       expect.arrayContaining(["Queued live smoke.", "Running Agent Readiness Compiler live smoke.", "live smoke completed."])
     );
+  });
+
+  it("certifies an uploaded external trace under the managed artifact root", async () => {
+    const config = await testConfig({ maxRequestBytes: 200_000 });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const trace = JSON.parse(await readFile("examples/sample-external-trace-pass.json", "utf8")) as unknown;
+    const response = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/external-trace-certification",
+      body: JSON.stringify({ trace, agentName: "Uploaded Trace Agent", agentVersion: "sample-pass" })
+    });
+    const started = response.json as { job: { id: string; workflow: string; inputSummary: string } };
+    const completed = await waitForJob(runner, started.job.id);
+    const receipt = JSON.parse(
+      await readFile(join(config.artifactRoot, completed.runId, "receipt-external-001.json"), "utf8")
+    ) as { verdict: string; agent: { name: string } };
+
+    expect(response.status).toBe(202);
+    expect(started.job.workflow).toBe("external-trace-certification");
+    expect(started.job.inputSummary).toContain("trace event");
+    expect(completed.state).toBe("succeeded");
+    expect(completed.artifacts).toEqual(
+      expect.arrayContaining([
+        "uploaded-external-trace.json",
+        "environment-contract.json",
+        "receipt-external-001.json",
+        "proof-audit.json",
+        "proof-manifest.json"
+      ])
+    );
+    expect(receipt).toMatchObject({ verdict: "READY", agent: { name: "Uploaded Trace Agent" } });
+  });
+
+  it("rejects malformed external trace uploads before allocating a job", async () => {
+    const config = await testConfig({ maxRequestBytes: 2_000 });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const response = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/external-trace-certification",
+      body: JSON.stringify({ trace: [{ id: "not-a-trace-event" }] })
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.json).toMatchObject({
+      error: {
+        code: "WORKBENCH_REQUEST_FAILED",
+        message: expect.stringContaining("Invalid external trace upload")
+      }
+    });
+    expect(runner.listJobs()).toHaveLength(0);
+  });
+
+  it("certifies an uploaded MCP transcript with a server-appended final answer", async () => {
+    const config = await testConfig({ maxRequestBytes: 200_000 });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const transcript = await readFile("examples/sample-mcp-transcript-pass.jsonl", "utf8");
+    const response = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/mcp-transcript-certification",
+      body: JSON.stringify({
+        transcript,
+        finalAnswer:
+          "Evidence supports suspicious lateral movement. Provenance saved-search-lateral-movement returned 3 rows with evidence evt-102, evt-118, and evt-141.",
+        strictImport: true,
+        agentName: "Uploaded Transcript Agent",
+        agentVersion: "jsonrpc-pass"
+      })
+    });
+    const started = response.json as { job: { id: string; inputSummary: string } };
+    const completed = await waitForJob(runner, started.job.id);
+    const imported = JSON.parse(
+      await readFile(join(config.artifactRoot, completed.runId, "mcp-transcript-import.json"), "utf8")
+    ) as { finalAnswers: number; strictImport: boolean };
+    const receipt = JSON.parse(
+      await readFile(join(config.artifactRoot, completed.runId, "receipt-external-001.json"), "utf8")
+    ) as { verdict: string; evidenceRefs: string[] };
+
+    expect(response.status).toBe(202);
+    expect(started.job.inputSummary).toContain("strictImport=true");
+    expect(completed.state).toBe("succeeded");
+    expect(completed.artifacts).toEqual(
+      expect.arrayContaining([
+        "uploaded-mcp-transcript.jsonl",
+        "trace-imported.json",
+        "mcp-transcript-import.json",
+        "receipt-external-001.json",
+        "proof-audit.json",
+        "proof-manifest.json"
+      ])
+    );
+    expect(imported).toMatchObject({ strictImport: true, finalAnswers: 2 });
+    expect(receipt.verdict).toBe("READY");
+    expect(receipt.evidenceRefs).toEqual(expect.arrayContaining(["evt-102", "evt-118", "evt-141"]));
   });
 
   it("runs hosted-model diagnostic as an allowlisted server-owned live workflow", async () => {

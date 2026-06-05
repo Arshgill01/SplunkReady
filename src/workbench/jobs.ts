@@ -1,5 +1,11 @@
 import { relative } from "node:path";
 
+import {
+  externalCertificationInputSummary,
+  runExternalTraceCertificationWorkflow,
+  runMcpTranscriptCertificationWorkflow,
+  type ExternalCertificationPayload
+} from "../workflows/external-certification.js";
 import { runFixtureCertificationWorkflow } from "../workflows/fixture-certification.js";
 import { runHostedModelDiagnosticWorkflow, runHostedModelProofWorkflow } from "../workflows/hosted-model-actions.js";
 import {
@@ -13,7 +19,12 @@ import { redactUnknownError } from "./redaction.js";
 import type { WorkbenchConfig } from "./config.js";
 import type { WorkbenchEvent, WorkbenchJobSnapshot, WorkbenchWorkflow } from "./events.js";
 
-export type WorkbenchWorkflowHandler = (input: { outDir: string }) => Promise<{ artifacts: string[] }>;
+export interface WorkbenchWorkflowInput {
+  outDir: string;
+  payload?: ExternalCertificationPayload;
+}
+
+export type WorkbenchWorkflowHandler = (input: WorkbenchWorkflowInput) => Promise<{ artifacts: string[] }>;
 
 export interface WorkbenchJobRunnerOptions {
   config: WorkbenchConfig;
@@ -68,6 +79,20 @@ export class WorkbenchJobRunner {
     this.artifactStore = options.artifactStore;
     this.workflows = {
       "fixture-certification": async ({ outDir }) => runFixtureCertificationWorkflow({ outDir }),
+      "external-trace-certification": async ({ outDir, payload }) => {
+        if (payload?.kind !== "external-trace") {
+          throw new Error("External trace certification requires an external trace upload payload.");
+        }
+
+        return runExternalTraceCertificationWorkflow({ outDir, payload: payload.value });
+      },
+      "mcp-transcript-certification": async ({ outDir, payload }) => {
+        if (payload?.kind !== "mcp-transcript") {
+          throw new Error("MCP transcript certification requires an MCP transcript upload payload.");
+        }
+
+        return runMcpTranscriptCertificationWorkflow({ outDir, payload: payload.value });
+      },
       "live-smoke": async ({ outDir }) => runLiveSmokeWorkflow({ outDir }),
       "live-candidates": async ({ outDir }) => runLiveCandidatesWorkflow({ outDir }),
       "live-security-readiness": async ({ outDir }) => runLiveSecurityReadinessWorkflow({ outDir }),
@@ -86,7 +111,7 @@ export class WorkbenchJobRunner {
     return this.jobs.get(id);
   }
 
-  async createJob(workflow: WorkbenchWorkflow): Promise<WorkbenchJobSnapshot> {
+  async createJob(workflow: WorkbenchWorkflow, payload?: ExternalCertificationPayload): Promise<WorkbenchJobSnapshot> {
     const handler = this.workflows[workflow];
 
     if (!handler) {
@@ -111,24 +136,30 @@ export class WorkbenchJobRunner {
       runId: run.runId,
       artifactBase: `/api/artifacts/${run.runId}`,
       createdAt: now(),
+      inputSummary: payload ? externalCertificationInputSummary(payload) : undefined,
       artifacts: [],
       events: []
     };
 
     this.jobs.set(job.id, job);
     this.addEvent(job, "phase", `Queued ${workflowLabel(workflow)}.`);
-    void this.runJob(job, handler, run.path);
+    void this.runJob(job, handler, run.path, payload);
 
     return this.snapshot(job);
   }
 
-  private async runJob(job: WorkbenchJobSnapshot, handler: WorkbenchWorkflowHandler, outDir: string): Promise<void> {
+  private async runJob(
+    job: WorkbenchJobSnapshot,
+    handler: WorkbenchWorkflowHandler,
+    outDir: string,
+    payload?: ExternalCertificationPayload
+  ): Promise<void> {
     job.state = "running";
     job.startedAt = now();
     this.addEvent(job, "phase", `Running Agent Readiness Compiler ${workflowLabel(job.workflow)}.`);
 
     try {
-      const result = await handler({ outDir });
+      const result = await handler({ outDir, payload });
       job.artifacts = result.artifacts.map((artifact) => relative(outDir, artifact).replaceAll("\\", "/"));
       for (const artifact of job.artifacts) {
         this.addEvent(job, "artifact", `Wrote ${artifact}.`, artifact);

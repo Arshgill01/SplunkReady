@@ -2,6 +2,11 @@ import { extname } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { healthFromConfig, type WorkbenchConfig } from "./config.js";
+import {
+  parseExternalTraceCertificationPayload,
+  parseMcpTranscriptCertificationPayload,
+  type ExternalCertificationPayload
+} from "../workflows/external-certification.js";
 import { WorkbenchArtifactStore } from "./artifacts.js";
 import { WorkbenchJobRunner } from "./jobs.js";
 import type { WorkbenchWorkflow } from "./events.js";
@@ -82,6 +87,8 @@ const localhostOriginAllowed = (request: IncomingMessage): boolean => {
 
 const workflows = new Set<WorkbenchWorkflow>([
   "fixture-certification",
+  "external-trace-certification",
+  "mcp-transcript-certification",
   "live-smoke",
   "live-candidates",
   "live-security-readiness",
@@ -92,6 +99,26 @@ const workflows = new Set<WorkbenchWorkflow>([
 
 const parseWorkflow = (value: string): WorkbenchWorkflow | undefined =>
   workflows.has(value as WorkbenchWorkflow) ? (value as WorkbenchWorkflow) : undefined;
+
+const parseJsonBody = (body: string): unknown => {
+  if (!body.trim()) {
+    return {};
+  }
+
+  return JSON.parse(body) as unknown;
+};
+
+const payloadForWorkflow = (workflow: WorkbenchWorkflow, body: string): ExternalCertificationPayload | undefined => {
+  if (workflow === "external-trace-certification") {
+    return { kind: "external-trace", value: parseExternalTraceCertificationPayload(parseJsonBody(body)) };
+  }
+
+  if (workflow === "mcp-transcript-certification") {
+    return { kind: "mcp-transcript", value: parseMcpTranscriptCertificationPayload(parseJsonBody(body)) };
+  }
+
+  return undefined;
+};
 
 export const createWorkbenchApiHandler =
   (context: WorkbenchRouteContext) =>
@@ -121,8 +148,10 @@ export const createWorkbenchApiHandler =
           return true;
         }
 
-        await readRequestBody(request, context.config.maxRequestBytes);
-        json(response, 202, { job: await context.jobRunner.createJob(workflow) });
+        const body = await readRequestBody(request, context.config.maxRequestBytes);
+        const payload = payloadForWorkflow(workflow, body);
+
+        json(response, 202, { job: await context.jobRunner.createJob(workflow, payload) });
         return true;
       }
 

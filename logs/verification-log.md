@@ -6127,3 +6127,78 @@ Open risks:
 
 - Live SAIA entitlement remains unverified locally because the MCP endpoint transport fails before hosted-model tool calls.
 - Existing CLI mock coverage verifies the truthful `BLOCKED` diagnostic artifact and strict gate behavior when hosted-model tools are not entitled.
+
+## 2026-06-05 - Move 10 External Trace And Transcript Certification UI
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/workbench/workbench.test.ts tests/ui/app.test.ts`
+- `npx tsc --noEmit && npx vitest run tests/workbench/workbench.test.ts tests/ui/app.test.ts`
+- `npx vitest run tests/examples/external-trace.test.ts tests/cli/flow.test.ts tests/workbench tests/ui/app.test.ts && npm run build && npm run check && git diff --check`
+- `npm run ui:build`
+- `npm run workbench:dev`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open 'http://127.0.0.1:4317/#import-certification' && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e47 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh upload examples/sample-external-trace-pass.json && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e57 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e187 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e459 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh upload examples/sample-external-trace.json && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e469 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e664 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e966 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh upload examples/sample-mcp-transcript-pass.jsonl && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e982 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `curl -s 'http://127.0.0.1:4317/api/artifacts/run-2026-06-05T09-18-35-598Z-2e195c78/violations-external.json'`
+- `npx tsc --noEmit && npx vitest run tests/ui/app.test.ts tests/workbench/workbench.test.ts && npm run ui:build`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open 'http://127.0.0.1:4317/#import-certification' && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e77 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh upload examples/sample-mcp-transcript-pass.jsonl && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e93 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `npx vitest run tests/examples/external-trace.test.ts tests/cli/flow.test.ts tests/workbench tests/ui/app.test.ts && npm run build && npm run check && npm run ui:build && git diff --check`
+
+Result:
+
+- PASS for `npx` prerequisite.
+- PASS for TypeScript validation.
+- PASS for focused backend/UI tests:
+  - 2 test files;
+  - 35 tests passed.
+- PASS for required Move 10 focused verification:
+  - 4 test files;
+  - 71 tests passed.
+- PASS for canonical build/check gate:
+  - production TypeScript build passed;
+  - scaffold verified;
+  - 85 waves;
+  - 1035 project files;
+  - 41 test files;
+  - 270 tests passed.
+- PASS for Vite production UI build:
+  - 21 modules transformed;
+  - production bundle written to `dist-ui`.
+- PASS for `git diff --check`.
+- PASS for Playwright Import view render:
+  - external trace and MCP transcript upload controls rendered;
+  - boundary rows rendered for producer-supplied trace, structure-only strict import, producer-provided final answer, and mutation false.
+- PASS for Playwright external trace pass upload:
+  - uploaded `examples/sample-external-trace-pass.json`;
+  - generated workbench artifact bundle under `/api/artifacts/run-*`;
+  - rendered `receipt-external-001`;
+  - rendered `READY`, score `100`, zero violations;
+  - rendered proof audit `PASS`.
+- PASS for Playwright external trace fail upload:
+  - uploaded `examples/sample-external-trace.json`;
+  - generated workbench artifact bundle under `/api/artifacts/run-*`;
+  - rendered `NOT READY`, score `0`, five violations;
+  - rendered proof audit `FAIL`.
+- FAIL for first Playwright MCP transcript pass upload:
+  - uploaded `examples/sample-mcp-transcript-pass.jsonl`;
+  - server appended final-answer record;
+  - rendered `NOT READY`, score `75`, one violation;
+  - violation was deterministic `EVD-001` because the UI default final-answer text did not cite `saved-search-lateral-movement`.
+- PASS after default final-answer fix for Playwright MCP transcript pass upload:
+  - uploaded `examples/sample-mcp-transcript-pass.jsonl`;
+  - rendered `receipt-external-001`;
+  - rendered `READY`, score `100`, zero violations;
+  - rendered strict import summary with 6 imported events, 2 tool calls, 2 tool results, 0 skipped records, and 0 unmatched tool calls;
+  - rendered evidence refs and proof audit `PASS`.
+
+Open risks:
+
+- External import receipts certify the supplied trace/transcript against SplunkReady rules; they do not prove the producer actually observed the referenced deployment evidence.
+- Upload support remains deliberately bounded to JSON request bodies under the workbench byte limit.

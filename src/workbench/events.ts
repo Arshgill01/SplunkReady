@@ -1,5 +1,7 @@
 export type WorkbenchWorkflow =
   | "fixture-certification"
+  | "external-trace-certification"
+  | "mcp-transcript-certification"
   | "live-smoke"
   | "live-candidates"
   | "live-security-readiness"
@@ -26,6 +28,7 @@ export interface WorkbenchJobSnapshot {
   runId: string;
   artifactBase: string;
   createdAt: string;
+  inputSummary?: string;
   startedAt?: string;
   completedAt?: string;
   error?: string;

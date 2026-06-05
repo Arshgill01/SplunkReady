@@ -1081,6 +1081,55 @@ describe("Vite UI artifact app", () => {
     expect(blocked).not.toContain("type=\"password\"");
   });
 
+  it("renders external import certification forms with explicit trust boundaries", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": contract,
+        "missions.json": [mission],
+        "receipt-external-001.json": receipt({
+          id: "receipt-external-001",
+          agent: { name: "Uploaded Trace Agent", version: "sample-pass" },
+          verdict: "READY",
+          score: 100
+        }),
+        "trace-external.json": afterTrace,
+        "violations-external.json": []
+      })
+    );
+    const html = renderApp(bundle, "import-certification", {
+      workbench: {
+        available: true,
+        healthStatus: "available",
+        job: {
+          id: "job-import-1",
+          workflow: "external-trace-certification",
+          state: "succeeded",
+          runId: "run-import-001",
+          artifactBase: "/api/artifacts/run-import-001",
+          inputSummary: "3 trace event(s); requirePass=false",
+          events: [{ id: 1, type: "complete", message: "external trace certification completed." }]
+        }
+      }
+    });
+
+    expect(html).toContain('data-view="import-certification"');
+    expect(html).toContain('class="active">Import</a>');
+    expect(html).toContain("External trace");
+    expect(html).toContain("MCP transcript");
+    expect(html).toContain('data-external-trace-form');
+    expect(html).toContain('data-mcp-transcript-form');
+    expect(html).toContain("producer-supplied canonical TraceEvent array");
+    expect(html).toContain("read-only Splunk MCP JSON-RPC transcript");
+    expect(html).toContain("checks transcript structure, not independent readiness");
+    expect(html).toContain("producer-provided and appended server-side");
+    expect(html).toContain("Mutation</th><td>false");
+    expect(html).toContain("job-import-1 / external-trace-certification / succeeded");
+    expect(html).toContain("3 trace event(s); requirePass=false");
+    expect(html).toContain("Receipt</th><td>receipt-external-001");
+    expect(html).not.toContain("SDK");
+  });
+
   it("renders live proof summaries without implying a fake patch loop", async () => {
     const bundle = await loadUiArtifactBundle(
       "/artifact-base",

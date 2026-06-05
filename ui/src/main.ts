@@ -163,9 +163,13 @@ const pollWorkbenchJob = async (jobId: string, successView: ViewId): Promise<voi
   render();
 };
 
-const runWorkbenchWorkflow = async (workflow: string, successView: ViewId): Promise<void> => {
+const runWorkbenchWorkflow = async (workflow: string, successView: ViewId, payload?: unknown): Promise<void> => {
   try {
-    const response = await fetch(`/api/jobs/${encodeURIComponent(workflow)}`, { method: "POST" });
+    const response = await fetch(`/api/jobs/${encodeURIComponent(workflow)}`, {
+      method: "POST",
+      headers: payload === undefined ? undefined : { "content-type": "application/json" },
+      body: payload === undefined ? undefined : JSON.stringify(payload)
+    });
 
     if (!response.ok) {
       const failure = await response.json().catch(() => undefined) as { error?: { message?: string } } | undefined;
@@ -196,6 +200,67 @@ const runWorkbenchWorkflow = async (workflow: string, successView: ViewId): Prom
 
 const runFixtureCertification = async (): Promise<void> => {
   await runWorkbenchWorkflow("fixture-certification", "certification-replay");
+};
+
+const selectedFileText = async (selector: string, label: string): Promise<string> => {
+  const input = document.querySelector<HTMLInputElement>(selector);
+  const file = input?.files?.[0];
+
+  if (!file) {
+    throw new Error(`${label} file is required.`);
+  }
+
+  return file.text();
+};
+
+const stringInput = (selector: string): string | undefined => {
+  const value = document.querySelector<HTMLInputElement | HTMLTextAreaElement>(selector)?.value.trim();
+
+  return value && value.length > 0 ? value : undefined;
+};
+
+const checked = (selector: string): boolean =>
+  document.querySelector<HTMLInputElement>(selector)?.checked === true;
+
+const runExternalTraceImport = async (): Promise<void> => {
+  const traceText = await selectedFileText("[data-external-trace-file]", "External trace");
+  const trace = JSON.parse(traceText) as unknown;
+
+  await runWorkbenchWorkflow("external-trace-certification", "receipt", {
+    trace,
+    requirePass: checked("[data-external-trace-require-pass]"),
+    agentName: stringInput("[data-external-trace-agent-name]"),
+    agentVersion: stringInput("[data-external-trace-agent-version]")
+  });
+};
+
+const runMcpTranscriptImport = async (): Promise<void> => {
+  const transcript = await selectedFileText("[data-mcp-transcript-file]", "MCP transcript");
+
+  await runWorkbenchWorkflow("mcp-transcript-certification", "receipt", {
+    transcript,
+    finalAnswer: stringInput("[data-mcp-transcript-final-answer]"),
+    strictImport: checked("[data-mcp-transcript-strict-import]"),
+    requirePass: checked("[data-mcp-transcript-require-pass]"),
+    agentName: stringInput("[data-mcp-transcript-agent-name]"),
+    agentVersion: stringInput("[data-mcp-transcript-agent-version]")
+  });
+};
+
+const showStartFailure = (workflow: string, error: unknown): void => {
+  workbench = {
+    ...workbench,
+    job: {
+      id: "job-start-failed",
+      workflow,
+      state: "failed",
+      runId: "not allocated",
+      artifactBase: "",
+      error: error instanceof Error ? error.message : String(error),
+      events: []
+    }
+  };
+  render();
 };
 
 const bindInteractions = (): void => {
@@ -233,6 +298,16 @@ const bindInteractions = (): void => {
       void runWorkbenchWorkflow(workflow, workflow === "fixture-certification" ? "certification-replay" : "live-connect");
     });
   }
+
+  document.querySelector<HTMLFormElement>("[data-external-trace-form]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void runExternalTraceImport().catch((error: unknown) => showStartFailure("external-trace-certification", error));
+  });
+
+  document.querySelector<HTMLFormElement>("[data-mcp-transcript-form]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void runMcpTranscriptImport().catch((error: unknown) => showStartFailure("mcp-transcript-certification", error));
+  });
 
   for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-proof-artifact]")) {
     link.addEventListener("click", (event) => {
