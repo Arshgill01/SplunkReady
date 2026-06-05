@@ -62,6 +62,11 @@
       "uri": "splunkready://workflows/splunk-mcp-certification-loop",
       "name": "splunk-mcp-certification-loop",
       "mimeType": "text/markdown"
+    },
+    {
+      "uri": "splunkready://workflows/mcp-composition-scorecard",
+      "name": "mcp-composition-scorecard",
+      "mimeType": "text/markdown"
     }
   ],
   "prompts": [
@@ -80,6 +85,10 @@
     {
       "name": "splunkready_splunk_mcp_certification_loop",
       "argumentCount": 3
+    },
+    {
+      "name": "splunkready_mcp_composition_review",
+      "argumentCount": 1
     }
   ],
   "describe": {
@@ -101,13 +110,15 @@
       "splunkready://examples/pass-receipt",
       "splunkready://client-config/stdio",
       "splunkready://client-config/splunk-and-splunkready",
-      "splunkready://workflows/splunk-mcp-certification-loop"
+      "splunkready://workflows/splunk-mcp-certification-loop",
+      "splunkready://workflows/mcp-composition-scorecard"
     ],
     "prompts": [
       "splunkready_certify_mcp_transcript",
       "splunkready_capture_trace",
       "splunkready_explain_receipt",
-      "splunkready_splunk_mcp_certification_loop"
+      "splunkready_splunk_mcp_certification_loop",
+      "splunkready_mcp_composition_review"
     ]
   },
   "postureResource": {
@@ -115,7 +126,7 @@
       {
         "uri": "splunkready://certification/posture",
         "mimeType": "application/json",
-        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://client-config/splunk-and-splunkready\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\"\n  ]\n}"
+        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://client-config/splunk-and-splunkready\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\",\n    \"splunkready://workflows/mcp-composition-scorecard\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\",\n    \"splunkready_mcp_composition_review\"\n  ]\n}"
       }
     ]
   },
@@ -146,6 +157,15 @@
       }
     ]
   },
+  "compositionScorecardResource": {
+    "contents": [
+      {
+        "uri": "splunkready://workflows/mcp-composition-scorecard",
+        "mimeType": "text/markdown",
+        "text": "# MCP Composition Scorecard\n\nA competitive MCP proof should show composition, not replacement.\nRequired evidence:\n1. The MCP client config contains both an existing Splunk MCP server named `splunk` and a local `splunkready` MCP server.\n2. The transcript contains read-only `splunk_*` tool calls produced by the Splunk MCP server.\n3. The transcript includes deployment evidence, preferably saved-search output with event refs.\n4. SplunkReady MCP certifies the captured transcript into a Readiness Receipt.\n5. Deterministic rules decide READY or NOT READY; LLM, SAIA, or assistant text may only explain.\n6. SplunkReady reports `mutation=false` and does not mutate Splunk.\n\nUse this scorecard to review `mcp-proof-summary.json` before presenting the MCP category story."
+      }
+    ]
+  },
   "transcriptPrompt": {
     "description": "Guide an MCP-capable agent to pass a captured Splunk JSON-RPC transcript through SplunkReady certification.",
     "messages": [
@@ -166,6 +186,18 @@
         "content": {
           "type": "text",
           "text": "Run a Splunk MCP investigation loop and certify it with SplunkReady.\n\nSplunk MCP server: splunk\nTranscript path: examples/sample-mcp-transcript-pass.jsonl\nOutput directory: submission-evidence/mcp-proof/mcp-transcript-certification\n\nUse the two-server MCP client configuration: `splunk` is the existing Splunk MCP Server and `splunkready` is the local certification server.\nUse Splunk MCP only for read-only investigation actions. Prefer saved searches and knowledge objects when the deployment exposes them.\nPreserve the JSON-RPC transcript of the Splunk MCP tool calls and responses.\nThen call splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.\nUse the Readiness Receipt as the authoritative verdict; LLM or assistant text may only explain the deterministic result."
+        }
+      }
+    ]
+  },
+  "compositionReviewPrompt": {
+    "description": "Guide an MCP-capable reviewer to verify that a proof uses existing Splunk MCP behavior plus SplunkReady certification.",
+    "messages": [
+      {
+        "role": "user",
+        "content": {
+          "type": "text",
+          "text": "Review this MCP composition proof before presenting it.\n\nProof summary path: submission-evidence/mcp-proof/mcp-proof-summary.json\n\nConfirm the proof composes two MCP servers: existing Splunk MCP for read-only investigation and SplunkReady MCP for deterministic certification.\nCheck for a dual-server client config, captured splunk_* tool calls, saved-search evidence refs, a generated Readiness Receipt, deterministic authority, and mutation=false.\nCall out any missing evidence directly. Do not treat LLM output as pass/fail authority."
         }
       }
     ]
@@ -223,6 +255,58 @@
       "evt-141"
     ],
     "receiptPath": "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+    "deterministicAuthority": true,
+    "mutation": false
+  },
+  "mcpComposition": {
+    "status": "PASS",
+    "score": 100,
+    "servers": [
+      {
+        "name": "splunk",
+        "role": "Existing Splunk MCP server for read-only investigation and operational evidence retrieval.",
+        "evidence": "splunk_get_knowledge_objects, splunk_run_saved_search",
+        "existingMcpServer": true
+      },
+      {
+        "name": "splunkready",
+        "role": "SplunkReady MCP server for posture discovery, reusable prompts, and deterministic transcript certification.",
+        "evidence": "splunkready_certify_mcp_transcript generated the Readiness Receipt.",
+        "existingMcpServer": false
+      }
+    ],
+    "checks": [
+      {
+        "id": "dual-server-client-config",
+        "status": "PASS",
+        "evidence": "Client config includes separate splunk and splunkready MCP servers."
+      },
+      {
+        "id": "discoverable-resources-and-prompts",
+        "status": "PASS",
+        "evidence": "8 resources and 5 prompts expose the composed workflow."
+      },
+      {
+        "id": "existing-splunk-mcp-boundary",
+        "status": "PASS",
+        "evidence": "2 captured splunk_* tool calls are certified."
+      },
+      {
+        "id": "saved-search-evidence",
+        "status": "PASS",
+        "evidence": "3 evidence refs from saved-search output."
+      },
+      {
+        "id": "readiness-receipt-authority",
+        "status": "PASS",
+        "evidence": "Transcript certification returned PASS; deterministic rules remain authoritative."
+      },
+      {
+        "id": "no-splunkready-mutation",
+        "status": "PASS",
+        "evidence": "SplunkReady certification reports mutation=false across workflow, boundary, and receipt artifacts."
+      }
+    ],
     "deterministicAuthority": true,
     "mutation": false
   },

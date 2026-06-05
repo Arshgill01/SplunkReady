@@ -21,6 +21,7 @@ Resources:
 - splunkready://client-config/stdio (application/json)
 - splunkready://client-config/splunk-and-splunkready (application/json)
 - splunkready://workflows/splunk-mcp-certification-loop (text/markdown)
+- splunkready://workflows/mcp-composition-scorecard (text/markdown)
 
 Dual-server MCP client kit:
 - Resource: splunkready://client-config/splunk-and-splunkready
@@ -32,6 +33,7 @@ Prompts:
 - splunkready_capture_trace arguments=2
 - splunkready_explain_receipt arguments=1
 - splunkready_splunk_mcp_certification_loop arguments=3
+- splunkready_mcp_composition_review arguments=1
 
 Agent-driven workflow: PASS
 - MCP client discovers SplunkReady certification posture and stdio configuration.
@@ -46,5 +48,13 @@ Splunk MCP boundary: PASS
 - Saved-search execution: yes
 - Evidence refs: evt-102, evt-118, evt-141
 - Receipt: submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json
+
+MCP composition scorecard: PASS (100/100)
+- dual-server-client-config: PASS - Client config includes separate splunk and splunkready MCP servers.
+- discoverable-resources-and-prompts: PASS - 8 resources and 5 prompts expose the composed workflow.
+- existing-splunk-mcp-boundary: PASS - 2 captured splunk_* tool calls are certified.
+- saved-search-evidence: PASS - 3 evidence refs from saved-search output.
+- readiness-receipt-authority: PASS - Transcript certification returned PASS; deterministic rules remain authoritative.
+- no-splunkready-mutation: PASS - SplunkReady certification reports mutation=false across workflow, boundary, and receipt artifacts.
 
 Receipt: submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json

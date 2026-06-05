@@ -9670,6 +9670,86 @@ Open blockers:
 - Actual public npm publication remains blocked until an authenticated operator
   runs the publish path.
 - Hosted demo deployment and live proof export remain open Minimax caps.
+
+## 2026-06-06 - Move 85 MCP Composition Scorecard
+
+Commands:
+
+- `npx vitest run tests/mcp/server.test.ts tests/cli/flow.test.ts tests/ui/app.test.ts --testNamePattern "MCP server proof|MCP JSON-RPC transcript|mcp-proof|MCP proof|composable certification resources|reusable MCP certification prompts"`
+- `npm run build && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json && node dist/src/cli.js verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json`
+- `find submission-evidence -type f ! -path 'submission-evidence/evidence-pack-sha256.txt' | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run public-demo:build`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `npx vite --host 127.0.0.1 --port 4338 artifacts/public-demo`
+- `export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"; export PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh"; bash "$PWCLI" open 'http://127.0.0.1:4338/?artifacts=artifacts%2Fmcp-proof#mcp-proof' && bash "$PWCLI" snapshot`
+- `export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"; export PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh"; bash "$PWCLI" screenshot --filename submission-evidence/screenshots/workbench-mcp-proof.png --full-page`
+- `npm run check`
+- `lsof -ti tcp:4338 | xargs -r kill`
+
+Result:
+
+- FAIL on the first focused test run before the scorecard fix:
+  - `tests/mcp/server.test.ts` caught missing explicit `mutation` wording in
+    the scorecard resource;
+  - `tests/cli/flow.test.ts` caught `mcpComposition.score: 83` because the
+    scorecard inspected JSON-wrapped resource output instead of
+    `contents[].text`;
+  - fixed by making the resource say `mutation=false` and by reading MCP
+    resource text before scoring the dual-server config.
+- PASS for the focused MCP/CLI/UI test run after the fix:
+  - 3 test files passed;
+  - 6 focused tests passed;
+  - 67 tests skipped by focused pattern.
+- PASS for regenerated MCP proof evidence:
+  - `mcp-proof` returned `status: PASS`;
+  - wrote `submission-evidence/mcp-proof/mcp-proof-summary.json`;
+  - nested `verify-manifest` returned `status: PASS`.
+- PASS for evidence SHA-256 verification after refreshing MCP proof artifacts
+  and the claim ledger.
+- PASS for public demo rebuild:
+  - Vite production UI built successfully;
+  - public demo export copied `artifacts/mcp-proof`,
+    `artifacts/suite-proof`, and `artifacts/public-proof-export`.
+- PASS for Playwright UI verification:
+  - opened
+    `http://127.0.0.1:4338/?artifacts=artifacts%2Fmcp-proof#mcp-proof`;
+  - snapshot showed `MCP composition scorecard`, `Score 100/100`,
+    existing MCP server `splunk`, 8 resources, 5 prompts, and all six
+    composition checks passing;
+  - captured
+    `submission-evidence/screenshots/workbench-mcp-proof.png`.
+- PASS for full `npm run check`:
+  - scaffold verified with 85 waves;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 152 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and ran
+    `npx splunkready judge-proof`;
+  - 56 test files passed;
+  - 346 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- The Playwright wrapper script was present but not executable, so it was
+  invoked with `bash "$PWCLI"` instead of changing permissions.
+- `.playwright-cli` scratch output was removed after the screenshot run.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after the Move 85 push.
+- The MCP category story is stronger, but a live public MCP-client screencast
+  remains an open evidence gap.
+- Hosted demo deployment, public package publication, and redacted live proof
+  export remain open probability caps.
 ## 2026-06-06 - Move 78 Refreshed Submission Evidence Pack
 
 Commands:

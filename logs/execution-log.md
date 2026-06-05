@@ -11119,3 +11119,63 @@ Open blockers:
   deploy succeeds.
 - Live proof export remains open because raw ignored live artifacts can contain
   deployment inventory.
+
+## 2026-06-06 01:36 - Move 85 MCP Composition Scorecard
+
+Scope:
+- Continued the Minimax MCP-award cap work without using subagents.
+- Added `moves/moves85.md` for an MCP composition scorecard move.
+- Added `splunkready://workflows/mcp-composition-scorecard` as a discoverable
+  MCP resource.
+- Added `splunkready_mcp_composition_review` as a reusable MCP prompt for
+  reviewing composed-MCP evidence.
+- Added `mcpComposition` to `mcp-proof-summary.json`, with six deterministic
+  checks:
+  - dual-server client config;
+  - discoverable resources and prompts;
+  - existing Splunk MCP boundary;
+  - saved-search evidence;
+  - Readiness Receipt authority;
+  - no SplunkReady mutation.
+- Updated the Vite MCP proof view to render the composition scorecard.
+- Regenerated `submission-evidence/mcp-proof/**`, updated the claim ledger and
+  SHA-256 ledger, rebuilt the public demo export, and captured the MCP proof
+  route with Playwright.
+- Removed Playwright scratch files from `.playwright-cli` after the browser
+  run.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+- Did not add Splunk write operations or make MCP/LLM/SAIA output
+  authoritative for pass/fail.
+
+Files changed:
+- `src/mcp/server.ts`
+- `src/workflows/mcp-proof.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `submission-evidence/mcp-proof/mcp-proof-summary.md`
+- `moves/README.md`
+- `moves/moves85.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- The MCP proof now reads as a composed workflow: existing Splunk MCP retrieves
+  operational evidence, then SplunkReady MCP certifies the captured transcript.
+- `mcp-proof-summary.json` now reports `mcpComposition.status: PASS`,
+  `score: 100`, 8 resources, 5 prompts, and all six composition checks passing.
+- The workbench MCP route shows the scorecard in the browser with the existing
+  MCP server named `splunk`, `100/100`, and `mutation no`.
+
+Open blockers:
+- This improves the MCP story but is still a credential-free captured proof,
+  not a live public MCP-client screencast.
+- Hosted demo deployment, public npm publication, and redacted live proof export
+  remain open probability caps.

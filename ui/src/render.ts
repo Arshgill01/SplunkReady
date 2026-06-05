@@ -183,6 +183,23 @@ const renderMcpProofTable = (summary: McpProofSummary): string => {
   ]);
 };
 
+const renderMcpComposition = (summary: McpProofSummary): string => {
+  const composition = summary.mcpComposition;
+
+  return `${renderFactTable([
+    ["Status", composition.status],
+    ["Score", `${composition.score}/100`],
+    ["Servers", composition.servers.map((server) => `${server.name}: ${server.role}`).join(" / ")],
+    ["Existing MCP server", composition.servers.find((server) => server.existingMcpServer)?.name ?? "none"],
+    ["Deterministic authority", composition.deterministicAuthority ? "yes" : "no"],
+    ["Mutation", composition.mutation ? "yes" : "no"]
+  ])}
+  ${renderMcpProofList(
+    composition.checks.map((check) => `${check.id}: ${check.status} - ${check.evidence}`),
+    "stage-list"
+  )}`;
+};
+
 const renderMcpProof = (bundle: UiArtifactBundle): string => {
   const summary = bundle.mcpProofSummary;
 
@@ -208,6 +225,10 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
                   ["Mutation", summary.agentDrivenWorkflow.mutation ? "yes" : "no"]
                 ])}
                 ${renderMcpProofList(summary.agentDrivenWorkflow.stages, "stage-list")}
+              </section>
+              <section class="panel mcp-proof-panel">
+                <h2>MCP composition scorecard</h2>
+                ${renderMcpComposition(summary)}
               </section>
               <section class="panel mcp-proof-panel">
                 <h2>MCP surface</h2>

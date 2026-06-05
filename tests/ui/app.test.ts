@@ -355,8 +355,10 @@ const mcpProofSummary = {
   clientConfigResource: { contents: [] },
   dualServerClientConfigResource: { contents: [] },
   certificationLoopResource: { contents: [] },
+  compositionScorecardResource: { contents: [] },
   transcriptPrompt: { messages: [] },
   certificationLoopPrompt: { messages: [] },
+  compositionReviewPrompt: { messages: [] },
   transcriptCertification: {
     status: "PASS",
     outDir: "submission-evidence/mcp-proof/mcp-transcript-certification",
@@ -393,6 +395,58 @@ const mcpProofSummary = {
     includesSavedSearchExecution: true,
     evidenceRefs: ["evt-102", "evt-118", "evt-141"],
     receiptPath: "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+    deterministicAuthority: true,
+    mutation: false
+  },
+  mcpComposition: {
+    status: "PASS",
+    score: 100,
+    servers: [
+      {
+        name: "splunk",
+        role: "Existing Splunk MCP server for read-only investigation and operational evidence retrieval.",
+        evidence: "splunk_get_knowledge_objects, splunk_run_saved_search",
+        existingMcpServer: true
+      },
+      {
+        name: "splunkready",
+        role: "SplunkReady MCP server for posture discovery, reusable prompts, and deterministic transcript certification.",
+        evidence: "splunkready_certify_mcp_transcript generated the Readiness Receipt.",
+        existingMcpServer: false
+      }
+    ],
+    checks: [
+      {
+        id: "dual-server-client-config",
+        status: "PASS",
+        evidence: "Client config includes separate splunk and splunkready MCP servers."
+      },
+      {
+        id: "discoverable-resources-and-prompts",
+        status: "PASS",
+        evidence: "8 resources and 5 prompts expose the composed workflow."
+      },
+      {
+        id: "existing-splunk-mcp-boundary",
+        status: "PASS",
+        evidence: "2 captured splunk_* tool calls are certified."
+      },
+      {
+        id: "saved-search-evidence",
+        status: "PASS",
+        evidence: "3 evidence refs from saved-search output."
+      },
+      {
+        id: "readiness-receipt-authority",
+        status: "PASS",
+        evidence: "Transcript certification returned PASS; deterministic rules remain authoritative."
+      },
+      {
+        id: "no-splunkready-mutation",
+        status: "PASS",
+        evidence: "SplunkReady certification reports mutation=false across workflow, boundary, and receipt artifacts."
+      }
+    ],
     deterministicAuthority: true,
     mutation: false
   },
@@ -1244,6 +1298,10 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain('class="active">MCP</a>');
     expect(html).toContain("MCP proof");
     expect(html).toContain("Certification loop");
+    expect(html).toContain("MCP composition scorecard");
+    expect(html).toContain("dual-server-client-config: PASS");
+    expect(html).toContain("existing-splunk-mcp-boundary: PASS");
+    expect(html).toContain("splunk: Existing Splunk MCP server");
     expect(html).toContain("splunkready://workflows/splunk-mcp-certification-loop");
     expect(html).toContain("splunkready_splunk_mcp_certification_loop");
     expect(html).toContain("splunkready_certify_mcp_transcript");

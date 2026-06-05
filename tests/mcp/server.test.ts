@@ -76,7 +76,8 @@ describe("SplunkReady MCP server", () => {
       "splunkready://examples/pass-receipt",
       "splunkready://client-config/stdio",
       "splunkready://client-config/splunk-and-splunkready",
-      "splunkready://workflows/splunk-mcp-certification-loop"
+      "splunkready://workflows/splunk-mcp-certification-loop",
+      "splunkready://workflows/mcp-composition-scorecard"
     ]);
 
     const readResponse = await handleMcpMessage({
@@ -121,6 +122,19 @@ describe("SplunkReady MCP server", () => {
     expect(String(workflowContents[0].text)).toContain("Use the configured Splunk MCP Server");
     expect(String(workflowContents[0].text)).toContain("Configure two MCP servers");
     expect(String(workflowContents[0].text)).toContain("splunkready_certify_mcp_transcript");
+
+    const scorecardResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "scorecard-read",
+      method: "resources/read",
+      params: { uri: "splunkready://workflows/mcp-composition-scorecard" }
+    });
+    const scorecardResult = resultOf(scorecardResponse);
+    const scorecardContents = scorecardResult.contents as Array<Record<string, unknown>>;
+
+    expect(String(scorecardContents[0].text)).toContain("composition, not replacement");
+    expect(String(scorecardContents[0].text)).toContain("existing Splunk MCP server");
+    expect(String(scorecardContents[0].text)).toContain("mutation");
   });
 
   it("lists and returns reusable MCP certification prompts", async () => {
@@ -132,7 +146,8 @@ describe("SplunkReady MCP server", () => {
       "splunkready_certify_mcp_transcript",
       "splunkready_capture_trace",
       "splunkready_explain_receipt",
-      "splunkready_splunk_mcp_certification_loop"
+      "splunkready_splunk_mcp_certification_loop",
+      "splunkready_mcp_composition_review"
     ]);
 
     const getResponse = await handleMcpMessage({
@@ -175,6 +190,24 @@ describe("SplunkReady MCP server", () => {
     expect(loopMessages[0].content.text).toContain("two-server MCP client configuration");
     expect(loopMessages[0].content.text).toContain("Preserve the JSON-RPC transcript");
     expect(loopMessages[0].content.text).toContain("Readiness Receipt as the authoritative verdict");
+
+    const reviewResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "prompt-review",
+      method: "prompts/get",
+      params: {
+        name: "splunkready_mcp_composition_review",
+        arguments: {
+          proofSummaryPath: "artifacts/mcp-proof/mcp-proof-summary.json"
+        }
+      }
+    });
+    const reviewResult = resultOf(reviewResponse);
+    const reviewMessages = reviewResult.messages as Array<{ content: { text: string } }>;
+
+    expect(reviewMessages[0].content.text).toContain("two MCP servers");
+    expect(reviewMessages[0].content.text).toContain("saved-search evidence refs");
+    expect(reviewMessages[0].content.text).toContain("mutation=false");
   });
 
   it("certifies an external trace through tools/call", async () => {

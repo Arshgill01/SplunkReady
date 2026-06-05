@@ -249,6 +249,14 @@ export const splunkReadyMcpResources: McpResource[] = [
     description:
       "Agent workflow showing how Splunk MCP investigation calls become a captured transcript and deterministic Readiness Receipt.",
     mimeType: "text/markdown"
+  },
+  {
+    uri: "splunkready://workflows/mcp-composition-scorecard",
+    name: "mcp-composition-scorecard",
+    title: "MCP Composition Scorecard",
+    description:
+      "Checklist for proving an MCP client composed an existing Splunk MCP server with SplunkReady certification.",
+    mimeType: "text/markdown"
   }
 ];
 
@@ -329,6 +337,19 @@ export const splunkReadyMcpPrompts: McpPrompt[] = [
         required: true
       }
     ]
+  },
+  {
+    name: "splunkready_mcp_composition_review",
+    title: "Review MCP Composition Evidence",
+    description:
+      "Guide an MCP-capable reviewer to verify that a proof uses existing Splunk MCP behavior plus SplunkReady certification.",
+    arguments: [
+      {
+        name: "proofSummaryPath",
+        description: "Local path to the generated mcp-proof-summary.json artifact.",
+        required: true
+      }
+    ]
   }
 ];
 
@@ -364,8 +385,8 @@ const describeCertification = (): Record<string, unknown> => ({
   advisoryLlmOnly: true,
   mutation: false,
   tools: splunkReadyMcpTools.map((tool) => tool.name),
-  resources: splunkReadyMcpResources.map((resource) => resource.uri),
-  prompts: splunkReadyMcpPrompts.map((prompt) => prompt.name)
+    resources: splunkReadyMcpResources.map((resource) => resource.uri),
+    prompts: splunkReadyMcpPrompts.map((prompt) => prompt.name)
 });
 
 const splunkReadyClientConfig = (): Record<string, unknown> => ({
@@ -503,6 +524,31 @@ const readResource = async (uri: string): Promise<Record<string, unknown>> => {
     };
   }
 
+  if (uri === "splunkready://workflows/mcp-composition-scorecard") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "text/markdown",
+          text: [
+            "# MCP Composition Scorecard",
+            "",
+            "A competitive MCP proof should show composition, not replacement.",
+            "Required evidence:",
+            "1. The MCP client config contains both an existing Splunk MCP server named `splunk` and a local `splunkready` MCP server.",
+            "2. The transcript contains read-only `splunk_*` tool calls produced by the Splunk MCP server.",
+            "3. The transcript includes deployment evidence, preferably saved-search output with event refs.",
+            "4. SplunkReady MCP certifies the captured transcript into a Readiness Receipt.",
+            "5. Deterministic rules decide READY or NOT READY; LLM, SAIA, or assistant text may only explain.",
+            "6. SplunkReady reports `mutation=false` and does not mutate Splunk.",
+            "",
+            "Use this scorecard to review `mcp-proof-summary.json` before presenting the MCP category story."
+          ].join("\n")
+        }
+      ]
+    };
+  }
+
   throw new Error(`Unknown resource: ${uri}`);
 };
 
@@ -556,6 +602,18 @@ const promptText = (name: string, args: Record<string, unknown>): string => {
       "Preserve the JSON-RPC transcript of the Splunk MCP tool calls and responses.",
       "Then call splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.",
       "Use the Readiness Receipt as the authoritative verdict; LLM or assistant text may only explain the deterministic result."
+    ].join("\n");
+  }
+
+  if (name === "splunkready_mcp_composition_review") {
+    return [
+      "Review this MCP composition proof before presenting it.",
+      "",
+      `Proof summary path: ${String(args.proofSummaryPath ?? "<proofSummaryPath>")}`,
+      "",
+      "Confirm the proof composes two MCP servers: existing Splunk MCP for read-only investigation and SplunkReady MCP for deterministic certification.",
+      "Check for a dual-server client config, captured splunk_* tool calls, saved-search evidence refs, a generated Readiness Receipt, deterministic authority, and mutation=false.",
+      "Call out any missing evidence directly. Do not treat LLM output as pass/fail authority."
     ].join("\n");
   }
 

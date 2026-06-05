@@ -359,3 +359,12 @@ Move 84 reduces the public-package DevX risk by proving the packed
 outside the repository. It also fixed an installed-bin entrypoint bug caused by
 npm's `.bin` symlink path. The public registry risk remains open because local
 npm auth is unavailable and no `npm publish` was run.
+
+Move 85 reduces the Best Use of MCP positioning risk by making MCP composition a
+first-class proof artifact. The generated MCP proof now includes a
+`mcpComposition` scorecard with `PASS`, `100/100`, 8 resources, 5 prompts, an
+existing Splunk MCP server role, SplunkReady certification role, saved-search
+evidence, deterministic receipt authority, and `mutation=false`. This does not
+fully eliminate the award risk because the tracked evidence is still a
+credential-free captured transcript and Playwright-verified workbench view, not
+a public live MCP-client screencast.

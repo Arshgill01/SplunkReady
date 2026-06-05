@@ -654,8 +654,10 @@ const mcpProofSummarySchema = z
     clientConfigResource: z.record(z.unknown()),
     dualServerClientConfigResource: z.record(z.unknown()),
     certificationLoopResource: z.record(z.unknown()),
+    compositionScorecardResource: z.record(z.unknown()),
     transcriptPrompt: z.record(z.unknown()),
     certificationLoopPrompt: z.record(z.unknown()),
+    compositionReviewPrompt: z.record(z.unknown()),
     transcriptCertification: z
       .object({
         status: z.enum(["PASS", "FAIL"]),
@@ -686,6 +688,33 @@ const mcpProofSummarySchema = z
         includesSavedSearchExecution: z.boolean(),
         evidenceRefs: z.array(z.string().min(1)),
         receiptPath: z.string().min(1),
+        deterministicAuthority: z.boolean(),
+        mutation: z.boolean()
+      })
+      .strict(),
+    mcpComposition: z
+      .object({
+        status: z.enum(["PASS", "FAIL"]),
+        score: z.number().int().nonnegative(),
+        servers: z.array(
+          z
+            .object({
+              name: z.string().min(1),
+              role: z.string().min(1),
+              evidence: z.string().min(1),
+              existingMcpServer: z.boolean()
+            })
+            .strict()
+        ),
+        checks: z.array(
+          z
+            .object({
+              id: z.string().min(1),
+              status: z.enum(["PASS", "FAIL"]),
+              evidence: z.string().min(1)
+            })
+            .strict()
+        ),
         deterministicAuthority: z.boolean(),
         mutation: z.boolean()
       })

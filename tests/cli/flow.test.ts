@@ -1330,8 +1330,10 @@ describe("SplunkReady CLI flow", () => {
       clientConfigResource: { contents: Array<{ uri: string; text: string }> };
       dualServerClientConfigResource: { contents: Array<{ uri: string; text: string }> };
       certificationLoopResource: { contents: Array<{ uri: string; text: string }> };
+      compositionScorecardResource: { contents: Array<{ uri: string; text: string }> };
       transcriptPrompt: { messages: Array<{ content: { text: string } }> };
       certificationLoopPrompt: { messages: Array<{ content: { text: string } }> };
+      compositionReviewPrompt: { messages: Array<{ content: { text: string } }> };
       transcriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
       agentDrivenWorkflow: {
         status: string;
@@ -1351,6 +1353,14 @@ describe("SplunkReady CLI flow", () => {
         includesSavedSearchExecution: boolean;
         evidenceRefs: string[];
         receiptPath: string;
+        deterministicAuthority: boolean;
+        mutation: boolean;
+      };
+      mcpComposition: {
+        status: string;
+        score: number;
+        servers: Array<{ name: string; role: string; evidence: string; existingMcpServer: boolean }>;
+        checks: Array<{ id: string; status: string; evidence: string }>;
         deterministicAuthority: boolean;
         mutation: boolean;
       };
@@ -1402,6 +1412,24 @@ describe("SplunkReady CLI flow", () => {
         receiptPath: join(transcriptProofDir, "receipt-external-001.json"),
         deterministicAuthority: true,
         mutation: false
+      },
+      mcpComposition: {
+        status: "PASS",
+        score: 100,
+        servers: [
+          expect.objectContaining({ name: "splunk", existingMcpServer: true }),
+          expect.objectContaining({ name: "splunkready", existingMcpServer: false })
+        ],
+        checks: [
+          expect.objectContaining({ id: "dual-server-client-config", status: "PASS" }),
+          expect.objectContaining({ id: "discoverable-resources-and-prompts", status: "PASS" }),
+          expect.objectContaining({ id: "existing-splunk-mcp-boundary", status: "PASS" }),
+          expect.objectContaining({ id: "saved-search-evidence", status: "PASS" }),
+          expect.objectContaining({ id: "readiness-receipt-authority", status: "PASS" }),
+          expect.objectContaining({ id: "no-splunkready-mutation", status: "PASS" })
+        ],
+        deterministicAuthority: true,
+        mutation: false
       }
     });
     expect(summary.splunkMcpBoundary.localMcpServerRole).toContain("certification interface");
@@ -1418,13 +1446,15 @@ describe("SplunkReady CLI flow", () => {
       "splunkready://examples/pass-receipt",
       "splunkready://client-config/stdio",
       "splunkready://client-config/splunk-and-splunkready",
-      "splunkready://workflows/splunk-mcp-certification-loop"
+      "splunkready://workflows/splunk-mcp-certification-loop",
+      "splunkready://workflows/mcp-composition-scorecard"
     ]);
     expect(summary.prompts.map((prompt) => prompt.name)).toEqual([
       "splunkready_certify_mcp_transcript",
       "splunkready_capture_trace",
       "splunkready_explain_receipt",
-      "splunkready_splunk_mcp_certification_loop"
+      "splunkready_splunk_mcp_certification_loop",
+      "splunkready_mcp_composition_review"
     ]);
     expect(summary.postureResource.contents[0].text).toContain("\"advisoryLlmOnly\": true");
     expect(summary.clientConfigResource.contents[0].text).toContain("\"splunkready\"");
@@ -1435,9 +1465,11 @@ describe("SplunkReady CLI flow", () => {
     );
     expect(summary.certificationLoopResource.contents[0].text).toContain("Splunk MCP Certification Loop");
     expect(summary.certificationLoopResource.contents[0].text).toContain("Configure two MCP servers");
+    expect(summary.compositionScorecardResource.contents[0].text).toContain("composition, not replacement");
     expect(summary.transcriptPrompt.messages[0].content.text).toContain("strictImport=true");
     expect(summary.certificationLoopPrompt.messages[0].content.text).toContain("Splunk MCP server: splunk");
     expect(summary.certificationLoopPrompt.messages[0].content.text).toContain("two-server MCP client configuration");
+    expect(summary.compositionReviewPrompt.messages[0].content.text).toContain("two MCP servers");
     expect(summary.agentDrivenWorkflow.splunkMcpServerRole).toContain("read-only investigation");
     expect(summary.agentDrivenWorkflow.splunkReadyMcpServerRole).toContain("deterministic certification");
     expect(summary.agentDrivenWorkflow.stages).toHaveLength(4);
