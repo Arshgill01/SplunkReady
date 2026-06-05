@@ -9602,6 +9602,84 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-06 - Move 97 Static Hosted Demo Request Hygiene
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "artifact manifests|static-host|normalizes artifact base"`
+- `npx vitest run tests/scripts/public-demo-export.test.ts`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `npm run public-demo:build && npm run audit:public-demo-export`
+- `npx vite --host 127.0.0.1 --port 4340 artifacts/public-demo`
+- `bash "$PWCLI" open "http://127.0.0.1:4340/?artifacts=artifacts%2Fmcp-proof&v=move97#mcp-proof" && bash "$PWCLI" snapshot && bash "$PWCLI" console error && bash "$PWCLI" requests`
+- `bash "$PWCLI" screenshot --filename output/playwright/move97-static-mcp-proof.png --full-page`
+- `npm run check`
+- `npm run verify:scaffold`
+- `git diff --check`
+
+Result:
+
+- PASS for focused UI artifact tests:
+  - 1 test file passed;
+  - 3 tests passed;
+  - 23 tests skipped by focused pattern;
+  - verified static-host SPA fallback handling and artifact-manifest loading.
+- PASS for public demo export unit tests:
+  - 1 test file passed;
+  - 2 tests passed;
+  - verified copied static evidence includes `artifact-manifest.json`.
+- PASS for public demo build and audit:
+  - Vite production UI build completed;
+  - `audit:public-demo-export` passed with 114 files, `mutation=false`, and
+    default route `mcp-proof`.
+- PASS for Playwright local static verification:
+  - opened
+    `http://127.0.0.1:4340/?artifacts=artifacts%2Fmcp-proof&v=move97#mcp-proof`;
+  - snapshot rendered the MCP proof route with `Status PASS`,
+    `splunk_get_knowledge_objects`, `splunk_run_saved_search`, saved-search
+    execution `yes`, evidence refs `evt-102`, `evt-118`, `evt-141`,
+    deterministic authority `yes`, mutation `no`, and MCP composition score
+    `100/100`;
+  - `console error` returned `Errors: 0`;
+  - network requests for proof data were limited to
+    `public-demo-manifest.json`, `artifacts/mcp-proof/artifact-manifest.json`,
+    and `artifacts/mcp-proof/mcp-proof-summary.json`;
+  - screenshot saved to `output/playwright/move97-static-mcp-proof.png`.
+- PASS for full `npm run check`:
+  - scaffold verified with 85 waves and 2009 project files;
+  - runtime contracts verified 19 rules, 4 fixture missions, and 20 evidence
+    refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 114 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed the tarball and verified
+    `npx splunkready judge-proof` returned PASS;
+  - 56 test files passed;
+  - 348 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for post-log scaffold and diff verification:
+  - `npm run verify:scaffold` passed with 85 waves and 2009 project files;
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was required and run because this move changed UI browser behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI and the manual Pages workflow still need to run after push before
+  the public GitHub Pages URL can be claimed for Move 97 behavior.
+- Public npm publication remains blocked until npm auth is configured.
+- Live/public MCP-client screencast evidence remains separate from this hosted
+  static demo polish move.
+
 ## 2026-06-06 - Move 87 CLI Proof Command Extraction
 
 Commands:

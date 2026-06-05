@@ -43,6 +43,9 @@ describe("public demo export", () => {
     await expect(readFile(join(root, "out/public-demo/artifacts/mcp-proof/mcp-proof-summary.json"), "utf8")).resolves.toContain(
       "PASS"
     );
+    await expect(readFile(join(root, "out/public-demo/artifacts/mcp-proof/artifact-manifest.json"), "utf8")).resolves.toContain(
+      "mcp-proof-summary.json"
+    );
     await expect(readFile(join(root, "out/public-demo/screenshots/workbench-mcp-proof.png"), "utf8")).resolves.toBe("png-bytes");
     await expect(readFile(join(root, "out/public-demo/public-demo-manifest.json"), "utf8")).resolves.toContain(
       "?artifacts=artifacts%2Fmcp-proof#mcp-proof"

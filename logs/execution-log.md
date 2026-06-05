@@ -11603,3 +11603,43 @@ Open blockers:
 - Public npm publication remains blocked by missing npm auth.
 - Live/public MCP-client screencast evidence remains a separate award-positioning
   gap.
+
+## 2026-06-06 02:51 - Move 97 Static Hosted Demo Request Hygiene
+
+Scope:
+- Targeted the residual Move 96 hosted-demo polish risk: the public MCP proof
+  route rendered, but static hosts still logged avoidable 404s for unavailable
+  local `/api/*` workbench endpoints and absent optional artifact files.
+- Added per-artifact `artifact-manifest.json` files to the public demo export.
+- Updated the Vite artifact loader to read that manifest first and fetch only
+  optional files that are present in the static bundle.
+- Updated the Vite browser entrypoint to detect `public-demo-manifest.json` and
+  skip local workbench `/api/health` and `/api/artifacts` probes on static
+  public-demo hosts.
+- Tightened the public demo export audit so every copied proof bundle must
+  include a valid artifact manifest.
+- Verified the local static public demo route with Playwright snapshot, console
+  inspection, network request inspection, and screenshot capture.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+
+Files changed:
+- `ui/src/artifacts.ts`
+- `ui/src/main.ts`
+- `scripts/export-public-demo.js`
+- `scripts/audit-public-demo-export.mjs`
+- `tests/ui/app.test.ts`
+- `tests/scripts/public-demo-export.test.ts`
+- `moves/README.md`
+- `moves/moves97.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- The deployed GitHub Pages site still needs to be refreshed from this commit
+  after push before claiming the public URL has the Move 97 request hygiene.
+- Public npm publication remains blocked by missing npm auth.
+- Live/public MCP-client screencast evidence remains a separate award-positioning
+  gap.

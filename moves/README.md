@@ -119,6 +119,7 @@ commands, or filesystem paths.
 | P0 | [94](moves94.md) NPM release preflight | 0.5d | Makes public npm package readiness and publish blockers machine-checkable without publishing. |
 | P0 | [95](moves95.md) GitHub Pages public demo workflow | 0.5d | Adds a manual Pages deployment path for the verified credential-free public demo export without claiming an unverified URL. |
 | P0 | [96](moves96.md) GitHub Pages deployment verification | 0.5d | Runs the manual Pages workflow and records whether a public demo URL is actually deployed and browser-verified. |
+| P0 | [97](moves97.md) Static hosted demo request hygiene | 0.5d | Removes avoidable static-host 404 noise from the public MCP proof route without weakening local workbench behavior. |
 
 ## Non-Negotiable Boundaries
 

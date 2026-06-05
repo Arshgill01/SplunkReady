@@ -27,6 +27,7 @@ if (!app) {
 let bundle: UiArtifactBundle | undefined;
 let artifactOptions: ArtifactOption[] = defaultArtifactOptions;
 let workbench: WorkbenchRenderState = { available: false, healthStatus: "not connected" };
+let staticPublicDemo = false;
 const disabledRuleIds = new Set<string>();
 
 interface WorkbenchHealthResponse {
@@ -49,6 +50,22 @@ interface ManifestVerificationResponse {
   status: "PASS" | "FAIL";
   report?: ManifestVerificationState["report"];
 }
+
+const detectStaticPublicDemo = async (): Promise<boolean> => {
+  try {
+    const response = await fetch("public-demo-manifest.json");
+
+    if (!response.ok || response.headers.get("content-type")?.toLowerCase().includes("text/html")) {
+      return false;
+    }
+
+    const manifest = (await response.json()) as { source?: string };
+
+    return manifest.source === "splunkready-public-demo-export";
+  } catch {
+    return false;
+  }
+};
 
 const activeViewFromHash = (): ViewId => normalizeView(window.location.hash.replace(/^#/, ""));
 
@@ -89,6 +106,11 @@ const loadArtifactFromLocation = async (): Promise<void> => {
 };
 
 const loadWorkbenchHealth = async (): Promise<void> => {
+  if (staticPublicDemo) {
+    workbench = { available: false, healthStatus: "static demo" };
+    return;
+  }
+
   try {
     const [response, runsResponse] = await Promise.all([fetch("/api/health"), fetch("/api/artifacts")]);
 
@@ -499,5 +521,6 @@ window.addEventListener("popstate", () => {
   void loadArtifactFromLocation();
 });
 
+staticPublicDemo = await detectStaticPublicDemo();
 await loadWorkbenchHealth();
 await loadArtifactFromLocation();

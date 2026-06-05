@@ -1098,6 +1098,28 @@ describe("Vite UI artifact app", () => {
     expect(bundle.missing).toContain("receipt-after-001.json");
   });
 
+  it("uses public artifact manifests to avoid probing absent optional files", async () => {
+    const requested: string[] = [];
+    const bundle = await loadUiArtifactBundle("artifacts/mcp-proof", async (url) => {
+      const fileName = decodeURIComponent(url.split("/").at(-1) ?? "");
+      requested.push(fileName);
+
+      if (fileName === "artifact-manifest.json") {
+        return jsonResponse({
+          source: "splunkready-artifact-file-manifest",
+          generatedAt: "2026-06-06T00:00:00.000Z",
+          files: ["mcp-proof-summary.json", "mcp-client-walkthrough.md"]
+        });
+      }
+
+      return fileName === "mcp-proof-summary.json" ? jsonResponse(mcpProofSummary) : htmlResponse();
+    });
+
+    expect(bundle.mcpProofSummary?.status).toBe("PASS");
+    expect(requested).toEqual(["artifact-manifest.json", "mcp-proof-summary.json"]);
+    expect(bundle.missing).toEqual([]);
+  });
+
   it("loads artifact selector options from a generated UI manifest", async () => {
     const bundle = await loadUiArtifactBundle(
       "artifacts/certification-index",

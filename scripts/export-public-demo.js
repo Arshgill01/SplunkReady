@@ -43,6 +43,27 @@ const copyTree = async (source, target, root = source) => {
   await copyFile(sourcePath, targetPath);
 };
 
+const listRelativeFiles = async (dir, root = dir) => {
+  const entries = [];
+
+  for (const entry of await readdir(dir)) {
+    const path = resolve(dir, entry);
+    const info = await lstat(path);
+
+    if (info.isSymbolicLink()) {
+      throw new Error(`Refusing to inspect symbolic link in public demo export: ${path}`);
+    }
+
+    if (info.isDirectory()) {
+      entries.push(...await listRelativeFiles(path, root));
+    } else if (info.isFile()) {
+      entries.push(relative(root, path));
+    }
+  }
+
+  return entries.sort();
+};
+
 const parseArgs = (argv) => {
   const outIndex = argv.indexOf("--out");
 
@@ -65,7 +86,22 @@ export const exportPublicDemo = async ({
   await copyTree(distUi, targetRoot);
 
   for (const artifactDir of requiredArtifactDirs) {
-    await copyTree(resolve(evidenceRoot, artifactDir), resolve(targetRoot, "artifacts", artifactDir));
+    const targetArtifactDir = resolve(targetRoot, "artifacts", artifactDir);
+
+    await copyTree(resolve(evidenceRoot, artifactDir), targetArtifactDir);
+    await writeFile(
+      resolve(targetArtifactDir, "artifact-manifest.json"),
+      `${JSON.stringify(
+        {
+          source: "splunkready-artifact-file-manifest",
+          generatedAt,
+          files: await listRelativeFiles(targetArtifactDir)
+        },
+        null,
+        2
+      )}\n`,
+      "utf8"
+    );
   }
 
   await copyTree(resolve(evidenceRoot, "screenshots"), resolve(targetRoot, "screenshots"));

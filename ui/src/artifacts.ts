@@ -40,6 +40,14 @@ const uiArtifactManifestSchema = z
 
 export type UiArtifactManifest = z.infer<typeof uiArtifactManifestSchema>;
 
+const artifactFileManifestSchema = z
+  .object({
+    source: z.literal("splunkready-artifact-file-manifest"),
+    generatedAt: z.string().min(1),
+    files: z.array(z.string().min(1))
+  })
+  .strict();
+
 const hostedModelSummarySchema = z
   .object({
     status: z.enum(["invoked", "available_not_applicable", "unavailable"]),
@@ -925,6 +933,28 @@ const loadOptionalJson = async (
   return response.json() as Promise<unknown>;
 };
 
+const loadArtifactFileManifest = async (
+  artifactBase: string,
+  fetcher: ArtifactFetch
+): Promise<Set<(typeof optionalFiles)[number]> | undefined> => {
+  const response = await fetcher(artifactUrl(artifactBase, "artifact-manifest.json"));
+
+  if (response.status === 204 || response.status === 404) {
+    return undefined;
+  }
+
+  if (!response.ok || response.headers.get("content-type")?.toLowerCase().includes("text/html")) {
+    return undefined;
+  }
+
+  const manifest = artifactFileManifestSchema.parse(await response.json());
+  const optionalFileSet = new Set<string>(optionalFiles);
+
+  return new Set(
+    manifest.files.filter((fileName): fileName is (typeof optionalFiles)[number] => optionalFileSet.has(fileName))
+  );
+};
+
 export const loadUiArtifactBundle = async (
   artifactBase: string,
   fetcher: ArtifactFetch = fetch
@@ -932,9 +962,11 @@ export const loadUiArtifactBundle = async (
   const normalizedBase = normalizeArtifactBase(artifactBase);
   const loaded = new Map<string, unknown>();
   const missing: string[] = [];
+  const fileManifest = await loadArtifactFileManifest(normalizedBase, fetcher);
+  const filesToLoad = fileManifest ? optionalFiles.filter((fileName) => fileManifest.has(fileName)) : optionalFiles;
 
   await Promise.all(
-    optionalFiles.map(async (fileName) => {
+    filesToLoad.map(async (fileName) => {
       const value = await loadOptionalJson(normalizedBase, fileName, fetcher);
 
       if (value === undefined) {

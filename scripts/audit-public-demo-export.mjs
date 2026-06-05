@@ -50,10 +50,13 @@ try {
   for (const requiredPath of [
     "index.html",
     "public-demo-manifest.json",
+    "artifacts/mcp-proof/artifact-manifest.json",
     "artifacts/mcp-proof/mcp-proof-summary.json",
     "artifacts/mcp-proof/mcp-client-walkthrough.json",
     "artifacts/mcp-proof/mcp-client-walkthrough.md",
+    "artifacts/suite-proof/artifact-manifest.json",
     "artifacts/suite-proof/suite-proof-summary.json",
+    "artifacts/public-proof-export/artifact-manifest.json",
     "artifacts/public-proof-export/public-proof-summary.json",
     "screenshots/workbench-mcp-proof.png"
   ]) {
@@ -81,6 +84,21 @@ try {
 
   if (JSON.stringify(manifest.artifactBases) !== JSON.stringify(expectedArtifactBases)) {
     fail("public demo manifest artifactBases changed unexpectedly");
+  }
+
+  for (const artifactBase of expectedArtifactBases) {
+    const artifactManifestPath = join(outDir, artifactBase, "artifact-manifest.json");
+    const artifactManifest = existsSync(artifactManifestPath)
+      ? JSON.parse(readFileSync(artifactManifestPath, "utf8"))
+      : {};
+
+    if (artifactManifest.source !== "splunkready-artifact-file-manifest") {
+      fail(`artifact manifest source is invalid for ${artifactBase}`);
+    }
+
+    if (!Array.isArray(artifactManifest.files) || artifactManifest.files.length === 0) {
+      fail(`artifact manifest has no files for ${artifactBase}`);
+    }
   }
 
   const indexHtmlPath = join(outDir, "index.html");
