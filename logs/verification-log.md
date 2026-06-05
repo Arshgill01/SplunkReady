@@ -7539,6 +7539,41 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 40 Artifact Symlink Read Guard Verification
+
+Commands:
+
+- `npm test -- tests/workbench/workbench.test.ts`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused workbench backend tests:
+  - 1 test file passed;
+  - 30 tests passed.
+- PASS for artifact symlink regression coverage:
+  - a symlink inside a managed run pointing outside that run returned
+    `undefined` from `WorkbenchArtifactStore.readFile`;
+  - the same symlink was not included in `WorkbenchArtifactStore.listRunFiles`.
+- PASS for full `npm run check && git diff --check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 296 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output;
+  - explicit final `git diff --check` completed with no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 39 Atomic Workbench Job Limit Verification
 
 Commands:

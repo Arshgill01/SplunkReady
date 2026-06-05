@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, stat } from "node:fs/promises";
+import { lstat, mkdir, readdir, readFile } from "node:fs/promises";
 import { basename, relative, resolve, sep } from "node:path";
 import { randomUUID } from "node:crypto";
 
@@ -67,7 +67,7 @@ export class WorkbenchArtifactStore {
     const target = this.resolveFile(runId, fileName);
 
     try {
-      const info = await stat(target);
+      const info = await lstat(target);
 
       if (!info.isFile()) {
         return undefined;

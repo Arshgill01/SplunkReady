@@ -8915,6 +8915,38 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 40 Artifact Symlink Read Guard
+
+Context:
+- Continued development hardening after Move 39.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- User explicitly deferred video/submission work; this move stayed on managed
+  artifact serving safety.
+- Found that the artifact store's path traversal checks were solid, but
+  `stat()` plus `readFile()` could follow a symlink placed inside a managed run.
+
+Files touched:
+- `src/workbench/artifacts.ts`
+- `tests/workbench/workbench.test.ts`
+- `moves/README.md`
+- `moves/moves40.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Switched managed artifact reads from `stat()` to `lstat()` so the artifact
+  path itself must be a regular file.
+- Preserved existing path traversal checks and normal regular-file behavior.
+- Added a regression that creates a symlink inside a managed run pointing to a
+  file outside the run and verifies:
+  - `readFile()` returns `undefined`;
+  - `listRunFiles()` does not list the symlink.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 39 Atomic Workbench Job Limit
 
 Context:

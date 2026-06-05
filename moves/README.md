@@ -62,6 +62,7 @@ commands, or filesystem paths.
 | P0 | [37](moves37.md) Workbench cross-site API guard | 0.5d | Rejects browser-marked cross-site requests before they can start local workbench workflows. |
 | P0 | [38](moves38.md) Isolated workbench job snapshots | 0.5d | Keeps public job reads from exposing mutable runner-owned job state. |
 | P0 | [39](moves39.md) Atomic workbench job limit | 0.5d | Reserves a job slot before async run allocation so concurrent starts cannot exceed the configured limit. |
+| P0 | [40](moves40.md) Artifact symlink read guard | 0.5d | Keeps managed artifact reads from following symlinks out of a run directory. |
 
 ## Non-Negotiable Boundaries
 

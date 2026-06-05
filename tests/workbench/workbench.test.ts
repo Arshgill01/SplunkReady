@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
@@ -223,6 +223,19 @@ describe("workbench backend", () => {
       "Artifact file path escapes run root."
     );
     await expect(async () => store.resolveFile("../outside", "receipt.json")).rejects.toThrow("Invalid artifact run id.");
+  });
+
+  it("does not follow symlinks when reading managed artifacts", async () => {
+    const root = await tempRoot();
+    const store = new WorkbenchArtifactStore(root);
+    const run = await store.createRunDirectory();
+    const outside = join(root, "outside-secret.txt");
+
+    await writeFile(outside, "secret outside run\n", "utf8");
+    await symlink(outside, store.resolveFile(run.runId, "linked-secret.txt"));
+
+    await expect(store.readFile(run.runId, "linked-secret.txt")).resolves.toBeUndefined();
+    await expect(store.listRunFiles(run.runId)).resolves.not.toContain("linked-secret.txt");
   });
 
   it("runs the allowlisted fixture workflow and records structured events", async () => {
