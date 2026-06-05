@@ -1,0 +1,83 @@
+{
+  "source": "splunkready-proof-manifest",
+  "generatedAt": "2026-06-01T06:45:00.000Z",
+  "proofDir": "submission-evidence/public-proof-export",
+  "aggregateSha256": "ecfce3689dc9afd65803e119d4787f31c2f170f421b15eef3e1cfe7906f1195f",
+  "files": [
+    {
+      "path": "environment-contract.json",
+      "sizeBytes": 14654,
+      "sha256": "d59ea9376707ded4e705746734416133427caa45adb824f66038d8e9a0ca7b81"
+    },
+    {
+      "path": "missions.json",
+      "sizeBytes": 2338,
+      "sha256": "d8299285a80192e9433f3108748def64009ac363f6493d3395dbfe97827790fa"
+    },
+    {
+      "path": "policy-patch.json",
+      "sizeBytes": 6386,
+      "sha256": "857bab42967bbbe6996f6e718e6f2e20a5ad10a3ef7694d982448d9f859f230e"
+    },
+    {
+      "path": "proof-audit.json",
+      "sizeBytes": 2711,
+      "sha256": "7b1e6269bee044dca10b3592f01ef42933298a44d8e7b21336357cadadcd7fd6"
+    },
+    {
+      "path": "public-proof-export-manifest.json",
+      "sizeBytes": 4189,
+      "sha256": "30624a4bbc1ec28ba2044fff8980518b99901178306753008ae712746d206c99"
+    },
+    {
+      "path": "public-proof-summary.json",
+      "sizeBytes": 1554,
+      "sha256": "fb19364455e391bb23f73d4861a9107dacfa1b9b056a441d2a48a482fa64c09e"
+    },
+    {
+      "path": "readiness-profile.json",
+      "sizeBytes": 22750,
+      "sha256": "fe42848a4756e193a7e1333d3fbbfc1c8a3e8960ee353862caff3af562f4d0fb"
+    },
+    {
+      "path": "receipt-after-001.json",
+      "sizeBytes": 1845,
+      "sha256": "5992bc4ce85d41fe99a3be1de1bb55ecc7cc956bb1ecef2366bda26d3ae3eed2"
+    },
+    {
+      "path": "receipt-before-001.json",
+      "sizeBytes": 2012,
+      "sha256": "ab1128bb735e8c92767d304054ac64e5aefd2edf103aa2644973b66df6b6be11"
+    },
+    {
+      "path": "source-proof-manifest.json",
+      "sizeBytes": 3388,
+      "sha256": "037ed72ecdbb3b5925990e4bdb307cfc1f620e9a3f2685107f1fef856c951d78"
+    },
+    {
+      "path": "trace-after.json",
+      "sizeBytes": 3330,
+      "sha256": "be99120a52f6b19e9a816e13dcb6bae380bff5b2b3ebeeacb02bb72c50f540bc"
+    },
+    {
+      "path": "trace-before.json",
+      "sizeBytes": 1863,
+      "sha256": "32bbb5f63d94cf3f72c2fd1dba09066185c119487bcc8ac478504eb3c202d94d"
+    },
+    {
+      "path": "ui-artifacts.json",
+      "sizeBytes": 340,
+      "sha256": "dbeb8a5d5565da3512b71ed3afd17c248defb07e13ac5b79ed12c341cd36ed69"
+    },
+    {
+      "path": "violations-after.json",
+      "sizeBytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "violations-before.json",
+      "sizeBytes": 4422,
+      "sha256": "7c52db6bfcb2b3ae93573e9c8f5b80b1090ece52a0b01879449aa30c1f4c93d0"
+    }
+  ]
+}

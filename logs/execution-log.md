@@ -10782,3 +10782,57 @@ Open blockers:
 - CLI still owns argument parsing and command adapter dispatch.
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
+## 2026-06-06 00:36 - Move 78 Refreshed Submission Evidence Pack
+
+Scope:
+- Refreshed the tracked judge-facing `submission-evidence/` pack without using
+  subagents.
+- Regenerated the credential-free suite proof directly into
+  `submission-evidence/suite-proof/`, including compiler diagnostics.
+- Added the credential-free MCP proof bundle under `submission-evidence/mcp-proof/`.
+- Refreshed the redacted public proof export from a packaged workbench fixture
+  run and verified its manifest through the UI.
+- Captured current packaged workbench, trace timeline, and public export
+  screenshots with Playwright.
+- Fixed a discovered `certify-mcp-transcript` manifest-ordering bug so
+  `mcp-proof` leaves the nested transcript proof manifest verifiable on first
+  run.
+- Normalized the MCP proof server path in the summary to avoid local absolute
+  path leakage.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Files changed:
+- `src/workflows/external-certification.ts`
+- `src/workflows/mcp-proof.ts`
+- `tests/cli/flow.test.ts`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/suite-proof/**`
+- `submission-evidence/mcp-proof/**`
+- `submission-evidence/public-proof-export/**`
+- `submission-evidence/screenshots/**`
+- `moves/README.md`
+- `moves/moves78.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- The evidence pack no longer points at Move 21 as the current judge-facing
+  proof set.
+- `suite-proof` now tracks `compiler-diagnostics.json` and
+  `compiler-diagnostics.md`.
+- `mcp-proof` now tracks resources, prompts, the agent-driven Splunk MCP
+  certification loop, the captured Splunk MCP transcript receipt, and a passing
+  nested manifest verification.
+- `public-proof-export` now tracks a current redacted derivative bundle plus
+  manifest verification.
+
+Open blockers:
+- Hosted demo URL remains open.
+- Public npm publish remains an explicit external release action.
+- Live proof export remains open because raw ignored live artifacts can contain
+  deployment inventory.
+- The MCP category still needs a stronger public demo using existing MCP
+  servers beyond the credential-free captured transcript proof.

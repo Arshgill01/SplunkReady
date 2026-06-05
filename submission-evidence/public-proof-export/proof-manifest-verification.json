@@ -1,0 +1,14 @@
+{
+  "source": "splunkready-proof-manifest-verification",
+  "generatedAt": "2026-06-01T06:45:00.000Z",
+  "status": "PASS",
+  "proofDir": "submission-evidence/public-proof-export",
+  "manifestPath": "submission-evidence/public-proof-export/proof-manifest.json",
+  "expectedAggregateSha256": "ecfce3689dc9afd65803e119d4787f31c2f170f421b15eef3e1cfe7906f1195f",
+  "actualAggregateSha256": "ecfce3689dc9afd65803e119d4787f31c2f170f421b15eef3e1cfe7906f1195f",
+  "expectedFiles": 15,
+  "actualFiles": 15,
+  "missingFiles": [],
+  "unexpectedFiles": [],
+  "changedFiles": []
+}

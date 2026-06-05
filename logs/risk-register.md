@@ -308,3 +308,13 @@ workflow extractions. Inspection showed `demoCommand` was already a thin
 workflow delegator, so extracting it would not have materially improved the
 architecture. `src/cli.ts` dropped from 883 lines to 827 lines. Remaining CLI
 risk: argument parsing and command adapter dispatch still live in `src/cli.ts`.
+
+Move 78 reduces the stale-evidence cap by regenerating the tracked
+`submission-evidence/` pack with suite compiler diagnostics, MCP proof
+resources/prompts, captured Splunk MCP transcript certification, refreshed
+public proof export, and Playwright screenshots. It also fixes the
+`certify-mcp-transcript` manifest ordering bug discovered during refresh.
+Remaining evidence risks: hosted demo is still open, public package publication
+is still an external release action, live proof export still needs redaction
+work, and MCP award positioning still needs a stronger public demo using
+existing MCP servers.

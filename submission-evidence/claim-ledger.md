@@ -1,6 +1,6 @@
 # Submission Claim Ledger
 
-Generated on 2026-06-05 from source commit `606e2e6`.
+Regenerated on 2026-06-06 for Move 78.
 
 | Claim | Status | Evidence | Verification |
 | --- | --- | --- | --- |
@@ -12,9 +12,15 @@ Generated on 2026-06-05 from source commit `606e2e6`.
 | The final receipts include evidence provenance. | Supported | `submission-evidence/suite-proof/suite-proof-summary.json` reports `totals.evidenceRefs: 15`; mission `receipt-after-001.json` files list evidence refs | `npm run splunkready -- proof-audit --out submission-evidence/suite-proof --require-pass true --json` |
 | The suite proof does not mutate Splunk. | Supported | `submission-evidence/suite-proof/suite-proof-summary.json` and `proof-audit.json` report `mutation: false` | `npm run splunkready -- proof-audit --out submission-evidence/suite-proof --require-pass true --json` |
 | The tracked suite proof has an internally consistent manifest. | Supported | `submission-evidence/suite-proof/proof-manifest.json`; `submission-evidence/suite-proof/proof-manifest-verification.json` | `npm run splunkready -- verify-manifest --out submission-evidence/suite-proof --json` |
+| The suite proof exposes compiler diagnostics, not only final receipts. | Supported | `submission-evidence/suite-proof/compiler-diagnostics.json`; `submission-evidence/suite-proof/compiler-diagnostics.md` | Inspect diagnostics plus `npm run splunkready -- proof-audit --out submission-evidence/suite-proof --require-pass true --json` |
+| The MCP category story uses Splunk MCP behavior and SplunkReady certification rather than only a local certifier server. | Supported | `submission-evidence/mcp-proof/mcp-proof-summary.json`; `submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json` | `npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json` |
+| The MCP proof exposes reusable resources and prompts for an agent-driven certification loop. | Supported | `submission-evidence/mcp-proof/mcp-proof-summary.json` lists 6 resources and 4 prompts, including `splunkready://workflows/splunk-mcp-certification-loop` and `splunkready_splunk_mcp_certification_loop` | `npm run mcp-proof` |
 | The public proof export is redacted before sharing. | Supported | `submission-evidence/public-proof-export/public-proof-export-manifest.json`; `submission-evidence/public-proof-export/public-proof-summary.json`; `submission-evidence/screenshots/public-proof-export-proof-browser.png` | Secret scan plus manifest inspection |
+| The refreshed public proof export has a verified manifest. | Supported | `submission-evidence/public-proof-export/proof-manifest.json`; `submission-evidence/public-proof-export/proof-manifest-verification.json` | `npm run splunkready -- verify-manifest --out submission-evidence/public-proof-export --json` |
 | The local workbench can run packaged UI and API from one origin. | Supported | `submission-evidence/screenshots/workbench-packaged-fixture.png`; Move 20 verification log | `SPLUNKREADY_WORKBENCH_PORT=4337 npm run workbench` plus Playwright click flow |
-| The local workbench can run Vite-backed UI and API from one origin. | Supported | `submission-evidence/screenshots/workbench-dev-fixture.png`; Move 20 verification log | `SPLUNKREADY_WORKBENCH_PORT=4338 npm run workbench:dev` plus Playwright click flow |
+| The trace timeline shows ordered before/after events in the current workbench. | Supported | `submission-evidence/screenshots/workbench-trace-timeline.png` | Playwright opened the packaged workbench, ran fixture certification, clicked Trace, and captured the screenshot |
+| The repository includes a composite GitHub Action gate for external traces, MCP transcripts, and judge proof. | Supported | `action.yml`; `src/ci/github-action.ts`; `.github/workflows/ci.yml` | `npm run check` plus hosted CI |
+| The package is publish-ready but not published by this evidence pack. | Conditional | `package.json`; `scripts/audit-package-readiness.mjs`; `npm pack --dry-run --json` output in `npm run check` | Actual `npm publish` remains an external release action |
 | The public submission targets Platform & Developer Experience as the primary track. | Supported | `docs/devpost-submission.md`; `README.md` | `npm run audit:submission-copy` |
 | The root architecture diagram shows Splunk interaction, agent/model integration, compiler, grader, receipt, backend/workbench, and evidence outputs. | Supported | `architecture_diagram.md` | Manual inspection of the Mermaid diagram |
 | Live proof exists only when operator-owned live environment variables are provided. | Conditional | `README.md`; `submission-evidence/README.md` redaction boundary | Do not cite raw ignored live artifacts from this tracked evidence pack |

@@ -1441,6 +1441,12 @@ describe("SplunkReady CLI flow", () => {
         join(transcriptProofDir, "proof-audit.json")
       ])
     );
+
+    expect(parseCliJsonOutput((await runCli(["verify-manifest", "--out", transcriptProofDir, "--json"])).stdout)).toMatchObject({
+      command: "verify-manifest",
+      status: "PASS",
+      artifacts: [join(transcriptProofDir, "proof-manifest-verification.json")]
+    });
   });
 
   it("keeps failed MCP transcript certification artifacts while enforcing require-pass", async () => {

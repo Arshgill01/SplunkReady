@@ -1,9 +1,9 @@
 {
   "source": "splunkready-public-proof-summary",
-  "generatedAt": "2026-06-05T12:06:19.254Z",
-  "sourceRunId": "run-2026-06-05T12-05-39-854Z-7a57b488",
-  "sourceArtifactBase": "/api/artifacts/run-2026-06-05T12-05-39-854Z-7a57b488",
-  "exportArtifactBase": "/api/artifacts/run-2026-06-05T12-06-19-135Z-44163c4f",
+  "generatedAt": "2026-06-05T19:01:15.619Z",
+  "sourceRunId": "run-2026-06-05T19-00-20-455Z-b5613154",
+  "sourceArtifactBase": "/api/artifacts/run-2026-06-05T19-00-20-455Z-b5613154",
+  "exportArtifactBase": "/api/artifacts/run-2026-06-05T19-01-15-496Z-3a4d3125",
   "redactionStatus": "REDACTED",
   "label": "Redacted public proof export",
   "includedFiles": [

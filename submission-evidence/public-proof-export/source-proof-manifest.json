@@ -2,7 +2,7 @@
   "source": "splunkready-proof-manifest",
   "generatedAt": "2026-06-01T06:45:00.000Z",
   "proofDir": "/Users/[REDACTED]",
-  "aggregateSha256": "7ae241acb64af7caf728730c5660319949ac0c4c874870ae7ecfaf67cd06aa5a",
+  "aggregateSha256": "0b305c06278b09d9a5c51859b328381bf7400bcfe31b1ff8480960a849cdb25e",
   "files": [
     {
       "path": "agent-policy.json",
@@ -11,13 +11,13 @@
     },
     {
       "path": "demo-rehearsal.json",
-      "sizeBytes": 3272,
-      "sha256": "68e5c28f1a5471a889e827e363b760ecc6111a39614b41135b448cf6706e556d"
+      "sizeBytes": 3271,
+      "sha256": "ffa5a6beb3d603c5185cc64ccf5d84fdfc90aa9c45c27891fdbef7f8bc6a0bd5"
     },
     {
       "path": "demo-rehearsal.md",
-      "sizeBytes": 426,
-      "sha256": "80dab411752f2b628b1b2a09bd6d2f7df9e7dd1f7fcbe1c39fcb068d94358055"
+      "sizeBytes": 425,
+      "sha256": "cb60b1457cdde1d46c0a87cd52df104b16de8f219384eebe6fdfe61a90a0936e"
     },
     {
       "path": "environment-contract.json",
@@ -42,7 +42,7 @@
     {
       "path": "proof-audit.json",
       "sizeBytes": 2777,
-      "sha256": "065780e9bedaa7987f53cea11f9c49db344112f3ee12060adee20a24fff1fbc2"
+      "sha256": "1da8bddd2dd1a61007b981e150085f4a346889decb9ce333b3fec151a33b2f26"
     },
     {
       "path": "readiness-profile.json",
@@ -82,7 +82,7 @@
     {
       "path": "splunkready-shell.html",
       "sizeBytes": 62265,
-      "sha256": "b95bce2574be1d22c7f69387267c2b9e7690fe016dd4675bb2036d165cc94d11"
+      "sha256": "5ca647d9beb4f1f24e93ddce044e0e1612a5719d5aee137e5bf88541cd518690"
     },
     {
       "path": "trace-after.json",

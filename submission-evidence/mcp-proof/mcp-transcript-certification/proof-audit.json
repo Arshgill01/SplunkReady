@@ -1,0 +1,82 @@
+{
+  "status": "PASS",
+  "proofType": "external-trace",
+  "proofDir": "submission-evidence/mcp-proof/mcp-transcript-certification",
+  "mode": "fixture",
+  "mutation": false,
+  "checks": [
+    {
+      "id": "contract-loaded",
+      "status": "PASS",
+      "detail": "Environment contract is present and schema-valid.",
+      "evidence": {
+        "id": "contract-acme-soc-dev",
+        "mode": "fixture"
+      }
+    },
+    {
+      "id": "external-receipt-loaded",
+      "status": "PASS",
+      "detail": "External trace receipt is present and schema-valid.",
+      "evidence": {
+        "id": "receipt-external-001",
+        "verdict": "READY",
+        "score": 100,
+        "violations": 0
+      }
+    },
+    {
+      "id": "external-trace-loaded",
+      "status": "PASS",
+      "detail": "External trace artifact is present, schema-valid, and non-empty.",
+      "evidence": {
+        "traceEvents": 6
+      }
+    },
+    {
+      "id": "external-violations-loaded",
+      "status": "PASS",
+      "detail": "External deterministic violations artifact is present and schema-valid.",
+      "evidence": {
+        "violations": 0
+      }
+    },
+    {
+      "id": "external-receipt-trace-refs",
+      "status": "PASS",
+      "detail": "Every traceRef in the external receipt must exist in trace-external.json.",
+      "evidence": {
+        "missingTraceRefs": []
+      }
+    },
+    {
+      "id": "external-verdict-ready",
+      "status": "PASS",
+      "detail": "External-agent CI proof must end with a READY receipt.",
+      "evidence": {
+        "verdict": "READY",
+        "score": 100,
+        "violations": 0
+      }
+    },
+    {
+      "id": "external-mutation-false",
+      "status": "PASS",
+      "detail": "External trace grading is offline; imported MCP transcripts must declare mutation=false when present.",
+      "evidence": {
+        "importMutation": false
+      }
+    },
+    {
+      "id": "external-mcp-transcript-integrity",
+      "status": "PASS",
+      "detail": "Imported MCP transcript summaries must have no skipped records or unmatched tool calls.",
+      "evidence": {
+        "source": "mcp-jsonrpc-transcript",
+        "strictImport": true,
+        "skippedRecords": 0,
+        "unmatchedToolCalls": 0
+      }
+    }
+  ]
+}

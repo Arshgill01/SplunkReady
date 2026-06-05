@@ -699,14 +699,18 @@ export const runMcpTranscriptCertificationFromPathWorkflow = async (
     }
   });
 
-  if (input.requirePass && auditResult.report.status !== "PASS") {
-    throw new Error(`certify-mcp-transcript strict gate failed with ${auditResult.report.status}. Inspect ${summaryPath}.`);
+  const finalAuditResult = await runExternalTraceAuditWorkflow({ outDir: input.outDir, requirePass: false });
+
+  if (input.requirePass && finalAuditResult.report.status !== "PASS") {
+    throw new Error(`certify-mcp-transcript strict gate failed with ${finalAuditResult.report.status}. Inspect ${summaryPath}.`);
   }
 
   return {
-    status: auditResult.report.status === "PASS" ? "PASS" : "FAIL",
+    status: finalAuditResult.report.status === "PASS" ? "PASS" : "FAIL",
     outDir: input.outDir,
-    artifacts: [...new Set([...compileArtifacts, ...importResult.artifacts, ...gradeResult.artifacts, ...auditResult.artifacts, summaryPath])],
+    artifacts: [
+      ...new Set([...compileArtifacts, ...importResult.artifacts, ...gradeResult.artifacts, summaryPath, ...finalAuditResult.artifacts])
+    ],
     mutation: false,
     messages: []
   };

@@ -1,0 +1,42 @@
+{
+  "id": "receipt-external-001",
+  "agent": {
+    "name": "External MCP Agent",
+    "version": "mcp-proof-jsonrpc-pass"
+  },
+  "environment": {
+    "id": "contract-acme-soc-dev",
+    "name": "acme-soc-dev"
+  },
+  "mode": "fixture",
+  "contractVersion": "2026.06.01",
+  "missionSuiteVersion": "external-trace-1",
+  "verdict": "READY",
+  "score": 100,
+  "passedMissions": [
+    "mission-security-lateral-movement-readiness"
+  ],
+  "failedMissions": [],
+  "criticalViolations": [],
+  "violations": [],
+  "traceRefs": [
+    "mission-security-lateral-movement-readiness-imported-trace-001",
+    "mission-security-lateral-movement-readiness-imported-trace-002",
+    "mission-security-lateral-movement-readiness-imported-trace-003",
+    "mission-security-lateral-movement-readiness-imported-trace-004",
+    "mission-security-lateral-movement-readiness-imported-trace-005",
+    "mission-security-lateral-movement-readiness-imported-trace-006"
+  ],
+  "evidenceRefs": [
+    "saved-search-lateral-movement",
+    "macro-security-content-ctime",
+    "lookup-asset-lookup",
+    "evt-102",
+    "evt-118",
+    "evt-141"
+  ],
+  "policyPatchSummary": [],
+  "rerunComparison": {},
+  "generatedBy": "Agent Readiness Compiler",
+  "notes": "This receipt grades an externally supplied trace. The deterministic rule engine decides pass/fail; the trace producer is outside SplunkReady."
+}

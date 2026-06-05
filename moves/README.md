@@ -100,6 +100,7 @@ commands, or filesystem paths.
 | P0 | [75](moves75.md) MCP client certification loop | 0.5d | Makes the MCP proof show an agent-driven Splunk MCP investigation loop that is certified through SplunkReady. |
 | P0 | [76](moves76.md) LLM agent workflow extraction | 0.5d | Moves the `llm-agent` trace, grading, scoring, and receipt artifact writes out of the CLI monolith. |
 | P0 | [77](moves77.md) CLI orphan helper cleanup | 0.5d | Removes CLI-local helper code made obsolete by prior workflow extractions. |
+| P0 | [78](moves78.md) Refreshed submission evidence pack | 0.5d | Refreshes tracked judge-facing evidence with current compiler diagnostics, MCP proof, public export, and Playwright screenshots. |
 
 ## Non-Negotiable Boundaries
 

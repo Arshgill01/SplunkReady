@@ -1,6 +1,6 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 
 export interface McpProofWorkflowInput {
   outDir: string;
@@ -258,6 +258,16 @@ const collectEvidenceRefs = (value: unknown): string[] => {
   return [...directRefs, ...resultRefs];
 };
 
+const displayPath = (path: string): string => {
+  const relativePath = relative(process.cwd(), path);
+
+  if (!relativePath || relativePath.startsWith("..")) {
+    return path;
+  }
+
+  return relativePath;
+};
+
 const readSplunkMcpBoundaryEvidence = async (
   transcriptPath: string,
   certificationStatus: "PASS" | "FAIL",
@@ -447,7 +457,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       status: certificationStatus,
       mutation: false,
       generatedAt,
-      serverPath: input.serverPath,
+      serverPath: displayPath(input.serverPath),
       transcriptPath,
       handshake: {
         protocolVersion: stringFromRecord(initialize, "protocolVersion"),

@@ -9601,6 +9601,99 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
+## 2026-06-06 - Move 78 Refreshed Submission Evidence Pack
+
+Commands:
+
+- `npm run build`
+- `node dist/src/cli.js suite-proof --mode fixture --suite fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json --out submission-evidence/suite-proof --require-fail-to-pass true --json`
+- `node dist/src/cli.js proof-audit --out submission-evidence/suite-proof --require-pass true --json`
+- `node dist/src/cli.js verify-manifest --out submission-evidence/suite-proof --json`
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json`
+- `node dist/src/cli.js verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json`
+- `SPLUNKREADY_WORKBENCH_PORT=4337 npm run workbench`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4337`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e34`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/workbench-packaged-fixture-current.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e112`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/workbench-trace-timeline-current.png --full-page`
+- `curl -sS -X POST http://127.0.0.1:4337/api/jobs/public-proof-export -H 'Content-Type: application/json' --data '{"sourceRunId":"run-2026-06-05T19-00-20-455Z-b5613154"}'`
+- `curl -sS http://127.0.0.1:4337/api/jobs/job-2`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open 'http://127.0.0.1:4337/?artifacts=%2Fapi%2Fartifacts%2Frun-2026-06-05T19-01-15-496Z-3a4d3125#proof-browser'`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e973`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/public-proof-export-verified-current.png --full-page`
+- `node dist/src/cli.js proof-audit --out submission-evidence/public-proof-export --require-pass false --json`
+- `node dist/src/cli.js verify-manifest --out submission-evidence/public-proof-export --json`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `rg -n "/tmp|/Users/arshdeepsingh|GEMINI|TOKEN|password|secret" submission-evidence/mcp-proof submission-evidence/suite-proof submission-evidence/public-proof-export | head -80`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "MCP server proof"`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for build.
+- PASS for regenerated suite proof:
+  - suite status `PASS`;
+  - mode `fixture`;
+  - 3 missions;
+  - 3 fail-to-pass missions;
+  - 3 READY-after-patch missions;
+  - 15 evidence refs;
+  - compiler diagnostics emitted.
+- PASS for suite proof audit and manifest verification.
+- PASS for MCP proof:
+  - MCP server initialized through stdio;
+  - 3 tools, 6 resources, and 4 prompts discovered;
+  - `splunkready_splunk_mcp_certification_loop` prompt present;
+  - captured Splunk MCP transcript certified with `splunk_get_knowledge_objects`
+    and `splunk_run_saved_search`;
+  - nested transcript proof manifest verification passed.
+- PASS for Playwright UI evidence:
+  - packaged workbench opened at `http://127.0.0.1:4337`;
+  - fixture certification completed as `job-1 / succeeded`;
+  - replay screenshot shows `READY / 100/100`;
+  - trace screenshot shows ordered before/after rows;
+  - public proof export screenshot shows redaction status and manifest
+    verification `PASS`.
+- PASS for public proof export manifest verification.
+- PASS for evidence-pack SHA verification.
+- PASS for focused MCP regression:
+  - 1 test file passed;
+  - 1 test passed;
+  - 39 tests skipped by focused pattern.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified with 19 rules, 4 fixture missions, 20 evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 152 dry-run packed files;
+  - 55 test files passed;
+  - 341 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- The path/string scan produced only the intentional
+  `public-proof-export-manifest.json` marker `"secrets": "redacted"`; no
+  credential value, `.env*`, `.splunkready*`, `/tmp`, or local user path was
+  found in the refreshed tracked proof bundles.
+- The temporary workbench server was stopped and `.playwright-cli/` was removed
+  before final status inspection.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Hosted demo, public package publication, live proof export, and stronger
+  public MCP-client demo remain open Minimax caps.
 ## 2026-06-06 - Move 77 CLI Orphan Helper Cleanup
 
 Commands:

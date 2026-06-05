@@ -20,7 +20,7 @@
       "missionId": "mission-security-lateral-movement-readiness",
       "title": "Investigate lateral movement from win-finance-07",
       "domain": "security",
-      "artifactDir": "artifacts/submission-suite-proof/mission-security-lateral-movement-readiness",
+      "artifactDir": "submission-evidence/suite-proof/mission-security-lateral-movement-readiness",
       "proofLoop": "fail-to-pass",
       "before": {
         "verdict": "NOT READY",
@@ -44,7 +44,7 @@
       "missionId": "mission-security-exfiltration-readiness",
       "title": "Investigate suspicious DNS exfiltration",
       "domain": "security",
-      "artifactDir": "artifacts/submission-suite-proof/mission-security-exfiltration-readiness",
+      "artifactDir": "submission-evidence/suite-proof/mission-security-exfiltration-readiness",
       "proofLoop": "fail-to-pass",
       "before": {
         "verdict": "NOT READY",
@@ -69,7 +69,7 @@
       "missionId": "mission-observability-latency-readiness",
       "title": "Certify MCP gateway latency investigation",
       "domain": "observability",
-      "artifactDir": "artifacts/submission-suite-proof/mission-observability-latency-readiness",
+      "artifactDir": "submission-evidence/suite-proof/mission-observability-latency-readiness",
       "proofLoop": "fail-to-pass",
       "before": {
         "verdict": "NOT READY",

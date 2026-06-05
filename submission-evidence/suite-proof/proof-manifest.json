@@ -2,8 +2,18 @@
   "source": "splunkready-proof-manifest",
   "generatedAt": "2026-06-01T06:45:00.000Z",
   "proofDir": "submission-evidence/suite-proof",
-  "aggregateSha256": "0d1a4a34afb3f9e799a865e8928de8289c2134baf698bbff554538bfe5f6c54c",
+  "aggregateSha256": "2fe227e950a1a0dcf21ca2a2cc6afb1e94fa925e04c11a324bce52247b57bd5f",
   "files": [
+    {
+      "path": "compiler-diagnostics.json",
+      "sizeBytes": 39546,
+      "sha256": "ca43009faf0b23962610cde9309a49eeffc06f046b82ab4677dc40cb5e697624"
+    },
+    {
+      "path": "compiler-diagnostics.md",
+      "sizeBytes": 5497,
+      "sha256": "8469f8fa31e9697b0710a653436cc8ee54975fecd1b7e992736470214b27ab55"
+    },
     {
       "path": "mission-observability-latency-readiness/agent-policy.json",
       "sizeBytes": 10118,
@@ -251,8 +261,8 @@
     },
     {
       "path": "suite-proof-summary.json",
-      "sizeBytes": 2453,
-      "sha256": "4d81d7a182dd8a9e63ef723f9f9d518bc9ad603fc1422dae181514ff96fb98e6"
+      "sizeBytes": 2450,
+      "sha256": "c3380b188878067968b058fd8e360914afae0ab0237878af045614520f155332"
     },
     {
       "path": "suite-proof-summary.md",

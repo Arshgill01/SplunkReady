@@ -1,0 +1,237 @@
+{
+  "source": "splunkready-mcp-proof",
+  "status": "PASS",
+  "mutation": false,
+  "generatedAt": "2026-06-01T06:45:00.000Z",
+  "serverPath": "dist/src/mcp/server.js",
+  "transcriptPath": "examples/sample-mcp-transcript-pass.jsonl",
+  "handshake": {
+    "protocolVersion": "2025-06-18",
+    "serverName": "splunkready",
+    "instructions": "SplunkReady certifies Splunk-connected agent traces. Deterministic rules decide readiness; LLM and SAIA output is advisory only. Tools do not mutate Splunk."
+  },
+  "tools": [
+    {
+      "name": "splunkready_describe_certification",
+      "destructiveHint": false,
+      "readOnlyHint": true
+    },
+    {
+      "name": "splunkready_certify_external_trace",
+      "destructiveHint": false,
+      "readOnlyHint": true
+    },
+    {
+      "name": "splunkready_certify_mcp_transcript",
+      "destructiveHint": false,
+      "readOnlyHint": true
+    }
+  ],
+  "resources": [
+    {
+      "uri": "splunkready://certification/posture",
+      "name": "certification-posture",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "splunkready://examples/external-trace-pass",
+      "name": "external-trace-pass",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "splunkready://examples/mcp-transcript-pass",
+      "name": "mcp-transcript-pass",
+      "mimeType": "application/jsonl"
+    },
+    {
+      "uri": "splunkready://examples/pass-receipt",
+      "name": "pass-receipt",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "splunkready://client-config/stdio",
+      "name": "stdio-client-config",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "splunkready://workflows/splunk-mcp-certification-loop",
+      "name": "splunk-mcp-certification-loop",
+      "mimeType": "text/markdown"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "splunkready_certify_mcp_transcript",
+      "argumentCount": 3
+    },
+    {
+      "name": "splunkready_capture_trace",
+      "argumentCount": 2
+    },
+    {
+      "name": "splunkready_explain_receipt",
+      "argumentCount": 1
+    },
+    {
+      "name": "splunkready_splunk_mcp_certification_loop",
+      "argumentCount": 3
+    }
+  ],
+  "describe": {
+    "product": "SplunkReady",
+    "engine": "Agent Readiness Compiler",
+    "primaryArtifact": "Readiness Receipt",
+    "deterministicAuthority": true,
+    "advisoryLlmOnly": true,
+    "mutation": false,
+    "tools": [
+      "splunkready_describe_certification",
+      "splunkready_certify_external_trace",
+      "splunkready_certify_mcp_transcript"
+    ],
+    "resources": [
+      "splunkready://certification/posture",
+      "splunkready://examples/external-trace-pass",
+      "splunkready://examples/mcp-transcript-pass",
+      "splunkready://examples/pass-receipt",
+      "splunkready://client-config/stdio",
+      "splunkready://workflows/splunk-mcp-certification-loop"
+    ],
+    "prompts": [
+      "splunkready_certify_mcp_transcript",
+      "splunkready_capture_trace",
+      "splunkready_explain_receipt",
+      "splunkready_splunk_mcp_certification_loop"
+    ]
+  },
+  "postureResource": {
+    "contents": [
+      {
+        "uri": "splunkready://certification/posture",
+        "mimeType": "application/json",
+        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\"\n  ]\n}"
+      }
+    ]
+  },
+  "clientConfigResource": {
+    "contents": [
+      {
+        "uri": "splunkready://client-config/stdio",
+        "mimeType": "application/json",
+        "text": "{\n  \"mcpServers\": {\n    \"splunkready\": {\n      \"command\": \"npm\",\n      \"args\": [\n        \"run\",\n        \"mcp\"\n      ],\n      \"cwd\": \"/path/to/SplunkReady\"\n    }\n  }\n}"
+      }
+    ]
+  },
+  "certificationLoopResource": {
+    "contents": [
+      {
+        "uri": "splunkready://workflows/splunk-mcp-certification-loop",
+        "mimeType": "text/markdown",
+        "text": "# Splunk MCP Certification Loop\n\n1. Use the configured Splunk MCP Server for read-only investigation calls such as knowledge-object lookup and saved-search execution.\n2. Preserve the MCP JSON-RPC request/response transcript as JSONL. Do not include tokens or environment files.\n3. Call `splunkready_certify_mcp_transcript` with `strictImport=true` and `requirePass=true`.\n4. Treat the generated Readiness Receipt as the source of truth. Deterministic rules decide READY or NOT READY; LLM output may only explain the receipt.\n\nSplunkReady does not replace Splunk MCP and does not mutate Splunk. It certifies captured Splunk MCP behavior for this deployment."
+      }
+    ]
+  },
+  "transcriptPrompt": {
+    "description": "Guide an MCP-capable agent to pass a captured Splunk JSON-RPC transcript through SplunkReady certification.",
+    "messages": [
+      {
+        "role": "user",
+        "content": {
+          "type": "text",
+          "text": "Certify this captured Splunk MCP transcript with SplunkReady.\n\nTranscript path: examples/sample-mcp-transcript-pass.jsonl\nOutput directory: submission-evidence/mcp-proof/mcp-transcript-certification\nFinal answer: Evidence supports suspicious lateral movement from win-finance-07 through admin-login-02 to dc-01 and finance-sql-03. Provenance saved-search-lateral-movement returned 3 rows for the -24h to now window, with evidence rows evt-102, evt-118, and evt-141.\n\nCall splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.\nUse the resulting Readiness Receipt as the source of truth. Deterministic rules decide READY or NOT READY; LLM output may only explain the receipt."
+        }
+      }
+    ]
+  },
+  "certificationLoopPrompt": {
+    "description": "Guide an MCP-capable agent to investigate through Splunk MCP, preserve the JSON-RPC transcript, and certify it with SplunkReady.",
+    "messages": [
+      {
+        "role": "user",
+        "content": {
+          "type": "text",
+          "text": "Run a Splunk MCP investigation loop and certify it with SplunkReady.\n\nSplunk MCP server: splunk\nTranscript path: examples/sample-mcp-transcript-pass.jsonl\nOutput directory: submission-evidence/mcp-proof/mcp-transcript-certification\n\nUse Splunk MCP only for read-only investigation actions. Prefer saved searches and knowledge objects when the deployment exposes them.\nPreserve the JSON-RPC transcript of the Splunk MCP tool calls and responses.\nThen call splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.\nUse the Readiness Receipt as the authoritative verdict; LLM or assistant text may only explain the deterministic result."
+        }
+      }
+    ]
+  },
+  "transcriptCertification": {
+    "artifacts": [
+      "submission-evidence/mcp-proof/mcp-transcript-certification/uploaded-mcp-transcript.jsonl",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/environment-contract.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/missions.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/agent-policy.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/readiness-profile.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/trace-imported.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/mcp-transcript-import.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/trace-external.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/violations-external.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/score-external.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.md",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/mcp-transcript-certification.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/proof-audit.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/proof-manifest.json"
+    ],
+    "status": "PASS",
+    "outDir": "submission-evidence/mcp-proof/mcp-transcript-certification",
+    "mutation": false
+  },
+  "agentDrivenWorkflow": {
+    "status": "PASS",
+    "splunkMcpServerRole": "Splunk MCP performs the read-only investigation actions and returns operational data to the agent.",
+    "splunkReadyMcpServerRole": "SplunkReady MCP gives the agent posture resources, reusable prompts, and deterministic certification tools for the captured transcript.",
+    "stages": [
+      "MCP client discovers SplunkReady certification posture and stdio configuration.",
+      "Agent investigates through Splunk MCP read-only tools and preserves the JSON-RPC transcript.",
+      "Agent calls SplunkReady MCP to certify the captured Splunk MCP transcript.",
+      "Agent explains the generated Readiness Receipt without overriding the deterministic verdict."
+    ],
+    "deterministicAuthority": true,
+    "mutation": false
+  },
+  "splunkMcpBoundary": {
+    "status": "PASS",
+    "transcriptKind": "captured-splunk-mcp-jsonrpc",
+    "transcriptPath": "examples/sample-mcp-transcript-pass.jsonl",
+    "localMcpServerRole": "SplunkReady MCP exposes the Agent Readiness Compiler as a certification interface for MCP clients.",
+    "splunkMcpServerRole": "The captured transcript is the Splunk MCP Server boundary: an agent invoked Splunk MCP tools, then SplunkReady certified the behavior.",
+    "certifiedToolNames": [
+      "splunk_get_knowledge_objects",
+      "splunk_run_saved_search"
+    ],
+    "splunkToolCallCount": 2,
+    "includesSavedSearchExecution": true,
+    "evidenceRefs": [
+      "evt-102",
+      "evt-118",
+      "evt-141"
+    ],
+    "receiptPath": "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+    "deterministicAuthority": true,
+    "mutation": false
+  },
+  "artifacts": [
+    "submission-evidence/mcp-proof/mcp-proof-summary.json",
+    "submission-evidence/mcp-proof/mcp-proof-summary.md",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/uploaded-mcp-transcript.jsonl",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/environment-contract.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/missions.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/agent-policy.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/readiness-profile.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/trace-imported.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/mcp-transcript-import.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/trace-external.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/violations-external.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/score-external.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.md",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/mcp-transcript-certification.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/proof-audit.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/proof-manifest.json"
+  ],
+  "nextCommands": [
+    "npm run mcp",
+    "npm run splunkready -- certify-mcp-transcript --transcript examples/sample-mcp-transcript-pass.jsonl --out submission-evidence/mcp-proof/mcp-transcript-certification --strict-import true --require-pass true --agent-name \"External MCP Agent\" --agent-version \"mcp-proof-jsonrpc-pass\" --json"
+  ]
+}

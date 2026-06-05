@@ -1,7 +1,7 @@
 {
   "status": "WARN",
   "proofType": "receipt",
-  "proofDir": "/Users/[REDACTED]",
+  "proofDir": "submission-evidence/public-proof-export",
   "mode": "fixture",
   "failToPass": true,
   "readyAfterPatch": true,

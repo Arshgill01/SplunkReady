@@ -1,10 +1,10 @@
 {
   "source": "splunkready-public-proof-export",
-  "generatedAt": "2026-06-05T12:06:19.254Z",
-  "sourceRunId": "run-2026-06-05T12-05-39-854Z-7a57b488",
-  "sourceCommit": "f6406d7478d6",
-  "sourceArtifactBase": "/api/artifacts/run-2026-06-05T12-05-39-854Z-7a57b488",
-  "exportArtifactBase": "/api/artifacts/run-2026-06-05T12-06-19-135Z-44163c4f",
+  "generatedAt": "2026-06-05T19:01:15.620Z",
+  "sourceRunId": "run-2026-06-05T19-00-20-455Z-b5613154",
+  "sourceCommit": "8dd88c0cb984",
+  "sourceArtifactBase": "/api/artifacts/run-2026-06-05T19-00-20-455Z-b5613154",
+  "exportArtifactBase": "/api/artifacts/run-2026-06-05T19-01-15-496Z-3a4d3125",
   "redactionStatus": "REDACTED",
   "redaction": {
     "secrets": "redacted",
@@ -13,7 +13,7 @@
     "userPaths": "redacted",
     "rawMcpErrorBodies": "redacted"
   },
-  "aggregateSha256": "8d0001500eea4ed0deffb6dfda68d21ad9cd89f7bc228f6a2753dc881e27b990",
+  "aggregateSha256": "00a41db000a4bb2ad7d470edcf5aaa724b3ab3ecd31626f7cf7696d1ccf358e9",
   "files": [
     {
       "path": "environment-contract.json",
@@ -50,7 +50,7 @@
     {
       "path": "public-proof-summary.json",
       "sizeBytes": 1554,
-      "sha256": "1313b47d2f2b62a330928e1faa605459f8243783b13bf58100367fefdb8cd7a8",
+      "sha256": "fb19364455e391bb23f73d4861a9107dacfa1b9b056a441d2a48a482fa64c09e",
       "redacted": true,
       "schemaValidated": false
     },
@@ -82,7 +82,7 @@
       "path": "source-proof-manifest.json",
       "sourcePath": "proof-manifest.json",
       "sizeBytes": 3388,
-      "sha256": "8ea2dec19b9ef7bbe97a2170586f80092a8e8080986300109c67c96390f9c587",
+      "sha256": "037ed72ecdbb3b5925990e4bdb307cfc1f620e9a3f2685107f1fef856c951d78",
       "redacted": true,
       "schemaValidated": false
     },
@@ -105,7 +105,7 @@
     {
       "path": "ui-artifacts.json",
       "sizeBytes": 340,
-      "sha256": "f5c364572b68f6abb6a38bf7eb2f569582a5666262acd44efed0cc32db1673ca",
+      "sha256": "dbeb8a5d5565da3512b71ed3afd17c248defb07e13ac5b79ed12c341cd36ed69",
       "redacted": true,
       "schemaValidated": false
     },
