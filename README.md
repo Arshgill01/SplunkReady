@@ -50,6 +50,24 @@ Expected fixture outcome:
 - after receipt: `READY`
 - visible deterministic rule IDs include `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`
 
+## Local Workbench
+
+For the interactive workbench, run one local command:
+
+```bash
+npm run workbench
+```
+
+The command builds the TypeScript runtime and Vite UI, starts one localhost-only server, and prints the local URL, artifact root, fixture capability, live capability, and SAIA status. The first screen is the usable certification replay; no live Splunk credentials are required for the fixture path.
+
+For UI development with Vite middleware, use:
+
+```bash
+npm run workbench:dev
+```
+
+The workbench API and UI are served from the same local origin. Live actions remain disabled unless the live environment variables in the Live Mode section are set in the shell that starts the server.
+
 ## Grade a Captured Agent Trace
 
 The fixture demo is reproducible, but SplunkReady is not limited to its bundled specimen. After compiling the environment contract, pass in a schema-valid trace captured from another Splunk-connected agent:

@@ -6951,3 +6951,73 @@ Open risks:
 
 - Move 19 validates fixture public proof export through UI and HTTP, plus a synthetic live-shaped managed run in the workbench unit test. A real live export should only be produced when live artifacts exist and raw live artifacts are not exposed.
 - Public proof exports are redacted derivative bundles; claims must not imply unredacted source export.
+
+## 2026-06-05 - Move 20 Package The Workbench Run Command
+
+Commands:
+
+- `command -v npx >/dev/null 2>&1`
+- `npx tsc --noEmit`
+- `npm run test:workbench`
+- `SPLUNKREADY_WORKBENCH_PORT=4337 npm run workbench`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4337/#certification-replay`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e34`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot`
+- `cp .playwright-cli/page-2026-06-05T12-22-50-169Z.png output/playwright/workbench-packaged-fixture.png`
+- `SPLUNKREADY_WORKBENCH_PORT=4338 npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4338/#certification-replay`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e34`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot`
+- `cp .playwright-cli/page-2026-06-05T12-23-51-986Z.png output/playwright/workbench-dev-fixture.png`
+- `SPLUNKREADY_WORKBENCH_PORT=4339 node dist/src/workbench/server.js`
+- `SPLUNKREADY_WORKBENCH_PORT=4339 node dist/src/workbench/server.js`
+- `npm run ui:build`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for Playwright prerequisite:
+  - `npx` was available.
+- PASS for `npx tsc --noEmit`.
+- PASS for focused workbench/UI regression suite:
+  - 3 test files passed;
+  - 53 tests passed.
+- PASS for packaged workbench startup:
+  - printed URL `http://127.0.0.1:4337`;
+  - printed artifact root `/Users/arshdeepsingh/Developer/SplunkReady/artifacts/workbench-runs`;
+  - printed fixture available, live disabled with missing env names, and SAIA disabled.
+- PASS for packaged Playwright browser verification:
+  - initial `http://127.0.0.1:4337/#certification-replay` snapshot rendered the empty workbench state without console errors;
+  - fixture run `run-2026-06-05T12-22-29-949Z-4388efe9` rendered `job-1 / succeeded`, `READY / 100/100`, `5 before / 0 after`, and artifact base `/api/artifacts/run-2026-06-05T12-22-29-949Z-4388efe9`;
+  - screenshot saved at `output/playwright/workbench-packaged-fixture.png`.
+- PASS for Vite-backed workbench startup:
+  - printed URL `http://127.0.0.1:4338`;
+  - printed artifact root `/Users/arshdeepsingh/Developer/SplunkReady/artifacts/workbench-runs`;
+  - printed fixture available, live disabled with missing env names, and SAIA disabled.
+- PASS for Vite-backed Playwright browser verification:
+  - initial `http://127.0.0.1:4338/#certification-replay` snapshot rendered the empty workbench state without console errors;
+  - fixture run `run-2026-06-05T12-23-35-298Z-2ceb5840` rendered `job-1 / succeeded`, `READY / 100/100`, `5 before / 0 after`, and artifact base `/api/artifacts/run-2026-06-05T12-23-35-298Z-2ceb5840`;
+  - screenshot saved at `output/playwright/workbench-dev-fixture.png`.
+- PASS for port-conflict verification:
+  - second `SPLUNKREADY_WORKBENCH_PORT=4339 node dist/src/workbench/server.js` exited 1;
+  - printed `Unable to start SplunkReady Workbench: Port 4339 is already in use on 127.0.0.1. Set SPLUNKREADY_WORKBENCH_PORT to another local port.`
+- PASS for explicit `npm run ui:build`.
+- PASS for explicit `git diff --check`.
+- PASS for canonical gate `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 289 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - `git diff --check` passed.
+
+Open risks:
+
+- Move 20 validates fixture workflow through both packaged and Vite-backed UI paths. Live actions remain disabled until live env vars are set in the server shell.
+- The packaged command prioritizes reliable one-command judging over startup speed by rebuilding before serving.

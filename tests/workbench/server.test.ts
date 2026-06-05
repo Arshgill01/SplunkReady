@@ -1,11 +1,11 @@
-import { mkdtemp } from "node:fs/promises";
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
 import { createWorkbenchConfig, type WorkbenchConfig } from "../../src/workbench/config.js";
-import { startWorkbenchServer, type StartedWorkbenchServer } from "../../src/workbench/server.js";
+import { startWorkbenchServer, type StartedWorkbenchServer, type WorkbenchServerOptions } from "../../src/workbench/server.js";
 import type { WorkbenchJobSnapshot } from "../../src/workbench/events.js";
 
 interface StartedTestWorkbench {
@@ -17,7 +17,7 @@ const tempRoot = async (): Promise<string> => mkdtemp(join(tmpdir(), "splunkread
 
 const startTestWorkbench = async (
   overrides: Partial<WorkbenchConfig> = {},
-  options: { devUi?: boolean } = {}
+  options: WorkbenchServerOptions = {}
 ): Promise<StartedTestWorkbench> => {
   const config: WorkbenchConfig = {
     ...createWorkbenchConfig({}, process.cwd()),
@@ -213,6 +213,52 @@ describe("workbench HTTP server", () => {
       expect(traversal.text).toContain("WORKBENCH_REQUEST_FAILED");
       expect(traversal.text).toContain("Artifact file path escapes run root.");
       expect(traversal.text).not.toContain('"scripts"');
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves the built UI and API from one packaged local origin", async () => {
+    const staticUiRoot = await tempRoot();
+
+    await mkdir(join(staticUiRoot, "assets"));
+    await writeFile(
+      join(staticUiRoot, "index.html"),
+      '<!doctype html><div id="app"></div><script type="module" src="/assets/index-test.js"></script>',
+      "utf8"
+    );
+    await writeFile(join(staticUiRoot, "assets", "index-test.js"), "document.body.dataset.splunkready = 'loaded';", "utf8");
+
+    const { server } = await startTestWorkbench({}, { staticUiRoot });
+
+    try {
+      const shell = await fetchText(server.url, "/#certification-replay");
+      const asset = await fetchText(server.url, "/assets/index-test.js");
+      const missingJson = await fetchText(server.url, "/__splunkready_artifacts/receipt-after-001.json");
+      const health = await fetchJson<{ source: string; capabilities: { fixtureCertification: boolean; live: boolean } }>(
+        server.url,
+        "/api/health"
+      );
+      const created = await fetchJson<{ job: WorkbenchJobSnapshot }>(server.url, "/api/jobs/fixture-certification", { method: "POST" });
+      const completed = await waitForHttpJob(server.url, created.json.job.id);
+
+      expect(shell.response.status).toBe(200);
+      expect(shell.response.headers.get("content-type")).toContain("text/html");
+      expect(shell.text).toContain('<div id="app"></div>');
+      expect(asset.response.status).toBe(200);
+      expect(asset.response.headers.get("content-type")).toContain("text/javascript");
+      expect(asset.text).toContain("splunkready");
+      expect(missingJson.response.status).toBe(204);
+      expect(missingJson.text).toBe("");
+      expect(health.json).toMatchObject({
+        source: "splunkready-workbench",
+        capabilities: { fixtureCertification: true, live: false }
+      });
+      expect(completed).toMatchObject({
+        workflow: "fixture-certification",
+        state: "succeeded",
+        artifactBase: `/api/artifacts/${completed.runId}`
+      });
     } finally {
       await server.close();
     }

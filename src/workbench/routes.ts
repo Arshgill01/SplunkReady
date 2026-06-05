@@ -358,6 +358,12 @@ export const createWorkbenchApiHandler =
   async (request: IncomingMessage, response: ServerResponse): Promise<boolean> => {
     const url = new URL(request.url ?? "/", "http://127.0.0.1");
 
+    if (request.method === "GET" && url.pathname.startsWith("/__splunkready_artifacts/")) {
+      response.statusCode = 204;
+      response.end();
+      return true;
+    }
+
     if (!url.pathname.startsWith("/api/")) {
       return false;
     }

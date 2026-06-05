@@ -8459,3 +8459,50 @@ Playwright evidence:
 Open risks:
 - The export is intentionally a sanitized derivative bundle. Do not describe it as unredacted source proof.
 - Final workbench UI may still be too broad for judges; Move 25 now tracks deliberate end-stage consolidation.
+
+## 2026-06-05 - Move 20 Package The Workbench Run Command
+
+Context:
+- Implemented Move 20 locally without subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Used Playwright CLI for live UI verification against both packaged and Vite-backed workbench servers.
+
+Files touched:
+- `package.json`
+- `README.md`
+- `src/workbench/server.ts`
+- `src/workbench/routes.ts`
+- `tests/workbench/server.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `npm run workbench`, which builds the TypeScript runtime and production Vite UI before starting the compiled workbench server.
+- Made the compiled server serve the built UI and workbench API from one localhost-only origin.
+- Added startup output for local URL, artifact root, fixture capability, live capability, and SAIA status.
+- Added a friendly port-conflict error that tells the operator to set `SPLUNKREADY_WORKBENCH_PORT`.
+- Preserved `npm run workbench:dev` for Vite middleware development.
+- Added packaged-server static UI routing with content types, path traversal containment, SPA fallback for app routes, and 404s for missing asset-like paths.
+- Added a quiet `204` response for the empty default `__splunkready_artifacts` probe so the workbench first screen does not emit browser console errors before a run exists.
+- Documented the local workbench commands in `README.md`.
+- Added HTTP regression coverage for packaged UI + API from one origin.
+
+Playwright evidence:
+- Packaged server:
+  - Ran `SPLUNKREADY_WORKBENCH_PORT=4337 npm run workbench`.
+  - Opened `http://127.0.0.1:4337/#certification-replay`.
+  - Confirmed the initial workbench state rendered without console errors.
+  - Clicked `Run fixture certification`.
+  - Verified run `run-2026-06-05T12-22-29-949Z-4388efe9` rendered `job-1 / succeeded`, `READY / 100/100`, `5 before / 0 after`, and artifact base `/api/artifacts/run-2026-06-05T12-22-29-949Z-4388efe9`.
+  - Screenshot saved at `output/playwright/workbench-packaged-fixture.png`.
+- Vite-backed dev server:
+  - Ran `SPLUNKREADY_WORKBENCH_PORT=4338 npm run workbench:dev`.
+  - Opened `http://127.0.0.1:4338/#certification-replay`.
+  - Confirmed the initial workbench state rendered without console errors.
+  - Clicked `Run fixture certification`.
+  - Verified run `run-2026-06-05T12-23-35-298Z-2ceb5840` rendered `job-1 / succeeded`, `READY / 100/100`, `5 before / 0 after`, and artifact base `/api/artifacts/run-2026-06-05T12-23-35-298Z-2ceb5840`.
+  - Screenshot saved at `output/playwright/workbench-dev-fixture.png`.
+
+Open risks:
+- `npm run workbench` intentionally rebuilds on every start. This is simple and reliable for judging, but later cleanup could add a faster already-built mode if startup time becomes a problem.
+- The workbench surface remains broad during implementation. Move 25 tracks final consolidation after proof-building moves are complete.
