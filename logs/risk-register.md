@@ -296,3 +296,9 @@ deterministic Readiness Receipt. This does not add Splunk write actions and does
 not make LLM/MCP output authoritative. Remaining MCP risk: the strongest public
 story still needs exported live/captured proof evidence and a judge-visible demo
 surface.
+
+Move 76 further reduces the CLI monolith risk by moving `llm-agent`
+orchestration into `src/workflows/llm-agent.ts`. `src/cli.ts` dropped from 925
+lines to 883 lines and no longer imports receipt generation or readiness scoring
+internals for that command. Remaining CLI risk: argument parsing, demo shell
+generation, and small command adapters still live in `src/cli.ts`.

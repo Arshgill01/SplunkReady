@@ -10712,3 +10712,39 @@ Open blockers:
 - This improves the MCP category artifact, but live proof pack export and a
   hosted/clickable demo remain open probability caps.
 - Public package publication remains an explicit release action.
+## 2026-06-06 00:17 - Move 76 LLM Agent Workflow Extraction
+
+Scope:
+- Continued the CLI modularization pass without using subagents.
+- Moved `llm-agent` trace production, deterministic grading, readiness scoring,
+  receipt generation, and artifact writes into `src/workflows/llm-agent.ts`.
+- Kept the CLI command as a thin delegator.
+- Preserved Gemini credential fail-closed behavior and deterministic pass/fail
+  authority.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/workflows/llm-agent.ts`
+- `src/cli.ts`
+- `tests/workflows/llm-agent.test.ts`
+- `moves/README.md`
+- `moves/moves76.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `runLlmAgentWorkflow` now owns LLM-agent compile/run/grade/score/receipt
+  artifact generation.
+- `src/cli.ts` no longer imports `generateReadinessReceipt`,
+  `scoreMissionReadiness`, `createLlmSpecimenAgent`, or `loadMission`.
+- Added workflow tests for missing Gemini credentials and CLI independence.
+- `src/cli.ts` dropped from 925 lines to 883 lines.
+
+Open blockers:
+- CLI still owns argument parsing, demo shell generation, and command adapter
+  wiring.
+- Hosted demo, refreshed submission evidence, public package publication, and
+  live proof export remain open Minimax caps.

@@ -5,13 +5,10 @@ import { dirname, isAbsolute, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { createGeminiConfigFromEnv } from "./agents/gemini-model.js";
-import { scoreMissionReadiness } from "./grader/scoring.js";
 import { validateLiveSecurityKit } from "./live-security-kit/validator.js";
-import { generateReadinessReceipt } from "./receipts/generator.js";
 import {
   compileCommand,
   compileContract,
-  createLlmSpecimenAgent,
   createSplunkAccessAdapter,
   evaluateCommand,
   firewallCheckCommand,
@@ -19,7 +16,6 @@ import {
   gradeTrace,
   llmEnabled,
   loadContract,
-  loadMission,
   receiptCommand,
   rerunCommand,
   writeCompiledArtifacts
@@ -61,6 +57,7 @@ import {
   type HostedModelWorkflowInput,
   type HostedModelWorkflowResult
 } from "./workflows/hosted-model-actions.js";
+import { runLlmAgentWorkflow } from "./workflows/llm-agent.js";
 import { runJudgeProofWorkflow } from "./workflows/judge-proof.js";
 import {
   runManifestVerificationWorkflow,
@@ -445,48 +442,9 @@ const llmAgentCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<string[]> => {
-  const geminiConfig = createGeminiConfigFromEnv(env);
+  const { artifacts } = await runLlmAgentWorkflow(options, env);
 
-  if (!geminiConfig) {
-    throw new Error("llm-agent requires GEMINI_API_KEY. No Gemini request was made and no Splunk calls were made.");
-  }
-
-  const compileArtifacts = await compileCommand(options, env);
-  const adapter = await createSplunkAccessAdapter(options, env);
-  const contract = await loadContract(options.out);
-  const mission = await loadMission(options.mission);
-  const agent = createLlmSpecimenAgent(contract, options, env);
-  const run = await agent.run({ mission, adapter });
-  const violations = gradeTrace(contract, mission, run.traceEvents);
-  const score = scoreMissionReadiness(mission, violations);
-  const generated = generateReadinessReceipt({
-    id: "receipt-llm-agent-001",
-    agent: { name: "Gemini Splunk MCP Agent", version: options.agentModel || geminiConfig.model },
-    environment: contract,
-    missionSuiteVersion: "security-readiness-llm-1",
-    missions: [mission],
-    traceEvents: run.traceEvents,
-    violations,
-    notes:
-      "This receipt grades a trace produced by a Gemini-backed specimen agent. The model chooses read-only Splunk tool calls; the deterministic rule engine decides pass/fail."
-  });
-
-  await writeJson(join(options.out, "trace-llm-agent.json"), run.traceEvents);
-  await writeJson(join(options.out, "llm-agent-observations.json"), run.observations);
-  await writeJson(join(options.out, "violations-llm-agent.json"), violations);
-  await writeJson(join(options.out, "score-llm-agent.json"), score);
-  await writeText(join(options.out, "receipt-llm-agent-001.json"), generated.json);
-  await writeText(join(options.out, "receipt-llm-agent-001.md"), generated.markdown);
-
-  return [
-    ...compileArtifacts,
-    join(options.out, "trace-llm-agent.json"),
-    join(options.out, "llm-agent-observations.json"),
-    join(options.out, "violations-llm-agent.json"),
-    join(options.out, "score-llm-agent.json"),
-    join(options.out, "receipt-llm-agent-001.json"),
-    join(options.out, "receipt-llm-agent-001.md")
-  ];
+  return artifacts;
 };
 
 const llmProofCommand = async (
