@@ -1421,51 +1421,45 @@ const tracePhaseSummary = (events: TraceEvent[], violations: Violation[]): strin
   return `${events.length} event(s) / ${tools.length} tool(s) / ${violations.length} finding(s) / ${evidenceRefs} evidence ref(s)`;
 };
 
-const renderTracePreviewEvents = (
-  events: TraceEvent[],
-  violations: Violation[]
-): string => {
-  const groupedViolations = violationByEvent(violations);
-  const previewEvents = events.slice(0, 3);
-  const hiddenEvents = events.length - previewEvents.length;
+const traceToolsSummary = (events: TraceEvent[]): string => {
+  const tools = [...new Set(events.map((event) => event.toolName).filter((toolName): toolName is string => Boolean(toolName)))];
+  const visibleTools = tools.slice(0, 3);
+  const hiddenTools = tools.length - visibleTools.length;
 
-  return `<ol class="trace-preview-list">
-    ${previewEvents
-      .map((event, index) => {
-        const eventViolations = groupedViolations.get(event.id) ?? [];
-        const timeWindow =
-          event.timeWindow && (event.timeWindow.earliest || event.timeWindow.latest)
-            ? `${event.timeWindow.earliest ?? "n/a"} to ${event.timeWindow.latest ?? "n/a"}`
-            : "n/a";
+  if (visibleTools.length === 0) {
+    return "none";
+  }
 
-        return `<li class="trace-preview-event">
-          <span class="trace-preview-step">${index + 1}</span>
-          <div class="trace-preview-body">
-            <div class="trace-preview-head">
-              ${code(shortTraceEventId(event.id))}
-              <span>${value(event.type)}</span>
-              <strong>${value(event.toolName ?? event.actor)}</strong>
-            </div>
-            <p class="trace-preview-summary">${value(eventSummary(event))}</p>
-            <div class="trace-preview-meta">
-              <span>window ${value(timeWindow)}</span>
-              <span>rows ${value(event.resultCount ?? "n/a")}</span>
-              <span>evidence ${value(event.evidenceRefs.length)}</span>
-            </div>
-            <div class="trace-preview-findings">
-              ${renderTracePreviewFindings(eventViolations)}
-            </div>
-          </div>
-        </li>`;
-      })
-      .join("")}
-    ${
-      hiddenEvents > 0
-        ? `<li class="trace-preview-more">${hiddenEvents} more event(s) in the full Trace view.</li>`
-        : ""
-    }
-  </ol>`;
+  return `${visibleTools.join(" / ")}${hiddenTools > 0 ? ` / +${hiddenTools} more` : ""}`;
 };
+
+const traceSpanSummary = (events: TraceEvent[]): string => {
+  const first = events[0];
+  const last = events.at(-1);
+
+  if (!first || !last) {
+    return "n/a";
+  }
+
+  if (first.id === last.id) {
+    return `${shortTraceEventId(first.id)} (${first.type})`;
+  }
+
+  return `${shortTraceEventId(first.id)} to ${shortTraceEventId(last.id)}`;
+};
+
+const renderTracePreviewRows = (traces: Array<[string, TraceEvent[], Violation[]]>): string =>
+  traces
+    .map(
+      ([label, events, violations]) => `<tr data-trace-preview-phase="${value(label.toLowerCase())}">
+        <th>${value(label)}</th>
+        <td data-label="Evidence">${value(tracePhaseSummary(events, violations))}</td>
+        <td data-label="Tools">${value(traceToolsSummary(events))}</td>
+        <td data-label="Span">${value(traceSpanSummary(events))}</td>
+        <td data-label="Findings">${renderTracePreviewFindings(violations)}</td>
+      </tr>`
+    )
+    .join("");
 
 const externalTraceForDisplay = (bundle: UiArtifactBundle): TraceEvent[] =>
   bundle.externalTrace.length > 0 ? bundle.externalTrace : bundle.importedTrace;
@@ -1874,20 +1868,14 @@ const renderTracePreview = (bundle: UiArtifactBundle): string => {
       <h2>Trace preview</h2>
       <a href="#trace-timeline">Full Trace view</a>
     </div>
+    <p class="trace-preview-note">Runs shows phase-level trace evidence only. Open the Trace view for the event-by-event timeline.</p>
     ${
       traces.length === 0
         ? `<p class="empty">Trace artifact not loaded.</p>`
-        : traces
-            .map(
-              ([label, events, violations]) => `<section class="trace-preview-group">
-                <div class="trace-preview-group-head">
-                  <h3>${value(label)}</h3>
-                  <span>${value(tracePhaseSummary(events, violations))}</span>
-                </div>
-                ${renderTracePreviewEvents(events, violations)}
-              </section>`
-            )
-            .join("")
+        : `<table class="trace-preview-table">
+            <thead><tr><th>Phase</th><th>Evidence</th><th>Tools</th><th>Span</th><th>Findings</th></tr></thead>
+            <tbody>${renderTracePreviewRows(traces)}</tbody>
+          </table>`
     }
   </section>`;
 };

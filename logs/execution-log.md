@@ -8262,3 +8262,45 @@ Evidence:
 
 Open risks:
 - Several workflow modules still dynamically load CLI wrappers internally. Move 15 intentionally avoided a broad mechanical refactor; the workbench backend boundary is now module-based, while deeper extraction can proceed in later waves if it blocks reuse.
+
+## 2026-06-05 - Runs Trace Preview Repair
+
+Context:
+- User reported that the trace timeline in the Runs section was completely messed up.
+- Implemented locally without subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Kept the full event-by-event timeline on the Trace view; changed only the Runs detail preview.
+
+Files touched:
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Replaced the Runs detail mini trace timeline with a compact phase-level trace preview table.
+- The Runs preview now shows one bounded row per available trace phase with evidence count, tool count, tool names, first-to-last event span, and finding summary.
+- Removed long event summaries, intermediate event rows, and nested trace cards from the Runs section.
+- Added mobile labeled-row styling for the trace preview table so it remains readable at narrow widths.
+- Updated the focused UI regression test to assert that Runs renders phase-level trace evidence and no longer renders detailed trace event rows.
+
+Playwright evidence:
+- Started `SPLUNKREADY_WORKBENCH_PORT=4334 npm run workbench:dev`.
+- Opened `http://127.0.0.1:4334/#proof-browser` with the Playwright skill wrapper.
+- Verified desktop 1440px Runs preview:
+  - `.trace-preview-table` rendered;
+  - two phase rows rendered for the loaded proof bundle;
+  - `.trace-preview-event` did not render;
+  - trace preview labels and the full Trace link rendered;
+  - horizontal overflow was `0`.
+- Verified mobile 390px Runs preview:
+  - phase rows rendered with CSS `data-label` labels;
+  - `.trace-preview-event` did not render;
+  - horizontal overflow was `0`.
+- Captured screenshots:
+  - `output/playwright/runs-trace-preview-fixed-desktop.png`
+  - `output/playwright/runs-trace-preview-fixed-mobile.png`
+
+Open risks:
+- The Runs preview is intentionally summary-level now. Operators still need to use the Trace view for per-event detail.

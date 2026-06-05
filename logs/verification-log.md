@@ -6691,3 +6691,58 @@ Result:
 Open risks:
 
 - Workflow modules still dynamically import CLI wrappers internally. This is a scoped Move 15 extraction that removes direct workbench backend imports and shrinks CLI type duplication without changing CLI behavior.
+
+## 2026-06-05 - Runs Trace Preview Repair
+
+Commands:
+
+- `command -v npx >/dev/null 2>&1 && echo npx-present || echo npx-missing`
+- `npx tsc --noEmit`
+- `npx vitest run tests/ui/app.test.ts`
+- `SPLUNKREADY_WORKBENCH_PORT=4334 npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4334/#proof-browser`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 1440 1000`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code 'async (page) => page.evaluate(() => { ... Runs desktop trace preview assertions ... })'`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/runs-trace-preview-fixed-desktop.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 390 844`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code 'async (page) => page.evaluate(() => { ... Runs mobile trace preview assertions ... })'`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/runs-trace-preview-fixed-mobile.png --full-page`
+- `npx vitest run tests/workbench tests/ui/app.test.ts`
+- `npm run ui:build`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for Playwright prerequisite: `npx` was available.
+- PASS for TypeScript validation.
+- PASS for focused UI regression tests:
+  - 1 test file;
+  - 22 tests passed.
+- PASS for desktop Playwright assertions:
+  - `.trace-preview-table` rendered;
+  - two phase rows rendered;
+  - detailed `.trace-preview-event` rows did not render in Runs;
+  - preview labels and the full Trace link rendered;
+  - horizontal overflow was `0`.
+- PASS for mobile Playwright assertions:
+  - phase rows rendered with CSS `data-label` labels;
+  - detailed `.trace-preview-event` rows did not render in Runs;
+  - horizontal overflow was `0`.
+- PASS for Move 16 focused verification command:
+  - 2 test files;
+  - 45 tests passed.
+- PASS for Vite production UI build:
+  - 21 modules transformed;
+  - production bundle written to `dist-ui`.
+- PASS for `git diff --check`.
+- PASS for canonical project gate:
+  - scaffold verified;
+  - 85 waves;
+  - 1179 project files;
+  - 41 test files;
+  - 281 tests passed.
+
+Open risks:
+
+- The Runs section now provides phase-level trace evidence only; detailed per-event inspection remains in the Trace view.
