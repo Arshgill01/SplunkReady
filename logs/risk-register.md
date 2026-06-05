@@ -239,3 +239,8 @@ into `src/workflows/certification-actions.ts` and making
 without importing `../cli.js`. `src/cli.ts` dropped from 2,660 lines to 2,173
 lines. Remaining CLI-backed workflow wrappers are policy actions and live
 actions.
+
+Move 68 removes policy actions from the CLI-backed wrapper list by moving
+`policy-backed-rerun` and `firewall-check` into
+`src/workflows/policy-actions.ts`. `src/cli.ts` dropped from 2,173 lines to
+2,135 lines. The remaining CLI-backed workflow wrapper is live actions.

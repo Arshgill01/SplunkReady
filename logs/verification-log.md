@@ -7843,6 +7843,51 @@ Notes:
 - Remaining dynamic CLI imports are policy actions and live actions; fixture
   certification is no longer CLI-owned.
 
+## 2026-06-05 - Move 68 Policy Action Workflow Extraction
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/workflows/policy-actions.test.ts`
+- `npx vitest run tests/workbench/workbench.test.ts --testNamePattern "policy-backed rerun and firewall-check"`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "firewall-check|policy-backed rerun"`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript validation.
+- PASS for direct policy workflow coverage:
+  - 1 test file passed;
+  - 3 tests passed, including the regression that
+    `src/workflows/policy-actions.ts` does not import `../cli.js`.
+- PASS for focused workbench policy job coverage:
+  - 1 test file passed;
+  - 1 selected test passed and 29 tests skipped.
+- PASS for focused CLI policy coverage:
+  - 1 test file passed;
+  - 2 selected tests passed and 37 tests skipped.
+- PASS for CLI shrink check:
+  - `src/cli.ts` line count after Move 67 was 2,173;
+  - `src/cli.ts` line count after Move 68 is 2,135.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 52 test files passed;
+  - 330 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- This move did not change UI source or behavior, so Playwright was not run.
+- Remaining dynamic CLI import is live actions; policy actions are no longer
+  CLI-owned.
+
 ## 2026-06-05 - Move 58 MCP Resources And Prompts
 
 Commands:

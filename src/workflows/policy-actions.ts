@@ -1,3 +1,11 @@
+import {
+  defaultFixtureCertificationOptions,
+  firewallCheckCommand,
+  fixtureCertificationSteps,
+  rerunCommand
+} from "./certification-actions.js";
+import { runFixtureCertification } from "./fixture-certification.js";
+
 export interface PolicyWorkbenchWorkflowInput {
   outDir: string;
 }
@@ -10,38 +18,43 @@ export interface PolicyWorkbenchWorkflowResult {
   messages: string[];
 }
 
-type PolicyActionRunner = (
-  input: PolicyWorkbenchWorkflowInput,
-  env?: NodeJS.ProcessEnv
-) => Promise<PolicyWorkbenchWorkflowResult>;
-
-const loadPolicyAction = async (
-  exportName: "runPolicyBackedRerunFromCli" | "runFirewallCheckFromCli"
-): Promise<PolicyActionRunner> => {
-  const cli = (await import("../cli.js")) as Record<string, unknown>;
-  const runner = cli[exportName];
-
-  if (typeof runner !== "function") {
-    throw new Error(`CLI policy action ${exportName} is unavailable.`);
-  }
-
-  return runner as PolicyActionRunner;
-};
-
 export const runPolicyBackedRerunWorkflow = async (
   input: PolicyWorkbenchWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<PolicyWorkbenchWorkflowResult> => {
-  const runner = await loadPolicyAction("runPolicyBackedRerunFromCli");
+  const options = defaultFixtureCertificationOptions(input.outDir);
+  const beforeOptions = { ...options, phase: "before" as const, firewall: false };
+  const afterOptions = { ...options, phase: "after" as const, firewall: true };
+  const steps = fixtureCertificationSteps(beforeOptions, env);
+  const workflow = await runFixtureCertification(
+    { outDir: input.outDir, includeProofAudit: true },
+    {
+      ...steps,
+      rerun: () => rerunCommand(afterOptions, env)
+    }
+  );
 
-  return runner(input, env);
+  return {
+    status: "PASS",
+    outDir: input.outDir,
+    artifacts: workflow.artifacts,
+    mutation: false,
+    messages: ["Before trace was graded without the firewall; policy-backed rerun used the compiled firewall."]
+  };
 };
 
 export const runFirewallCheckWorkflow = async (
   input: PolicyWorkbenchWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<PolicyWorkbenchWorkflowResult> => {
-  const runner = await loadPolicyAction("runFirewallCheckFromCli");
+  const options = defaultFixtureCertificationOptions(input.outDir);
+  const artifacts = await firewallCheckCommand(options, env);
 
-  return runner(input, env);
+  return {
+    status: "PASS",
+    outDir: input.outDir,
+    artifacts,
+    mutation: false,
+    messages: ["Compiled policy firewall rejected unsafe SPL before Splunk execution."]
+  };
 };

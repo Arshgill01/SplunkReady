@@ -86,9 +86,9 @@ import {
 } from "./workflows/manifest-verification.js";
 import { runMcpProofWorkflow } from "./workflows/mcp-proof.js";
 import { classifyProofLoop, runProofAuditWorkflow, type ProofAuditReport, type ProofAuditStatus } from "./workflows/proof-audit.js";
-import type {
-  PolicyWorkbenchWorkflowInput,
-  PolicyWorkbenchWorkflowResult
+import {
+  runFirewallCheckWorkflow,
+  runPolicyBackedRerunWorkflow
 } from "./workflows/policy-actions.js";
 import type { ProofManifestVerification } from "./workflows/proof-manifest.js";
 
@@ -1899,47 +1899,9 @@ const demoCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process
 
 export const runFixtureCertificationFromCli = runFixtureCertificationWorkflow;
 
-export const runPolicyBackedRerunFromCli = async (
-  input: PolicyWorkbenchWorkflowInput,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<PolicyWorkbenchWorkflowResult> => {
-  const options = defaultCliOptions({ mode: "fixture", out: input.outDir });
-  const beforeOptions = { ...options, phase: "before" as const, firewall: false };
-  const afterOptions = { ...options, phase: "after" as const, firewall: true };
-  const steps = fixtureCertificationSteps(beforeOptions, env);
-  const workflow = await runFixtureCertification(
-    { outDir: input.outDir, includeProofAudit: true },
-    {
-      ...steps,
-      rerun: () => rerunCommand(afterOptions, env),
-      proofAudit: () => proofAuditCommand({ ...options, requirePass: false })
-    }
-  );
+export const runPolicyBackedRerunFromCli = runPolicyBackedRerunWorkflow;
 
-  return {
-    status: "PASS",
-    outDir: input.outDir,
-    artifacts: workflow.artifacts,
-    mutation: false,
-    messages: ["Before trace was graded without the firewall; policy-backed rerun used the compiled firewall."]
-  };
-};
-
-export const runFirewallCheckFromCli = async (
-  input: PolicyWorkbenchWorkflowInput,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<PolicyWorkbenchWorkflowResult> => {
-  const options = defaultCliOptions({ mode: "fixture", out: input.outDir });
-  const artifacts = await firewallCheckCommand(options, env);
-
-  return {
-    status: "PASS",
-    outDir: input.outDir,
-    artifacts,
-    mutation: false,
-    messages: ["Compiled policy firewall rejected unsafe SPL before Splunk execution."]
-  };
-};
+export const runFirewallCheckFromCli = runFirewallCheckWorkflow;
 
 export const runLiveSmokeFromCli = async (
   input: LiveActionWorkflowInput,

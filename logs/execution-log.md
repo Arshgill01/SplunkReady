@@ -271,6 +271,45 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
+
+## 2026-06-05 23:18 - Move 68 Policy Action Workflow Extraction
+
+Scope:
+- Continued the Minimax CLI modularization pass by removing the policy action
+  dynamic CLI wrapper.
+- Moved `policy-backed-rerun` and `firewall-check` execution into
+  `src/workflows/policy-actions.ts`.
+- Kept CLI exports as compatibility aliases to workflow-owned functions.
+- Added direct policy workflow tests, including a no-`../cli.js` source
+  regression.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/cli.ts`
+- `src/workflows/policy-actions.ts`
+- `tests/workflows/policy-actions.test.ts`
+- `moves/README.md`
+- `moves/moves68.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `src/workflows/policy-actions.ts` now runs policy-backed rerun and firewall
+  check directly using workflow-owned certification actions.
+- `src/cli.ts` dropped from 2,173 lines after Move 67 to 2,135 lines.
+- Remaining dynamic CLI workflow wrapper is live actions only.
+
+Open blockers:
+- Live workflow wrappers still import the CLI dynamically and remain the next
+  modularization target.
+- Public npm publication, hosted demo, refreshed submission evidence, and final
+  reviewer-equivalent pass remain open Minimax audit caps.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
 - Npm publication, hosted workbench URL, and refreshed submission evidence pack
   remain separate high-leverage gaps.
 
