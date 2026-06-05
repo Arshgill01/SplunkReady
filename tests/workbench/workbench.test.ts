@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
@@ -70,6 +71,14 @@ const waitForJob = async (runner: WorkbenchJobRunner, id: string) => {
 
   throw new Error(`Timed out waiting for ${id}.`);
 };
+
+const emptyProofManifest = (proofDir: string) => ({
+  source: "splunkready-proof-manifest",
+  generatedAt: "2026-06-01T06:30:00.000Z",
+  proofDir,
+  aggregateSha256: createHash("sha256").update("").digest("hex"),
+  files: []
+});
 
 describe("workbench backend", () => {
   it("reports health without leaking server secrets", async () => {
@@ -372,6 +381,81 @@ describe("workbench backend", () => {
     expect(imported).toMatchObject({ strictImport: true, finalAnswers: 2 });
     expect(receipt.verdict).toBe("READY");
     expect(receipt.evidenceRefs).toEqual(expect.arrayContaining(["evt-102", "evt-118", "evt-141"]));
+  });
+
+  it("lists artifact runs with receipt, audit, manifest, mission, and rule summaries", async () => {
+    const config = await testConfig({ maxRequestBytes: 200_000 });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const trace = JSON.parse(await readFile("examples/sample-external-trace.json", "utf8")) as unknown;
+    const response = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/external-trace-certification",
+      body: JSON.stringify({ trace, agentName: "Uploaded Trace Agent", agentVersion: "sample-fail" })
+    });
+    const started = response.json as { job: { id: string } };
+    const completed = await waitForJob(runner, started.job.id);
+    const list = await callApi(config, runner, store, { method: "GET", path: "/api/artifacts" });
+
+    expect(response.status).toBe(202);
+    expect(completed.state).toBe("succeeded");
+    expect(list.status).toBe(200);
+    expect(list.json).toMatchObject({
+      runs: [
+        {
+          runId: completed.runId,
+          artifactBase: `/api/artifacts/${completed.runId}`,
+          workflow: "external-trace-certification",
+          state: "succeeded",
+          verdict: "NOT READY",
+          score: 0,
+          proofAuditStatus: "FAIL",
+          manifestStatus: "UNVERIFIED",
+          missionIds: ["mission-security-lateral-movement-readiness"],
+          ruleIds: expect.arrayContaining(["SPL-001"])
+        }
+      ]
+    });
+  });
+
+  it("verifies managed proof manifests through the artifact API without hiding FAIL reports", async () => {
+    const config = await testConfig();
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const passingRun = await store.createRunDirectory();
+    const failingRun = await store.createRunDirectory();
+
+    await writeFile(join(passingRun.path, "proof-manifest.json"), `${JSON.stringify(emptyProofManifest(passingRun.path), null, 2)}\n`, "utf8");
+    await writeFile(join(failingRun.path, "proof-manifest.json"), `${JSON.stringify(emptyProofManifest(failingRun.path), null, 2)}\n`, "utf8");
+    await writeFile(join(failingRun.path, "receipt.json"), "{}\n", "utf8");
+
+    const pass = await callApi(config, runner, store, {
+      method: "POST",
+      path: `/api/artifacts/${passingRun.runId}/verify-manifest`
+    });
+    const fail = await callApi(config, runner, store, {
+      method: "POST",
+      path: `/api/artifacts/${failingRun.runId}/verify-manifest`
+    });
+    const failReport = JSON.parse(await readFile(join(failingRun.path, "proof-manifest-verification.json"), "utf8")) as {
+      status: string;
+      unexpectedFiles: string[];
+    };
+
+    expect(pass.status).toBe(200);
+    expect(pass.json).toMatchObject({
+      status: "PASS",
+      artifact: "proof-manifest-verification.json",
+      report: { status: "PASS", expectedFiles: 0, actualFiles: 0 },
+      run: { runId: passingRun.runId, manifestStatus: "PASS" }
+    });
+    expect(fail.status).toBe(200);
+    expect(fail.json).toMatchObject({
+      status: "FAIL",
+      report: { status: "FAIL", unexpectedFiles: ["receipt.json"] },
+      run: { runId: failingRun.runId, manifestStatus: "FAIL" }
+    });
+    expect(failReport).toMatchObject({ status: "FAIL", unexpectedFiles: ["receipt.json"] });
   });
 
   it("runs hosted-model diagnostic as an allowlisted server-owned live workflow", async () => {

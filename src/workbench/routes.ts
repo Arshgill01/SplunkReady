@@ -27,6 +27,144 @@ const structuredError = (response: ServerResponse, statusCode: number, code: str
   json(response, statusCode, { error: { code, message } });
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+const stringField = (value: unknown, key: string): string | undefined => {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const field = value[key];
+  return typeof field === "string" && field.length > 0 ? field : undefined;
+};
+
+const numberField = (value: unknown, key: string): number | undefined => {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const field = value[key];
+  return typeof field === "number" ? field : undefined;
+};
+
+const arrayField = (value: unknown, key: string): unknown[] => {
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  const field = value[key];
+  return Array.isArray(field) ? field : [];
+};
+
+const readRunJson = async (store: WorkbenchArtifactStore, runId: string, fileName: string): Promise<unknown> => {
+  const file = await store.readFile(runId, fileName);
+
+  if (!file) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(file.toString("utf8")) as unknown;
+  } catch {
+    return undefined;
+  }
+};
+
+const inferWorkflow = (files: string[]): WorkbenchWorkflow | "artifact-bundle" => {
+  const has = (fileName: string): boolean => files.includes(fileName);
+
+  if (has("mcp-transcript-import.json")) {
+    return "mcp-transcript-certification";
+  }
+
+  if (has("receipt-external-001.json")) {
+    return "external-trace-certification";
+  }
+
+  if (has("live-security-proof-summary.json")) {
+    return "live-security-proof";
+  }
+
+  if (has("live-security-readiness.json")) {
+    return "live-security-readiness";
+  }
+
+  if (has("hosted-model-proof.json")) {
+    return "hosted-model-proof";
+  }
+
+  if (has("hosted-model-diagnostic.json")) {
+    return "hosted-model-diagnostic";
+  }
+
+  if (has("live-candidates.json")) {
+    return "live-candidates";
+  }
+
+  if (has("live-smoke-contract.json")) {
+    return "live-smoke";
+  }
+
+  if (has("receipt-before-001.json") || has("receipt-after-001.json")) {
+    return "fixture-certification";
+  }
+
+  return "artifact-bundle";
+};
+
+const summarizeRun = async (context: WorkbenchRouteContext, runId: string, fileCount: number) => {
+  const files = await context.artifactStore.listRunFiles(runId);
+  const job = context.jobRunner.listJobs().find((candidate) => candidate.runId === runId);
+  const receipt =
+    (await readRunJson(context.artifactStore, runId, "receipt-after-001.json")) ??
+    (await readRunJson(context.artifactStore, runId, "receipt-before-001.json")) ??
+    (await readRunJson(context.artifactStore, runId, "receipt-external-001.json"));
+  const proofAudit = await readRunJson(context.artifactStore, runId, "proof-audit.json");
+  const manifestVerification = await readRunJson(context.artifactStore, runId, "proof-manifest-verification.json");
+  const beforeViolations = await readRunJson(context.artifactStore, runId, "violations-before.json");
+  const afterViolations = await readRunJson(context.artifactStore, runId, "violations-after.json");
+  const externalViolations = await readRunJson(context.artifactStore, runId, "violations-external.json");
+  const violations = [
+    ...(Array.isArray(beforeViolations) ? beforeViolations : []),
+    ...(Array.isArray(afterViolations) ? afterViolations : []),
+    ...(Array.isArray(externalViolations) ? externalViolations : [])
+  ];
+  const missionsInput = await readRunJson(context.artifactStore, runId, "missions.json");
+  const missionIds = Array.isArray(missionsInput)
+    ? missionsInput.map((mission) => stringField(mission, "id")).filter((missionId): missionId is string => Boolean(missionId))
+    : [];
+  const ruleIds = violations
+    .map((violation) => stringField(violation, "ruleId"))
+    .filter((ruleId): ruleId is string => Boolean(ruleId));
+  const proofAuditStatus = stringField(proofAudit, "status");
+  const manifestStatus = stringField(manifestVerification, "status") ?? (files.includes("proof-manifest.json") ? "UNVERIFIED" : "MISSING");
+
+  return {
+    runId,
+    artifactBase: `/api/artifacts/${runId}`,
+    fileCount: files.length || fileCount,
+    files,
+    workflow: job?.workflow ?? inferWorkflow(files),
+    state: job?.state ?? (proofAuditStatus === "FAIL" ? "failed" : "succeeded"),
+    verdict: stringField(receipt, "verdict") ?? "NO RECEIPT",
+    score: numberField(receipt, "score") ?? null,
+    violations: arrayField(receipt, "violations").length,
+    evidenceRefs: arrayField(receipt, "evidenceRefs").length,
+    proofAuditStatus: proofAuditStatus ?? "not loaded",
+    manifestStatus,
+    missionIds,
+    ruleIds: [...new Set(ruleIds)].sort(),
+    createdAt: job?.createdAt ?? runId.replace(/^run-/, "")
+  };
+};
+
+const listArtifactRuns = async (context: WorkbenchRouteContext) => {
+  const runs = await context.artifactStore.listRuns();
+
+  return Promise.all(runs.map((run) => summarizeRun(context, run.runId, run.files)));
+};
+
 const contentTypeFor = (fileName: string): string => {
   if (extname(fileName) === ".json") {
     return "application/json; charset=utf-8";
@@ -179,7 +317,22 @@ export const createWorkbenchApiHandler =
       }
 
       if (request.method === "GET" && url.pathname === "/api/artifacts") {
-        json(response, 200, { runs: await context.artifactStore.listRuns() });
+        json(response, 200, { runs: await listArtifactRuns(context) });
+        return true;
+      }
+
+      if (request.method === "POST" && url.pathname.startsWith("/api/artifacts/") && url.pathname.endsWith("/verify-manifest")) {
+        const parts = url.pathname.split("/").filter(Boolean);
+        const runId = parts[2] ?? "";
+        const { runVerifyManifestFromCli } = await import("../cli.js");
+        const result = await runVerifyManifestFromCli({ outDir: context.artifactStore.resolveRun(runId) });
+
+        json(response, 200, {
+          status: result.status,
+          artifact: "proof-manifest-verification.json",
+          report: result.report,
+          run: await summarizeRun(context, runId, 0)
+        });
         return true;
       }
 

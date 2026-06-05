@@ -2764,7 +2764,9 @@ const proofDirsFromOptions = (options: CliOptions): string[] =>
     .map((proofDir) => proofDir.trim())
     .filter((proofDir) => proofDir.length > 0);
 
-const verifyManifestCommand = async (options: CliOptions): Promise<string[]> => {
+const verifyProofManifest = async (
+  options: CliOptions
+): Promise<{ report: ProofManifestVerification; reportPath: string }> => {
   const manifestPath = join(options.out, "proof-manifest.json");
   const reportPath = join(options.out, "proof-manifest-verification.json");
   const expected = parseProofManifest(await readJson<unknown>(manifestPath, "proof manifest"), manifestPath);
@@ -2822,8 +2824,14 @@ const verifyManifestCommand = async (options: CliOptions): Promise<string[]> => 
 
   await writeJson(reportPath, report);
 
-  if (status !== "PASS") {
-    throw new Error(`verify-manifest failed with ${status}. Inspect ${reportPath}.`);
+  return { report, reportPath };
+};
+
+const verifyManifestCommand = async (options: CliOptions): Promise<string[]> => {
+  const { report, reportPath } = await verifyProofManifest(options);
+
+  if (report.status !== "PASS") {
+    throw new Error(`verify-manifest failed with ${report.status}. Inspect ${reportPath}.`);
   }
 
   return [reportPath];
@@ -3473,6 +3481,27 @@ export const runMcpTranscriptCertificationFromCli = async (
   const status = await receiptStatusFromArtifact(join(input.outDir, "receipt-external-001.json"));
 
   return { status, outDir: input.outDir, artifacts, mutation: false, messages: [] };
+};
+
+export interface ManifestVerificationWorkflowInput {
+  outDir: string;
+}
+
+export interface ManifestVerificationWorkflowResult {
+  status: "PASS" | "FAIL";
+  outDir: string;
+  artifacts: string[];
+  mutation: false;
+  report: ProofManifestVerification;
+}
+
+export const runVerifyManifestFromCli = async (
+  input: ManifestVerificationWorkflowInput
+): Promise<ManifestVerificationWorkflowResult> => {
+  const options = defaultCliOptions({ out: input.outDir });
+  const { report, reportPath } = await verifyProofManifest(options);
+
+  return { status: report.status, outDir: input.outDir, artifacts: [reportPath], mutation: false, report };
 };
 
 const main = async (): Promise<void> => {

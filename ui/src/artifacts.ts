@@ -175,6 +175,35 @@ const proofAuditSchema = z
 
 export type ProofAudit = z.infer<typeof proofAuditSchema>;
 
+const proofManifestVerificationSchema = z
+  .object({
+    source: z.literal("splunkready-proof-manifest-verification"),
+    generatedAt: z.string().min(1),
+    status: z.enum(["PASS", "FAIL"]),
+    proofDir: z.string().min(1),
+    manifestPath: z.string().min(1),
+    expectedAggregateSha256: z.string().min(1),
+    actualAggregateSha256: z.string().min(1),
+    expectedFiles: z.number().int().nonnegative(),
+    actualFiles: z.number().int().nonnegative(),
+    missingFiles: z.array(z.string().min(1)),
+    unexpectedFiles: z.array(z.string().min(1)),
+    changedFiles: z.array(
+      z
+        .object({
+          path: z.string().min(1),
+          expectedSha256: z.string().min(1),
+          actualSha256: z.string().min(1),
+          expectedSizeBytes: z.number().int().nonnegative(),
+          actualSizeBytes: z.number().int().nonnegative()
+        })
+        .strict()
+    )
+  })
+  .strict();
+
+export type ProofManifestVerification = z.infer<typeof proofManifestVerificationSchema>;
+
 const certificationIndexSchema = z
   .object({
     status: z.enum(["PASS", "WARN", "FAIL"]),
@@ -533,6 +562,7 @@ export interface UiArtifactBundle {
   hostedModelProof?: HostedModelProof;
   hostedModelDiagnostic?: HostedModelDiagnostic;
   proofAudit?: ProofAudit;
+  proofManifestVerification?: ProofManifestVerification;
   certificationIndex?: CertificationIndex;
   firewallBlock?: FirewallBlock;
   mcpTranscriptImport?: McpTranscriptImport;
@@ -564,6 +594,7 @@ const optionalFiles = [
   "hosted-model-proof.json",
   "hosted-model-diagnostic.json",
   "proof-audit.json",
+  "proof-manifest-verification.json",
   "certification-index.json",
   "ui-artifacts.json",
   "firewall-block-before.json",
@@ -685,6 +716,9 @@ export const loadUiArtifactBundle = async (
     hostedModelProof: hostedModelProofSchema.optional().parse(loaded.get("hosted-model-proof.json")),
     hostedModelDiagnostic: hostedModelDiagnosticSchema.optional().parse(loaded.get("hosted-model-diagnostic.json")),
     proofAudit: proofAuditSchema.optional().parse(loaded.get("proof-audit.json")),
+    proofManifestVerification: proofManifestVerificationSchema
+      .optional()
+      .parse(loaded.get("proof-manifest-verification.json")),
     certificationIndex: certificationIndexSchema.optional().parse(loaded.get("certification-index.json")),
     artifactOptions: uiArtifactManifestSchema.optional().parse(loaded.get("ui-artifacts.json"))?.artifacts,
     firewallBlock: firewallBlockSchema

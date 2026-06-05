@@ -10,7 +10,15 @@ import {
   type ArtifactOption,
   type UiArtifactBundle
 } from "./artifacts.js";
-import { normalizeView, renderApp, renderError, type ViewId, type WorkbenchRenderState } from "./render.js";
+import {
+  normalizeView,
+  renderApp,
+  renderError,
+  type ManifestVerificationState,
+  type ViewId,
+  type WorkbenchRenderState,
+  type WorkbenchRunSummary
+} from "./render.js";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -33,6 +41,15 @@ interface WorkbenchHealthResponse {
     available?: boolean;
     missing?: string[];
   };
+}
+
+interface WorkbenchRunsResponse {
+  runs?: WorkbenchRunSummary[];
+}
+
+interface ManifestVerificationResponse {
+  status: "PASS" | "FAIL";
+  report?: ManifestVerificationState["report"];
 }
 
 const activeViewFromHash = (): ViewId => normalizeView(window.location.hash.replace(/^#/, ""));
@@ -75,13 +92,14 @@ const loadArtifactFromLocation = async (): Promise<void> => {
 
 const loadWorkbenchHealth = async (): Promise<void> => {
   try {
-    const response = await fetch("/api/health");
+    const [response, runsResponse] = await Promise.all([fetch("/api/health"), fetch("/api/artifacts")]);
 
     if (!response.ok) {
       throw new Error(`${response.status} ${response.statusText}`);
     }
 
     const health = (await response.json()) as WorkbenchHealthResponse;
+    const runs = runsResponse.ok ? ((await runsResponse.json()) as WorkbenchRunsResponse).runs ?? [] : [];
 
     workbench = {
       ...workbench,
@@ -89,7 +107,8 @@ const loadWorkbenchHealth = async (): Promise<void> => {
       healthStatus: "available",
       liveAvailable: health.live?.available ?? health.capabilities?.live ?? false,
       liveMissing: health.live?.missing ?? [],
-      saiaAvailable: health.capabilities?.saia ?? false
+      saiaAvailable: health.capabilities?.saia ?? false,
+      runs
     };
   } catch {
     workbench = { available: false, healthStatus: "not connected" };
@@ -103,6 +122,22 @@ const navigateToArtifact = async (artifactBase: string, view: ViewId): Promise<v
   nextUrl.hash = `#${view}`;
   window.history.pushState(null, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
   await loadArtifactFromLocation();
+};
+
+const refreshWorkbenchRuns = async (): Promise<void> => {
+  try {
+    const response = await fetch("/api/artifacts");
+
+    if (!response.ok) {
+      return;
+    }
+
+    const runs = ((await response.json()) as WorkbenchRunsResponse).runs ?? [];
+
+    workbench = { ...workbench, available: true, runs };
+  } catch {
+    // Keep the last run list visible if a refresh fails.
+  }
 };
 
 interface WorkbenchJobResponse {
@@ -134,6 +169,7 @@ const pollWorkbenchJob = async (jobId: string, successView: ViewId): Promise<voi
       window.history.pushState(null, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
       bundle = await loadUiArtifactBundle(job.artifactBase);
       artifactOptions = [{ label: `Workbench ${job.runId}`, path: job.artifactBase }, ...artifactOptions];
+      await refreshWorkbenchRuns();
       render();
       return;
     }
@@ -263,6 +299,49 @@ const showStartFailure = (workflow: string, error: unknown): void => {
   render();
 };
 
+const setRunFilters = (): void => {
+  workbench = {
+    ...workbench,
+    runFilter: document.querySelector<HTMLInputElement>("[data-run-filter]")?.value ?? "",
+    runStatusFilter: document.querySelector<HTMLSelectElement>("[data-run-status-filter]")?.value ?? "all",
+    runWorkflowFilter: document.querySelector<HTMLSelectElement>("[data-run-workflow-filter]")?.value ?? "all"
+  };
+  render();
+};
+
+const verifyManifest = async (runId: string): Promise<void> => {
+  try {
+    const response = await fetch(`/api/artifacts/${encodeURIComponent(runId)}/verify-manifest`, { method: "POST" });
+
+    if (!response.ok) {
+      const failure = await response.json().catch(() => undefined) as { error?: { message?: string } } | undefined;
+      throw new Error(failure?.error?.message ?? `Unable to verify manifest: ${response.status} ${response.statusText}`);
+    }
+
+    const result = (await response.json()) as ManifestVerificationResponse;
+
+    workbench = {
+      ...workbench,
+      manifestVerification: { runId, status: result.status, report: result.report }
+    };
+    await refreshWorkbenchRuns();
+    if (bundle) {
+      bundle = await loadUiArtifactBundle(bundle.artifactBase);
+    }
+    render();
+  } catch (error) {
+    workbench = {
+      ...workbench,
+      manifestVerification: {
+        runId,
+        status: "ERROR",
+        message: error instanceof Error ? error.message : String(error)
+      }
+    };
+    render();
+  }
+};
+
 const bindInteractions = (): void => {
   for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-view-link]")) {
     link.addEventListener("click", () => {
@@ -326,6 +405,20 @@ const bindInteractions = (): void => {
   const artifactSelector = document.querySelector<HTMLSelectElement>("[data-artifact-selector]");
   artifactSelector?.addEventListener("change", () => {
     void navigateToArtifact(artifactSelector.value, activeViewFromHash());
+  });
+
+  document.querySelector<HTMLInputElement>("[data-run-filter]")?.addEventListener("input", setRunFilters);
+  document.querySelector<HTMLSelectElement>("[data-run-status-filter]")?.addEventListener("change", setRunFilters);
+  document.querySelector<HTMLSelectElement>("[data-run-workflow-filter]")?.addEventListener("change", setRunFilters);
+
+  document.querySelector<HTMLButtonElement>("[data-verify-manifest]")?.addEventListener("click", (event) => {
+    const runId = (event.currentTarget as HTMLButtonElement).dataset.verifyManifest;
+
+    if (!runId) {
+      return;
+    }
+
+    void verifyManifest(runId);
   });
 
   for (const input of document.querySelectorAll<HTMLInputElement>("[data-policy-rule]")) {

@@ -6202,3 +6202,89 @@ Open risks:
 
 - External import receipts certify the supplied trace/transcript against SplunkReady rules; they do not prove the producer actually observed the referenced deployment evidence.
 - Upload support remains deliberately bounded to JSON request bodies under the workbench byte limit.
+
+## 2026-06-05 - Move 11 Proof Bundle Browser And Comparison
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/workbench/workbench.test.ts tests/ui/app.test.ts`
+- `npx vitest run tests/ui/app.test.ts tests/ui/shell.test.ts tests/workbench`
+- `npm run ui:build`
+- `npm run check`
+- `git diff --check`
+- `command -v npx >/dev/null 2>&1`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh --help`
+- `npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4317/#import-certification`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e48`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh upload examples/sample-external-trace-pass.json`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e58`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh goto http://127.0.0.1:4317/#import-certification`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e48`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh upload examples/sample-external-trace.json`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e58`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh goto 'http://127.0.0.1:4317/?artifacts=%2Fapi%2Fartifacts%2Frun-2026-06-05T09-39-53-203Z-694704d2#proof-browser'`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e355`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 1440 900`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code "async (page) => { await page.screenshot({ path: 'output/playwright/move11-runs-desktop.png', fullPage: true }); }"`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval "() => ({ viewport: document.documentElement.clientWidth, bodyScroll: document.body.scrollWidth, docScroll: document.documentElement.scrollWidth, list: document.querySelector('.run-browser-list')?.scrollWidth, listClient: document.querySelector('.run-browser-list')?.clientWidth, timeline: document.querySelector('.trace-preview')?.scrollWidth, timelineClient: document.querySelector('.trace-preview')?.clientWidth })"`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 390 844`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code "async (page) => { await page.screenshot({ path: 'output/playwright/move11-runs-mobile.png', fullPage: true }); }"`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval "() => ({ viewport: document.documentElement.clientWidth, bodyScroll: document.body.scrollWidth, docScroll: document.documentElement.scrollWidth, list: document.querySelector('.run-browser-list')?.scrollWidth, listClient: document.querySelector('.run-browser-list')?.clientWidth, timeline: document.querySelector('.trace-preview')?.scrollWidth, timelineClient: document.querySelector('.trace-preview')?.clientWidth })"`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code "async (page) => { await page.locator('.trace-preview').scrollIntoViewIfNeeded(); await page.screenshot({ path: 'output/playwright/move11-runs-trace-desktop.png' }); }"`
+
+Result:
+
+- PASS for TypeScript validation.
+- PASS for focused backend/UI tests:
+  - `tests/workbench/workbench.test.ts`;
+  - `tests/ui/app.test.ts`;
+  - 2 test files;
+  - 38 tests passed.
+- PASS for required Move 11 focused verification:
+  - `tests/ui/app.test.ts`;
+  - `tests/ui/shell.test.ts`;
+  - `tests/workbench`;
+  - 3 test files;
+  - 50 tests passed.
+- PASS for Vite production UI build:
+  - 21 modules transformed;
+  - production bundle written to `dist-ui`.
+- PASS for canonical project gate:
+  - scaffold verified;
+  - 85 waves;
+  - 1077 project files;
+  - 41 test files;
+  - 273 tests passed.
+- PASS for `git diff --check`.
+- PASS for Playwright `npx` prerequisite.
+- PASS for Playwright Import-to-Runs flow:
+  - browser generated a READY external-trace run from `examples/sample-external-trace-pass.json`;
+  - browser generated a NOT READY external-trace run from `examples/sample-external-trace.json`;
+  - Runs view listed multiple workflow/status groups.
+- PASS for Playwright manifest verification:
+  - clicked `Verify manifest`;
+  - selected run rendered manifest status `PASS`;
+  - selected run list entry refreshed to manifest `PASS`.
+- PASS for Playwright desktop layout at 1440px:
+  - document scroll width equaled viewport width;
+  - run-list scroll width equaled client width;
+  - trace-panel scroll width equaled client width;
+  - screenshot saved to `output/playwright/move11-runs-desktop.png`.
+- PASS for Playwright mobile layout at 390px:
+  - document scroll width equaled viewport width;
+  - run-list scroll width equaled client width;
+  - trace-panel scroll width equaled client width;
+  - screenshot saved to `output/playwright/move11-runs-mobile.png`.
+- PASS for Playwright trace-focused desktop screenshot:
+  - Runs trace timeline rendered as stacked event rows;
+  - findings rendered under the matching trace step;
+  - long SPL wrapped inside the panel;
+  - screenshot saved to `output/playwright/move11-runs-trace-desktop.png`.
+
+Open risks:
+
+- Browser screenshots live under ignored `output/playwright/`; they are local verification artifacts and are not committed.
+- The local run browser includes managed runs from earlier manual checks. The UI handles them, but they are not part of the committed fixture set.

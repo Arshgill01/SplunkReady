@@ -7849,3 +7849,73 @@ Result:
 - Vite production UI build passed.
 - `git diff --check` passed.
 - Playwright browser upload checks passed for external trace PASS, external trace FAIL, and MCP transcript PASS after the browser-discovered provenance copy fix.
+
+## 2026-06-05 - Move 11 Proof Bundle Browser And Comparison
+
+Scope:
+- Add a server-backed proof bundle browser for managed workbench runs.
+- Show searchable/grouped run history with workflow, state, receipt verdict, proof audit status, manifest status, violations, and evidence counts.
+- Add receipt comparison, raw receipt links, proof audit inspection, manifest verification, and trace inspection in the Runs view.
+- Keep rendering artifact-grounded only; do not render untrusted artifact HTML or invent conclusions.
+
+Files expected/touched:
+- `src/cli.ts`
+- `src/workbench/artifacts.ts`
+- `src/workbench/routes.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/workbench/workbench.test.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added a reusable manifest verification helper/export in `src/cli.ts` so the workbench can return manifest `PASS` and `FAIL` reports as data without hiding a failed verification behind CLI process failure.
+- Added recursive managed-run file listing in `WorkbenchArtifactStore`.
+- Extended `/api/artifacts` to return enriched run summaries with inferred workflow, job state, receipt verdict/score, violation/evidence counts, audit status, manifest status, mission IDs, rule IDs, file count, and raw file list.
+- Added `POST /api/artifacts/:runId/verify-manifest` to verify a selected managed run and return `proof-manifest-verification.json` plus the refreshed run summary.
+- Made run-summary JSON parsing tolerant of malformed optional artifacts so one bad optional file does not break the whole run list.
+- Added UI parsing for `proof-manifest-verification.json`.
+- Added the Runs view:
+  - searchable/grouped run browser;
+  - receipt before/after/current comparison;
+  - raw links to `receipt-before-001.json`, `receipt-after-001.json`, and `receipt-external-001.json`;
+  - proof audit panel;
+  - manifest verification panel/action;
+  - embedded trace preview.
+- Reworked the Runs trace preview after browser testing showed the compact table layout was unusable. It now renders stacked event rows with wrapped SPL/answer text, per-event metadata, and findings under the matching step.
+- Reworked the Runs list after screenshots showed the narrow table layout was also unusable. It now renders compact run cards with labeled receipt/audit/manifest/evidence facts.
+- Added backend tests for enriched run summaries and manifest verification `PASS`/`FAIL` reports.
+- Added UI tests for the Runs view filters, run cards, receipt comparison, raw links, proof audit, manifest verification, and trace preview cards.
+
+Playwright evidence:
+- Started `npm run workbench:dev` and opened `http://127.0.0.1:4317/#import-certification`.
+- Uploaded `examples/sample-external-trace-pass.json` through the browser Import view and generated a managed READY run.
+- Uploaded `examples/sample-external-trace.json` through the browser Import view and generated a managed NOT READY run.
+- Opened `http://127.0.0.1:4317/?artifacts=/api/artifacts/run-*#proof-browser`.
+- Confirmed the Runs view listed multiple managed runs across workflow/status groups.
+- Clicked `Verify manifest`; the selected run's manifest panel updated to `PASS` and the run list refreshed to manifest `PASS`.
+- Captured desktop and mobile screenshots:
+  - `output/playwright/move11-runs-desktop.png`
+  - `output/playwright/move11-runs-mobile.png`
+  - `output/playwright/move11-runs-trace-desktop.png`
+- Measured layout overflow in Playwright:
+  - desktop 1440px: document, run list, and trace panel scroll widths matched client widths;
+  - mobile 390px: document, run list, and trace panel scroll widths matched client widths.
+
+Reviewer findings:
+- Subagents are disabled per user direction; no reviewer loop was run for this slice.
+
+Open risks:
+- Existing generated workbench artifact directories from earlier manual checks remain visible in the local browser run list. They are useful for browser stress testing but are local artifacts, not committed product fixtures.
+- The Runs view verifies manifests only for managed `/api/artifacts/run-*` bundles. Static preset artifacts remain browser-readable but do not get a workbench verification button unless loaded from a managed run.
+
+Result:
+- Focused Move 11 backend/UI verification passed.
+- Required Move 11 command set passed.
+- Canonical build/check gate passed.
+- Vite production UI build passed.
+- `git diff --check` passed.
+- Playwright browser checks passed for run browsing, manifest verification, desktop layout, mobile layout, and the corrected Runs trace timeline.

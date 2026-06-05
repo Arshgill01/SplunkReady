@@ -94,4 +94,30 @@ export class WorkbenchArtifactStore {
 
     return runs.sort((left, right) => right.runId.localeCompare(left.runId));
   }
+
+  async listRunFiles(runId: string): Promise<string[]> {
+    const runRoot = this.resolveRun(runId);
+    const collect = async (currentDir: string): Promise<string[]> => {
+      const entries = await readdir(currentDir, { withFileTypes: true }).catch(() => []);
+      const files = await Promise.all(
+        entries.map(async (entry) => {
+          const target = resolve(currentDir, entry.name);
+
+          if (entry.isDirectory()) {
+            return collect(target);
+          }
+
+          if (!entry.isFile()) {
+            return [];
+          }
+
+          return [relative(runRoot, target).split(sep).join("/")];
+        })
+      );
+
+      return files.flat();
+    };
+
+    return (await collect(runRoot)).sort();
+  }
 }

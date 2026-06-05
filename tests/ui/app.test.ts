@@ -512,6 +512,21 @@ const proofAudit = {
   ]
 } as const;
 
+const proofManifestVerification = {
+  source: "splunkready-proof-manifest-verification",
+  generatedAt: "2026-06-01T06:46:00.000Z",
+  status: "PASS",
+  proofDir: "artifacts/live-security-proof",
+  manifestPath: "artifacts/live-security-proof/proof-manifest.json",
+  expectedAggregateSha256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  actualAggregateSha256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  expectedFiles: 12,
+  actualFiles: 12,
+  missingFiles: [],
+  unexpectedFiles: [],
+  changedFiles: []
+} as const;
+
 const firewallBlock = {
   status: "BLOCKED",
   code: "FIREWALL_POLICY_BLOCKED",
@@ -1354,6 +1369,109 @@ describe("Vite UI artifact app", () => {
     expect(withoutCriticalOrHigh).toContain("READY (SIMULATED)");
     expect(withoutCriticalOrHigh).toContain("<td>100</td>");
     expect(withoutCriticalOrHigh).toContain("deterministic-rule-engine");
+  });
+
+  it("renders proof bundle browser filters, run summaries, receipt diff, trace timeline, and manifest audit", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/api/artifacts/run-after",
+      fetcherFor({
+        "environment-contract.json": contract,
+        "missions.json": [mission],
+        "receipt-before-001.json": receipt({
+          id: "receipt-before-001",
+          verdict: "NOT READY",
+          score: 0,
+          violations: [violation.id],
+          evidenceRefs: []
+        }),
+        "receipt-after-001.json": receipt({}),
+        "policy-patch.json": policyPatch,
+        "proof-audit.json": proofAudit,
+        "proof-manifest-verification.json": proofManifestVerification,
+        "trace-before.json": beforeTrace,
+        "trace-after.json": afterTrace,
+        "violations-before.json": [violation],
+        "violations-after.json": []
+      })
+    );
+    const html = renderApp(bundle, "proof-browser", {
+      artifactOptions: defaultArtifactOptions,
+      workbench: {
+        available: true,
+        healthStatus: "available",
+        runs: [
+          {
+            runId: "run-after",
+            artifactBase: "/api/artifacts/run-after",
+            fileCount: 12,
+            files: ["receipt-before-001.json", "receipt-after-001.json", "proof-audit.json", "proof-manifest.json"],
+            workflow: "fixture-certification",
+            state: "succeeded",
+            verdict: "READY",
+            score: 100,
+            violations: 0,
+            evidenceRefs: 1,
+            proofAuditStatus: "PASS",
+            manifestStatus: "PASS",
+            missionIds: [mission.id],
+            ruleIds: [],
+            createdAt: "2026-06-01T06:45:00.000Z"
+          },
+          {
+            runId: "run-before",
+            artifactBase: "/api/artifacts/run-before",
+            fileCount: 9,
+            files: ["receipt-external-001.json", "trace-external.json", "violations-external.json"],
+            workflow: "external-trace-certification",
+            state: "failed",
+            verdict: "NOT READY",
+            score: 0,
+            violations: 1,
+            evidenceRefs: 0,
+            proofAuditStatus: "FAIL",
+            manifestStatus: "UNVERIFIED",
+            missionIds: [mission.id],
+            ruleIds: ["SPL-001"],
+            createdAt: "2026-06-01T06:31:00.000Z"
+          }
+        ]
+      }
+    });
+
+    expect(bundle.proofManifestVerification?.status).toBe("PASS");
+    expect(html).toContain('data-view="proof-browser"');
+    expect(html).toContain('class="active">Runs</a>');
+    expect(html).toContain('data-run-filter');
+    expect(html).toContain('data-run-status-filter');
+    expect(html).toContain('data-run-workflow-filter');
+    expect(html).toContain("fixture-certification");
+    expect(html).toContain("external-trace-certification");
+    expect(html).toContain("run-after");
+    expect(html).toContain("run-before");
+    expect(html).toContain("run-card");
+    expect(html).toContain("run-card-facts");
+    expect(html).toContain("Receipt comparison");
+    expect(html).toContain("NOT READY");
+    expect(html).toContain("READY");
+    expect(html).toContain("<td>0</td>");
+    expect(html).toContain("<td>100</td>");
+    expect(html).toContain("SPL-001");
+    expect(html).toContain("<th>Evidence refs</th><td>0</td><td>1</td>");
+    expect(html).toContain("<th>Policy patch</th><td>1 rule(s)</td><td>exported</td>");
+    expect(html).toContain("/api/artifacts/run-after/receipt-before-001.json");
+    expect(html).toContain("/api/artifacts/run-after/receipt-after-001.json");
+    expect(html).toContain("Proof audit");
+    expect(html).toContain("contract-loaded / PASS");
+    expect(html).toContain("Manifest verification");
+    expect(html).toContain("<th>Expected files</th><td>12</td>");
+    expect(html).toContain("<th>Unexpected files</th><td>none</td>");
+    expect(html).toContain('data-verify-manifest="run-after"');
+    expect(html).toContain("Trace timeline");
+    expect(html).toContain("trace-preview-list");
+    expect(html).toContain("trace-preview-event");
+    expect(html).not.toContain("compact-trace-table");
+    expect(html).toContain("splunk_run_query");
+    expect(html).toContain("splunk_run_saved_search");
   });
 
   it("keeps the app styling away from generic AI dashboard patterns", async () => {

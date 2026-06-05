@@ -1,4 +1,5 @@
 import {
+  artifactUrl,
   normalizeArtifactBase,
   summarizeBundle,
   type ArtifactOption,
@@ -9,6 +10,7 @@ import {
   type HostedModelSummary,
   type McpTranscriptImport,
   type ProofAudit,
+  type ProofManifestVerification,
   type SuiteProofSummary,
   type UiArtifactBundle
 } from "./artifacts.js";
@@ -20,6 +22,7 @@ export type ViewId =
   | "trace-timeline"
   | "suite-proof"
   | "agent-index"
+  | "proof-browser"
   | "import-certification"
   | "live-connect";
 
@@ -29,6 +32,7 @@ export const views: Array<{ id: ViewId; label: string }> = [
   { id: "trace-timeline", label: "Trace" },
   { id: "suite-proof", label: "Suite" },
   { id: "agent-index", label: "Agents" },
+  { id: "proof-browser", label: "Runs" },
   { id: "import-certification", label: "Import" },
   { id: "live-connect", label: "Live connect" }
 ];
@@ -45,6 +49,11 @@ export interface WorkbenchRenderState {
   liveAvailable?: boolean;
   liveMissing?: string[];
   saiaAvailable?: boolean;
+  runFilter?: string;
+  runStatusFilter?: string;
+  runWorkflowFilter?: string;
+  runs?: WorkbenchRunSummary[];
+  manifestVerification?: ManifestVerificationState;
   job?: {
     id: string;
     workflow?: string;
@@ -55,6 +64,31 @@ export interface WorkbenchRenderState {
     error?: string;
     events: Array<{ id: number; type: string; message: string; artifact?: string }>;
   };
+}
+
+export interface WorkbenchRunSummary {
+  runId: string;
+  artifactBase: string;
+  fileCount: number;
+  files: string[];
+  workflow: string;
+  state: string;
+  verdict: string;
+  score: number | null;
+  violations: number;
+  evidenceRefs: number;
+  proofAuditStatus: string;
+  manifestStatus: string;
+  missionIds: string[];
+  ruleIds: string[];
+  createdAt: string;
+}
+
+export interface ManifestVerificationState {
+  runId: string;
+  status: "PASS" | "FAIL" | "ERROR";
+  message?: string;
+  report?: ProofManifestVerification;
 }
 
 export const normalizeView = (value: string | undefined): ViewId =>
@@ -1076,6 +1110,47 @@ const renderTraceRows = (events: TraceEvent[], violations: Violation[], policyPa
     .join("");
 };
 
+const renderTracePreviewEvents = (
+  events: TraceEvent[],
+  violations: Violation[],
+  policyPatch: PolicyPatch | undefined
+): string => {
+  const groupedViolations = violationByEvent(violations);
+  const assistanceByViolation = splAssistanceByViolation(policyPatch);
+
+  return `<ol class="trace-preview-list">
+    ${events
+      .map((event, index) => {
+        const eventViolations = groupedViolations.get(event.id) ?? [];
+        const timeWindow =
+          event.timeWindow && (event.timeWindow.earliest || event.timeWindow.latest)
+            ? `${event.timeWindow.earliest ?? "n/a"} to ${event.timeWindow.latest ?? "n/a"}`
+            : "n/a";
+
+        return `<li class="trace-preview-event">
+          <span class="trace-preview-step">${index + 1}</span>
+          <div class="trace-preview-body">
+            <div class="trace-preview-head">
+              ${code(event.id)}
+              <span>${value(event.type)}</span>
+              <strong>${value(event.toolName ?? event.actor)}</strong>
+            </div>
+            <p class="trace-preview-summary">${value(eventSummary(event))}</p>
+            <div class="trace-preview-meta">
+              <span>window ${value(timeWindow)}</span>
+              <span>rows ${value(event.resultCount ?? "n/a")}</span>
+              <span>evidence ${value(event.evidenceRefs.length)}</span>
+            </div>
+            <div class="trace-preview-findings">
+              ${eventViolations.length > 0 ? renderFindings(eventViolations, assistanceByViolation) : `<span class="trace-preview-none">None</span>`}
+            </div>
+          </div>
+        </li>`;
+      })
+      .join("")}
+  </ol>`;
+};
+
 const externalTraceForDisplay = (bundle: UiArtifactBundle): TraceEvent[] =>
   bundle.externalTrace.length > 0 ? bundle.externalTrace : bundle.importedTrace;
 
@@ -1287,6 +1362,246 @@ const renderImportCertification = (bundle: UiArtifactBundle, options: RenderOpti
   </main>`;
 };
 
+const currentRunIdFromBundle = (bundle: UiArtifactBundle): string | undefined => {
+  const normalized = normalizeArtifactBase(bundle.artifactBase);
+  const match = normalized.match(/\/api\/artifacts\/(run-[A-Za-z0-9._-]+)\/$/);
+
+  return match?.[1];
+};
+
+const activeRunMatches = (run: WorkbenchRunSummary, bundle: UiArtifactBundle): boolean =>
+  normalizeArtifactBase(run.artifactBase) === normalizeArtifactBase(bundle.artifactBase);
+
+const runSearchText = (run: WorkbenchRunSummary): string =>
+  [
+    run.runId,
+    run.workflow,
+    run.state,
+    run.verdict,
+    run.proofAuditStatus,
+    run.manifestStatus,
+    ...run.missionIds,
+    ...run.ruleIds,
+    ...run.files
+  ]
+    .join(" ")
+    .toLowerCase();
+
+const filteredRuns = (runs: WorkbenchRunSummary[], workbench: WorkbenchRenderState | undefined): WorkbenchRunSummary[] => {
+  const query = workbench?.runFilter?.trim().toLowerCase() ?? "";
+  const status = workbench?.runStatusFilter ?? "all";
+  const workflow = workbench?.runWorkflowFilter ?? "all";
+
+  return runs.filter((run) => {
+    const statusMatches = status === "all" || run.state === status || run.verdict === status || run.proofAuditStatus === status;
+    const workflowMatches = workflow === "all" || run.workflow === workflow;
+    const queryMatches = !query || runSearchText(run).includes(query);
+
+    return statusMatches && workflowMatches && queryMatches;
+  });
+};
+
+const groupedRuns = (runs: WorkbenchRunSummary[]): Array<[string, WorkbenchRunSummary[]]> => {
+  const groups = new Map<string, WorkbenchRunSummary[]>();
+
+  for (const run of runs) {
+    const key = `${run.workflow} / ${run.state}`;
+    groups.set(key, [...(groups.get(key) ?? []), run]);
+  }
+
+  return [...groups.entries()].sort(([left], [right]) => left.localeCompare(right));
+};
+
+const uniqueRunValues = (runs: WorkbenchRunSummary[], key: "workflow" | "state"): string[] =>
+  [...new Set(runs.map((run) => run[key]))].sort();
+
+const renderRunFilters = (runs: WorkbenchRunSummary[], workbench: WorkbenchRenderState | undefined): string => {
+  const selectedStatus = workbench?.runStatusFilter ?? "all";
+  const selectedWorkflow = workbench?.runWorkflowFilter ?? "all";
+
+  return `<div class="run-filters">
+    <label>
+      <span>Search mission, verdict, rule, or file</span>
+      <input type="search" data-run-filter value="${value(workbench?.runFilter ?? "")}">
+    </label>
+    <label>
+      <span>Status</span>
+      <select data-run-status-filter>
+        <option value="all"${selectedStatus === "all" ? " selected" : ""}>All statuses</option>
+        ${["succeeded", "failed", "READY", "NOT READY", "NEEDS REVIEW", "PASS", "FAIL", "WARN"]
+          .map((status) => `<option value="${value(status)}"${selectedStatus === status ? " selected" : ""}>${value(status)}</option>`)
+          .join("")}
+      </select>
+    </label>
+    <label>
+      <span>Workflow</span>
+      <select data-run-workflow-filter>
+        <option value="all"${selectedWorkflow === "all" ? " selected" : ""}>All workflows</option>
+        ${uniqueRunValues(runs, "workflow")
+          .map((workflow) => `<option value="${value(workflow)}"${selectedWorkflow === workflow ? " selected" : ""}>${value(workflow)}</option>`)
+          .join("")}
+      </select>
+    </label>
+  </div>`;
+};
+
+const renderRunList = (
+  bundle: UiArtifactBundle,
+  runs: WorkbenchRunSummary[],
+  workbench: WorkbenchRenderState | undefined
+): string => {
+  const visibleRuns = filteredRuns(runs, workbench);
+
+  if (!workbench?.available) {
+    return `<section class="panel run-browser-list">
+      <h2>Workbench runs</h2>
+      <p class="empty">Start the local workbench backend to browse managed proof runs.</p>
+    </section>`;
+  }
+
+  return `<section class="panel run-browser-list">
+    <h2>Workbench runs</h2>
+    ${renderRunFilters(runs, workbench)}
+    ${
+      visibleRuns.length === 0
+        ? `<p class="empty">No managed runs match the current filters.</p>`
+        : groupedRuns(visibleRuns)
+            .map(
+              ([group, groupRuns]) => `<section class="run-group">
+                <h3>${value(group)}</h3>
+                <div class="run-card-list">
+                  ${groupRuns
+                    .map(
+                      (run) => `<article class="run-card ${activeRunMatches(run, bundle) ? "active" : ""}">
+                        <div class="run-card-title">
+                          ${code(run.runId)}
+                          <a href="?artifacts=${encodeURIComponent(run.artifactBase)}#proof-browser" data-proof-artifact="${value(
+                            run.artifactBase
+                          )}" data-proof-view="proof-browser">Open</a>
+                        </div>
+                        <dl class="run-card-facts">
+                          <div><dt>Receipt</dt><dd>${value(run.verdict)} / ${run.score === null ? "score n/a" : `score ${run.score}`}</dd></div>
+                          <div><dt>Audit</dt><dd>${value(run.proofAuditStatus)} / ${value(run.state)}</dd></div>
+                          <div><dt>Manifest</dt><dd>${value(run.manifestStatus)} / ${run.fileCount} file(s)</dd></div>
+                          <div><dt>Evidence</dt><dd>${run.violations} violation(s) / ${run.evidenceRefs} ref(s)</dd></div>
+                        </dl>
+                      </article>`
+                    )
+                    .join("")}
+                </div>
+              </section>`
+            )
+            .join("")
+    }
+  </section>`;
+};
+
+const renderReceiptComparison = (bundle: UiArtifactBundle): string => {
+  const before = bundle.beforeReceipt;
+  const after = bundle.afterReceipt;
+  const current = bundle.receipt;
+  const rows: Array<[string, unknown, unknown]> = [
+    ["Verdict", before?.verdict ?? current?.verdict ?? "n/a", after?.verdict ?? current?.verdict ?? "n/a"],
+    ["Score", before?.score ?? current?.score ?? "n/a", after?.score ?? current?.score ?? "n/a"],
+    ["Violations", before?.violations.length ?? current?.violations.length ?? "n/a", after?.violations.length ?? current?.violations.length ?? "n/a"],
+    ["Evidence refs", before?.evidenceRefs.length ?? current?.evidenceRefs.length ?? "n/a", after?.evidenceRefs.length ?? current?.evidenceRefs.length ?? "n/a"],
+    [
+      "Policy patch",
+      bundle.policyPatch ? `${bundle.policyPatch.rules.length} rule(s)` : "not loaded",
+      bundle.policyPatch ? bundle.policyPatch.status : "not loaded"
+    ]
+  ];
+
+  return `<section class="panel receipt-comparison">
+    <h2>Receipt comparison</h2>
+    <table class="comparison-table">
+      <thead><tr><th>Field</th><th>Before/current</th><th>After/current</th></tr></thead>
+      <tbody>${rows.map(([label, left, right]) => `<tr><th>${value(label)}</th><td>${value(left)}</td><td>${value(right)}</td></tr>`).join("")}</tbody>
+    </table>
+    <div class="raw-links">
+      <a href="${artifactUrl(bundle.artifactBase, "receipt-before-001.json")}">receipt-before-001.json</a>
+      <a href="${artifactUrl(bundle.artifactBase, "receipt-after-001.json")}">receipt-after-001.json</a>
+      <a href="${artifactUrl(bundle.artifactBase, "receipt-external-001.json")}">receipt-external-001.json</a>
+    </div>
+  </section>`;
+};
+
+const renderTracePreview = (bundle: UiArtifactBundle): string => {
+  const allTraces: Array<[string, TraceEvent[], Violation[]]> = [
+    ["Before", bundle.beforeTrace, bundle.beforeViolations],
+    ["After", bundle.afterTrace, bundle.afterViolations],
+    [bundle.externalTrace.length > 0 ? "External" : "Imported", externalTraceForDisplay(bundle), bundle.externalViolations]
+  ];
+  const traces = allTraces.filter(([, events]) => events.length > 0);
+
+  return `<section class="panel trace-preview">
+    <h2>Trace timeline</h2>
+    ${
+      traces.length === 0
+        ? `<p class="empty">Trace artifact not loaded.</p>`
+        : traces
+            .map(
+              ([label, events, violations]) => `<section class="trace-preview-group">
+                <h3>${value(label)}</h3>
+                ${renderTracePreviewEvents(events, violations, bundle.policyPatch)}
+              </section>`
+            )
+            .join("")
+    }
+  </section>`;
+};
+
+const renderManifestVerificationPanel = (
+  bundle: UiArtifactBundle,
+  workbench: WorkbenchRenderState | undefined
+): string => {
+  const runId = currentRunIdFromBundle(bundle);
+  const manifestVerification = workbench?.manifestVerification;
+  const report = bundle.proofManifestVerification ?? manifestVerification?.report;
+  const activeVerification = manifestVerification?.runId === runId ? manifestVerification : undefined;
+  const status = activeVerification?.status ?? report?.status ?? (bundle.missing.includes("proof-manifest.json") ? "MISSING" : "UNVERIFIED");
+
+  return `<section class="panel manifest-panel">
+    <div class="run-panel-header">
+      <h2>Manifest verification</h2>
+      <button class="replay-button" type="button" data-verify-manifest="${value(runId ?? "")}" ${
+        !runId || status === "MISSING" ? "disabled" : ""
+      }>Verify manifest</button>
+    </div>
+    ${renderFactTable([
+      ["Run", runId ?? "not a managed workbench run"],
+      ["Status", status],
+      ["Expected files", report?.expectedFiles ?? "n/a"],
+      ["Actual files", report?.actualFiles ?? "n/a"],
+      ["Missing files", report && report.missingFiles.length > 0 ? report.missingFiles.join(" / ") : "none"],
+      ["Unexpected files", report && report.unexpectedFiles.length > 0 ? report.unexpectedFiles.join(" / ") : "none"],
+      ["Changed files", report && report.changedFiles.length > 0 ? report.changedFiles.map((file) => file.path).join(" / ") : "none"],
+      ["Error", activeVerification?.message ?? "none"]
+    ])}
+  </section>`;
+};
+
+const renderProofBrowser = (bundle: UiArtifactBundle, options: RenderOptions): string => {
+  const runs = options.workbench?.runs ?? [];
+
+  return `<main class="view" data-view="proof-browser">
+    <section class="workbench">
+      <div class="section-title">
+        <h1>Proof bundle browser</h1>
+      </div>
+      <div class="run-browser-grid">
+        ${renderRunList(bundle, runs, options.workbench)}
+        <div class="run-browser-detail">
+          ${renderReceiptComparison(bundle)}
+          ${renderProofAuditPanel(bundle.proofAudit)}
+          ${renderManifestVerificationPanel(bundle, options.workbench)}
+          ${renderTracePreview(bundle)}
+        </div>
+      </div>
+    </section>
+  </main>`;
+};
+
 const renderArtifactSelector = (bundle: UiArtifactBundle, artifactOptions: ArtifactOption[] | undefined): string => {
   if (!artifactOptions || artifactOptions.length === 0) {
     return "";
@@ -1369,6 +1684,10 @@ const renderActiveView = (bundle: UiArtifactBundle, activeView: ViewId, options:
 
   if (activeView === "agent-index") {
     return renderCertificationIndex(bundle);
+  }
+
+  if (activeView === "proof-browser") {
+    return renderProofBrowser(bundle, options);
   }
 
   if (activeView === "import-certification") {
