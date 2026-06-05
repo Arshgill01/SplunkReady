@@ -57,6 +57,7 @@ commands, or filesystem paths.
 | P0 | [32](moves32.md) Workbench no-store responses | 0.5d | Prevents browser caching of local proof and workbench responses. |
 | P0 | [33](moves33.md) Runs trace preview timeline | 0.5d | Makes the Runs trace panel show compact ordered events instead of summary-only cards. |
 | P0 | [34](moves34.md) SplunkReady secret env ignore | 0.5d | Ensures `.splunkready*` local secret files are ignored by default. |
+| P0 | [35](moves35.md) Secret env ignore gate | 0.5d | Adds the `.splunkready*` and `.env*` ignore boundary to the canonical check. |
 
 ## Non-Negotiable Boundaries
 

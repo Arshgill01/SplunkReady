@@ -8915,6 +8915,36 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 35 Secret Env Ignore Gate
+
+Context:
+- Continued development hardening after Move 34.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Move 34 added the ignore boundary; this move makes that boundary part of the
+  canonical verification gate so it cannot regress silently.
+
+Files touched:
+- `package.json`
+- `scripts/audit-secret-env-ignore.sh`
+- `moves/README.md`
+- `moves/moves35.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `npm run audit:secret-env-ignore`.
+- The audit checks representative `.splunkready*` and `.env*` paths through
+  `git check-ignore` without reading file contents.
+- The audit also verifies `.splunkready.example` and `.env.example` remain
+  available for checked-in example files.
+- Wired the audit into `npm run check` after tests and before reviewer and
+  submission-copy audits.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 34 SplunkReady Secret Env Ignore
 
 Context:
