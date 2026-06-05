@@ -7542,6 +7542,24 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 54 GitHub Workflow Diagnostics Artifact
+
+Commands:
+
+- `npm test -- tests/examples/github-workflow-example.test.ts`
+- `npm run check`
+
+Result:
+
+- PASS for focused workflow example test: 1 file, 1 test.
+- PASS for full `npm run check`: scaffold, runtime contracts, build, ui build,
+  all tests, secret env audit, reviewer audit, submission copy audit, and
+  `git diff --check`.
+
+Notes:
+
+- Playwright was not run because no UI source changed.
+
 ## 2026-06-05 - Move 53 Runs Trace Preview Layout
 
 Commands:

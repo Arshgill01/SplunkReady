@@ -163,3 +163,7 @@ the composite GitHub Action and rendering it in the GitHub job summary.
 Move 53 addresses the Runs trace preview readability risk under R004/R012 by
 making the preview event lanes stable for long trace metadata and by verifying
 the dashboard with Playwright on desktop and narrow viewports.
+
+Move 54 reduces R018 developer workflow friction by updating the GitHub workflow
+example and docs to upload the composite action's `diagnostics-path` artifact
+directly, instead of requiring CI users to know the proof directory layout.

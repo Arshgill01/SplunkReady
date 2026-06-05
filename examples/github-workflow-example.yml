@@ -34,6 +34,14 @@ jobs:
           name: splunkready-action-mcp-transcript
           path: ${{ steps.splunkready.outputs.out-dir }}
 
+      - name: Upload action diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: splunkready-action-diagnostics
+          path: ${{ steps.splunkready.outputs.diagnostics-path }}
+          if-no-files-found: warn
+
   external-trace-sdk:
     name: External trace SDK gate
     runs-on: ubuntu-latest

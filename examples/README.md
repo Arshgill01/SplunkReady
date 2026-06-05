@@ -269,13 +269,22 @@ calling repository's workflow small while still producing a full proof bundle:
   with:
     name: splunkready-proof
     path: ${{ steps.splunkready.outputs.out-dir }}
+
+- uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: splunkready-diagnostics
+    path: ${{ steps.splunkready.outputs.diagnostics-path }}
 ```
 
 The action supports `mode: judge-proof`, `mode: mcp-transcript`, and
 `mode: external-trace`. It does not accept live Splunk credentials as action
 inputs; live proof remains an explicit operator-owned workflow. When GitHub
 provides `GITHUB_STEP_SUMMARY`, the action writes a concise job summary with the
-gate mode, status, proof directory, receipt path, and summary path.
+gate mode, status, proof directory, receipt path, summary path, and diagnostics
+path. For `judge-proof`, `diagnostics-path` points to
+`compiler-diagnostics.json`; for transcript and external-trace gates, it points
+to `readiness-profile.json`.
 
 The default `fixture-smoke` job runs without live Splunk credentials. It compiles the fixture contract, evaluates the specimen, issues the receipt, reruns with the compiled policy, writes a diagnostic `proof-audit.json`, and blocks the merge unless the final receipt is `READY`.
 

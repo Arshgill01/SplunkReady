@@ -9474,6 +9474,42 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 21:50 - Move 54 GitHub Workflow Diagnostics Artifact
+
+Scope:
+- Updated CI examples to use the Move 52 `diagnostics-path` action output.
+- Kept the change limited to examples, docs, and focused regression coverage.
+- Did not change action runtime behavior.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source, so Playwright is not required.
+
+Files changed:
+- `README.md`
+- `examples/README.md`
+- `examples/github-workflow-example.yml`
+- `tests/examples/github-workflow-example.test.ts`
+- `moves/README.md`
+- `moves/moves54.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- The composite action workflow example now uploads
+  `${{ steps.splunkready.outputs.diagnostics-path }}` as a separate artifact.
+- README and examples guide snippets now show the diagnostics upload alongside
+  the proof bundle upload.
+- Example docs explain that `judge-proof` diagnostics point to
+  `compiler-diagnostics.json`, while transcript/trace gates point to
+  `readiness-profile.json`.
+- Added a focused example regression test.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 21:46 - Move 53 Runs Trace Preview Layout
 
 Scope:

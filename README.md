@@ -171,6 +171,12 @@ To use the same transcript gate as a GitHub Action step:
   with:
     name: splunkready-proof
     path: ${{ steps.splunkready.outputs.out-dir }}
+
+- uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: splunkready-diagnostics
+    path: ${{ steps.splunkready.outputs.diagnostics-path }}
 ```
 
 The repository-root `action.yml` is a composite action. It installs and builds
