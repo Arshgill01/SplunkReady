@@ -266,3 +266,11 @@ default credential-free judge proof records `NOT_REQUESTED`; the explicit
 Gemini-produced fixture fail-to-pass proof when a Gemini key is configured.
 The evidence records the LLM as trace producer and the deterministic rule
 engine as pass/fail authority.
+
+Move 72 reduces the public installability cap without performing a registry
+release. `package.json` no longer sets `private: true`, publish metadata is in
+place, and `npm run check` now includes a package readiness audit that runs
+`npm pack --dry-run --json` after build. Actual `npm publish` remains an
+explicit external release action. Registry preflight on 2026-06-05 returned
+404 for both `splunkready` and `@splunkready/cli`, indicating neither package
+name was claimed at check time.

@@ -10508,6 +10508,52 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
+## 2026-06-05 23:54 - Move 72 Public Package Publish Readiness
+
+Scope:
+- Continued the Minimax/user-directed public installability work without using
+  subagents.
+- Checked npm registry availability for `splunkready` and `@splunkready/cli`;
+  both returned 404 at check time.
+- Removed the `private: true` blocker, moved the package version to `0.1.0`,
+  and added public publish metadata.
+- Added `scripts/audit-package-readiness.mjs` and included it in
+  `npm run check` after build.
+- Preserved the boundary that actual `npm publish` is an explicit external
+  release action.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `package.json`
+- `package-lock.json`
+- `scripts/audit-package-readiness.mjs`
+- `tests/package/package-exports.test.ts`
+- `README.md`
+- `moves/README.md`
+- `moves/moves72.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `package.json` is now publish-ready for the public `splunkready` package
+  name, with repository/homepage/bugs/keywords and `publishConfig.access`.
+- The package readiness audit verifies built bin/export files and dry-runs
+  `npm pack --dry-run --json`.
+- The audit denies packed local artifacts, logs, moves, source files, `.env*`,
+  and `.splunkready*`.
+- Focused package tests now fail if the package regresses to `private: true` or
+  `0.0.0`.
+
+Open blockers:
+- Actual `npm publish` was not run and remains an explicit release action.
+- Hosted demo, refreshed submission evidence, and final reviewer-equivalent
+  scrutiny remain open Minimax caps.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
 ## 2026-06-05 23:48 - Move 71 Judge Proof LLM Evidence Slot
 
 Scope:

@@ -9392,3 +9392,53 @@ Open blockers:
   credentials.
 - Public package publish, hosted demo, refreshed submission evidence, and
   final reviewer-equivalent scrutiny remain open Minimax caps.
+## 2026-06-05 - Move 72 Public Package Publish Readiness
+
+Commands:
+
+- `npm view splunkready name version --json`
+- `npm view @splunkready/cli name version --json`
+- `npm install --package-lock-only --ignore-scripts`
+- `npm run build && npm run audit:package-readiness && npx vitest run tests/package/package-exports.test.ts`
+- `npm run check`
+
+Result:
+
+- PASS for npm registry preflight as availability evidence:
+  - `npm view splunkready name version --json` returned npm `E404`;
+  - `npm view @splunkready/cli name version --json` returned npm `E404`.
+- PASS for `npm install --package-lock-only --ignore-scripts`:
+  - package lock updated;
+  - audited 112 packages;
+  - 0 vulnerabilities.
+- PASS for focused package validation:
+  - TypeScript build completed;
+  - package readiness audit checked 148 dry-run packed files;
+  - 1 package test file passed;
+  - 2 tests passed.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 148 dry-run packed files;
+  - 53 test files passed;
+  - 337 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- `npm publish` was not run.
+- `npm pack --dry-run --json` did not produce a `.tgz` package artifact.
+- Playwright was not run because this move did not change UI source or
+  behavior.
+
+Open blockers:
+
+- Actual registry publication remains an explicit release action.
+- Hosted demo, refreshed submission evidence, and final reviewer-equivalent
+  scrutiny remain open Minimax caps.

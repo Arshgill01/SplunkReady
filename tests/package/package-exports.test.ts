@@ -9,6 +9,24 @@ import { describe, expect, it } from "vitest";
 const execFileAsync = promisify(execFile);
 
 describe("package exports", () => {
+  it("is configured for public package publication", async () => {
+    const packageJson = JSON.parse(await readFile(new URL("../../package.json", import.meta.url), "utf8")) as {
+      name?: string;
+      version?: string;
+      private?: boolean;
+      publishConfig?: { access?: string };
+      bin?: { splunkready?: string };
+    };
+
+    expect(packageJson).toMatchObject({
+      name: "splunkready",
+      publishConfig: { access: "public" },
+      bin: { splunkready: "dist/src/cli.js" }
+    });
+    expect(packageJson.private).not.toBe(true);
+    expect(packageJson.version).not.toBe("0.0.0");
+  });
+
   it("exposes trace bridge helpers through stable package subpaths", async () => {
     const packageJson = JSON.parse(await readFile(new URL("../../package.json", import.meta.url), "utf8")) as {
       exports?: Record<string, unknown>;

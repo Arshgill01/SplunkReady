@@ -56,8 +56,10 @@ splunkready judge-proof --out artifacts/judge-proof --json
 ```
 
 The `splunkready` bin resolves the bundled default fixture, mission, and suite
-paths even when it is run from outside the repository root. The package remains
-private in this repository until a registry publishing decision is made.
+paths even when it is run from outside the repository root. The repository is
+configured for public package publication and the canonical gate runs a package
+readiness audit with `npm pack --dry-run`; actual registry publication remains
+an explicit release action.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:
