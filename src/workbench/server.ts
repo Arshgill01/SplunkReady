@@ -8,6 +8,7 @@ import { pathToFileURL } from "node:url";
 import { WorkbenchArtifactStore } from "./artifacts.js";
 import { createWorkbenchConfig, type WorkbenchConfig } from "./config.js";
 import { WorkbenchJobRunner } from "./jobs.js";
+import { redactUnknownError } from "./redaction.js";
 import { createWorkbenchApiHandler } from "./routes.js";
 
 interface ViteDevServerLike {
@@ -22,6 +23,7 @@ export interface StartedWorkbenchServer {
 
 export interface WorkbenchServerOptions {
   devUi?: boolean;
+  devUiServer?: ViteDevServerLike;
   staticUiRoot?: string;
 }
 
@@ -143,7 +145,7 @@ export const startWorkbenchServer = async (
   const artifactStore = new WorkbenchArtifactStore(config.artifactRoot);
   const jobRunner = new WorkbenchJobRunner({ config, artifactStore });
   const apiHandler = createWorkbenchApiHandler({ config, artifactStore, jobRunner });
-  const viteServer = options.devUi ? await startViteMiddleware() : undefined;
+  const viteServer = options.devUiServer ?? (options.devUi ? await startViteMiddleware() : undefined);
   const staticUiRoot = resolve(options.staticUiRoot ?? "dist-ui");
   const server = createServer((request, response) => {
     setWorkbenchSecurityHeaders(response);
@@ -159,7 +161,7 @@ export const startWorkbenchServer = async (
         viteServer.middlewares(request, response, (error?: unknown) => {
           if (error) {
             response.statusCode = 500;
-            response.end(error instanceof Error ? error.message : String(error));
+            response.end(redactUnknownError(error));
             return;
           }
 
@@ -172,7 +174,7 @@ export const startWorkbenchServer = async (
       await serveStaticUi(staticUiRoot, request, response);
     })().catch((error: unknown) => {
       response.statusCode = 500;
-      response.end(error instanceof Error ? error.message : String(error));
+      response.end(redactUnknownError(error));
     });
   });
 

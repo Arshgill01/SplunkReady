@@ -7539,6 +7539,40 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 31 Workbench Server Fallback Redaction Verification
+
+Commands:
+
+- `npm test -- tests/workbench/server.test.ts`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused workbench HTTP server tests:
+  - 1 test file passed;
+  - 8 tests passed.
+- PASS for server fallback redaction regression coverage:
+  - dev UI middleware `next(error)` response redacted `Bearer dev-ui-secret-token failed` to `Bearer [REDACTED] failed`;
+  - top-level thrown middleware response redacted `TOKEN=fallback-secret-token failed` to `TOKEN=[REDACTED] failed`;
+  - both 500 responses retained the workbench hardening headers.
+
+- PASS for full `npm run check && git diff --check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 292 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output;
+  - explicit final `git diff --check` completed with no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 30 Workbench Response Security Headers Verification
 
 Commands:

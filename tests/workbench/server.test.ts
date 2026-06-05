@@ -302,4 +302,56 @@ describe("workbench HTTP server", () => {
       await server.close();
     }
   }, 15_000);
+
+  it("redacts dev UI middleware errors before returning them to the browser", async () => {
+    const secret = "dev-ui-secret-token";
+    const { server } = await startTestWorkbench(
+      {},
+      {
+        devUiServer: {
+          middlewares(_request, _response, next) {
+            next(new Error(`Bearer ${secret} failed`));
+          },
+          async close() {}
+        }
+      }
+    );
+
+    try {
+      const result = await fetchText(server.url, "/");
+
+      expect(result.response.status).toBe(500);
+      expectWorkbenchSecurityHeaders(result.response);
+      expect(result.text).toBe("Bearer [REDACTED] failed");
+      expect(result.text).not.toContain(secret);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("redacts top-level server fallback errors before returning them to the browser", async () => {
+    const secret = "fallback-secret-token";
+    const { server } = await startTestWorkbench(
+      {},
+      {
+        devUiServer: {
+          middlewares() {
+            throw new Error(`TOKEN=${secret} failed`);
+          },
+          async close() {}
+        }
+      }
+    );
+
+    try {
+      const result = await fetchText(server.url, "/");
+
+      expect(result.response.status).toBe(500);
+      expectWorkbenchSecurityHeaders(result.response);
+      expect(result.text).toBe("TOKEN=[REDACTED] failed");
+      expect(result.text).not.toContain(secret);
+    } finally {
+      await server.close();
+    }
+  });
 });

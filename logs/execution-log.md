@@ -8915,6 +8915,37 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 31 Workbench Server Fallback Redaction
+
+Context:
+- Continued development hardening after Move 30.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Found that API route and job errors were redacted, but server-level fallback
+  paths in `server.ts` still returned raw middleware/top-level error messages.
+
+Files touched:
+- `src/workbench/server.ts`
+- `tests/workbench/server.test.ts`
+- `moves/README.md`
+- `moves/moves31.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Routed dev UI middleware fallback errors through `redactUnknownError`.
+- Routed top-level workbench request catch errors through `redactUnknownError`.
+- Added an injectable dev-UI middleware option for focused HTTP tests without
+  changing normal runtime behavior.
+- Added real HTTP tests proving:
+  - `Bearer dev-ui-secret-token failed` returns `Bearer [REDACTED] failed`;
+  - `TOKEN=fallback-secret-token failed` returns `TOKEN=[REDACTED] failed`;
+  - hardening headers remain present on these 500 responses.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 30 Workbench Response Security Headers
 
 Context:
