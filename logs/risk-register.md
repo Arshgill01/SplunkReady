@@ -460,3 +460,11 @@ the MCP proof route with zero console errors and only three proof-data requests:
 `artifacts/mcp-proof/mcp-proof-summary.json`. Remaining hosted-demo risk is
 workflow maintenance only: GitHub Pages actions still emit a Node 20 deprecation
 annotation, but the deployment succeeds.
+
+Move 98 targets that workflow-maintenance risk by updating the public demo
+Pages workflow to current upstream action tags:
+`actions/configure-pages@v6`, `actions/upload-pages-artifact@v5`, and
+`actions/deploy-pages@v5`. Local checks passed, including upstream tag
+verification, workflow regression coverage, and `npm run check`. The risk is
+not closed until the pushed workflow is run on GitHub and the Pages annotation
+is confirmed absent.

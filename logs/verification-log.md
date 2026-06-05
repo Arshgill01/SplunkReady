@@ -9708,6 +9708,63 @@ Open blockers:
 - Live/public MCP-client screencast evidence remains separate from this hosted
   static demo polish move.
 
+## 2026-06-06 - Move 98 GitHub Pages Node 24 Actions Runtime
+
+Commands:
+
+- `git ls-remote --tags https://github.com/actions/configure-pages.git 'refs/tags/v*' | tail -20`
+- `git ls-remote --tags https://github.com/actions/upload-pages-artifact.git 'refs/tags/v*' | tail -20`
+- `git ls-remote --tags https://github.com/actions/deploy-pages.git 'refs/tags/v*' | tail -20`
+- `npx vitest run tests/examples/repository-ci-workflow.test.ts`
+- `npm run check`
+
+Result:
+
+- PASS for upstream action tag checks:
+  - `actions/configure-pages` exposes `v6` and `v6.0.0`;
+  - `actions/upload-pages-artifact` exposes `v5` and `v5.0.0`;
+  - `actions/deploy-pages` exposes `v5` and `v5.0.0`.
+- PASS for focused workflow regression:
+  - 1 test file passed;
+  - 2 tests passed;
+  - repository CI still uses `actions/checkout@v5` and
+    `actions/setup-node@v5`;
+  - public demo Pages workflow now requires `actions/configure-pages@v6`,
+    `actions/upload-pages-artifact@v5`, and `actions/deploy-pages@v5`.
+- PASS for full `npm run check`:
+  - scaffold verified with 85 waves and 2013 project files;
+  - runtime contracts verified 19 rules, 4 fixture missions, and 20 evidence
+    refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 114 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed the tarball and verified
+    `npx splunkready judge-proof` returned PASS;
+  - 56 test files passed;
+  - 348 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because this move changed only GitHub workflow
+  configuration and workflow regression tests, not UI source or browser
+  behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI and the manual Pages workflow still need to run after push to prove
+  the public demo workflow warning is gone.
+- Public npm publication remains blocked until npm auth is configured.
+- Live/public MCP-client screencast evidence remains separate from this workflow
+  maintenance move.
+
 ## 2026-06-06 - Move 87 CLI Proof Command Extraction
 
 Commands:

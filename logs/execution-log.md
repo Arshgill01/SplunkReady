@@ -11641,3 +11641,35 @@ Open blockers:
 - Public npm publication remains blocked by missing npm auth.
 - Live/public MCP-client screencast evidence remains a separate award-positioning
   gap.
+
+## 2026-06-06 02:59 - Move 98 GitHub Pages Node 24 Actions Runtime
+
+Scope:
+- Targeted the remaining GitHub Pages workflow warning from Moves 96-97.
+- Verified upstream GitHub action tags exist for `actions/configure-pages@v6`,
+  `actions/upload-pages-artifact@v5`, and `actions/deploy-pages@v5`.
+- Updated `.github/workflows/public-demo-pages.yml` to those current Pages
+  action tags while keeping the project runtime on Node 22 and the workflow
+  manual-only.
+- Updated repository workflow regression coverage for the new Pages action
+  versions.
+- Did not use the `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` fallback.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+
+Files changed:
+- `.github/workflows/public-demo-pages.yml`
+- `tests/examples/repository-ci-workflow.test.ts`
+- `moves/README.md`
+- `moves/moves98.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Hosted CI and the manual Pages workflow still need to run after push to prove
+  the public demo workflow warning is gone.
+- Public npm publication remains blocked by missing npm auth.
+- Live/public MCP-client screencast evidence remains a separate award-positioning
+  gap.

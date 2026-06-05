@@ -39,10 +39,10 @@ describe("repository CI workflow", () => {
     expect(workflow).toContain("run: npm ci --ignore-scripts");
     expect(workflow).toContain("run: npm run public-demo:build");
     expect(workflow).toContain("run: npm run audit:public-demo-export");
-    expect(workflow).toContain("uses: actions/configure-pages@v5");
-    expect(workflow).toContain("uses: actions/upload-pages-artifact@v4");
+    expect(workflow).toContain("uses: actions/configure-pages@v6");
+    expect(workflow).toContain("uses: actions/upload-pages-artifact@v5");
     expect(workflow).toContain("path: artifacts/public-demo");
-    expect(workflow).toContain("uses: actions/deploy-pages@v4");
+    expect(workflow).toContain("uses: actions/deploy-pages@v5");
     expect(workflow).not.toContain("GEMINI_API_KEY");
     expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_TOKEN");
     expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_URL");
