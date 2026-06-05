@@ -238,6 +238,18 @@ const runFixtureCertification = async (): Promise<void> => {
   await runWorkbenchWorkflow("fixture-certification", "certification-replay");
 };
 
+const successViewForWorkflow = (workflow: string): ViewId => {
+  if (workflow === "fixture-certification") {
+    return "certification-replay";
+  }
+
+  if (workflow === "policy-backed-rerun" || workflow === "firewall-check") {
+    return "policy-firewall";
+  }
+
+  return "live-connect";
+};
+
 const selectedFileText = async (selector: string, label: string): Promise<string> => {
   const input = document.querySelector<HTMLInputElement>(selector);
   const file = input?.files?.[0];
@@ -374,7 +386,7 @@ const bindInteractions = (): void => {
         return;
       }
 
-      void runWorkbenchWorkflow(workflow, workflow === "fixture-certification" ? "certification-replay" : "live-connect");
+      void runWorkbenchWorkflow(workflow, successViewForWorkflow(workflow));
     });
   }
 

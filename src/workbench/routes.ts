@@ -82,6 +82,14 @@ const inferWorkflow = (files: string[]): WorkbenchWorkflow | "artifact-bundle" =
     return "external-trace-certification";
   }
 
+  if (has("firewall-block-before.json") || has("firewall-check.json")) {
+    return "firewall-check";
+  }
+
+  if (has("policy-patch.json") && has("receipt-before-001.json") && has("receipt-after-001.json")) {
+    return "policy-backed-rerun";
+  }
+
   if (has("live-security-proof-summary.json")) {
     return "live-security-proof";
   }
@@ -227,6 +235,8 @@ const workflows = new Set<WorkbenchWorkflow>([
   "fixture-certification",
   "external-trace-certification",
   "mcp-transcript-certification",
+  "policy-backed-rerun",
+  "firewall-check",
   "live-smoke",
   "live-candidates",
   "live-security-readiness",

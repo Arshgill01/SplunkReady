@@ -7919,3 +7919,90 @@ Result:
 - Vite production UI build passed.
 - `git diff --check` passed.
 - Playwright browser checks passed for run browsing, manifest verification, desktop layout, mobile layout, and the corrected Runs trace timeline.
+
+## 2026-06-05 - Move 12 Policy Patch And Firewall Workbench
+
+Scope:
+- Make the safety loop visible from the workbench: unsafe behavior, deterministic violations, exported policy additions, policy-backed rerun, and firewall enforcement.
+- Keep policy patches truthful as review artifacts only; do not add any Splunk mutation path.
+- Add fixture-owned workbench actions for policy-backed rerun and firewall checks.
+- Verify the new Policy surface in a real browser with Playwright before treating it as done.
+
+Files expected/touched:
+- `src/cli.ts`
+- `src/workbench/events.ts`
+- `src/workbench/jobs.ts`
+- `src/workbench/routes.ts`
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/workbench/workbench.test.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `policy-backed-rerun` and `firewall-check` to the workbench workflow model and API allowlist.
+- Added exported CLI workflow wrappers for:
+  - a policy-backed fixture rerun that grades the unsafe before trace, exports `policy-patch.json`, then reruns under the compiled policy firewall;
+  - a fixture firewall check that writes `firewall-block-before.json` when unsafe SPL is blocked before Splunk execution.
+- Wired the workbench job runner to execute both workflows from server-owned configuration.
+- Updated artifact run inference so managed firewall and policy-rerun bundles show the correct workflow in the Runs list.
+- Added a Policy view with:
+  - workbench actions for policy-backed rerun and firewall check;
+  - receipt-grounded before/after transition facts;
+  - explicit `UI recalculation: none`;
+  - exported policy-addition facts including `Splunk apply action: none`;
+  - policy rule and SAIA advisory summary;
+  - deterministic violation-to-patch mapping;
+  - firewall block and proof audit panels.
+- Updated generic UI workflow routing so fixture jobs return to Replay, policy/firewall jobs return to Policy, and live/hosted jobs return to Live connect.
+- Added backend tests proving both new workflows run as managed fixture jobs and produce the expected receipt, patch, firewall, audit, and manifest artifacts.
+- Added UI tests proving the Policy view renders action hooks, exported patch semantics, receipt-grounded transition data, deterministic violation mapping, firewall block facts, and proof audit evidence.
+- Fixed browser-discovered mobile overflow in policy patch panels by reducing mobile fact-table sizing and allowing policy-rule paragraphs to wrap long saved-search lists.
+
+Playwright evidence:
+- Confirmed `npx` was available and used the Playwright skill wrapper.
+- Found `.splunkready-live.env` in the repo without reading or printing secret values. The browser verification intentionally used fixture-owned workflows only and did not load live secrets.
+- Started `SPLUNKREADY_WORKBENCH_PORT=4327 npm run workbench:dev`.
+- Opened `http://127.0.0.1:4327/#policy-firewall`.
+- Clicked `Run policy-backed rerun`; the browser generated managed run `run-2026-06-05T10-00-07-693Z-c407c40e` and redirected to `#policy-firewall`.
+- Confirmed the generated policy-rerun page rendered:
+  - `job-1 / policy-backed-rerun / succeeded`;
+  - `NOT READY / 0` before and `READY / 100` after;
+  - exported `policy-patch.json`;
+  - deterministic violation mapping;
+  - `UI recalculation: none`;
+  - `Splunk apply action: none`.
+- Clicked `Run firewall check`; the browser generated managed run `run-2026-06-05T10-00-30-157Z-49170118` and redirected to `#policy-firewall`.
+- Confirmed the generated firewall page rendered:
+  - `job-2 / firewall-check / succeeded`;
+  - `FIREWALL_POLICY_BLOCKED`;
+  - `Blocked before Splunk: yes`;
+  - `Mutation: no`;
+  - proof audit `PASS`.
+- Captured desktop and mobile screenshots:
+  - `output/playwright/move12-policy-rerun-desktop.png`
+  - `output/playwright/move12-policy-rerun-mobile.png`
+  - `output/playwright/move12-firewall-check-desktop.png`
+  - `output/playwright/move12-firewall-check-mobile.png`
+- Initial Playwright overflow check found a mobile internal overflow in `.policy-patch-panel`; fixed it and reran the same check.
+- Final Playwright overflow result:
+  - policy-rerun desktop 1440px: no document/body/panel/table/card horizontal overflow;
+  - policy-rerun mobile 390px: no document/body/panel/table/card horizontal overflow;
+  - firewall-check desktop 1440px: no document/body/panel/table/card horizontal overflow;
+  - firewall-check mobile 390px: no document/body/panel/table/card horizontal overflow.
+
+Reviewer findings:
+- Subagents are disabled per user direction; no reviewer loop was run for this slice.
+
+Open risks:
+- The Policy view shows exported patch semantics and firewall proof separately. A firewall-only run correctly has no policy patch loaded; combining both stories requires loading the policy-rerun artifact.
+- Local managed runs generated during Playwright verification remain under ignored `artifacts/workbench-runs/` for manual inspection and are not committed fixtures.
+
+Result:
+- Required Move 12 focused verification passed.
+- Canonical build/check gate passed after the final CSS fix.
+- Vite production UI build passed.
+- `git diff --check` passed.
+- Playwright browser checks passed for policy-backed rerun, firewall check, desktop layout, mobile layout, and overflow after the browser-discovered CSS fix.

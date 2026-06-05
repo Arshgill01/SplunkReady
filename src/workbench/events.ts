@@ -2,6 +2,8 @@ export type WorkbenchWorkflow =
   | "fixture-certification"
   | "external-trace-certification"
   | "mcp-transcript-certification"
+  | "policy-backed-rerun"
+  | "firewall-check"
   | "live-smoke"
   | "live-candidates"
   | "live-security-readiness"

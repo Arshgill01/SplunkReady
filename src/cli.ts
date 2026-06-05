@@ -3296,6 +3296,63 @@ export const runFixtureCertificationFromCli = async (
 
 export const runFixtureCertificationWorkflow = runFixtureCertificationFromCli;
 
+export interface PolicyWorkbenchWorkflowInput {
+  outDir: string;
+}
+
+export interface PolicyWorkbenchWorkflowResult {
+  status: "PASS";
+  outDir: string;
+  artifacts: string[];
+  mutation: false;
+  messages: string[];
+}
+
+export const runPolicyBackedRerunFromCli = async (
+  input: PolicyWorkbenchWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<PolicyWorkbenchWorkflowResult> => {
+  const options = defaultCliOptions({ mode: "fixture", out: input.outDir });
+  const beforeOptions = { ...options, phase: "before" as const, firewall: false };
+  const afterOptions = { ...options, phase: "after" as const, firewall: true };
+  const workflow = await runFixtureCertification(
+    { outDir: input.outDir, includeProofAudit: true },
+    {
+      compile: () => compileCommand(beforeOptions, env),
+      evaluate: () => evaluateCommand(beforeOptions, env),
+      receiptBefore: () => receiptCommand(beforeOptions, env),
+      rerun: () => rerunCommand(afterOptions, env),
+      receiptAfter: async () => [join(input.outDir, "receipt-after-001.json"), join(input.outDir, "receipt-after-001.md")],
+      writeUiShell: () => writeUiShell(input.outDir),
+      proofAudit: () => proofAuditCommand({ ...options, requirePass: false })
+    }
+  );
+
+  return {
+    status: "PASS",
+    outDir: input.outDir,
+    artifacts: workflow.artifacts,
+    mutation: false,
+    messages: ["Before trace was graded without the firewall; policy-backed rerun used the compiled firewall."]
+  };
+};
+
+export const runFirewallCheckFromCli = async (
+  input: PolicyWorkbenchWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<PolicyWorkbenchWorkflowResult> => {
+  const options = defaultCliOptions({ mode: "fixture", out: input.outDir });
+  const artifacts = await firewallCheckCommand(options, env);
+
+  return {
+    status: "PASS",
+    outDir: input.outDir,
+    artifacts,
+    mutation: false,
+    messages: ["Compiled policy firewall rejected unsafe SPL before Splunk execution."]
+  };
+};
+
 export interface LiveActionWorkflowInput {
   outDir: string;
 }

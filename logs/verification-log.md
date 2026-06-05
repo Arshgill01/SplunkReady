@@ -6288,3 +6288,80 @@ Open risks:
 
 - Browser screenshots live under ignored `output/playwright/`; they are local verification artifacts and are not committed.
 - The local run browser includes managed runs from earlier manual checks. The UI handles them, but they are not part of the committed fixture set.
+
+## 2026-06-05 - Move 12 Policy Patch And Firewall Workbench
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/gateway/firewall.test.ts tests/policy/patch.test.ts tests/cli/flow.test.ts tests/workbench tests/ui/app.test.ts`
+- `npm run build`
+- `npm run ui:build`
+- `npm run check`
+- `git diff --check`
+- `command -v npx >/dev/null 2>&1`
+- `find .. -maxdepth 3 -name '.splunkready*' -o -name '*.env' -o -name '.env*'`
+- `SPLUNKREADY_WORKBENCH_PORT=4327 npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4327/#policy-firewall`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e53`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e352`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code 'async (page) => { ... capture policy/firewall desktop+mobile screenshots and overflow data ... }'`
+- `ls -l output/playwright/move12-*.png`
+
+Result:
+
+- PASS for TypeScript validation.
+- PASS for required Move 12 focused verification:
+  - `tests/gateway/firewall.test.ts`;
+  - `tests/policy/patch.test.ts`;
+  - `tests/cli/flow.test.ts`;
+  - `tests/workbench`;
+  - `tests/ui/app.test.ts`;
+  - 5 test files;
+  - 82 tests passed.
+- PASS for canonical project gate after the final CSS fix:
+  - scaffold verified;
+  - 85 waves;
+  - 1112 project files;
+  - 41 test files;
+  - 275 tests passed.
+- PASS for `npm run build`.
+- PASS for Vite production UI build:
+  - 21 modules transformed;
+  - production bundle written to `dist-ui`.
+- PASS for `git diff --check`.
+- PASS for Playwright `npx` prerequisite.
+- PASS for env-file discovery without secret disclosure:
+  - `.splunkready-live.env` exists in the repo;
+  - file contents were not read or printed;
+  - fixture-only browser verification did not source live secrets.
+- PASS for Playwright policy-backed rerun:
+  - clicked `Run policy-backed rerun`;
+  - generated `/api/artifacts/run-2026-06-05T10-00-07-693Z-c407c40e`;
+  - rendered `job-1 / policy-backed-rerun / succeeded`;
+  - rendered `NOT READY / 0` before and `READY / 100` after;
+  - rendered exported policy patch and deterministic violation mapping;
+  - rendered `UI recalculation: none`;
+  - rendered `Splunk apply action: none`.
+- PASS for Playwright firewall check:
+  - clicked `Run firewall check`;
+  - generated `/api/artifacts/run-2026-06-05T10-00-30-157Z-49170118`;
+  - rendered `job-2 / firewall-check / succeeded`;
+  - rendered `FIREWALL_POLICY_BLOCKED`;
+  - rendered `Blocked before Splunk: yes`;
+  - rendered `Mutation: no`;
+  - rendered proof audit `PASS`.
+- FAIL then PASS for Playwright mobile policy layout:
+  - first overflow pass found `.policy-patch-panel` internal overflow on the policy-rerun mobile page;
+  - after CSS fix, policy-rerun desktop 1440px, policy-rerun mobile 390px, firewall-check desktop 1440px, and firewall-check mobile 390px all reported no document/body/panel/table/card horizontal overflow.
+- PASS for screenshot artifacts:
+  - `output/playwright/move12-policy-rerun-desktop.png`;
+  - `output/playwright/move12-policy-rerun-mobile.png`;
+  - `output/playwright/move12-firewall-check-desktop.png`;
+  - `output/playwright/move12-firewall-check-mobile.png`.
+
+Open risks:
+
+- Browser screenshots live under ignored `output/playwright/`; they are local verification artifacts and are not committed.
+- The generated workbench run directories are local ignored artifacts. They are useful for review on this machine but are not committed as product fixtures.

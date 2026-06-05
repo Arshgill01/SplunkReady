@@ -1265,6 +1265,59 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("firewall-block-before-splunk / PASS");
   });
 
+  it("renders policy patch and firewall controls as a receipt-grounded safety loop", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": contract,
+        "missions.json": [mission],
+        "receipt-before-001.json": receipt({
+          id: "receipt-before-001",
+          verdict: "NOT READY",
+          score: 0,
+          violations: [violation.id],
+          evidenceRefs: []
+        }),
+        "receipt-after-001.json": receipt({}),
+        "policy-patch.json": policyPatch,
+        "trace-before.json": beforeTrace,
+        "trace-after.json": afterTrace,
+        "violations-before.json": [violation],
+        "violations-after.json": [],
+        "firewall-block-before.json": firewallBlock,
+        "proof-audit.json": firewallProofAudit
+      })
+    );
+    const html = renderApp(bundle, "policy-firewall", {
+      workbench: { available: true, healthStatus: "available" }
+    });
+
+    expect(html).toContain('data-view="policy-firewall"');
+    expect(html).toContain('class="active">Policy</a>');
+    expect(html).toContain("Policy workbench");
+    expect(html).toContain('data-run-workflow="policy-backed-rerun"');
+    expect(html).toContain('data-run-workflow="firewall-check"');
+    expect(html).toContain("exported additions for human review");
+    expect(html).toContain("pre-execution Splunk tool gate");
+    expect(html).toContain("NOT READY / 0");
+    expect(html).toContain("READY / 100");
+    expect(html).toContain("receipt artifacts");
+    expect(html).toContain("UI recalculation</th><td>none");
+    expect(html).toContain("Exported policy additions");
+    expect(html).toContain("Splunk apply action</th><td>none");
+    expect(html).toContain("inject-contract-summary");
+    expect(html).toContain("violation-spl-001");
+    expect(html).toContain("SPL-001");
+    expect(html).toContain("trace-before-call");
+    expect(html).toContain("Query contains a forbidden SPL pattern.");
+    expect(html).toContain("SAIA optimized SPL");
+    expect(html).toContain("search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now");
+    expect(html).toContain("Firewall block");
+    expect(html).toContain("Blocked before Splunk");
+    expect(html).toContain("Mutation</th><td>no");
+    expect(html).toContain("firewall-block-before-splunk / PASS");
+  });
+
   it("shows an actionable warning when proof artifacts are missing from the UI bundle", async () => {
     const bundle = await loadUiArtifactBundle(
       "/artifact-base",

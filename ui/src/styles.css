@@ -250,6 +250,12 @@ code {
   grid-column: 1 / -1;
 }
 
+.policy-action-panel,
+.policy-patch-panel,
+.firewall-block-panel {
+  grid-column: 1 / -1;
+}
+
 .live-action-list {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -963,10 +969,12 @@ code {
 }
 
 .patch-rules {
+  min-width: 0;
   border-left: 1px solid var(--line);
 }
 
 .patch-rules article {
+  min-width: 0;
   padding: 14px 16px;
   border-bottom: 1px solid var(--line-soft);
 }
@@ -980,6 +988,29 @@ code {
 .patch-rules article p {
   margin: 0 0 8px;
   color: var(--muted);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.patch-map {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.patch-map article {
+  min-width: 0;
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.patch-map article > strong {
+  display: block;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--text);
+  overflow-wrap: anywhere;
 }
 
 .trace-stack {
@@ -1095,6 +1126,15 @@ code {
   .patch-grid,
   .live-action-list {
     grid-template-columns: 1fr;
+  }
+
+  .fact-table th {
+    width: 118px;
+  }
+
+  .fact-table th,
+  .fact-table td {
+    padding: 11px 12px;
   }
 
   .policy-simulator {

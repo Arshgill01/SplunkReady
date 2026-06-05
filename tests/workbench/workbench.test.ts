@@ -59,14 +59,14 @@ const callApi = async (
 };
 
 const waitForJob = async (runner: WorkbenchJobRunner, id: string) => {
-  for (let index = 0; index < 80; index += 1) {
+  for (let index = 0; index < 200; index += 1) {
     const job = runner.getJob(id);
 
     if (job && (job.state === "succeeded" || job.state === "failed")) {
       return job;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 25));
   }
 
   throw new Error(`Timed out waiting for ${id}.`);
@@ -381,6 +381,47 @@ describe("workbench backend", () => {
     expect(imported).toMatchObject({ strictImport: true, finalAnswers: 2 });
     expect(receipt.verdict).toBe("READY");
     expect(receipt.evidenceRefs).toEqual(expect.arrayContaining(["evt-102", "evt-118", "evt-141"]));
+  });
+
+  it("runs policy-backed rerun and firewall-check as server-owned fixture workflows", async () => {
+    const config = await testConfig({ maxRequestBytes: 200_000 });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const rerunResponse = await callApi(config, runner, store, { method: "POST", path: "/api/jobs/policy-backed-rerun" });
+    const rerunStarted = rerunResponse.json as { job: { id: string; workflow: string } };
+    const rerunCompleted = await waitForJob(runner, rerunStarted.job.id);
+    const afterReceipt = JSON.parse(
+      await readFile(join(config.artifactRoot, rerunCompleted.runId, "receipt-after-001.json"), "utf8")
+    ) as { verdict: string; score: number; rerunComparison: { beforeVerdict?: string; afterVerdict?: string } };
+    const firewallResponse = await callApi(config, runner, store, { method: "POST", path: "/api/jobs/firewall-check" });
+    const firewallStarted = firewallResponse.json as { job: { id: string; workflow: string } };
+    const firewallCompleted = await waitForJob(runner, firewallStarted.job.id);
+    const block = JSON.parse(
+      await readFile(join(config.artifactRoot, firewallCompleted.runId, "firewall-block-before.json"), "utf8")
+    ) as { code: string; blockedBeforeSplunk: boolean; mutation: boolean };
+
+    expect(rerunResponse.status).toBe(202);
+    expect(rerunStarted.job.workflow).toBe("policy-backed-rerun");
+    expect(rerunCompleted).toMatchObject({ workflow: "policy-backed-rerun", state: "succeeded" });
+    expect(rerunCompleted.artifacts).toEqual(
+      expect.arrayContaining(["receipt-before-001.json", "policy-patch.json", "receipt-after-001.json", "proof-audit.json"])
+    );
+    expect(afterReceipt).toMatchObject({
+      verdict: "READY",
+      score: 100,
+      rerunComparison: { beforeVerdict: "NOT READY", afterVerdict: "READY" }
+    });
+    expect(firewallResponse.status).toBe(202);
+    expect(firewallStarted.job.workflow).toBe("firewall-check");
+    expect(firewallCompleted).toMatchObject({ workflow: "firewall-check", state: "succeeded" });
+    expect(firewallCompleted.artifacts).toEqual(
+      expect.arrayContaining(["firewall-block-before.json", "proof-audit.json", "proof-manifest.json"])
+    );
+    expect(block).toMatchObject({
+      code: "FIREWALL_POLICY_BLOCKED",
+      blockedBeforeSplunk: true,
+      mutation: false
+    });
   });
 
   it("lists artifact runs with receipt, audit, manifest, mission, and rule summaries", async () => {

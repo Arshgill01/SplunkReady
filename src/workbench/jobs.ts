@@ -1,6 +1,10 @@
 import { relative } from "node:path";
 
 import {
+  runFirewallCheckFromCli,
+  runPolicyBackedRerunFromCli
+} from "../cli.js";
+import {
   externalCertificationInputSummary,
   runExternalTraceCertificationWorkflow,
   runMcpTranscriptCertificationWorkflow,
@@ -86,6 +90,8 @@ export class WorkbenchJobRunner {
 
         return runExternalTraceCertificationWorkflow({ outDir, payload: payload.value });
       },
+      "policy-backed-rerun": async ({ outDir }) => runPolicyBackedRerunFromCli({ outDir }),
+      "firewall-check": async ({ outDir }) => runFirewallCheckFromCli({ outDir }),
       "mcp-transcript-certification": async ({ outDir, payload }) => {
         if (payload?.kind !== "mcp-transcript") {
           throw new Error("MCP transcript certification requires an MCP transcript upload payload.");
