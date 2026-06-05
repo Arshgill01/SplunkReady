@@ -14,6 +14,7 @@
     "audit:reviewers": "node scripts/audit-reviewer-inbox.mjs",
     "audit:submission-copy": "node scripts/audit-submission-copy.mjs",
     "check": "npm run verify:scaffold && npm run verify:runtime-contracts && npm run build && npm run ui:build && npm test && npm run audit:secret-env-ignore && npm run audit:reviewers && npm run audit:submission-copy && git diff --check",
+    "mcp": "npm run build && node dist/src/mcp/server.js",
     "test:workbench": "vitest run tests/workbench tests/ui/app.test.ts",
     "workbench": "npm run build && npm run ui:build && node dist/src/workbench/server.js",
     "workbench:dev": "npm run build && node dist/src/workbench/server.js --dev-ui",

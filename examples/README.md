@@ -106,6 +106,46 @@ npm run splunkready -- proof-audit --out "$tmp" --require-pass true --json
 
 The bridge is not a second grader. It only records tool calls, adapter results, errors, and final answers in the canonical trace schema. The deterministic rule engine still decides readiness.
 
+## Run SplunkReady as an MCP server
+
+SplunkReady can also run as a local MCP server so MCP clients can invoke the Agent Readiness Compiler directly. This is not a Splunk search copilot and it does not mutate Splunk. It exposes certification tools that grade local traces and transcripts into Readiness Receipts.
+
+Build and launch the stdio server:
+
+```bash
+npm run mcp
+```
+
+For MCP clients that accept a command configuration, use:
+
+```json
+{
+  "command": "npm",
+  "args": ["run", "mcp"],
+  "cwd": "/path/to/SplunkReady"
+}
+```
+
+The server exposes these tools:
+
+- `splunkready_describe_certification`: returns the product posture, no-mutation boundary, and deterministic grading authority.
+- `splunkready_certify_external_trace`: grades a local SplunkReady trace JSON file and writes `trace-external.json`, deterministic violations, score, receipt, and proof audit artifacts.
+- `splunkready_certify_mcp_transcript`: imports a local Splunk MCP JSONL transcript, appends the producer final answer, and writes the same deterministic certification artifacts.
+
+Example `splunkready_certify_external_trace` arguments:
+
+```json
+{
+  "tracePath": "examples/sample-external-trace-pass.json",
+  "outDir": "artifacts/mcp-server-external-pass",
+  "requirePass": true,
+  "agentName": "External MCP Agent",
+  "agentVersion": "mcp-server-pass-001"
+}
+```
+
+The MCP server refuses `.env*` and `.splunkready*` paths. Keep secrets in local environment files for the existing CLI/workbench flows; do not pass them as MCP tool arguments.
+
 ## Import an MCP JSON-RPC transcript
 
 External agents do not have to emit SplunkReady trace events directly. If an agent can log Splunk MCP JSON-RPC `tools/call` requests and responses, SplunkReady can certify that transcript directly:

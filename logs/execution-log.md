@@ -8947,6 +8947,58 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 42 SplunkReady MCP Server
+
+Context:
+- Continued development after Move 41.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- User explicitly deferred video/submission work; this move stayed on product
+  development and MCP award-positioning.
+- User's audit called out that SplunkReady consumed MCP traces but did not
+  expose an MCP server.
+- Checked the current Model Context Protocol 2025-06-18 docs for lifecycle,
+  stdio transport, `tools/list`, `tools/call`, tool result shape, and security
+  considerations before implementing a dependency-free local stdio server.
+
+Files touched:
+- `src/mcp/server.ts`
+- `tests/mcp/server.test.ts`
+- `package.json`
+- `examples/README.md`
+- `logs/risk-register.md`
+- `moves/README.md`
+- `moves/moves42.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added a local stdio MCP server that supports:
+  - `initialize`;
+  - `notifications/initialized`;
+  - `tools/list`;
+  - `tools/call`;
+  - protocol errors for invalid requests, unknown methods, and unknown tools.
+- Exposed three SplunkReady MCP tools:
+  - `splunkready_describe_certification`;
+  - `splunkready_certify_external_trace`;
+  - `splunkready_certify_mcp_transcript`.
+- Reused existing CLI/workflow certification paths so deterministic rules and
+  Readiness Receipts remain authoritative.
+- Added non-destructive MCP tool annotations and no-mutation instructions.
+- Added `.env*` / `.splunkready*` path refusal before MCP tools read or write
+  local files.
+- Added `npm run mcp` for local MCP client launch.
+- Documented MCP server usage and arguments in `examples/README.md`.
+- Added risk `R016 MCP Server Scope Drift` to keep this server scoped to
+  certification rather than Splunk search/copilot behavior.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+- The MCP server is local stdio only; streamable HTTP is not implemented.
+- This move did not change UI code, so no Playwright run was required.
+
 ## 2026-06-05 - Move 41 Agent Trace Bridge
 
 Context:

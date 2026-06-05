@@ -7574,6 +7574,83 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 42 SplunkReady MCP Server Verification
+
+Commands:
+
+- `npm test -- tests/mcp/server.test.ts`
+- `npm test -- tests/mcp/server.test.ts`
+- `npm run build`
+- `npm test -- tests/mcp/server.test.ts`
+- `npm run build`
+- `printf '%s\n%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"stdio-smoke","version":"1"}}}' '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' | node dist/src/mcp/server.js`
+- `npm run check && git diff --check`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for the first focused MCP server tests:
+  - 1 test file passed;
+  - 6 tests passed.
+- FAIL for the first TypeScript build:
+  - `toolResult(result)` passed a typed workflow result where TypeScript
+    required a record-shaped MCP structured payload;
+  - invalid-request handling could pass an undefined id into the JSON-RPC error
+    helper.
+- PASS after the type fixes:
+  - focused MCP server test file passed again;
+  - `npm run build` completed.
+- PASS for the compiled stdio smoke:
+  - `initialize` returned protocol version `2025-06-18`, `tools` capability,
+    SplunkReady server info, deterministic-grading instruction, and no-mutation
+    instruction;
+  - `tools/list` returned the three SplunkReady certification tools with
+    schemas and non-destructive annotations.
+- PASS for full `npm run check && git diff --check` before log updates:
+  - scaffold verified with 85 waves and 1750 project files;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 44 test files passed;
+  - 303 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output;
+  - explicit final `git diff --check` completed with no output.
+- PASS for full `npm run check && git diff --check` after log updates:
+  - scaffold verified with 85 waves and 1750 project files;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 44 test files passed;
+  - 303 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output;
+  - explicit final `git diff --check` completed with no output.
+
+References:
+
+- Model Context Protocol 2025-06-18 Tools:
+  `https://modelcontextprotocol.io/specification/2025-06-18/server/tools`
+- Model Context Protocol 2025-06-18 Lifecycle:
+  `https://modelcontextprotocol.io/specification/2025-06-18/basic/lifecycle`
+- Model Context Protocol 2025-06-18 Transports:
+  `https://modelcontextprotocol.io/specification/2025-06-18/basic/transports`
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+- The server is stdio-only; streamable HTTP remains future work and would need
+  origin/auth hardening before implementation.
+
 ## 2026-06-05 - Move 41 Agent Trace Bridge Verification
 
 Commands:

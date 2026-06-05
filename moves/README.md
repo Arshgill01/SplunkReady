@@ -64,6 +64,7 @@ commands, or filesystem paths.
 | P0 | [39](moves39.md) Atomic workbench job limit | 0.5d | Reserves a job slot before async run allocation so concurrent starts cannot exceed the configured limit. |
 | P0 | [40](moves40.md) Artifact symlink read guard | 0.5d | Keeps managed artifact reads from following symlinks out of a run directory. |
 | P0 | [41](moves41.md) Agent trace bridge | 0.5d | Reduces native-agent integration friction without adding framework dependencies or weakening deterministic grading. |
+| P0 | [42](moves42.md) SplunkReady MCP server | 0.5d | Exposes the Agent Readiness Compiler as local MCP certification tools without turning SplunkReady into a Splunk copilot. |
 
 ## Non-Negotiable Boundaries
 
