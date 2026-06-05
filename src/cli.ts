@@ -48,6 +48,12 @@ import {
 } from "./schemas/core.js";
 import { importMcpTranscript, parseMcpTranscriptRecords } from "./traces/mcp-transcript.js";
 import { writeUiShell } from "./ui/shell.js";
+import {
+  runFixtureCertification,
+  type FixtureCertificationWorkflowInput,
+  type FixtureCertificationWorkflowResult,
+  type FixtureCertificationWorkflowSteps
+} from "./workflows/fixture-certification.js";
 
 const defaultFixturePath = "fixtures/acme-soc-dev/adapter-fixture.json";
 const defaultMissionPath = "fixtures/acme-soc-dev/missions/security-investigation-readiness.json";
@@ -3242,86 +3248,45 @@ ${markdownRows}
   return [...new Set([...artifacts, summaryPath, markdownPath])];
 };
 
-const demoCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const startedAt = Date.now();
+const fixtureCertificationSteps = (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): FixtureCertificationWorkflowSteps => {
   const beforeOptions = { ...options, phase: "before" as const };
-  const compileArtifacts = await compileCommand(beforeOptions, env);
-  const evaluateArtifacts = await evaluateCommand(beforeOptions, env);
-  const receiptArtifacts = await receiptCommand(beforeOptions, env);
-  const rerunArtifacts = await rerunCommand(beforeOptions, env);
-  const uiShellPath = await writeUiShell(options.out);
-  const rehearsalPath = join(options.out, "demo-rehearsal.json");
-  const notesPath = join(options.out, "demo-rehearsal.md");
-  const elapsedSeconds = Number(((Date.now() - startedAt) / 1000).toFixed(3));
-  const expectedArtifacts = [
-    ...compileArtifacts,
-    ...evaluateArtifacts,
-    ...receiptArtifacts,
-    ...rerunArtifacts,
-    uiShellPath,
-    rehearsalPath,
-    notesPath
-  ];
-  const uiRoute = `${uiShellPath}#certification-replay`;
-  const rehearsal = {
-    status: "PASS",
-    targetSeconds: 180,
-    measuredSeconds: elapsedSeconds,
-    fitsUnderThreeMinutes: elapsedSeconds < 180,
-    uiRoute,
-    story: "fail -> compile -> patch -> rerun -> pass",
-    expectedArtifacts,
-    timingNotes: [
-      { segment: "setup", targetSeconds: 15 },
-      { segment: "scary failure", targetSeconds: 30 },
-      { segment: "compile and grade", targetSeconds: 70 },
-      { segment: "policy patch", targetSeconds: 25 },
-      { segment: "rerun and close", targetSeconds: 40 }
-    ]
+  const afterOptions = { ...options, phase: "after" as const };
+
+  return {
+    compile: () => compileCommand(beforeOptions, env),
+    evaluate: () => evaluateCommand(beforeOptions, env),
+    receiptBefore: () => receiptCommand(beforeOptions, env),
+    rerun: () => rerunCommand(afterOptions, env),
+    receiptAfter: async () => [join(options.out, "receipt-after-001.json"), join(options.out, "receipt-after-001.md")],
+    writeUiShell: () => writeUiShell(options.out),
+    proofAudit: () => proofAuditCommand({ ...options, requirePass: false })
   };
-
-  await writeJson(rehearsalPath, rehearsal);
-  await writeText(
-    notesPath,
-    `# SplunkReady Demo Rehearsal
-
-- Story: fail -> compile -> patch -> rerun -> pass.
-- Target: under 180 seconds.
-- Measured CLI orchestration: ${elapsedSeconds}s.
-- UI route: ${uiRoute}
-- Expected artifacts: ${expectedArtifacts.length}
-
-Open the UI shell at the route above and follow docs/demo-script.md for the spoken path.
-`
-  );
-
-  return expectedArtifacts;
 };
 
-export interface FixtureCertificationWorkflowInput {
-  outDir: string;
-}
+const demoCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
+  const workflow = await runFixtureCertification(
+    { outDir: options.out, includeProofAudit: false },
+    fixtureCertificationSteps(options, env)
+  );
 
-export interface FixtureCertificationWorkflowResult {
-  status: "PASS";
-  outDir: string;
-  artifacts: string[];
-}
+  return workflow.artifacts;
+};
 
-export const runFixtureCertificationWorkflow = async (
+export const runFixtureCertificationFromCli = async (
   input: FixtureCertificationWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<FixtureCertificationWorkflowResult> => {
   const options = defaultCliOptions({ mode: "fixture", out: input.outDir });
-  const demoArtifacts = await demoCommand(options, env);
-  const auditArtifacts = await proofAuditCommand({ ...options, requirePass: false });
-
-  return {
-    status: "PASS",
-    outDir: input.outDir,
-    artifacts: [...new Set([...demoArtifacts, ...auditArtifacts])]
-  };
+  return runFixtureCertification(
+    { ...input, includeProofAudit: true },
+    fixtureCertificationSteps(options, env)
+  );
 };
+
+export const runFixtureCertificationWorkflow = runFixtureCertificationFromCli;
 
 const main = async (): Promise<void> => {
   const { command, options } = parseArgs(process.argv.slice(2));

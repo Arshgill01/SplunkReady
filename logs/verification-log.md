@@ -5929,3 +5929,38 @@ Open risks:
 
 - Live token forwarding was verified against mock MCP transport and HTTP JSON-RPC integration tests, not a production Splunk MCP server.
 - If a future MCP server does not support the nested `tokens` object, the parity-preserving behavior should be an explicit rejection in both fixture and live modes rather than silent token loss.
+
+## 2026-06-05 - Move 04 Reusable Fixture Certification Workflow
+
+Commands:
+
+- `npx tsc --noEmit && npx vitest run tests/workflows tests/workbench/workbench.test.ts tests/cli/flow.test.ts`
+- `npm run build && npm run check`
+- `git diff --check`
+
+Result:
+
+- FAIL for the first focused TypeScript/workflow/workbench/CLI run:
+  - TypeScript caught test progress callbacks returning the numeric result of `Array.push`.
+- FAIL for the second focused run:
+  - workflow and workbench tests passed;
+  - CLI demo compatibility test failed because rehearsal `expectedArtifacts` omitted the rehearsal JSON and Markdown files.
+- FAIL for the third focused run:
+  - workflow entrypoint, workbench, and CLI tests passed except the new backend-facing workflow test expected `mutation: false`;
+  - the workflow returned `mutation: null` when the fixture proof audit omitted an explicit mutation field.
+- PASS after fixes for focused TypeScript/workflow/workbench/CLI verification:
+  - 3 test files;
+  - 43 tests passed.
+- PASS for canonical build/check gate:
+  - production TypeScript build passed;
+  - scaffold verified;
+  - 85 waves;
+  - 902 project files;
+  - 41 test files;
+  - 260 tests passed.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Move 04 intentionally did not rewrite the full CLI monolith. The extracted workflow still injects existing CLI command functions and uses a dynamic CLI step provider for the backend-facing entrypoint.
+- Future workflow expansion should move command primitives into smaller modules only when needed by another real caller.

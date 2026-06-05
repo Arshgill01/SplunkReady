@@ -7573,3 +7573,49 @@ Result:
 - Production build passed.
 - Full offline check passed with 40 test files and 257 tests.
 - `git diff --check` passed.
+
+## 2026-06-05 - Move 04 Reusable Fixture Certification Workflow
+
+Scope:
+- Extract the fixture certification orchestration out of direct workbench-to-CLI coupling.
+- Keep CLI `demo` artifact behavior stable.
+- Add a backend-facing workflow entrypoint with stable progress phases and structured success/error metadata.
+- Avoid a broad CLI decomposition.
+
+Files expected/touched:
+- `src/workflows/fixture-certification.ts`
+- `src/cli.ts`
+- `src/workbench/jobs.ts`
+- `tests/workflows/fixture-certification.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `src/workflows/fixture-certification.ts` with:
+  - stable phase names for compile, evaluate, before receipt, rerun, after receipt, UI shell, demo rehearsal, and proof audit;
+  - a progress callback contract;
+  - structured success metadata including run id, output directory, artifact paths, before/after verdicts, fail-to-pass status, mutation status, and empty error list on success;
+  - structured redacted `FixtureCertificationWorkflowError` failures.
+- Moved demo rehearsal writing into the workflow module while preserving the old CLI `demo` rehearsal artifact contract.
+- Rewired `src/cli.ts` so `demo` and the fixture certification workflow use the extracted phase runner with existing CLI command functions as injected steps.
+- Added `runFixtureCertificationFromCli` for the workflow module's backend-facing entrypoint to call existing command implementations without shelling out, while keeping `runFixtureCertificationWorkflow` as a CLI-module compatibility alias.
+- Updated the workbench job runner to import `runFixtureCertificationWorkflow` from `src/workflows/fixture-certification.ts` instead of importing `src/cli.ts` directly.
+- Added direct workflow tests for stable phase events, structured metadata, redacted phase failures, and the backend-facing fixture workflow entrypoint.
+
+Product impact:
+- The local workbench no longer depends directly on the CLI module as its public workflow surface.
+- Workflow progress is now explicit enough for UI rendering instead of only workbench-local generic phase messages.
+- CLI demo behavior remains stable while the orchestration has a reusable module boundary.
+
+Reviewer findings:
+- Subagents are disabled per user direction; no reviewer loop was run for this slice.
+
+Open risks:
+- The workflow still reuses existing CLI command implementations as injected steps. This is intentionally scoped for Move 04; full command decomposition remains out of scope and should be handled only if later moves need it.
+- The backend-facing workflow entrypoint dynamically imports the CLI step provider so the workbench can call `src/workflows/` directly without shelling out. That is a transition boundary, not a final command-module architecture.
+
+Result:
+- Focused TypeScript/workflow/workbench/CLI checks passed.
+- Production build passed.
+- Full offline check passed with 41 test files and 260 tests.
+- `git diff --check` passed.

@@ -1,6 +1,6 @@
 import { relative } from "node:path";
 
-import { runFixtureCertificationWorkflow } from "../cli.js";
+import { runFixtureCertificationWorkflow } from "../workflows/fixture-certification.js";
 import { WorkbenchArtifactStore } from "./artifacts.js";
 import { redactUnknownError } from "./redaction.js";
 import type { WorkbenchConfig } from "./config.js";
