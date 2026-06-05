@@ -377,6 +377,31 @@ export const createWorkbenchApiHandler =
       return true;
     }
 
+    if (request.method === "GET" && url.pathname.startsWith("/artifacts/")) {
+      const path = decodeURIComponent(url.pathname.slice("/artifacts/".length));
+      const [bundleId, ...fileParts] = path.split("/");
+      const fileName = fileParts.join("/");
+
+      if (!bundleId || !fileName) {
+        response.statusCode = 404;
+        response.end("Not found");
+        return true;
+      }
+
+      const file = await context.artifactStore.readBundleFile(bundleId, fileName);
+
+      if (!file) {
+        response.statusCode = 204;
+        response.end();
+        return true;
+      }
+
+      response.statusCode = 200;
+      response.setHeader("content-type", contentTypeFor(fileName));
+      response.end(file);
+      return true;
+    }
+
     if (!url.pathname.startsWith("/api/")) {
       return false;
     }

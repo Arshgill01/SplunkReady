@@ -608,6 +608,94 @@ const mcpTranscriptImportSchema = z
 
 export type McpTranscriptImport = z.infer<typeof mcpTranscriptImportSchema>;
 
+const mcpProofSummarySchema = z
+  .object({
+    source: z.literal("splunkready-mcp-proof"),
+    status: z.enum(["PASS", "FAIL"]),
+    mutation: z.boolean(),
+    generatedAt: z.string().min(1),
+    serverPath: z.string().min(1),
+    transcriptPath: z.string().min(1),
+    handshake: z
+      .object({
+        protocolVersion: z.string().min(1),
+        serverName: z.string().min(1),
+        instructions: z.string().min(1)
+      })
+      .strict(),
+    tools: z.array(
+      z
+        .object({
+          name: z.string().min(1),
+          destructiveHint: z.boolean(),
+          readOnlyHint: z.boolean()
+        })
+        .strict()
+    ),
+    resources: z.array(
+      z
+        .object({
+          uri: z.string().min(1),
+          name: z.string().min(1),
+          mimeType: z.string().min(1)
+        })
+        .strict()
+    ),
+    prompts: z.array(
+      z
+        .object({
+          name: z.string().min(1),
+          argumentCount: z.number().int().nonnegative()
+        })
+        .strict()
+    ),
+    describe: z.record(z.unknown()),
+    postureResource: z.record(z.unknown()),
+    clientConfigResource: z.record(z.unknown()),
+    certificationLoopResource: z.record(z.unknown()),
+    transcriptPrompt: z.record(z.unknown()),
+    certificationLoopPrompt: z.record(z.unknown()),
+    transcriptCertification: z
+      .object({
+        status: z.enum(["PASS", "FAIL"]),
+        outDir: z.string().min(1),
+        mutation: z.boolean(),
+        artifacts: z.array(z.string().min(1))
+      })
+      .strict(),
+    agentDrivenWorkflow: z
+      .object({
+        status: z.enum(["PASS", "FAIL"]),
+        splunkMcpServerRole: z.string().min(1),
+        splunkReadyMcpServerRole: z.string().min(1),
+        stages: z.array(z.string().min(1)),
+        deterministicAuthority: z.boolean(),
+        mutation: z.boolean()
+      })
+      .strict(),
+    splunkMcpBoundary: z
+      .object({
+        status: z.enum(["PASS", "FAIL"]),
+        transcriptKind: z.string().min(1),
+        transcriptPath: z.string().min(1),
+        localMcpServerRole: z.string().min(1),
+        splunkMcpServerRole: z.string().min(1),
+        certifiedToolNames: z.array(z.string().min(1)),
+        splunkToolCallCount: z.number().int().nonnegative(),
+        includesSavedSearchExecution: z.boolean(),
+        evidenceRefs: z.array(z.string().min(1)),
+        receiptPath: z.string().min(1),
+        deterministicAuthority: z.boolean(),
+        mutation: z.boolean()
+      })
+      .strict(),
+    artifacts: z.array(z.string().min(1)),
+    nextCommands: z.array(z.string().min(1))
+  })
+  .strict();
+
+export type McpProofSummary = z.infer<typeof mcpProofSummarySchema>;
+
 const publicProofExportManifestSchema = z
   .object({
     source: z.literal("splunkready-public-proof-export"),
@@ -663,6 +751,7 @@ export interface UiArtifactBundle {
   certificationIndex?: CertificationIndex;
   firewallBlock?: FirewallBlock;
   mcpTranscriptImport?: McpTranscriptImport;
+  mcpProofSummary?: McpProofSummary;
   publicProofExport?: PublicProofExportManifest;
   beforeTrace: TraceEvent[];
   afterTrace: TraceEvent[];
@@ -697,6 +786,7 @@ const optionalFiles = [
   "ui-artifacts.json",
   "firewall-block-before.json",
   "firewall-block-after.json",
+  "mcp-proof-summary.json",
   "mcp-transcript-import.json",
   "public-proof-export-manifest.json",
   "trace-before.json",
@@ -725,6 +815,7 @@ export const defaultArtifactOptions: ArtifactOption[] = [
   { label: "Live security proof", path: "artifacts/live-security-ui" },
   { label: "Certification index", path: "artifacts/certification-index" },
   { label: "Suite proof", path: "artifacts/suite-proof" },
+  { label: "MCP proof", path: "artifacts/mcp-proof" },
   { label: "MCP transcript import", path: "artifacts/mcp-transcript" },
   { label: "LLM fixture proof", path: "artifacts/llm-fixture-proof" },
   { label: "Fixture demo", path: "artifacts/fixture-demo" },
@@ -828,6 +919,7 @@ export const loadUiArtifactBundle = async (
     firewallBlock: firewallBlockSchema
       .optional()
       .parse(loaded.get("firewall-block-before.json") ?? loaded.get("firewall-block-after.json")),
+    mcpProofSummary: mcpProofSummarySchema.optional().parse(loaded.get("mcp-proof-summary.json")),
     mcpTranscriptImport: mcpTranscriptImportSchema.optional().parse(loaded.get("mcp-transcript-import.json")),
     publicProofExport: publicProofExportManifestSchema
       .optional()
@@ -860,6 +952,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   firewallStory: string;
   suiteStory: string;
   indexStory: string;
+  mcpProofStory: string;
   transcriptStory: string;
 } => {
   const receipt = bundle.receipt;
@@ -915,6 +1008,9 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
     indexStory: bundle.certificationIndex
       ? `${bundle.certificationIndex.status.toLowerCase()} ${bundle.certificationIndex.totals.proofs} proof index`
       : "index not loaded",
+    mcpProofStory: bundle.mcpProofSummary
+      ? `mcp proof ${bundle.mcpProofSummary.status.toLowerCase()} ${bundle.mcpProofSummary.tools.length} tools`
+      : "mcp proof not loaded",
     transcriptStory: bundle.mcpTranscriptImport
       ? `mcp import ${bundle.mcpTranscriptImport.strictImport ? "strict" : "loaded"}`
       : "mcp import not loaded"

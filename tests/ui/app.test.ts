@@ -314,6 +314,92 @@ const mcpTranscriptImport = {
     "npm run splunkready -- grade-trace --trace artifacts/mcp-transcript/trace-imported.json --out artifacts/mcp-transcript --json"
 } as const;
 
+const mcpProofSummary = {
+  source: "splunkready-mcp-proof",
+  status: "PASS",
+  mutation: false,
+  generatedAt: "2026-06-01T06:45:00.000Z",
+  serverPath: "dist/src/mcp/server.js",
+  transcriptPath: "examples/sample-mcp-transcript-pass.jsonl",
+  handshake: {
+    protocolVersion: "2025-06-18",
+    serverName: "splunkready",
+    instructions:
+      "SplunkReady certifies Splunk-connected agent traces. Deterministic rules decide readiness; LLM and SAIA output is advisory only. Tools do not mutate Splunk."
+  },
+  tools: [
+    { name: "splunkready_describe_certification", destructiveHint: false, readOnlyHint: true },
+    { name: "splunkready_certify_external_trace", destructiveHint: false, readOnlyHint: true },
+    { name: "splunkready_certify_mcp_transcript", destructiveHint: false, readOnlyHint: true }
+  ],
+  resources: [
+    { uri: "splunkready://certification/posture", name: "certification-posture", mimeType: "application/json" },
+    { uri: "splunkready://client-config/stdio", name: "stdio-client-config", mimeType: "application/json" },
+    {
+      uri: "splunkready://workflows/splunk-mcp-certification-loop",
+      name: "splunk-mcp-certification-loop",
+      mimeType: "text/markdown"
+    }
+  ],
+  prompts: [
+    { name: "splunkready_certify_mcp_transcript", argumentCount: 3 },
+    { name: "splunkready_splunk_mcp_certification_loop", argumentCount: 3 }
+  ],
+  describe: { deterministicAuthority: true, advisoryLlmOnly: true, mutation: false },
+  postureResource: { contents: [] },
+  clientConfigResource: { contents: [] },
+  certificationLoopResource: { contents: [] },
+  transcriptPrompt: { messages: [] },
+  certificationLoopPrompt: { messages: [] },
+  transcriptCertification: {
+    status: "PASS",
+    outDir: "submission-evidence/mcp-proof/mcp-transcript-certification",
+    mutation: false,
+    artifacts: [
+      "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+      "submission-evidence/mcp-proof/mcp-transcript-certification/proof-audit.json"
+    ]
+  },
+  agentDrivenWorkflow: {
+    status: "PASS",
+    splunkMcpServerRole:
+      "Splunk MCP performs the read-only investigation actions and returns operational data to the agent.",
+    splunkReadyMcpServerRole:
+      "SplunkReady MCP gives the agent posture resources, reusable prompts, and deterministic certification tools for the captured transcript.",
+    stages: [
+      "MCP client discovers SplunkReady certification posture and stdio configuration.",
+      "Agent investigates through Splunk MCP read-only tools and preserves the JSON-RPC transcript.",
+      "Agent calls SplunkReady MCP to certify the captured Splunk MCP transcript.",
+      "Agent explains the generated Readiness Receipt without overriding the deterministic verdict."
+    ],
+    deterministicAuthority: true,
+    mutation: false
+  },
+  splunkMcpBoundary: {
+    status: "PASS",
+    transcriptKind: "captured-splunk-mcp-jsonrpc",
+    transcriptPath: "examples/sample-mcp-transcript-pass.jsonl",
+    localMcpServerRole: "SplunkReady MCP exposes the Agent Readiness Compiler as a certification interface for MCP clients.",
+    splunkMcpServerRole:
+      "The captured transcript is the Splunk MCP Server boundary: an agent invoked Splunk MCP tools, then SplunkReady certified the behavior.",
+    certifiedToolNames: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+    splunkToolCallCount: 2,
+    includesSavedSearchExecution: true,
+    evidenceRefs: ["evt-102", "evt-118", "evt-141"],
+    receiptPath: "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+    deterministicAuthority: true,
+    mutation: false
+  },
+  artifacts: [
+    "submission-evidence/mcp-proof/mcp-proof-summary.json",
+    "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json"
+  ],
+  nextCommands: [
+    "npm run mcp",
+    "npm run splunkready -- certify-mcp-transcript --transcript examples/sample-mcp-transcript-pass.jsonl --out submission-evidence/mcp-proof/mcp-transcript-certification --strict-import true --require-pass true --json"
+  ]
+} as const;
+
 const liveProofSummary = {
   status: "PASS",
   mode: "live",
@@ -855,6 +941,7 @@ describe("Vite UI artifact app", () => {
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/live-security-ui");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/certification-index");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/suite-proof");
+    expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/mcp-proof");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/mcp-transcript");
     expect(artifactUrl("/custom", "receipt-after-001.json")).toBe("/custom/receipt-after-001.json");
     expect(artifactUrl("artifacts/live-security-ui", "receipt-after-001.json")).toBe(
@@ -934,6 +1021,7 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain('value="artifacts/live-security-ui" selected');
     expect(html).toContain("LLM fixture proof");
     expect(html).toContain("Certification index");
+    expect(html).toContain("MCP proof");
     expect(html).toContain("MCP transcript import");
     expect(html).toContain("Hosted model proof");
   });
@@ -1117,6 +1205,32 @@ describe("Vite UI artifact app", () => {
     expect(traceHtml).toContain("examples/sample-mcp-transcript.jsonl");
     expect(traceHtml).toContain("artifacts/mcp-transcript/trace-imported.json");
     expect(traceHtml).not.toContain("Artifact bundle incomplete");
+  });
+
+  it("loads and renders MCP proof summary as a first-class certification loop", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "artifacts/mcp-proof",
+      fetcherFor({
+        "mcp-proof-summary.json": mcpProofSummary
+      })
+    );
+    const html = renderApp(bundle, "mcp-proof", { artifactOptions: defaultArtifactOptions });
+
+    expect(bundle.mcpProofSummary?.status).toBe("PASS");
+    expect(html).toContain('data-view="mcp-proof"');
+    expect(html).toContain('class="active">MCP</a>');
+    expect(html).toContain("MCP proof");
+    expect(html).toContain("Certification loop");
+    expect(html).toContain("splunkready://workflows/splunk-mcp-certification-loop");
+    expect(html).toContain("splunkready_splunk_mcp_certification_loop");
+    expect(html).toContain("splunkready_certify_mcp_transcript");
+    expect(html).toContain("splunk_get_knowledge_objects / splunk_run_saved_search");
+    expect(html).toContain("Saved-search execution");
+    expect(html).toContain("evt-102 / evt-118 / evt-141");
+    expect(html).toContain("Deterministic");
+    expect(html).toContain("mcp proof pass 3 tools");
+    expect(html).toContain("<td>no</td>");
+    expect(html).not.toContain("Artifact bundle incomplete");
   });
 
   it("renders a multi-mission suite proof ledger from artifact data", async () => {

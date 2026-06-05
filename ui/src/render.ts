@@ -8,6 +8,7 @@ import {
   type HostedModelDiagnostic,
   type HostedModelProof,
   type HostedModelSummary,
+  type McpProofSummary,
   type McpTranscriptImport,
   type ProofAudit,
   type PublicProofExportManifest,
@@ -24,6 +25,7 @@ export type ViewId =
   | "trace-timeline"
   | "policy-firewall"
   | "suite-proof"
+  | "mcp-proof"
   | "agent-index"
   | "proof-browser"
   | "import-certification"
@@ -35,6 +37,7 @@ export const views: Array<{ id: ViewId; label: string }> = [
   { id: "trace-timeline", label: "Trace" },
   { id: "policy-firewall", label: "Policy" },
   { id: "suite-proof", label: "Suite" },
+  { id: "mcp-proof", label: "MCP" },
   { id: "agent-index", label: "Agents" },
   { id: "proof-browser", label: "Runs" },
   { id: "import-certification", label: "Import" },
@@ -158,6 +161,89 @@ const renderMcpTranscriptImport = (summary: McpTranscriptImport | undefined): st
       ["Next command", summary.nextCommand ?? "grade-trace"]
     ])}
   </section>`;
+};
+
+const renderMcpProofList = (items: readonly string[], className: string): string =>
+  items.length > 0 ? renderPlainList(items, className) : `<p class="empty">None recorded.</p>`;
+
+const renderMcpProofTable = (summary: McpProofSummary): string => {
+  const boundary = summary.splunkMcpBoundary;
+
+  return renderFactTable([
+    ["Status", summary.status],
+    ["Handshake", `${summary.handshake.serverName} / ${summary.handshake.protocolVersion}`],
+    ["Splunk MCP transcript", boundary.transcriptPath],
+    ["Certified Splunk tools", boundary.certifiedToolNames.join(" / ")],
+    ["Splunk tool calls", boundary.splunkToolCallCount],
+    ["Saved-search execution", boundary.includesSavedSearchExecution ? "yes" : "no"],
+    ["Evidence refs", boundary.evidenceRefs.join(" / ")],
+    ["Receipt", boundary.receiptPath],
+    ["Deterministic authority", boundary.deterministicAuthority ? "yes" : "no"],
+    ["Mutation", summary.mutation || boundary.mutation ? "yes" : "no"]
+  ]);
+};
+
+const renderMcpProof = (bundle: UiArtifactBundle): string => {
+  const summary = bundle.mcpProofSummary;
+
+  return `<main class="view" data-view="mcp-proof">
+    <section class="workbench">
+      <div class="section-title">
+        <h1>MCP proof</h1>
+      </div>
+      <div class="receipt-ledger">
+        ${
+          summary
+            ? `<section class="panel mcp-proof-panel">
+                <h2>Certification loop</h2>
+                ${renderMcpProofTable(summary)}
+              </section>
+              <section class="panel mcp-proof-panel">
+                <h2>Agent-driven workflow</h2>
+                ${renderFactTable([
+                  ["Status", summary.agentDrivenWorkflow.status],
+                  ["Splunk MCP role", summary.agentDrivenWorkflow.splunkMcpServerRole],
+                  ["SplunkReady MCP role", summary.agentDrivenWorkflow.splunkReadyMcpServerRole],
+                  ["Deterministic authority", summary.agentDrivenWorkflow.deterministicAuthority ? "yes" : "no"],
+                  ["Mutation", summary.agentDrivenWorkflow.mutation ? "yes" : "no"]
+                ])}
+                ${renderMcpProofList(summary.agentDrivenWorkflow.stages, "stage-list")}
+              </section>
+              <section class="panel mcp-proof-panel">
+                <h2>MCP surface</h2>
+                ${renderFactTable([
+                  ["Tools", summary.tools.map((tool) => `${tool.name} / read-only ${tool.readOnlyHint ? "yes" : "no"}`).join(" / ")],
+                  ["Resources", summary.resources.map((resource) => resource.uri).join(" / ")],
+                  ["Prompts", summary.prompts.map((prompt) => `${prompt.name} (${prompt.argumentCount})`).join(" / ")]
+                ])}
+              </section>
+              <section class="panel mcp-proof-panel">
+                <h2>Certified boundary</h2>
+                ${renderFactTable([
+                  ["Boundary", summary.splunkMcpBoundary.transcriptKind],
+                  ["Local MCP role", summary.splunkMcpBoundary.localMcpServerRole],
+                  ["Splunk MCP role", summary.splunkMcpBoundary.splunkMcpServerRole],
+                  ["Transcript certification", summary.transcriptCertification.status],
+                  ["Certification out dir", summary.transcriptCertification.outDir],
+                  ["Generated artifacts", summary.transcriptCertification.artifacts.length],
+                  ["Next commands", summary.nextCommands.join(" / ")]
+                ])}
+              </section>`
+            : `<section class="panel mcp-proof-panel">
+                <h2>MCP proof not loaded</h2>
+                ${renderFactTable([
+                  ["Artifact base", bundle.artifactBase],
+                  ["Expected file", "mcp-proof-summary.json"],
+                  ["Generate", "npm run mcp-proof"],
+                  ["Boundary", "certify captured Splunk MCP behavior; do not replace Splunk MCP"],
+                  ["Mutation", "false"]
+                ])}
+              </section>`
+        }
+        ${renderMcpTranscriptImport(bundle.mcpTranscriptImport)}
+      </div>
+    </section>
+  </main>`;
 };
 
 const renderReceiptPanel = (receipt: ReadinessReceipt | undefined, title: string): string => {
@@ -1705,6 +1791,7 @@ const optionalRailStories = (summary: ReturnType<typeof summarizeBundle>): strin
     summary.firewallStory,
     summary.suiteStory,
     summary.indexStory,
+    summary.mcpProofStory,
     summary.transcriptStory
   ].filter((story) => !story.includes("not loaded"));
 
@@ -1754,6 +1841,10 @@ const renderActiveView = (bundle: UiArtifactBundle, activeView: ViewId, options:
 
   if (activeView === "suite-proof") {
     return renderSuiteProof(bundle);
+  }
+
+  if (activeView === "mcp-proof") {
+    return renderMcpProof(bundle);
   }
 
   if (activeView === "agent-index") {

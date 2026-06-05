@@ -318,3 +318,13 @@ Remaining evidence risks: hosted demo is still open, public package publication
 is still an external release action, live proof export still needs redaction
 work, and MCP award positioning still needs a stronger public demo using
 existing MCP servers.
+
+Move 79 reduces the MCP demo-surface risk by making the `mcp-proof` bundle a
+first-class Vite workbench view. The UI now shows the Splunk MCP read-only
+boundary, SplunkReady MCP tools/resources/prompts, the reusable MCP
+certification-loop prompt/resource, evidence refs, deterministic authority, and
+mutation false from `mcp-proof-summary.json`. Playwright also exposed and
+verified a fix for local preset artifact serving under `/artifacts/<bundle>`.
+Remaining MCP risks: the hosted demo URL is still open, public package
+publication remains an external release action, and live/captured external
+MCP-client evidence would still strengthen the award story.

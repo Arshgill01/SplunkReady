@@ -1,5 +1,5 @@
 import { lstat, mkdir, readdir, readFile } from "node:fs/promises";
-import { basename, relative, resolve, sep } from "node:path";
+import { basename, dirname, relative, resolve, sep } from "node:path";
 import { randomUUID } from "node:crypto";
 
 export interface ArtifactRun {
@@ -65,6 +65,36 @@ export class WorkbenchArtifactStore {
 
   async readFile(runId: string, fileName: string): Promise<Buffer | undefined> {
     const target = this.resolveFile(runId, fileName);
+
+    try {
+      const info = await lstat(target);
+
+      if (!info.isFile()) {
+        return undefined;
+      }
+
+      return readFile(target);
+    } catch {
+      return undefined;
+    }
+  }
+
+  async readBundleFile(bundleId: string, fileName: string): Promise<Buffer | undefined> {
+    if (!/^[A-Za-z0-9._-]+$/.test(bundleId)) {
+      throw new Error("Invalid artifact bundle id.");
+    }
+
+    if (fileName.length === 0 || fileName.includes("\0")) {
+      throw new Error("Invalid artifact file path.");
+    }
+
+    const artifactRoot = dirname(this.root);
+    const bundleRoot = resolve(artifactRoot, bundleId);
+    const target = resolve(bundleRoot, fileName.replaceAll("\\", "/"));
+
+    if (!isContained(artifactRoot, bundleRoot) || !isContained(bundleRoot, target)) {
+      throw new Error("Artifact bundle file path escapes artifact root.");
+    }
 
     try {
       const info = await lstat(target);

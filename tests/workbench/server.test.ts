@@ -233,21 +233,25 @@ describe("workbench HTTP server", () => {
 
   it("serves the built UI and API from one packaged local origin", async () => {
     const staticUiRoot = await tempRoot();
+    const artifactRoot = await tempRoot();
 
     await mkdir(join(staticUiRoot, "assets"));
+    await mkdir(join(artifactRoot, "mcp-proof"), { recursive: true });
     await writeFile(
       join(staticUiRoot, "index.html"),
       '<!doctype html><div id="app"></div><script type="module" src="/assets/index-test.js"></script>',
       "utf8"
     );
     await writeFile(join(staticUiRoot, "assets", "index-test.js"), "document.body.dataset.splunkready = 'loaded';", "utf8");
+    await writeFile(join(artifactRoot, "mcp-proof", "mcp-proof-summary.json"), '{"source":"splunkready-mcp-proof"}\n', "utf8");
 
-    const { server } = await startTestWorkbench({}, { staticUiRoot });
+    const { server } = await startTestWorkbench({ artifactRoot: join(artifactRoot, "workbench-runs") }, { staticUiRoot });
 
     try {
       const shell = await fetchText(server.url, "/#certification-replay");
       const asset = await fetchText(server.url, "/assets/index-test.js");
       const missingJson = await fetchText(server.url, "/__splunkready_artifacts/receipt-after-001.json");
+      const presetArtifact = await fetchText(server.url, "/artifacts/mcp-proof/mcp-proof-summary.json");
       const health = await fetchJson<{ source: string; capabilities: { fixtureCertification: boolean; live: boolean } }>(
         server.url,
         "/api/health"
@@ -266,6 +270,10 @@ describe("workbench HTTP server", () => {
       expect(missingJson.response.status).toBe(204);
       expectWorkbenchSecurityHeaders(missingJson.response);
       expect(missingJson.text).toBe("");
+      expect(presetArtifact.response.status).toBe(200);
+      expectWorkbenchSecurityHeaders(presetArtifact.response);
+      expect(presetArtifact.response.headers.get("content-type")).toContain("application/json");
+      expect(presetArtifact.text).toContain("splunkready-mcp-proof");
       expect(health.json).toMatchObject({
         source: "splunkready-workbench",
         capabilities: { fixtureCertification: true, live: false }

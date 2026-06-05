@@ -10836,3 +10836,57 @@ Open blockers:
   deployment inventory.
 - The MCP category still needs a stronger public demo using existing MCP
   servers beyond the credential-free captured transcript proof.
+## 2026-06-06 00:51 - Move 79 MCP Proof Workbench View
+
+Scope:
+- Continued the Minimax/user-directed MCP competitiveness work without using
+  subagents.
+- Added a first-class `MCP` Vite workbench view backed by
+  `mcp-proof-summary.json`.
+- Kept the view proof-led: SplunkReady MCP tools/resources/prompts, the
+  agent-driven Splunk MCP certification loop, certified Splunk MCP boundary,
+  deterministic authority, and no-mutation posture.
+- Fixed the local workbench preset artifact serving gap discovered by
+  Playwright: preset paths like `artifacts/mcp-proof` now load through a
+  read-only, path-contained `/artifacts/<bundle>/<file>` route.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not change deterministic grading, LLM/SAIA authority, fixture/live
+  adapter parity, or Splunk mutation boundaries.
+
+Files changed:
+- `src/workbench/artifacts.ts`
+- `src/workbench/routes.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/ui/app.test.ts`
+- `tests/workbench/server.test.ts`
+- `tests/workbench/workbench.test.ts`
+- `moves/README.md`
+- `moves/moves79.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `loadUiArtifactBundle` now loads typed `mcpProofSummary` artifacts from
+  `mcp-proof-summary.json`.
+- The sidebar presets include `MCP proof` pointing at `artifacts/mcp-proof`.
+- The new `MCP` view renders the certification loop, Splunk MCP read-only tool
+  boundary, MCP resources/prompts, evidence refs, generated receipt path, and
+  deterministic authority.
+- The workbench server can now serve known local artifact bundle presets under
+  `/artifacts/<bundle>/<file>` while preserving path containment and file-only
+  reads.
+- Playwright initially exposed that the route rendered but did not load the
+  proof file; that server-side preset serving gap was fixed before the final
+  browser verification.
+
+Open blockers:
+- Hosted demo URL remains open.
+- Public npm publish remains an explicit external release action.
+- Live proof export remains open because raw ignored live artifacts can contain
+  deployment inventory.
+- MCP category positioning is stronger in the workbench, but a public hosted
+  demo and live/captured external MCP-client evidence would still improve the
+  award story.

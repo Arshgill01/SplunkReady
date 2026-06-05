@@ -9694,6 +9694,72 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Hosted demo, public package publication, live proof export, and stronger
   public MCP-client demo remain open Minimax caps.
+## 2026-06-06 - Move 79 MCP Proof Workbench View
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "MCP proof|artifact base|artifact source"`
+- `npm run mcp-proof`
+- `SPLUNKREADY_WORKBENCH_PORT=4337 npm run workbench`
+- `bash "$PWCLI" open 'http://127.0.0.1:4337/?artifacts=artifacts%2Fmcp-proof#mcp-proof'`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/move79-mcp-proof.png --full-page`
+- `npx vitest run tests/ui/app.test.ts tests/workbench/workbench.test.ts tests/workbench/server.test.ts --testNamePattern "MCP proof|artifact base|artifact source|preset artifact|built UI"`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused UI test after correcting a brittle capitalization assertion:
+  - 1 test file passed;
+  - 3 tests passed;
+  - 21 tests skipped by focused pattern.
+- PASS for generated MCP proof:
+  - `npm run mcp-proof` produced `artifacts/mcp-proof/mcp-proof-summary.json`,
+    `mcp-proof-summary.md`, and nested transcript-certification artifacts.
+- PASS for Playwright browser verification:
+  - opened
+    `http://127.0.0.1:4337/?artifacts=artifacts%2Fmcp-proof#mcp-proof`;
+  - first snapshot exposed that the route rendered but did not load
+    `mcp-proof-summary.json`;
+  - after the preset artifact route fix, the second snapshot showed `MCP proof`,
+    `PASS`, `splunk_get_knowledge_objects`,
+    `splunk_run_saved_search`,
+    `splunkready://workflows/splunk-mcp-certification-loop`,
+    deterministic authority, evidence refs, and `Mutation no`;
+  - screenshot saved to `output/playwright/move79-mcp-proof.png`.
+- PASS for focused route/UI regression tests:
+  - 3 test files passed;
+  - 5 tests passed;
+  - 58 tests skipped by focused pattern.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified: 19 rules, 4 fixture missions, 20 evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 152 dry-run packed files;
+  - 55 test files passed;
+  - 343 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- The local workbench server was stopped and `.playwright-cli/` was removed
+  before final status inspection.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Hosted demo, public package publication, live proof export, and external
+  MCP-client evidence remain open probability caps.
 ## 2026-06-06 - Move 77 CLI Orphan Helper Cleanup
 
 Commands:

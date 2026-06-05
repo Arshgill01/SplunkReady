@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { mkdtemp, readFile, symlink, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
@@ -236,6 +236,24 @@ describe("workbench backend", () => {
 
     await expect(store.readFile(run.runId, "linked-secret.txt")).resolves.toBeUndefined();
     await expect(store.listRunFiles(run.runId)).resolves.not.toContain("linked-secret.txt");
+  });
+
+  it("serves preset artifact bundle files without allowing traversal", async () => {
+    const root = await tempRoot();
+    const store = new WorkbenchArtifactStore(join(root, "workbench-runs"));
+
+    await mkdir(join(root, "mcp-proof"), { recursive: true });
+    await writeFile(join(root, "mcp-proof", "mcp-proof-summary.json"), '{"status":"PASS"}\n', "utf8");
+
+    await expect(store.readBundleFile("mcp-proof", "mcp-proof-summary.json")).resolves.toEqual(
+      Buffer.from('{"status":"PASS"}\n')
+    );
+    await expect(async () => store.readBundleFile("../outside", "mcp-proof-summary.json")).rejects.toThrow(
+      "Invalid artifact bundle id."
+    );
+    await expect(async () => store.readBundleFile("mcp-proof", "../package.json")).rejects.toThrow(
+      "Artifact bundle file path escapes artifact root."
+    );
   });
 
   it("runs the allowlisted fixture workflow and records structured events", async () => {
