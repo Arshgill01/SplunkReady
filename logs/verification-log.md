@@ -7539,6 +7539,54 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 44 Runs Trace Preview Ordering Verification
+
+Commands:
+
+- `npm test -- tests/ui/app.test.ts -t "proof bundle browser" && npm run build`
+- `npm run ui:build && command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `npm run workbench`
+- `node -e "const fs=require('fs');const path=require('path');const root='artifacts/workbench-runs';const runs=fs.readdirSync(root).filter((name)=>name.startsWith('run-')).sort();const run=runs.at(-1);console.log(JSON.stringify({run,artifactBase:'/api/artifacts/'+run},null,2));"`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open "http://127.0.0.1:4317/?artifacts=%2Fapi%2Fartifacts%2Frun-2026-06-05T13-27-51-419Z-6452b6c3#proof-browser"`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot --filename output/playwright/move44-runs-trace-desktop.png --full-page`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" mousewheel 0 1800 && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot e903 --filename output/playwright/move44-runs-trace-preview.png`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval "() => document.querySelector('.trace-preview')?.scrollIntoView({block:'start'})" && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot --filename output/playwright/move44-runs-trace-viewport.png`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" resize 390 844 && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval "() => document.querySelector('.trace-preview')?.scrollIntoView({block:'start'})" && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot --filename output/playwright/move44-runs-trace-mobile.png`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for the focused UI regression and TypeScript build:
+  - 1 test file passed;
+  - 1 test passed and 21 skipped for the focused filter;
+  - `npm run build` completed.
+- PASS for production UI build through `npm run ui:build`.
+- PASS for local workbench launch on `http://127.0.0.1:4317`.
+- PASS for Playwright desktop snapshot:
+  - trace preview displayed phase-local rows in call/result/final order;
+  - parent references and timestamps were visible;
+  - before and after phases both rendered ordered tool timelines.
+- PASS for Playwright desktop and mobile screenshots:
+  - `output/playwright/move44-runs-trace-desktop.png`;
+  - `output/playwright/move44-runs-trace-preview.png`;
+  - `output/playwright/move44-runs-trace-viewport.png`;
+  - `output/playwright/move44-runs-trace-mobile.png`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 44 test files passed;
+  - 304 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for final explicit `git diff --check` after log update.
+
 ## 2026-06-05 - Move 40 Artifact Symlink Read Guard Verification
 
 Commands:

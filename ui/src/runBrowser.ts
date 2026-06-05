@@ -207,9 +207,80 @@ const traceToolsSummary = (events: TraceEvent[]): string => {
   return `${visibleTools.join(" / ")}${hiddenTools > 0 ? ` / +${hiddenTools} more` : ""}`;
 };
 
+interface IndexedTraceEvent {
+  event: TraceEvent;
+  index: number;
+}
+
+const traceTimestamp = (event: TraceEvent): number => {
+  const parsed = Date.parse(event.timestamp);
+
+  return Number.isFinite(parsed) ? parsed : Number.POSITIVE_INFINITY;
+};
+
+const traceTypeRank = (event: TraceEvent): number => {
+  if (event.type === "tool_call") {
+    return 0;
+  }
+
+  if (event.type === "tool_result") {
+    return 1;
+  }
+
+  if (event.type === "error") {
+    return 2;
+  }
+
+  return 3;
+};
+
+const compareParentage = (left: TraceEvent, right: TraceEvent): number | undefined => {
+  if (right.parentId === left.id) {
+    return -1;
+  }
+
+  if (left.parentId === right.id) {
+    return 1;
+  }
+
+  return undefined;
+};
+
+const orderedTraceEvents = (events: TraceEvent[]): TraceEvent[] =>
+  events
+    .map((event, index): IndexedTraceEvent => ({ event, index }))
+    .sort((left, right) => {
+      const parentage = compareParentage(left.event, right.event);
+
+      if (parentage !== undefined) {
+        return parentage;
+      }
+
+      if (left.event.step !== undefined && right.event.step !== undefined && left.event.step !== right.event.step) {
+        return left.event.step - right.event.step;
+      }
+
+      const leftTime = traceTimestamp(left.event);
+      const rightTime = traceTimestamp(right.event);
+
+      if (leftTime !== rightTime) {
+        return leftTime - rightTime;
+      }
+
+      const typeRank = traceTypeRank(left.event) - traceTypeRank(right.event);
+
+      if (typeRank !== 0) {
+        return typeRank;
+      }
+
+      return left.index - right.index;
+    })
+    .map(({ event }) => event);
+
 const traceSpanSummary = (events: TraceEvent[]): string => {
-  const first = events[0];
-  const last = events.at(-1);
+  const ordered = orderedTraceEvents(events);
+  const first = ordered[0];
+  const last = ordered.at(-1);
 
   if (!first || !last) {
     return "n/a";
@@ -228,22 +299,6 @@ const tracePhaseSummary = (events: TraceEvent[], violations: Violation[]): strin
   return `${events.length} event(s) / ${tools.length} tool(s) / ${violations.length} finding(s) / ${traceEvidenceRefCount(events)} evidence ref(s)`;
 };
 
-const orderedTraceEvents = (events: TraceEvent[]): TraceEvent[] =>
-  [...events].sort((left, right) => {
-    if (left.step !== undefined && right.step !== undefined && left.step !== right.step) {
-      return left.step - right.step;
-    }
-
-    const leftTime = Date.parse(left.timestamp);
-    const rightTime = Date.parse(right.timestamp);
-
-    if (Number.isFinite(leftTime) && Number.isFinite(rightTime) && leftTime !== rightTime) {
-      return leftTime - rightTime;
-    }
-
-    return left.id.localeCompare(right.id);
-  });
-
 const traceEventTitle = (event: TraceEvent): string => {
   if (event.toolName) {
     return `${event.type} / ${event.toolName}`;
@@ -257,10 +312,21 @@ const traceEventMeta = (event: TraceEvent): string => {
     shortTraceEventId(event.id),
     event.resultCount === null ? undefined : `${event.resultCount} result(s)`,
     event.evidenceRefs.length > 0 ? `${event.evidenceRefs.length} evidence ref(s)` : undefined,
-    event.queryRef ?? undefined
+    event.queryRef ?? undefined,
+    event.parentId ? `parent ${shortTraceEventId(event.parentId)}` : undefined
   ].filter((part): part is string => Boolean(part));
 
   return parts.join(" / ");
+};
+
+const formatTraceTimestamp = (timestamp: string): string => {
+  const parsed = Date.parse(timestamp);
+
+  if (!Number.isFinite(parsed)) {
+    return timestamp;
+  }
+
+  return timestamp.replace("T", " ").replace(/\.\d{3}Z$/, "Z");
 };
 
 const traceViolationsByEvent = (violations: Violation[]): Map<string, Violation[]> => {
@@ -282,12 +348,14 @@ const renderTracePreviewEvents = (events: TraceEvent[], violations: Violation[])
     ${visibleEvents
       .map((event, index) => {
         const eventViolations = groupedViolations.get(event.id) ?? [];
+        const sequence = String(index + 1).padStart(2, "0");
 
-        return `<li class="trace-preview-event" data-trace-preview-event="${value(event.type)}">
-          <span class="trace-preview-step">${value(event.step ?? index + 1)}</span>
+        return `<li class="trace-preview-event" data-trace-preview-event="${value(event.type)}" data-trace-preview-id="${value(event.id)}">
+          <span class="trace-preview-step">${value(sequence)}</span>
           <span class="trace-preview-event-body">
             <strong>${value(traceEventTitle(event))}</strong>
             <span>${value(traceEventMeta(event))}</span>
+            <time datetime="${value(event.timestamp)}">${value(formatTraceTimestamp(event.timestamp))}</time>
           </span>
           <span class="trace-preview-event-findings">${eventViolations.length === 0 ? "clear" : `${eventViolations.length} finding(s)`}</span>
         </li>`;

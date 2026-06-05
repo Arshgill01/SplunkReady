@@ -1613,33 +1613,36 @@ describe("Vite UI artifact app", () => {
   });
 
   it("renders proof bundle browser filters, run summaries, receipt diff, trace timeline, and manifest audit", async () => {
-    const runAfterTrace: TraceEvent[] = [
-      ...afterTrace,
-      {
-        ...afterTrace[0],
-        id: "trace-after-result",
-        type: "tool_result",
-        parentId: "trace-after-call",
-        toolOutputSummary: "Saved search returned 3 row(s).",
-        resultCount: 3
-      },
-      {
-        ...afterTrace[0],
-        id: "trace-after-enrichment",
-        toolName: "splunk_get_knowledge_objects",
-        toolInput: { name: "ES - Lateral Movement Auth Chain" },
-        evidenceRefs: []
-      },
-      {
-        ...afterTrace[0],
-        id: "trace-after-final",
-        type: "final_answer",
-        toolName: null,
-        toolInput: null,
-        toolOutputSummary: "Evidence supports the investigation.",
-        resultCount: 3
-      }
-    ];
+    const runAfterCall: TraceEvent = { ...afterTrace[0], step: 1 };
+    const runAfterResult: TraceEvent = {
+      ...afterTrace[0],
+      id: "trace-after-result",
+      type: "tool_result",
+      parentId: "trace-after-call",
+      toolOutputSummary: "Saved search returned 3 row(s).",
+      resultCount: 3,
+      step: 2
+    };
+    const runAfterEnrichment: TraceEvent = {
+      ...afterTrace[0],
+      id: "trace-after-enrichment",
+      toolName: "splunk_get_knowledge_objects",
+      toolInput: { name: "ES - Lateral Movement Auth Chain" },
+      evidenceRefs: [],
+      step: 3
+    };
+    const runAfterFinal: TraceEvent = {
+      ...afterTrace[0],
+      id: "trace-after-final",
+      type: "final_answer",
+      toolName: null,
+      toolInput: null,
+      toolOutputSummary: "Evidence supports the investigation.",
+      resultCount: 3,
+      parentId: "trace-after-result",
+      step: 4
+    };
+    const runAfterTrace: TraceEvent[] = [runAfterResult, runAfterFinal, runAfterEnrichment, runAfterCall];
     const bundle = await loadUiArtifactBundle(
       "/api/artifacts/run-after",
       fetcherFor({
@@ -1763,6 +1766,17 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("trace-preview-event");
     expect(html).toContain('data-trace-preview-event="tool_call"');
     expect(html).toContain('data-trace-preview-event="final_answer"');
+    expect(html.indexOf('data-trace-preview-id="trace-after-call"')).toBeLessThan(
+      html.indexOf('data-trace-preview-id="trace-after-result"')
+    );
+    expect(html.indexOf('data-trace-preview-id="trace-after-result"')).toBeLessThan(
+      html.indexOf('data-trace-preview-id="trace-after-enrichment"')
+    );
+    expect(html.indexOf('data-trace-preview-id="trace-after-enrichment"')).toBeLessThan(
+      html.indexOf('data-trace-preview-id="trace-after-final"')
+    );
+    expect(html).toContain("parent after-call");
+    expect(html).toContain("2026-06-01 06:45:00Z");
     expect(html).toContain("tool_call / splunk_run_saved_search");
     expect(html).toContain("final_answer");
     expect(html).toContain("3 result(s)");

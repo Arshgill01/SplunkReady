@@ -66,6 +66,7 @@ commands, or filesystem paths.
 | P0 | [41](moves41.md) Agent trace bridge | 0.5d | Reduces native-agent integration friction without adding framework dependencies or weakening deterministic grading. |
 | P0 | [42](moves42.md) SplunkReady MCP server | 0.5d | Exposes the Agent Readiness Compiler as local MCP certification tools without turning SplunkReady into a Splunk copilot. |
 | P0 | [43](moves43.md) One-command judge proof | 0.5d | Reduces fresh-clone judge friction by composing suite, firewall, audit, manifest, and index proofs into one command. |
+| P0 | [44](moves44.md) Runs trace preview ordering | 0.5d | Repairs scrambled trace timelines in the Runs proof browser and verifies the UI with Playwright. |
 
 ## Non-Negotiable Boundaries
 

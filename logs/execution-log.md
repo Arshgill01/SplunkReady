@@ -9426,3 +9426,50 @@ Notes:
 - `judge-proof` composes the existing strict gates: multi-mission suite proof with fail-to-pass required, suite proof audit, suite manifest verification, firewall proof, firewall manifest verification, and strict certification index generation.
 - `npm run judge-proof` writes the generated proof bundle to ignored `artifacts/judge-proof`.
 - This reduces fresh-clone judge friction without introducing a new grader path, a new dependency, Splunk mutation, or LLM pass/fail authority.
+
+## 2026-06-05 20:34 - Move 44 Runs Trace Preview Ordering
+
+Scope:
+- Responded to the reported Runs-section trace timeline bug.
+- Kept this as a presentation repair around existing trace artifacts; no grader,
+  receipt, or schema behavior changed.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Used Playwright against the local workbench before considering the UI change
+  verified.
+
+Files changed:
+- `ui/src/runBrowser.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `moves/README.md`
+- `moves/moves44.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added deterministic Runs trace-preview ordering: parent before child, then
+  explicit step, timestamp, event type, and original input order.
+- Rendered phase-local row numbers, timestamps, and parent references so the
+  preview reads like an auditable event timeline.
+- Adjusted trace-preview CSS so metadata and finding counts wrap instead of
+  pushing the card sideways.
+- Added a UI regression with intentionally scrambled trace input.
+
+Competitive audit logged:
+- Platform & Developer Experience remains exposed to workflow friction; keep
+  reducing the path from agent run to receipt.
+- Best Use of MCP improves only if the local SplunkReady MCP server is visible
+  and testable as a certification server, not merely implied by trace shape.
+- Native agent integrations should stay thin and dependency-light: callback and
+  tool-wrapper snippets are likely higher leverage than adding heavy framework
+  packages.
+- Deterministic grading remains authoritative. The response to "determinism is
+  boring" is better evidence presentation and advisory explanations, not
+  replacing pass/fail with LLM judgment.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
