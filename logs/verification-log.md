@@ -7144,3 +7144,91 @@ Notes:
 - No UI code changed in Move 22, so no new Playwright run was required for this documentation-only move.
 - The diagram was manually inspected as Markdown/Mermaid source, not as a rendered browser image.
 - Live and hosted-model claims remain conditional in public copy.
+
+## 2026-06-05 - Move 23 Public Demo Video And Feedback Prep
+
+Commands:
+
+- `sed -n '1,220p' /Users/arshdeepsingh/.codex/skills/playwright/SKILL.md`
+- `sed -n '1,240p' moves/moves23.md`
+- `sed -n '1,260p' logs/risk-register.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f -print | sort | tail -n 30`
+- `sed -n '1,260p' logs/splunk-feedback.md`
+- `command -v npx >/dev/null 2>&1`
+- `SPLUNKREADY_WORKBENCH_PORT=4340 npm run workbench`
+- `bash "$PWCLI" open http://127.0.0.1:4340/#certification-replay && bash "$PWCLI" snapshot`
+- `bash "$PWCLI" click e34 && bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/move23-demo-rehearsal-replay.png --full-page && bash "$PWCLI" click e112 && bash "$PWCLI" snapshot`
+- `bash "$PWCLI" click e349 && bash "$PWCLI" snapshot`
+- `bash "$PWCLI" click e533 && bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/move23-demo-rehearsal-public-export.png --full-page`
+- `lsof -ti tcp:4340`
+- `kill 97643 97772`
+- `lsof -ti tcp:4340`
+- `if rg -n "(Bearer\\s+[A-Za-z0-9._~+/=-]{8,}|TOKEN=|SECRET=|PASSWORD=|splunk\\.local|10\\.1\\.2\\.3|/Users/[A-Za-z0-9._-]+|https?://(?:10\\.|192\\.168|172\\.))" docs/demo-video-runbook.md docs/splunk-feedback-form-draft.md; then exit 1; else exit 0; fi`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PARTIAL for Move 23 acceptance criteria:
+  - local prep docs were created;
+  - packaged workbench UI was rehearsed with Playwright;
+  - public video upload and official feedback submission were not completed.
+- PASS for Playwright prerequisite:
+  - `npx` was available.
+- PASS for packaged workbench startup:
+  - fixture certification available;
+  - live mode disabled without loading live env vars;
+  - SAIA assistance disabled.
+- PASS for fixture certification browser run:
+  - run `run-2026-06-05T12-44-12-664Z-87c0b8a3`;
+  - `job-1 / succeeded`;
+  - `NOT READY` before;
+  - `READY / 100/100` after;
+  - `5 before / 0 after`;
+  - artifact base `/api/artifacts/run-2026-06-05T12-44-12-664Z-87c0b8a3`.
+- PASS for Trace view browser check:
+  - visible before query `search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now`;
+  - visible rule IDs `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, and `ANS-001`;
+  - visible SAIA advisory query `search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now`;
+  - visible after saved-search run `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`;
+  - visible evidence refs `evt-102`, `evt-118`, and `evt-141`.
+- PASS for Runs view browser check:
+  - run list, receipt comparison, proof audit, manifest verification panel, and trace preview rendered.
+- PASS for public proof export browser check:
+  - export run `run-2026-06-05T12-44-56-519Z-f197138b`;
+  - workflow `public-proof-export`;
+  - status `succeeded`;
+  - public proof export status `REDACTED`;
+  - source commit `e1c4f09580b8`;
+  - 14 files;
+  - 8 schema-validated files;
+  - redaction categories for secrets, private endpoints, private IPs, user paths, and raw MCP error bodies.
+- PASS for screenshot capture:
+  - `output/playwright/move23-demo-rehearsal-replay.png`;
+  - `output/playwright/move23-demo-rehearsal-public-export.png`.
+- PASS for manual screenshot inspection:
+  - replay screenshot is clear for fixture certification;
+  - public export screenshot is functionally clear, but dense enough to keep Move 25 UI consolidation active.
+- PASS for stopping the local workbench:
+  - final `lsof -ti tcp:4340` returned no process.
+- PASS for new-doc secret/private identifier scan:
+  - no matches for bearer tokens, token/secret/password markers, known private endpoint strings, `/Users/<name>`, or private URL patterns.
+- PASS for explicit `git diff --check`.
+- PASS for canonical gate `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 289 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims.
+
+Open blockers:
+
+- Public video URL has not been created.
+- Signed-out public video access has not been verified.
+- Official feedback form has not been submitted.
+- Do not claim Move 23 complete until those external gates are actually done.

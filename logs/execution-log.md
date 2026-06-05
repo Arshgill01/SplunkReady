@@ -8597,3 +8597,61 @@ Manual inspection:
 Open risks:
 - The root architecture artifact is Markdown/Mermaid rather than a rendered image; this satisfies the accepted root `architecture_diagram.md` filename, but a rendered PNG/PDF can still be added later if Devpost upload formatting needs it.
 - The tracked evidence pack remains credential-free and redacted; raw live proof must stay out of public copy unless separately sanitized.
+
+## 2026-06-05 - Move 23 Public Demo Video And Feedback Prep
+
+Context:
+- Implemented the executable local parts of Move 23 locally without subagents.
+- Used the Playwright skill wrapper against the packaged workbench.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Did not claim public video upload or official feedback submission, because those require an actual accepted video host/form submission path.
+
+Files touched:
+- `docs/demo-video-runbook.md`
+- `docs/splunk-feedback-form-draft.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `docs/demo-video-runbook.md` with:
+  - the public video requirement source summary;
+  - workbench recording command;
+  - three-minute shot plan;
+  - script beats;
+  - redaction checklist;
+  - signed-out public-link verification checklist.
+- Added `docs/splunk-feedback-form-draft.md` condensed from `logs/splunk-feedback.md` with:
+  - MCP readiness feedback;
+  - local smoke-test guidance feedback;
+  - TLS guidance feedback;
+  - sample-data and saved-search content feedback;
+  - app-context and saved-search argument-shape feedback;
+  - evidence-preserving query feedback;
+  - hosted-model entitlement and SAIA argument feedback.
+- Rehearsed the actual packaged workbench UI with Playwright:
+  - fixture certification run;
+  - trace timeline;
+  - proof browser;
+  - public proof export.
+
+Playwright evidence:
+- Started `SPLUNKREADY_WORKBENCH_PORT=4340 npm run workbench`.
+- Opened `http://127.0.0.1:4340/#certification-replay`.
+- Clicked `Run fixture certification`.
+- Verified run `run-2026-06-05T12-44-12-664Z-87c0b8a3` rendered `job-1 / succeeded`, `NOT READY` before, `READY / 100/100` after, `5 before / 0 after`, saved-search rerun, and evidence refs.
+- Verified Trace view rendered the unsafe `index=*` / `src_ip` before query, deterministic rule IDs, SAIA advisory copy, saved-search after query, and evidence refs `evt-102`, `evt-118`, `evt-141`.
+- Verified Runs view rendered the run list, receipt comparison, proof audit, manifest section, and trace preview.
+- Clicked export for the fresh run and verified public proof export run `run-2026-06-05T12-44-56-519Z-f197138b` rendered `Status REDACTED`, source run, source commit `e1c4f09580b8`, 14 files, 8 schema-validated files, aggregate hash, and redaction categories for secrets, private endpoints, private IPs, user paths, and raw MCP error bodies.
+- Saved screenshots:
+  - `output/playwright/move23-demo-rehearsal-replay.png`
+  - `output/playwright/move23-demo-rehearsal-public-export.png`
+
+External blockers:
+- Public video URL is still not available.
+- Signed-out public video access has not been verified.
+- Official feedback form has not been submitted.
+- README and Devpost copy should not receive a video link until the public URL works signed out.
+
+Open risks:
+- The Runs/export screenshot is functionally clear but visually dense. Keep Move 25 for final workbench consolidation.
+- The public video and official feedback submission remain manual/external gates unless an upload target and form session are available.
