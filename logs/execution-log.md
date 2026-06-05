@@ -11023,3 +11023,46 @@ Open blockers:
 - Public npm publish remains an explicit external release action.
 - Live proof export remains open because raw ignored live artifacts can contain
   deployment inventory.
+
+## 2026-06-06 01:24 - Move 83 Netlify Static Demo Config
+
+Scope:
+- Continued the hosted-demo gap work without using subagents.
+- Attempted `npx netlify status` to check whether an authenticated deploy could
+  run, but the CLI fetch/status command hung and was killed without producing a
+  usable auth/link result.
+- Added a deploy-ready `netlify.toml` for the static public demo export.
+- Added `public-demo:deploy:netlify` as a local draft deploy command for an
+  authenticated operator.
+- Added `.netlify/` to `.gitignore` so local Netlify state is not committed.
+- Verified the configured publish directory by rebuilding
+  `artifacts/public-demo`, serving it locally, and opening the MCP proof route
+  in Playwright.
+- Did not deploy externally and did not claim a hosted URL.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Files changed:
+- `.gitignore`
+- `netlify.toml`
+- `package.json`
+- `moves/README.md`
+- `moves/moves83.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- Netlify builds with `npm run public-demo:build` and publishes
+  `artifacts/public-demo`.
+- SPA fallback routes all paths to `index.html`, which keeps the workbench hash
+  routes and artifact query parameters usable on a static host.
+- Static assets get immutable cache headers; all routes get basic
+  `nosniff`/frame-deny headers.
+
+Open blockers:
+- Actual hosted demo deployment remains open until an authenticated Netlify
+  deploy succeeds.
+- Public npm publish remains an explicit external release action.
+- Live proof export remains open because raw ignored live artifacts can contain
+  deployment inventory.

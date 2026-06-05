@@ -105,6 +105,7 @@ commands, or filesystem paths.
 | P0 | [80](moves80.md) MCP proof evidence screenshot | 0.5d | Tracks the Playwright-verified MCP proof workbench view in the judge-facing evidence pack. |
 | P0 | [81](moves81.md) Public demo static export | 0.5d | Packages the built Vite workbench and tracked credential-free evidence into a static folder for hosted demo deployment. |
 | P0 | [82](moves82.md) Dual MCP client kit | 0.5d | Makes the MCP proof expose a credential-free two-server client kit for existing Splunk MCP plus SplunkReady certification. |
+| P0 | [83](moves83.md) Netlify static demo config | 0.5d | Adds Netlify-ready build, publish, redirect, and header configuration for the public demo export. |
 
 ## Non-Negotiable Boundaries
 

@@ -9941,6 +9941,65 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Actual hosted demo deployment, public package publication, and live proof
   export remain open probability caps.
+
+## 2026-06-06 - Move 83 Netlify Static Demo Config
+
+Commands:
+
+- `npx netlify status`
+- `kill 98285`
+- `npm run public-demo:build`
+- `npx vite --host 127.0.0.1 --port 4338 artifacts/public-demo`
+- `bash "$PWCLI" open 'http://127.0.0.1:4338/?artifacts=artifacts%2Fmcp-proof#mcp-proof'`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/move83-netlify-static-demo.png --full-page`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- BLOCKED for Netlify auth/link status:
+  - `npx netlify status` fetched the Netlify CLI package but hung without
+    returning auth or site-link state;
+  - killed the hanging `npm exec netlify status` process;
+  - no token, Netlify state, or secret output was read or committed.
+- PASS for public demo build:
+  - `artifacts/public-demo` was generated with `public-demo-manifest.json`;
+  - the manifest states `mutation: false` and notes that live credentials and
+    `.env` files are not copied.
+- PASS for Playwright static publish-directory verification:
+  - the served MCP proof page rendered `PASS`;
+  - the rendered resources included
+    `splunkready://client-config/splunk-and-splunkready`;
+  - screenshot captured at
+    `output/playwright/move83-netlify-static-demo.png`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 152 packed files;
+  - 56 test files passed;
+  - 346 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for standalone diff whitespace:
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- The local static server was stopped after Playwright verification.
+- `.playwright-cli/` was removed after browser evidence capture.
+- This move does not claim a hosted URL.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Actual hosted demo deployment, public package publication, and live proof
+  export remain open probability caps.
 ## 2026-06-06 - Move 77 CLI Orphan Helper Cleanup
 
 Commands:

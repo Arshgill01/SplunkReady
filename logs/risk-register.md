@@ -347,3 +347,8 @@ credential-free dual-server MCP client kit: existing Splunk MCP for read-only
 investigation and SplunkReady MCP for deterministic certification. This is still
 captured-transcript evidence rather than a live public MCP-client screencast, so
 the external demonstration cap remains open.
+
+Move 83 reduces the no-hosted-demo friction by adding Netlify static deploy
+configuration for the public demo export. It does not eliminate the hosted URL
+risk because `npx netlify status` hung before auth/link status could be
+confirmed and no external deploy was completed.
