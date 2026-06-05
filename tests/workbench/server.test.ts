@@ -46,6 +46,7 @@ const fetchJson = async <T>(baseUrl: string, path: string, init?: RequestInit): 
 };
 
 const expectWorkbenchSecurityHeaders = (response: Response): void => {
+  expect(response.headers.get("cache-control")).toBe("no-store");
   expect(response.headers.get("x-content-type-options")).toBe("nosniff");
   expect(response.headers.get("referrer-policy")).toBe("no-referrer");
   expect(response.headers.get("cross-origin-resource-policy")).toBe("same-origin");
@@ -286,6 +287,7 @@ describe("workbench HTTP server", () => {
       const shell = await fetchText(server.url, "/#certification-replay");
 
       expect(shell.response.status).toBe(200);
+      expectWorkbenchSecurityHeaders(shell.response);
       expect(shell.response.headers.get("content-type")).toContain("text/html");
       expect(shell.text).toContain('<div id="app"></div>');
       expect(shell.text).toContain('/src/main.ts');

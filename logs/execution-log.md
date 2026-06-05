@@ -8915,6 +8915,38 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 32 Workbench No-Store Responses
+
+Context:
+- Continued development hardening after Move 31.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- User explicitly deferred video/submission work; this move stayed on
+  development hardening.
+- Workbench serves local operator-owned receipts, traces, and proof artifacts, so
+  browser-visible responses should not be cacheable by default.
+
+Files touched:
+- `src/workbench/server.ts`
+- `tests/workbench/server.test.ts`
+- `moves/README.md`
+- `moves/moves32.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `cache-control: no-store` to the shared workbench browser response
+  hardening boundary.
+- Enforced the no-store value when downstream middleware, including Vite dev UI
+  middleware, attempts to replace `Cache-Control`.
+- Extended the existing real HTTP security-header assertion so API, packaged UI,
+  dev UI, missing-artifact shims, and fallback error responses inherit the same
+  no-store regression coverage.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 31 Workbench Server Fallback Redaction
 
 Context:

@@ -54,6 +54,7 @@ commands, or filesystem paths.
 | P0 | [29](moves29.md) Workbench route error redaction | 0.5d | Applies the same secret redaction boundary to route-level API failures. |
 | P0 | [30](moves30.md) Workbench response security headers | 0.5d | Adds conservative browser hardening headers to local API and UI responses. |
 | P0 | [31](moves31.md) Workbench server fallback redaction | 0.5d | Redacts server-level fallback errors before they reach the browser. |
+| P0 | [32](moves32.md) Workbench no-store responses | 0.5d | Prevents browser caching of local proof and workbench responses. |
 
 ## Non-Negotiable Boundaries
 

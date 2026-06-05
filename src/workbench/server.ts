@@ -66,6 +66,15 @@ const staticContentTypeFor = (path: string): string => {
 };
 
 const setWorkbenchSecurityHeaders = (response: ServerResponse): void => {
+  const setHeader = response.setHeader;
+
+  response.setHeader = function enforceWorkbenchHeaders(name, value) {
+    const headerName = String(name).toLowerCase();
+
+    return setHeader.call(this, name, headerName === "cache-control" ? "no-store" : value);
+  };
+
+  response.setHeader("cache-control", "no-store");
   response.setHeader("x-content-type-options", "nosniff");
   response.setHeader("referrer-policy", "no-referrer");
   response.setHeader("cross-origin-resource-policy", "same-origin");

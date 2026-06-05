@@ -7539,6 +7539,44 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 32 Workbench No-Store Responses Verification
+
+Commands:
+
+- `npm test -- tests/workbench/server.test.ts`
+- `npm test -- tests/workbench/server.test.ts`
+- `npm run check && git diff --check`
+
+Result:
+
+- FAIL for the first focused server test run:
+  - the packaged/API header paths had the new assertion;
+  - the Vite dev UI path returned `cache-control: no-cache`, proving downstream
+    middleware could overwrite the early workbench header.
+- PASS after enforcing `cache-control: no-store` through the response header
+  boundary:
+  - 1 test file passed;
+  - 8 tests passed;
+  - dev UI shell response included the shared workbench hardening headers.
+- PASS for full `npm run check && git diff --check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 292 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output;
+  - explicit trailing `git diff --check` from the command chain completed with
+    no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 31 Workbench Server Fallback Redaction Verification
 
 Commands:
