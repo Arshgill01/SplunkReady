@@ -174,4 +174,20 @@ describe("readiness receipt generator", () => {
     expect(markdown).toContain('"afterVerdict": "READY"');
     expect(markdown).toContain('"resolvedViolations"');
   });
+
+  it("discloses live mode without changing receipt scoring or verdict semantics", () => {
+    const fixtureReceipt = generateReadinessReceipt(receiptInput).receipt;
+    const liveReceipt = generateReadinessReceipt({
+      ...receiptInput,
+      environment: { ...environment, mode: "live" }
+    }).receipt;
+
+    expect(liveReceipt.mode).toBe("live");
+    expect(liveReceipt.verdict).toBe(fixtureReceipt.verdict);
+    expect(liveReceipt.score).toBe(fixtureReceipt.score);
+    expect(liveReceipt.passedMissions).toEqual(fixtureReceipt.passedMissions);
+    expect(liveReceipt.failedMissions).toEqual(fixtureReceipt.failedMissions);
+    expect(liveReceipt.violations).toEqual(fixtureReceipt.violations);
+    expect(liveReceipt.criticalViolations).toEqual(fixtureReceipt.criticalViolations);
+  });
 });

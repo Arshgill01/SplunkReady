@@ -136,4 +136,19 @@ describe("SPL structural rules", () => {
       ["SPL-004", "pass"]
     ]);
   });
+
+  it("grades identical fixture and live contexts the same way", () => {
+    const query = "search index=* host=win-finance-07 earliest=-30d latest=now";
+    const fixtureResult = runRuleEngine(contextFor(query), createSplStructuralRules());
+    const liveResult = runRuleEngine(
+      {
+        ...contextFor(query),
+        contract: { ...contract, mode: "live" }
+      },
+      createSplStructuralRules()
+    );
+
+    expect(liveResult.violations).toEqual(fixtureResult.violations);
+    expect(liveResult.results).toEqual(fixtureResult.results);
+  });
 });

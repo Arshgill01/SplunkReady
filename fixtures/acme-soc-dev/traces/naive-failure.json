@@ -1,7 +1,7 @@
 [
   {
     "id": "trace-naive-call-001",
-    "missionId": "mission-lateral-movement",
+    "missionId": "mission-security-lateral-movement-readiness",
     "timestamp": "2026-06-01T06:00:10.000Z",
     "actor": "specimen_agent",
     "type": "tool_call",
@@ -19,7 +19,7 @@
   },
   {
     "id": "trace-naive-result-001",
-    "missionId": "mission-lateral-movement",
+    "missionId": "mission-security-lateral-movement-readiness",
     "timestamp": "2026-06-01T06:00:11.000Z",
     "actor": "splunk_adapter",
     "type": "tool_result",
@@ -38,7 +38,7 @@
   },
   {
     "id": "trace-naive-final-001",
-    "missionId": "mission-lateral-movement",
+    "missionId": "mission-security-lateral-movement-readiness",
     "timestamp": "2026-06-01T06:00:18.000Z",
     "actor": "specimen_agent",
     "type": "final_answer",

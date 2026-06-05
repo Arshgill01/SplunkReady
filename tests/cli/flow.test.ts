@@ -1723,12 +1723,17 @@ describe("SplunkReady CLI flow", () => {
 
   it("rejects an externally supplied trace for the wrong mission", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-external-trace-mismatch-"));
+    const mismatchTracePath = join(outDir, "wrong-mission-trace.json");
+    const rawTrace = await readFile("fixtures/acme-soc-dev/traces/naive-failure.json", "utf8");
+    const trace = JSON.parse(rawTrace) as Array<Record<string, unknown>>;
+    const mismatchTrace = trace.map((event) => ({ ...event, missionId: "mission-wrong-for-test" }));
 
     await expect(runCli(["compile", "--out", outDir])).resolves.toMatchObject({
       stdout: expect.stringContaining("PASS compile")
     });
+    await writeFile(mismatchTracePath, JSON.stringify(mismatchTrace, null, 2));
     await expect(
-      runCli(["grade-trace", "--trace", "fixtures/acme-soc-dev/traces/naive-failure.json", "--out", outDir])
+      runCli(["grade-trace", "--trace", mismatchTracePath, "--out", outDir])
     ).rejects.toMatchObject({
       stderr: expect.stringContaining("Trace missionId mismatch")
     });

@@ -56,6 +56,16 @@ Live mode must:
 - never mutate Splunk;
 - record tool call provenance in the same trace format as fixture mode.
 
+Saved-search execution must preserve the shared request shape. If a fixture trace calls
+`splunk_run_saved_search` with `tokens`, live mode forwards the same `tokens` object to
+the MCP `splunk_run_saved_search` arguments. If a future MCP transport cannot support
+tokens, both modes must reject tokenized saved-search missions consistently instead of
+silently dropping token inputs.
+
+Canonical trace fixtures must use the same `missionId` as the flagship mission:
+`mission-security-lateral-movement-readiness`. Mismatched mission ids are reserved for
+negative tests that create temporary traces deliberately.
+
 ## Parity Tests
 
 Required implementation tests:

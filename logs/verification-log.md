@@ -5898,3 +5898,34 @@ Open risks:
 
 - The runtime registry remains assembled in `src/cli.ts`; extract it in Move 15 when CLI modularization resumes.
 - No live network verification was run for this rule slice; behavior is exercised through shared contract/compiler/adapter-shaped tests and CLI mocks.
+
+## 2026-06-05 - Move 03 Fixture/Live Parity Boundary Closure
+
+Commands:
+
+- `npx vitest run tests/fixtures/traces.test.ts tests/cli/flow.test.ts`
+- `npx vitest run tests/adapters tests/compiler tests/grader tests/receipts`
+- `npm run build && npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for trace fixture and CLI verification:
+  - 2 test files;
+  - 37 tests passed.
+- PASS for adapter/compiler/grader/receipt parity verification:
+  - 18 test files;
+  - 101 tests passed.
+- PASS for canonical build/check gate:
+  - production TypeScript build passed;
+  - scaffold verified;
+  - 85 waves;
+  - 900 project files;
+  - 40 test files;
+  - 257 tests passed.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Live token forwarding was verified against mock MCP transport and HTTP JSON-RPC integration tests, not a production Splunk MCP server.
+- If a future MCP server does not support the nested `tokens` object, the parity-preserving behavior should be an explicit rejection in both fixture and live modes rather than silent token loss.

@@ -41,8 +41,10 @@ describe("live Splunk adapter skeleton", () => {
   });
 
   it("exposes the shared adapter interface through a mock live transport", async () => {
+    const calls: Array<{ toolName: string; input: unknown }> = [];
     const transport: LiveSplunkTransport = {
       async call<TInput, TOutput>(request: LiveSplunkTransportRequest<TInput>): Promise<TOutput> {
+        calls.push({ toolName: request.toolName, input: request.input });
         expect(request.authToken).toBe("test-token");
         expect(request.endpointUrl).toBe("https://splunk.example.invalid/mcp");
 
@@ -83,11 +85,17 @@ describe("live Splunk adapter skeleton", () => {
       adapter.runSavedSearch(
         {
           name: "ES - Lateral Movement Auth Chain",
-          app: "SplunkEnterpriseSecuritySuite"
+          app: "SplunkEnterpriseSecuritySuite",
+          tokens: { host: "win-finance-07", earliest: "-24h", latest: "now" }
         },
         requestOptions
       )
     ).resolves.toMatchObject({ resultCount: 1, evidenceRefs: ["live-evt-001"] });
+    expect(calls.find((call) => call.toolName === "splunk_run_saved_search")?.input).toMatchObject({
+      saved_search_name: "ES - Lateral Movement Auth Chain",
+      app: "SplunkEnterpriseSecuritySuite",
+      tokens: { host: "win-finance-07", earliest: "-24h", latest: "now" }
+    });
   });
 
   it("maps internal SPL assistance query input to the live MCP spl argument", async () => {

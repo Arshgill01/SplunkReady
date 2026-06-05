@@ -252,6 +252,7 @@ const normalizeLiveSavedSearchResult = (input: RunSavedSearchRequest, value: unk
 const liveSavedSearchInput = (input: RunSavedSearchRequest): Record<string, unknown> => ({
   saved_search_name: input.name,
   ...(input.app ? { app: input.app } : {}),
+  ...(input.tokens ? { tokens: input.tokens } : {}),
   ...(input.maxRows ? { maxRows: input.maxRows } : {})
 });
 

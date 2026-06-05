@@ -183,6 +183,7 @@ describe("live Splunk HTTP adapter integration", () => {
       expect(request.params.arguments).toMatchObject({
         saved_search_name: "ES - Lateral Movement Auth Chain",
         app: "SplunkEnterpriseSecuritySuite",
+        tokens: { host: "win-finance-07", earliest: "-24h", latest: "now" },
         maxRows: 5
       });
 
@@ -201,7 +202,12 @@ describe("live Splunk HTTP adapter integration", () => {
 
     await expect(
       createAdapter(mcp.url).runSavedSearch(
-        { name: "ES - Lateral Movement Auth Chain", app: "SplunkEnterpriseSecuritySuite", maxRows: 5 },
+        {
+          name: "ES - Lateral Movement Auth Chain",
+          app: "SplunkEnterpriseSecuritySuite",
+          tokens: { host: "win-finance-07", earliest: "-24h", latest: "now" },
+          maxRows: 5
+        },
         requestOptions
       )
     ).resolves.toMatchObject({

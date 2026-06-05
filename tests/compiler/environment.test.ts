@@ -93,4 +93,54 @@ describe("environment contract compiler", () => {
     expect(contract.canonicalFields).toEqual({});
     expect(contract.warnings).toContain("Canonical field map inferred only from discovered fields: none.");
   });
+
+  it("keeps fixture and live adapter outputs equivalent apart from disclosed mode", async () => {
+    const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
+    const fixtureAdapter = createFixtureSplunkAccessAdapter(fixture);
+    const liveAdapter: SplunkAccessAdapter = {
+      ...fixtureAdapter,
+      mode: "live",
+      async getInfo(options) {
+        const info = await fixtureAdapter.getInfo(options);
+        return { ...info, mode: "live" };
+      },
+      async getMetadata(input, options) {
+        const metadata = await fixtureAdapter.getMetadata(input, options);
+        return { ...metadata, source: "live" };
+      }
+    };
+
+    const fixtureContract = await compileEnvironmentContract(fixtureAdapter, compileOptions);
+    const liveContract = await compileEnvironmentContract(liveAdapter, compileOptions);
+
+    expect(fixtureContract.mode).toBe("fixture");
+    expect(liveContract.mode).toBe("live");
+    expect({
+      indexes: liveContract.indexes,
+      restrictedIndexes: liveContract.restrictedIndexes,
+      sourcetypes: liveContract.sourcetypes,
+      canonicalFields: liveContract.canonicalFields,
+      savedSearches: liveContract.savedSearches,
+      knowledgeObjects: liveContract.knowledgeObjects,
+      dashboardPanels: liveContract.dashboardPanels,
+      dataModels: liveContract.dataModels,
+      appContexts: liveContract.appContexts,
+      mcpTools: liveContract.mcpTools,
+      queryBudgets: liveContract.queryBudgets,
+      forbiddenQueryPatterns: liveContract.forbiddenQueryPatterns
+    }).toEqual({
+      indexes: fixtureContract.indexes,
+      restrictedIndexes: fixtureContract.restrictedIndexes,
+      sourcetypes: fixtureContract.sourcetypes,
+      canonicalFields: fixtureContract.canonicalFields,
+      savedSearches: fixtureContract.savedSearches,
+      knowledgeObjects: fixtureContract.knowledgeObjects,
+      dashboardPanels: fixtureContract.dashboardPanels,
+      dataModels: fixtureContract.dataModels,
+      appContexts: fixtureContract.appContexts,
+      mcpTools: fixtureContract.mcpTools,
+      queryBudgets: fixtureContract.queryBudgets,
+      forbiddenQueryPatterns: fixtureContract.forbiddenQueryPatterns
+    });
+  });
 });

@@ -7520,3 +7520,56 @@ Result:
 - Production build passed.
 - Full offline check first failed because `tests/agents/llm-specimen.test.ts` duplicated the runtime registry without `SAF-003`; after fixing that test registry and adding final registry/dependency boundary tests, full offline check passed with 40 test files and 253 tests.
 - `git diff --check` passed before log/doc updates.
+
+## 2026-06-05 - Move 03 Fixture/Live Parity Boundary Closure
+
+Scope:
+- Close the fixture/live parity drift found while auditing Move 03.
+- Keep fixture mode reproducible without allowing it to become a fake product path.
+- Preserve shared adapter interfaces for fixture and live mode.
+- Preserve deterministic grader authority and receipt provenance across modes.
+
+Files expected/touched:
+- `fixtures/acme-soc-dev/traces/naive-failure.json`
+- `fixtures/acme-soc-dev/traces/contract-aware-pass.json`
+- `src/adapters/live.ts`
+- `tests/fixtures/traces.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/adapters/live.test.ts`
+- `tests/adapters/live.integration.test.ts`
+- `tests/compiler/environment.test.ts`
+- `tests/grader/spl.test.ts`
+- `tests/receipts/generator.test.ts`
+- `docs/fixture-live-parity.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Updated both canonical trace fixtures from the stale `mission-lateral-movement` id to `mission-security-lateral-movement-readiness`.
+- Reworked the CLI wrong-mission negative test so it creates a temporary mismatched trace instead of depending on canonical fixture drift.
+- Added trace fixture coverage that asserts every canonical event belongs to the flagship mission.
+- Forwarded `RunSavedSearchRequest.tokens` through the live MCP `splunk_run_saved_search` argument mapper.
+- Added mock-transport and HTTP integration assertions proving live saved-search token forwarding.
+- Added a compiler adapter-swap parity test that feeds equivalent fixture/live adapter facts through `compileEnvironmentContract` and asserts compiled inventory equality apart from disclosed `mode`.
+- Added a grader mode-independence test proving identical SPL contexts produce identical deterministic rule results under fixture and live contracts.
+- Added a receipt mode-disclosure test proving live mode changes receipt provenance disclosure without changing score, verdict, mission, or violation semantics.
+- Documented canonical trace mission ids and saved-search token parity in `docs/fixture-live-parity.md`.
+
+Product impact:
+- External trace grading can no longer rely on stale fixture mission ids.
+- Tokenized saved searches now preserve fixture/live request shape instead of silently dropping live tokens.
+- Compiler, grader, and receipt boundaries have explicit parity regression coverage.
+
+Reviewer findings:
+- Subagents are disabled per user direction; no reviewer loop was run for this slice.
+
+Open risks:
+- This slice verifies live transport shape with mocks, not a real Splunk MCP server.
+- If future MCP versions reject a nested `tokens` argument, both fixture and live modes must reject tokenized saved-search missions consistently instead of dropping tokens.
+
+Result:
+- Focused trace and CLI tests passed.
+- Focused adapter/compiler/grader/receipt parity tests passed.
+- Production build passed.
+- Full offline check passed with 40 test files and 257 tests.
+- `git diff --check` passed.

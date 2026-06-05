@@ -6,6 +6,8 @@ import { traceEventSchema } from "../../src/schemas/core.js";
 
 type TraceFixtureEvent = Record<string, unknown>;
 
+const flagshipMissionId = "mission-security-lateral-movement-readiness";
+
 const loadTraceFixture = async (name: string) => {
   const fileUrl = new URL(`../../fixtures/acme-soc-dev/traces/${name}.json`, import.meta.url);
   const rawTrace = await readFile(fileUrl, "utf8");
@@ -21,6 +23,14 @@ describe("fixture trace examples", () => {
 
     for (const trace of traces.flat()) {
       expect(traceEventSchema.safeParse(trace).success).toBe(true);
+    }
+  });
+
+  it("keeps canonical traces bound to the flagship mission", async () => {
+    const traces = await Promise.all([loadTraceFixture("naive-failure"), loadTraceFixture("contract-aware-pass")]);
+
+    for (const trace of traces.flat()) {
+      expect(trace["missionId"]).toBe(flagshipMissionId);
     }
   });
 
