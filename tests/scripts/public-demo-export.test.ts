@@ -45,7 +45,7 @@ describe("public demo export", () => {
     );
     await expect(readFile(join(root, "out/public-demo/screenshots/workbench-mcp-proof.png"), "utf8")).resolves.toBe("png-bytes");
     await expect(readFile(join(root, "out/public-demo/public-demo-manifest.json"), "utf8")).resolves.toContain(
-      "/?artifacts=artifacts%2Fmcp-proof#mcp-proof"
+      "?artifacts=artifacts%2Fmcp-proof#mcp-proof"
     );
     expect(result.copiedArtifactBases).toEqual(["artifacts/mcp-proof", "artifacts/suite-proof", "artifacts/public-proof-export"]);
     expect(result.manifest.mutation).toBe(false);

@@ -73,14 +73,21 @@ try {
     fail("public demo manifest must preserve mutation=false");
   }
 
-  if (manifest.defaultUrl !== "/?artifacts=artifacts%2Fmcp-proof#mcp-proof") {
-    fail("public demo manifest must point at the MCP proof workbench route");
+  if (manifest.defaultUrl !== "?artifacts=artifacts%2Fmcp-proof#mcp-proof") {
+    fail("public demo manifest must point at the relative MCP proof workbench route");
   }
 
   const expectedArtifactBases = ["artifacts/mcp-proof", "artifacts/suite-proof", "artifacts/public-proof-export"];
 
   if (JSON.stringify(manifest.artifactBases) !== JSON.stringify(expectedArtifactBases)) {
     fail("public demo manifest artifactBases changed unexpectedly");
+  }
+
+  const indexHtmlPath = join(outDir, "index.html");
+  const indexHtml = existsSync(indexHtmlPath) ? readFileSync(indexHtmlPath, "utf8") : "";
+
+  if (indexHtml.includes('src="/assets/') || indexHtml.includes('href="/assets/')) {
+    fail("public demo index must use relative asset paths for project-site hosting");
   }
 
   const files = walk(outDir);

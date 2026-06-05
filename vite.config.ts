@@ -87,6 +87,7 @@ const artifactServerPlugin = (): Plugin => ({
 
 export default defineConfig({
   root: "ui",
+  base: "./",
   plugins: [artifactServerPlugin()],
   server: {
     port: 5173,

@@ -74,7 +74,7 @@ export const exportPublicDemo = async ({
     source: "splunkready-public-demo-export",
     generatedAt,
     mutation: false,
-    defaultUrl: "/?artifacts=artifacts%2Fmcp-proof#mcp-proof",
+    defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
     artifactBases: requiredArtifactDirs.map((artifactDir) => `artifacts/${artifactDir}`),
     screenshots: "screenshots",
     notes:
