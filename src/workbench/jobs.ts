@@ -2,6 +2,7 @@ import { relative } from "node:path";
 
 import {
   runFirewallCheckFromCli,
+  runLiveSecurityKitFromCli,
   runPolicyBackedRerunFromCli
 } from "../cli.js";
 import {
@@ -56,6 +57,10 @@ const workflowLabel = (workflow: WorkbenchWorkflow): string => {
     return "live security readiness";
   }
 
+  if (workflow === "live-security-kit") {
+    return "live security kit";
+  }
+
   if (workflow === "live-security-proof") {
     return "live security proof";
   }
@@ -101,6 +106,7 @@ export class WorkbenchJobRunner {
       },
       "live-smoke": async ({ outDir }) => runLiveSmokeWorkflow({ outDir }),
       "live-candidates": async ({ outDir }) => runLiveCandidatesWorkflow({ outDir }),
+      "live-security-kit": async ({ outDir }) => runLiveSecurityKitFromCli({ outDir }),
       "live-security-readiness": async ({ outDir }) => runLiveSecurityReadinessWorkflow({ outDir }),
       "live-security-proof": async ({ outDir }) => runLiveSecurityProofWorkflow({ outDir }),
       "hosted-model-diagnostic": async ({ outDir }) => runHostedModelDiagnosticWorkflow({ outDir }),

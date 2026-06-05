@@ -6,6 +6,7 @@ export type WorkbenchWorkflow =
   | "firewall-check"
   | "live-smoke"
   | "live-candidates"
+  | "live-security-kit"
   | "live-security-readiness"
   | "live-security-proof"
   | "hosted-model-diagnostic"

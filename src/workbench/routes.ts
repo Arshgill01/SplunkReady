@@ -94,6 +94,10 @@ const inferWorkflow = (files: string[]): WorkbenchWorkflow | "artifact-bundle" =
     return "live-security-proof";
   }
 
+  if (has("live-security-kit.json")) {
+    return "live-security-kit";
+  }
+
   if (has("live-security-readiness.json")) {
     return "live-security-readiness";
   }
@@ -253,6 +257,7 @@ const workflows = new Set<WorkbenchWorkflow>([
   "firewall-check",
   "live-smoke",
   "live-candidates",
+  "live-security-kit",
   "live-security-readiness",
   "live-security-proof",
   "hosted-model-diagnostic",

@@ -247,6 +247,10 @@ const successViewForWorkflow = (workflow: string): ViewId => {
     return "policy-firewall";
   }
 
+  if (workflow === "live-security-kit") {
+    return "live-connect";
+  }
+
   return "live-connect";
 };
 

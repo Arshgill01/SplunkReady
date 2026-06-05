@@ -8052,3 +8052,66 @@ Playwright evidence:
 Open risks:
 - Historical ignored run directories still exist on disk for manual inspection; the API no longer presents empty stale ones as successful runs.
 - The Runs preview intentionally stays compact. Detailed finding explanations remain available in the dedicated Trace view.
+
+## 2026-06-05 - Move 13 Live Security Kit UX Without Mutation
+
+Context:
+- Move 13 required clearer operator-owned live security kit generation and inspection without adding any Splunk write automation.
+- Subagents remained disabled per user direction; all implementation and verification were done in the main executor.
+- The `.splunkready-live.env` secret file was not read, printed, or sourced. Move 13 kit generation is local-only and does not require live credentials.
+
+Files touched:
+- `src/live-security-kit/validator.ts`
+- `src/cli.ts`
+- `src/workbench/events.ts`
+- `src/workbench/jobs.ts`
+- `src/workbench/routes.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/cli/flow.test.ts`
+- `tests/workbench/workbench.test.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added deterministic live security kit validation over the generated app config, index stanza, props stanza, saved-search stanza, sample CSV rows, README operator boundary, existing Enterprise Security warning, and cleanup guidance.
+- Added validation, operator warnings, and cleanup guidance to `live-security-kit.json`.
+- Made the CLI fail if a generated kit does not pass validation.
+- Added README cleanup guidance that keeps removal/import cleanup operator-owned and outside SplunkReady.
+- Added `live-security-kit` as a workbench workflow that generates local kit artifacts without live credentials and without being gated by live env availability.
+- Added artifact-run inference so generated kit runs appear as `live-security-kit` in the Runs browser.
+- Added Live connect UI action `Generate operator kit`; it stays enabled when live mode is unavailable, while live checks/proofs remain disabled.
+- Expanded the Operator security kit panel to render generated files, validation checks, operator warnings, cleanup guidance, and explicit `SplunkReady write operations: none`.
+- Added CLI tests for validation evidence and mismatched generated saved-search detection.
+- Added workbench test coverage for live-security-kit generation without live credentials.
+- Added UI tests for kit action/validation/warnings/cleanup rendering.
+
+Playwright evidence:
+- Confirmed `npx` was available and used the Playwright skill wrapper.
+- Started `SPLUNKREADY_WORKBENCH_PORT=4330 npm run workbench:dev`.
+- Opened `http://127.0.0.1:4330/#live-connect`.
+- Verified before clicking that:
+  - `Generate operator kit` was enabled;
+  - live actions such as `Run live smoke` and `Run security proof` were disabled without live env;
+  - browser credential input fields were absent.
+- Clicked `Generate operator kit`.
+- Workbench generated `/api/artifacts/run-2026-06-05T10-30-52-540Z-e26240fc` and returned to `#live-connect`.
+- Verified rendered kit details on mobile 390px and desktop 1440px:
+  - validation showed `PASS / 0 failed check(s)`;
+  - `saved-search-stanza` validation was visible;
+  - existing Enterprise Security warning text was visible;
+  - cleanup guidance text was visible;
+  - `SplunkReady write operations` and `none` were visible;
+  - live actions remained disabled;
+  - kit button remained enabled.
+- Captured screenshots:
+  - `output/playwright/move13-live-security-kit-mobile.png`
+  - `output/playwright/move13-live-security-kit-desktop.png`
+- Ran strict overflow checks on mobile and desktop for `html`, `body`, `.app-frame`, `.view`, `.workbench`, `.panel`, `.kit-detail`, `.kit-validation-table`, and `.fact-table`; all reported zero overflow.
+
+Open risks:
+- The generated kit is intentionally local operator content. SplunkReady does not install, import, remove, or mutate Splunk content.
+- Playwright-generated workbench runs and screenshots are ignored local artifacts and are not committed.

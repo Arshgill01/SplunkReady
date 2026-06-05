@@ -27,6 +27,11 @@ import { createSavedSearchRules } from "./grader/saved-search.js";
 import { scoreMissionReadiness } from "./grader/scoring.js";
 import { createSplStructuralRules } from "./grader/spl.js";
 import { firewallBlockedCode, SplunkFirewallGateway } from "./gateway/firewall.js";
+import {
+  liveSecurityKitCleanupGuidance,
+  liveSecurityKitOperatorWarnings,
+  validateLiveSecurityKit
+} from "./live-security-kit/validator.js";
 import { parseMissionDefinition, type MissionDefinition } from "./missions/dsl.js";
 import { deriveLiveMission, type LiveSavedSearchCandidateResult } from "./missions/live.js";
 import { compileAgentPolicy, type AgentPolicy } from "./policy/compiler.js";
@@ -1308,8 +1313,18 @@ export SPLUNKREADY_LLM_ENABLED=true
 export GEMINI_MODEL=gemini-3.1-flash-lite
 NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-proof --out artifacts/live-security-proof --json
 \`\`\`
+
+## Cleanup
+
+Cleanup is operator-owned and outside SplunkReady. SplunkReady does not remove app content, indexes, saved searches, or ingested events.
+
+- On a disposable trial, remove or disable the generated \`${flagshipSecuritySavedSearch.app}\` app through normal Splunk admin controls.
+- Delete imported sample events only in an approved disposable environment.
+- Do not run destructive cleanup against production data or an existing Enterprise Security deployment.
 `
   );
+  const validation = await validateLiveSecurityKit(options.out);
+
   await writeJson(manifestPath, {
     status: "PASS",
     mutation: false,
@@ -1320,8 +1335,15 @@ NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-proof --out 
     sourcetype: "XmlWinEventLog:Security",
     sampleEvents: 3,
     generatedAt: kitGeneratedAt.toISOString(),
+    validation,
+    operatorWarnings: [...liveSecurityKitOperatorWarnings],
+    cleanupGuidance: [...liveSecurityKitCleanupGuidance],
     artifacts: [appConfPath, indexesPath, propsPath, savedSearchesPath, sampleEventsPath, readmePath]
   });
+
+  if (validation.status !== "PASS") {
+    throw new Error(`Generated live security kit failed validation: ${validation.checks.filter((check) => check.status === "FAIL").map((check) => check.id).join(", ")}`);
+  }
 
   return [manifestPath, appConfPath, indexesPath, propsPath, savedSearchesPath, sampleEventsPath, readmePath];
 };
@@ -3400,6 +3422,21 @@ export const runLiveSecurityReadinessFromCli = async (
   const artifacts = await liveSecurityCheckCommand(options, env);
 
   return { status: "PASS", outDir: input.outDir, artifacts, mutation: false, messages: [] };
+};
+
+export const runLiveSecurityKitFromCli = async (
+  input: LiveActionWorkflowInput
+): Promise<LiveActionWorkflowResult> => {
+  const options = defaultCliOptions({ mode: "fixture", out: input.outDir });
+  const artifacts = await liveSecurityKitCommand(options);
+
+  return {
+    status: "PASS",
+    outDir: input.outDir,
+    artifacts,
+    mutation: false,
+    messages: ["Generated local operator-owned security kit. SplunkReady performed no Splunk write operation."]
+  };
 };
 
 export const runLiveSecurityProofFromCli = async (

@@ -424,6 +424,45 @@ const liveSecurityKit = {
   sourcetype: "XmlWinEventLog:Security",
   sampleEvents: 3,
   generatedAt: "2026-06-01T06:30:00.000Z",
+  validation: {
+    status: "PASS",
+    expectedFiles: [
+      "SplunkEnterpriseSecuritySuite/default/app.conf",
+      "SplunkEnterpriseSecuritySuite/default/indexes.conf",
+      "SplunkEnterpriseSecuritySuite/default/props.conf",
+      "SplunkEnterpriseSecuritySuite/default/savedsearches.conf",
+      "lateral-movement-events.csv",
+      "README.md"
+    ],
+    checks: [
+      {
+        id: "saved-search-stanza",
+        status: "PASS",
+        path: "SplunkEnterpriseSecuritySuite/default/savedsearches.conf",
+        detail: "Expected lateral-movement saved-search stanza is present."
+      },
+      {
+        id: "sample-event-refs",
+        status: "PASS",
+        path: "lateral-movement-events.csv",
+        detail: "Expected lateral-movement evidence refs are present."
+      },
+      {
+        id: "cleanup-guidance",
+        status: "PASS",
+        path: "README.md",
+        detail: "README includes cleanup guidance."
+      }
+    ]
+  },
+  operatorWarnings: [
+    "Operator-owned install/import only; SplunkReady generated local files and performs no Splunk write operation.",
+    "If Enterprise Security is already installed, do not overwrite its app directory; merge the generated stanzas through normal Splunk administration."
+  ],
+  cleanupGuidance: [
+    "Cleanup is operator-owned and outside SplunkReady.",
+    "Delete imported sample events only in an approved disposable environment."
+  ],
   artifacts: [
     "artifacts/live-security-kit/SplunkEnterpriseSecuritySuite/default/savedsearches.conf",
     "artifacts/live-security-kit/lateral-movement-events.csv",
@@ -1061,8 +1100,10 @@ describe("Vite UI artifact app", () => {
     });
 
     expect(unavailable).toContain("Live workbench actions");
-    expect(unavailable).toContain("Live mode unavailable. Missing server env");
+    expect(unavailable).toContain("Live mode unavailable for live checks");
+    expect(unavailable).toContain("local operator kit can still be generated without credentials");
     expect(unavailable).toContain("SPLUNKREADY_SPLUNK_MCP_URL");
+    expect(unavailable).toContain('data-run-workflow="live-security-kit" >');
     expect(unavailable).toContain("Run live smoke");
     expect(unavailable).toContain("Scan saved searches");
     expect(unavailable).toContain("Check security readiness");
@@ -1187,7 +1228,22 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("BLOCKED");
     expect(liveConnect).toContain("SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain / missing");
     expect(liveConnect).toContain("wineventlog / missing");
+    expect(liveConnect).toContain('data-run-workflow="live-security-kit"');
+    expect(liveConnect).toContain("Generate operator kit");
+    expect(liveConnect).toContain("local generation; no live credentials required");
     expect(liveConnect).toContain("Operator security kit");
+    expect(liveConnect).toContain("Validation");
+    expect(liveConnect).toContain("PASS / 0 failed check(s)");
+    expect(liveConnect).toContain("Validation checks");
+    expect(liveConnect).toContain("saved-search-stanza");
+    expect(liveConnect).toContain("sample-event-refs");
+    expect(liveConnect).toContain("Operator warnings");
+    expect(liveConnect).toContain("no Splunk write operation");
+    expect(liveConnect).toContain("do not overwrite");
+    expect(liveConnect).toContain("Cleanup guidance");
+    expect(liveConnect).toContain("Cleanup is operator-owned");
+    expect(liveConnect).toContain("SplunkReady write operations");
+    expect(liveConnect).toContain("<td>none</td>");
     expect(liveConnect).toContain("Operator action");
     expect(liveConnect).toContain("required");
     expect(liveConnect).toContain("Hosted model assistance");

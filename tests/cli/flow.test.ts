@@ -7,6 +7,8 @@ import { promisify } from "node:util";
 
 import { beforeAll, describe, expect, it } from "vitest";
 
+import { validateLiveSecurityKit } from "../../src/live-security-kit/validator.js";
+
 const execFileAsync = promisify(execFile);
 let cliPath = "";
 
@@ -2260,6 +2262,13 @@ describe("SplunkReady CLI flow", () => {
       preferredIndex: string;
       sampleEvents: number;
       generatedAt: string;
+      validation: {
+        status: "PASS" | "FAIL";
+        expectedFiles: string[];
+        checks: Array<{ id: string; status: "PASS" | "FAIL"; path: string; detail: string }>;
+      };
+      operatorWarnings: string[];
+      cleanupGuidance: string[];
     };
     const savedSearches = await readFile(
       join(outDir, "SplunkEnterpriseSecuritySuite", "default", "savedsearches.conf"),
@@ -2281,6 +2290,28 @@ describe("SplunkReady CLI flow", () => {
       preferredIndex: "wineventlog",
       sampleEvents: 3
     });
+    expect(manifest.validation.status).toBe("PASS");
+    expect(manifest.validation.expectedFiles).toEqual(
+      expect.arrayContaining([
+        "SplunkEnterpriseSecuritySuite/default/indexes.conf",
+        "SplunkEnterpriseSecuritySuite/default/savedsearches.conf",
+        "lateral-movement-events.csv",
+        "README.md"
+      ])
+    );
+    expect(manifest.validation.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "saved-search-stanza", status: "PASS" }),
+        expect.objectContaining({ id: "index-stanza", status: "PASS" }),
+        expect.objectContaining({ id: "sample-event-refs", status: "PASS" }),
+        expect.objectContaining({ id: "operator-owned-boundary", status: "PASS" }),
+        expect.objectContaining({ id: "existing-es-warning", status: "PASS" }),
+        expect.objectContaining({ id: "cleanup-guidance", status: "PASS" })
+      ])
+    );
+    expect(manifest.operatorWarnings.join(" ")).toContain("no Splunk write operation");
+    expect(manifest.operatorWarnings.join(" ")).toContain("do not overwrite");
+    expect(manifest.cleanupGuidance.join(" ")).toContain("Cleanup is operator-owned");
     expect(Date.now() - new Date(manifest.generatedAt).getTime()).toBeLessThan(24 * 60 * 60 * 1000);
     expect(savedSearches).toContain("[ES - Lateral Movement Auth Chain]");
     expect(savedSearches).toContain("index=wineventlog");
@@ -2304,8 +2335,33 @@ describe("SplunkReady CLI flow", () => {
     expect(readme).toContain("SplunkReady generated these files locally; it did not connect to or mutate Splunk.");
     expect(readme).toContain("generated `SplunkEnterpriseSecuritySuite` app directory provides the app context");
     expect(readme).toContain("CSV timestamps are generated at kit creation time");
+    expect(readme).toContain("Cleanup is operator-owned and outside SplunkReady.");
+    expect(readme).toContain("Do not run destructive cleanup against production data");
     expect(readme).toContain("live-security-check --out artifacts/live-security-check --json");
     expect(readme).toContain("live-security-proof --out artifacts/live-security-proof --json");
+  });
+
+  it("detects mismatched live security kit files after generation", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-security-kit-invalid-"));
+
+    await runCli(["live-security-kit", "--out", outDir, "--json"]);
+    await writeFile(
+      join(outDir, "SplunkEnterpriseSecuritySuite", "default", "savedsearches.conf"),
+      "[Wrong Saved Search]\nsearch = index=main\n",
+      "utf8"
+    );
+
+    const validation = await validateLiveSecurityKit(outDir);
+
+    expect(validation.status).toBe("FAIL");
+    expect(validation.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "saved-search-stanza", status: "FAIL" }),
+        expect.objectContaining({ id: "saved-search-index", status: "FAIL" }),
+        expect.objectContaining({ id: "saved-search-window", status: "FAIL" }),
+        expect.objectContaining({ id: "saved-search-event-ref", status: "FAIL" })
+      ])
+    );
   });
 
   it("bundles proof, live security readiness, and operator kit artifacts for the Vite UI", async () => {

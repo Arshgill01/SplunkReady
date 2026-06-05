@@ -513,6 +513,25 @@ const liveSecurityKitSchema = z
     sourcetype: z.string().min(1),
     sampleEvents: z.number().int().nonnegative(),
     generatedAt: z.string().min(1),
+    validation: z
+      .object({
+        status: z.enum(["PASS", "FAIL"]),
+        expectedFiles: z.array(z.string().min(1)),
+        checks: z.array(
+          z
+            .object({
+              id: z.string().min(1),
+              status: z.enum(["PASS", "FAIL"]),
+              path: z.string().min(1),
+              detail: z.string().min(1)
+            })
+            .strict()
+        )
+      })
+      .strict()
+      .optional(),
+    operatorWarnings: z.array(z.string().min(1)).optional(),
+    cleanupGuidance: z.array(z.string().min(1)).optional(),
     artifacts: z.array(z.string().min(1))
   })
   .strict();

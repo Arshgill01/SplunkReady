@@ -977,6 +977,81 @@ code {
   overflow: auto;
 }
 
+.kit-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  min-width: 0;
+  border-top: 1px solid var(--line);
+}
+
+.kit-detail {
+  min-width: 0;
+  padding: 14px 16px;
+  border-right: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.kit-detail:nth-child(2n) {
+  border-right: 0;
+}
+
+.kit-detail h3 {
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.kit-file-list,
+.kit-note-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.kit-file-list li,
+.kit-note-list li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.kit-validation-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.kit-validation-table th,
+.kit-validation-table td {
+  padding: 9px 8px;
+  vertical-align: top;
+  text-align: left;
+  border-top: 1px solid var(--line-soft);
+  overflow-wrap: anywhere;
+}
+
+.kit-validation-table th {
+  color: var(--text);
+  font-weight: 720;
+}
+
+.kit-validation-table td {
+  color: var(--muted);
+}
+
+.kit-validation-table td:first-child {
+  font-family: "Spline Sans Mono Variable", "Spline Sans Mono", ui-monospace, monospace;
+}
+
+.kit-validation-table td span {
+  display: block;
+  margin-top: 4px;
+  color: var(--quiet);
+  font-family: "Spline Sans Variable", "Spline Sans", sans-serif;
+  font-size: 12px;
+}
+
 @media (min-width: 1500px) {
   .saia-compare {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1150,8 +1225,13 @@ code {
   .run-browser-grid,
   .run-filters,
   .patch-grid,
+  .kit-detail-grid,
   .live-action-list {
     grid-template-columns: 1fr;
+  }
+
+  .kit-detail {
+    border-right: 0;
   }
 
   .fact-table th {

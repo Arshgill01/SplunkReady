@@ -147,6 +147,9 @@ const renderFactTable = (rows: Array<[string, unknown]>): string =>
     .map(([label, rowValue]) => `<tr><th>${value(label)}</th><td>${value(rowValue)}</td></tr>`)
     .join("")}</tbody></table>`;
 
+const renderPlainList = (items: readonly string[], className: string): string =>
+  `<ul class="${value(className)}">${items.map((item) => `<li>${value(item)}</li>`).join("")}</ul>`;
+
 const renderProofArtifactWarning = (bundle: UiArtifactBundle): string => {
   const hasReceipt = Boolean(bundle.receipt);
   const hasTrace =
@@ -751,10 +754,14 @@ const renderLiveSecurityKit = (bundle: UiArtifactBundle): string => {
     return "";
   }
 
+  const validation = kit.validation;
+  const failedChecks = validation?.checks.filter((check) => check.status === "FAIL") ?? [];
+
   return `<section class="panel live-security-kit-panel">
     <h2>Operator security kit</h2>
     ${renderFactTable([
       ["Status", kit.status],
+      ["Validation", validation ? `${validation.status} / ${failedChecks.length} failed check(s)` : "not recorded"],
       ["Mission", kit.mission],
       ["Saved search", kit.savedSearch.ref],
       ["Preferred index", kit.preferredIndex],
@@ -762,9 +769,36 @@ const renderLiveSecurityKit = (bundle: UiArtifactBundle): string => {
       ["Sample events", kit.sampleEvents],
       ["Operator action", kit.operatorActionRequired ? "required" : "not required"],
       ["Mutation", kit.mutation ? "yes" : "no"],
-      ["Generated", kit.generatedAt],
-      ["Artifacts", kit.artifacts.join(" / ")]
+      ["SplunkReady write operations", "none"],
+      ["Generated", kit.generatedAt]
     ])}
+    <div class="kit-detail-grid">
+      <section class="kit-detail">
+        <h3>Generated files</h3>
+        ${renderPlainList(kit.artifacts, "kit-file-list")}
+      </section>
+      <section class="kit-detail">
+        <h3>Validation checks</h3>
+        ${
+          validation
+            ? `<table class="kit-validation-table">
+                <thead><tr><th>Check</th><th>Status</th><th>Evidence</th></tr></thead>
+                <tbody>${validation.checks
+                  .map((check) => `<tr><td>${code(check.id)}<span>${value(check.path)}</span></td><td>${value(check.status)}</td><td>${value(check.detail)}</td></tr>`)
+                  .join("")}</tbody>
+              </table>`
+            : `<p class="empty">Validation artifact not recorded.</p>`
+        }
+      </section>
+      <section class="kit-detail">
+        <h3>Operator warnings</h3>
+        ${renderPlainList(kit.operatorWarnings ?? ["Operator-owned install/import only; SplunkReady performs no Splunk write operation."], "kit-note-list")}
+      </section>
+      <section class="kit-detail">
+        <h3>Cleanup guidance</h3>
+        ${renderPlainList(kit.cleanupGuidance ?? ["Cleanup is operator-owned and outside SplunkReady."], "kit-note-list")}
+      </section>
+    </div>
   </section>`;
 };
 
@@ -810,6 +844,10 @@ const liveActionRows = [
   ["live-security-proof", "Run security proof", "Execute the strict LLM fail-to-pass proof only when readiness is green."]
 ] as const;
 
+const liveKitActionRows = [
+  ["live-security-kit", "Generate operator kit", "Write local app, saved search, sample CSV, README, and validation manifest."]
+] as const;
+
 const hostedModelActionRows = [
   ["hosted-model-diagnostic", "Check SAIA entitlement", "Call hosted-model helper tools only; report PASS or BLOCKED."],
   ["hosted-model-proof", "Run hosted-model proof", "Collect advisory explain/optimize output without executing SPL."]
@@ -820,6 +858,7 @@ const renderLiveActionPanel = (workbench: WorkbenchRenderState | undefined): str
   const running = job?.state === "queued" || job?.state === "running";
   const liveAvailable = workbench?.liveAvailable === true;
   const disabled = !workbench?.available || !liveAvailable || running;
+  const kitDisabled = !workbench?.available || running;
   const missing = workbench?.liveMissing ?? [];
   const status = !workbench?.available
     ? "workbench backend not connected"
@@ -842,8 +881,19 @@ const renderLiveActionPanel = (workbench: WorkbenchRenderState | undefined): str
       ],
       ["SAIA authority", "advisory only"],
       ["Browser credentials", "not accepted"],
+      ["Operator kit", "local generation; no live credentials required"],
       ["Mutation", "false"]
     ])}
+    <div class="live-action-list kit-action-list">
+      ${liveKitActionRows
+        .map(
+          ([workflow, label, detail]) => `<button class="replay-button live-action-button" type="button" data-run-workflow="${workflow}" ${kitDisabled ? "disabled" : ""}>
+            <strong>${value(label)}</strong>
+            <span>${value(detail)}</span>
+          </button>`
+        )
+        .join("")}
+    </div>
     <div class="live-action-list">
       ${liveActionRows
         .map(
@@ -882,7 +932,7 @@ const renderLiveActionPanel = (workbench: WorkbenchRenderState | undefined): str
         : `<p class="empty">${value(
             liveAvailable
               ? "Run a server-owned live action to produce fresh live artifacts."
-              : `Live mode unavailable. Missing server env: ${missing.join(", ") || "SPLUNKREADY_LIVE_ENABLED=true, SPLUNKREADY_SPLUNK_MCP_URL, SPLUNKREADY_SPLUNK_MCP_TOKEN"}.`
+              : `Live mode unavailable for live checks. The local operator kit can still be generated without credentials. Missing server env: ${missing.join(", ") || "SPLUNKREADY_LIVE_ENABLED=true, SPLUNKREADY_SPLUNK_MCP_URL, SPLUNKREADY_SPLUNK_MCP_TOKEN"}.`
           )}</p>`
     }
   </section>`;

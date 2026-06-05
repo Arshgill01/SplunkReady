@@ -6433,3 +6433,85 @@ Open risks:
 
 - Screenshot artifacts live under ignored `output/playwright/` and are not committed.
 - Existing non-empty historical workbench runs still appear by design; only empty stale folders are filtered from the run browser.
+
+## 2026-06-05 - Move 13 Live Security Kit UX Without Mutation
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts tests/workbench tests/ui/app.test.ts`
+- `npm run build`
+- `npm run splunkready -- live-security-kit --out output/move13-live-security-kit-20260605-160003 --json`
+- `node -e "const kit=require('./output/move13-live-security-kit-20260605-160003/live-security-kit.json'); console.log(JSON.stringify({status:kit.status, mutation:kit.mutation, validation:kit.validation.status, checks:kit.validation.checks.length, failed:kit.validation.checks.filter(c=>c.status==='FAIL').length, warnings:kit.operatorWarnings.length, cleanup:kit.cleanupGuidance.length}, null, 2));"`
+- `command -v npx >/dev/null 2>&1 && echo npx-present || echo npx-missing`
+- `SPLUNKREADY_WORKBENCH_PORT=4330 npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4330/#live-connect`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e59`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 390 844`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/move13-live-security-kit-mobile.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 1440 1000`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/move13-live-security-kit-desktop.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code 'async (page) => page.evaluate(() => { ... live-security-kit UI assertions ... })'`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code 'async (page) => page.evaluate(() => { ... overflow selectors ... })'`
+- `npm run ui:build`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript validation.
+- PASS for required Move 13 focused verification:
+  - `tests/cli/flow.test.ts`;
+  - `tests/workbench`;
+  - `tests/ui/app.test.ts`;
+  - 3 test files;
+  - 75 tests passed.
+- PASS for `npm run build`.
+- PASS for required fresh-kit command:
+  - command: `npm run splunkready -- live-security-kit --out output/move13-live-security-kit-20260605-160003 --json`;
+  - output status: `PASS`;
+  - generated `live-security-kit.json`, `app.conf`, `indexes.conf`, `props.conf`, `savedsearches.conf`, `lateral-movement-events.csv`, and `README.md`.
+- PASS for generated manifest spot-check:
+  - `status`: `PASS`;
+  - `mutation`: `false`;
+  - `validation`: `PASS`;
+  - validation checks: `19`;
+  - failed checks: `0`;
+  - operator warnings: `2`;
+  - cleanup guidance entries: `3`.
+- PASS for Playwright prerequisite: `npx` was available.
+- PASS for Playwright local workbench generation:
+  - opened `http://127.0.0.1:4330/#live-connect`;
+  - confirmed `Generate operator kit` was enabled without live env;
+  - confirmed live proof/check buttons remained disabled without live env;
+  - clicked `Generate operator kit`;
+  - generated `/api/artifacts/run-2026-06-05T10-30-52-540Z-e26240fc`;
+  - navigated to generated kit artifact on `#live-connect`.
+- PASS for Playwright mobile 390px kit UI:
+  - document overflow: `0`;
+  - validation content visible: `true`;
+  - `saved-search-stanza` visible: `true`;
+  - existing ES warning visible: `true`;
+  - cleanup guidance visible: `true`;
+  - explicit no-write text visible: `true`;
+  - live actions disabled: `true`;
+  - kit action enabled: `true`.
+- PASS for Playwright desktop 1440px kit UI with the same assertions.
+- PASS for strict overflow checks on mobile and desktop:
+  - `html`, `body`, `.app-frame`, `.view`, `.workbench`, `.panel`, `.kit-detail`, `.kit-validation-table`, and `.fact-table` all reported zero overflowing elements.
+- PASS for Vite production UI build:
+  - 21 modules transformed;
+  - production bundle written to `dist-ui`.
+- PASS for `git diff --check`.
+- PASS for canonical project gate:
+  - scaffold verified;
+  - 85 waves;
+  - 1141 project files;
+  - 41 test files;
+  - 277 tests passed.
+
+Open risks:
+
+- Browser screenshots and generated fresh-kit output live under ignored `output/`; they are local verification artifacts and are not committed.
+- Live Splunk install/import/cleanup remains explicitly operator-owned and outside SplunkReady.

@@ -424,6 +424,60 @@ describe("workbench backend", () => {
     });
   });
 
+  it("generates the operator-owned live security kit without live credentials", async () => {
+    const config = await testConfig({
+      liveAvailable: false,
+      liveMissing: ["SPLUNKREADY_LIVE_ENABLED", "SPLUNKREADY_SPLUNK_MCP_URL", "SPLUNKREADY_SPLUNK_MCP_TOKEN"]
+    });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const response = await callApi(config, runner, store, { method: "POST", path: "/api/jobs/live-security-kit" });
+    const started = response.json as { job: { id: string; workflow: string } };
+    const completed = await waitForJob(runner, started.job.id);
+    const manifest = JSON.parse(
+      await readFile(join(config.artifactRoot, completed.runId, "live-security-kit.json"), "utf8")
+    ) as {
+      mutation: boolean;
+      operatorActionRequired: boolean;
+      validation: { status: string };
+      operatorWarnings: string[];
+      cleanupGuidance: string[];
+    };
+    const list = await callApi(config, runner, store, { method: "GET", path: "/api/artifacts" });
+
+    expect(response.status).toBe(202);
+    expect(started.job.workflow).toBe("live-security-kit");
+    expect(completed).toMatchObject({ workflow: "live-security-kit", state: "succeeded" });
+    expect(completed.artifacts).toEqual(
+      expect.arrayContaining([
+        "live-security-kit.json",
+        "SplunkEnterpriseSecuritySuite/default/savedsearches.conf",
+        "SplunkEnterpriseSecuritySuite/default/indexes.conf",
+        "lateral-movement-events.csv",
+        "README.md"
+      ])
+    );
+    expect(manifest).toMatchObject({
+      mutation: false,
+      operatorActionRequired: true,
+      validation: { status: "PASS" }
+    });
+    expect(manifest.operatorWarnings.join(" ")).toContain("no Splunk write operation");
+    expect(manifest.cleanupGuidance.join(" ")).toContain("Cleanup is operator-owned");
+    expect(list.json).toMatchObject({
+      runs: [
+        expect.objectContaining({
+          runId: completed.runId,
+          workflow: "live-security-kit",
+          state: "succeeded",
+          verdict: "NO RECEIPT",
+          proofAuditStatus: "not loaded",
+          manifestStatus: "MISSING"
+        })
+      ]
+    });
+  });
+
   it("lists artifact runs with receipt, audit, manifest, mission, and rule summaries", async () => {
     const config = await testConfig({ maxRequestBytes: 200_000 });
     const store = new WorkbenchArtifactStore(config.artifactRoot);
