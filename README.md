@@ -2,7 +2,7 @@
 
 Certify AI agents before they touch production Splunk.
 
-SplunkReady is a Splunk-native certification harness for teams shipping agents that can call Splunk. It does not answer alerts for the operator. It proves whether a specific agent can safely operate against a specific Splunk deployment.
+SplunkReady is a Splunk-native certification harness and local workbench for teams shipping agents that can call Splunk. It does not answer alerts for the operator. It proves whether a specific agent can safely operate against a specific Splunk deployment.
 
 ## One-Sentence Pitch
 
@@ -13,6 +13,8 @@ Splunk is making operational data agent-ready. SplunkReady makes agents Splunk-r
 The Agent Readiness Compiler compiles a fixture or live Splunk environment into an agent contract and readiness profile, runs realistic missions or accepts captured agent traces, grades the resulting tool trace with deterministic rules, and produces a Readiness Receipt.
 
 The flagship demo story is security investigation readiness: the bundled specimen confidently clears possible lateral movement after using `index=*`, a stale field, and no saved search provenance. SplunkReady catches the unsafe trace, exports a reviewable policy patch, reruns the same mission, and shows a bounded pass with evidence. The default specimen is deterministic for local reproducibility; set `SPLUNKREADY_LLM_ENABLED=true` to run the Gemini-backed specimen instead.
+
+The tracked evidence pack is in [submission-evidence/](submission-evidence/README.md). It includes a self-verifiable three-mission fixture proof, a redacted public proof export, manually inspected workbench screenshots, and a claim ledger that maps public claims to evidence paths.
 
 ## Judge-Runnable Fixture Demo
 
@@ -230,7 +232,7 @@ The Readiness Receipt is the product artifact. It records the environment contra
 
 The Agent Readiness Compiler keeps fixture and live Splunk access behind the same adapter boundary, then compiles a contract, runs missions, grades traces with deterministic rules, and emits a Readiness Receipt.
 
-![SplunkReady architecture diagram](docs/architecture.svg)
+See [architecture_diagram.md](architecture_diagram.md) for the root architecture diagram.
 
 Core flow:
 
@@ -266,7 +268,9 @@ npm run check
 
 - Devpost copy: [docs/devpost-submission.md](docs/devpost-submission.md)
 - Demo script: [docs/demo-script.md](docs/demo-script.md)
-- Architecture diagram: [docs/architecture.svg](docs/architecture.svg)
+- Architecture diagram: [architecture_diagram.md](architecture_diagram.md)
+- Evidence pack: [submission-evidence/](submission-evidence/README.md)
+- Claim ledger: [submission-evidence/claim-ledger.md](submission-evidence/claim-ledger.md)
 - Live adapter safety notes: [docs/live-adapter.md](docs/live-adapter.md)
 - Live setup checklist: [docs/live-setup-checklist.md](docs/live-setup-checklist.md)
 - LLM specimen agent: [docs/llm-specimen-agent.md](docs/llm-specimen-agent.md)

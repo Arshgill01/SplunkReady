@@ -7099,3 +7099,48 @@ Open risks:
 
 - The tracked pack does not include raw live artifacts. Live claims remain conditional unless a separate operator-approved redacted live evidence pack is produced.
 - The public export metadata is a sanitized derivative; do not describe it as an unredacted source proof.
+
+## 2026-06-05 - Move 22 Finalize README, Devpost, And Root Architecture
+
+Commands:
+
+- `npm run audit:submission-copy`
+- `npm run audit:reviewers`
+- `if rg -n "(Bearer\\s+[A-Za-z0-9._~+/=-]{8,}|TOKEN=|SECRET=|PASSWORD=|splunk\\.local|10\\.1\\.2\\.3|/Users/[A-Za-z0-9._-]+|https?://(?:localhost|127\\.|10\\.|192\\.168|172\\.))" submission-evidence; then exit 1; else exit 0; fi`
+- `git diff --check`
+- `npm run check`
+- `git status --short`
+- `rg -n "Move 22|docs/architecture\\.svg|Best Use|Also eligible|live hosted-model success|multiple mutually exclusive" README.md docs/devpost-submission.md architecture_diagram.md submission-evidence/claim-ledger.md docs/final-qa-report.md`
+
+Result:
+
+- PASS for `npm run audit:submission-copy`:
+  - 28 required claims audited.
+- PASS for `npm run audit:reviewers`:
+  - 85 reviewer groups audited;
+  - 5 latest pass-with-concerns files;
+  - 0 failing latest verdicts.
+- PASS for tracked evidence secret/private identifier scan:
+  - no matches for bearer tokens, token/secret/password markers, known private endpoint strings, `/Users/<name>`, or private URL patterns.
+- PASS for explicit `git diff --check`.
+- PASS for canonical gate `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 289 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims.
+- PASS for public-copy grep after the final docs update:
+  - no `Also eligible` claim remains in `README.md`, `docs/devpost-submission.md`, `architecture_diagram.md`, `submission-evidence/claim-ledger.md`, or `docs/final-qa-report.md`;
+  - no `Best Use` target claim remains in those current submission files;
+  - no unsupported `live hosted-model success` claim remains;
+  - the broader grep found one intentional line saying the copy should not claim `multiple mutually exclusive prize targets`;
+  - the narrower stale-claim grep without that intentional phrase had no matches.
+
+Notes:
+
+- No UI code changed in Move 22, so no new Playwright run was required for this documentation-only move.
+- The diagram was manually inspected as Markdown/Mermaid source, not as a rendered browser image.
+- Live and hosted-model claims remain conditional in public copy.

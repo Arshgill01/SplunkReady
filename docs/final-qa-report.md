@@ -40,7 +40,7 @@ Total: 90/100. This exceeds the Wave 41 threshold of 85/100, but it intentionall
 | Specimen agent is not hardcoded to fail/pass | Agent and CLI flow tests pass; demo artifacts show before and after traces. |
 | Splunk is not auto-mutated | README, Devpost copy, live adapter docs, and tests preserve read-only/live smoke behavior. |
 | Demo shows fail -> patch -> rerun -> pass | Demo command produced before and after receipts and `demo-rehearsal.json` with `fitsUnderThreeMinutes: true`. |
-| Submission docs exist | `README.md`, `LICENSE`, `docs/architecture.svg`, and `docs/devpost-submission.md` exist. |
+| Submission docs exist | `README.md`, `LICENSE`, root `architecture_diagram.md`, and `docs/devpost-submission.md` exist. |
 | Reviewer Critical/High findings resolved | Latest reviewer verdict audit passed across 41 waves with 0 failing latest verdicts. |
 | Continue after Wave 41 | `PLAN.md` and `docs/waves/README.md` define Wave 42-45 continuation work. |
 

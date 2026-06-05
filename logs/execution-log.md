@@ -8554,3 +8554,46 @@ What changed:
 Open risks:
 - This tracked pack intentionally contains credential-free fixture proof and a redacted public export. Raw live artifacts remain ignored and must not be cited from this pack.
 - Live proof claims remain conditional unless an operator intentionally generates and sanitizes a live evidence export.
+
+## 2026-06-05 - Move 22 Finalize README, Devpost, And Root Architecture
+
+Context:
+- Implemented Move 22 locally without subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Kept Platform & Developer Experience as the explicit submission track.
+- Kept Security as the flagship use case instead of claiming a separate mutually exclusive prize target.
+- Kept hosted-model and live proof claims conditional unless operator-owned credentials and sanitized evidence are available.
+
+Files touched:
+- `README.md`
+- `docs/devpost-submission.md`
+- `architecture_diagram.md`
+- `docs/final-qa-report.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added root `architecture_diagram.md` with a Mermaid architecture view covering:
+  - Splunk fixture/live deployment input;
+  - bundled, hosted-model-gated, and external agents;
+  - the Agent Readiness Compiler;
+  - deterministic grader;
+  - Readiness Receipt;
+  - policy patch;
+  - proof audit and manifest;
+  - workbench backend and UI.
+- Updated `README.md` to describe SplunkReady as a certification harness and local workbench, link the tracked evidence pack, and point submission materials at the root architecture diagram and claim ledger.
+- Rewrote `docs/devpost-submission.md` around the four judging criteria, the workbench proof path, the tracked evidence pack, and conditional live/hosted-model claims.
+- Added claim-ledger rows for the primary Platform & Developer Experience track and root architecture coverage.
+- Replaced the stale `docs/architecture.svg` current-submission reference in `docs/final-qa-report.md`.
+- Regenerated the evidence-pack SHA-256 list after the claim ledger update.
+
+Manual inspection:
+- Inspected the Markdown/Mermaid source for `architecture_diagram.md` and confirmed it includes the required Splunk interaction, agent/model integration, compiler, grader, receipt, backend/workbench, and evidence-output nodes.
+- Inspected the public copy for stale "Also eligible", "Best Use", and unsupported live hosted-model success claims.
+
+Open risks:
+- The root architecture artifact is Markdown/Mermaid rather than a rendered image; this satisfies the accepted root `architecture_diagram.md` filename, but a rendered PNG/PDF can still be added later if Devpost upload formatting needs it.
+- The tracked evidence pack remains credential-free and redacted; raw live proof must stay out of public copy unless separately sanitized.
