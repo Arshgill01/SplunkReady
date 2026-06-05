@@ -8988,6 +8988,54 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 65 Proof Audit Workflow Extraction
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/workflows/proof-audit.test.ts tests/workflows/fixture-certification.test.ts tests/workbench/workbench.test.ts --testNamePattern "proof audit|fixture workflow|policy-backed rerun|firewall-check"`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "proof-audit|firewall-check|judge-proof|rerun firewall"`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for `npx tsc --noEmit`.
+- PASS for focused workflow/workbench tests:
+  - 3 test files passed;
+  - 5 tests passed;
+  - 30 tests skipped by the focused pattern.
+- PASS for focused CLI proof path tests:
+  - 1 test file passed;
+  - 2 tests passed;
+  - 37 tests skipped by the focused pattern.
+- PASS for `git diff --check`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 50 test files passed;
+  - 324 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- `src/cli.ts` line count is now 2,795, down from 3,388 after Move 63.
+- Playwright was not run because this move did not change UI source or
+  behavior.
+
+Open blockers:
+
+- More CLI-backed workflow dependencies remain in fixture, policy, live, and
+  hosted-model workflow wrappers.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 43 One-Command Judge Proof Verification
 
 Commands:

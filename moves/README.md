@@ -87,6 +87,7 @@ commands, or filesystem paths.
 | P0 | [62](moves62.md) Proof manifest and index workflow extraction | 0.5d | Continues the CLI modularization pass by moving proof manifest, verification, and certification index logic into workflow modules. |
 | P0 | [63](moves63.md) External MCP certification workflow extraction | 0.5d | Makes external trace and captured Splunk MCP transcript certification workflow-owned instead of CLI-owned. |
 | P0 | [64](moves64.md) Official hackathon rubric grounding | 0.5d | Captures official criteria and corrects MCP award positioning against Splunk MCP Server usage. |
+| P0 | [65](moves65.md) Proof audit workflow extraction | 0.5d | Removes the 500+ line proof audit implementation from the CLI and gives it a direct workflow test surface. |
 
 ## Non-Negotiable Boundaries
 

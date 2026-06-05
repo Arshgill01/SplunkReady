@@ -10192,6 +10192,43 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 22:53 - Move 65 Proof Audit Workflow Extraction
+
+Scope:
+- Responded to the user's concern that small CLI line-count reductions were not
+  meaningful modularization.
+- Extracted the proof audit implementation from `src/cli.ts` into a workflow
+  module with a direct test surface.
+- Kept deterministic proof audit semantics unchanged.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/workflows/proof-audit.ts`
+- `src/cli.ts`
+- `tests/workflows/proof-audit.test.ts`
+- `moves/README.md`
+- `moves/moves65.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- Moved proof audit report generation, strict gate handling, proof manifest
+  writing, and proof loop classification out of the CLI.
+- The CLI now delegates `proof-audit` to `runProofAuditWorkflow`.
+- Added focused workflow tests for passing suite proof audit and strict missing
+  artifact failure.
+- Reduced `src/cli.ts` from 3,388 lines to 2,795 lines, a 593-line reduction.
+
+Open blockers:
+- `fixture-certification.ts`, `policy-actions.ts`, `live-actions.ts`, and
+  `hosted-model-actions.ts` still contain CLI-backed workflow dependencies.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 20:44 - Move 46 MCP Server Proof Command
 
 Scope:

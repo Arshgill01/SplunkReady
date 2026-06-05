@@ -219,3 +219,9 @@ award framing: SplunkReady should compete by certifying behavior at the Splunk
 MCP Server boundary and by using its local MCP server as a composable
 certification interface, not by claiming that building a separate MCP server is
 the category-winning action by itself.
+
+Move 65 materially reduces the CLI monolith risk by moving proof audit report
+generation and strict gate handling into `src/workflows/proof-audit.ts`.
+`src/cli.ts` dropped from 3,388 lines to 2,795 lines in this move. Remaining
+CLI-backed workflow wrappers in fixture, policy, live, and hosted-model actions
+are still open modularization risks.
