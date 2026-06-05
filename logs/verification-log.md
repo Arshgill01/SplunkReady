@@ -7539,6 +7539,48 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 39 Atomic Workbench Job Limit Verification
+
+Commands:
+
+- `npm test -- tests/workbench/workbench.test.ts`
+- `npm run check && git diff --check`
+- `npm test -- tests/workbench/workbench.test.ts`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for the first focused workbench backend tests:
+  - 1 test file passed;
+  - 28 tests passed.
+- PASS for the first full `npm run check && git diff --check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 294 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output;
+  - explicit final `git diff --check` completed with no output.
+- PASS after adding explicit failed-allocation slot-release coverage:
+  - focused workbench backend tests passed with 29 tests;
+  - full `npm run check && git diff --check` passed with 42 test files and 295
+    tests.
+- Regression coverage now proves:
+  - a second concurrent `createJob()` call is rejected while the first call is
+    allocating a run directory;
+  - a failed run-directory allocation does not permanently consume the
+    configured job slot.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 38 Isolated Workbench Job Snapshots Verification
 
 Commands:

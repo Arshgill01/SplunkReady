@@ -8915,6 +8915,41 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 39 Atomic Workbench Job Limit
+
+Context:
+- Continued development hardening after Move 38.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- User explicitly deferred video/submission work; this move stayed on local
+  workbench backend correctness.
+- Found that `createJob()` checked `maxConcurrentJobs` before awaiting managed
+  run-directory allocation and only stored the queued job after that await,
+  leaving a race window for concurrent starts.
+
+Files touched:
+- `src/workbench/jobs.ts`
+- `tests/workbench/workbench.test.ts`
+- `moves/README.md`
+- `moves/moves39.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added a pending job-start reservation counter inside `WorkbenchJobRunner`.
+- Included pending starts in the configured max-concurrent-jobs limit.
+- Released pending reservations in `finally` after run allocation succeeds or
+  fails.
+- Added focused regressions proving:
+  - a second concurrent job start is rejected while the first start is still
+    allocating its run directory;
+  - a failed run-directory allocation releases the pending slot and allows a
+    later job to start.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 38 Isolated Workbench Job Snapshots
 
 Context:

@@ -121,6 +121,7 @@ export class WorkbenchJobRunner {
   private readonly artifactStore: WorkbenchArtifactStore;
   private readonly workflows: Record<WorkbenchWorkflow, WorkbenchWorkflowHandler>;
   private readonly jobs = new Map<string, WorkbenchJobSnapshot>();
+  private pendingJobStarts = 0;
   private sequence = 0;
 
   constructor(options: WorkbenchJobRunnerOptions) {
@@ -205,28 +206,34 @@ export class WorkbenchJobRunner {
 
     const activeJobs = this.listJobs().filter((job) => job.state === "queued" || job.state === "running");
 
-    if (activeJobs.length >= this.config.maxConcurrentJobs) {
+    if (activeJobs.length + this.pendingJobStarts >= this.config.maxConcurrentJobs) {
       throw new Error("Workbench job limit reached.");
     }
 
-    const run = await this.artifactStore.createRunDirectory();
-    const job: WorkbenchJobSnapshot = {
-      id: `job-${++this.sequence}`,
-      workflow,
-      state: "queued",
-      runId: run.runId,
-      artifactBase: `/api/artifacts/${run.runId}`,
-      createdAt: now(),
-      inputSummary: inputSummaryForPayload(payload),
-      artifacts: [],
-      events: []
-    };
+    this.pendingJobStarts += 1;
 
-    this.jobs.set(job.id, job);
-    this.addEvent(job, "phase", `Queued ${workflowLabel(workflow)}.`);
-    void this.runJob(job, handler, run.path, payload);
+    try {
+      const run = await this.artifactStore.createRunDirectory();
+      const job: WorkbenchJobSnapshot = {
+        id: `job-${++this.sequence}`,
+        workflow,
+        state: "queued",
+        runId: run.runId,
+        artifactBase: `/api/artifacts/${run.runId}`,
+        createdAt: now(),
+        inputSummary: inputSummaryForPayload(payload),
+        artifacts: [],
+        events: []
+      };
 
-    return this.snapshot(job);
+      this.jobs.set(job.id, job);
+      this.addEvent(job, "phase", `Queued ${workflowLabel(workflow)}.`);
+      void this.runJob(job, handler, run.path, payload);
+
+      return this.snapshot(job);
+    } finally {
+      this.pendingJobStarts -= 1;
+    }
   }
 
   private async runJob(

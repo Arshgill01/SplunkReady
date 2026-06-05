@@ -80,6 +80,41 @@ const emptyProofManifest = (proofDir: string) => ({
   files: []
 });
 
+class DelayedCreateArtifactStore extends WorkbenchArtifactStore {
+  private releaseCreateRun: (() => void) | undefined;
+  readonly createRunStarted: Promise<void>;
+
+  constructor(root: string) {
+    super(root);
+    let markStarted: (() => void) | undefined;
+    this.createRunStarted = new Promise((resolve) => {
+      markStarted = resolve;
+    });
+    this.releaseCreateRun = markStarted;
+  }
+
+  async createRunDirectory() {
+    this.releaseCreateRun?.();
+    this.releaseCreateRun = undefined;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    return super.createRunDirectory();
+  }
+}
+
+class FailOnceCreateArtifactStore extends WorkbenchArtifactStore {
+  private failed = false;
+
+  async createRunDirectory() {
+    if (!this.failed) {
+      this.failed = true;
+      throw new Error("temporary allocation failure");
+    }
+
+    return super.createRunDirectory();
+  }
+}
+
 describe("workbench backend", () => {
   it("keeps the workbench backend decoupled from direct CLI imports", async () => {
     const sources = await Promise.all([
@@ -256,6 +291,52 @@ describe("workbench backend", () => {
       expect.arrayContaining(["Queued fixture certification.", "fixture certification completed."])
     );
     expect(reloaded?.events.map((event) => event.message)).not.toContain("corrupted");
+  });
+
+  it("reserves a concurrency slot while allocating a run directory", async () => {
+    const config = await testConfig();
+    const store = new DelayedCreateArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({
+      config,
+      artifactStore: store,
+      workflows: {
+        "fixture-certification": async ({ outDir }) => {
+          await writeFile(join(outDir, "receipt-after-001.json"), "{}\n", "utf8");
+
+          return { artifacts: [join(outDir, "receipt-after-001.json")] };
+        }
+      }
+    });
+
+    const first = runner.createJob("fixture-certification");
+    await store.createRunStarted;
+    await expect(runner.createJob("fixture-certification")).rejects.toThrow("Workbench job limit reached.");
+    const completed = await waitForJob(runner, (await first).id);
+
+    expect(completed.state).toBe("succeeded");
+    expect(runner.listJobs()).toHaveLength(1);
+  });
+
+  it("releases the pending job slot after run allocation fails", async () => {
+    const config = await testConfig();
+    const store = new FailOnceCreateArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({
+      config,
+      artifactStore: store,
+      workflows: {
+        "fixture-certification": async ({ outDir }) => {
+          await writeFile(join(outDir, "receipt-after-001.json"), "{}\n", "utf8");
+
+          return { artifacts: [join(outDir, "receipt-after-001.json")] };
+        }
+      }
+    });
+
+    await expect(runner.createJob("fixture-certification")).rejects.toThrow("temporary allocation failure");
+    const completed = await waitForJob(runner, (await runner.createJob("fixture-certification")).id);
+
+    expect(completed.state).toBe("succeeded");
+    expect(runner.listJobs()).toHaveLength(1);
   });
 
   it("stores redacted failed-job diagnostics without corrupting earlier runs", async () => {
