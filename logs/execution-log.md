@@ -8655,3 +8655,40 @@ External blockers:
 Open risks:
 - The Runs/export screenshot is functionally clear but visually dense. Keep Move 25 for final workbench consolidation.
 - The public video and official feedback submission remain manual/external gates unless an upload target and form session are available.
+
+## 2026-06-05 - Move 24 Final Clean-Room Submission Gate
+
+Context:
+- Ran Move 24 locally without subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Created a fresh clone from the current local `splunkready-build` branch at `/tmp/splunkready-cleanroom-hYM4OS/SplunkReady`.
+- Tested commit `969ef19c27a15807d2df014abfd9f9afec8e5e8d`.
+- Noted that the main branch was `ahead 24` of `origin/splunkready-build`, so public-remote proof remains blocked until push.
+
+Files touched:
+- `docs/final-clean-room-submission-gate.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added a final clean-room gate report recording:
+  - source commit;
+  - clean clone path;
+  - dependency install result;
+  - two canonical gate passes;
+  - explicit build/UI build/audit results;
+  - external trace and MCP transcript proof results;
+  - evidence pack hash verification;
+  - Playwright fixture certification from the clean clone;
+  - public submission blockers.
+
+Clean-room findings:
+- Executable judge path passed from a fresh local clone.
+- The first external-trace command failed when run against an empty output directory because `grade-trace` requires `environment-contract.json`; rerunning the documented prerequisite `compile` step first made the flow pass.
+- A broad secret scan flagged README placeholder variable names; a value-focused scan found no actual bearer tokens, private endpoints, private URL ranges, or absolute user paths.
+
+Open blockers:
+- Commits are not yet pushed to the public remote.
+- Public video URL is not available.
+- Official feedback submission is not confirmed.
+- Move 25 workbench consolidation remains useful for judge-video clarity.

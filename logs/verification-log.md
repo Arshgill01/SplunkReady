@@ -7232,3 +7232,121 @@ Open blockers:
 - Signed-out public video access has not been verified.
 - Official feedback form has not been submitted.
 - Do not claim Move 23 complete until those external gates are actually done.
+
+## 2026-06-05 - Move 24 Final Clean-Room Submission Gate
+
+Commands:
+
+- `git status --short --branch`
+- `sed -n '1,260p' moves/moves24.md`
+- `sed -n '1,260p' MANIFEST.md`
+- `sed -n '1,260p' QUALITY-BAR.md`
+- `sed -n '1,260p' PLAN.md`
+- `sed -n '1,260p' DECISIONS.md`
+- `sed -n '1,260p' ARCHITECTURE.md`
+- `git remote -v && git rev-parse HEAD && git rev-parse --short HEAD && git status --short --branch`
+- `cleanroom=$(mktemp -d /tmp/splunkready-cleanroom-XXXXXX) && git clone --no-local --branch splunkready-build /Users/arshdeepsingh/Developer/SplunkReady "$cleanroom/SplunkReady" && printf '%s\n' "$cleanroom/SplunkReady"`
+- `npm ci`
+- `npm run check`
+- `npm run check`
+- `npm run build`
+- `npm run ui:build`
+- `npm run audit:reviewers`
+- `npm run audit:submission-copy`
+- `tmp=$(mktemp -d /tmp/splunkready-cleanroom-external-trace-XXXXXX) && npm run splunkready -- grade-trace --trace examples/sample-external-trace-pass.json --out "$tmp" --agent-name "External MCP Agent" --agent-version "cleanroom-trace-pass" --json && npm run splunkready -- proof-audit --out "$tmp" --require-pass true --json`
+- `tmp=$(mktemp -d /tmp/splunkready-cleanroom-external-trace-XXXXXX) && npm run splunkready -- compile --out "$tmp" --json && npm run splunkready -- grade-trace --trace examples/sample-external-trace-pass.json --out "$tmp" --agent-name "External MCP Agent" --agent-version "cleanroom-trace-pass" --json && npm run splunkready -- proof-audit --out "$tmp" --require-pass true --json`
+- `tmp=$(mktemp -d /tmp/splunkready-cleanroom-mcp-transcript-XXXXXX) && npm run splunkready -- certify-mcp-transcript --transcript examples/sample-mcp-transcript-pass.jsonl --out "$tmp" --strict-import true --require-pass true --agent-name "External MCP Agent" --agent-version "cleanroom-jsonrpc-transcript-pass" --json && npm run splunkready -- proof-audit --out "$tmp" --require-pass true --json`
+- `sha256sum -c submission-evidence/evidence-pack-sha256.txt`
+- `SPLUNKREADY_WORKBENCH_PORT=4341 npm run workbench`
+- `bash "$PWCLI" open http://127.0.0.1:4341/#certification-replay && bash "$PWCLI" snapshot`
+- `bash "$PWCLI" click e34 && bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/cleanroom-workbench-fixture.png --full-page`
+- `npm run audit:submission-copy && git diff --check && git status --short`
+- `if rg -n "(Bearer\\s+[A-Za-z0-9._~+/=-]{8,}|TOKEN=|SECRET=|PASSWORD=|splunk\\.local|10\\.1\\.2\\.3|/Users/[A-Za-z0-9._-]+|https?://(?:10\\.|192\\.168|172\\.))" README.md docs/devpost-submission.md docs/demo-video-runbook.md docs/splunk-feedback-form-draft.md architecture_diagram.md submission-evidence; then exit 1; else exit 0; fi`
+- `if rg -n "(Bearer\\s+[A-Za-z0-9._~+/=-]{8,}|=\"[^\"]*(?:secret|password|token)[^\"]{8,}\"|splunk\\.local|10\\.1\\.2\\.3|/Users/[A-Za-z0-9._-]+|https?://(?:10\\.|192\\.168|172\\.))" README.md docs/devpost-submission.md docs/demo-video-runbook.md docs/splunk-feedback-form-draft.md architecture_diagram.md submission-evidence; then exit 1; else exit 0; fi`
+- `test -f architecture_diagram.md && test -f README.md && test -f docs/devpost-submission.md && test -f docs/demo-video-runbook.md && test -f docs/splunk-feedback-form-draft.md && test -f submission-evidence/README.md && echo required-public-files-present`
+- `git status --short --branch`
+- `git log -1 --oneline`
+- `lsof -ti tcp:4341`
+- `kill 2915 2988 && lsof -ti tcp:4341`
+- `if rg -n "(Bearer\\s+[A-Za-z0-9._~+/=-]{8,}|=\"[^\"]*(?:secret|password|token)[^\"]{8,}\"|splunk\\.local|10\\.1\\.2\\.3|/Users/[A-Za-z0-9._-]+|https?://(?:10\\.|192\\.168|172\\.))" docs/final-clean-room-submission-gate.md logs/execution-log.md logs/verification-log.md; then exit 1; else exit 0; fi`
+- `if rg -n "(Bearer\\s+[A-Za-z0-9._~+/=-]{8,}|=\"[^\"]*(?:secret|password|token)[^\"]{8,}\"|splunk\\.local|10\\.1\\.2\\.3|/Users/[A-Za-z0-9._-]+|https?://(?:10\\.|192\\.168|172\\.))" docs/final-clean-room-submission-gate.md; then exit 1; else exit 0; fi`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PARTIAL for full public-submission acceptance:
+  - executable clean-room gate passed;
+  - public remote/video/feedback gates remain blocked.
+- PASS for clean clone:
+  - cloned current local `splunkready-build` into `/tmp/splunkready-cleanroom-hYM4OS/SplunkReady`;
+  - tested commit `969ef19c27a15807d2df014abfd9f9afec8e5e8d`.
+- PASS for `npm ci`:
+  - 49 packages installed;
+  - 0 vulnerabilities.
+- PASS for first clean-room `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 289 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims.
+- PASS for second clean-room `npm run check` with the same test/audit counts.
+- PASS for explicit `npm run build`.
+- PASS for explicit `npm run ui:build`.
+- PASS for explicit `npm run audit:reviewers`.
+- PASS for explicit `npm run audit:submission-copy`.
+- FAIL for the first external-trace attempt:
+  - `grade-trace` was run against an empty temp output directory;
+  - it failed because `environment-contract.json` was missing.
+- PASS after rerunning the external-trace path with `compile` first:
+  - `compile` passed;
+  - `grade-trace` passed;
+  - strict `proof-audit --require-pass true` passed.
+- PASS for MCP transcript certification:
+  - `certify-mcp-transcript --strict-import true --require-pass true` passed;
+  - strict `proof-audit --require-pass true` passed.
+- PASS for tracked evidence hash verification:
+  - `sha256sum -c submission-evidence/evidence-pack-sha256.txt` returned OK for all tracked evidence files.
+- PASS for clean-room Playwright fixture certification:
+  - opened `http://127.0.0.1:4341/#certification-replay`;
+  - clicked `Run fixture certification`;
+  - run `run-2026-06-05T12-50-57-780Z-1dac40f3`;
+  - `job-1 / succeeded`;
+  - before `NOT READY`, score `0`, `5` violations;
+  - after `READY / 100/100`, score `100`, `0` violations, `5` evidence refs;
+  - screenshot saved at `/tmp/splunkready-cleanroom-hYM4OS/SplunkReady/output/playwright/cleanroom-workbench-fixture.png`.
+- PASS for manual screenshot inspection:
+  - clean-room replay screenshot is clear enough for the executable fixture demo.
+- PASS for required public files:
+  - `README.md`, `docs/devpost-submission.md`, `architecture_diagram.md`, `docs/demo-video-runbook.md`, `docs/splunk-feedback-form-draft.md`, and `submission-evidence/README.md` exist.
+- PASS for value-focused secret/private identifier scan:
+  - no actual bearer tokens, private endpoints, private URL ranges, or absolute user paths found.
+  - the broader scan flagged README placeholder variable names only.
+- PASS for stopping the clean-room workbench:
+  - final `lsof -ti tcp:4341` returned no process.
+- FAIL for the first post-report broad scan:
+  - it included historical `logs/` files and matched old absolute local Playwright paths plus the new report's initial absolute main repo path.
+  - the public-facing report was sanitized to remove the absolute main repo path.
+- PASS for targeted scan of `docs/final-clean-room-submission-gate.md` after sanitization:
+  - no bearer tokens, secret/password/token values, private endpoints, private URL ranges, or absolute user paths found.
+- PASS for final local `git diff --check`.
+- PASS for final local `npm run check` after adding the clean-room report:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 289 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims.
+
+Open blockers:
+
+- Local branch is still ahead of `origin/splunkready-build`; public-remote clean-room proof is not complete until pushed.
+- Public video URL is still missing.
+- Official feedback submission confirmation is still missing.
+- Move 25 remains relevant for workbench surface consolidation before final video/public submission.
