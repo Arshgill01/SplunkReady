@@ -11,6 +11,7 @@ import { createContractLookupRules } from "../../src/grader/contract.js";
 import { createEvidenceRules } from "../../src/grader/evidence.js";
 import { runRuleEngine } from "../../src/grader/engine.js";
 import { createInjectionRules } from "../../src/grader/injection.js";
+import { createSafetyRules } from "../../src/grader/safety.js";
 import { createSavedSearchRules } from "../../src/grader/saved-search.js";
 import { createSplStructuralRules } from "../../src/grader/spl.js";
 import { LlmSpecimenAgent, type LlmAgentModel } from "../../src/agents/llm-specimen.js";
@@ -27,7 +28,8 @@ const allRules = () => [
   ...createEvidenceRules(),
   ...createAnswerRules(),
   ...createInjectionRules(),
-  ...createBudgetRules()
+  ...createBudgetRules(),
+  ...createSafetyRules()
 ];
 
 const loadFixtureContext = async () => {

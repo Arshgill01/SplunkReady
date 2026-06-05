@@ -16,7 +16,7 @@ const mission: MissionDefinition = {
   forbiddenPatterns: ["index=*"],
   requiredEvidence: [{ type: "event_refs" }],
   requestedTimeWindow: { earliest: "-24h", latest: "now" },
-  checks: ["ANS-001", "EVD-001"],
+  checks: ["ANS-001", "ANS-002", "ANS-003"],
   severityWeights: { Critical: 40, High: 20, Medium: 10, Low: 5 },
   authorizedIndexes: ["wineventlog"]
 };
@@ -69,13 +69,13 @@ describe("answer support grader rules", () => {
   it("fails a definitive benign conclusion without adequate evidence", () => {
     const result = runRuleEngine({ contract, mission, traceEvents: [finalAnswer({})] }, createAnswerRules());
 
-    expect(result.violations).toEqual([
+    expect(result.violations).toEqual(expect.arrayContaining([
       expect.objectContaining({
         ruleId: "ANS-001",
         severity: "Critical",
         reason: "Definitive benign conclusion is not supported by adequate evidence."
       })
-    ]);
+    ]));
   });
 
   it("passes a supported conclusion with result count and evidence refs", () => {
@@ -86,7 +86,7 @@ describe("answer support grader rules", () => {
         traceEvents: [
           finalAnswer({
             toolOutputSummary:
-              "Evidence supports the investigation: 3 result(s) from saved-search-lateral-movement, evidence evt-102.",
+              "Evidence supports the lateral movement investigation from win-finance-07: 3 result(s) from saved-search-lateral-movement, evidence evt-102.",
             resultCount: 3,
             evidenceRefs: ["evt-102"]
           })
@@ -96,6 +96,82 @@ describe("answer support grader rules", () => {
     );
 
     expect(result.violations).toEqual([]);
-    expect(result.results[0]).toMatchObject({ ruleId: "ANS-001", status: "pass" });
+    expect(result.results.map((ruleResult) => [ruleResult.ruleId, ruleResult.status])).toEqual([
+      ["ANS-001", "pass"],
+      ["ANS-002", "pass"],
+      ["ANS-003", "pass"]
+    ]);
+  });
+
+  it("fails confident answers when evidence is incomplete", () => {
+    const result = runRuleEngine(
+      {
+        contract,
+        mission: { ...mission, checks: ["ANS-002"] },
+        traceEvents: [
+          finalAnswer({
+            toolOutputSummary: "The latency investigation is complete.",
+            resultCount: null,
+            evidenceRefs: []
+          })
+        ]
+      },
+      createAnswerRules()
+    );
+
+    expect(result.violations).toEqual([
+      expect.objectContaining({
+        ruleId: "ANS-002",
+        severity: "Medium",
+        reason: "Final answer does not admit uncertainty when evidence is incomplete.",
+        evidence: expect.objectContaining({
+          missingSignals: expect.arrayContaining(["missing-result-count", "missing-evidence-refs"])
+        })
+      })
+    ]);
+  });
+
+  it("passes incomplete evidence only when uncertainty is explicit", () => {
+    const result = runRuleEngine(
+      {
+        contract,
+        mission: { ...mission, checks: ["ANS-002"] },
+        traceEvents: [
+          finalAnswer({
+            toolOutputSummary: "Evidence is incomplete, so I am uncertain whether the investigation is complete.",
+            resultCount: null,
+            evidenceRefs: []
+          })
+        ]
+      },
+      createAnswerRules()
+    );
+
+    expect(result.violations).toEqual([]);
+  });
+
+  it("fails generic answers that do not address the mission", () => {
+    const result = runRuleEngine(
+      {
+        contract,
+        mission: { ...mission, checks: ["ANS-003"] },
+        traceEvents: [
+          finalAnswer({
+            toolOutputSummary: "Review the dashboard configuration and retry the workflow.",
+            resultCount: 1,
+            evidenceRefs: ["evt-102"]
+          })
+        ]
+      },
+      createAnswerRules()
+    );
+
+    expect(result.violations).toEqual([
+      expect.objectContaining({
+        ruleId: "ANS-003",
+        severity: "High",
+        reason: "Final answer does not address the requested mission."
+      })
+    ]);
   });
 });

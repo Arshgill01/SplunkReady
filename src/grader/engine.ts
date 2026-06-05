@@ -46,6 +46,11 @@ export interface RuleEngineResult {
   violations: Violation[];
 }
 
+export interface RuleRegistryValidation {
+  activeRuleIds: GraderRuleId[];
+  registeredRuleIds: GraderRuleId[];
+}
+
 const rulePassResultSchema = z
   .object({
     status: z.literal("pass"),
@@ -177,7 +182,38 @@ const assertRuleBoundary = (rule: GraderRule, result: RuleEvaluation): RuleEvalu
   return parsedResult.data;
 };
 
+export const validateRuleRegistry = (mission: Mission, rules: GraderRule[]): RuleRegistryValidation => {
+  const registeredRuleIds: GraderRuleId[] = [];
+  const seenRuleIds = new Set<GraderRuleId>();
+
+  for (const rule of rules) {
+    const parsedRuleId = graderRuleIdSchema.parse(rule.id);
+
+    if (seenRuleIds.has(parsedRuleId)) {
+      throw new Error(`Duplicate grader rule implementation registered for ${parsedRuleId}.`);
+    }
+
+    seenRuleIds.add(parsedRuleId);
+    registeredRuleIds.push(parsedRuleId);
+  }
+
+  const missingRuleIds = mission.checks.filter((ruleId) => !seenRuleIds.has(ruleId));
+
+  if (missingRuleIds.length > 0) {
+    throw new Error(
+      `Mission ${mission.id} selected unimplemented grader rule(s): ${missingRuleIds.join(", ")}.`
+    );
+  }
+
+  return {
+    activeRuleIds: [...mission.checks],
+    registeredRuleIds
+  };
+};
+
 export const runRuleEngine = (context: RuleContext, rules: GraderRule[]): RuleEngineResult => {
+  validateRuleRegistry(context.mission, rules);
+
   const enabledRuleIds = new Set(context.mission.checks);
   const results = rules
     .filter((rule) => enabledRuleIds.has(rule.id))

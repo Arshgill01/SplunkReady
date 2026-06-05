@@ -9,9 +9,11 @@ import {
   createViolation,
   fail,
   type GraderRule,
+  type GraderRuleId,
   pass,
   runRuleEngine,
-  ruleSeverityById
+  ruleSeverityById,
+  validateRuleRegistry
 } from "../../src/grader/engine.js";
 import { parseMissionDefinition } from "../../src/missions/dsl.js";
 import { violationSchema, type TraceEvent } from "../../src/schemas/core.js";
@@ -42,6 +44,14 @@ const queryFrom = (event: TraceEvent): string | undefined => {
   const input = event.toolInput;
   return input && typeof input["query"] === "string" ? input["query"] : undefined;
 };
+
+const withChecks = <T extends Awaited<ReturnType<typeof loadContext>>>(
+  context: T,
+  checks: GraderRuleId[]
+): T => ({
+  ...context,
+  mission: { ...context.mission, checks }
+});
 
 describe("rule engine foundation", () => {
   it("runs pass and fail rules in order and emits structured violations", async () => {
@@ -81,7 +91,7 @@ describe("rule engine foundation", () => {
         ]);
       }
     };
-    const result = runRuleEngine(context, [passRule, forbiddenQueryRule]);
+    const result = runRuleEngine(withChecks(context, ["EVD-001", "SPL-001"]), [passRule, forbiddenQueryRule]);
 
     expect(result.results.map((ruleResult) => [ruleResult.ruleId, ruleResult.status])).toEqual([
       ["EVD-001", "pass"],
@@ -136,7 +146,7 @@ describe("rule engine foundation", () => {
         }
       }
     ];
-    const result = runRuleEngine(context, rules);
+    const result = runRuleEngine(withChecks(context, ["SPL-001", "KO-001"]), rules);
 
     expect(result.violations.map((violation) => violation.ruleId)).toEqual(["SPL-001", "KO-001"]);
     expect(result.violations.map((violation) => violation.severity)).toEqual(["Critical", "High"]);
@@ -170,6 +180,55 @@ describe("rule engine foundation", () => {
     expect(result.violations).toEqual([]);
   });
 
+  it("fails closed when a mission selects an unimplemented rule", async () => {
+    const context = await loadContext();
+    const scopedContext = {
+      ...context,
+      mission: { ...context.mission, checks: ["SPL-001", "SAF-003"] as GraderRuleId[] }
+    };
+    const rules: GraderRule[] = [
+      {
+        id: "SPL-001",
+        severity: "Critical",
+        evaluate() {
+          return pass("SPL-001", { activated: true });
+        }
+      }
+    ];
+
+    expect(() => runRuleEngine(scopedContext, rules)).toThrow(
+      "Mission mission-security-lateral-movement-readiness selected unimplemented grader rule(s): SAF-003."
+    );
+  });
+
+  it("rejects duplicate registered rule ids before scoring", async () => {
+    const context = await loadContext();
+    const duplicateRule: GraderRule = {
+      id: "SPL-001",
+      severity: "Critical",
+      evaluate() {
+        return pass("SPL-001");
+      }
+    };
+
+    expect(() => validateRuleRegistry(context.mission, [duplicateRule, duplicateRule])).toThrow(
+      "Duplicate grader rule implementation registered for SPL-001."
+    );
+  });
+
+  it("rejects registered rule ids outside the schema before scoring", async () => {
+    const context = await loadContext();
+    const invalidRule: GraderRule = {
+      id: "FAKE-999" as GraderRuleId,
+      severity: "Critical",
+      evaluate() {
+        return pass("SPL-001");
+      }
+    };
+
+    expect(() => validateRuleRegistry(context.mission, [invalidRule])).toThrow();
+  });
+
   it("rejects rules declared with non-canonical severity", async () => {
     const context = await loadContext();
     const rule: GraderRule = {
@@ -180,7 +239,7 @@ describe("rule engine foundation", () => {
       }
     };
 
-    expect(() => runRuleEngine(context, [rule])).toThrow(
+    expect(() => runRuleEngine(withChecks(context, ["SPL-001"]), [rule])).toThrow(
       "Rule SPL-001 declared severity High, expected canonical severity Critical."
     );
   });
@@ -202,8 +261,8 @@ describe("rule engine foundation", () => {
       }
     };
 
-    expect(() => runRuleEngine(context, [wrongRuleId])).toThrow("Rule SPL-001 returned result for KO-001.");
-    expect(() => runRuleEngine(context, [wrongSeverity])).toThrow(
+    expect(() => runRuleEngine(withChecks(context, ["SPL-001"]), [wrongRuleId])).toThrow("Rule SPL-001 returned result for KO-001.");
+    expect(() => runRuleEngine(withChecks(context, ["SPL-001"]), [wrongSeverity])).toThrow(
       "Rule SPL-001 returned severity High, expected canonical severity Critical."
     );
   });
@@ -223,7 +282,7 @@ describe("rule engine foundation", () => {
       }
     };
 
-    expect(() => runRuleEngine(context, [rule])).toThrow("Rule SPL-001 returned malformed evaluation.");
+    expect(() => runRuleEngine(withChecks(context, ["SPL-001"]), [rule])).toThrow("Rule SPL-001 returned malformed evaluation.");
   });
 
   it("rejects violations emitted for a different rule id or severity", async () => {
@@ -262,10 +321,10 @@ describe("rule engine foundation", () => {
       }
     };
 
-    expect(() => runRuleEngine(context, [wrongViolationRuleId])).toThrow(
+    expect(() => runRuleEngine(withChecks(context, ["SPL-001"]), [wrongViolationRuleId])).toThrow(
       "Rule SPL-001 emitted violation for KO-001."
     );
-    expect(() => runRuleEngine(context, [wrongViolationSeverity])).toThrow(
+    expect(() => runRuleEngine(withChecks(context, ["SPL-001"]), [wrongViolationSeverity])).toThrow(
       "Rule SPL-001 emitted violation severity High, expected Critical."
     );
   });

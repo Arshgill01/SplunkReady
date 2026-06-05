@@ -126,6 +126,7 @@ export const compileEnvironmentContract = async (
     macros: projectKnowledgeObjects(knowledgeObjects.objects, "macros"),
     lookups: projectKnowledgeObjects(knowledgeObjects.objects, "lookups"),
     savedSearches: projectKnowledgeObjects(knowledgeObjects.objects, "saved_searches"),
+    knowledgeObjects: projectRichKnowledgeObjects(knowledgeObjects.objects, knowledgeObjectTypes),
     dashboardPanels: projectRichKnowledgeObjects(knowledgeObjects.objects, ["dashboards", "panels"]),
     dataModels: projectRichKnowledgeObjects(knowledgeObjects.objects, ["data_models"]),
     appContexts,

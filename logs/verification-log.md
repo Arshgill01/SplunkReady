@@ -5832,3 +5832,69 @@ Result:
 Open risks:
 
 - The full workbench UI click path still needs browser automation once a local server can stay running for inspection. The API and renderer behavior are covered, and the actual fixture workflow smoke produced receipt/audit artifacts.
+
+## 2026-06-05 - Moves 01-02 Rule Registry Closure And Missing Activated Rules
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/grader/engine.test.ts tests/grader/answer.test.ts tests/grader/contract.test.ts tests/grader/safety.test.ts tests/missions/security.test.ts`
+- `npx vitest run tests/grader tests/missions tests/compiler/readiness-profile.test.ts`
+- `npx vitest run tests/cli/flow.test.ts`
+- `npm run build`
+- `npm run check`
+- `npx vitest run tests/agents/llm-specimen.test.ts`
+- `npm run check`
+- `git diff --check && git status --short`
+- `npm run verify:scaffold && git diff --check && git status --short`
+- `npx tsc --noEmit && npx vitest run tests/grader/engine.test.ts tests/grader/contract.test.ts tests/grader/answer.test.ts tests/grader/safety.test.ts`
+- `npm run build && npm run check`
+
+Result:
+
+- PASS for `npx tsc --noEmit` after local type fixes.
+- PASS for focused Move 01/02 grader and mission tests:
+  - 5 test files;
+  - 33 tests passed.
+- PASS for broader grader/mission/readiness-profile verification:
+  - 17 test files;
+  - 88 tests passed.
+- PASS for CLI flow verification:
+  - 1 test file;
+  - 33 tests passed.
+- PASS for production TypeScript build.
+- FAIL for the first `npm run check` after source implementation:
+  - scaffold verifier passed;
+  - 40 test files ran;
+  - 249 tests passed;
+  - 2 tests failed in `tests/agents/llm-specimen.test.ts` because the duplicated test registry omitted the newly registered `SAF-003` implementation.
+- PASS after fixing the duplicated LLM specimen test registry:
+  - `npx vitest run tests/agents/llm-specimen.test.ts`;
+  - 1 test file;
+  - 13 tests passed.
+- PASS for rerun `npm run check` before final boundary-test cleanup:
+  - scaffold verified;
+  - 85 waves;
+  - 900 project files;
+  - 40 test files;
+  - 251 tests passed.
+- PASS for post-log scaffold and whitespace verification:
+  - scaffold verified;
+  - 85 waves;
+  - 900 project files.
+- PASS for final focused TypeScript/grader rerun after cleanup and added boundary tests:
+  - 4 test files;
+  - 30 tests passed.
+- PASS for final `npm run build && npm run check`:
+  - production TypeScript build passed;
+  - scaffold verified;
+  - 85 waves;
+  - 900 project files;
+  - 40 test files;
+  - 253 tests passed.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- The runtime registry remains assembled in `src/cli.ts`; extract it in Move 15 when CLI modularization resumes.
+- No live network verification was run for this rule slice; behavior is exercised through shared contract/compiler/adapter-shaped tests and CLI mocks.

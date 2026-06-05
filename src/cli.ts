@@ -22,6 +22,7 @@ import { createContractLookupRules } from "./grader/contract.js";
 import { createEvidenceRules } from "./grader/evidence.js";
 import { createInjectionRules } from "./grader/injection.js";
 import { runRuleEngine, type GraderRule } from "./grader/engine.js";
+import { createSafetyRules } from "./grader/safety.js";
 import { createSavedSearchRules } from "./grader/saved-search.js";
 import { scoreMissionReadiness } from "./grader/scoring.js";
 import { createSplStructuralRules } from "./grader/spl.js";
@@ -236,7 +237,8 @@ const allRules = (): GraderRule[] => [
   ...createEvidenceRules(),
   ...createAnswerRules(),
   ...createInjectionRules(),
-  ...createBudgetRules()
+  ...createBudgetRules(),
+  ...createSafetyRules()
 ];
 
 const usage = `SplunkReady CLI

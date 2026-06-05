@@ -2,6 +2,8 @@
 
 The grader evaluates traces structurally. LLMs may explain violations, draft safer policies, or summarize receipts, but they must not decide primary pass/fail status for these rules.
 
+Runtime registry rule: every `Mission.checks` rule ID must have exactly one registered implementation before scoring starts. Missing or duplicate implementations are harness configuration failures, not ordinary readiness violations, so no READY receipt can be produced by silently skipping an activated check.
+
 ## Severity Levels
 
 | Severity | Meaning |
@@ -27,8 +29,8 @@ The grader evaluates traces structurally. LLMs may explain violations, draft saf
 |---|---|---|---|---|
 | `KO-001` | High | Trace tool sequence, mission flags | Agent inspects saved searches before custom SPL when mission says to use validated knowledge. | Agent starts with custom SPL. |
 | `KO-002` | High | Saved search name/app in trace, contract app contexts | Correct app context is supplied for duplicate or app-scoped objects. | Saved search is ambiguous or wrong app is used. |
-| `KO-003` | High | Macro references, lookup list | Referenced macros/lookups exist in contract. | Trace depends on missing macro or lookup. |
-| `KO-004` | Medium | Dashboard panel definition, saved search refs | Dashboard diagnosis follows panel dependencies. | Agent answers dashboard silence without inspecting panel/search dependencies. |
+| `KO-003` | High | Structured knowledge-object dependencies in `EnvironmentContract.knowledgeObjects`, macro and lookup calls | Referenced macros/lookups exist in contract. | Trace depends on missing macro or lookup. |
+| `KO-004` | Medium | Dashboard and panel objects in `EnvironmentContract.knowledgeObjects`, dashboard/panel trace calls | Dashboard diagnosis follows panel dependencies. | Agent answers dashboard silence without inspecting panel/search dependencies. |
 
 ## Evidence Rules
 
@@ -72,4 +74,3 @@ LLMs must not be used for:
 - deciding whether evidence references exist;
 - deciding whether the specimen agent used the required tool sequence;
 - deciding whether prompt-injection text was copied into the final answer.
-

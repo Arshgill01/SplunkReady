@@ -7453,3 +7453,70 @@ Reviewer findings:
 
 Result:
 - Focused backend/UI checks, production builds, direct fixture workflow smoke, full project check with local listener permission, and `git diff --check` passed.
+
+## 2026-06-05 - Moves 01-02 Rule Registry Closure And Missing Activated Rules
+
+Scope:
+- Close the P0 certification correctness gap from Moves 01 and 02 before continuing workbench moves.
+- Make active mission checks fail closed when a runtime rule implementation is missing or duplicated.
+- Implement the five declared and activated deterministic rules that were absent from runtime:
+  - `KO-003`;
+  - `KO-004`;
+  - `ANS-002`;
+  - `ANS-003`;
+  - `SAF-003`.
+- Preserve non-negotiables:
+  - deterministic rules remain authoritative;
+  - missing rule implementations are harness failures, not LLM fallbacks;
+  - rule facts come from the shared environment contract and trace events;
+  - SplunkReady still exports proposed changes only and does not mutate Splunk.
+
+Files expected/touched:
+- `src/grader/engine.ts`
+- `src/grader/answer.ts`
+- `src/grader/contract.ts`
+- `src/grader/safety.ts`
+- `src/compiler/environment.ts`
+- `src/schemas/core.ts`
+- `src/cli.ts`
+- `tests/grader/engine.test.ts`
+- `tests/grader/answer.test.ts`
+- `tests/grader/contract.test.ts`
+- `tests/grader/safety.test.ts`
+- `tests/agents/llm-specimen.test.ts`
+- `docs/grader-rule-catalog.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `validateRuleRegistry()` and called it before rule evaluation. It rejects duplicate registered rule IDs and any `Mission.checks` ID without a registered implementation before scoring starts.
+- Extended the environment contract with optional `knowledgeObjects` and populated it from the adapter knowledge-object response so dependency grading uses the fixture/live shared contract boundary.
+- Implemented:
+  - `KO-003` for saved-search macro/lookup dependency existence and direct macro/lookup references;
+  - `KO-004` for dashboard/panel dependency inspection;
+  - `ANS-002` for uncertainty when evidence is incomplete;
+  - `ANS-003` for deterministic mission-addressing checks from mission keywords;
+  - `SAF-003` for unsupported/destructive tool attempts and false Splunk mutation claims.
+- Registered `SAF-003` in the CLI runtime rule registry and in the duplicated LLM specimen test registry.
+- Updated focused tests for the fail-closed engine behavior and each newly implemented rule.
+- Updated the rule catalog to document the registry fail-closed contract and the structured inputs for `KO-003` and `KO-004`.
+
+Product impact:
+- SplunkReady can no longer issue a READY verdict by silently skipping an activated mission check.
+- The catalog and runtime now agree for all 19 rule IDs.
+- Knowledge-object dependency grading is backed by contract data generated through the same adapter/compiler path for fixture and live modes.
+- Unsupported write/mutation attempts are now deterministic critical safety failures.
+
+Reviewer findings:
+- Read-only sidecar confirmed the missing runtime rules and the registry assembly location. It suggested normal violations for missing implementations, but that was not adopted because Move 01 requires a harness configuration failure and no READY receipt on validation failure.
+
+Open risks:
+- `src/cli.ts` still owns the main runtime registry assembly. Move 15 should still extract a shared registry module when doing CLI modularization so tests do not duplicate registry composition.
+- `ANS-003` is intentionally deterministic and keyword-based. It catches generic/off-mission answers but does not attempt semantic LLM grading.
+
+Result:
+- Focused grader/missions tests passed.
+- CLI flow tests passed.
+- Production build passed.
+- Full offline check first failed because `tests/agents/llm-specimen.test.ts` duplicated the runtime registry without `SAF-003`; after fixing that test registry and adding final registry/dependency boundary tests, full offline check passed with 40 test files and 253 tests.
+- `git diff --check` passed before log/doc updates.

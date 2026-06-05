@@ -20,6 +20,7 @@ const contract: EnvironmentContract = {
   macros: [],
   lookups: [],
   savedSearches: [],
+  knowledgeObjects: [],
   dashboardPanels: [],
   dataModels: [],
   appContexts: ["search"],
@@ -51,6 +52,22 @@ const queryEvent = (query: string): TraceEvent => ({
   type: "tool_call",
   toolName: "splunk_run_query",
   toolInput: { query },
+  toolOutputSummary: null,
+  queryRef: null,
+  timeWindow: null,
+  resultCount: null,
+  evidenceRefs: [],
+  error: null
+});
+
+const toolCall = (id: string, toolName: string, toolInput: Record<string, unknown>): TraceEvent => ({
+  id,
+  missionId: mission.id,
+  timestamp: "2026-06-01T06:31:00.000Z",
+  actor: "specimen_agent",
+  type: "tool_call",
+  toolName,
+  toolInput,
   toolOutputSummary: null,
   queryRef: null,
   timeWindow: null,
@@ -163,5 +180,204 @@ describe("contract lookup grader rules", () => {
     );
 
     expect(result.violations).toEqual([]);
+  });
+
+  it("fails saved-search macro or lookup dependencies missing from the contract", () => {
+    const result = runRuleEngine(
+      {
+        contract: {
+          ...contract,
+          savedSearches: [{ app: "search", name: "Missing Dependency Search" }],
+          knowledgeObjects: [
+            {
+              id: "saved-search-missing-dependency",
+              type: "saved_searches",
+              app: "search",
+              name: "Missing Dependency Search",
+              dependsOn: ["macro-missing"]
+            }
+          ]
+        },
+        mission: { ...mission, checks: ["KO-003"] },
+        traceEvents: [
+          toolCall("trace-saved-search", "splunk_run_saved_search", {
+            app: "search",
+            name: "Missing Dependency Search"
+          })
+        ]
+      },
+      createContractLookupRules()
+    );
+
+    expect(result.violations).toEqual([
+      expect.objectContaining({
+        ruleId: "KO-003",
+        severity: "High",
+        reason: "Saved search depends on a missing knowledge object.",
+        evidence: {
+          savedSearch: "search::Missing Dependency Search",
+          missingDependencyId: "macro-missing"
+        }
+      })
+    ]);
+  });
+
+  it("passes saved-search macro and lookup dependencies present in the contract", () => {
+    const result = runRuleEngine(
+      {
+        contract: {
+          ...contract,
+          savedSearches: [{ app: "search", name: "Complete Dependency Search" }],
+          macros: [{ app: "search", name: "known_macro" }],
+          lookups: [{ app: "search", name: "known_lookup" }],
+          knowledgeObjects: [
+            {
+              id: "saved-search-complete-dependency",
+              type: "saved_searches",
+              app: "search",
+              name: "Complete Dependency Search",
+              dependsOn: ["macro-known", "lookup-known"]
+            },
+            { id: "macro-known", type: "macros", app: "search", name: "known_macro" },
+            { id: "lookup-known", type: "lookups", app: "search", name: "known_lookup" }
+          ]
+        },
+        mission: { ...mission, checks: ["KO-003"] },
+        traceEvents: [
+          toolCall("trace-saved-search", "splunk_run_saved_search", {
+            app: "search",
+            name: "Complete Dependency Search"
+          })
+        ]
+      },
+      createContractLookupRules()
+    );
+
+    expect(result.violations).toEqual([]);
+  });
+
+  it("fails dashboard diagnosis when panel dependencies are not inspected", () => {
+    const result = runRuleEngine(
+      {
+        contract: {
+          ...contract,
+          knowledgeObjects: [
+            {
+              id: "dashboard-executive",
+              type: "dashboards",
+              app: "search",
+              name: "Executive Dashboard",
+              dependsOn: ["panel-lateral-movement"]
+            },
+            {
+              id: "panel-lateral-movement",
+              type: "panels",
+              app: "search",
+              name: "Lateral Movement Panel",
+              dependsOn: ["saved-search-panel"]
+            }
+          ],
+          dashboardPanels: [
+            {
+              id: "dashboard-executive",
+              type: "dashboards",
+              app: "search",
+              name: "Executive Dashboard",
+              dependsOn: ["panel-lateral-movement"],
+              metadata: {}
+            },
+            {
+              id: "panel-lateral-movement",
+              type: "panels",
+              app: "search",
+              name: "Lateral Movement Panel",
+              dependsOn: ["saved-search-panel"],
+              metadata: {}
+            }
+          ]
+        },
+        mission: { ...mission, checks: ["KO-004"] },
+        traceEvents: [
+          toolCall("trace-dashboard", "splunk_get_knowledge_objects", {
+            types: ["dashboards"],
+            name: "Executive Dashboard",
+            app: "search"
+          })
+        ]
+      },
+      createContractLookupRules()
+    );
+
+    expect(result.violations).toEqual([
+      expect.objectContaining({
+        ruleId: "KO-004",
+        severity: "Medium",
+        reason: "Dashboard or panel was inspected without resolving its declared dependencies."
+      })
+    ]);
+  });
+
+  it("passes dashboard diagnosis when declared panel dependencies are inspected", () => {
+    const result = runRuleEngine(
+      {
+        contract: {
+          ...contract,
+          knowledgeObjects: [
+            {
+              id: "dashboard-executive",
+              type: "dashboards",
+              app: "search",
+              name: "Executive Dashboard",
+              dependsOn: ["panel-lateral-movement"]
+            },
+            {
+              id: "panel-lateral-movement",
+              type: "panels",
+              app: "search",
+              name: "Lateral Movement Panel",
+              dependsOn: []
+            }
+          ],
+          dashboardPanels: [
+            {
+              id: "dashboard-executive",
+              type: "dashboards",
+              app: "search",
+              name: "Executive Dashboard",
+              dependsOn: ["panel-lateral-movement"],
+              metadata: {}
+            },
+            {
+              id: "panel-lateral-movement",
+              type: "panels",
+              app: "search",
+              name: "Lateral Movement Panel",
+              dependsOn: [],
+              metadata: {}
+            }
+          ]
+        },
+        mission: { ...mission, checks: ["KO-004"] },
+        traceEvents: [
+          toolCall("trace-dashboard", "splunk_get_knowledge_objects", {
+            types: ["dashboards"],
+            name: "Executive Dashboard",
+            app: "search"
+          }),
+          toolCall("trace-panel", "splunk_get_knowledge_objects", {
+            types: ["panels"],
+            name: "Lateral Movement Panel",
+            app: "search"
+          })
+        ]
+      },
+      createContractLookupRules()
+    );
+
+    expect(result.violations).toEqual([]);
+    expect(result.results.find((ruleResult) => ruleResult.ruleId === "KO-004")).toMatchObject({
+      status: "pass",
+      evidence: { inspectedDashboardEvents: 2 }
+    });
   });
 });

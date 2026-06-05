@@ -60,6 +60,20 @@ export const environmentContractSchema = z
     macros: z.array(z.object({ name: z.string().min(1), app: z.string().min(1) }).strict()),
     lookups: z.array(z.object({ name: z.string().min(1), app: z.string().min(1) }).strict()),
     savedSearches: z.array(z.object({ name: z.string().min(1), app: z.string().min(1) }).strict()),
+    knowledgeObjects: z
+      .array(
+        z
+          .object({
+            id: idSchema,
+            type: z.enum(["saved_searches", "macros", "lookups", "dashboards", "panels", "field_aliases", "data_models"]),
+            name: z.string().min(1),
+            app: z.string().min(1),
+            dependsOn: stringListSchema.optional(),
+            metadata: looseObjectSchema.optional()
+          })
+          .strict()
+      )
+      .optional(),
     dashboardPanels: z.array(looseObjectSchema),
     dataModels: z.array(looseObjectSchema),
     appContexts: stringListSchema,
