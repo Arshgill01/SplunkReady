@@ -9606,6 +9606,60 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
+
+## 2026-06-06 - Move 103 Public Judge Proof Evidence Pack
+
+Commands:
+
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `npm run verify:scaffold`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for the evidence-pack checksum:
+  - every tracked `submission-evidence/` file verified;
+  - new `screenshots/public-judge-proof-proof-browser.png` verified.
+- PASS for submission-copy audit:
+  - 34 required claims passed.
+- PASS for scaffold verification:
+  - scaffold verified;
+  - waves: 85;
+  - project files: 2079.
+- PASS for `git diff --check`:
+  - completed with no output.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 183 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and `npx
+    splunkready judge-proof` returned `PASS`;
+  - 58 test files passed;
+  - 353 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 34 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- No new Playwright run was needed because this move tracked the already
+  Playwright-verified hosted screenshot from Move 100.
+- Did not change source behavior.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
 ## 2026-06-06 - Move 99 Public Judge Proof LLM Evidence Surface
 
 Commands:

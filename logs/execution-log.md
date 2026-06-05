@@ -11824,3 +11824,32 @@ Files changed:
 
 Open blockers:
 - Hosted CI needs to run after push for Move 102.
+
+## 2026-06-06 03:42 - Move 103 Public Judge Proof Evidence Pack
+
+Scope:
+- Added the Playwright-verified hosted judge-proof screenshot to the tracked
+  submission evidence pack.
+- Updated the evidence README and claim ledger so the public judge-proof route
+  is visible as judge-facing evidence, including:
+  - `PASS`;
+  - `mutation=false`;
+  - deterministic rule-engine authority for the LLM evidence slot.
+- Refreshed the evidence-pack SHA-256 ledger.
+- Did not change source behavior.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/screenshots/public-judge-proof-proof-browser.png`
+- `moves/README.md`
+- `moves/moves103.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 103.
