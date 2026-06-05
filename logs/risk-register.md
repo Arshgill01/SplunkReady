@@ -198,3 +198,7 @@ follow-up risks to track:
   copilot.
 - Official hackathon criteria are not tracked in-repo, so probability estimates
   remain rubric assumptions until anchored to the published criteria.
+
+Move 56 reduces the CI visibility portion of the Minimax 3 audit by adding a
+repository GitHub Actions workflow that runs the canonical `npm run check` gate
+on Node 22 without live Splunk or Gemini secrets.

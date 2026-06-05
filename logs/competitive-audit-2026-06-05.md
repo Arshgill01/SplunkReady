@@ -119,3 +119,7 @@ Move 55 addresses one concrete native-integration gap from this audit by
 exposing stable package subpaths and generated declarations for the trace bridge,
 callback capture helper, and schema imports. It does not claim public npm
 publication.
+
+Move 56 addresses the in-repository CI visibility gap by adding a credential-free
+GitHub Actions workflow for the canonical `npm run check` gate. It does not
+claim a green badge until GitHub has actually run the workflow.

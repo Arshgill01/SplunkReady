@@ -7542,6 +7542,39 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 56 Repository CI Canonical Gate
+
+Commands:
+
+- `npm test -- tests/examples/repository-ci-workflow.test.ts`
+- `npm run check`
+- `npm run verify:scaffold && git diff --check`
+
+Result:
+
+- PASS for focused CI workflow regression: 1 file, 1 test.
+- PASS for full `npm run check`:
+  - scaffold verified: 85 waves and 1727 project files;
+  - runtime contracts verified: 19 rules, 4 fixture missions, and 20 evidence
+    refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 49 test files passed;
+  - 318 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for post-log structural check: scaffold verified 85 waves and 1727
+  project files, and `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because no UI source changed.
+- The workflow itself has not yet been observed green on GitHub; it will run
+  after the branch is pushed.
+
 ## 2026-06-05 - Move 55 Package Trace Bridge Exports
 
 Commands:

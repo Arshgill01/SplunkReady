@@ -9523,6 +9523,46 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 21:59 - Move 56 Repository CI Canonical Gate
+
+Scope:
+- Responded to the Minimax 3 audit's "no in-repo CI workflow" concern.
+- Added a credential-free GitHub Actions workflow that runs the repository's
+  canonical gate on Node 22.
+- Kept live Splunk, Gemini, package publication, and public deployment out of
+  scope.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source, so Playwright is not required.
+
+Files changed:
+- `.github/workflows/ci.yml`
+- `tests/examples/repository-ci-workflow.test.ts`
+- `moves/README.md`
+- `moves/moves56.md`
+- `logs/competitive-audit-2026-06-05.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `CI`, a GitHub Actions workflow for pull requests, pushes to
+  `splunkready-build`, and manual dispatch.
+- The workflow checks out the repo, sets up Node 22 with npm caching, installs
+  dependencies with `npm ci --ignore-scripts`, and runs `npm run check`.
+- Added a focused regression ensuring the workflow runs the canonical gate and
+  does not reference live Splunk or Gemini secrets.
+- Logged that this creates a visible CI path but does not claim a green badge
+  until GitHub actually runs the workflow.
+
+Open blockers:
+- Public npm publication remains unclaimed and requires an explicit release
+  decision.
+- Hosted public demo remains unclaimed and requires an explicit deploy decision.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 21:50 - Move 54 GitHub Workflow Diagnostics Artifact
 
 Scope:
