@@ -81,16 +81,17 @@ splunkready judge-proof --out ./judge-proof --json
 ```
 
 The canonical gate still runs a package readiness audit with
-`npm pack --dry-run`. To re-check registry/auth readiness for the next version,
-run:
+`npm pack --dry-run`. To re-check current publication state and registry/auth
+readiness for the next version, run:
 
 ```bash
 npm run audit:npm-release-preflight
 ```
 
 That preflight checks package metadata, dry-run pack contents, npm registry
-version availability, and local npm authentication. It prints `BLOCKED` when the
-package is ready but the machine is not logged in to npm.
+state, and local npm authentication. It prints `PUBLISHED` for the current
+released version, `READY` for a bumped unpublished version, and `BLOCKED` when
+the package is otherwise ready but the machine is not logged in to npm.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:

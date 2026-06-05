@@ -9,6 +9,7 @@ const requireReady = process.argv.includes("--require-ready");
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const failures = [];
 const blockers = [];
+let currentVersionPublished = false;
 
 const run = (command, args) => {
   try {
@@ -63,10 +64,7 @@ if (view.ok) {
     versions,
     currentVersionAvailable: !versions.includes(packageJson.version)
   };
-
-  if (versions.includes(packageJson.version)) {
-    failures.push(`${packageJson.name}@${packageJson.version} already exists on npm`);
-  }
+  currentVersionPublished = versions.includes(packageJson.version);
 } else if (view.stderr.includes("E404") || view.stdout.includes("\"code\":\"E404\"")) {
   registry = {
     packageName: packageJson.name,
@@ -93,7 +91,7 @@ if (pack.ok) {
   failures.push(`npm pack --dry-run --json failed: ${pack.stderr.trim() || pack.message}`);
 }
 
-const status = failures.length > 0 ? "FAIL" : blockers.length > 0 ? "BLOCKED" : "READY";
+const status = failures.length > 0 ? "FAIL" : blockers.length > 0 ? "BLOCKED" : currentVersionPublished ? "PUBLISHED" : "READY";
 const report = {
   source: "splunkready-npm-release-preflight",
   status,
@@ -107,12 +105,15 @@ const report = {
   pack: packSummary,
   blockers,
   failures,
-  releaseCommand: "npm publish --access public",
+  releaseCommand: currentVersionPublished ? "npm version patch && npm publish --access public" : "npm publish --access public",
+  publishedPackage: currentVersionPublished
+    ? `https://www.npmjs.com/package/${packageJson.name}/v/${packageJson.version}`
+    : null,
   mutation: false
 };
 
 console.log(JSON.stringify(report, null, 2));
 
-if (status === "FAIL" || (requireReady && status !== "READY")) {
+if (status === "FAIL" || (requireReady && !["READY", "PUBLISHED"].includes(status))) {
   process.exitCode = 1;
 }

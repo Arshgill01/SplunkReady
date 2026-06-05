@@ -123,6 +123,7 @@ commands, or filesystem paths.
 | P0 | [98](moves98.md) GitHub Pages Node 24 actions runtime | 0.5d | Removes the public demo Pages workflow Node 20 warning by moving to current Pages action tags. |
 | P0 | [99](moves99.md) Public judge proof LLM evidence surface | 0.5d | Makes hosted public demo exports include credential-free judge proof and visible LLM-evidence authority boundaries. |
 | P0 | [100](moves100.md) Published package judge smoke | 0.5d | Converts the completed npm publish into clean-folder npx proof, README/Devpost install copy, and claim-ledger evidence. |
+| P0 | [101](moves101.md) Published version release preflight | 0.5d | Makes the npm release preflight report the current published version as verified instead of failing stale availability checks. |
 
 ## Non-Negotiable Boundaries
 

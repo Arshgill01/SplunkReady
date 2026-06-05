@@ -11756,3 +11756,39 @@ Open blockers:
   - Public Demo Pages run `27041858369` completed successfully and deployed the
     public demo export.
 - Future npm versions still need registry/auth preflight before release.
+
+## 2026-06-06 03:23 - Move 101 Published Version Release Preflight
+
+Scope:
+- Fixed stale post-publication release evidence in
+  `audit:npm-release-preflight`.
+- The audit now reports `PUBLISHED` when the current `package.json` version
+  already exists on npm and all metadata/pack/auth checks pass.
+- Bumped unpublished versions still report `READY`; real metadata, pack,
+  registry, and auth problems remain visible as `FAIL` or `BLOCKED`.
+- The current real preflight now reports:
+  - `status: PUBLISHED`;
+  - `registry.status: VERSION_ALREADY_PUBLISHED`;
+  - `publishedPackage: https://www.npmjs.com/package/splunkready/v/0.1.0`;
+  - `mutation: false`.
+- Added deterministic tests with a fake npm binary so published/current and
+  bumped/ready cases are covered without depending on live registry behavior.
+- Updated README and risk-register language so they no longer describe the
+  package as only publish-ready.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `scripts/audit-npm-release-preflight.mjs`
+- `tests/scripts/npm-release-preflight.test.ts`
+- `README.md`
+- `logs/risk-register.md`
+- `moves/README.md`
+- `moves/moves101.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Open blockers:
+- Future npm releases still need a version bump before publish.
+- Hosted CI needs to run after push for Move 101.

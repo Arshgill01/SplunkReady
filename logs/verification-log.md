@@ -9737,6 +9737,69 @@ Open blockers:
 
 - Future npm versions still need release preflight before publication.
 
+## 2026-06-06 - Move 101 Published Version Release Preflight
+
+Commands:
+
+- `npm run audit:npm-release-preflight`
+- `npx vitest run tests/scripts/npm-release-preflight.test.ts`
+- `npm run check`
+- `npm run verify:scaffold`
+- `git diff --check`
+
+Result:
+
+- Initial real `npm run audit:npm-release-preflight` exposed the stale behavior:
+  - `status: FAIL`;
+  - `auth.authenticated: true`;
+  - `registry.status: VERSION_ALREADY_PUBLISHED`;
+  - failure reason: `splunkready@0.1.0 already exists on npm`.
+- PASS after updating the preflight:
+  - focused test file passed;
+  - 2 tests passed;
+  - current published version reports `PUBLISHED`;
+  - bumped unpublished version reports `READY`.
+- PASS for real `npm run audit:npm-release-preflight` after the fix:
+  - `status: PUBLISHED`;
+  - `auth.authenticated: true`;
+  - `auth.username: brightybrainiac`;
+  - `registry.status: VERSION_ALREADY_PUBLISHED`;
+  - `pack.fileCount: 162`;
+  - `publishedPackage: https://www.npmjs.com/package/splunkready/v/0.1.0`;
+  - `mutation: false`;
+  - exit code 0.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 182 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and returned
+    `PASS` from `npx splunkready judge-proof`;
+  - 57 test files passed;
+  - 351 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for final scaffold verification after log/doc edits:
+  - waves: 85;
+  - project files: 2075.
+- PASS for standalone diff whitespace:
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- Did not run `npm publish`.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI needs to run after push for Move 101.
+
 ## 2026-06-06 - Move 97 Static Hosted Demo Request Hygiene
 
 Commands:

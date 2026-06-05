@@ -429,10 +429,12 @@ enabled without `GEMINI_API_KEY`, `judge-proof` now reports
 `llmEvidence.status=NOT_CONFIGURED` instead of failing the base proof.
 
 Move 94 reduces the public-package release risk by adding
-`audit:npm-release-preflight`. Current preflight status is `BLOCKED`: npm
-reports package name `splunkready` as unclaimed and `0.1.0` as available, and
-`npm pack --dry-run` succeeds with 162 files, but local npm auth is missing
-(`ENEEDAUTH`). No publish action was attempted.
+`audit:npm-release-preflight`. Move 100 closed the initial public-package
+release risk by verifying the user-published `splunkready@0.1.0` package from a
+clean temp folder. Move 101 updates the preflight to report the current version
+as `PUBLISHED` instead of failing because the version already exists. Remaining
+release risk is next-version hygiene: bump `package.json` before the next
+`npm publish` and re-run the preflight.
 
 Move 95 reduces the hosted-demo risk by adding a manual GitHub Pages deployment
 workflow for the verified credential-free public demo export. The workflow
