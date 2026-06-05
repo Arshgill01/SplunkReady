@@ -52,7 +52,6 @@ import {
   type TraceEvent,
   type Violation
 } from "./schemas/core.js";
-import { importMcpTranscript, parseMcpTranscriptRecords } from "./traces/mcp-transcript.js";
 import { writeUiShell } from "./ui/shell.js";
 import {
   writeCertificationIndex,
@@ -61,6 +60,12 @@ import {
   type CertificationIndexWorkflowInput,
   type CertificationIndexWorkflowResult
 } from "./workflows/certification-index.js";
+import {
+  runExternalTraceCertificationFromPathWorkflow,
+  runGradeExternalTraceWorkflow,
+  runImportMcpTranscriptWorkflow,
+  runMcpTranscriptCertificationFromPathWorkflow
+} from "./workflows/external-certification.js";
 import {
   runFixtureCertification,
   type FixtureCertificationWorkflowInput,
@@ -600,24 +605,6 @@ const loadTrace = async (outDir: string, phase: string): Promise<TraceEvent[]> =
 
 const loadViolations = async (outDir: string, phase: string): Promise<Violation[]> =>
   readJson(join(outDir, `violations-${phase}.json`), `${phase} violations`);
-
-const loadTraceFile = async (tracePath: string): Promise<TraceEvent[]> => {
-  if (!tracePath) {
-    throw new Error("grade-trace requires --trace <path>.");
-  }
-
-  return traceEventSchema.array().parse(JSON.parse(await readFile(tracePath, "utf8")) as unknown);
-};
-
-const assertTraceMatchesMission = (mission: MissionDefinition, traceEvents: TraceEvent[]): void => {
-  const mismatchedMissionIds = [...new Set(traceEvents.map((event) => event.missionId).filter((id) => id !== mission.id))];
-
-  if (mismatchedMissionIds.length > 0) {
-    throw new Error(
-      `Trace missionId mismatch. Expected ${mission.id}; found ${mismatchedMissionIds.join(", ")}.`
-    );
-  }
-};
 
 const gradeTrace = (contract: EnvironmentContract, mission: MissionDefinition, traceEvents: TraceEvent[]): Violation[] =>
   runRuleEngine({ contract, mission, traceEvents }, allRules()).violations;
@@ -1875,126 +1862,44 @@ const firewallCheckCommand = async (
 };
 
 const gradeTraceCommand = async (options: CliOptions): Promise<string[]> => {
-  const contract = await loadContract(options.out);
-  const mission = await loadMission(options.mission);
-  const traceEvents = await loadTraceFile(options.trace);
-  assertTraceMatchesMission(mission, traceEvents);
-  const violations = gradeTrace(contract, mission, traceEvents);
-  const score = scoreMissionReadiness(mission, violations);
-  const generated = generateReadinessReceipt({
-    id: "receipt-external-001",
-    agent: { name: options.agentName, version: options.agentVersion },
-    environment: contract,
-    missionSuiteVersion: "external-trace-1",
-    missions: [mission],
-    traceEvents,
-    violations,
-    notes:
-      "This receipt grades an externally supplied trace. The deterministic rule engine decides pass/fail; the trace producer is outside SplunkReady."
+  const { artifacts } = await runGradeExternalTraceWorkflow({
+    outDir: options.out,
+    tracePath: options.trace,
+    missionPath: options.mission,
+    agentName: options.agentName,
+    agentVersion: options.agentVersion
   });
 
-  await writeJson(join(options.out, "trace-external.json"), traceEvents);
-  await writeJson(join(options.out, "violations-external.json"), violations);
-  await writeJson(join(options.out, "score-external.json"), score);
-  await writeText(join(options.out, "receipt-external-001.json"), generated.json);
-  await writeText(join(options.out, "receipt-external-001.md"), generated.markdown);
-
-  return [
-    join(options.out, "trace-external.json"),
-    join(options.out, "violations-external.json"),
-    join(options.out, "score-external.json"),
-    join(options.out, "receipt-external-001.json"),
-    join(options.out, "receipt-external-001.md")
-  ];
+  return artifacts;
 };
 
 const importMcpTranscriptCommand = async (options: CliOptions): Promise<string[]> => {
-  if (!options.transcript) {
-    throw new Error("import-mcp-transcript requires --transcript <path>.");
-  }
-
-  const mission = await loadMission(options.mission);
-  const records = parseMcpTranscriptRecords(await readFile(options.transcript, "utf8"));
-  const imported = importMcpTranscript(records, mission.id);
-  const importFailures = [
-    imported.summary.skippedRecords > 0
-      ? `${imported.summary.skippedRecords} skipped transcript record(s)`
-      : null,
-    imported.summary.unmatchedToolCalls > 0
-      ? `${imported.summary.unmatchedToolCalls} unmatched tool call(s)`
-      : null
-  ].filter((failure): failure is string => Boolean(failure));
-
-  if (options.strictImport && importFailures.length > 0) {
-    throw new Error(`Strict MCP transcript import failed: ${importFailures.join("; ")}.`);
-  }
-
-  const tracePath = join(options.out, "trace-imported.json");
-  const summaryPath = join(options.out, "mcp-transcript-import.json");
-
-  await writeJson(tracePath, imported.traceEvents);
-  await writeJson(summaryPath, {
-    ...imported.summary,
-    strictImport: options.strictImport,
+  const { artifacts } = await runImportMcpTranscriptWorkflow({
+    outDir: options.out,
     transcriptPath: options.transcript,
-    outputTracePath: tracePath,
-    nextCommand: `npm run splunkready -- grade-trace --trace ${tracePath} --out ${options.out} --agent-name "${options.agentName}" --agent-version "${options.agentVersion}"`
+    missionPath: options.mission,
+    strictImport: options.strictImport,
+    agentName: options.agentName,
+    agentVersion: options.agentVersion
   });
 
-  return [tracePath, summaryPath];
+  return artifacts;
 };
 
 const certifyMcpTranscriptCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  if (!options.transcript) {
-    throw new Error("certify-mcp-transcript requires --transcript <path>.");
-  }
-
-  const auditOptions: CliOptions = { ...options, requirePass: false };
-  const compileArtifacts = await compileCommand(options, env);
-  const importArtifacts = await importMcpTranscriptCommand(options);
-  const gradeArtifacts = await gradeTraceCommand({ ...options, trace: join(options.out, "trace-imported.json") });
-  const auditArtifacts = await proofAuditCommand(auditOptions);
-  const receipt = readinessReceiptSchema.parse(
-    await readJson(join(options.out, "receipt-external-001.json"), "external receipt")
-  );
-  const audit = await readJson<ProofAuditReport>(join(options.out, "proof-audit.json"), "proof audit");
-  const summaryPath = join(options.out, "mcp-transcript-certification.json");
-
-  await writeJson(summaryPath, {
-    status: audit.status === "PASS" ? "PASS" : "FAIL",
-    source: "mcp-jsonrpc-transcript-certification",
-    mutation: false,
+  void env;
+  const { artifacts } = await runMcpTranscriptCertificationFromPathWorkflow({
+    outDir: options.out,
     transcriptPath: options.transcript,
+    fixturePath: options.fixture,
     missionPath: options.mission,
-    agent: receipt.agent,
-    receipt: {
-      id: receipt.id,
-      verdict: receipt.verdict,
-      score: receipt.score,
-      violations: receipt.violations.length,
-      traceRefs: receipt.traceRefs.length,
-      evidenceRefs: receipt.evidenceRefs.length
-    },
-    audit: {
-      status: audit.status,
-      proofType: audit.proofType,
-      checks: audit.checks.map((check) => ({ id: check.id, status: check.status }))
-    },
-    artifacts: {
-      contract: join(options.out, "environment-contract.json"),
-      importedTrace: join(options.out, "trace-imported.json"),
-      externalTrace: join(options.out, "trace-external.json"),
-      violations: join(options.out, "violations-external.json"),
-      receipt: join(options.out, "receipt-external-001.json"),
-      audit: join(options.out, "proof-audit.json")
-    }
+    strictImport: options.strictImport,
+    requirePass: options.requirePass,
+    agentName: options.agentName,
+    agentVersion: options.agentVersion
   });
 
-  if (options.requirePass && audit.status !== "PASS") {
-    throw new Error(`certify-mcp-transcript strict gate failed with ${audit.status}. Inspect ${summaryPath}.`);
-  }
-
-  return [...new Set([...compileArtifacts, ...importArtifacts, ...gradeArtifacts, ...auditArtifacts, summaryPath])];
+  return artifacts;
 };
 
 const llmAgentCommand = async (
@@ -3330,86 +3235,6 @@ export const runHostedModelProofFromCli = async (
   const options = defaultCliOptions({ mode: "live", out: input.outDir });
   const artifacts = await hostedModelProofCommand(options, env);
   const status = await hostedModelStatusFromArtifact(join(input.outDir, "hosted-model-proof.json"));
-
-  return { status, outDir: input.outDir, artifacts, mutation: false, messages: [] };
-};
-
-export interface ExternalTraceCertificationWorkflowInput {
-  outDir: string;
-  tracePath: string;
-  requirePass?: boolean;
-  agentName?: string;
-  agentVersion?: string;
-}
-
-export interface McpTranscriptCertificationWorkflowInput {
-  outDir: string;
-  transcriptPath: string;
-  strictImport?: boolean;
-  requirePass?: boolean;
-  agentName?: string;
-  agentVersion?: string;
-}
-
-export interface ExternalCertificationWorkflowResult {
-  status: "PASS" | "FAIL";
-  outDir: string;
-  artifacts: string[];
-  mutation: false;
-  messages: string[];
-}
-
-const receiptStatusFromArtifact = async (artifactPath: string): Promise<"PASS" | "FAIL"> => {
-  const receipt = readinessReceiptSchema.parse(await readJson(artifactPath, "external certification receipt"));
-
-  return receipt.verdict === "READY" ? "PASS" : "FAIL";
-};
-
-export const runExternalTraceCertificationFromCli = async (
-  input: ExternalTraceCertificationWorkflowInput,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<ExternalCertificationWorkflowResult> => {
-  const options = defaultCliOptions({
-    mode: "fixture",
-    out: input.outDir,
-    trace: input.tracePath,
-    requirePass: input.requirePass ?? false,
-    agentName: input.agentName ?? "External Splunk MCP Agent",
-    agentVersion: input.agentVersion ?? "uploaded-trace"
-  });
-  const compileArtifacts = await compileCommand(options, env);
-  const gradeArtifacts = await gradeTraceCommand(options);
-  const auditArtifacts = await proofAuditCommand(options);
-  const status = await receiptStatusFromArtifact(join(input.outDir, "receipt-external-001.json"));
-
-  if (options.requirePass && status !== "PASS") {
-    throw new Error("external-trace-certification strict gate failed with FAIL. Inspect receipt-external-001.json.");
-  }
-
-  return {
-    status,
-    outDir: input.outDir,
-    artifacts: [...new Set([...compileArtifacts, ...gradeArtifacts, ...auditArtifacts])],
-    mutation: false,
-    messages: []
-  };
-};
-
-export const runMcpTranscriptCertificationFromCli = async (
-  input: McpTranscriptCertificationWorkflowInput,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<ExternalCertificationWorkflowResult> => {
-  const options = defaultCliOptions({
-    mode: "fixture",
-    out: input.outDir,
-    transcript: input.transcriptPath,
-    strictImport: input.strictImport ?? true,
-    requirePass: input.requirePass ?? false,
-    agentName: input.agentName ?? "External MCP Transcript Agent",
-    agentVersion: input.agentVersion ?? "uploaded-jsonrpc-transcript"
-  });
-  const artifacts = await certifyMcpTranscriptCommand(options, env);
-  const status = await receiptStatusFromArtifact(join(input.outDir, "receipt-external-001.json"));
 
   return { status, outDir: input.outDir, artifacts, mutation: false, messages: [] };
 };

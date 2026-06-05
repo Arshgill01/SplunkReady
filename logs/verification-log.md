@@ -158,6 +158,59 @@ Notes:
 
 - This move did not change UI source or behavior, so Playwright was not run.
 
+## 2026-06-05 - Move 63 External MCP Certification Workflow Extraction
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npm test -- tests/cli/flow.test.ts -t "externally supplied trace|MCP JSON-RPC transcript|certifies an MCP JSON-RPC transcript|strict MCP transcript"`
+- `npm test -- tests/cli/flow.test.ts -t "externally supplied trace|MCP JSON-RPC transcript|certifies an MCP JSON-RPC transcript|strict MCP transcript|MCP server proof"`
+- `npm test -- tests/mcp/server.test.ts`
+- `npm test -- tests/workbench/workbench.test.ts -t "external trace|MCP transcript"`
+- `npm test -- tests/integrations/agent-trace-bridge.test.ts tests/integrations/callback-trace-capture.test.ts`
+- `wc -l src/cli.ts src/workflows/external-certification.ts src/mcp/server.ts`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript validation.
+- PASS for initial focused CLI external/MCP certification coverage:
+  - 1 test file passed;
+  - 4 selected tests passed and 35 tests skipped.
+- PASS for final focused CLI external/MCP certification and MCP proof coverage:
+  - 1 test file passed;
+  - 5 selected tests passed and 34 tests skipped.
+- PASS for MCP server coverage:
+  - 1 test file passed;
+  - 8 tests passed.
+- PASS for focused workbench upload coverage:
+  - 1 test file passed;
+  - 3 selected tests passed and 27 tests skipped.
+- PASS for direct workflow integration coverage:
+  - 2 test files passed;
+  - 3 tests passed.
+- PASS for CLI shrink check:
+  - `src/cli.ts` line count after Move 62 was 3,563;
+  - `src/cli.ts` line count after extraction is 3,388;
+  - `src/workflows/external-certification.ts` is 756 lines;
+  - `src/mcp/server.ts` is 662 lines.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 49 test files passed;
+  - 322 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- This move did not change UI source or behavior, so Playwright was not run.
+
 ## 2026-06-01 15:36 - Wave 39 Demo Orchestration
 
 Commands:

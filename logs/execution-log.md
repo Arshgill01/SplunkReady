@@ -142,6 +142,54 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 22:39 - Move 63 External MCP Certification Workflow Extraction
+
+Scope:
+- Continued the CLI modularization response with the external-agent and captured
+  Splunk MCP transcript certification path.
+- Responded to the Best Use of Splunk MCP Server positioning concern by making
+  captured Splunk MCP behavior certification workflow-owned instead of
+  CLI-internal.
+- Removed the dynamic imports from `src/workflows/external-certification.ts`
+  back into `src/cli.ts`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/cli.ts`
+- `src/mcp/server.ts`
+- `src/workflows/external-certification.ts`
+- `moves/README.md`
+- `moves/moves63.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Moved fixture compile, external trace grading, MCP transcript import,
+  external proof audit, and MCP transcript certification summary construction
+  into `src/workflows/external-certification.ts`.
+- Kept `grade-trace`, `import-mcp-transcript`, and
+  `certify-mcp-transcript` command surfaces stable while making the CLI delegate
+  to workflow functions.
+- Pointed the local SplunkReady MCP server's external trace certification tool
+  at the workflow module instead of the CLI.
+- Removed the now-unreferenced external/MCP CLI runner exports.
+- Reduced `src/cli.ts` from 3,563 lines after Move 62 to 3,388 lines.
+- Preserved deterministic grading as the pass/fail authority for external MCP
+  traces and transcripts.
+
+Open blockers:
+- Continue modularizing remaining `src/cli.ts` command families; live, policy,
+  hosted-model, and fixture-certification workflow modules still contain
+  dynamic imports back into the CLI.
+- Official Best Use of Splunk MCP Server criteria should be captured in a
+  tracked rubric file before further probability estimates are treated as
+  grounded.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 Future entries must use:
 
 ```text

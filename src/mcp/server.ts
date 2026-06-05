@@ -5,10 +5,12 @@ import { pathToFileURL } from "node:url";
 
 import { z } from "zod";
 
-import { runExternalTraceCertificationFromCli } from "../cli.js";
 import { readinessReceiptSchema } from "../schemas/core.js";
 import { redactUnknownError } from "../workbench/redaction.js";
-import { runMcpTranscriptCertificationWorkflow } from "../workflows/external-certification.js";
+import {
+  runExternalTraceCertificationFromPathWorkflow,
+  runMcpTranscriptCertificationWorkflow
+} from "../workflows/external-certification.js";
 
 const protocolVersion = "2025-06-18";
 
@@ -453,16 +455,13 @@ const callTool = async (name: string, args: unknown, env: NodeJS.ProcessEnv): Pr
     try {
       assertNonSecretPath(parsed.data.tracePath);
       assertNonSecretPath(parsed.data.outDir);
-      const result = await runExternalTraceCertificationFromCli(
-        {
-          outDir: parsed.data.outDir,
-          tracePath: parsed.data.tracePath,
-          requirePass: parsed.data.requirePass,
-          agentName: parsed.data.agentName,
-          agentVersion: parsed.data.agentVersion
-        },
-        env
-      );
+      const result = await runExternalTraceCertificationFromPathWorkflow({
+        outDir: parsed.data.outDir,
+        tracePath: parsed.data.tracePath,
+        requirePass: parsed.data.requirePass,
+        agentName: parsed.data.agentName,
+        agentVersion: parsed.data.agentVersion
+      });
 
       return toolResult({ ...result });
     } catch (caught) {
