@@ -8915,6 +8915,39 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 33 Runs Trace Preview Timeline
+
+Context:
+- Continued development hardening after Move 32.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- User explicitly deferred video/submission work; this move stayed on
+  development hardening.
+- User had reported the trace timeline in the Runs section was messed up.
+
+Files touched:
+- `ui/src/runBrowser.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `moves/README.md`
+- `moves/moves33.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Replaced the Runs trace preview's summary-only phase cards with compact
+  ordered event rows inside each phase.
+- Each preview event row shows the trace step, event type/tool, short trace id,
+  result/evidence counts when present, and event-local finding count.
+- Kept the full event table in the Trace view and did not add new workflow
+  controls.
+- Added focused render assertions so the Runs view must keep the compact event
+  preview instead of regressing to phase summaries only.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 32 Workbench No-Store Responses
 
 Context:

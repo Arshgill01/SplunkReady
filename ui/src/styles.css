@@ -679,6 +679,74 @@ code {
   font-weight: 720;
 }
 
+.trace-preview-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line-soft);
+  list-style: none;
+}
+
+.trace-preview-event {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+  padding: 8px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.trace-preview-event:first-child {
+  border-top: 0;
+}
+
+.trace-preview-step,
+.trace-preview-event-body span,
+.trace-preview-event-findings,
+.trace-preview-event-more {
+  color: var(--quiet);
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.trace-preview-event-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.trace-preview-event-body strong {
+  display: block;
+  min-width: 0;
+  color: var(--text);
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 620;
+  overflow-wrap: anywhere;
+}
+
+.trace-preview-event-body span {
+  overflow-wrap: anywhere;
+}
+
+.trace-preview-event-findings {
+  color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.trace-preview-event-findings:not(:only-child) {
+  min-width: 64px;
+}
+
+.trace-preview-event-more {
+  grid-template-columns: 1fr;
+  color: var(--muted);
+}
+
 .trace-preview-none,
 .trace-preview-rule-summary {
   color: var(--muted);

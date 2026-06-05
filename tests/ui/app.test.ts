@@ -1735,7 +1735,7 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain('data-verify-manifest="run-after"');
     expect(html).toContain("Trace preview");
     expect(html).toContain("Full Trace view");
-    expect(html).toContain("Runs shows phase-level trace evidence only.");
+    expect(html).toContain("Selected run trace events grouped by phase.");
     expect(html).toContain("trace-preview-phases");
     expect(html).toContain("trace-preview-phase");
     expect(html).toContain('data-trace-preview-phase="before"');
@@ -1747,10 +1747,16 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("trace-preview-rule-summary");
     expect(html).toContain("4 event(s) / 2 tool(s) / 0 finding(s) / 3 evidence ref(s)");
     expect(html).toContain("after-call to after-final");
+    expect(html).toContain("trace-preview-list");
+    expect(html).toContain("trace-preview-event");
+    expect(html).toContain('data-trace-preview-event="tool_call"');
+    expect(html).toContain('data-trace-preview-event="final_answer"');
+    expect(html).toContain("tool_call / splunk_run_saved_search");
+    expect(html).toContain("final_answer");
+    expect(html).toContain("3 result(s)");
+    expect(html).toContain("3 evidence ref(s)");
     expect(html).toContain("splunk_get_knowledge_objects");
     expect(html).not.toContain("trace-preview-table");
-    expect(html).not.toContain("trace-preview-list");
-    expect(html).not.toContain("trace-preview-event");
     expect(html).not.toContain("SAIA recommended SPL");
     expect(html).not.toContain("compact-trace-table");
     expect(html).toContain("splunk_run_query");

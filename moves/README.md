@@ -55,6 +55,7 @@ commands, or filesystem paths.
 | P0 | [30](moves30.md) Workbench response security headers | 0.5d | Adds conservative browser hardening headers to local API and UI responses. |
 | P0 | [31](moves31.md) Workbench server fallback redaction | 0.5d | Redacts server-level fallback errors before they reach the browser. |
 | P0 | [32](moves32.md) Workbench no-store responses | 0.5d | Prevents browser caching of local proof and workbench responses. |
+| P0 | [33](moves33.md) Runs trace preview timeline | 0.5d | Makes the Runs trace panel show compact ordered events instead of summary-only cards. |
 
 ## Non-Negotiable Boundaries
 

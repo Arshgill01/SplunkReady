@@ -7539,6 +7539,72 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 33 Runs Trace Preview Timeline Verification
+
+Commands:
+
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `npm run workbench`
+- `CODEX_HOME="${CODEX_HOME:-$HOME/.codex}" PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh" "$PWCLI" open http://127.0.0.1:4317#proof-browser`
+- `/Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4317#proof-browser`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4317#proof-browser`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e49`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/move33-runs-before.png --full-page`
+- `npm test -- tests/ui/app.test.ts`
+- `npm run ui:build`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open 'http://127.0.0.1:4317/?artifacts=%2Fapi%2Fartifacts%2Frun-2026-06-05T13-27-51-419Z-6452b6c3#proof-browser'`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/move33-runs-after-desktop.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 390 844`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/move33-runs-after-mobile.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/move33-runs-after-mobile.png --full-page && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval "() => ({ width: window.innerWidth, overflowing: Array.from(document.querySelectorAll('.trace-preview, .trace-preview *')).filter((el) => el.scrollWidth > el.clientWidth + 1).slice(0, 10).map((el) => ({ tag: el.tagName, className: el.className, text: el.textContent?.slice(0, 80), clientWidth: el.clientWidth, scrollWidth: el.scrollWidth })) })"`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 1280 900`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 1280 900 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval "() => ({ width: window.innerWidth, overflowing: Array.from(document.querySelectorAll('.trace-preview, .trace-preview *')).filter((el) => el.scrollWidth > el.clientWidth + 1).slice(0, 10).map((el) => ({ tag: el.tagName, className: el.className, text: el.textContent?.slice(0, 80), clientWidth: el.clientWidth, scrollWidth: el.scrollWidth })) })"`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS prerequisite check: `npx-ok`.
+- FAIL for the first two Playwright wrapper invocations:
+  - shell variable setup resolved the wrapper path incorrectly;
+  - direct script execution returned permission denied because the wrapper is not
+    executable on this machine;
+  - rerunning the same wrapper through `bash` succeeded.
+- PASS live reproduction before patch:
+  - packaged workbench served at `http://127.0.0.1:4317`;
+  - Runs route opened through Playwright;
+  - managed run `run-2026-06-05T13-27-51-419Z-6452b6c3` loaded in the Runs route;
+  - before screenshot saved at `output/playwright/move33-runs-before.png`.
+- PASS focused UI render test after patch:
+  - 1 test file passed;
+  - 22 tests passed.
+- PASS packaged browser verification after patch:
+  - desktop snapshot showed before/after trace preview event rows for tool calls,
+    tool results, final answers, and finding counts;
+  - desktop screenshot saved at `output/playwright/move33-runs-after-desktop.png`;
+  - mobile screenshot saved at `output/playwright/move33-runs-after-mobile.png`;
+  - mobile overflow probe returned `{ "width": 390, "overflowing": [] }`;
+  - desktop overflow probe returned `{ "width": 1280, "overflowing": [] }`.
+- PASS for full `npm run check && git diff --check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 292 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output;
+  - explicit trailing `git diff --check` from the command chain completed with
+    no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 32 Workbench No-Store Responses Verification
 
 Commands:
