@@ -178,6 +178,12 @@ The export writes `artifacts/public-demo` from the built Vite workbench plus tra
 
 To deploy that export through GitHub Pages, enable Pages for the repository and run the `Public Demo Pages` workflow manually. The workflow builds `artifacts/public-demo`, runs `audit:public-demo-export`, uploads the Pages artifact, and deploys without live Splunk or Gemini secrets. Do not claim a public URL until that workflow has completed and the Pages URL has been opened successfully.
 
+Verified hosted demo:
+
+```text
+https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof
+```
+
 ## Grade a Captured Agent Trace
 
 The fixture demo is reproducible, but SplunkReady is not limited to its bundled specimen. After compiling the environment contract, pass in a schema-valid trace captured from another Splunk-connected agent:

@@ -440,3 +440,13 @@ builds `artifacts/public-demo`, runs `audit:public-demo-export`, uploads the
 Pages artifact, and deploys without live Splunk or Gemini secrets. This does
 not eliminate the hosted URL cap until Pages is enabled, the manual workflow is
 run, and the resulting URL is opened successfully.
+
+Move 96 closes the hosted static demo cap for the MCP proof route. GitHub Pages
+is enabled with `build_type=workflow`, the final `Public Demo Pages` workflow
+run `27040415415` deployed successfully, and Playwright opened the live URL
+`https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof`
+and verified rendered MCP proof evidence: PASS status, saved-search execution,
+Splunk MCP tool names, evidence refs, deterministic authority, mutation=false,
+and MCP composition score. Residual hosted-demo polish risk remains because the
+static host logs expected 404s for optional artifact probes and unavailable
+local workbench `/api/*` endpoints.

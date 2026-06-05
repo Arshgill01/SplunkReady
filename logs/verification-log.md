@@ -10104,6 +10104,115 @@ Open blockers:
 - Public npm publication and live/public MCP-client screencast evidence remain
   separate probability caps.
 
+## 2026-06-06 - Move 96 GitHub Pages Deployment Verification
+
+Commands:
+
+- `gh workflow run "Public Demo Pages" --ref splunkready-build`
+- `gh run watch 27039910727 --exit-status`
+- `gh run view 27039910727 --json name,workflowName,conclusion,status,url,event,headBranch,headSha,jobs`
+- `gh run view 27039910727 --log`
+- `gh api repos/Arshgill01/SplunkReady/pages --jq '{status_url,html_url,build_type,source}'`
+- `gh api -X POST repos/Arshgill01/SplunkReady/pages -f build_type=workflow --jq '{html_url,build_type,status_url,url}'`
+- `gh workflow run "Public Demo Pages" --ref splunkready-build`
+- `gh run watch 27039982182 --exit-status`
+- `bash "$PWCLI" open "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof&v=864fb1b#mcp-proof"`
+- `npx vitest run tests/scripts/public-demo-export.test.ts`
+- `npx vitest run tests/examples/repository-ci-workflow.test.ts`
+- `npm run public-demo:build && npm run audit:public-demo-export`
+- `npm run check`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "normalizes artifact base|MCP proof|static-host|public demo"`
+- `npx vitest run tests/scripts/public-demo-export.test.ts`
+- `npm run public-demo:build && npm run audit:public-demo-export`
+- `bash "$PWCLI" open "http://127.0.0.1:4339/?artifacts=artifacts%2Fmcp-proof&v=local2#mcp-proof" && bash "$PWCLI" snapshot`
+- `npm run check`
+- `gh run watch 27040120576 --exit-status`
+- `gh workflow run "Public Demo Pages" --ref splunkready-build`
+- `gh run watch 27040170546 --exit-status`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "MCP proof|normalizes artifact base|static-host|public demo"`
+- `npm run public-demo:build && npm run audit:public-demo-export`
+- `bash "$PWCLI" open "http://127.0.0.1:4339/?artifacts=artifacts%2Fmcp-proof&v=local2#mcp-proof" && bash "$PWCLI" snapshot`
+- `npm run check`
+- `gh run watch 27040354490 --exit-status`
+- `gh workflow run "Public Demo Pages" --ref splunkready-build`
+- `gh run watch 27040415415 --exit-status`
+- `bash "$PWCLI" open "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof&v=386deb5#mcp-proof" && bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/github-pages-mcp-proof.png --full-page`
+
+Result:
+
+- FAIL then PASS for GitHub Pages enablement:
+  - run `27039910727` failed in `Configure GitHub Pages`;
+  - root cause was GitHub Pages not enabled/configured for workflow builds;
+  - `gh api repos/Arshgill01/SplunkReady/pages` returned HTTP 404 before
+    enablement;
+  - `gh api -X POST ... -f build_type=workflow` enabled Pages and returned
+    `html_url: https://arshgill01.github.io/SplunkReady/`.
+- PASS for the first post-enablement Pages deploy:
+  - run `27039982182` succeeded;
+  - build job passed public demo build and `audit:public-demo-export`;
+  - deploy job passed.
+- FAIL then PASS for public demo browser verification:
+  - first Playwright open showed root-relative asset 404s;
+  - after `base: "./"` and relative manifest default URL, assets loaded but
+    artifact files still requested from root `/artifacts/...`;
+  - after preserving `artifacts/...` as a relative artifact base and adding the
+    MCP `clientWalkthrough` schema, local static Playwright rendered the MCP
+    proof view with `PASS`, saved-search execution, evidence refs, score
+    `100/100`, deterministic authority `yes`, and mutation `no`.
+- PASS for final local `npm run check` after the static-host fixes:
+  - scaffold verified with 85 waves and 1998 project files;
+  - runtime contracts verified 19 rules, 4 fixture missions, and 20 evidence
+    refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 111 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed the package tarball and verified
+    `npx splunkready judge-proof` returned PASS;
+  - 56 test files passed;
+  - 347 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for hosted CI after both fix commits:
+  - run `27040120576` passed for commit `864fb1b` in 57s;
+  - run `27040354490` passed for commit `386deb5` in 1m7s.
+- PASS for final Pages deployment:
+  - run `27040415415` succeeded;
+  - build job passed public demo build, public demo audit, Pages configure, and
+    Pages artifact upload;
+  - deploy job passed.
+- PASS for final Playwright verification of the deployed URL:
+  - opened
+    `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof&v=386deb5#mcp-proof`;
+  - rendered the MCP proof route;
+  - visible evidence included `Status PASS`, `splunk_get_knowledge_objects`,
+    `splunk_run_saved_search`, saved-search execution `yes`, refs `evt-102`,
+    `evt-118`, `evt-141`, deterministic authority `yes`, mutation `no`, and
+    MCP composition score `100/100`;
+  - screenshot saved to `output/playwright/github-pages-mcp-proof.png`.
+
+Notes:
+
+- The final hosted page still reports 404 console entries for static-host
+  optional artifact probes and `/api/*` workbench endpoints. The rendered MCP
+  proof route is loaded and usable; these 404s are not blocking the public
+  static demo, but they remain a polish item.
+- The Pages run reports a Node 20 deprecation annotation for GitHub-owned Pages
+  actions. The run succeeds, but the warning should be revisited when GitHub
+  Pages actions expose Node-24-native versions.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Public npm publication remains blocked until npm auth is configured.
+- Live/public MCP-client screencast evidence remains separate from this hosted
+  static demo.
+
 ## 2026-06-06 - Move 84 Package Installability Audit
 
 Commands:
