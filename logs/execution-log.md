@@ -11791,4 +11791,5 @@ Files changed:
 
 Open blockers:
 - Future npm releases still need a version bump before publish.
-- Hosted CI needs to run after push for Move 101.
+- Hosted CI passed after push:
+  - CI run `27042127046` completed successfully for commit `37014e0`.

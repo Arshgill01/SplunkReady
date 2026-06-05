@@ -9746,6 +9746,8 @@ Commands:
 - `npm run check`
 - `npm run verify:scaffold`
 - `git diff --check`
+- `git push origin splunkready-build`
+- `gh run watch 27042127046 --exit-status`
 
 Result:
 
@@ -9789,6 +9791,9 @@ Result:
   - project files: 2075.
 - PASS for standalone diff whitespace:
   - `git diff --check` completed with no output.
+- PASS for remote CI after push:
+  - run `27042127046`;
+  - job `npm run check` completed successfully in 54 seconds.
 
 Notes:
 
@@ -9798,7 +9803,7 @@ Notes:
 
 Open blockers:
 
-- Hosted CI needs to run after push for Move 101.
+- Future npm releases still need a version bump before publish.
 
 ## 2026-06-06 - Move 97 Static Hosted Demo Request Hygiene
 
