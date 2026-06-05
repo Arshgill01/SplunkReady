@@ -10890,3 +10890,37 @@ Open blockers:
 - MCP category positioning is stronger in the workbench, but a public hosted
   demo and live/captured external MCP-client evidence would still improve the
   award story.
+## 2026-06-06 01:00 - Move 80 MCP Proof Evidence Screenshot
+
+Scope:
+- Continued the evidence-pack cleanup after Move 79 without using subagents.
+- Copied the Playwright-verified MCP proof workbench screenshot into
+  `submission-evidence/screenshots/workbench-mcp-proof.png`.
+- Updated the submission evidence README and claim ledger so the judge-facing
+  pack now cites the MCP workbench view directly.
+- Regenerated `submission-evidence/evidence-pack-sha256.txt` after adding the
+  screenshot and text updates.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Files changed:
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/screenshots/workbench-mcp-proof.png`
+- `moves/README.md`
+- `moves/moves80.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- The tracked evidence pack now includes the Move 79 MCP proof view screenshot.
+- The claim ledger maps the first-class MCP view to the underlying
+  `mcp-proof-summary.json`, renderer, and artifact loader evidence.
+
+Open blockers:
+- Hosted demo URL remains open.
+- Public npm publish remains an explicit external release action.
+- Live proof export remains open because raw ignored live artifacts can contain
+  deployment inventory.

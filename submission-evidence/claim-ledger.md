@@ -1,6 +1,6 @@
 # Submission Claim Ledger
 
-Regenerated on 2026-06-06 for Move 78.
+Regenerated on 2026-06-06 for Move 78 and extended with Move 80 MCP workbench evidence.
 
 | Claim | Status | Evidence | Verification |
 | --- | --- | --- | --- |
@@ -15,6 +15,7 @@ Regenerated on 2026-06-06 for Move 78.
 | The suite proof exposes compiler diagnostics, not only final receipts. | Supported | `submission-evidence/suite-proof/compiler-diagnostics.json`; `submission-evidence/suite-proof/compiler-diagnostics.md` | Inspect diagnostics plus `npm run splunkready -- proof-audit --out submission-evidence/suite-proof --require-pass true --json` |
 | The MCP category story uses Splunk MCP behavior and SplunkReady certification rather than only a local certifier server. | Supported | `submission-evidence/mcp-proof/mcp-proof-summary.json`; `submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json` | `npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json` |
 | The MCP proof exposes reusable resources and prompts for an agent-driven certification loop. | Supported | `submission-evidence/mcp-proof/mcp-proof-summary.json` lists 6 resources and 4 prompts, including `splunkready://workflows/splunk-mcp-certification-loop` and `splunkready_splunk_mcp_certification_loop` | `npm run mcp-proof` |
+| The Vite workbench exposes the MCP proof as a first-class judge-visible view. | Supported | `submission-evidence/screenshots/workbench-mcp-proof.png`; `ui/src/render.ts`; `ui/src/artifacts.ts` | Playwright opened `?artifacts=artifacts%2Fmcp-proof#mcp-proof` and captured the screenshot |
 | The public proof export is redacted before sharing. | Supported | `submission-evidence/public-proof-export/public-proof-export-manifest.json`; `submission-evidence/public-proof-export/public-proof-summary.json`; `submission-evidence/screenshots/public-proof-export-proof-browser.png` | Secret scan plus manifest inspection |
 | The refreshed public proof export has a verified manifest. | Supported | `submission-evidence/public-proof-export/proof-manifest.json`; `submission-evidence/public-proof-export/proof-manifest-verification.json` | `npm run splunkready -- verify-manifest --out submission-evidence/public-proof-export --json` |
 | The local workbench can run packaged UI and API from one origin. | Supported | `submission-evidence/screenshots/workbench-packaged-fixture.png`; Move 20 verification log | `SPLUNKREADY_WORKBENCH_PORT=4337 npm run workbench` plus Playwright click flow |

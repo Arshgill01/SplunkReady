@@ -1,6 +1,6 @@
 # SplunkReady Submission Evidence
 
-Regenerated for Move 78 on 2026-06-06.
+Regenerated for Move 78 on 2026-06-06 and extended with Move 80 MCP workbench evidence.
 
 This directory is the judge-facing evidence pack. It is tracked in git so it can be inspected from a clean clone without access to ignored local `artifacts/`, `.splunkready*` env files, live credentials, or private deployment details.
 
@@ -9,7 +9,7 @@ This directory is the judge-facing evidence pack. It is tracked in git so it can
 - `suite-proof/`: credential-free multi-mission fixture proof. It includes the full proof bundle, compiler diagnostics, strict `proof-audit.json`, `proof-manifest.json`, and `proof-manifest-verification.json`.
 - `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, discovers tools/resources/prompts, certifies a captured Splunk MCP JSON-RPC transcript, and verifies the nested transcript proof manifest.
 - `public-proof-export/`: redacted derivative export generated from a managed workbench run. It includes the public export manifest, summary, audit, receipts, traces, redacted source proof manifest, and manifest verification. It is intentionally not the unredacted source proof.
-- `screenshots/`: Playwright screenshots for the packaged workbench fixture run, trace timeline, and verified public proof export UI. The earlier Vite-backed fixture screenshot is retained as historical evidence but is not the primary refreshed screenshot.
+- `screenshots/`: Playwright screenshots for the packaged workbench fixture run, trace timeline, MCP proof view, and verified public proof export UI. The earlier Vite-backed fixture screenshot is retained as historical evidence but is not the primary refreshed screenshot.
 - `claim-ledger.md`: public claim to evidence mapping.
 - `evidence-pack-sha256.txt`: SHA-256 hashes for this tracked evidence pack.
 
@@ -56,4 +56,5 @@ Included refreshed screenshots were captured with Playwright before tracking:
 
 - `screenshots/workbench-packaged-fixture.png`: packaged `npm run workbench` fixture run, `job-1 / succeeded`, `READY / 100/100`.
 - `screenshots/workbench-trace-timeline.png`: Trace view showing ordered before/after rows for the fixture run.
+- `screenshots/workbench-mcp-proof.png`: MCP view showing `mcp-proof-summary.json` loaded through the packaged workbench, including Splunk MCP boundary tools, resources/prompts, deterministic authority, and `Mutation no`.
 - `screenshots/public-proof-export-proof-browser.png`: Runs view showing the redacted public proof export panel and manifest verification `PASS`.

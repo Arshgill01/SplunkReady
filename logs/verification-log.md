@@ -9760,6 +9760,38 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Hosted demo, public package publication, live proof export, and external
   MCP-client evidence remain open probability caps.
+## 2026-06-06 - Move 80 MCP Proof Evidence Screenshot
+
+Commands:
+
+- `cp output/playwright/move79-mcp-proof.png submission-evidence/screenshots/workbench-mcp-proof.png`
+- `shasum -a 256 $(find submission-evidence -type f ! -name 'evidence-pack-sha256.txt' | sort) > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `git diff --check`
+
+Result:
+
+- PASS for evidence pack hash verification:
+  - every file listed in `submission-evidence/evidence-pack-sha256.txt`
+    returned `OK`.
+- PASS for submission copy audit:
+  - 28 required claims passed.
+- PASS for diff whitespace:
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- This move did not change product code. It tracks the already Playwright-
+  verified Move 79 screenshot in the judge-facing evidence pack.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Hosted demo, public package publication, live proof export, and external
+  MCP-client evidence remain open probability caps.
 ## 2026-06-06 - Move 77 CLI Orphan Helper Cleanup
 
 Commands:

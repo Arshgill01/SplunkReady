@@ -328,3 +328,10 @@ verified a fix for local preset artifact serving under `/artifacts/<bundle>`.
 Remaining MCP risks: the hosted demo URL is still open, public package
 publication remains an external release action, and live/captured external
 MCP-client evidence would still strengthen the award story.
+
+Move 80 reduces the stale-public-evidence risk introduced by Move 79 by adding
+the Playwright-verified MCP proof workbench screenshot to
+`submission-evidence/screenshots/` and updating the tracked evidence README,
+claim ledger, and SHA-256 ledger. Remaining evidence risks are unchanged:
+hosted demo URL, public package publication, and live proof export still need
+separate release/redaction work.
