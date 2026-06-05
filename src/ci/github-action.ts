@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { appendFile } from "node:fs/promises";
+import { appendFile, readFile } from "node:fs/promises";
 import { isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -234,6 +234,44 @@ const writeOutputs = async (outputs: GitHubActionPlan["outputs"], outputPath: st
   );
 };
 
+const markdownValue = (value: string): string => value.replaceAll("\n", " ").replaceAll("|", "\\|");
+
+const statusFromSummary = async (summaryPath: string): Promise<string | undefined> => {
+  try {
+    const parsed = JSON.parse(await readFile(summaryPath, "utf8")) as unknown;
+
+    if (parsed && typeof parsed === "object" && "status" in parsed && typeof parsed.status === "string") {
+      return parsed.status;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+};
+
+export const renderGitHubStepSummary = (plan: GitHubActionPlan, status: string | undefined): string => `## SplunkReady Gate
+
+| Field | Value |
+|---|---|
+| Mode | ${markdownValue(plan.mode)} |
+| Status | ${markdownValue(status ?? "not recorded")} |
+| Proof directory | \`${markdownValue(plan.outputs.outDir)}\` |
+| Receipt | \`${markdownValue(plan.outputs.receiptPath)}\` |
+| Summary | \`${markdownValue(plan.outputs.summaryPath)}\` |
+
+Deterministic SplunkReady checks decide pass/fail. LLM or hosted-model output is advisory only.
+`;
+
+const writeStepSummary = async (plan: GitHubActionPlan, summaryPath: string | undefined): Promise<void> => {
+  if (!summaryPath) {
+    return;
+  }
+
+  const status = await statusFromSummary(plan.outputs.summaryPath);
+  await appendFile(summaryPath, renderGitHubStepSummary(plan, status), "utf8");
+};
+
 export const runGitHubAction = async (env: NodeJS.ProcessEnv = process.env): Promise<GitHubActionPlan> => {
   const plan = buildGitHubActionPlan(readGitHubActionInputs(env), env);
 
@@ -242,6 +280,7 @@ export const runGitHubAction = async (env: NodeJS.ProcessEnv = process.env): Pro
   }
 
   await writeOutputs(plan.outputs, env.GITHUB_OUTPUT);
+  await writeStepSummary(plan, env.GITHUB_STEP_SUMMARY);
   console.log(`\n[SplunkReady] ${plan.mode} gate complete.`);
   console.log(`[SplunkReady] Proof directory: ${plan.outputs.outDir}`);
   console.log(`[SplunkReady] Summary: ${plan.outputs.summaryPath}`);

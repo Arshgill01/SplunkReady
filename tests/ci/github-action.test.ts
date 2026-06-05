@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, it } from "vitest";
 
-import { buildGitHubActionPlan, readGitHubActionInputs } from "../../src/ci/github-action.js";
+import { buildGitHubActionPlan, readGitHubActionInputs, renderGitHubStepSummary } from "../../src/ci/github-action.js";
 
 const actionPath = "/tmp/splunkready-action";
 const workspace = "/tmp/caller-workspace";
@@ -156,5 +156,27 @@ describe("GitHub Action runner", () => {
     expect(metadata).not.toContain("SPLUNKREADY_SPLUNK_MCP_URL");
     expect(metadata).not.toContain("GEMINI_API_KEY");
     expect(metadata).not.toContain("live-security-proof");
+  });
+
+  it("renders a concise deterministic GitHub step summary", () => {
+    const plan = buildGitHubActionPlan(
+      readGitHubActionInputs({
+        INPUT_MODE: "mcp-transcript",
+        INPUT_TRANSCRIPT: "traces/splunk-mcp.jsonl",
+        INPUT_OUT_DIR: "artifacts/mcp-gate",
+        GITHUB_ACTION_PATH: actionPath,
+        GITHUB_WORKSPACE: workspace
+      }),
+      { GITHUB_ACTION_PATH: actionPath, GITHUB_WORKSPACE: workspace }
+    );
+    const summary = renderGitHubStepSummary(plan, "PASS");
+
+    expect(summary).toContain("## SplunkReady Gate");
+    expect(summary).toContain("| Mode | mcp-transcript |");
+    expect(summary).toContain("| Status | PASS |");
+    expect(summary).toContain(`| Proof directory | \`${workspace}/artifacts/mcp-gate\` |`);
+    expect(summary).toContain(`| Receipt | \`${workspace}/artifacts/mcp-gate/receipt-external-001.json\` |`);
+    expect(summary).toContain("Deterministic SplunkReady checks decide pass/fail");
+    expect(summary).toContain("hosted-model output is advisory only");
   });
 });

@@ -9474,6 +9474,41 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 21:11 - Move 49 GitHub Action Job Summary
+
+Scope:
+- Built on Move 48's composite GitHub Action by adding a deterministic job
+  summary for developer visibility.
+- Did not change pass/fail authority; existing CLI gates still decide success.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/ci/github-action.ts`
+- `tests/ci/github-action.test.ts`
+- `README.md`
+- `examples/README.md`
+- `moves/README.md`
+- `moves/moves49.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- The action runner now writes a GitHub job summary when
+  `GITHUB_STEP_SUMMARY` is present.
+- The summary includes gate mode, status from the proof summary JSON when
+  available, proof directory, primary receipt path, and primary summary path.
+- The summary explicitly states that deterministic SplunkReady checks decide
+  pass/fail and LLM/hosted-model output is advisory only.
+- Added unit coverage for summary rendering and ran a local action-like smoke
+  that wrote a real summary file.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 21:06 - Move 48 Composite GitHub Action Gate
 
 Scope:

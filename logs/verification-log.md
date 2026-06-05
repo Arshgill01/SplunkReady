@@ -8251,6 +8251,45 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 49 GitHub Action Job Summary
+
+Commands:
+
+- `npm test -- tests/ci/github-action.test.ts`
+- `npm run build`
+- `summary_file=$(mktemp /tmp/splunkready-action-summary-XXXXXX.md); npm test -- tests/ci/github-action.test.ts && npm run build && GITHUB_ACTION_PATH="$PWD" GITHUB_WORKSPACE="$PWD" GITHUB_STEP_SUMMARY="$summary_file" INPUT_MODE=mcp-transcript INPUT_TRANSCRIPT=examples/sample-mcp-transcript-pass.jsonl INPUT_OUT_DIR=artifacts/action-summary-smoke INPUT_AGENT_NAME="External MCP Agent" INPUT_AGENT_VERSION="action-summary-smoke" node dist/src/ci/github-action.js && printf '\n--- summary ---\n' && cat "$summary_file"`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for focused GitHub Action runner tests:
+  - 1 test file passed;
+  - 6 tests passed.
+- PASS for `npm run build`.
+- PASS for local action-like MCP transcript summary smoke:
+  - action runner invoked `certify-mcp-transcript`;
+  - status was `PASS`;
+  - summary file included mode `mcp-transcript`, status `PASS`, proof directory, receipt path, and summary path;
+  - summary preserved deterministic pass/fail authority language.
+- PASS for explicit `git diff --check`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 46 test files passed;
+  - 313 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 48 Composite GitHub Action Gate
 
 Commands:
