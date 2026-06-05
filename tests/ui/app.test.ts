@@ -2,7 +2,13 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, it } from "vitest";
 
-import { artifactUrl, defaultArtifactOptions, loadUiArtifactBundle, normalizeArtifactBase } from "../../ui/src/artifacts.js";
+import {
+  artifactBaseFromLocation,
+  artifactUrl,
+  defaultArtifactOptions,
+  loadUiArtifactBundle,
+  normalizeArtifactBase
+} from "../../ui/src/artifacts.js";
 import { renderApp } from "../../ui/src/render.js";
 import type {
   EnvironmentContract,
@@ -799,6 +805,9 @@ describe("Vite UI artifact app", () => {
     expect(normalizeArtifactBase(undefined)).toBe("/__splunkready_artifacts/");
     expect(normalizeArtifactBase("/custom")).toBe("/custom/");
     expect(normalizeArtifactBase("artifacts/live-security-ui")).toBe("/artifacts/live-security-ui/");
+    expect(normalizeArtifactBase("https://example.test/artifacts")).toBe("/__splunkready_artifacts/");
+    expect(normalizeArtifactBase("//example.test/artifacts")).toBe("/__splunkready_artifacts/");
+    expect(normalizeArtifactBase("data:application/json,{}")).toBe("/__splunkready_artifacts/");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/live-security-ui");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/certification-index");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/suite-proof");
@@ -806,6 +815,9 @@ describe("Vite UI artifact app", () => {
     expect(artifactUrl("/custom", "receipt-after-001.json")).toBe("/custom/receipt-after-001.json");
     expect(artifactUrl("artifacts/live-security-ui", "receipt-after-001.json")).toBe(
       "/artifacts/live-security-ui/receipt-after-001.json"
+    );
+    expect(artifactBaseFromLocation({ search: "?artifacts=https%3A%2F%2Fexample.test%2Fproof" })).toBe(
+      "/__splunkready_artifacts/"
     );
   });
 

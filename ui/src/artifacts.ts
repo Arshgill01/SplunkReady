@@ -668,6 +668,11 @@ const optionalFiles = [
 export const normalizeArtifactBase = (value: string | null | undefined): string => {
   const fallback = "/__splunkready_artifacts/";
   const raw = value && value.trim().length > 0 ? value.trim() : fallback;
+
+  if (/^[A-Za-z][A-Za-z0-9+.-]*:/.test(raw) || raw.startsWith("//")) {
+    return fallback;
+  }
+
   const localPath = raw.startsWith("artifacts/") ? `/${raw}` : raw;
 
   return localPath.endsWith("/") ? localPath : `${localPath}/`;

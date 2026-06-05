@@ -8915,6 +8915,39 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 36 Local Artifact Base Guard
+
+Context:
+- Continued development hardening after Move 35.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- User explicitly deferred video/submission work; this move stayed on product
+  development and local UI safety.
+- Found that the Vite UI artifact base normalization preserved URL-like values
+  from `?artifacts=...`, which could make the browser attempt off-origin
+  artifact fetches.
+
+Files touched:
+- `ui/src/artifacts.ts`
+- `tests/ui/app.test.ts`
+- `moves/README.md`
+- `moves/moves36.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Updated `normalizeArtifactBase` to reject URL-scheme and protocol-relative
+  artifact bases and fall back to `/__splunkready_artifacts/`.
+- Preserved existing local artifact path behavior for `artifacts/...`,
+  `/api/artifacts/...`, and other same-origin path bases.
+- Added focused UI coverage for direct normalization and the browser location
+  query-parameter entry point.
+- Added a Move 36 plan file documenting the boundary and verification target.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 35 Secret Env Ignore Gate
 
 Context:

@@ -7539,6 +7539,52 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 36 Local Artifact Base Guard Verification
+
+Commands:
+
+- `npm test -- tests/ui/app.test.ts`
+- `npm run workbench:dev`
+- `npx --yes --package playwright node --input-type=module <<'EOF' ... EOF`
+- `npx --yes --package playwright node --input-type=module <<'EOF' ... EOF`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused UI tests:
+  - 1 test file passed;
+  - 22 tests passed.
+- FAIL for the first Playwright browser assertion:
+  - the product page loaded, but the assertion filtered request URLs by raw
+    substring and counted the current page URL because the encoded query string
+    contained `example.test`;
+  - this was a verification-script false positive, not an off-origin artifact
+    fetch.
+- PASS for the corrected Playwright browser assertion against
+  `http://127.0.0.1:4317/?artifacts=https%3A%2F%2Fexample.test%2Fproof#receipt`:
+  - observed 0 network requests whose hostname was `example.test`;
+  - observed 30 fallback requests under `/__splunkready_artifacts/`;
+  - rendered UI exposed the fallback artifact base;
+  - screenshot written to `output/playwright/move36-local-artifact-guard.png`.
+- PASS for full `npm run check && git diff --check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 292 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output;
+  - explicit final `git diff --check` completed with no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 35 Secret Env Ignore Gate Verification
 
 Commands:
