@@ -1,4 +1,9 @@
-export type LiveActionWorkflow = "live-smoke" | "live-candidates" | "live-security-readiness" | "live-security-proof";
+export type LiveActionWorkflow =
+  | "live-smoke"
+  | "live-candidates"
+  | "live-security-readiness"
+  | "live-security-kit"
+  | "live-security-proof";
 
 export interface LiveActionWorkflowInput {
   outDir: string;
@@ -18,7 +23,12 @@ type CliLiveAction = (
 ) => Promise<LiveActionWorkflowResult>;
 
 const runCliLiveAction = async (
-  exportName: "runLiveSmokeFromCli" | "runLiveCandidatesFromCli" | "runLiveSecurityReadinessFromCli" | "runLiveSecurityProofFromCli",
+  exportName:
+    | "runLiveSmokeFromCli"
+    | "runLiveCandidatesFromCli"
+    | "runLiveSecurityReadinessFromCli"
+    | "runLiveSecurityKitFromCli"
+    | "runLiveSecurityProofFromCli",
   input: LiveActionWorkflowInput,
   env: NodeJS.ProcessEnv
 ): Promise<LiveActionWorkflowResult> => {
@@ -46,6 +56,11 @@ export const runLiveSecurityReadinessWorkflow = (
   input: LiveActionWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<LiveActionWorkflowResult> => runCliLiveAction("runLiveSecurityReadinessFromCli", input, env);
+
+export const runLiveSecurityKitWorkflow = (
+  input: LiveActionWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<LiveActionWorkflowResult> => runCliLiveAction("runLiveSecurityKitFromCli", input, env);
 
 export const runLiveSecurityProofWorkflow = (
   input: LiveActionWorkflowInput,

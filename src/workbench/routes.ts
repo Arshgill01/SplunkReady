@@ -7,6 +7,7 @@ import {
   parseMcpTranscriptCertificationPayload,
   type ExternalCertificationPayload
 } from "../workflows/external-certification.js";
+import { runManifestVerificationWorkflow } from "../workflows/manifest-verification.js";
 import { WorkbenchArtifactStore } from "./artifacts.js";
 import { WorkbenchJobRunner, type CertificationIndexPayload, type WorkbenchWorkflowPayload } from "./jobs.js";
 import type { WorkbenchWorkflow } from "./events.js";
@@ -386,8 +387,7 @@ export const createWorkbenchApiHandler =
       if (request.method === "POST" && url.pathname.startsWith("/api/artifacts/") && url.pathname.endsWith("/verify-manifest")) {
         const parts = url.pathname.split("/").filter(Boolean);
         const runId = parts[2] ?? "";
-        const { runVerifyManifestFromCli } = await import("../cli.js");
-        const result = await runVerifyManifestFromCli({ outDir: context.artifactStore.resolveRun(runId) });
+        const result = await runManifestVerificationWorkflow({ outDir: context.artifactStore.resolveRun(runId) });
 
         json(response, 200, {
           status: result.status,

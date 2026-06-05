@@ -1,11 +1,6 @@
 import { relative } from "node:path";
 
-import {
-  runFirewallCheckFromCli,
-  runCertificationIndexFromCli,
-  runLiveSecurityKitFromCli,
-  runPolicyBackedRerunFromCli
-} from "../cli.js";
+import { runCertificationIndexWorkflow } from "../workflows/certification-index.js";
 import {
   externalCertificationInputSummary,
   runExternalTraceCertificationWorkflow,
@@ -16,10 +11,12 @@ import { runFixtureCertificationWorkflow } from "../workflows/fixture-certificat
 import { runHostedModelDiagnosticWorkflow, runHostedModelProofWorkflow } from "../workflows/hosted-model-actions.js";
 import {
   runLiveCandidatesWorkflow,
+  runLiveSecurityKitWorkflow,
   runLiveSecurityProofWorkflow,
   runLiveSecurityReadinessWorkflow,
   runLiveSmokeWorkflow
 } from "../workflows/live-actions.js";
+import { runFirewallCheckWorkflow, runPolicyBackedRerunWorkflow } from "../workflows/policy-actions.js";
 import { WorkbenchArtifactStore } from "./artifacts.js";
 import { redactUnknownError } from "./redaction.js";
 import type { WorkbenchConfig } from "./config.js";
@@ -122,8 +119,8 @@ export class WorkbenchJobRunner {
 
         return runExternalTraceCertificationWorkflow({ outDir, payload: payload.value });
       },
-      "policy-backed-rerun": async ({ outDir }) => runPolicyBackedRerunFromCli({ outDir }),
-      "firewall-check": async ({ outDir }) => runFirewallCheckFromCli({ outDir }),
+      "policy-backed-rerun": async ({ outDir }) => runPolicyBackedRerunWorkflow({ outDir }),
+      "firewall-check": async ({ outDir }) => runFirewallCheckWorkflow({ outDir }),
       "mcp-transcript-certification": async ({ outDir, payload }) => {
         if (payload?.kind !== "mcp-transcript") {
           throw new Error("MCP transcript certification requires an MCP transcript upload payload.");
@@ -136,7 +133,7 @@ export class WorkbenchJobRunner {
           throw new Error("Certification index requires selected managed proof runs.");
         }
 
-        return runCertificationIndexFromCli({
+        return runCertificationIndexWorkflow({
           outDir,
           proofDirs: payload.value.runIds.map((runId) => this.artifactStore.resolveRun(runId)),
           proofArtifactBases: payload.value.runIds.map((runId) => `/api/artifacts/${runId}`),
@@ -145,7 +142,7 @@ export class WorkbenchJobRunner {
       },
       "live-smoke": async ({ outDir }) => runLiveSmokeWorkflow({ outDir }),
       "live-candidates": async ({ outDir }) => runLiveCandidatesWorkflow({ outDir }),
-      "live-security-kit": async ({ outDir }) => runLiveSecurityKitFromCli({ outDir }),
+      "live-security-kit": async ({ outDir }) => runLiveSecurityKitWorkflow({ outDir }),
       "live-security-readiness": async ({ outDir }) => runLiveSecurityReadinessWorkflow({ outDir }),
       "live-security-proof": async ({ outDir }) => runLiveSecurityProofWorkflow({ outDir }),
       "hosted-model-diagnostic": async ({ outDir }) => runHostedModelDiagnosticWorkflow({ outDir }),

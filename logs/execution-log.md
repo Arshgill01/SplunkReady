@@ -8224,3 +8224,41 @@ Open risks:
 - Workbench-generated certification-index runs are browsable output artifacts and currently do not generate their own proof manifest; constituent proof manifests are verified before indexing.
 - The generated index can include proof bundles without receipts, such as firewall-block proofs; the table renders those explicitly as `NO RECEIPT`.
 - Browser screenshots and generated workbench runs are local ignored artifacts and are not committed.
+
+## 2026-06-05 - Move 15 CLI Workflow Modularization
+
+Context:
+- Implemented Move 15 locally without subagents.
+- This was a backend/module refactor wave; no UI behavior changed, so no Playwright run was required.
+- Preserved CLI command names, flags, JSON output, and artifact paths.
+
+Files touched:
+- `src/cli.ts`
+- `src/workbench/jobs.ts`
+- `src/workbench/routes.ts`
+- `src/workflows/certification-index.ts`
+- `src/workflows/live-actions.ts`
+- `src/workflows/manifest-verification.ts`
+- `src/workflows/policy-actions.ts`
+- `tests/workbench/workbench.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added focused workflow modules for:
+  - certification index generation;
+  - manifest verification;
+  - policy-backed rerun and firewall check.
+- Moved `live-security-kit` behind the existing live workflow module pattern.
+- Rewired the workbench job runner to import workflow modules instead of importing CLI handlers directly.
+- Rewired the workbench manifest-verification route to use a workflow module instead of dynamically importing `../cli.js`.
+- Removed duplicate workbench workflow type declarations from `src/cli.ts` and reused the focused workflow module types.
+- Added a regression test that reads `src/workbench/jobs.ts` and `src/workbench/routes.ts` and fails if either reintroduces a direct `../cli.js` import.
+
+Evidence:
+- `src/cli.ts` shrank in the touched workflow-wrapper area from 3844 lines after Move 14 to 3809 lines.
+- `rg -n "\\.\\./cli\\.js|from \\\"\\.\\./cli" src/workbench || true` returned no matches.
+- Existing CLI behavior stayed covered by `tests/cli/flow.test.ts`.
+
+Open risks:
+- Several workflow modules still dynamically load CLI wrappers internally. Move 15 intentionally avoided a broad mechanical refactor; the workbench backend boundary is now module-based, while deeper extraction can proceed in later waves if it blocks reuse.

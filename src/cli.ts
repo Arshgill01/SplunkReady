@@ -53,12 +53,28 @@ import {
 } from "./schemas/core.js";
 import { importMcpTranscript, parseMcpTranscriptRecords } from "./traces/mcp-transcript.js";
 import { writeUiShell } from "./ui/shell.js";
+import type {
+  CertificationIndexWorkflowInput,
+  CertificationIndexWorkflowResult
+} from "./workflows/certification-index.js";
 import {
   runFixtureCertification,
   type FixtureCertificationWorkflowInput,
   type FixtureCertificationWorkflowResult,
   type FixtureCertificationWorkflowSteps
 } from "./workflows/fixture-certification.js";
+import type {
+  LiveActionWorkflowInput,
+  LiveActionWorkflowResult
+} from "./workflows/live-actions.js";
+import type {
+  ManifestVerificationWorkflowInput,
+  ManifestVerificationWorkflowResult
+} from "./workflows/manifest-verification.js";
+import type {
+  PolicyWorkbenchWorkflowInput,
+  PolicyWorkbenchWorkflowResult
+} from "./workflows/policy-actions.js";
 
 const defaultFixturePath = "fixtures/acme-soc-dev/adapter-fixture.json";
 const defaultMissionPath = "fixtures/acme-soc-dev/missions/security-investigation-readiness.json";
@@ -3352,18 +3368,6 @@ export const runFixtureCertificationFromCli = async (
 
 export const runFixtureCertificationWorkflow = runFixtureCertificationFromCli;
 
-export interface PolicyWorkbenchWorkflowInput {
-  outDir: string;
-}
-
-export interface PolicyWorkbenchWorkflowResult {
-  status: "PASS";
-  outDir: string;
-  artifacts: string[];
-  mutation: false;
-  messages: string[];
-}
-
 export const runPolicyBackedRerunFromCli = async (
   input: PolicyWorkbenchWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
@@ -3408,18 +3412,6 @@ export const runFirewallCheckFromCli = async (
     messages: ["Compiled policy firewall rejected unsafe SPL before Splunk execution."]
   };
 };
-
-export interface LiveActionWorkflowInput {
-  outDir: string;
-}
-
-export interface LiveActionWorkflowResult {
-  status: "PASS" | "SKIP";
-  outDir: string;
-  artifacts: string[];
-  mutation: false;
-  messages: string[];
-}
 
 export const runLiveSmokeFromCli = async (
   input: LiveActionWorkflowInput,
@@ -3611,18 +3603,6 @@ export const runMcpTranscriptCertificationFromCli = async (
   return { status, outDir: input.outDir, artifacts, mutation: false, messages: [] };
 };
 
-export interface ManifestVerificationWorkflowInput {
-  outDir: string;
-}
-
-export interface ManifestVerificationWorkflowResult {
-  status: "PASS" | "FAIL";
-  outDir: string;
-  artifacts: string[];
-  mutation: false;
-  report: ProofManifestVerification;
-}
-
 export const runVerifyManifestFromCli = async (
   input: ManifestVerificationWorkflowInput
 ): Promise<ManifestVerificationWorkflowResult> => {
@@ -3631,21 +3611,6 @@ export const runVerifyManifestFromCli = async (
 
   return { status: report.status, outDir: input.outDir, artifacts: [reportPath], mutation: false, report };
 };
-
-export interface CertificationIndexWorkflowInput {
-  outDir: string;
-  proofDirs: string[];
-  proofArtifactBases?: string[];
-  indexArtifactBase?: string;
-}
-
-export interface CertificationIndexWorkflowResult {
-  status: "PASS" | "WARN" | "FAIL";
-  outDir: string;
-  artifacts: string[];
-  mutation: boolean;
-  messages: string[];
-}
 
 const manifestFailureDetail = (report: ProofManifestVerification): string => {
   const details = [

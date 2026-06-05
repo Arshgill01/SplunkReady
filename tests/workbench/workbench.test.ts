@@ -81,6 +81,17 @@ const emptyProofManifest = (proofDir: string) => ({
 });
 
 describe("workbench backend", () => {
+  it("keeps the workbench backend decoupled from direct CLI imports", async () => {
+    const sources = await Promise.all([
+      readFile("src/workbench/jobs.ts", "utf8"),
+      readFile("src/workbench/routes.ts", "utf8")
+    ]);
+
+    for (const source of sources) {
+      expect(source).not.toContain("../cli.js");
+    }
+  });
+
   it("reports health without leaking server secrets", async () => {
     const config = createWorkbenchConfig(
       {

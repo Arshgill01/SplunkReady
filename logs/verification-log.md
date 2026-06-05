@@ -6655,3 +6655,39 @@ Open risks:
 
 - Workbench certification-index output runs are browsable artifacts and do not themselves carry a proof manifest; selected constituent proof manifests are verified before index generation.
 - Browser screenshots and generated workbench runs live under ignored local artifact paths and are not committed.
+
+## 2026-06-05 - Move 15 CLI Workflow Modularization
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts tests/workflows tests/workbench`
+- `rg -n "\\.\\./cli\\.js|from \\\"\\.\\./cli" src/workbench || true`
+- `npm run build`
+- `git diff --check`
+- `npm run check`
+- `wc -l src/cli.ts src/workbench/jobs.ts src/workbench/routes.ts src/workflows/*.ts | tail -n 12`
+
+Result:
+
+- PASS for TypeScript validation.
+- PASS for Move 15 verification command:
+  - 3 test files;
+  - 60 tests passed.
+- PASS for direct workbench CLI import check:
+  - no matches in `src/workbench`.
+- PASS for `npm run build`.
+- PASS for `git diff --check`.
+- PASS for canonical project gate:
+  - scaffold verified;
+  - 85 waves;
+  - 1176 project files;
+  - 41 test files;
+  - 281 tests passed.
+- PASS for CLI shrink check:
+  - `src/cli.ts` line count after Move 14 was 3844;
+  - `src/cli.ts` line count after Move 15 is 3809.
+
+Open risks:
+
+- Workflow modules still dynamically import CLI wrappers internally. This is a scoped Move 15 extraction that removes direct workbench backend imports and shrinks CLI type duplication without changing CLI behavior.
