@@ -10192,6 +10192,50 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 23:01 - Move 66 Hosted Model Workflow Extraction
+
+Scope:
+- Responded to the Minimax/user concern that LLM and hosted-model evidence
+  should be visible without becoming the pass/fail judge.
+- Removed the hosted-model workflow module's dynamic CLI import.
+- Kept SAIA output advisory-only and kept deterministic rules authoritative.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/workflows/hosted-model-actions.ts`
+- `src/cli.ts`
+- `tests/workflows/hosted-model-actions.test.ts`
+- `moves/README.md`
+- `moves/moves66.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `runHostedModelProofWorkflow` and `runHostedModelDiagnosticWorkflow` now own
+  hosted-model compile/proof/diagnostic artifact generation.
+- The CLI hosted-model commands now call those workflows instead of owning the
+  SAIA proof implementation.
+- `writeHostedModelProofArtifact` moved into the workflow module and remains
+  reusable by live security proof.
+- Added direct workflow tests for fixture hosted-model proof and diagnostic
+  artifacts.
+- Reduced `src/cli.ts` from 2,795 lines to 2,660 lines.
+
+Implementation note:
+- The first focused CLI regression exposed a moved formatter bug where blocked
+  SAIA errors became `[object Object]`; the workflow formatter now preserves the
+  prior action-forbidden diagnostic text.
+
+Open blockers:
+- `fixture-certification.ts`, `policy-actions.ts`, and `live-actions.ts` still
+  contain CLI-backed workflow dependencies.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 22:53 - Move 65 Proof Audit Workflow Extraction
 
 Scope:

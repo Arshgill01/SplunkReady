@@ -81,6 +81,14 @@ import type {
 } from "./workflows/live-actions.js";
 import { runLlmProofWorkflow } from "./workflows/llm-proof.js";
 import {
+  hostedModelToolNames,
+  runHostedModelDiagnosticWorkflow,
+  runHostedModelProofWorkflow,
+  writeHostedModelProofArtifact,
+  type HostedModelWorkflowInput,
+  type HostedModelWorkflowResult
+} from "./workflows/hosted-model-actions.js";
+import {
   runManifestVerificationWorkflow,
   type ManifestVerificationWorkflowInput,
   type ManifestVerificationWorkflowResult
@@ -106,8 +114,6 @@ const liveSmokeInventoryTools: ReadOnlySplunkToolName[] = [
   "splunk_get_metadata",
   "splunk_get_knowledge_objects"
 ];
-const hostedModelToolNames: ReadOnlySplunkToolName[] = ["saia_explain_spl", "saia_optimize_spl"];
-const hostedModelProofQuery = "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now";
 const liveSmokeNotCalledTools = readOnlySplunkToolNameSchema.options.filter(
   (toolName) => !liveSmokeInventoryTools.includes(toolName)
 );
@@ -703,16 +709,6 @@ const summarizeHostedModels = (
     notes:
       "SAIA explain/optimize tools were available, but this proof did not produce SPL-rule violations with query evidence."
   };
-};
-
-const formatHostedModelProofError = (error: unknown): string => {
-  const formatted = formatCliError(error);
-
-  if (formatted.includes("Action forbidden")) {
-    return "Hosted-model SAIA action forbidden. The current MCP token or Splunk user can access live read-only Splunk tools, but not saia_explain_spl/saia_optimize_spl.";
-  }
-
-  return formatted.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 };
 
 const llmEnabled = (env: NodeJS.ProcessEnv = process.env): boolean => env.SPLUNKREADY_LLM_ENABLED === "true";
@@ -1648,7 +1644,7 @@ const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.Process
   const contract = await loadContract(options.out);
   const policyPatch = await readOptionalPolicyPatch(options.out);
   const hostedModelProofPath = await writeHostedModelProofArtifact(
-    liveOptions,
+    { outDir: liveOptions.out, mode: liveOptions.mode },
     await createSplunkAccessAdapter(liveOptions, env),
     contract
   );
@@ -1925,133 +1921,29 @@ const hostedModelProofCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<string[]> => {
-  const compileArtifacts = await compileCommand(options, env);
-  const adapter = await createSplunkAccessAdapter(options, env);
-  const contract = await loadContract(options.out);
-  const proofPath = await writeHostedModelProofArtifact(options, adapter, contract);
+  const result = await runHostedModelProofWorkflow({
+    outDir: options.out,
+    mode: options.mode,
+    fixturePath: options.fixture,
+    missionPath: options.mission
+  }, env);
 
-  return [...compileArtifacts, proofPath];
+  return result.artifacts;
 };
 
 const hostedModelDiagnosticCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<string[]> => {
-  const compileArtifacts = await compileCommand(options, env);
-  const adapter = await createSplunkAccessAdapter(options, env);
-  const contract = await loadContract(options.out);
-  const proofPath = await writeHostedModelProofArtifact(options, adapter, contract);
-  const proof = await readJson<unknown>(proofPath, "hosted model proof");
-  const proofStatus = stringFromRecord(proof, "status") ?? "UNKNOWN";
-  const availableTools = hostedModelToolNames.filter((toolName) => contract.mcpTools.includes(toolName));
-  const missingTools = hostedModelToolNames.filter((toolName) => !contract.mcpTools.includes(toolName));
-  const diagnosticPath = join(options.out, "hosted-model-diagnostic.json");
-  const blocked = proofStatus !== "PASS";
-
-  await writeJson(diagnosticPath, {
-    status: blocked ? "BLOCKED" : "PASS",
+  const result = await runHostedModelDiagnosticWorkflow({
+    outDir: options.out,
     mode: options.mode,
-    mutation: false,
-    proofPath,
-    contract: {
-      id: contract.id,
-      mode: contract.mode
-    },
-    requiredTools: hostedModelToolNames,
-    availableTools,
-    missingTools,
-    permission: blocked
-      ? {
-          status: "BLOCKED",
-          message:
-            "The MCP contract advertises hosted-model tools, but the current credentials did not return advisory SAIA output.",
-          error: stringFromRecord(proof, "error") ?? "Hosted-model proof did not pass.",
-          requiredActions: [
-            "Grant the Splunk/MCP user permission to invoke saia_explain_spl.",
-            "Grant the Splunk/MCP user permission to invoke saia_optimize_spl.",
-            "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
-          ]
-        }
-      : {
-          status: "OK",
-          message:
-            "The current MCP credentials can invoke saia_explain_spl and saia_optimize_spl for advisory SPL remediation."
-        },
-    deterministicAuthority: "deterministic-rule-engine",
-    notes:
-      "This diagnostic calls hosted-model helper tools only. It does not execute the SPL query, does not grade with an LLM, and does not mutate Splunk."
-  });
+    fixturePath: options.fixture,
+    missionPath: options.mission,
+    requirePass: options.requirePass
+  }, env);
 
-  if (options.requirePass && blocked) {
-    throw new Error(
-      `hosted-model-diagnostic requires SAIA access but hosted-model proof status was ${proofStatus}. See ${diagnosticPath}.`
-    );
-  }
-
-  return [...compileArtifacts, proofPath, diagnosticPath];
-};
-
-const writeHostedModelProofArtifact = async (
-  options: CliOptions,
-  adapter: SplunkAccessAdapter,
-  contract: EnvironmentContract
-): Promise<string> => {
-  if (!adapter.explainSpl || !adapter.optimizeSpl) {
-    throw new Error("hosted-model-proof requires adapters that expose saia_explain_spl and saia_optimize_spl.");
-  }
-
-  const callOptions = { requestId: "req-hosted-model-proof-1", missionId: "hosted-model-proof" };
-  const proofPath = join(options.out, "hosted-model-proof.json");
-  const baseProof = {
-    mode: options.mode,
-    mutation: false,
-    contract: {
-      id: contract.id,
-      mode: contract.mode,
-      hostedModelTools: hostedModelToolNames,
-      availableTools: hostedModelToolNames.filter((toolName) => contract.mcpTools.includes(toolName))
-    },
-    query: hostedModelProofQuery,
-    deterministicContext: {
-      ruleIds: ["SPL-001", "SPL-003"],
-      passFailAuthority: "deterministic-rule-engine",
-      purpose:
-        "Demonstrate hosted-model explain/optimize as advisory remediation for a deterministic SPL violation. The query is not executed."
-    },
-    toolCalls: hostedModelToolNames
-  };
-
-  try {
-    const [explanation, optimization] = await Promise.all([
-      adapter.explainSpl({ query: hostedModelProofQuery }, callOptions),
-      adapter.optimizeSpl({ query: hostedModelProofQuery }, callOptions)
-    ]);
-
-    await writeJson(proofPath, {
-      status: "PASS",
-      ...baseProof,
-      assistance: {
-        explanation: explanation.explanation,
-        optimizedQuery: optimization.optimizedQuery,
-        rationale: optimization.rationale,
-        warnings: [...explanation.warnings, ...optimization.warnings]
-      },
-      error: null,
-      notes:
-        "This proof calls hosted-model tools only. It does not run the SPL query, does not grade with an LLM, and does not mutate Splunk."
-    });
-  } catch (error) {
-    await writeJson(proofPath, {
-      status: "BLOCKED",
-      ...baseProof,
-      assistance: null,
-      error: formatHostedModelProofError(error),
-      notes:
-        "Hosted-model tools were advertised in the live contract but could not be invoked with the current MCP credentials."
-    });
-  }
-
-  return proofPath;
+  return result.artifacts;
 };
 
 const proofAuditCommand = async (options: CliOptions): Promise<string[]> => {
@@ -2605,45 +2497,18 @@ export const runLiveSecurityProofFromCli = async (
   };
 };
 
-export interface HostedModelWorkflowInput {
-  outDir: string;
-}
-
-export interface HostedModelWorkflowResult {
-  status: "PASS" | "BLOCKED";
-  outDir: string;
-  artifacts: string[];
-  mutation: false;
-  messages: string[];
-}
-
-const hostedModelStatusFromArtifact = async (artifactPath: string): Promise<"PASS" | "BLOCKED"> => {
-  const artifact = await readJson<unknown>(artifactPath, "hosted-model workflow artifact");
-  const status = stringFromRecord(artifact, "status");
-
-  return status === "PASS" ? "PASS" : "BLOCKED";
-};
-
 export const runHostedModelDiagnosticFromCli = async (
   input: HostedModelWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<HostedModelWorkflowResult> => {
-  const options = defaultCliOptions({ mode: "live", out: input.outDir, requirePass: false });
-  const artifacts = await hostedModelDiagnosticCommand(options, env);
-  const status = await hostedModelStatusFromArtifact(join(input.outDir, "hosted-model-diagnostic.json"));
-
-  return { status, outDir: input.outDir, artifacts, mutation: false, messages: [] };
+  return runHostedModelDiagnosticWorkflow({ ...input, mode: input.mode ?? "live", requirePass: false }, env);
 };
 
 export const runHostedModelProofFromCli = async (
   input: HostedModelWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<HostedModelWorkflowResult> => {
-  const options = defaultCliOptions({ mode: "live", out: input.outDir });
-  const artifacts = await hostedModelProofCommand(options, env);
-  const status = await hostedModelStatusFromArtifact(join(input.outDir, "hosted-model-proof.json"));
-
-  return { status, outDir: input.outDir, artifacts, mutation: false, messages: [] };
+  return runHostedModelProofWorkflow({ ...input, mode: input.mode ?? "live" }, env);
 };
 
 export const runVerifyManifestFromCli = async (

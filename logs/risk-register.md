@@ -225,3 +225,9 @@ generation and strict gate handling into `src/workflows/proof-audit.ts`.
 `src/cli.ts` dropped from 3,388 lines to 2,795 lines in this move. Remaining
 CLI-backed workflow wrappers in fixture, policy, live, and hosted-model actions
 are still open modularization risks.
+
+Move 66 removes hosted-model actions from the CLI-backed wrapper list by moving
+SAIA proof and diagnostic artifact generation into
+`src/workflows/hosted-model-actions.ts`. `src/cli.ts` dropped from 2,795 lines
+to 2,660 lines. Remaining CLI-backed workflow wrappers are fixture
+certification, policy actions, and live actions.
