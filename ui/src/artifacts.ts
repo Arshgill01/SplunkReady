@@ -719,6 +719,51 @@ const mcpProofSummarySchema = z
         mutation: z.boolean()
       })
       .strict(),
+    clientWalkthrough: z
+      .object({
+        source: z.literal("splunkready-mcp-client-walkthrough"),
+        status: z.enum(["PASS", "FAIL"]),
+        artifactPath: z.string().min(1),
+        markdownPath: z.string().min(1),
+        deterministicAuthority: z.boolean(),
+        mutation: z.boolean(),
+        servers: z.array(
+          z
+            .object({
+              name: z.string().min(1),
+              role: z.string().min(1),
+              existingMcpServer: z.boolean()
+            })
+            .strict()
+        ),
+        stages: z.array(
+          z
+            .object({
+              id: z.string().min(1),
+              title: z.string().min(1),
+              server: z.string().min(1),
+              evidence: z.string().min(1)
+            })
+            .strict()
+        ),
+        transcript: z
+          .object({
+            path: z.string().min(1),
+            splunkToolNames: z.array(z.string().min(1)),
+            splunkToolCallCount: z.number().int().nonnegative(),
+            includesSavedSearchExecution: z.boolean(),
+            evidenceRefs: z.array(z.string().min(1))
+          })
+          .strict(),
+        receipt: z
+          .object({
+            path: z.string().min(1),
+            status: z.enum(["PASS", "FAIL"]),
+            authoritative: z.boolean()
+          })
+          .strict()
+      })
+      .strict(),
     artifacts: z.array(z.string().min(1)),
     nextCommands: z.array(z.string().min(1))
   })
@@ -836,9 +881,7 @@ export const normalizeArtifactBase = (value: string | null | undefined): string 
     return fallback;
   }
 
-  const localPath = raw.startsWith("artifacts/") ? `/${raw}` : raw;
-
-  return localPath.endsWith("/") ? localPath : `${localPath}/`;
+  return raw.endsWith("/") ? raw : `${raw}/`;
 };
 
 export const defaultArtifactOptions: ArtifactOption[] = [

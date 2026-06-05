@@ -450,6 +450,52 @@ const mcpProofSummary = {
     deterministicAuthority: true,
     mutation: false
   },
+  clientWalkthrough: {
+    source: "splunkready-mcp-client-walkthrough",
+    status: "PASS",
+    artifactPath: "submission-evidence/mcp-proof/mcp-client-walkthrough.json",
+    markdownPath: "submission-evidence/mcp-proof/mcp-client-walkthrough.md",
+    deterministicAuthority: true,
+    mutation: false,
+    servers: [
+      {
+        name: "splunk",
+        role: "Existing Splunk MCP Server performs the read-only investigation and returns deployment evidence.",
+        existingMcpServer: true
+      },
+      {
+        name: "splunkready",
+        role: "SplunkReady MCP certifies the captured Splunk MCP transcript into a deterministic Readiness Receipt.",
+        existingMcpServer: false
+      }
+    ],
+    stages: [
+      {
+        id: "client-discovers-two-servers",
+        title: "MCP client is configured with existing Splunk MCP plus SplunkReady MCP",
+        server: "client",
+        evidence: "splunkready://client-config/splunk-and-splunkready"
+      },
+      {
+        id: "splunk-mcp-investigates",
+        title: "Agent investigates through read-only Splunk MCP tools",
+        server: "splunk",
+        evidence: "splunk_get_knowledge_objects, splunk_run_saved_search"
+      }
+    ],
+    transcript: {
+      path: "examples/sample-mcp-transcript-pass.jsonl",
+      splunkToolNames: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+      splunkToolCallCount: 2,
+      includesSavedSearchExecution: true,
+      evidenceRefs: ["evt-102", "evt-118", "evt-141"]
+    },
+    receipt: {
+      path: "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+      status: "PASS",
+      authoritative: true
+    }
+  },
   artifacts: [
     "submission-evidence/mcp-proof/mcp-proof-summary.json",
     "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json"
@@ -999,7 +1045,7 @@ describe("Vite UI artifact app", () => {
   it("normalizes artifact base URLs and preserves file names", () => {
     expect(normalizeArtifactBase(undefined)).toBe("/__splunkready_artifacts/");
     expect(normalizeArtifactBase("/custom")).toBe("/custom/");
-    expect(normalizeArtifactBase("artifacts/live-security-ui")).toBe("/artifacts/live-security-ui/");
+    expect(normalizeArtifactBase("artifacts/live-security-ui")).toBe("artifacts/live-security-ui/");
     expect(normalizeArtifactBase("https://example.test/artifacts")).toBe("/__splunkready_artifacts/");
     expect(normalizeArtifactBase("//example.test/artifacts")).toBe("/__splunkready_artifacts/");
     expect(normalizeArtifactBase("data:application/json,{}")).toBe("/__splunkready_artifacts/");
@@ -1010,7 +1056,7 @@ describe("Vite UI artifact app", () => {
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/mcp-transcript");
     expect(artifactUrl("/custom", "receipt-after-001.json")).toBe("/custom/receipt-after-001.json");
     expect(artifactUrl("artifacts/live-security-ui", "receipt-after-001.json")).toBe(
-      "/artifacts/live-security-ui/receipt-after-001.json"
+      "artifacts/live-security-ui/receipt-after-001.json"
     );
     expect(artifactBaseFromLocation({ search: "?artifacts=https%3A%2F%2Fexample.test%2Fproof" })).toBe(
       "/__splunkready_artifacts/"
