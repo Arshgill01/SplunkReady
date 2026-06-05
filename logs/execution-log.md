@@ -9474,6 +9474,43 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 21:36 - Move 52 GitHub Action Diagnostics Output
+
+Scope:
+- Carried Move 51 compiler diagnostics into the GitHub Action interface.
+- Added a `diagnostics-path` composite action output and GitHub job summary row.
+- Kept action modes credential-free and unchanged: `judge-proof`,
+  `mcp-transcript`, and `external-trace`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `action.yml`
+- `src/ci/github-action.ts`
+- `tests/ci/github-action.test.ts`
+- `README.md`
+- `moves/README.md`
+- `moves/moves52.md`
+- `logs/competitive-audit-2026-06-05.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- `judge-proof` action outputs now point `diagnostics-path` at
+  `suite-proof/compiler-diagnostics.json`.
+- `mcp-transcript` and `external-trace` action outputs point
+  `diagnostics-path` at `readiness-profile.json`.
+- The GitHub step summary now renders the diagnostics path alongside status,
+  proof directory, receipt, and summary.
+- README and tests now document and verify the new output.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 21:27 - Move 51 Suite Compiler Diagnostics
 
 Scope:

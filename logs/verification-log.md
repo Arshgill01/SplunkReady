@@ -7542,6 +7542,26 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 52 GitHub Action Diagnostics Output
+
+Commands:
+
+- `npm test -- tests/ci/github-action.test.ts`
+- `output_file=$(mktemp /tmp/splunkready-action-output-XXXXXX.txt); summary_file=$(mktemp /tmp/splunkready-action-summary-XXXXXX.md); proof_dir=$(mktemp -d /tmp/splunkready-action-diag-XXXXXX); npm run build >/tmp/splunkready-action-diag-build.log && GITHUB_ACTION_PATH="$PWD" GITHUB_WORKSPACE="$PWD" GITHUB_OUTPUT="$output_file" GITHUB_STEP_SUMMARY="$summary_file" INPUT_MODE=judge-proof INPUT_OUT_DIR="$proof_dir" node dist/src/ci/github-action.js >/tmp/splunkready-action-diag-run.log && printf '%s\n' '--- output ---' && cat "$output_file" && printf '%s\n' '--- summary ---' && cat "$summary_file"`
+- `output_file=$(mktemp /tmp/splunkready-action-output-XXXXXX); summary_file=$(mktemp /tmp/splunkready-action-summary-XXXXXX); proof_dir=$(mktemp -d /tmp/splunkready-action-diag-XXXXXX); npm run build >/tmp/splunkready-action-diag-build.log && GITHUB_ACTION_PATH="$PWD" GITHUB_WORKSPACE="$PWD" GITHUB_OUTPUT="$output_file" GITHUB_STEP_SUMMARY="$summary_file" INPUT_MODE=judge-proof INPUT_OUT_DIR="$proof_dir" node dist/src/ci/github-action.js >/tmp/splunkready-action-diag-run.log && printf '%s\n' '--- output ---' && cat "$output_file" && printf '%s\n' '--- summary ---' && cat "$summary_file"`
+- `npm run check`
+
+Result:
+
+- PASS for focused GitHub Action tests: 1 test file, 6 tests.
+- First action-like smoke partially verified `GITHUB_OUTPUT`, but failed because the `mktemp` suffix template was not portable and left `GITHUB_STEP_SUMMARY` empty.
+- PASS for corrected action-like judge-proof smoke: output included `out-dir`, `receipt-path`, `summary-path`, `diagnostics-path`; diagnostics path pointed to `suite-proof/compiler-diagnostics.json`; step summary rendered Diagnostics row.
+- PASS for full `npm run check`: scaffold, runtime contracts, build, ui build, 46 files / 314 tests, secret env audit, reviewer audit, submission copy audit, included `git diff --check`.
+
+Notes:
+
+- Playwright was not run because no UI source changed.
+
 ## 2026-06-05 - Move 51 Suite Compiler Diagnostics
 
 Commands:

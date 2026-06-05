@@ -156,3 +156,6 @@ Move 51 addresses one concrete R014 gap: `suite-proof` now emits
 `compiler-diagnostics.json` / `.md`, a deterministic report that maps active
 rule bindings to before/after violation counts, resolved rules, trace refs,
 evidence refs, deployment signals, and the advisory-only LLM boundary.
+
+Move 52 carries that proof surface into CI by exposing `diagnostics-path` from
+the composite GitHub Action and rendering it in the GitHub job summary.

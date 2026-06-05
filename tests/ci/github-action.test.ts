@@ -34,7 +34,8 @@ describe("GitHub Action runner", () => {
       outputs: {
         outDir: `${workspace}/artifacts/splunkready-gate`,
         receiptPath: `${workspace}/artifacts/splunkready-gate/suite-proof/receipt-after-001.json`,
-        summaryPath: `${workspace}/artifacts/splunkready-gate/judge-proof-summary.json`
+        summaryPath: `${workspace}/artifacts/splunkready-gate/judge-proof-summary.json`,
+        diagnosticsPath: `${workspace}/artifacts/splunkready-gate/suite-proof/compiler-diagnostics.json`
       }
     });
     expect(plan.commands).toEqual([
@@ -92,7 +93,8 @@ describe("GitHub Action runner", () => {
     ]);
     expect(plan.outputs).toMatchObject({
       receiptPath: `${workspace}/artifacts/mcp-gate/receipt-external-001.json`,
-      summaryPath: `${workspace}/artifacts/mcp-gate/mcp-transcript-certification.json`
+      summaryPath: `${workspace}/artifacts/mcp-gate/mcp-transcript-certification.json`,
+      diagnosticsPath: `${workspace}/artifacts/mcp-gate/readiness-profile.json`
     });
   });
 
@@ -120,7 +122,8 @@ describe("GitHub Action runner", () => {
     expect(plan.outputs).toMatchObject({
       outDir: "/var/tmp/splunkready-proof",
       receiptPath: "/var/tmp/splunkready-proof/receipt-external-001.json",
-      summaryPath: "/var/tmp/splunkready-proof/proof-audit.json"
+      summaryPath: "/var/tmp/splunkready-proof/proof-audit.json",
+      diagnosticsPath: "/var/tmp/splunkready-proof/readiness-profile.json"
     });
   });
 
@@ -149,6 +152,8 @@ describe("GitHub Action runner", () => {
     const metadata = await readFile("action.yml", "utf8");
 
     expect(metadata).toContain("using: composite");
+    expect(metadata).toContain("diagnostics-path:");
+    expect(metadata).toContain("steps.splunkready-gate.outputs.diagnostics-path");
     expect(metadata).toContain("working-directory: ${{ github.action_path }}");
     expect(metadata).toContain("node dist/src/ci/github-action.js");
     expect(metadata).toContain("INPUT_MODE: ${{ inputs.mode }}");
@@ -176,6 +181,7 @@ describe("GitHub Action runner", () => {
     expect(summary).toContain("| Status | PASS |");
     expect(summary).toContain(`| Proof directory | \`${workspace}/artifacts/mcp-gate\` |`);
     expect(summary).toContain(`| Receipt | \`${workspace}/artifacts/mcp-gate/receipt-external-001.json\` |`);
+    expect(summary).toContain(`| Diagnostics | \`${workspace}/artifacts/mcp-gate/readiness-profile.json\` |`);
     expect(summary).toContain("Deterministic SplunkReady checks decide pass/fail");
     expect(summary).toContain("hosted-model output is advisory only");
   });

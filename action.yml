@@ -43,6 +43,9 @@ outputs:
   summary-path:
     description: "Primary proof summary JSON path for the selected gate."
     value: ${{ steps.splunkready-gate.outputs.summary-path }}
+  diagnostics-path:
+    description: "Primary compiler diagnostics or readiness profile JSON path for the selected gate."
+    value: ${{ steps.splunkready-gate.outputs.diagnostics-path }}
 
 runs:
   using: composite

@@ -61,6 +61,8 @@ LLM-judging-LLM. Instead:
 - Move 51: suite compiler diagnostics that turn deterministic rules into a
   visible activation/resolution report backed by readiness profiles, receipts,
   traces, and violation files.
+- Move 52: GitHub Action `diagnostics-path` output and job-summary row so CI
+  users can find the compiler evidence without knowing the artifact tree.
 
 ## Remaining Considerations
 

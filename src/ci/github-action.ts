@@ -33,6 +33,7 @@ export interface GitHubActionPlan {
     outDir: string;
     receiptPath: string;
     summaryPath: string;
+    diagnosticsPath: string;
   };
 }
 
@@ -196,7 +197,11 @@ export const buildGitHubActionPlan = (
           ? join(outDir, "judge-proof-summary.json")
           : inputs.mode === "mcp-transcript"
             ? join(outDir, "mcp-transcript-certification.json")
-            : join(outDir, "proof-audit.json")
+            : join(outDir, "proof-audit.json"),
+      diagnosticsPath:
+        inputs.mode === "judge-proof"
+          ? join(outDir, "suite-proof", "compiler-diagnostics.json")
+          : join(outDir, "readiness-profile.json")
     }
   };
 };
@@ -229,7 +234,7 @@ const writeOutputs = async (outputs: GitHubActionPlan["outputs"], outputPath: st
 
   await appendFile(
     outputPath,
-    `out-dir=${outputs.outDir}\nreceipt-path=${outputs.receiptPath}\nsummary-path=${outputs.summaryPath}\n`,
+    `out-dir=${outputs.outDir}\nreceipt-path=${outputs.receiptPath}\nsummary-path=${outputs.summaryPath}\ndiagnostics-path=${outputs.diagnosticsPath}\n`,
     "utf8"
   );
 };
@@ -259,6 +264,7 @@ export const renderGitHubStepSummary = (plan: GitHubActionPlan, status: string |
 | Proof directory | \`${markdownValue(plan.outputs.outDir)}\` |
 | Receipt | \`${markdownValue(plan.outputs.receiptPath)}\` |
 | Summary | \`${markdownValue(plan.outputs.summaryPath)}\` |
+| Diagnostics | \`${markdownValue(plan.outputs.diagnosticsPath)}\` |
 
 Deterministic SplunkReady checks decide pass/fail. LLM or hosted-model output is advisory only.
 `;

@@ -176,9 +176,11 @@ To use the same transcript gate as a GitHub Action step:
 The repository-root `action.yml` is a composite action. It installs and builds
 SplunkReady from the action checkout, writes proof artifacts into the caller
 workspace, and exposes `out-dir`, `receipt-path`, and `summary-path` outputs.
-It also writes a short GitHub job summary with the selected mode, status, proof
-directory, receipt path, and summary path. Pin it to a tag or commit for
-production CI.
+It also exposes `diagnostics-path`: `compiler-diagnostics.json` for
+`judge-proof`, or `readiness-profile.json` for transcript/trace gates. The
+action writes a short GitHub job summary with the selected mode, status, proof
+directory, receipt path, summary path, and diagnostics path. Pin it to a tag or
+commit for production CI.
 
 To exercise the same certification path through the stdio MCP server itself:
 
