@@ -8332,3 +8332,39 @@ What changed:
 
 Open risks:
 - The normal offline gate covers browser-facing server behavior through Vite middleware and HTTP fetch. Full Playwright automation remains an external QA workflow rather than a committed test dependency.
+
+## 2026-06-05 - Move 17 One-Command Verification Gate
+
+Context:
+- Implemented Move 17 locally without subagents.
+- Kept the default gate deterministic, fixture-backed, and credential-free.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Left live Splunk and hosted-model checks as opt-in workflows, not default verification.
+
+Files touched:
+- `package.json`
+- `scripts/verify-runtime-contracts.mjs`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `npm run verify:runtime-contracts`.
+- Expanded `npm run check` into the single canonical Move 17 gate:
+  - scaffold verification;
+  - runtime contract verification;
+  - TypeScript build;
+  - production UI build;
+  - full Vitest suite;
+  - reviewer inbox audit;
+  - submission copy audit;
+  - `git diff --check`.
+- Added a runtime contract verifier that fails when:
+  - schema, catalog, severity registry, and implemented grader rule IDs diverge;
+  - duplicate grader rule IDs are implemented;
+  - CLI rule factory registration misses a grader rule module;
+  - fixture read-only tools drift from the schema or look mutating;
+  - fixture indexes, knowledge dependencies, mission rule IDs, mission tools, saved-search refs, evidence provenance, or suite mission paths break.
+- Kept the gate sequential to avoid shared output directory races between builds and tests.
+
+Open risks:
+- The runtime verifier intentionally uses repository structure and source-registry checks rather than importing the full TypeScript application. This keeps it lightweight, but future large refactors may require updating its source patterns.

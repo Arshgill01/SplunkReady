@@ -6788,3 +6788,46 @@ Result:
 Open risks:
 
 - The committed offline gate uses real HTTP and Vite middleware coverage, not a committed Playwright dependency. Playwright remains available for manual UI QA through the local skill wrapper.
+
+## 2026-06-05 - Move 17 One-Command Verification Gate
+
+Commands:
+
+- `npm run verify:runtime-contracts`
+- `npm run check`
+- `npm run check`
+- `npm run build`
+- `npm run ui:build`
+- `git diff --check`
+
+Result:
+
+- PASS for runtime contract verification:
+  - 19 canonical grader rules checked across schema, catalog, severity registry, implementations, and CLI rule factory registration;
+  - 4 fixture missions checked;
+  - 20 fixture evidence refs checked;
+  - fixture read-only tools, indexes, knowledge dependencies, mission provenance, saved-search refs, and suite mission paths checked.
+- PASS for first canonical gate run:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 285 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - `git diff --check` passed.
+- PASS for second consecutive canonical gate run with the same command shape:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 285 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - `git diff --check` passed.
+
+Open risks:
+
+- Live Splunk and hosted-model verification remains intentionally opt-in and was not run as part of the default gate.
