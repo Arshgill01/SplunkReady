@@ -10558,8 +10558,8 @@ Open blockers:
 
 Scope:
 - Cleaned up the remaining hosted GitHub CI warning without using subagents.
-- Opted JavaScript actions into the Node 24 runtime via
-  `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`.
+- Upgraded repository CI to `actions/checkout@v5` and `actions/setup-node@v5`,
+  which target the Node 24 JavaScript Actions runtime.
 - Kept the project runtime on Node 22.
 - Preserved the canonical `npm run check` gate and credential-free CI posture.
 - Did not read, source, print, or commit `.splunkready*` or `.env*` secret
@@ -10576,9 +10576,9 @@ Files changed:
 - `logs/risk-register.md`
 
 What changed:
-- Repository CI now sets `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`.
-- The repository CI workflow regression now requires the Node 24 actions
-  runtime opt-in.
+- Repository CI now uses `actions/checkout@v5` and `actions/setup-node@v5`.
+- The repository CI workflow regression now requires those Node-24-native
+  action versions and rejects the force-env fallback.
 
 Open blockers:
 - Hosted demo, refreshed submission evidence, and final reviewer-equivalent

@@ -275,7 +275,8 @@ explicit external release action. Registry preflight on 2026-06-05 returned
 404 for both `splunkready` and `@splunkready/cli`, indicating neither package
 name was claimed at check time.
 
-Move 73 reduces developer-experience noise in hosted CI by opting the
-repository workflow's JavaScript actions into the Node 24 runtime while keeping
-the project runtime on Node 22. The goal is a clean green GitHub check without
-the Node 20 deprecation annotation.
+Move 73 reduces developer-experience noise in hosted CI by upgrading the
+repository workflow to `actions/checkout@v5` and `actions/setup-node@v5`,
+which target the Node 24 JavaScript Actions runtime while keeping the project
+runtime on Node 22. The goal is a clean green GitHub check without the Node 20
+deprecation annotation.

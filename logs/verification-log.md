@@ -9446,11 +9446,16 @@ Open blockers:
 
 Commands:
 
+- `git ls-remote --tags https://github.com/actions/checkout.git 'refs/tags/v5*'`
+- `git ls-remote --tags https://github.com/actions/setup-node.git 'refs/tags/v5*'`
 - `npx vitest run tests/examples/repository-ci-workflow.test.ts`
 - `npm run check`
 
 Result:
 
+- PASS for GitHub action tag preflight:
+  - `actions/checkout` has `v5`, `v5.0.0`, and `v5.0.1` tags;
+  - `actions/setup-node` has `v5` and `v5.0.0` tags.
 - PASS for focused repository CI workflow regression:
   - 1 test file passed;
   - 1 test passed.
@@ -9470,7 +9475,8 @@ Result:
 
 Notes:
 
-- The workflow now sets `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`.
+- The workflow now uses `actions/checkout@v5` and `actions/setup-node@v5`.
+- The workflow rejects the `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` fallback.
 - The project runtime remains `node-version: 22`.
 - Playwright was not run because this move did not change UI source or
   behavior.

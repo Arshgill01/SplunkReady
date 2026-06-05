@@ -95,7 +95,7 @@ commands, or filesystem paths.
 | P0 | [70](moves70.md) MCP boundary proof evidence | 0.5d | Makes `mcp-proof` explicitly prove captured Splunk MCP behavior, not just the local SplunkReady MCP server surface. |
 | P0 | [71](moves71.md) Judge proof LLM evidence slot | 0.5d | Makes model-produced trace evidence visible in the judge bundle through an explicit opt-in while keeping deterministic grading authoritative. |
 | P0 | [72](moves72.md) Public package publish readiness | 0.5d | Removes the private-package blocker and adds a dry-run package audit without publishing to the registry. |
-| P0 | [73](moves73.md) CI Node 24 actions runtime | 0.5d | Removes the hosted GitHub Actions Node 20 deprecation warning while keeping the project runtime on Node 22. |
+| P0 | [73](moves73.md) CI Node 24 actions runtime | 0.5d | Uses Node-24-native GitHub Actions while keeping the project runtime on Node 22. |
 
 ## Non-Negotiable Boundaries
 

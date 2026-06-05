@@ -9,11 +9,11 @@ is still friction.
 
 ## Scope
 
-- Opt the repository CI workflow into the Node 24 JavaScript Actions runtime
-  using `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true`.
+- Upgrade repository CI to `actions/checkout@v5` and `actions/setup-node@v5`,
+  which target the Node 24 JavaScript Actions runtime.
 - Keep the project runtime on Node 22 through `actions/setup-node`.
-- Extend the repository CI workflow regression to require the Node 24 action
-  runtime opt-in.
+- Extend the repository CI workflow regression to require the Node-24-native
+  action versions and reject the force-env fallback.
 
 ## Boundaries
 
@@ -25,8 +25,8 @@ is still friction.
 
 ## Acceptance
 
-- `.github/workflows/ci.yml` sets
-  `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`.
+- `.github/workflows/ci.yml` uses `actions/checkout@v5` and
+  `actions/setup-node@v5`.
 - Focused repository CI workflow regression passes.
 - Full repository checks pass.
 - Hosted GitHub CI passes without the Node 20 deprecation annotation.
