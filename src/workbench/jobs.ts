@@ -181,11 +181,15 @@ export class WorkbenchJobRunner {
   }
 
   listJobs(): WorkbenchJobSnapshot[] {
-    return [...this.jobs.values()].sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+    return [...this.jobs.values()]
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+      .map((job) => this.snapshot(job));
   }
 
   getJob(id: string): WorkbenchJobSnapshot | undefined {
-    return this.jobs.get(id);
+    const job = this.jobs.get(id);
+
+    return job ? this.snapshot(job) : undefined;
   }
 
   async createJob(workflow: WorkbenchWorkflow, payload?: WorkbenchWorkflowPayload): Promise<WorkbenchJobSnapshot> {

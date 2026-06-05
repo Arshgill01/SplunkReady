@@ -8915,6 +8915,36 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 38 Isolated Workbench Job Snapshots
+
+Context:
+- Continued development hardening after Move 37.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- User explicitly deferred video/submission work; this move stayed on backend
+  maintainability and state encapsulation.
+- Found that `WorkbenchJobRunner.createJob()` returned a snapshot, but
+  `listJobs()` and `getJob()` returned runner-owned mutable job objects.
+
+Files touched:
+- `src/workbench/jobs.ts`
+- `tests/workbench/workbench.test.ts`
+- `moves/README.md`
+- `moves/moves38.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Made `listJobs()` return cloned job snapshots.
+- Made `getJob()` return a cloned job snapshot when the job exists.
+- Preserved the existing internal async job mutation path.
+- Added regression coverage proving caller-side mutations to returned job
+  state, artifact arrays, and event arrays do not corrupt the stored runner job.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 37 Workbench Cross-Site API Guard
 
 Context:

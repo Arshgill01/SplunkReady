@@ -218,6 +218,46 @@ describe("workbench backend", () => {
     );
   });
 
+  it("returns isolated job snapshots from public read APIs", async () => {
+    const config = await testConfig();
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({
+      config,
+      artifactStore: store,
+      workflows: {
+        "fixture-certification": async ({ outDir }) => {
+          await writeFile(join(outDir, "receipt-after-001.json"), "{}\n", "utf8");
+
+          return { artifacts: [join(outDir, "receipt-after-001.json")] };
+        }
+      }
+    });
+
+    const completed = await waitForJob(runner, (await runner.createJob("fixture-certification")).id);
+    const listed = runner.listJobs()[0];
+    const fetched = runner.getJob(completed.id);
+
+    expect(listed).toBeDefined();
+    expect(fetched).toBeDefined();
+
+    listed!.state = "failed";
+    listed!.artifacts.push("corrupted.json");
+    listed!.events[0]!.message = "corrupted";
+    fetched!.state = "cancelled";
+    fetched!.events.push({ id: 999, type: "error", message: "corrupted", at: new Date().toISOString() });
+
+    const reloaded = runner.getJob(completed.id);
+
+    expect(reloaded).toMatchObject({
+      state: "succeeded",
+      artifacts: ["receipt-after-001.json"]
+    });
+    expect(reloaded?.events.map((event) => event.message)).toEqual(
+      expect.arrayContaining(["Queued fixture certification.", "fixture certification completed."])
+    );
+    expect(reloaded?.events.map((event) => event.message)).not.toContain("corrupted");
+  });
+
   it("stores redacted failed-job diagnostics without corrupting earlier runs", async () => {
     const config = await testConfig();
     const store = new WorkbenchArtifactStore(config.artifactRoot);
