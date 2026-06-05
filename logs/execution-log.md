@@ -11638,8 +11638,6 @@ Files changed:
 - `logs/risk-register.md`
 
 Open blockers:
-- The deployed GitHub Pages site still needs to be refreshed from this commit
-  after push before claiming the public URL has the Move 97 request hygiene.
 - Public npm publication remains blocked by missing npm auth.
 - Live/public MCP-client screencast evidence remains a separate award-positioning
   gap.

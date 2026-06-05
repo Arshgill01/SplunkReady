@@ -9616,6 +9616,12 @@ Commands:
 - `npm run check`
 - `npm run verify:scaffold`
 - `git diff --check`
+- `gh run watch 27040843500 --exit-status`
+- `gh workflow run "Public Demo Pages" --ref splunkready-build`
+- `gh run watch 27040892454 --exit-status`
+- `bash "$PWCLI" open "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof&v=2a157df#mcp-proof" && bash "$PWCLI" snapshot && bash "$PWCLI" console error && bash "$PWCLI" requests`
+- `bash "$PWCLI" reload && sleep 1 && bash "$PWCLI" snapshot && bash "$PWCLI" eval "() => document.body.innerText.slice(0, 1200)"`
+- `bash "$PWCLI" console error && bash "$PWCLI" requests && bash "$PWCLI" screenshot --filename output/playwright/move97-github-pages-mcp-proof.png --full-page`
 
 Result:
 
@@ -9665,6 +9671,30 @@ Result:
 - PASS for post-log scaffold and diff verification:
   - `npm run verify:scaffold` passed with 85 waves and 2009 project files;
   - `git diff --check` completed with no output.
+- PASS for hosted CI:
+  - run `27040843500` passed for commit `2a157df` in 57s.
+- PASS for final GitHub Pages deployment:
+  - run `27040892454` succeeded for commit `2a157df`;
+  - build job passed in 14s;
+  - deploy job passed in 10s;
+  - the run still reports the GitHub-owned Pages Node 20 deprecation
+    annotation for `actions/configure-pages@v5` and nested
+    `actions/upload-artifact`.
+- PASS for final deployed Playwright verification:
+  - opened
+    `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof&v=2a157df#mcp-proof`;
+  - the first snapshot command returned an empty accessibility tree, then a
+    reload plus second snapshot rendered the MCP proof route normally;
+  - rendered content included `Status PASS`,
+    `splunk_get_knowledge_objects`, `splunk_run_saved_search`, saved-search
+    execution `yes`, evidence refs `evt-102`, `evt-118`, `evt-141`,
+    deterministic authority `yes`, mutation `no`, and MCP composition score
+    `100/100`;
+  - `console error` returned `Errors: 0`;
+  - proof-data network requests were limited to `public-demo-manifest.json`,
+    `artifacts/mcp-proof/artifact-manifest.json`, and
+    `artifacts/mcp-proof/mcp-proof-summary.json` after initial load and reload;
+  - screenshot saved to `output/playwright/move97-github-pages-mcp-proof.png`.
 
 Notes:
 
@@ -9674,8 +9704,6 @@ Notes:
 
 Open blockers:
 
-- Hosted CI and the manual Pages workflow still need to run after push before
-  the public GitHub Pages URL can be claimed for Move 97 behavior.
 - Public npm publication remains blocked until npm auth is configured.
 - Live/public MCP-client screencast evidence remains separate from this hosted
   static demo polish move.

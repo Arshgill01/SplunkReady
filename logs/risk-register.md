@@ -451,12 +451,12 @@ and MCP composition score. Residual hosted-demo polish risk remains because the
 static host logs expected 404s for optional artifact probes and unavailable
 local workbench `/api/*` endpoints.
 
-Move 97 closes the residual static-host request-noise risk locally by adding
+Move 97 closes the residual static-host request-noise risk by adding
 per-artifact manifests to the public demo export and making the browser detect
-`public-demo-manifest.json` before probing local workbench APIs. Playwright on a
-local static export rendered the MCP proof route with zero console errors and
-only three proof-data requests: `public-demo-manifest.json`,
-`artifacts/mcp-proof/artifact-manifest.json`, and
-`artifacts/mcp-proof/mcp-proof-summary.json`. The public GitHub Pages deployment
-must still be refreshed from the Move 97 commit before claiming the hosted URL
-has this request-hygiene behavior.
+`public-demo-manifest.json` before probing local workbench APIs. Playwright on
+both a local static export and the refreshed GitHub Pages deployment rendered
+the MCP proof route with zero console errors and only three proof-data requests:
+`public-demo-manifest.json`, `artifacts/mcp-proof/artifact-manifest.json`, and
+`artifacts/mcp-proof/mcp-proof-summary.json`. Remaining hosted-demo risk is
+workflow maintenance only: GitHub Pages actions still emit a Node 20 deprecation
+annotation, but the deployment succeeds.
