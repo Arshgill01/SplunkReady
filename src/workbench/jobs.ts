@@ -1,6 +1,12 @@
 import { relative } from "node:path";
 
 import { runFixtureCertificationWorkflow } from "../workflows/fixture-certification.js";
+import {
+  runLiveCandidatesWorkflow,
+  runLiveSecurityProofWorkflow,
+  runLiveSecurityReadinessWorkflow,
+  runLiveSmokeWorkflow
+} from "../workflows/live-actions.js";
 import { WorkbenchArtifactStore } from "./artifacts.js";
 import { redactUnknownError } from "./redaction.js";
 import type { WorkbenchConfig } from "./config.js";
@@ -16,6 +22,29 @@ export interface WorkbenchJobRunnerOptions {
 
 const now = (): string => new Date().toISOString();
 
+const liveWorkflows = new Set<WorkbenchWorkflow>([
+  "live-smoke",
+  "live-candidates",
+  "live-security-readiness",
+  "live-security-proof"
+]);
+
+const workflowLabel = (workflow: WorkbenchWorkflow): string => {
+  if (workflow === "fixture-certification") {
+    return "fixture certification";
+  }
+
+  if (workflow === "live-security-readiness") {
+    return "live security readiness";
+  }
+
+  if (workflow === "live-security-proof") {
+    return "live security proof";
+  }
+
+  return workflow.replaceAll("-", " ");
+};
+
 export class WorkbenchJobRunner {
   private readonly config: WorkbenchConfig;
   private readonly artifactStore: WorkbenchArtifactStore;
@@ -28,6 +57,10 @@ export class WorkbenchJobRunner {
     this.artifactStore = options.artifactStore;
     this.workflows = {
       "fixture-certification": async ({ outDir }) => runFixtureCertificationWorkflow({ outDir }),
+      "live-smoke": async ({ outDir }) => runLiveSmokeWorkflow({ outDir }),
+      "live-candidates": async ({ outDir }) => runLiveCandidatesWorkflow({ outDir }),
+      "live-security-readiness": async ({ outDir }) => runLiveSecurityReadinessWorkflow({ outDir }),
+      "live-security-proof": async ({ outDir }) => runLiveSecurityProofWorkflow({ outDir }),
       ...options.workflows
     };
   }
@@ -45,6 +78,10 @@ export class WorkbenchJobRunner {
 
     if (!handler) {
       throw new Error(`Unsupported workbench workflow ${workflow}.`);
+    }
+
+    if (liveWorkflows.has(workflow) && !this.config.liveAvailable) {
+      throw new Error(`Live mode unavailable. Missing server env: ${this.config.liveMissing.join(", ")}.`);
     }
 
     const activeJobs = this.listJobs().filter((job) => job.state === "queued" || job.state === "running");
@@ -66,7 +103,7 @@ export class WorkbenchJobRunner {
     };
 
     this.jobs.set(job.id, job);
-    this.addEvent(job, "phase", "Queued fixture certification.");
+    this.addEvent(job, "phase", `Queued ${workflowLabel(workflow)}.`);
     void this.runJob(job, handler, run.path);
 
     return this.snapshot(job);
@@ -75,7 +112,7 @@ export class WorkbenchJobRunner {
   private async runJob(job: WorkbenchJobSnapshot, handler: WorkbenchWorkflowHandler, outDir: string): Promise<void> {
     job.state = "running";
     job.startedAt = now();
-    this.addEvent(job, "phase", "Running Agent Readiness Compiler fixture certification.");
+    this.addEvent(job, "phase", `Running Agent Readiness Compiler ${workflowLabel(job.workflow)}.`);
 
     try {
       const result = await handler({ outDir });
@@ -86,7 +123,7 @@ export class WorkbenchJobRunner {
 
       job.state = "succeeded";
       job.completedAt = now();
-      this.addEvent(job, "complete", "Fixture certification completed.");
+      this.addEvent(job, "complete", `${workflowLabel(job.workflow)} completed.`);
     } catch (error) {
       job.state = "failed";
       job.completedAt = now();

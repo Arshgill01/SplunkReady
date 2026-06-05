@@ -9,6 +9,7 @@ export interface WorkbenchConfig {
   maxConcurrentJobs: number;
   maxRequestBytes: number;
   liveAvailable: boolean;
+  liveMissing: string[];
   saiaAvailable: boolean;
 }
 
@@ -22,10 +23,12 @@ export const createWorkbenchConfig = (
   env: NodeJS.ProcessEnv = process.env,
   cwd: string = process.cwd()
 ): WorkbenchConfig => {
-  const liveAvailable =
-    env["SPLUNKREADY_LIVE_ENABLED"] === "true" &&
-    Boolean(env["SPLUNKREADY_SPLUNK_MCP_URL"]) &&
-    Boolean(env["SPLUNKREADY_SPLUNK_MCP_TOKEN"]);
+  const liveMissing = [
+    env["SPLUNKREADY_LIVE_ENABLED"] === "true" ? undefined : "SPLUNKREADY_LIVE_ENABLED=true",
+    env["SPLUNKREADY_SPLUNK_MCP_URL"] ? undefined : "SPLUNKREADY_SPLUNK_MCP_URL",
+    env["SPLUNKREADY_SPLUNK_MCP_TOKEN"] ? undefined : "SPLUNKREADY_SPLUNK_MCP_TOKEN"
+  ].filter((value): value is string => Boolean(value));
+  const liveAvailable = liveMissing.length === 0;
 
   return {
     source: "splunkready-workbench",
@@ -36,6 +39,7 @@ export const createWorkbenchConfig = (
     maxConcurrentJobs: integerFromEnv(env["SPLUNKREADY_WORKBENCH_MAX_JOBS"], 1),
     maxRequestBytes: integerFromEnv(env["SPLUNKREADY_WORKBENCH_MAX_REQUEST_BYTES"], 4096),
     liveAvailable,
+    liveMissing,
     saiaAvailable: liveAvailable && env["SPLUNKREADY_SAIA_ENABLED"] === "true"
   };
 };
@@ -49,6 +53,10 @@ export const healthFromConfig = (config: WorkbenchConfig) => ({
     fixtureCertification: true,
     live: config.liveAvailable,
     saia: config.saiaAvailable
+  },
+  live: {
+    available: config.liveAvailable,
+    missing: config.liveMissing
   },
   limits: {
     maxConcurrentJobs: config.maxConcurrentJobs,

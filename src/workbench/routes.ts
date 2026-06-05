@@ -80,8 +80,16 @@ const localhostOriginAllowed = (request: IncomingMessage): boolean => {
   }
 };
 
+const workflows = new Set<WorkbenchWorkflow>([
+  "fixture-certification",
+  "live-smoke",
+  "live-candidates",
+  "live-security-readiness",
+  "live-security-proof"
+]);
+
 const parseWorkflow = (value: string): WorkbenchWorkflow | undefined =>
-  value === "fixture-certification" ? value : undefined;
+  workflows.has(value as WorkbenchWorkflow) ? (value as WorkbenchWorkflow) : undefined;
 
 export const createWorkbenchApiHandler =
   (context: WorkbenchRouteContext) =>

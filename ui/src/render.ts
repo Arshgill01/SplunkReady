@@ -34,8 +34,12 @@ export interface RenderOptions {
 export interface WorkbenchRenderState {
   available: boolean;
   healthStatus?: string;
+  liveAvailable?: boolean;
+  liveMissing?: string[];
+  saiaAvailable?: boolean;
   job?: {
     id: string;
+    workflow?: string;
     state: string;
     runId: string;
     artifactBase: string;
@@ -711,6 +715,68 @@ const renderWorkbenchRunPanel = (workbench: WorkbenchRenderState | undefined): s
   </section>`;
 };
 
+const liveActionRows = [
+  ["live-smoke", "Run live smoke", "Compile read-only MCP inventory and readiness profile."],
+  ["live-candidates", "Scan saved searches", "Run bounded saved-search candidates from the compiled live contract."],
+  ["live-security-readiness", "Check security readiness", "Verify flagship saved-search evidence without mutating Splunk."],
+  ["live-security-proof", "Run security proof", "Execute the strict LLM fail-to-pass proof only when readiness is green."]
+] as const;
+
+const renderLiveActionPanel = (workbench: WorkbenchRenderState | undefined): string => {
+  const job = workbench?.job;
+  const running = job?.state === "queued" || job?.state === "running";
+  const liveAvailable = workbench?.liveAvailable === true;
+  const disabled = !workbench?.available || !liveAvailable || running;
+  const missing = workbench?.liveMissing ?? [];
+  const status = !workbench?.available
+    ? "workbench backend not connected"
+    : liveAvailable
+      ? "available from server env"
+      : `unavailable: ${missing.join(" / ") || "live env not configured"}`;
+
+  return `<section class="panel live-action-panel">
+    <h2>Live workbench actions</h2>
+    ${renderFactTable([
+      ["Backend", workbench?.available ? (workbench.healthStatus ?? "available") : "not connected"],
+      ["Live mode", status],
+      ["SAIA", workbench?.saiaAvailable ? "available" : "not available"],
+      ["Browser credentials", "not accepted"],
+      ["Mutation", "false"]
+    ])}
+    <div class="live-action-list">
+      ${liveActionRows
+        .map(
+          ([workflow, label, detail]) => `<button class="replay-button live-action-button" type="button" data-run-workflow="${workflow}" ${disabled ? "disabled" : ""}>
+            <strong>${value(label)}</strong>
+            <span>${value(detail)}</span>
+          </button>`
+        )
+        .join("")}
+    </div>
+    ${
+      job
+        ? `<div class="job-status">
+            ${renderFactTable([
+              ["Job", `${job.id} / ${job.workflow ?? "unknown"} / ${job.state}`],
+              ["Run", job.runId],
+              ["Artifacts", job.artifactBase || "not allocated"],
+              ["Error", job.error ?? "none"]
+            ])}
+            <ol class="job-events" aria-label="Live workbench job events">
+              ${job.events
+                .map((event) => `<li data-job-event="${value(event.type)}"><strong>${value(event.type)}</strong><span>${value(event.message)}</span></li>`)
+                .join("")}
+            </ol>
+          </div>`
+        : `<p class="empty">${value(
+            liveAvailable
+              ? "Run a server-owned live action to produce fresh live artifacts."
+              : `Live mode unavailable. Missing server env: ${missing.join(", ") || "SPLUNKREADY_LIVE_ENABLED=true, SPLUNKREADY_SPLUNK_MCP_URL, SPLUNKREADY_SPLUNK_MCP_TOKEN"}.`
+          )}</p>`
+    }
+  </section>`;
+};
+
 const renderReplay = (bundle: UiArtifactBundle, options: RenderOptions): string => {
   const before = bundle.beforeReceipt;
   const after = bundle.afterReceipt;
@@ -1023,7 +1089,7 @@ const renderTraceTimeline = (bundle: UiArtifactBundle): string => {
   </main>`;
 };
 
-const renderLiveConnect = (bundle: UiArtifactBundle): string => {
+const renderLiveConnect = (bundle: UiArtifactBundle, options: RenderOptions): string => {
   const contract = bundle.liveSmokeContract ?? bundle.contract;
   const liveLoaded = Boolean(bundle.liveSmokeContract || contract?.mode === "live");
 
@@ -1033,6 +1099,7 @@ const renderLiveConnect = (bundle: UiArtifactBundle): string => {
         <h1>Live connect</h1>
       </div>
       <div class="receipt-ledger">
+        ${renderLiveActionPanel(options.workbench)}
         <section class="panel">
           <h2>MCP status</h2>
           ${renderFactTable([
@@ -1152,7 +1219,7 @@ const renderActiveView = (bundle: UiArtifactBundle, activeView: ViewId, options:
   }
 
   if (activeView === "live-connect") {
-    return renderLiveConnect(bundle);
+    return renderLiveConnect(bundle, options);
   }
 
     return renderReplay(bundle, options);

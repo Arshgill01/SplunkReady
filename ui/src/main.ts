@@ -23,6 +23,18 @@ let artifactOptions: ArtifactOption[] = defaultArtifactOptions;
 let workbench: WorkbenchRenderState = { available: false, healthStatus: "not connected" };
 const disabledRuleIds = new Set<string>();
 
+interface WorkbenchHealthResponse {
+  capabilities?: {
+    fixtureCertification?: boolean;
+    live?: boolean;
+    saia?: boolean;
+  };
+  live?: {
+    available?: boolean;
+    missing?: string[];
+  };
+}
+
 const activeViewFromHash = (): ViewId => normalizeView(window.location.hash.replace(/^#/, ""));
 
 const render = (): void => {
@@ -69,7 +81,16 @@ const loadWorkbenchHealth = async (): Promise<void> => {
       throw new Error(`${response.status} ${response.statusText}`);
     }
 
-    workbench = { ...workbench, available: true, healthStatus: "available" };
+    const health = (await response.json()) as WorkbenchHealthResponse;
+
+    workbench = {
+      ...workbench,
+      available: true,
+      healthStatus: "available",
+      liveAvailable: health.live?.available ?? health.capabilities?.live ?? false,
+      liveMissing: health.live?.missing ?? [],
+      saiaAvailable: health.capabilities?.saia ?? false
+    };
   } catch {
     workbench = { available: false, healthStatus: "not connected" };
   }
@@ -98,7 +119,7 @@ const fetchJob = async (jobId: string): Promise<NonNullable<WorkbenchRenderState
   return ((await response.json()) as WorkbenchJobResponse).job;
 };
 
-const pollFixtureJob = async (jobId: string): Promise<void> => {
+const pollWorkbenchJob = async (jobId: string, successView: ViewId): Promise<void> => {
   for (let attempt = 0; attempt < 240; attempt += 1) {
     const job = await fetchJob(jobId);
 
@@ -109,7 +130,7 @@ const pollFixtureJob = async (jobId: string): Promise<void> => {
       const nextUrl = new URL(window.location.href);
 
       nextUrl.searchParams.set("artifacts", job.artifactBase);
-      nextUrl.hash = "#certification-replay";
+      nextUrl.hash = `#${successView}`;
       window.history.pushState(null, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
       bundle = await loadUiArtifactBundle(job.artifactBase);
       artifactOptions = [{ label: `Workbench ${job.runId}`, path: job.artifactBase }, ...artifactOptions];
@@ -129,36 +150,39 @@ const pollFixtureJob = async (jobId: string): Promise<void> => {
     job: {
       ...(workbench.job ?? {
         id: jobId,
+        workflow: "unknown",
         state: "failed",
         runId: "unknown",
         artifactBase: "",
         events: []
       }),
       state: "failed",
-      error: "Timed out waiting for fixture certification job."
+      error: `Timed out waiting for workbench job ${jobId}.`
     }
   };
   render();
 };
 
-const runFixtureCertification = async (): Promise<void> => {
+const runWorkbenchWorkflow = async (workflow: string, successView: ViewId): Promise<void> => {
   try {
-    const response = await fetch("/api/jobs/fixture-certification", { method: "POST" });
+    const response = await fetch(`/api/jobs/${encodeURIComponent(workflow)}`, { method: "POST" });
 
     if (!response.ok) {
-      throw new Error(`Unable to start fixture certification: ${response.status} ${response.statusText}`);
+      const failure = await response.json().catch(() => undefined) as { error?: { message?: string } } | undefined;
+      throw new Error(failure?.error?.message ?? `Unable to start ${workflow}: ${response.status} ${response.statusText}`);
     }
 
     const { job } = (await response.json()) as WorkbenchJobResponse;
 
     workbench = { ...workbench, available: true, job };
     render();
-    await pollFixtureJob(job.id);
+    await pollWorkbenchJob(job.id, successView);
   } catch (error) {
     workbench = {
       ...workbench,
       job: {
         id: "job-start-failed",
+        workflow,
         state: "failed",
         runId: "not allocated",
         artifactBase: "",
@@ -168,6 +192,10 @@ const runFixtureCertification = async (): Promise<void> => {
     };
     render();
   }
+};
+
+const runFixtureCertification = async (): Promise<void> => {
+  await runWorkbenchWorkflow("fixture-certification", "certification-replay");
 };
 
 const bindInteractions = (): void => {
@@ -193,6 +221,18 @@ const bindInteractions = (): void => {
     markReplayRunning();
     void runFixtureCertification();
   });
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-run-workflow]")) {
+    button.addEventListener("click", () => {
+      const workflow = button.dataset.runWorkflow;
+
+      if (!workflow) {
+        return;
+      }
+
+      void runWorkbenchWorkflow(workflow, workflow.startsWith("live-") ? "live-connect" : "certification-replay");
+    });
+  }
 
   for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-proof-artifact]")) {
     link.addEventListener("click", (event) => {

@@ -50,6 +50,34 @@ The smoke path writes:
 
 The metadata request is bounded to `earliest=-15m` and `latest=now`. The smoke path does not call `splunk_run_query`, does not run saved searches, and never writes or mutates Splunk configuration.
 
+## Local Workbench Live Actions
+
+The local workbench reads live capability from the backend process environment. The browser never sends a Splunk host,
+MCP token, app, SPL query, or filesystem output path.
+
+Start the workbench from a shell that owns the live env vars:
+
+```bash
+export SPLUNKREADY_LIVE_ENABLED=true
+export SPLUNKREADY_SPLUNK_MCP_URL='https://<MCP_SERVER_ENDPOINT>'
+export SPLUNKREADY_SPLUNK_MCP_TOKEN='<YOUR_ENCRYPTED_MCP_TOKEN>'
+npm run workbench:dev
+```
+
+When those values are absent, `/api/health` reports the missing env variable names and the Live connect screen disables
+live actions. It reports names only, not values.
+
+The workbench allowlists these server-owned live jobs:
+
+- `live-smoke`: fixed inventory-only smoke check.
+- `live-candidates`: compile a live contract, then run bounded saved-search candidates from that contract.
+- `live-security-readiness`: check the exact flagship saved-search readiness path.
+- `live-security-proof`: run the strict flagship proof only from server env and existing mission contracts.
+
+All live workbench jobs write artifacts under the managed workbench artifact root and report `mutation: false`. The
+browser can start only these named jobs; it cannot submit arbitrary CLI commands, SPL, credentials, or Splunk write
+operations.
+
 ## Operator Checklist
 
 Before running live smoke against a real MCP endpoint:

@@ -7619,3 +7619,60 @@ Result:
 - Production build passed.
 - Full offline check passed with 41 test files and 260 tests.
 - `git diff --check` passed.
+
+## 2026-06-05 - Move 08 Workbench Live Readiness And Proof Actions
+
+Scope:
+- Add server-owned live workbench actions without browser-entered credentials or arbitrary commands.
+- Reuse existing read-only live CLI paths for live smoke, saved-search candidates, flagship readiness, and strict security proof.
+- Expose live availability and missing server env names through `/api/health`.
+- Keep SplunkReady read-only and mutation-free.
+
+Files expected/touched:
+- `src/workflows/live-actions.ts`
+- `src/cli.ts`
+- `src/workbench/config.ts`
+- `src/workbench/events.ts`
+- `src/workbench/jobs.ts`
+- `src/workbench/routes.ts`
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/workbench/workbench.test.ts`
+- `tests/ui/app.test.ts`
+- `docs/live-adapter.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `src/workflows/live-actions.ts` with backend-callable live workflow entrypoints:
+  - `live-smoke`;
+  - `live-candidates`;
+  - `live-security-readiness`;
+  - `live-security-proof`.
+- Added narrow CLI step-provider exports for those workflows. They call existing live commands, return structured artifact metadata, and keep `mutation: false`.
+- Extended workbench health with `live.available` and `live.missing` so the UI can explain disabled live mode using env variable names only.
+- Extended the workbench job allowlist and route parser to accept only the fixed live workflows.
+- Added early live job rejection when server live env is unavailable, before allocating a managed artifact run directory.
+- Added Live connect UI actions with fixed buttons for smoke, candidates, readiness, and proof. The UI never renders credential inputs and never sends host, token, app, SPL, output path, or command arguments.
+- Added controller logic to start allowlisted workflow names and load returned live artifacts into the Live connect view.
+- Documented local workbench live setup and no-browser-secrets behavior in `docs/live-adapter.md`.
+
+Product impact:
+- The workbench can now be the operator surface for real Splunk MCP readiness/proof actions when launched from an env-configured shell.
+- With no live env, the UI explicitly says live mode is unavailable and why.
+- Live proof artifacts become browsable through the same managed artifact path used by fixture certification.
+
+Reviewer findings:
+- Subagents are disabled per user direction; no reviewer loop was run for this slice.
+
+Open risks:
+- No operator-owned live jobs were run in this environment; live behavior is verified through existing live adapter mocks, workbench route tests, UI render tests, and CLI flow mocks.
+- The workbench live workflow wrappers still delegate to CLI command implementations as a transition boundary. Move 15 remains the place for deeper command modularization if another caller needs it.
+
+Result:
+- Focused live adapter/workbench/UI checks passed.
+- Production build passed.
+- Full offline check passed with 41 test files and 264 tests.
+- Vite production UI build passed.
+- `git diff --check` passed.

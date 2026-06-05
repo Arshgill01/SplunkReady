@@ -1011,6 +1011,57 @@ describe("Vite UI artifact app", () => {
     expect(failed).not.toContain("secret-value");
   });
 
+  it("renders server-owned live action states without browser credential inputs", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "live-smoke-contract.json": { ...contract, mode: "live" },
+        "live-security-readiness.json": liveSecurityReadiness
+      })
+    );
+    const unavailable = renderApp(bundle, "live-connect", {
+      workbench: {
+        available: true,
+        healthStatus: "available",
+        liveAvailable: false,
+        liveMissing: ["SPLUNKREADY_LIVE_ENABLED=true", "SPLUNKREADY_SPLUNK_MCP_URL", "SPLUNKREADY_SPLUNK_MCP_TOKEN"]
+      }
+    });
+    const running = renderApp(bundle, "live-connect", {
+      workbench: {
+        available: true,
+        healthStatus: "available",
+        liveAvailable: true,
+        saiaAvailable: true,
+        liveMissing: [],
+        job: {
+          id: "job-live-1",
+          workflow: "live-smoke",
+          state: "running",
+          runId: "run-live-001",
+          artifactBase: "/api/artifacts/run-live-001",
+          events: [{ id: 1, type: "phase", message: "Running Agent Readiness Compiler live smoke." }]
+        }
+      }
+    });
+
+    expect(unavailable).toContain("Live workbench actions");
+    expect(unavailable).toContain("Live mode unavailable. Missing server env");
+    expect(unavailable).toContain("SPLUNKREADY_SPLUNK_MCP_URL");
+    expect(unavailable).toContain("Run live smoke");
+    expect(unavailable).toContain("Scan saved searches");
+    expect(unavailable).toContain("Check security readiness");
+    expect(unavailable).toContain("Run security proof");
+    expect(unavailable).toContain("disabled");
+    expect(unavailable).toContain("Browser credentials</th><td>not accepted");
+    expect(unavailable).not.toContain("<input");
+    expect(unavailable).not.toContain("type=\"password\"");
+    expect(unavailable).not.toContain("name=\"token\"");
+    expect(running).toContain("job-live-1 / live-smoke / running");
+    expect(running).toContain("Running Agent Readiness Compiler live smoke.");
+    expect(running).toContain("SAIA</th><td>available");
+  });
+
   it("renders live proof summaries without implying a fake patch loop", async () => {
     const bundle = await loadUiArtifactBundle(
       "/artifact-base",

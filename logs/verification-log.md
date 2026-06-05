@@ -5964,3 +5964,38 @@ Open risks:
 
 - Move 04 intentionally did not rewrite the full CLI monolith. The extracted workflow still injects existing CLI command functions and uses a dynamic CLI step provider for the backend-facing entrypoint.
 - Future workflow expansion should move command primitives into smaller modules only when needed by another real caller.
+
+## 2026-06-05 - Move 08 Workbench Live Readiness And Proof Actions
+
+Commands:
+
+- `npx tsc --noEmit && npx vitest run tests/adapters/live.test.ts tests/adapters/live.integration.test.ts tests/workbench tests/ui/app.test.ts`
+- `npm run build && npm run check`
+- `npm run ui:build && git diff --check`
+- `npx tsc --noEmit`
+- `git diff --check`
+
+Result:
+
+- FAIL for the first focused TypeScript/live/workbench/UI run:
+  - `ui/src/render.ts` used render options inside `renderLiveConnect` before threading the options parameter through that function.
+- PASS after fixing the render options path:
+  - 4 test files;
+  - 44 tests passed.
+- PASS for canonical build/check gate:
+  - production TypeScript build passed;
+  - scaffold verified;
+  - 85 waves;
+  - 903 project files;
+  - 41 test files;
+  - 264 tests passed.
+- PASS for Vite production UI build:
+  - 21 modules transformed;
+  - production bundle written to `dist-ui`.
+- PASS for final TypeScript check after controller cleanup.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Live jobs were not executed against a real Splunk MCP endpoint in this environment. Per Move 08, those should run manually only from an operator-owned live env.
+- Browser-level interaction was covered by renderer/controller tests and production UI build, not by a live browser session in this slice.

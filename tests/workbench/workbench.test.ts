@@ -85,8 +85,21 @@ describe("workbench backend", () => {
 
     expect(health).toContain("fixtureCertification");
     expect(health).toContain('"live":true');
+    expect(health).toContain('"missing":[]');
     expect(health).not.toContain("super-secret-token");
     expect(health).not.toContain("splunk.example.test");
+  });
+
+  it("reports missing live server env names without exposing values", () => {
+    const health = healthFromConfig(createWorkbenchConfig({}, process.cwd()));
+
+    expect(health).toMatchObject({
+      capabilities: { live: false },
+      live: {
+        available: false,
+        missing: ["SPLUNKREADY_LIVE_ENABLED=true", "SPLUNKREADY_SPLUNK_MCP_URL", "SPLUNKREADY_SPLUNK_MCP_TOKEN"]
+      }
+    });
   });
 
   it("redacts secret-looking text and environment values", () => {
@@ -183,6 +196,51 @@ describe("workbench backend", () => {
     });
     expect(unknownRoute.status).toBe(404);
     expect(unknownRoute.json).toMatchObject({ error: { code: "WORKBENCH_ROUTE_NOT_FOUND" } });
+  });
+
+  it("rejects live workflows when server live env is unavailable", async () => {
+    const config = await testConfig();
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const response = await callApi(config, runner, store, { method: "POST", path: "/api/jobs/live-smoke" });
+
+    expect(response.status).toBe(400);
+    expect(response.json).toMatchObject({
+      error: {
+        code: "WORKBENCH_REQUEST_FAILED",
+        message: expect.stringContaining("SPLUNKREADY_SPLUNK_MCP_TOKEN")
+      }
+    });
+  });
+
+  it("runs allowlisted live workflows from server-owned configuration", async () => {
+    const config = await testConfig({ liveAvailable: true, liveMissing: [] });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({
+      config,
+      artifactStore: store,
+      workflows: {
+        "live-smoke": async ({ outDir }) => {
+          await writeFile(join(outDir, "live-smoke-summary.json"), "{\"status\":\"PASS\",\"mutation\":false}\n", "utf8");
+
+          return { artifacts: [join(outDir, "live-smoke-summary.json")] };
+        }
+      }
+    });
+    const response = await callApi(config, runner, store, { method: "POST", path: "/api/jobs/live-smoke" });
+    const started = response.json as { job: { id: string; workflow: string } };
+    const completed = await waitForJob(runner, started.job.id);
+
+    expect(response.status).toBe(202);
+    expect(started.job.workflow).toBe("live-smoke");
+    expect(completed).toMatchObject({
+      workflow: "live-smoke",
+      state: "succeeded",
+      artifacts: ["live-smoke-summary.json"]
+    });
+    expect(completed.events.map((event) => event.message)).toEqual(
+      expect.arrayContaining(["Queued live smoke.", "Running Agent Readiness Compiler live smoke.", "live smoke completed."])
+    );
   });
 
   it("rejects non-local origins and oversized request bodies", async () => {

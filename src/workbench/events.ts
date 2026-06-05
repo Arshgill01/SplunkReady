@@ -1,4 +1,9 @@
-export type WorkbenchWorkflow = "fixture-certification";
+export type WorkbenchWorkflow =
+  | "fixture-certification"
+  | "live-smoke"
+  | "live-candidates"
+  | "live-security-readiness"
+  | "live-security-proof";
 
 export type WorkbenchJobState = "queued" | "running" | "succeeded" | "failed" | "cancelled";
 

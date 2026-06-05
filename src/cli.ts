@@ -3288,6 +3288,72 @@ export const runFixtureCertificationFromCli = async (
 
 export const runFixtureCertificationWorkflow = runFixtureCertificationFromCli;
 
+export interface LiveActionWorkflowInput {
+  outDir: string;
+}
+
+export interface LiveActionWorkflowResult {
+  status: "PASS" | "SKIP";
+  outDir: string;
+  artifacts: string[];
+  mutation: false;
+  messages: string[];
+}
+
+export const runLiveSmokeFromCli = async (
+  input: LiveActionWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<LiveActionWorkflowResult> => {
+  const options = defaultCliOptions({ mode: "live", out: input.outDir, requireLive: true });
+  const result = await liveSmokeCommand(options, env);
+
+  return { status: result.status, outDir: input.outDir, artifacts: result.artifacts, mutation: false, messages: result.messages };
+};
+
+export const runLiveCandidatesFromCli = async (
+  input: LiveActionWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<LiveActionWorkflowResult> => {
+  const options = defaultCliOptions({ mode: "live", out: input.outDir });
+  const compileArtifacts = await compileCommand(options, env);
+  const candidateArtifacts = await liveCandidatesCommand(options, env);
+
+  return {
+    status: "PASS",
+    outDir: input.outDir,
+    artifacts: [...new Set([...compileArtifacts, ...candidateArtifacts])],
+    mutation: false,
+    messages: []
+  };
+};
+
+export const runLiveSecurityReadinessFromCli = async (
+  input: LiveActionWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<LiveActionWorkflowResult> => {
+  const options = defaultCliOptions({ mode: "live", out: input.outDir });
+  const artifacts = await liveSecurityCheckCommand(options, env);
+
+  return { status: "PASS", outDir: input.outDir, artifacts, mutation: false, messages: [] };
+};
+
+export const runLiveSecurityProofFromCli = async (
+  input: LiveActionWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<LiveActionWorkflowResult> => {
+  const options = defaultCliOptions({ mode: "live", out: input.outDir, requirePass: true });
+  const proofArtifacts = await liveSecurityProofCommand(options, env);
+  const auditArtifacts = await proofAuditCommand(options);
+
+  return {
+    status: "PASS",
+    outDir: input.outDir,
+    artifacts: [...new Set([...proofArtifacts, ...auditArtifacts])],
+    mutation: false,
+    messages: []
+  };
+};
+
 const main = async (): Promise<void> => {
   const { command, options } = parseArgs(process.argv.slice(2));
   let artifacts: string[];
