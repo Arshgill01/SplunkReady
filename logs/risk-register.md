@@ -433,3 +433,10 @@ Move 94 reduces the public-package release risk by adding
 reports package name `splunkready` as unclaimed and `0.1.0` as available, and
 `npm pack --dry-run` succeeds with 162 files, but local npm auth is missing
 (`ENEEDAUTH`). No publish action was attempted.
+
+Move 95 reduces the hosted-demo risk by adding a manual GitHub Pages deployment
+workflow for the verified credential-free public demo export. The workflow
+builds `artifacts/public-demo`, runs `audit:public-demo-export`, uploads the
+Pages artifact, and deploys without live Splunk or Gemini secrets. This does
+not eliminate the hosted URL cap until Pages is enabled, the manual workflow is
+run, and the resulting URL is opened successfully.

@@ -10047,6 +10047,63 @@ Open blockers:
 - Actual npm publication remains blocked until npm auth is configured and the
   external release action is approved/executed.
 
+## 2026-06-06 - Move 95 GitHub Pages Public Demo Workflow
+
+Commands:
+
+- `npx vitest run tests/examples/repository-ci-workflow.test.ts`
+- `npm run public-demo:build && npm run audit:public-demo-export`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for focused repository workflow coverage:
+  - 1 test file passed;
+  - 2 tests passed.
+- PASS for targeted public demo export:
+  - Vite UI production build completed;
+  - `scripts/export-public-demo.js` wrote `artifacts/public-demo`;
+  - public demo export audit passed with 111 files;
+  - `mutation=false`;
+  - default route is `mcp-proof`.
+- PASS for full `npm run check`:
+  - scaffold verified with 85 waves and 1990 project files;
+  - runtime contracts verified 19 rules, 4 fixture missions, and 20 evidence
+    refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 111 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed the package tarball and verified
+    `npx splunkready judge-proof` returned PASS;
+  - 56 test files passed;
+  - 347 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for standalone diff whitespace:
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- The GitHub Pages workflow is manual-only and does not include live Splunk,
+  Gemini, npm, or deployment secrets.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Actual hosted URL remains unverified until GitHub Pages is enabled, the
+  `Public Demo Pages` workflow is run, and the resulting URL is opened.
+- Public npm publication and live/public MCP-client screencast evidence remain
+  separate probability caps.
+
 ## 2026-06-06 - Move 84 Package Installability Audit
 
 Commands:

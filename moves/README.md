@@ -117,6 +117,7 @@ commands, or filesystem paths.
 | P0 | [92](moves92.md) MCP client walkthrough evidence | 0.5d | Makes the MCP proof show an existing Splunk MCP client workflow before SplunkReady certification. |
 | P0 | [93](moves93.md) Judge proof LLM activation | 0.5d | Makes judge proof include model-produced trace evidence when LLM mode is operator-enabled. |
 | P0 | [94](moves94.md) NPM release preflight | 0.5d | Makes public npm package readiness and publish blockers machine-checkable without publishing. |
+| P0 | [95](moves95.md) GitHub Pages public demo workflow | 0.5d | Adds a manual Pages deployment path for the verified credential-free public demo export without claiming an unverified URL. |
 
 ## Non-Negotiable Boundaries
 

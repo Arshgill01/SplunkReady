@@ -11522,3 +11522,38 @@ Files changed:
 Open blockers:
 - Actual npm publication remains blocked until npm auth is configured and the
   external release action is approved/executed.
+
+## 2026-06-06 05:35 - Move 95 GitHub Pages Public Demo Workflow
+
+Scope:
+- Targeted the hosted-demo cap without claiming an unverified public URL.
+- Added a manual `workflow_dispatch` GitHub Pages workflow for the existing
+  credential-free public demo export.
+- The workflow installs dependencies, builds `artifacts/public-demo`, runs
+  `audit:public-demo-export`, uploads the Pages artifact, and deploys with
+  GitHub Pages permissions only.
+- Added repository workflow coverage so the public demo deploy path stays
+  manual, credential-free, and audited before upload.
+- Documented the Pages workflow in README with an explicit warning not to claim
+  a hosted URL until the workflow completes and the Pages URL is opened.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+- Did not change UI source or behavior, so Playwright was not required.
+
+Files changed:
+- `.github/workflows/public-demo-pages.yml`
+- `tests/examples/repository-ci-workflow.test.ts`
+- `README.md`
+- `moves/README.md`
+- `moves/moves95.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Actual hosted URL remains unclaimed until Pages is enabled, the manual
+  workflow is run, and the resulting URL is opened successfully.
+- Public npm publication remains blocked by missing npm auth.
+- Live/public MCP-client screencast evidence remains a separate award-positioning
+  gap.

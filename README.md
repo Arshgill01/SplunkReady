@@ -165,6 +165,19 @@ npm run workbench:dev
 
 The workbench API and UI are served from the same local origin. Live actions remain disabled unless the live environment variables in the Live Mode section are set in the shell that starts the server.
 
+## Public Demo Export
+
+For a credential-free static demo export:
+
+```bash
+npm run public-demo:build
+npm run audit:public-demo-export
+```
+
+The export writes `artifacts/public-demo` from the built Vite workbench plus tracked submission evidence. The audit checks required proof bundles, the default MCP proof route, no secret-named files, no symlinks, and `mutation=false`.
+
+To deploy that export through GitHub Pages, enable Pages for the repository and run the `Public Demo Pages` workflow manually. The workflow builds `artifacts/public-demo`, runs `audit:public-demo-export`, uploads the Pages artifact, and deploys without live Splunk or Gemini secrets. Do not claim a public URL until that workflow has completed and the Pages URL has been opened successfully.
+
 ## Grade a Captured Agent Trace
 
 The fixture demo is reproducible, but SplunkReady is not limited to its bundled specimen. After compiling the environment contract, pass in a schema-valid trace captured from another Splunk-connected agent:
