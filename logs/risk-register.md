@@ -244,3 +244,10 @@ Move 68 removes policy actions from the CLI-backed wrapper list by moving
 `policy-backed-rerun` and `firewall-check` into
 `src/workflows/policy-actions.ts`. `src/cli.ts` dropped from 2,173 lines to
 2,135 lines. The remaining CLI-backed workflow wrapper is live actions.
+
+Move 69 removes the final CLI-backed workflow wrapper by moving live smoke,
+saved-search candidate derivation, strict live security readiness,
+operator-owned security kit generation, generic live proof, live security proof,
+and live security UI bundling into `src/workflows/live-actions.ts`. `src/cli.ts`
+dropped from 2,135 lines to 1,162 lines. Further CLI cleanup is still useful,
+but workflow ownership no longer depends on importing `../cli.js`.

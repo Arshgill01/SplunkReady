@@ -91,6 +91,7 @@ commands, or filesystem paths.
 | P0 | [66](moves66.md) Hosted model workflow extraction | 0.5d | Makes SAIA proof and diagnostic workflows module-owned while preserving advisory-only hosted-model authority. |
 | P0 | [67](moves67.md) Fixture certification workflow extraction | 0.5d | Makes the workbench fixture certification path workflow-owned instead of CLI-owned and materially shrinks the CLI monolith. |
 | P0 | [68](moves68.md) Policy action workflow extraction | 0.5d | Makes policy-backed rerun and firewall-check workflow-owned instead of CLI-owned. |
+| P0 | [69](moves69.md) Live action workflow extraction | 0.5d | Removes the final CLI-backed workflow wrapper by making live smoke, candidates, strict readiness, operator kit, and live proof workflow-owned. |
 
 ## Non-Negotiable Boundaries
 

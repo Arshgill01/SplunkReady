@@ -1,32 +1,14 @@
 #!/usr/bin/env node
 
-import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import {
-  createHttpLiveSplunkTransport,
-  createLiveSplunkAccessAdapter,
-  createLiveSplunkAdapterConfigFromEnv
-} from "./adapters/live.js";
 import { createGeminiConfigFromEnv } from "./agents/gemini-model.js";
-import { compileEnvironmentContract } from "./compiler/environment.js";
-import { compileReadinessProfile } from "./compiler/readiness-profile.js";
 import { scoreMissionReadiness } from "./grader/scoring.js";
-import {
-  liveSecurityKitCleanupGuidance,
-  liveSecurityKitOperatorWarnings,
-  validateLiveSecurityKit
-} from "./live-security-kit/validator.js";
-import { deriveLiveMission, type LiveSavedSearchCandidateResult } from "./missions/live.js";
+import { validateLiveSecurityKit } from "./live-security-kit/validator.js";
 import { generateReadinessReceipt } from "./receipts/generator.js";
-import {
-  readOnlySplunkToolNameSchema,
-  readinessReceiptSchema,
-  type EnvironmentContract,
-  type PolicyPatch,
-  type ReadOnlySplunkToolName
-} from "./schemas/core.js";
+import { readinessReceiptSchema } from "./schemas/core.js";
 import {
   compileCommand,
   compileContract,
@@ -39,7 +21,6 @@ import {
   llmEnabled,
   loadContract,
   loadMission,
-  readOptionalPolicyPatch,
   receiptCommand,
   rerunCommand,
   writeCompiledArtifacts
@@ -70,12 +51,20 @@ import type {
   LiveActionWorkflowInput,
   LiveActionWorkflowResult
 } from "./workflows/live-actions.js";
+import {
+  runLiveCandidatesWorkflow,
+  runLiveProofWorkflow,
+  runLiveSecurityKitWorkflow,
+  runLiveSecurityProofArtifacts,
+  runLiveSecurityProofWorkflow,
+  runLiveSecurityReadinessWorkflow,
+  runLiveSecurityUiBundleWorkflow,
+  runLiveSmokeWorkflow
+} from "./workflows/live-actions.js";
 import { runLlmProofWorkflow } from "./workflows/llm-proof.js";
 import {
-  hostedModelToolNames,
   runHostedModelDiagnosticWorkflow,
   runHostedModelProofWorkflow,
-  writeHostedModelProofArtifact,
   type HostedModelWorkflowInput,
   type HostedModelWorkflowResult
 } from "./workflows/hosted-model-actions.js";
@@ -96,18 +85,7 @@ const defaultFixturePath = "fixtures/acme-soc-dev/adapter-fixture.json";
 const defaultMissionPath = "fixtures/acme-soc-dev/missions/security-investigation-readiness.json";
 const defaultSuitePath = "fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json";
 const defaultOutDir = "artifacts/fixture-demo";
-const generatedAt = "2026-06-01T06:30:00.000Z";
 const compiledAt = "2026-06-01T06:45:00.000Z";
-const liveSmokeInventoryTools: ReadOnlySplunkToolName[] = [
-  "splunk_get_info",
-  "splunk_get_user_info",
-  "splunk_get_indexes",
-  "splunk_get_metadata",
-  "splunk_get_knowledge_objects"
-];
-const liveSmokeNotCalledTools = readOnlySplunkToolNameSchema.options.filter(
-  (toolName) => !liveSmokeInventoryTools.includes(toolName)
-);
 
 interface CliOptions {
   mode: "fixture" | "live";
@@ -444,32 +422,6 @@ const removeOptionalFile = async (filePath: string): Promise<void> => {
   await rm(filePath, { force: true });
 };
 
-const copyRequiredArtifact = async (sourceDir: string, outDir: string, fileName: string, label: string): Promise<string> => {
-  const sourcePath = join(sourceDir, fileName);
-  const outPath = join(outDir, fileName);
-
-  if (!(await exists(sourcePath))) {
-    throw new Error(`Unable to read ${label} at ${sourcePath}. Run the prerequisite CLI command first.`);
-  }
-
-  await mkdir(dirname(outPath), { recursive: true });
-  await copyFile(sourcePath, outPath);
-  return outPath;
-};
-
-const copyOptionalArtifact = async (sourceDir: string, outDir: string, fileName: string): Promise<string | undefined> => {
-  const sourcePath = join(sourceDir, fileName);
-
-  if (!(await exists(sourcePath))) {
-    return undefined;
-  }
-
-  const outPath = join(outDir, fileName);
-  await mkdir(dirname(outPath), { recursive: true });
-  await copyFile(sourcePath, outPath);
-  return outPath;
-};
-
 interface SuiteDefinition {
   id: string;
   title: string;
@@ -513,944 +465,6 @@ const loadSuite = async (suitePath: string): Promise<SuiteDefinition> =>
 
 const suiteMissionPath = (suitePath: string, missionPath: string): string =>
   isAbsolute(missionPath) ? missionPath : join(dirname(suitePath), missionPath);
-
-const summarizeHostedModels = (
-  contract: EnvironmentContract,
-  policyPatch: PolicyPatch | undefined,
-  hostedModelProof?: unknown
-): {
-  status: "invoked" | "available_not_applicable" | "unavailable";
-  availableTools: ReadOnlySplunkToolName[];
-  missingTools: ReadOnlySplunkToolName[];
-  assistanceItems: number;
-  notes: string;
-} => {
-  const contractTools = new Set(contract.mcpTools);
-  const availableTools = hostedModelToolNames.filter((toolName) => contractTools.has(toolName));
-  const missingTools = hostedModelToolNames.filter((toolName) => !contractTools.has(toolName));
-  const patchAssistanceItems = policyPatch?.splAssistance?.length ?? 0;
-  const hostedModelProofStatus = stringFromRecord(hostedModelProof, "status");
-  const hostedModelProofInvoked = hostedModelProofStatus === "PASS";
-  const assistanceItems = patchAssistanceItems > 0 ? patchAssistanceItems : hostedModelProofInvoked ? 1 : 0;
-
-  if (patchAssistanceItems > 0) {
-    return {
-      status: "invoked",
-      availableTools,
-      missingTools,
-      assistanceItems,
-      notes:
-        "SAIA explain/optimize returned advisory output for SPL-rule violations. Deterministic rules remained authoritative for pass/fail."
-    };
-  }
-
-  if (hostedModelProofInvoked) {
-    return {
-      status: "invoked",
-      availableTools,
-      missingTools,
-      assistanceItems,
-      notes:
-        "SAIA explain/optimize returned advisory output in hosted-model proof mode. The SPL was not executed; deterministic rules remained authoritative for pass/fail."
-    };
-  }
-
-  if (hostedModelProofStatus === "BLOCKED") {
-    return {
-      status: "unavailable",
-      availableTools,
-      missingTools,
-      assistanceItems,
-      notes:
-        "Hosted-model tools were advertised but could not be invoked with the current MCP credentials or entitlement."
-    };
-  }
-
-  if (missingTools.length > 0) {
-    return {
-      status: "unavailable",
-      availableTools,
-      missingTools,
-      assistanceItems,
-      notes:
-        "The contract did not expose both hosted-model tools, so no SAIA explain/optimize evidence could be collected for this proof."
-    };
-  }
-
-  return {
-    status: "available_not_applicable",
-    availableTools,
-    missingTools,
-    assistanceItems,
-    notes:
-      "SAIA explain/optimize tools were available, but this proof did not produce SPL-rule violations with query evidence."
-  };
-};
-
-const liveSmokeMissingEnvFields = (env: NodeJS.ProcessEnv): string[] => {
-  const missingFields: string[] = [];
-
-  if (env.SPLUNKREADY_LIVE_ENABLED !== "true") {
-    missingFields.push("SPLUNKREADY_LIVE_ENABLED=true");
-  }
-
-  if (!env.SPLUNKREADY_SPLUNK_MCP_URL) {
-    missingFields.push("SPLUNKREADY_SPLUNK_MCP_URL");
-  }
-
-  if (!env.SPLUNKREADY_SPLUNK_MCP_TOKEN) {
-    missingFields.push("SPLUNKREADY_SPLUNK_MCP_TOKEN");
-  }
-
-  return missingFields;
-};
-
-const liveSmokeCommand = async (
-  options: CliOptions,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<{ status: "PASS" | "SKIP"; artifacts: string[]; messages: string[] }> => {
-  const missingFields = liveSmokeMissingEnvFields(env);
-
-  if (missingFields.length > 0) {
-    const message = [
-      `Live smoke skipped; missing ${missingFields.join(", ")}.`,
-      "No live Splunk calls were made and no live artifacts were written.",
-      "Fixture commands still run without live credentials.",
-      "See docs/live-adapter.md for the opt-in setup checklist."
-    ].join(" ");
-
-    if (options.requireLive) {
-      throw new Error(message);
-    }
-
-    return { status: "SKIP", artifacts: [], messages: [message] };
-  }
-
-  const metadataTimeWindow = { earliest: "-15m", latest: "now" };
-  const adapter = createLiveSplunkAccessAdapter({
-    ...createLiveSplunkAdapterConfigFromEnv(env),
-    capabilities: liveSmokeInventoryTools,
-    transport: createHttpLiveSplunkTransport()
-  });
-  const contract = await compileEnvironmentContract(adapter, {
-    requestId: "req-cli-live-smoke-001",
-    contractVersion: "live-smoke-2026.06.01",
-    generatedAt,
-    metadataTimeWindow,
-    queryBudgets: {
-      maxToolCalls: 5,
-      maxResultRows: 1,
-      timeoutSeconds: 30
-    }
-  });
-  const mission = await loadMission(options.mission);
-  const readinessProfile = compileReadinessProfile(contract, [mission], {
-    profileVersion: "live-smoke-profile-2026.06.01",
-    generatedAt: compiledAt
-  });
-  const contractPath = join(options.out, "live-smoke-contract.json");
-  const profilePath = join(options.out, "live-smoke-readiness-profile.json");
-  const summaryPath = join(options.out, "live-smoke-summary.json");
-
-  await writeJson(contractPath, contract);
-  await writeJson(profilePath, readinessProfile);
-  await writeJson(summaryPath, {
-    status: "PASS",
-    mode: contract.mode,
-    contractId: contract.id,
-    readinessProfileId: readinessProfile.id,
-    sourceRefs: contract.sourceRefs,
-    metadataTimeWindow,
-    allowedTools: liveSmokeInventoryTools,
-    notCalledTools: liveSmokeNotCalledTools,
-    readOnlyToolsOnly: true,
-    destructiveOperations: false
-  });
-
-  return { status: "PASS", artifacts: [contractPath, profilePath, summaryPath], messages: [] };
-};
-
-const savedSearchCandidateScore = (savedSearch: EnvironmentContract["savedSearches"][number]): number => {
-  const haystack = `${savedSearch.app} ${savedSearch.name}`.toLowerCase();
-  let score = 0;
-
-  if (/\b(error|alert|auth|login|security|notable|incident|lateral)\b/.test(haystack)) {
-    score += 4;
-  }
-
-  if (savedSearch.app === "search") {
-    score += 2;
-  }
-
-  if (!/instrumentation|deploymentserver|dmc|monitoring_console/i.test(haystack)) {
-    score += 1;
-  }
-
-  return score;
-};
-
-const sortedSavedSearchCandidates = (
-  savedSearches: EnvironmentContract["savedSearches"],
-  limit: number
-): EnvironmentContract["savedSearches"] =>
-  [...savedSearches]
-    .sort((left, right) => {
-      const scoreDiff = savedSearchCandidateScore(right) - savedSearchCandidateScore(left);
-      return scoreDiff !== 0 ? scoreDiff : `${left.app}::${left.name}`.localeCompare(`${right.app}::${right.name}`);
-    })
-    .slice(0, limit);
-
-const flagshipSecuritySavedSearch = {
-  app: "SplunkEnterpriseSecuritySuite",
-  name: "ES - Lateral Movement Auth Chain",
-  ref: "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain"
-};
-
-const flagshipLiveSecuritySetupRequirements = [
-  {
-    id: "saved-search",
-    description: `Read-only saved search ${flagshipSecuritySavedSearch.ref} exists in the live contract.`
-  },
-  {
-    id: "evidence-rows",
-    description: "Saved search returns at least one row for win-finance-07 in the -24h to now mission window."
-  },
-  {
-    id: "evidence-identifiers",
-    description: "Returned rows expose stable evidence identifiers such as eventRef, _cd, _raw, or _time."
-  },
-  {
-    id: "operator-owned-setup",
-    description: "Any missing app, index, saved search, or sample event setup is performed by the operator, not SplunkReady."
-  }
-] as const;
-
-const formatSplunkCsvTimestamp = (date: Date): string => {
-  const pad = (value: number): string => String(value).padStart(2, "0");
-
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(
-    date.getMinutes()
-  )}:${pad(date.getSeconds())}`;
-};
-
-const lateralMovementSampleRows = (now = new Date()): string[] => {
-  const offsetsMs = [21 * 60_000, 14 * 60_000, 7 * 60_000];
-  const rows = [
-    ["live-evt-102", "win-finance-07", "win-finance-07", "admin-login-02", "svc-finance", "4624", "An account was successfully logged on"],
-    ["live-evt-118", "admin-login-02", "admin-login-02", "dc-01", "svc-finance", "4672", "Special privileges assigned to new logon"],
-    ["live-evt-141", "dc-01", "dc-01", "finance-sql-03", "svc-finance", "4624", "An account was successfully logged on"]
-  ] as const;
-
-  return rows.map((row, index) =>
-    [
-      formatSplunkCsvTimestamp(new Date(now.getTime() - offsetsMs[index])),
-      row[0],
-      "XmlWinEventLog:Security",
-      row[1],
-      row[2],
-      row[3],
-      row[4],
-      row[5],
-      row[6]
-    ].join(",")
-  );
-};
-
-const liveSecurityKitCommand = async (options: CliOptions): Promise<string[]> => {
-  const kitGeneratedAt = new Date();
-  const appRoot = join(options.out, flagshipSecuritySavedSearch.app);
-  const appConfPath = join(appRoot, "default", "app.conf");
-  const indexesPath = join(appRoot, "default", "indexes.conf");
-  const propsPath = join(appRoot, "default", "props.conf");
-  const savedSearchesPath = join(appRoot, "default", "savedsearches.conf");
-  const sampleEventsPath = join(options.out, "lateral-movement-events.csv");
-  const readmePath = join(options.out, "README.md");
-  const manifestPath = join(options.out, "live-security-kit.json");
-
-  await writeText(
-    appConfPath,
-    `[install]
-is_configured = 1
-
-[launcher]
-author = SplunkReady
-description = Read-only content for the SplunkReady flagship security readiness proof.
-version = 0.1.0
-
-[ui]
-is_visible = 0
-label = SplunkReady Security Readiness
-`
-  );
-  await writeText(
-    indexesPath,
-    `[wineventlog]
-datatype = event
-homePath = $SPLUNK_DB/wineventlog/db
-coldPath = $SPLUNK_DB/wineventlog/colddb
-thawedPath = $SPLUNK_DB/wineventlog/thaweddb
-`
-  );
-  await writeText(
-    propsPath,
-    `[XmlWinEventLog:Security]
-INDEXED_EXTRACTIONS = csv
-KV_MODE = none
-SHOULD_LINEMERGE = false
-TIMESTAMP_FIELDS = _time
-TIME_FORMAT = %Y-%m-%d %H:%M:%S
-`
-  );
-  await writeText(
-    savedSearchesPath,
-    `[${flagshipSecuritySavedSearch.name}]
-disabled = 0
-dispatch.earliest_time = -24h
-dispatch.latest_time = now
-search = index=wineventlog | rex field=_raw "^(?<_csv_time>[^,]+),(?<eventRef>[^,]+),(?<csv_sourcetype>[^,]+),(?<csv_host>[^,]+),(?<src>[^,]+),(?<dest>[^,]+),(?<user>[^,]+),(?<EventCode>[^,]+),(?<signature>.*)$" | search (src="win-finance-07" OR src="admin-login-02" OR src="dc-01" OR dest="win-finance-07" OR dest="admin-login-02" OR dest="dc-01") | eval sourcetype=coalesce(sourcetype, csv_sourcetype) | dedup eventRef | table _time eventRef sourcetype src dest user EventCode signature
-`
-  );
-  await writeText(
-    sampleEventsPath,
-    `_time,eventRef,sourcetype,host,src,dest,user,EventCode,signature
-${lateralMovementSampleRows(kitGeneratedAt).join("\n")}
-`
-  );
-  await writeText(
-    readmePath,
-    `# SplunkReady Live Security Kit
-
-This directory contains an operator-owned setup bundle for the SplunkReady flagship security proof. SplunkReady generated these files locally; it did not connect to or mutate Splunk.
-
-## Contents
-
-- \`${flagshipSecuritySavedSearch.app}/default/indexes.conf\` defines the \`wineventlog\` index expected by the flagship mission.
-- \`${flagshipSecuritySavedSearch.app}/default/props.conf\` defines CSV parsing for \`XmlWinEventLog:Security\`.
-- \`${flagshipSecuritySavedSearch.app}/default/savedsearches.conf\` defines the exact saved search \`${flagshipSecuritySavedSearch.ref}\`.
-- \`lateral-movement-events.csv\` contains three evidence rows for the \`win-finance-07\` lateral-movement story.
-
-The CSV timestamps are generated at kit creation time and are intentionally recent so the saved search's \`-24h\` window returns rows. Regenerate this kit immediately before importing data if it has been sitting around.
-
-## Operator Setup
-
-Run these commands only on a local or approved Splunk Enterprise trial. They intentionally require an operator to install content and ingest data; SplunkReady will not do that automatically.
-
-If Splunk Enterprise Security is already installed, do not blindly overwrite that app. Merge the saved-search/index/props stanzas through your normal Splunk admin process. On a clean local trial, the generated \`${flagshipSecuritySavedSearch.app}\` app directory provides the app context needed for the exact saved-search reference.
-
-\`\`\`bash
-export SPLUNK_HOME=/path/to/splunk
-cd ${options.out}
-
-# Install or copy the app, then restart if your Splunk deployment requires it for indexes.conf.
-cp -R ${flagshipSecuritySavedSearch.app} "$SPLUNK_HOME/etc/apps/"
-"$SPLUNK_HOME/bin/splunk" restart
-
-# Ingest the sample evidence rows into the operator-created wineventlog index.
-"$SPLUNK_HOME/bin/splunk" add oneshot lateral-movement-events.csv \\
-  -index wineventlog \\
-  -sourcetype XmlWinEventLog:Security \\
-  -auth <user>:<password>
-\`\`\`
-
-## Verify
-
-After setup, rerun the read-only readiness diagnostic:
-
-\`\`\`bash
-set -a; source ./.splunkready-live.env; set +a
-NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-check --out artifacts/live-security-check --json
-\`\`\`
-
-Expected signal:
-
-- \`status\`: \`READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF\`
-- \`requiredSavedSearch.present\`: \`true\`
-- \`requiredSavedSearch.run.resultCount\`: at least \`1\`
-- \`requiredSavedSearch.run.evidenceRefs\`: non-empty
-
-Then run the live proof:
-
-\`\`\`bash
-set -a; source ./.splunkready-live.env; set +a
-export SPLUNKREADY_LLM_ENABLED=true
-export GEMINI_MODEL=gemini-3.1-flash-lite
-NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- live-security-proof --out artifacts/live-security-proof --json
-\`\`\`
-
-## Cleanup
-
-Cleanup is operator-owned and outside SplunkReady. SplunkReady does not remove app content, indexes, saved searches, or ingested events.
-
-- On a disposable trial, remove or disable the generated \`${flagshipSecuritySavedSearch.app}\` app through normal Splunk admin controls.
-- Delete imported sample events only in an approved disposable environment.
-- Do not run destructive cleanup against production data or an existing Enterprise Security deployment.
-`
-  );
-  const validation = await validateLiveSecurityKit(options.out);
-
-  await writeJson(manifestPath, {
-    status: "PASS",
-    mutation: false,
-    operatorActionRequired: true,
-    mission: "mission-security-lateral-movement-readiness",
-    savedSearch: flagshipSecuritySavedSearch,
-    preferredIndex: "wineventlog",
-    sourcetype: "XmlWinEventLog:Security",
-    sampleEvents: 3,
-    generatedAt: kitGeneratedAt.toISOString(),
-    validation,
-    operatorWarnings: [...liveSecurityKitOperatorWarnings],
-    cleanupGuidance: [...liveSecurityKitCleanupGuidance],
-    artifacts: [appConfPath, indexesPath, propsPath, savedSearchesPath, sampleEventsPath, readmePath]
-  });
-
-  if (validation.status !== "PASS") {
-    throw new Error(`Generated live security kit failed validation: ${validation.checks.filter((check) => check.status === "FAIL").map((check) => check.id).join(", ")}`);
-  }
-
-  return [manifestPath, appConfPath, indexesPath, propsPath, savedSearchesPath, sampleEventsPath, readmePath];
-};
-
-const liveSecurityCheckCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const liveOptions = { ...options, mode: "live" as const };
-  const contract = await compileContract(liveOptions, env);
-  const contractPath = join(options.out, "environment-contract.json");
-
-  await writeJson(contractPath, contract);
-
-  const adapter = await createSplunkAccessAdapter(liveOptions, env);
-  const requiredTools: ReadOnlySplunkToolName[] = [
-    "splunk_get_knowledge_objects",
-    "splunk_run_saved_search"
-  ];
-  const missingTools = requiredTools.filter((tool) => !contract.mcpTools.includes(tool));
-  const preferredIndex = contract.indexes.find((index) => index.name === "wineventlog");
-  const exactSavedSearch = contract.savedSearches.find(
-    (candidate) => candidate.app === flagshipSecuritySavedSearch.app && candidate.name === flagshipSecuritySavedSearch.name
-  );
-  const nearbySavedSearches = sortedSavedSearchCandidates(contract.savedSearches, 8)
-    .map((candidate) => `${candidate.app}::${candidate.name}`)
-    .filter((ref) => ref !== flagshipSecuritySavedSearch.ref);
-  let runResult:
-    | {
-        attempted: true;
-        resultCount: number | null;
-        evidenceRefs: string[];
-        warnings: string[];
-        error?: string;
-      }
-    | { attempted: false; reason: string };
-
-  if (!exactSavedSearch) {
-    runResult = { attempted: false, reason: "Exact flagship saved search is not present in the live contract." };
-  } else if (missingTools.length > 0) {
-    runResult = {
-      attempted: false,
-      reason: `Cannot run saved search because required MCP tools are missing: ${missingTools.join(", ")}.`
-    };
-  } else {
-    try {
-      const result = await adapter.runSavedSearch(
-        {
-          app: exactSavedSearch.app,
-          name: exactSavedSearch.name,
-          maxRows: 5
-        },
-        {
-          requestId: "req-cli-live-security-check-saved-search",
-          missionId: "live-security-readiness-check"
-        }
-      );
-
-      runResult = {
-        attempted: true,
-        resultCount: result.resultCount,
-        evidenceRefs: result.evidenceRefs,
-        warnings: result.warnings
-      };
-    } catch (error) {
-      runResult = {
-        attempted: true,
-        resultCount: null,
-        evidenceRefs: [],
-        warnings: [],
-        error: formatCliError(error)
-      };
-    }
-  }
-
-  const hasRows = runResult.attempted && typeof runResult.resultCount === "number" && runResult.resultCount > 0;
-  const hasEvidenceRefs = runResult.attempted && runResult.evidenceRefs.length > 0;
-  const ready =
-    missingTools.length === 0 &&
-    Boolean(exactSavedSearch) &&
-    hasRows &&
-    hasEvidenceRefs;
-  const nextActions: string[] = [];
-
-  if (missingTools.length > 0) {
-    nextActions.push(`Expose read-only MCP tools required for the flagship mission: ${missingTools.join(", ")}.`);
-  }
-
-  if (!exactSavedSearch) {
-    nextActions.push(
-      `Install or create read-only saved search ${flagshipSecuritySavedSearch.ref} for the lateral-movement mission.`
-    );
-  }
-
-  if (exactSavedSearch && !hasRows) {
-    nextActions.push(
-      "Ensure the flagship saved search returns at least one row for the current mission window before running live-proof."
-    );
-  }
-
-  if (exactSavedSearch && hasRows && !hasEvidenceRefs) {
-    nextActions.push("Ensure returned rows expose evidence identifiers such as eventRef, _cd, _raw, or _time.");
-  }
-
-  if (!preferredIndex) {
-    nextActions.push("Confirm the deployment has an authentication/security index such as wineventlog for the flagship story.");
-  }
-
-  if (ready) {
-    nextActions.push(
-      "Run live-security-proof with LLM mode enabled; the deployment has the saved-search evidence needed for the flagship live security path."
-    );
-  }
-
-  const reportPath = join(options.out, "live-security-readiness.json");
-
-  await writeJson(reportPath, {
-    status: ready ? "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF" : "BLOCKED",
-    mode: "live",
-    mutation: false,
-    proofMode: {
-      type: "strict-flagship-security",
-      fallbackAllowed: false,
-      rationale:
-        "The flagship lateral-movement proof requires the exact saved search and row-level evidence. It does not fall back to generic _internal proof."
-    },
-    mission: {
-      id: "mission-security-lateral-movement-readiness",
-      story: "security investigation readiness"
-    },
-    setupRequirements: flagshipLiveSecuritySetupRequirements.map((requirement) => ({
-      ...requirement,
-      satisfied:
-        requirement.id === "saved-search"
-          ? Boolean(exactSavedSearch)
-          : requirement.id === "evidence-rows"
-            ? hasRows
-            : requirement.id === "evidence-identifiers"
-              ? hasEvidenceRefs
-              : true,
-      operatorOwned: true
-    })),
-    fallbackPolicy: {
-      genericLiveCommand: "live-proof",
-      genericLiveDescription:
-        "Use live-proof only as generic live MCP evidence when the target deployment lacks flagship security content.",
-      flagshipProofCommand: "live-security-proof",
-      flagshipDescription:
-        "Use live-security-proof for the prize/demo lateral-movement story after operator-owned setup makes readiness green."
-    },
-    contract: {
-      id: contract.id,
-      name: contract.name,
-      indexes: contract.indexes.length,
-      savedSearches: contract.savedSearches.length,
-      tools: contract.mcpTools.length
-    },
-    requiredTools: {
-      expected: requiredTools,
-      missing: missingTools
-    },
-    preferredIndex: {
-      name: "wineventlog",
-      present: Boolean(preferredIndex),
-      sensitive: preferredIndex?.sensitive ?? null
-    },
-    requiredSavedSearch: {
-      ...flagshipSecuritySavedSearch,
-      present: Boolean(exactSavedSearch),
-      nearbySavedSearches,
-      run: runResult
-    },
-    blockers: nextActions.filter((action) => !ready || !action.startsWith("Run live-proof")),
-    nextActions
-  });
-
-  return [contractPath, reportPath];
-};
-
-const liveSecurityUiBundleCommand = async (options: CliOptions): Promise<string[]> => {
-  const requiredProofFiles = [
-    "environment-contract.json",
-    "missions.json",
-    "readiness-profile.json",
-    "receipt-before-001.json",
-    "receipt-after-001.json",
-    "trace-before.json",
-    "trace-after.json",
-    "violations-before.json",
-    "violations-after.json"
-  ];
-  const optionalProofFiles = [
-    "agent-policy.json",
-    "policy-patch.json",
-    "live-proof-summary.json",
-    "live-security-proof-summary.json",
-    "live-candidates.json",
-    "live-derived-mission.json",
-    "live-derived-readiness-profile.json",
-    "hosted-model-proof.json",
-    "hosted-model-diagnostic.json",
-    "score-before.json",
-    "score-after.json"
-  ];
-  const artifacts: string[] = [];
-  const missingOptional: string[] = [];
-
-  for (const fileName of requiredProofFiles) {
-    artifacts.push(await copyRequiredArtifact(options.proofDir, options.out, fileName, `live proof artifact ${fileName}`));
-  }
-
-  for (const fileName of optionalProofFiles) {
-    const copied = await copyOptionalArtifact(options.proofDir, options.out, fileName);
-
-    if (copied) {
-      artifacts.push(copied);
-    } else {
-      missingOptional.push(join(options.proofDir, fileName));
-    }
-  }
-
-  artifacts.push(
-    await copyRequiredArtifact(
-      options.securityCheckDir,
-      options.out,
-      "live-security-readiness.json",
-      "live security readiness report"
-    )
-  );
-  artifacts.push(
-    await copyRequiredArtifact(options.securityKitDir, options.out, "live-security-kit.json", "live security operator kit manifest")
-  );
-
-  if (!artifacts.some((artifact) => artifact.endsWith("hosted-model-proof.json"))) {
-    const hostedModelProof = await copyOptionalArtifact(options.hostedModelProofDir, options.out, "hosted-model-proof.json");
-
-    if (hostedModelProof) {
-      artifacts.push(hostedModelProof);
-    } else {
-      missingOptional.push(join(options.hostedModelProofDir, "hosted-model-proof.json"));
-    }
-  }
-
-  if (!artifacts.some((artifact) => artifact.endsWith("hosted-model-diagnostic.json"))) {
-    const hostedModelDiagnostic = await copyOptionalArtifact(
-      options.hostedModelProofDir,
-      options.out,
-      "hosted-model-diagnostic.json"
-    );
-
-    if (hostedModelDiagnostic) {
-      artifacts.push(hostedModelDiagnostic);
-    } else {
-      missingOptional.push(join(options.hostedModelProofDir, "hosted-model-diagnostic.json"));
-    }
-  }
-
-  const summaryPath = join(options.out, "live-security-ui-bundle.json");
-
-  await writeJson(summaryPath, {
-    status: "PASS",
-    mutation: false,
-    proofDir: options.proofDir,
-    securityCheckDir: options.securityCheckDir,
-    securityKitDir: options.securityKitDir,
-    hostedModelProofDir: options.hostedModelProofDir,
-    artifacts,
-    missingOptional
-  });
-  artifacts.push(summaryPath);
-
-  return artifacts;
-};
-
-const liveCandidatesCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const liveOptions = { ...options, mode: "live" as const };
-  const contract = await loadContract(options.out);
-  const adapter = await createSplunkAccessAdapter(liveOptions, env);
-  const candidates = sortedSavedSearchCandidates(contract.savedSearches, options.candidateLimit);
-  const results: LiveSavedSearchCandidateResult[] = [];
-
-  for (const candidate of candidates) {
-    try {
-      const result = await adapter.runSavedSearch(
-        {
-          app: candidate.app,
-          name: candidate.name,
-          maxRows: 5
-        },
-        {
-          requestId: `req-cli-live-candidates-${results.length + 1}`,
-          missionId: "live-candidate-scan"
-        }
-      );
-
-      results.push({
-        ref: `${candidate.app}::${candidate.name}`,
-        app: candidate.app,
-        name: candidate.name,
-        resultCount: result.resultCount,
-        evidenceRefs: result.evidenceRefs,
-        warnings: result.warnings
-      });
-    } catch (error) {
-      results.push({
-        ref: `${candidate.app}::${candidate.name}`,
-        app: candidate.app,
-        name: candidate.name,
-        resultCount: null,
-        evidenceRefs: [],
-        warnings: [],
-        error: formatCliError(error)
-      });
-    }
-  }
-
-  const reportPath = join(options.out, "live-candidates.json");
-  const derived = deriveLiveMission(contract, results);
-  const derivedMissionPath = join(options.out, "live-derived-mission.json");
-  const derivedProfilePath = join(options.out, "live-derived-readiness-profile.json");
-  const artifacts = [reportPath];
-
-  if (derived.mission) {
-    const readinessProfile = compileReadinessProfile(contract, [derived.mission], {
-      profileVersion: "live-derived-profile-2026.06.01",
-      generatedAt: compiledAt
-    });
-
-    await writeJson(derivedMissionPath, derived.mission);
-    await writeJson(derivedProfilePath, readinessProfile);
-    artifacts.push(derivedMissionPath, derivedProfilePath);
-  }
-
-  await writeJson(reportPath, {
-    mode: "live",
-    contractId: contract.id,
-    checked: results.length,
-    maxRowsPerSavedSearch: 5,
-    mutation: false,
-    candidates: results,
-    candidatesWithRows: results.filter((result) => typeof result.resultCount === "number" && result.resultCount > 0),
-    derivedMission: {
-      strategy: derived.strategy,
-      reason: derived.reason,
-      missionId: derived.mission?.id,
-      artifacts: derived.mission ? [derivedMissionPath, derivedProfilePath] : []
-    }
-  });
-
-  return artifacts;
-};
-
-const liveProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const liveOptions = { ...options, mode: "live" as const };
-  const contract = await compileContract(liveOptions, env);
-  const contractPath = join(options.out, "environment-contract.json");
-
-  await writeJson(contractPath, contract);
-
-  const candidateArtifacts = await liveCandidatesCommand(liveOptions, env);
-  const candidateReport = await readJson<{
-    derivedMission?: { strategy: string; reason: string; missionId?: string };
-  }>(join(options.out, "live-candidates.json"), "live candidates report");
-  const derivedMissionPath = join(options.out, "live-derived-mission.json");
-
-  if (!candidateReport.derivedMission?.missionId) {
-    throw new Error(
-      `live-proof could not derive a runnable mission. ${candidateReport.derivedMission?.reason ?? "Run live-candidates for details."}`
-    );
-  }
-
-  const mission = await loadMission(derivedMissionPath);
-  const compileArtifacts = await writeCompiledArtifacts(options.out, contract, mission, {
-    policyVersion: "live-derived-policy-2026.06.01",
-    profileVersion: "live-derived-profile-2026.06.01"
-  });
-  const runOptions = { ...liveOptions, mission: derivedMissionPath };
-  const evaluateArtifacts = await evaluateCommand(runOptions, env);
-  const receiptArtifacts = await receiptCommand(runOptions, env);
-  const rerunArtifacts = await rerunCommand(runOptions, env);
-  const beforeReceipt = readinessReceiptSchema.parse(
-    await readJson(join(options.out, "receipt-before-001.json"), "before receipt")
-  );
-  const afterReceipt = readinessReceiptSchema.parse(
-    await readJson(join(options.out, "receipt-after-001.json"), "after receipt")
-  );
-  const policyPatch = await readOptionalPolicyPatch(options.out);
-  const hostedModels = summarizeHostedModels(contract, policyPatch);
-  const summaryPath = join(options.out, "live-proof-summary.json");
-  const proofLoop = classifyProofLoop(beforeReceipt, afterReceipt);
-
-  await writeJson(summaryPath, {
-    status: "PASS",
-    mode: "live",
-    mutation: false,
-    derivedMission: candidateReport.derivedMission,
-    before: {
-      verdict: beforeReceipt.verdict,
-      score: beforeReceipt.score,
-      violations: beforeReceipt.violations.length
-    },
-    after: {
-      verdict: afterReceipt.verdict,
-      score: afterReceipt.score,
-      violations: afterReceipt.violations.length
-    },
-    failToPass: beforeReceipt.verdict === "NOT READY" && afterReceipt.verdict === "READY",
-    readyWithoutPatch: beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY",
-    proofLoop,
-    hostedModels,
-    notes:
-      proofLoop === "ready-without-patch"
-        ? "The live-derived mission was already ready before policy injection; this proves live certification but not the fail-to-pass patch loop."
-        : proofLoop === "fail-to-pass"
-          ? "The live-derived mission exercised a NOT READY -> READY patch loop."
-          : "The live-derived mission ran against live Splunk MCP tools; inspect receipts for remaining readiness state."
-  });
-
-  return [
-    ...new Set([
-      contractPath,
-      ...candidateArtifacts,
-      ...compileArtifacts,
-      ...evaluateArtifacts,
-      ...receiptArtifacts,
-      ...rerunArtifacts,
-      summaryPath
-    ])
-  ];
-};
-
-const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  if (!llmEnabled(env)) {
-    throw new Error("live-security-proof requires SPLUNKREADY_LLM_ENABLED=true so the certified specimen is a real LLM agent.");
-  }
-
-  const liveOptions = { ...options, mode: "live" as const };
-  const checkArtifacts = await liveSecurityCheckCommand(liveOptions, env);
-  const readiness = await readJson<{
-    status: string;
-    blockers?: string[];
-    nextActions?: string[];
-  }>(join(options.out, "live-security-readiness.json"), "live security readiness report");
-
-  if (readiness.status !== "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF") {
-    const blockers = readiness.blockers && readiness.blockers.length > 0 ? readiness.blockers.join(" ") : "No blockers were reported.";
-    const nextActions =
-      readiness.nextActions && readiness.nextActions.length > 0
-        ? ` Next actions: ${readiness.nextActions.join(" ")}`
-        : "";
-
-    throw new Error(`live-security-proof is blocked: ${blockers}${nextActions}`);
-  }
-
-  const compileArtifacts = await compileCommand(liveOptions, env);
-  const evaluateArtifacts = await evaluateCommand(liveOptions, env);
-  const receiptArtifacts = await receiptCommand(liveOptions, env);
-  const rerunArtifacts = await rerunCommand(liveOptions, env);
-  const beforeReceipt = readinessReceiptSchema.parse(
-    await readJson(join(options.out, "receipt-before-001.json"), "before receipt")
-  );
-  const afterReceipt = readinessReceiptSchema.parse(
-    await readJson(join(options.out, "receipt-after-001.json"), "after receipt")
-  );
-  const contract = await loadContract(options.out);
-  const policyPatch = await readOptionalPolicyPatch(options.out);
-  const hostedModelProofPath = await writeHostedModelProofArtifact(
-    { outDir: liveOptions.out, mode: liveOptions.mode },
-    await createSplunkAccessAdapter(liveOptions, env),
-    contract
-  );
-  const hostedModelProof = await readJson<unknown>(hostedModelProofPath, "hosted model proof");
-  const hostedModels = summarizeHostedModels(contract, policyPatch, hostedModelProof);
-  const liveProofSummaryPath = join(options.out, "live-proof-summary.json");
-  const securitySummaryPath = join(options.out, "live-security-proof-summary.json");
-  const failToPass = beforeReceipt.verdict === "NOT READY" && afterReceipt.verdict === "READY";
-  const readyAfterPatch = afterReceipt.verdict === "READY";
-  const proofLoop = classifyProofLoop(beforeReceipt, afterReceipt);
-
-  await writeJson(liveProofSummaryPath, {
-    status: "PASS",
-    mode: "live",
-    mutation: false,
-    derivedMission: {
-      strategy: "saved-search-with-evidence",
-      reason: "The flagship security readiness check passed, so the proof used the exact lateral-movement saved search.",
-      missionId: "mission-security-lateral-movement-readiness",
-      artifacts: ["live-security-readiness.json"]
-    },
-    before: {
-      verdict: beforeReceipt.verdict,
-      score: beforeReceipt.score,
-      violations: beforeReceipt.violations.length
-    },
-    after: {
-      verdict: afterReceipt.verdict,
-      score: afterReceipt.score,
-      violations: afterReceipt.violations.length
-    },
-    failToPass,
-    readyWithoutPatch: beforeReceipt.verdict === "READY" && afterReceipt.verdict === "READY",
-    proofLoop,
-    hostedModels,
-    notes: proofLoop === "fail-to-pass"
-      ? "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
-      : "The flagship live security mission ran against live Splunk MCP tools; inspect receipts for remaining readiness state."
-  });
-
-  await writeJson(securitySummaryPath, {
-    status: "PASS",
-    mode: "live",
-    mutation: false,
-    mission: "mission-security-lateral-movement-readiness",
-    readinessStatus: readiness.status,
-    before: {
-      verdict: beforeReceipt.verdict,
-      score: beforeReceipt.score,
-      violations: beforeReceipt.violations.length
-    },
-    after: {
-      verdict: afterReceipt.verdict,
-      score: afterReceipt.score,
-      violations: afterReceipt.violations.length,
-      evidenceRefs: afterReceipt.evidenceRefs
-    },
-    failToPass,
-    readyAfterPatch,
-    proofLoop,
-    hostedModels,
-    notes: proofLoop === "fail-to-pass"
-      ? "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
-      : "The flagship live security mission ran against live Splunk MCP tools; inspect receipts for remaining readiness state."
-  });
-
-  return [
-    ...new Set([
-      ...checkArtifacts,
-      ...compileArtifacts,
-      ...evaluateArtifacts,
-      ...receiptArtifacts,
-      ...rerunArtifacts,
-      hostedModelProofPath,
-      liveProofSummaryPath,
-      securitySummaryPath
-    ])
-  ];
-};
 
 const gradeTraceCommand = async (options: CliOptions): Promise<string[]> => {
   const { artifacts } = await runGradeExternalTraceWorkflow({
@@ -1907,69 +921,34 @@ export const runLiveSmokeFromCli = async (
   input: LiveActionWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<LiveActionWorkflowResult> => {
-  const options = defaultCliOptions({ mode: "live", out: input.outDir, requireLive: true });
-  const result = await liveSmokeCommand(options, env);
-
-  return { status: result.status, outDir: input.outDir, artifacts: result.artifacts, mutation: false, messages: result.messages };
+  return runLiveSmokeWorkflow({ ...input, requireLive: input.requireLive ?? true }, env);
 };
 
 export const runLiveCandidatesFromCli = async (
   input: LiveActionWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<LiveActionWorkflowResult> => {
-  const options = defaultCliOptions({ mode: "live", out: input.outDir });
-  const compileArtifacts = await compileCommand(options, env);
-  const candidateArtifacts = await liveCandidatesCommand(options, env);
-
-  return {
-    status: "PASS",
-    outDir: input.outDir,
-    artifacts: [...new Set([...compileArtifacts, ...candidateArtifacts])],
-    mutation: false,
-    messages: []
-  };
+  return runLiveCandidatesWorkflow({ ...input, compileFirst: input.compileFirst ?? true }, env);
 };
 
 export const runLiveSecurityReadinessFromCli = async (
   input: LiveActionWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<LiveActionWorkflowResult> => {
-  const options = defaultCliOptions({ mode: "live", out: input.outDir });
-  const artifacts = await liveSecurityCheckCommand(options, env);
-
-  return { status: "PASS", outDir: input.outDir, artifacts, mutation: false, messages: [] };
+  return runLiveSecurityReadinessWorkflow(input, env);
 };
 
 export const runLiveSecurityKitFromCli = async (
   input: LiveActionWorkflowInput
 ): Promise<LiveActionWorkflowResult> => {
-  const options = defaultCliOptions({ mode: "fixture", out: input.outDir });
-  const artifacts = await liveSecurityKitCommand(options);
-
-  return {
-    status: "PASS",
-    outDir: input.outDir,
-    artifacts,
-    mutation: false,
-    messages: ["Generated local operator-owned security kit. SplunkReady performed no Splunk write operation."]
-  };
+  return runLiveSecurityKitWorkflow(input);
 };
 
 export const runLiveSecurityProofFromCli = async (
   input: LiveActionWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<LiveActionWorkflowResult> => {
-  const options = defaultCliOptions({ mode: "live", out: input.outDir, requirePass: true });
-  const proofArtifacts = await liveSecurityProofCommand(options, env);
-  const auditArtifacts = await proofAuditCommand(options);
-
-  return {
-    status: "PASS",
-    outDir: input.outDir,
-    artifacts: [...new Set([...proofArtifacts, ...auditArtifacts])],
-    mutation: false,
-    messages: []
-  };
+  return runLiveSecurityProofWorkflow({ ...input, requirePass: input.requirePass ?? true }, env);
 };
 
 export const runHostedModelDiagnosticFromCli = async (
@@ -2014,7 +993,12 @@ const main = async (): Promise<void> => {
   }
 
   if (command === "live-smoke") {
-    const result = await liveSmokeCommand(options);
+    const result = await runLiveSmokeWorkflow({
+      outDir: options.out,
+      fixturePath: options.fixture,
+      missionPath: options.mission,
+      requireLive: options.requireLive
+    });
     printCliOutput({ command, status: result.status, artifacts: result.artifacts, messages: result.messages }, options);
     return;
   }
@@ -2050,17 +1034,60 @@ const main = async (): Promise<void> => {
   } else if (command === "mcp-proof") {
     artifacts = await mcpProofCommand(options);
   } else if (command === "live-candidates") {
-    artifacts = await liveCandidatesCommand(options);
+    artifacts = (
+      await runLiveCandidatesWorkflow({
+        outDir: options.out,
+        fixturePath: options.fixture,
+        missionPath: options.mission,
+        candidateLimit: options.candidateLimit,
+        compileFirst: false,
+        firewall: options.firewall,
+        agentModel: options.agentModel
+      })
+    ).artifacts;
   } else if (command === "live-security-check") {
-    artifacts = await liveSecurityCheckCommand(options);
+    artifacts = (
+      await runLiveSecurityReadinessWorkflow({
+        outDir: options.out,
+        fixturePath: options.fixture,
+        missionPath: options.mission,
+        firewall: options.firewall,
+        agentModel: options.agentModel
+      })
+    ).artifacts;
   } else if (command === "live-security-kit") {
-    artifacts = await liveSecurityKitCommand(options);
+    artifacts = (await runLiveSecurityKitWorkflow({ outDir: options.out })).artifacts;
   } else if (command === "live-security-proof") {
-    artifacts = await liveSecurityProofCommand(options);
+    artifacts = await runLiveSecurityProofArtifacts({
+      outDir: options.out,
+      fixturePath: options.fixture,
+      missionPath: options.mission,
+      firewall: options.firewall,
+      agentModel: options.agentModel,
+      requirePass: options.requirePass
+    });
   } else if (command === "live-security-ui-bundle") {
-    artifacts = await liveSecurityUiBundleCommand(options);
+    artifacts = (
+      await runLiveSecurityUiBundleWorkflow({
+        outDir: options.out,
+        proofDir: options.proofDir,
+        securityCheckDir: options.securityCheckDir,
+        securityKitDir: options.securityKitDir,
+        hostedModelProofDir: options.hostedModelProofDir
+      })
+    ).artifacts;
   } else if (command === "live-proof") {
-    artifacts = await liveProofCommand(options);
+    artifacts = (
+      await runLiveProofWorkflow({
+        outDir: options.out,
+        fixturePath: options.fixture,
+        missionPath: options.mission,
+        candidateLimit: options.candidateLimit,
+        firewall: options.firewall,
+        agentModel: options.agentModel,
+        requirePass: options.requirePass
+      })
+    ).artifacts;
   } else if (command === "suite-proof") {
     artifacts = await suiteProofCommand(options);
   } else if (command === "receipt") {

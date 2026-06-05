@@ -9240,3 +9240,57 @@ Open blockers:
 
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
+## 2026-06-05 - Move 69 Live Action Workflow Extraction
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/workflows/live-actions.test.ts`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "live smoke|live-candidates|live security|live proof"`
+- `git diff --check`
+- `npm run verify:scaffold`
+- `npm run check`
+
+Result:
+
+- PASS for `npx tsc --noEmit`.
+- PASS for direct live workflow tests:
+  - 1 test file passed;
+  - 5 tests passed.
+- PASS for focused live CLI regression tests:
+  - 1 test file passed;
+  - 10 tests passed;
+  - 29 tests skipped by the focused pattern.
+- PASS for `git diff --check`.
+- PASS for `npm run verify:scaffold`:
+  - scaffold verified;
+  - waves: 85;
+  - project files: 1749.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 53 test files passed;
+  - 335 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- `src/cli.ts` line count is now 1,162, down from 2,135 after Move 68.
+- `src/workflows/live-actions.ts` no longer imports `../cli.js`.
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- The production UI build ran as part of `npm run check`; no UI source or
+  behavior changed in this move.
+
+Open blockers:
+
+- Public package publish, hosted demo, refreshed submission evidence, and
+  stronger Splunk MCP usage proof remain open Minimax caps.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.

@@ -10429,3 +10429,44 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
+## 2026-06-05 23:32 - Move 69 Live Action Workflow Extraction
+
+Scope:
+- Continued the Minimax-driven CLI modularization pass without using subagents.
+- Removed the final CLI-backed workflow wrapper by moving live smoke, live
+  candidates, strict live security readiness, operator-owned kit generation,
+  generic live proof, live security proof, and live security UI bundling into
+  `src/workflows/live-actions.ts`.
+- Kept CLI commands and exported compatibility names as thin delegators.
+- Preserved no-mutation live boundaries and the advisory-only hosted-model/SAIA
+  boundary.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/workflows/live-actions.ts`
+- `src/cli.ts`
+- `tests/workflows/live-actions.test.ts`
+- `moves/README.md`
+- `moves/moves69.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `src/workflows/live-actions.ts` now owns the live orchestration directly
+  instead of dynamically importing `../cli.js`.
+- `src/cli.ts` now delegates live commands to workflow functions.
+- Added direct workflow tests for live smoke skip, candidate derivation, live
+  security kit generation, strict blocked readiness, and no CLI import.
+- Reduced `src/cli.ts` from 2,135 lines to 1,162 lines, a 973-line reduction.
+
+Open blockers:
+- `src/cli.ts` is still large enough to merit further extraction, but the live
+  workflow dependency is no longer CLI-owned.
+- Public package publish, hosted demo, refreshed submission evidence, and
+  stronger Splunk MCP usage proof remain open Minimax caps.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
