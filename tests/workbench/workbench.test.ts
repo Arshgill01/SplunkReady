@@ -10,7 +10,7 @@ import { WorkbenchArtifactStore } from "../../src/workbench/artifacts.js";
 import { createWorkbenchConfig, healthFromConfig, type WorkbenchConfig } from "../../src/workbench/config.js";
 import { WorkbenchJobRunner } from "../../src/workbench/jobs.js";
 import { createWorkbenchApiHandler } from "../../src/workbench/routes.js";
-import { redactText } from "../../src/workbench/redaction.js";
+import { redactText, redactUnknownError } from "../../src/workbench/redaction.js";
 
 const tempRoot = async (): Promise<string> => mkdtemp(join(tmpdir(), "splunkready-workbench-test-"));
 
@@ -109,6 +109,30 @@ describe("workbench backend", () => {
 
     expect(redacted).toContain("Bearer [REDACTED]");
     expect(redacted).toContain("TOKEN=[REDACTED]");
+    expect(redacted).not.toContain("exact-token");
+  });
+
+  it("formats structured adapter errors instead of rendering object placeholders", () => {
+    const redacted = redactUnknownError(
+      {
+        name: "SplunkAdapterError",
+        code: "LIVE_ADAPTER_TRANSPORT_ERROR",
+        message: "Live Splunk adapter call failed.",
+        context: {
+          mode: "live",
+          toolName: "splunk_get_info",
+          requestId: "request-1"
+        },
+        retryable: true,
+        cause: new Error("Bearer exact-token failed")
+      },
+      { SPLUNKREADY_SPLUNK_MCP_TOKEN: "exact-token" }
+    );
+
+    expect(redacted).toBe(
+      "LIVE_ADAPTER_TRANSPORT_ERROR while calling splunk_get_info: Live Splunk adapter call failed. Cause: Bearer [REDACTED] failed"
+    );
+    expect(redacted).not.toContain("[object Object]");
     expect(redacted).not.toContain("exact-token");
   });
 

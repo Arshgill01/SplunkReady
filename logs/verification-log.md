@@ -5999,3 +5999,82 @@ Open risks:
 
 - Live jobs were not executed against a real Splunk MCP endpoint in this environment. Per Move 08, those should run manually only from an operator-owned live env.
 - Browser-level interaction was covered by renderer/controller tests and production UI build, not by a live browser session in this slice.
+
+## 2026-06-05 - Move 08 Playwright Live UI Verification Follow-up
+
+Commands:
+
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4317 --headed`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e15 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval "(() => { const text = document.body.innerText; const buttons = Array.from(document.querySelectorAll('[data-run-workflow]')).map((button) => ({ workflow: button.getAttribute('data-run-workflow'), text: button.textContent?.replace(/\\s+/g, ' ').trim(), disabled: button.hasAttribute('disabled') })); const inputs = Array.from(document.querySelectorAll('input, textarea')).map((input) => ({ name: input.getAttribute('name'), type: input.getAttribute('type'), aria: input.getAttribute('aria-label') })); const result = { url: location.href, hasLivePanel: text.includes('Live workbench actions'), hasMissingEnv: text.includes('SPLUNKREADY_LIVE_ENABLED=true') && text.includes('SPLUNKREADY_SPLUNK_MCP_URL') && text.includes('SPLUNKREADY_SPLUNK_MCP_TOKEN'), hasNoBrowserCredentialsCopy: text.includes('Browser credentials') && text.includes('not accepted'), hasMutationFalse: text.includes('Mutation') && text.includes('false'), buttons, inputs }; const expected = ['live-smoke', 'live-candidates', 'live-security-readiness', 'live-security-proof']; if (result.url !== 'http://127.0.0.1:4317/#live-connect') throw new Error('not on live connect view: ' + result.url); if (!result.hasLivePanel) throw new Error('live panel missing'); if (!result.hasMissingEnv) throw new Error('missing env names not rendered'); if (!result.hasNoBrowserCredentialsCopy) throw new Error('browser credential posture missing'); if (!result.hasMutationFalse) throw new Error('mutation=false posture missing'); if (result.inputs.length !== 0) throw new Error('unexpected credential-capable inputs: ' + JSON.stringify(result.inputs)); for (const workflow of expected) { const button = result.buttons.find((candidate) => candidate.workflow === workflow); if (!button) throw new Error('missing workflow button ' + workflow + ': ' + JSON.stringify(result.buttons)); if (!button.disabled) throw new Error('workflow button should be disabled without live env: ' + workflow); } return result; })()"`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e168 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e319`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval "(() => { const text = document.body.innerText; const result = { url: location.href, hasSucceeded: text.includes('Job') && text.includes('succeeded'), hasQueuedEvent: text.includes('Queued fixture certification.'), hasCompleteEvent: text.includes('fixture certification completed.'), hasServerArtifactBase: text.includes('/api/artifacts/run-'), hasBeforeNotReady: text.includes('Before') && text.includes('NOT READY'), hasAfterReady: text.includes('After') && text.includes('READY'), hasResolvedViolations: text.includes('5 resolved violation') }; if (!result.url.includes('artifacts=%2Fapi%2Fartifacts%2Frun-')) throw new Error('server-owned artifact URL missing: ' + result.url); for (const [key, value] of Object.entries(result)) { if (key !== 'url' && value !== true) throw new Error(key + ' assertion failed: ' + JSON.stringify(result)); } return result; })()"`
+- `find /Users/arshdeepsingh -maxdepth 5 \( -name '.splunkready' -o -name '.splunkready.*' -o -name '*splunkready*env*' -o -name '*splunkready*secrets*' \) -not -path '*/node_modules/*' -not -path '*/.git/*' -print 2>/dev/null`
+- `awk -F= '/^[[:space:]]*(export[[:space:]]+)?[A-Za-z_][A-Za-z0-9_]*=/ { key=$1; sub(/^[[:space:]]*export[[:space:]]+/, "", key); gsub(/[[:space:]]/, "", key); print key "=<redacted>" }' ./.splunkready-live.env`
+- `set -a; source ./.splunkready-live.env; set +a; node - <<'NODE' ... NODE`
+- `set -a; source ./.splunkready-live.env; set +a; npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh goto http://127.0.0.1:4317/#live-connect && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e50`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval "(() => { const text = document.body.innerText; const result = { hasObjectPlaceholder: text.includes('[object Object]'), hasTransportError: text.includes('LIVE_ADAPTER_TRANSPORT_ERROR'), hasFetchFailed: text.includes('fetch failed'), inputCount: document.querySelectorAll('input, textarea').length }; if (result.hasObjectPlaceholder) throw new Error('object placeholder still rendered'); if (!result.hasTransportError) throw new Error('transport error not rendered'); if (result.inputCount !== 0) throw new Error('unexpected browser inputs: ' + result.inputCount); return result; })()"`
+- `npx tsc --noEmit && npx vitest run tests/workbench/workbench.test.ts`
+- `set -a; source ./.splunkready-live.env; set +a; NODE_TLS_REJECT_UNAUTHORIZED=0 npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh request 46`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh request-body 46 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh response-body 48`
+- `npm run build && npm run check && git diff --check`
+
+Result:
+
+- PASS for `npx` prerequisite.
+- PASS for no-env workbench browser launch.
+- PASS for Playwright no-env Live connect assertions:
+  - live panel rendered;
+  - missing env names rendered;
+  - browser credentials shown as `not accepted`;
+  - mutation shown as `false`;
+  - four fixed live action buttons rendered and disabled;
+  - zero `input` or `textarea` elements.
+- PASS for Playwright fixture certification browser run:
+  - server-owned `/api/artifacts/run-*` bundle loaded;
+  - job succeeded;
+  - before receipt rendered `NOT READY`;
+  - after receipt rendered `READY`;
+  - resolved violation evidence rendered.
+- PASS for finding `./.splunkready-live.env` and verifying required key presence without printing values:
+  - `SPLUNKREADY_LIVE_ENABLED`;
+  - `SPLUNKREADY_SPLUNK_MCP_URL`;
+  - `SPLUNKREADY_SPLUNK_MCP_TOKEN`;
+  - `GEMINI_API_KEY`.
+- FAIL for first live-env browser `Run live smoke` result:
+  - workbench accepted fixed `POST /api/jobs/live-smoke`;
+  - live job failed before artifact creation;
+  - UI rendered `[object Object]` for the structured adapter error.
+- PASS after redaction fix for focused TypeScript/workbench test:
+  - 1 test file;
+  - 11 tests passed.
+- PASS for canonical build/check gate:
+  - production TypeScript build passed;
+  - scaffold verified;
+  - 85 waves;
+  - 959 project files;
+  - 41 test files;
+  - 265 tests passed.
+- PASS for `git diff --check`.
+- PASS after redaction fix for Playwright live-env browser error rendering:
+  - no `[object Object]`;
+  - redacted `LIVE_ADAPTER_TRANSPORT_ERROR while calling splunk_get_info... Cause: fetch failed`;
+  - zero credential-capable browser inputs.
+- PARTIAL for real live smoke connectivity:
+  - live-env workbench and browser action path were real;
+  - the browser submitted only `POST /api/jobs/live-smoke` with no request body;
+  - endpoint transport still failed with `fetch failed` before `splunk_get_info` completed;
+  - retrying the server with `NODE_TLS_REJECT_UNAUTHORIZED=0` did not resolve the transport failure.
+
+Open risks:
+
+- The workbench UI live path is browser-verified, but this environment still cannot complete a live MCP smoke run. No `live-smoke-contract.json` was written from the Playwright live attempts.
+- The local TLS override was used only for diagnosis and should not be copied into production guidance.

@@ -7676,3 +7676,51 @@ Result:
 - Full offline check passed with 41 test files and 264 tests.
 - Vite production UI build passed.
 - `git diff --check` passed.
+
+## 2026-06-05 - Move 08 Playwright Live UI Verification Follow-up
+
+Scope:
+- Correct the missing browser-level verification gap for Move 08.
+- Exercise the actual local workbench UI with Playwright.
+- Verify no browser credential submission and fixed allowlisted workflow submission.
+- Fix any defect found by the browser pass before continuing Move 09.
+
+Files expected/touched:
+- `src/workbench/redaction.ts`
+- `tests/workbench/workbench.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Found `./.splunkready-live.env` and verified only key presence without printing values. Required live MCP keys were set in that file.
+- Ran the workbench first without live env and used Playwright to verify the Live connect view rendered missing env names, disabled all four live buttons, rendered no `input` or `textarea`, and still allowed fixture certification to run through the browser to a server-owned artifact bundle.
+- Restarted the workbench with `./.splunkready-live.env` and verified Playwright showed `Live mode available from server env` with the four live actions enabled and no browser credential inputs.
+- Clicked `Run live smoke` through Playwright. The browser submitted `POST /api/jobs/live-smoke` with no request body and then polled `/api/jobs/job-1`.
+- Playwright exposed a real defect: structured live adapter failures rendered as `[object Object]` in the job panel and event list.
+- Updated workbench error redaction to format structured `SplunkAdapterError` objects as redacted `CODE while calling tool: message Cause: ...` strings.
+- Added regression coverage for structured adapter error redaction so `[object Object]` cannot silently return.
+- Reran Playwright against the rebuilt live-env workbench. The live-smoke action still failed because the MCP transport returned `fetch failed`, including when the local TLS override was used, but the UI now displayed a redacted `LIVE_ADAPTER_TRANSPORT_ERROR` without endpoint or token values.
+
+Product impact:
+- Move 08 is now browser-verified instead of relying only on renderer/controller tests.
+- The workbench live failure path is understandable to an operator and does not leak live secrets.
+- The browser still cannot submit Splunk credentials, SPL, filesystem paths, or arbitrary commands; the live action request is a fixed workflow URL.
+
+Reviewer findings:
+- Subagents are disabled per user direction; no reviewer loop was run for this corrective slice.
+
+Open risks:
+- Live MCP connectivity did not complete from this environment. The UI was tested against a real live-configured workbench process, but the endpoint failed before `splunk_get_info` completed and no live-smoke artifacts were produced.
+- `NODE_TLS_REJECT_UNAUTHORIZED=0` was used only for the documented local non-production retry. It did not resolve the transport failure and must not become production guidance.
+
+Result:
+- Focused TypeScript/workbench regression check passed.
+- Production build passed.
+- Full offline check passed with 41 test files and 265 tests.
+- `git diff --check` passed.
+- Playwright browser checks passed for:
+  - no-env disabled live UI;
+  - fixture certification browser execution;
+  - live-env enabled UI;
+  - fixed live-smoke browser request shape;
+  - redacted live adapter transport error rendering.

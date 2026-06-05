@@ -22,5 +22,33 @@ export const redactUnknownError = (error: unknown, env: NodeJS.ProcessEnv = proc
     return redactText(error.message, env);
   }
 
+  if (error && typeof error === "object") {
+    const input = error as {
+      name?: unknown;
+      code?: unknown;
+      message?: unknown;
+      context?: { toolName?: unknown };
+      cause?: unknown;
+    };
+
+    if (input.name === "SplunkAdapterError") {
+      const code = typeof input.code === "string" ? input.code : "SPLUNK_ADAPTER_ERROR";
+      const message = typeof input.message === "string" ? input.message : "Splunk adapter failed.";
+      const toolName = typeof input.context?.toolName === "string" ? input.context.toolName : "unknown_tool";
+      const causeMessage =
+        input.cause instanceof Error
+          ? ` Cause: ${input.cause.message}`
+          : input.cause && typeof input.cause === "object" && "message" in input.cause
+            ? ` Cause: ${String((input.cause as { message: unknown }).message)}`
+            : "";
+
+      return redactText(`${code} while calling ${toolName}: ${message}${causeMessage}`, env);
+    }
+
+    if (typeof input.message === "string") {
+      return redactText(input.message, env);
+    }
+  }
+
   return redactText(String(error), env);
 };
