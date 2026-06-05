@@ -235,6 +235,14 @@ export const splunkReadyMcpResources: McpResource[] = [
     mimeType: "application/json"
   },
   {
+    uri: "splunkready://client-config/splunk-and-splunkready",
+    name: "dual-server-client-config",
+    title: "Splunk MCP + SplunkReady MCP Client Configuration",
+    description:
+      "Credential-free MCP client template that composes an operator-provided Splunk MCP server with SplunkReady certification.",
+    mimeType: "application/json"
+  },
+  {
     uri: "splunkready://workflows/splunk-mcp-certification-loop",
     name: "splunk-mcp-certification-loop",
     title: "Splunk MCP Certification Loop",
@@ -360,6 +368,46 @@ const describeCertification = (): Record<string, unknown> => ({
   prompts: splunkReadyMcpPrompts.map((prompt) => prompt.name)
 });
 
+const splunkReadyClientConfig = (): Record<string, unknown> => ({
+  mcpServers: {
+    splunkready: {
+      command: "npm",
+      args: ["run", "mcp"],
+      cwd: "/path/to/SplunkReady"
+    }
+  }
+});
+
+const dualServerClientConfig = (): Record<string, unknown> => ({
+  mcpServers: {
+    splunk: {
+      description:
+        "Operator-provided Splunk MCP Server. Keep credentials in the MCP client or environment, not in captured transcripts.",
+      command: "<existing-splunk-mcp-server-command>",
+      args: ["<existing-splunk-mcp-server-args>"],
+      env: {
+        SPLUNK_MCP_URL: "${SPLUNKREADY_SPLUNK_MCP_URL}",
+        SPLUNK_MCP_TOKEN: "${SPLUNKREADY_SPLUNK_MCP_TOKEN}"
+      }
+    },
+    splunkready: {
+      description: "Local SplunkReady certification server for deterministic Readiness Receipts.",
+      command: "npm",
+      args: ["run", "mcp"],
+      cwd: "/path/to/SplunkReady"
+    }
+  },
+  workflow: {
+    investigateWith: "splunk",
+    certifyWith: "splunkready",
+    capture: "Preserve the Splunk MCP JSON-RPC request/response transcript as JSONL without tokens or environment files.",
+    certificationTool: "splunkready_certify_mcp_transcript",
+    readOnlySplunkTools: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+    deterministicAuthority: true,
+    mutation: false
+  }
+});
+
 const readResource = async (uri: string): Promise<Record<string, unknown>> => {
   if (uri === "splunkready://certification/posture") {
     return {
@@ -415,19 +463,19 @@ const readResource = async (uri: string): Promise<Record<string, unknown>> => {
         {
           uri,
           mimeType: "application/json",
-          text: JSON.stringify(
-            {
-              mcpServers: {
-                splunkready: {
-                  command: "npm",
-                  args: ["run", "mcp"],
-                  cwd: "/path/to/SplunkReady"
-                }
-              }
-            },
-            null,
-            2
-          )
+          text: JSON.stringify(splunkReadyClientConfig(), null, 2)
+        }
+      ]
+    };
+  }
+
+  if (uri === "splunkready://client-config/splunk-and-splunkready") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "application/json",
+          text: JSON.stringify(dualServerClientConfig(), null, 2)
         }
       ]
     };
@@ -442,6 +490,7 @@ const readResource = async (uri: string): Promise<Record<string, unknown>> => {
           text: [
             "# Splunk MCP Certification Loop",
             "",
+            "Configure two MCP servers in the client: `splunk` for the existing Splunk MCP Server and `splunkready` for deterministic certification.",
             "1. Use the configured Splunk MCP Server for read-only investigation calls such as knowledge-object lookup and saved-search execution.",
             "2. Preserve the MCP JSON-RPC request/response transcript as JSONL. Do not include tokens or environment files.",
             "3. Call `splunkready_certify_mcp_transcript` with `strictImport=true` and `requirePass=true`.",
@@ -502,6 +551,7 @@ const promptText = (name: string, args: Record<string, unknown>): string => {
       `Transcript path: ${String(args.transcriptPath ?? "<transcriptPath>")}`,
       `Output directory: ${String(args.outDir ?? "<outDir>")}`,
       "",
+      "Use the two-server MCP client configuration: `splunk` is the existing Splunk MCP Server and `splunkready` is the local certification server.",
       "Use Splunk MCP only for read-only investigation actions. Prefer saved searches and knowledge objects when the deployment exposes them.",
       "Preserve the JSON-RPC transcript of the Splunk MCP tool calls and responses.",
       "Then call splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.",

@@ -75,6 +75,7 @@ describe("SplunkReady MCP server", () => {
       "splunkready://examples/mcp-transcript-pass",
       "splunkready://examples/pass-receipt",
       "splunkready://client-config/stdio",
+      "splunkready://client-config/splunk-and-splunkready",
       "splunkready://workflows/splunk-mcp-certification-loop"
     ]);
 
@@ -94,6 +95,20 @@ describe("SplunkReady MCP server", () => {
     expect(String(contents[0].text)).toContain("\"deterministicAuthority\": true");
     expect(String(contents[0].text)).toContain("\"mutation\": false");
 
+    const dualConfigResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "dual-config-read",
+      method: "resources/read",
+      params: { uri: "splunkready://client-config/splunk-and-splunkready" }
+    });
+    const dualConfigResult = resultOf(dualConfigResponse);
+    const dualConfigContents = dualConfigResult.contents as Array<Record<string, unknown>>;
+
+    expect(String(dualConfigContents[0].text)).toContain("\"splunk\"");
+    expect(String(dualConfigContents[0].text)).toContain("\"splunkready\"");
+    expect(String(dualConfigContents[0].text)).toContain("\"certificationTool\": \"splunkready_certify_mcp_transcript\"");
+    expect(String(dualConfigContents[0].text)).toContain("\"mutation\": false");
+
     const workflowResponse = await handleMcpMessage({
       jsonrpc: "2.0",
       id: "workflow-read",
@@ -104,6 +119,7 @@ describe("SplunkReady MCP server", () => {
     const workflowContents = workflowResult.contents as Array<Record<string, unknown>>;
 
     expect(String(workflowContents[0].text)).toContain("Use the configured Splunk MCP Server");
+    expect(String(workflowContents[0].text)).toContain("Configure two MCP servers");
     expect(String(workflowContents[0].text)).toContain("splunkready_certify_mcp_transcript");
   });
 
@@ -156,6 +172,7 @@ describe("SplunkReady MCP server", () => {
     const loopMessages = loopResult.messages as Array<{ content: { text: string } }>;
 
     expect(loopMessages[0].content.text).toContain("Splunk MCP server: splunk");
+    expect(loopMessages[0].content.text).toContain("two-server MCP client configuration");
     expect(loopMessages[0].content.text).toContain("Preserve the JSON-RPC transcript");
     expect(loopMessages[0].content.text).toContain("Readiness Receipt as the authoritative verdict");
   });

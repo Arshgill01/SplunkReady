@@ -1328,6 +1328,7 @@ describe("SplunkReady CLI flow", () => {
       describe: { product: string; engine: string; mutation: boolean; deterministicAuthority: boolean };
       postureResource: { contents: Array<{ uri: string; text: string }> };
       clientConfigResource: { contents: Array<{ uri: string; text: string }> };
+      dualServerClientConfigResource: { contents: Array<{ uri: string; text: string }> };
       certificationLoopResource: { contents: Array<{ uri: string; text: string }> };
       transcriptPrompt: { messages: Array<{ content: { text: string } }> };
       certificationLoopPrompt: { messages: Array<{ content: { text: string } }> };
@@ -1416,6 +1417,7 @@ describe("SplunkReady CLI flow", () => {
       "splunkready://examples/mcp-transcript-pass",
       "splunkready://examples/pass-receipt",
       "splunkready://client-config/stdio",
+      "splunkready://client-config/splunk-and-splunkready",
       "splunkready://workflows/splunk-mcp-certification-loop"
     ]);
     expect(summary.prompts.map((prompt) => prompt.name)).toEqual([
@@ -1426,9 +1428,16 @@ describe("SplunkReady CLI flow", () => {
     ]);
     expect(summary.postureResource.contents[0].text).toContain("\"advisoryLlmOnly\": true");
     expect(summary.clientConfigResource.contents[0].text).toContain("\"splunkready\"");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("\"splunk\"");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("\"splunkready\"");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain(
+      "\"certificationTool\": \"splunkready_certify_mcp_transcript\""
+    );
     expect(summary.certificationLoopResource.contents[0].text).toContain("Splunk MCP Certification Loop");
+    expect(summary.certificationLoopResource.contents[0].text).toContain("Configure two MCP servers");
     expect(summary.transcriptPrompt.messages[0].content.text).toContain("strictImport=true");
     expect(summary.certificationLoopPrompt.messages[0].content.text).toContain("Splunk MCP server: splunk");
+    expect(summary.certificationLoopPrompt.messages[0].content.text).toContain("two-server MCP client configuration");
     expect(summary.agentDrivenWorkflow.splunkMcpServerRole).toContain("read-only investigation");
     expect(summary.agentDrivenWorkflow.splunkReadyMcpServerRole).toContain("deterministic certification");
     expect(summary.agentDrivenWorkflow.stages).toHaveLength(4);

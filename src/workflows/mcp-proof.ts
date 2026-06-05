@@ -64,6 +64,7 @@ interface McpProofSummary {
   describe: Record<string, unknown>;
   postureResource: Record<string, unknown>;
   clientConfigResource: Record<string, unknown>;
+  dualServerClientConfigResource: Record<string, unknown>;
   certificationLoopResource: Record<string, unknown>;
   transcriptPrompt: Record<string, unknown>;
   certificationLoopPrompt: Record<string, unknown>;
@@ -218,6 +219,11 @@ ${summary.tools.map((tool) => `- ${tool.name} destructive=${String(tool.destruct
 Resources:
 ${summary.resources.map((resource) => `- ${resource.uri} (${resource.mimeType})`).join("\n")}
 
+Dual-server MCP client kit:
+- Resource: splunkready://client-config/splunk-and-splunkready
+- Existing Splunk MCP role: investigate with read-only Splunk tools
+- SplunkReady MCP role: certify the captured Splunk MCP transcript
+
 Prompts:
 ${summary.prompts.map((prompt) => `- ${prompt.name} arguments=${prompt.argumentCount}`).join("\n")}
 
@@ -356,6 +362,9 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
     const resourcesList = await client.request("resources/list");
     const postureResource = await client.request("resources/read", { uri: "splunkready://certification/posture" });
     const clientConfigResource = await client.request("resources/read", { uri: "splunkready://client-config/stdio" });
+    const dualServerClientConfigResource = await client.request("resources/read", {
+      uri: "splunkready://client-config/splunk-and-splunkready"
+    });
     const certificationLoopResource = await client.request("resources/read", {
       uri: "splunkready://workflows/splunk-mcp-certification-loop"
     });
@@ -470,6 +479,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       describe,
       postureResource,
       clientConfigResource,
+      dualServerClientConfigResource,
       certificationLoopResource,
       transcriptPrompt,
       certificationLoopPrompt,

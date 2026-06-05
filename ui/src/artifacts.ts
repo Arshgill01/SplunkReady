@@ -652,6 +652,7 @@ const mcpProofSummarySchema = z
     describe: z.record(z.unknown()),
     postureResource: z.record(z.unknown()),
     clientConfigResource: z.record(z.unknown()),
+    dualServerClientConfigResource: z.record(z.unknown()),
     certificationLoopResource: z.record(z.unknown()),
     transcriptPrompt: z.record(z.unknown()),
     certificationLoopPrompt: z.record(z.unknown()),

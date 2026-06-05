@@ -336,6 +336,11 @@ const mcpProofSummary = {
     { uri: "splunkready://certification/posture", name: "certification-posture", mimeType: "application/json" },
     { uri: "splunkready://client-config/stdio", name: "stdio-client-config", mimeType: "application/json" },
     {
+      uri: "splunkready://client-config/splunk-and-splunkready",
+      name: "dual-server-client-config",
+      mimeType: "application/json"
+    },
+    {
       uri: "splunkready://workflows/splunk-mcp-certification-loop",
       name: "splunk-mcp-certification-loop",
       mimeType: "text/markdown"
@@ -348,6 +353,7 @@ const mcpProofSummary = {
   describe: { deterministicAuthority: true, advisoryLlmOnly: true, mutation: false },
   postureResource: { contents: [] },
   clientConfigResource: { contents: [] },
+  dualServerClientConfigResource: { contents: [] },
   certificationLoopResource: { contents: [] },
   transcriptPrompt: { messages: [] },
   certificationLoopPrompt: { messages: [] },

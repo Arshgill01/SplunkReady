@@ -54,6 +54,11 @@
       "mimeType": "application/json"
     },
     {
+      "uri": "splunkready://client-config/splunk-and-splunkready",
+      "name": "dual-server-client-config",
+      "mimeType": "application/json"
+    },
+    {
       "uri": "splunkready://workflows/splunk-mcp-certification-loop",
       "name": "splunk-mcp-certification-loop",
       "mimeType": "text/markdown"
@@ -95,6 +100,7 @@
       "splunkready://examples/mcp-transcript-pass",
       "splunkready://examples/pass-receipt",
       "splunkready://client-config/stdio",
+      "splunkready://client-config/splunk-and-splunkready",
       "splunkready://workflows/splunk-mcp-certification-loop"
     ],
     "prompts": [
@@ -109,7 +115,7 @@
       {
         "uri": "splunkready://certification/posture",
         "mimeType": "application/json",
-        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\"\n  ]\n}"
+        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://client-config/splunk-and-splunkready\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\"\n  ]\n}"
       }
     ]
   },
@@ -122,12 +128,21 @@
       }
     ]
   },
+  "dualServerClientConfigResource": {
+    "contents": [
+      {
+        "uri": "splunkready://client-config/splunk-and-splunkready",
+        "mimeType": "application/json",
+        "text": "{\n  \"mcpServers\": {\n    \"splunk\": {\n      \"description\": \"Operator-provided Splunk MCP Server. Keep credentials in the MCP client or environment, not in captured transcripts.\",\n      \"command\": \"<existing-splunk-mcp-server-command>\",\n      \"args\": [\n        \"<existing-splunk-mcp-server-args>\"\n      ],\n      \"env\": {\n        \"SPLUNK_MCP_URL\": \"${SPLUNKREADY_SPLUNK_MCP_URL}\",\n        \"SPLUNK_MCP_TOKEN\": \"${SPLUNKREADY_SPLUNK_MCP_TOKEN}\"\n      }\n    },\n    \"splunkready\": {\n      \"description\": \"Local SplunkReady certification server for deterministic Readiness Receipts.\",\n      \"command\": \"npm\",\n      \"args\": [\n        \"run\",\n        \"mcp\"\n      ],\n      \"cwd\": \"/path/to/SplunkReady\"\n    }\n  },\n  \"workflow\": {\n    \"investigateWith\": \"splunk\",\n    \"certifyWith\": \"splunkready\",\n    \"capture\": \"Preserve the Splunk MCP JSON-RPC request/response transcript as JSONL without tokens or environment files.\",\n    \"certificationTool\": \"splunkready_certify_mcp_transcript\",\n    \"readOnlySplunkTools\": [\n      \"splunk_get_knowledge_objects\",\n      \"splunk_run_saved_search\"\n    ],\n    \"deterministicAuthority\": true,\n    \"mutation\": false\n  }\n}"
+      }
+    ]
+  },
   "certificationLoopResource": {
     "contents": [
       {
         "uri": "splunkready://workflows/splunk-mcp-certification-loop",
         "mimeType": "text/markdown",
-        "text": "# Splunk MCP Certification Loop\n\n1. Use the configured Splunk MCP Server for read-only investigation calls such as knowledge-object lookup and saved-search execution.\n2. Preserve the MCP JSON-RPC request/response transcript as JSONL. Do not include tokens or environment files.\n3. Call `splunkready_certify_mcp_transcript` with `strictImport=true` and `requirePass=true`.\n4. Treat the generated Readiness Receipt as the source of truth. Deterministic rules decide READY or NOT READY; LLM output may only explain the receipt.\n\nSplunkReady does not replace Splunk MCP and does not mutate Splunk. It certifies captured Splunk MCP behavior for this deployment."
+        "text": "# Splunk MCP Certification Loop\n\nConfigure two MCP servers in the client: `splunk` for the existing Splunk MCP Server and `splunkready` for deterministic certification.\n1. Use the configured Splunk MCP Server for read-only investigation calls such as knowledge-object lookup and saved-search execution.\n2. Preserve the MCP JSON-RPC request/response transcript as JSONL. Do not include tokens or environment files.\n3. Call `splunkready_certify_mcp_transcript` with `strictImport=true` and `requirePass=true`.\n4. Treat the generated Readiness Receipt as the source of truth. Deterministic rules decide READY or NOT READY; LLM output may only explain the receipt.\n\nSplunkReady does not replace Splunk MCP and does not mutate Splunk. It certifies captured Splunk MCP behavior for this deployment."
       }
     ]
   },
@@ -150,7 +165,7 @@
         "role": "user",
         "content": {
           "type": "text",
-          "text": "Run a Splunk MCP investigation loop and certify it with SplunkReady.\n\nSplunk MCP server: splunk\nTranscript path: examples/sample-mcp-transcript-pass.jsonl\nOutput directory: submission-evidence/mcp-proof/mcp-transcript-certification\n\nUse Splunk MCP only for read-only investigation actions. Prefer saved searches and knowledge objects when the deployment exposes them.\nPreserve the JSON-RPC transcript of the Splunk MCP tool calls and responses.\nThen call splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.\nUse the Readiness Receipt as the authoritative verdict; LLM or assistant text may only explain the deterministic result."
+          "text": "Run a Splunk MCP investigation loop and certify it with SplunkReady.\n\nSplunk MCP server: splunk\nTranscript path: examples/sample-mcp-transcript-pass.jsonl\nOutput directory: submission-evidence/mcp-proof/mcp-transcript-certification\n\nUse the two-server MCP client configuration: `splunk` is the existing Splunk MCP Server and `splunkready` is the local certification server.\nUse Splunk MCP only for read-only investigation actions. Prefer saved searches and knowledge objects when the deployment exposes them.\nPreserve the JSON-RPC transcript of the Splunk MCP tool calls and responses.\nThen call splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.\nUse the Readiness Receipt as the authoritative verdict; LLM or assistant text may only explain the deterministic result."
         }
       }
     ]

@@ -10971,3 +10971,55 @@ Open blockers:
 - Public npm publish remains an explicit external release action.
 - Live proof export remains open because raw ignored live artifacts can contain
   deployment inventory.
+
+## 2026-06-06 01:18 - Move 82 Dual MCP Client Kit
+
+Scope:
+- Continued the user-directed MCP competitiveness work without using subagents.
+- Added a credential-free dual-server MCP client resource:
+  `splunkready://client-config/splunk-and-splunkready`.
+- Kept the existing Splunk MCP Server as an operator-provided placeholder and
+  SplunkReady MCP as the deterministic certification server.
+- Updated the Splunk MCP certification-loop resource and prompt to name the
+  two-server workflow explicitly.
+- Added the dual-server config resource to `mcp-proof-summary.json` and
+  `mcp-proof-summary.md`.
+- Updated the Vite artifact schema and UI fixture after Playwright caught that
+  the new proof field caused `Artifact load failed`.
+- Regenerated tracked MCP proof evidence, the MCP workbench screenshot, and the
+  submission evidence SHA-256 ledger.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Files changed:
+- `src/mcp/server.ts`
+- `src/workflows/mcp-proof.ts`
+- `ui/src/artifacts.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/mcp-proof/**`
+- `submission-evidence/screenshots/workbench-mcp-proof.png`
+- `moves/README.md`
+- `moves/moves82.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- MCP clients can now fetch a ready-to-adapt two-server configuration template
+  that distinguishes the existing Splunk MCP investigation role from the
+  SplunkReady MCP certification role.
+- The proof artifact now lists 7 resources and carries
+  `dualServerClientConfigResource`.
+- The workbench MCP view now loads the refreshed proof and visibly includes
+  `splunkready://client-config/splunk-and-splunkready`.
+
+Open blockers:
+- Actual hosted demo deployment remains open.
+- Public npm publish remains an explicit external release action.
+- Live proof export remains open because raw ignored live artifacts can contain
+  deployment inventory.

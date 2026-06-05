@@ -341,3 +341,9 @@ export primitive for the workbench and tracked credential-free evidence. This
 does not eliminate the no-clickable-URL cap until the export is deployed, but it
 removes the need for a static host to understand repository internals or ignored
 artifact paths. The exporter refuses symlinks to reduce secret-smuggling risk.
+
+Move 82 reduces the MCP award-positioning risk by making the proof carry a
+credential-free dual-server MCP client kit: existing Splunk MCP for read-only
+investigation and SplunkReady MCP for deterministic certification. This is still
+captured-transcript evidence rather than a live public MCP-client screencast, so
+the external demonstration cap remains open.

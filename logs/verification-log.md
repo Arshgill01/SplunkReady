@@ -9857,6 +9857,90 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Actual external demo deployment remains a release action.
 - Public package publication and live proof export remain open probability caps.
+
+## 2026-06-06 - Move 82 Dual MCP Client Kit
+
+Commands:
+
+- `npx vitest run tests/mcp/server.test.ts`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "MCP server proof|MCP JSON-RPC transcript|mcp-proof"`
+- `npm run build && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json`
+- `npm run public-demo:build`
+- `bash "$PWCLI" open 'http://127.0.0.1:4338/?artifacts=artifacts%2Fmcp-proof#mcp-proof'`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/move82-mcp-dual-server-kit.png --full-page`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "MCP proof|static-host"`
+- `node dist/src/cli.js verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json`
+- `shasum -a 256 $(find submission-evidence -type f ! -name 'evidence-pack-sha256.txt' | sort) > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for focused MCP server tests:
+  - 1 test file passed;
+  - 8 tests passed.
+- PASS for focused CLI MCP proof tests:
+  - 1 test file passed;
+  - 3 tests passed;
+  - 37 tests skipped by focused pattern.
+- PASS for focused UI artifact tests after the Playwright-discovered schema fix:
+  - 1 test file passed;
+  - 2 tests passed;
+  - 23 tests skipped by focused pattern.
+- PASS for regenerated MCP proof:
+  - `mcp-proof` returned `PASS`;
+  - `mcp-proof-summary.json` now includes
+    `dualServerClientConfigResource`;
+  - the resource list includes
+    `splunkready://client-config/splunk-and-splunkready`.
+- PASS for nested MCP proof manifest verification:
+  - `verify-manifest` returned `PASS`.
+- PASS for Playwright static-export verification after fixing the UI schema:
+  - initial browser run failed with `Artifact load failed` because the UI schema
+    rejected `dualServerClientConfigResource`;
+  - after updating `ui/src/artifacts.ts`, the served MCP proof page rendered
+    `PASS`;
+  - the rendered MCP surface showed
+    `splunkready://client-config/splunk-and-splunkready`;
+  - screenshot captured at
+    `output/playwright/move82-mcp-dual-server-kit.png` and copied to
+    `submission-evidence/screenshots/workbench-mcp-proof.png`.
+- PASS for evidence pack hash verification:
+  - every file listed in `submission-evidence/evidence-pack-sha256.txt`
+    returned `OK`.
+- PASS for submission copy audit:
+  - 28 required claims passed.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 152 packed files;
+  - 56 test files passed;
+  - 346 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for standalone diff whitespace:
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- The local static server was stopped after Playwright verification.
+- `.playwright-cli/` was removed after browser evidence capture.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Actual hosted demo deployment, public package publication, and live proof
+  export remain open probability caps.
 ## 2026-06-06 - Move 77 CLI Orphan Helper Cleanup
 
 Commands:

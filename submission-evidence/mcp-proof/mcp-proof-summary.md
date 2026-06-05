@@ -19,7 +19,13 @@ Resources:
 - splunkready://examples/mcp-transcript-pass (application/jsonl)
 - splunkready://examples/pass-receipt (text/markdown)
 - splunkready://client-config/stdio (application/json)
+- splunkready://client-config/splunk-and-splunkready (application/json)
 - splunkready://workflows/splunk-mcp-certification-loop (text/markdown)
+
+Dual-server MCP client kit:
+- Resource: splunkready://client-config/splunk-and-splunkready
+- Existing Splunk MCP role: investigate with read-only Splunk tools
+- SplunkReady MCP role: certify the captured Splunk MCP transcript
 
 Prompts:
 - splunkready_certify_mcp_transcript arguments=3
