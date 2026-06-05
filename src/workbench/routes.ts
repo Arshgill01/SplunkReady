@@ -16,6 +16,7 @@ import {
   type WorkbenchWorkflowPayload
 } from "./jobs.js";
 import type { WorkbenchWorkflow } from "./events.js";
+import { redactUnknownError } from "./redaction.js";
 
 export interface WorkbenchRouteContext {
   config: WorkbenchConfig;
@@ -463,7 +464,7 @@ export const createWorkbenchApiHandler =
       structuredError(response, 404, "WORKBENCH_ROUTE_NOT_FOUND", "Workbench API route was not found.");
       return true;
     } catch (error) {
-      structuredError(response, 400, "WORKBENCH_REQUEST_FAILED", error instanceof Error ? error.message : String(error));
+      structuredError(response, 400, "WORKBENCH_REQUEST_FAILED", redactUnknownError(error));
       return true;
     }
   };

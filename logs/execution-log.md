@@ -8914,3 +8914,32 @@ What changed:
 Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
+
+## 2026-06-05 - Move 29 Workbench Route Error Redaction
+
+Context:
+- Continued development hardening after Move 28.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Found that job execution errors were redacted, but the outer workbench API
+  route catch returned raw `error.message`.
+
+Files touched:
+- `src/workbench/routes.ts`
+- `tests/workbench/workbench.test.ts`
+- `moves/README.md`
+- `moves/moves29.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Routed workbench API catch-block failures through `redactUnknownError`.
+- Preserved the existing `WORKBENCH_REQUEST_FAILED` structured error code and
+  HTTP 400 behavior.
+- Added a regression that forces `/api/artifacts` to fail with
+  `Bearer route-level-secret-token failed` and verifies the API response returns
+  `Bearer [REDACTED] failed`.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.

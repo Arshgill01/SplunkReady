@@ -158,6 +158,28 @@ describe("workbench backend", () => {
     expect(redacted).not.toContain("exact-token");
   });
 
+  it("redacts route-level API failures before returning JSON", async () => {
+    const secret = "route-level-secret-token";
+    const config = await testConfig();
+    const runner = new WorkbenchJobRunner({ config, artifactStore: new WorkbenchArtifactStore(config.artifactRoot) });
+    const store = {
+      async listRuns() {
+        throw new Error(`Bearer ${secret} failed`);
+      }
+    } as unknown as WorkbenchArtifactStore;
+
+    const response = await callApi(config, runner, store, { method: "GET", path: "/api/artifacts" });
+
+    expect(response.status).toBe(400);
+    expect(response.json).toMatchObject({
+      error: {
+        code: "WORKBENCH_REQUEST_FAILED",
+        message: "Bearer [REDACTED] failed"
+      }
+    });
+    expect(response.body).not.toContain(secret);
+  });
+
   it("blocks artifact path traversal under the managed root", async () => {
     const store = new WorkbenchArtifactStore(await tempRoot());
     const run = await store.createRunDirectory();

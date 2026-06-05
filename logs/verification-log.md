@@ -7539,6 +7539,44 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 29 Workbench Route Error Redaction Verification
+
+Commands:
+
+- `npm test -- tests/workbench/workbench.test.ts`
+- `npm run check && git diff --check`
+- `npm test -- tests/workbench/workbench.test.ts && npm run check && git diff --check`
+
+Result:
+
+- PASS for initial focused workbench backend tests:
+  - 1 test file passed;
+  - 26 tests passed.
+- PASS for route-level redaction regression:
+  - forced `/api/artifacts` to fail with `Bearer route-level-secret-token failed`;
+  - API returned `WORKBENCH_REQUEST_FAILED`;
+  - API response message was `Bearer [REDACTED] failed`;
+  - response body did not contain `route-level-secret-token`.
+- FAIL for first full `npm run check && git diff --check`:
+  - TypeScript build caught the new test constructing `WorkbenchJobRunner` with `WorkbenchConfig` instead of `WorkbenchJobRunnerOptions`.
+- PASS after test fix for `npm test -- tests/workbench/workbench.test.ts && npm run check && git diff --check`:
+  - focused workbench test file passed with 26 tests;
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 290 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output;
+  - explicit final `git diff --check` completed with no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 28 Browser Health Path Privacy Verification
 
 Commands:
