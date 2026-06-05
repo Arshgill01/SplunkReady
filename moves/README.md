@@ -93,6 +93,7 @@ commands, or filesystem paths.
 | P0 | [68](moves68.md) Policy action workflow extraction | 0.5d | Makes policy-backed rerun and firewall-check workflow-owned instead of CLI-owned. |
 | P0 | [69](moves69.md) Live action workflow extraction | 0.5d | Removes the final CLI-backed workflow wrapper by making live smoke, candidates, strict readiness, operator kit, and live proof workflow-owned. |
 | P0 | [70](moves70.md) MCP boundary proof evidence | 0.5d | Makes `mcp-proof` explicitly prove captured Splunk MCP behavior, not just the local SplunkReady MCP server surface. |
+| P0 | [71](moves71.md) Judge proof LLM evidence slot | 0.5d | Makes model-produced trace evidence visible in the judge bundle through an explicit opt-in while keeping deterministic grading authoritative. |
 
 ## Non-Negotiable Boundaries
 

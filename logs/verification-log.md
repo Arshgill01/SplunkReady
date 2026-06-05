@@ -9344,3 +9344,51 @@ Open blockers:
 - Optional live Splunk MCP proof remains environment-gated and operator-owned.
 - Public package publish, hosted demo, refreshed submission evidence, and
   final reviewer-equivalent scrutiny remain open Minimax caps.
+## 2026-06-05 - Move 71 Judge Proof LLM Evidence Slot
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "judge proof|LLM specimen proof"`
+- `npm run verify:scaffold`
+- `npm run check`
+
+Result:
+
+- PASS for `npx tsc --noEmit`.
+- PASS for focused judge/LLM proof regression:
+  - 1 test file passed;
+  - 3 tests passed;
+  - 37 tests skipped by the focused pattern.
+- PASS for `npm run verify:scaffold`:
+  - scaffold verified;
+  - waves: 85;
+  - project files: 1752.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 53 test files passed;
+  - 336 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- Normal `judge-proof` now records `llmEvidence.status: "NOT_REQUESTED"`.
+- Opt-in `judge-proof --include-llm-proof true` is covered with a mock Gemini
+  endpoint and records `llmEvidence.status: "PASS"`.
+- `src/cli.ts` line count is now 1,069, down from 1,162 after Move 70.
+- Playwright was not run because this move did not change UI source or
+  behavior.
+
+Open blockers:
+
+- LLM proof remains explicitly opt-in because it requires external model
+  credentials.
+- Public package publish, hosted demo, refreshed submission evidence, and
+  final reviewer-equivalent scrutiny remain open Minimax caps.

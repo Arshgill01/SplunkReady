@@ -10508,3 +10508,49 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
+## 2026-06-05 23:48 - Move 71 Judge Proof LLM Evidence Slot
+
+Scope:
+- Continued the Minimax/user-directed LLM visibility improvement without using
+  subagents.
+- Kept `judge-proof` credential-free by default while adding an explicit
+  opt-in path that attaches the Gemini-produced `llm-proof` to the judge bundle.
+- Extracted judge-proof orchestration into `src/workflows/judge-proof.ts`
+  instead of growing `src/cli.ts`.
+- Preserved deterministic pass/fail authority; the LLM is recorded only as the
+  trace producer.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/workflows/judge-proof.ts`
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `package.json`
+- `README.md`
+- `moves/README.md`
+- `moves/moves71.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `judge-proof-summary.json` now includes `llmEvidence`.
+- Normal `judge-proof` records `llmEvidence.status: "NOT_REQUESTED"` and makes
+  no model calls.
+- `judge-proof --include-llm-proof true` runs the LLM proof when
+  `GEMINI_API_KEY` is configured and records `llmEvidence.status: "PASS"` for
+  model-produced fail-to-pass traces.
+- Added `npm run judge-proof:llm`.
+- Reduced `src/cli.ts` from 1,162 lines to 1,069 lines while moving
+  judge-proof orchestration into a dedicated workflow module.
+
+Open blockers:
+- LLM proof remains explicitly opt-in because it requires external model
+  credentials.
+- Public package publish, hosted demo, refreshed submission evidence, and
+  final reviewer-equivalent scrutiny remain open Minimax caps.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.

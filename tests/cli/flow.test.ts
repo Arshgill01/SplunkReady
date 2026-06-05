@@ -756,6 +756,15 @@ describe("SplunkReady CLI flow", () => {
       mutation: boolean;
       proofDirs: { suite: string; firewall: string };
       gates: Array<{ id: string; status: string; artifacts: string[] }>;
+      llmEvidence: {
+        status: string;
+        role: string;
+        passFailAuthority: string;
+        proofDir: string;
+        artifacts: string[];
+        reason: string;
+        nextCommand: string;
+      };
       certificationIndex: string;
       uiArtifacts: string;
       nextCommands: string[];
@@ -803,7 +812,14 @@ describe("SplunkReady CLI flow", () => {
         firewall: join(outDir, "firewall-check")
       },
       certificationIndex: join(outDir, "certification-index.json"),
-      uiArtifacts: join(outDir, "ui-artifacts.json")
+      uiArtifacts: join(outDir, "ui-artifacts.json"),
+      llmEvidence: {
+        status: "NOT_REQUESTED",
+        role: "trace-producer",
+        passFailAuthority: "deterministic-rule-engine",
+        proofDir: join(outDir, "llm-proof"),
+        artifacts: []
+      }
     });
     expect(summary.gates).toEqual(
       expect.arrayContaining([
@@ -814,7 +830,9 @@ describe("SplunkReady CLI flow", () => {
         expect.objectContaining({ id: "certification-index", status: "PASS" })
       ])
     );
-    expect(summary.nextCommands).toEqual(expect.arrayContaining(["npm run workbench"]));
+    expect(summary.llmEvidence.reason).toContain("credential-free");
+    expect(summary.llmEvidence.nextCommand).toContain("--include-llm-proof true");
+    expect(summary.nextCommands).toEqual(expect.arrayContaining(["npm run workbench", summary.llmEvidence.nextCommand]));
     expect(index).toMatchObject({
       status: "PASS",
       mutation: false,
@@ -846,7 +864,60 @@ describe("SplunkReady CLI flow", () => {
     );
     expect(markdown).toContain("SplunkReady Judge Proof");
     expect(markdown).toContain("certification-index.json");
+    expect(markdown).toContain("LLM specimen evidence: NOT_REQUESTED");
   });
+
+  it("can include the model-produced LLM proof in the judge bundle when explicitly requested", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-judge-proof-llm-"));
+    const gemini = await startMockGeminiServer();
+    const llmEnv = {
+      GEMINI_API_KEY: "test-gemini-key",
+      GEMINI_MODEL: "gemini-test",
+      SPLUNKREADY_GEMINI_ENDPOINT_BASE_URL: gemini.url
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["judge-proof", "--out", outDir, "--include-llm-proof", "true", "--json"], process.cwd(), llmEnv)).stdout
+      );
+      const summary = JSON.parse(await readFile(join(outDir, "judge-proof-summary.json"), "utf8")) as {
+        status: string;
+        llmEvidence: {
+          status: string;
+          role: string;
+          passFailAuthority: string;
+          proofDir: string;
+          summaryPath: string;
+          artifacts: string[];
+        };
+      };
+
+      expect(output).toMatchObject({
+        command: "judge-proof",
+        status: "PASS",
+        artifacts: expect.arrayContaining([
+          join(outDir, "judge-proof-summary.json"),
+          join(outDir, "llm-proof", "llm-proof-summary.json"),
+          join(outDir, "llm-proof", "trace-before.json"),
+          join(outDir, "llm-proof", "trace-after.json")
+        ])
+      });
+      expect(summary).toMatchObject({
+        status: "PASS",
+        llmEvidence: {
+          status: "PASS",
+          role: "trace-producer",
+          passFailAuthority: "deterministic-rule-engine",
+          proofDir: join(outDir, "llm-proof"),
+          summaryPath: join(outDir, "llm-proof", "llm-proof-summary.json")
+        }
+      });
+      expect(summary.llmEvidence.artifacts).toEqual(expect.arrayContaining([join(outDir, "llm-proof", "llm-proof-summary.json")]));
+      expect(gemini.prompts).toHaveLength(4);
+    } finally {
+      await gemini.close();
+    }
+  }, 120_000);
 
   it("runs judge proof from outside the repository root with bundled defaults", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "splunkready-packaged-cwd-"));

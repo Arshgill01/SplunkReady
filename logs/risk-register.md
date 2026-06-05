@@ -258,3 +258,11 @@ server is a certification interface while the certified behavior is a captured
 Splunk MCP JSON-RPC transcript containing `splunk_get_knowledge_objects` and
 `splunk_run_saved_search`, evidence refs, a generated Readiness Receipt,
 deterministic authority, and `mutation: false`.
+
+Move 71 reduces the LLM-visibility gap without weakening deterministic
+authority. `judge-proof-summary.json` now includes an `llmEvidence` slot. The
+default credential-free judge proof records `NOT_REQUESTED`; the explicit
+`--include-llm-proof true` / `npm run judge-proof:llm` path attaches the
+Gemini-produced fixture fail-to-pass proof when a Gemini key is configured.
+The evidence records the LLM as trace producer and the deterministic rule
+engine as pass/fail authority.
