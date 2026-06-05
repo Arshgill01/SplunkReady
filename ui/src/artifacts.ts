@@ -845,6 +845,10 @@ const loadOptionalJson = async (
     throw new Error(`Unable to load ${fileName}: ${response.status} ${response.statusText}`);
   }
 
+  if (response.headers.get("content-type")?.toLowerCase().includes("text/html")) {
+    return undefined;
+  }
+
   return response.json() as Promise<unknown>;
 };
 

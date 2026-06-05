@@ -921,6 +921,11 @@ const certificationIndex = {
 
 const jsonResponse = (value: unknown): Response => new Response(JSON.stringify(value), { status: 200 });
 
+const htmlResponse = (): Response => new Response("<!doctype html><div id=\"app\"></div>", {
+  status: 200,
+  headers: { "content-type": "text/html; charset=utf-8" }
+});
+
 const fetcherFor = (files: Record<string, unknown>) => async (url: string): Promise<Response> => {
   const fileName = decodeURIComponent(url.split("/").at(-1) ?? "");
   const value = files[fileName];
@@ -973,6 +978,18 @@ describe("Vite UI artifact app", () => {
     expect(bundle.policyPatch?.splAssistance).toHaveLength(1);
     expect(bundle.beforeTrace[0]?.toolName).toBe("splunk_run_query");
     expect(bundle.afterTrace[0]?.toolName).toBe("splunk_run_saved_search");
+  });
+
+  it("treats static-host SPA fallback HTML as missing optional artifacts", async () => {
+    const bundle = await loadUiArtifactBundle("artifacts/mcp-proof", async (url) => {
+      const fileName = decodeURIComponent(url.split("/").at(-1) ?? "");
+
+      return fileName === "mcp-proof-summary.json" ? jsonResponse(mcpProofSummary) : htmlResponse();
+    });
+
+    expect(bundle.mcpProofSummary?.status).toBe("PASS");
+    expect(bundle.receipt).toBeUndefined();
+    expect(bundle.missing).toContain("receipt-after-001.json");
   });
 
   it("loads artifact selector options from a generated UI manifest", async () => {

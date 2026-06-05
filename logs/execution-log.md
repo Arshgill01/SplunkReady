@@ -10924,3 +10924,50 @@ Open blockers:
 - Public npm publish remains an explicit external release action.
 - Live proof export remains open because raw ignored live artifacts can contain
   deployment inventory.
+
+## 2026-06-06 01:10 - Move 81 Public Demo Static Export
+
+Scope:
+- Continued the Minimax/user-directed hosted-demo work without using subagents.
+- Added a local static export path for the Vite workbench plus tracked
+  credential-free evidence.
+- Kept the move to export packaging only; no external deploy, registry publish,
+  secret reads, or production configuration changes.
+- Fixed a static-host fallback issue in the UI artifact loader: optional JSON
+  files that resolve to SPA fallback HTML are treated as missing optional
+  artifacts instead of crashing the page.
+- Verified the generated export with Playwright against a local static server.
+
+Files changed:
+- `scripts/export-public-demo.js`
+- `scripts/export-public-demo.d.ts`
+- `package.json`
+- `tests/scripts/public-demo-export.test.ts`
+- `ui/src/artifacts.ts`
+- `tests/ui/app.test.ts`
+- `moves/README.md`
+- `moves/moves81.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `npm run public-demo:build` now runs `npm run ui:build` and exports the
+  static workbench to `artifacts/public-demo`.
+- The exporter copies `submission-evidence/mcp-proof`,
+  `submission-evidence/suite-proof`,
+  `submission-evidence/public-proof-export`, and
+  `submission-evidence/screenshots` into the static bundle.
+- The exporter refuses symbolic links and writes
+  `public-demo-manifest.json` with `mutation: false`, the default MCP proof URL,
+  artifact bases, screenshots path, and a note that live credentials and `.env`
+  files are not copied.
+- The generated static export was served from `127.0.0.1:4338` and verified in
+  Playwright at
+  `http://127.0.0.1:4338/?artifacts=artifacts%2Fmcp-proof#mcp-proof`.
+
+Open blockers:
+- Hosted demo URL remains open until the static export is deployed.
+- Public npm publish remains an explicit external release action.
+- Live proof export remains open because raw ignored live artifacts can contain
+  deployment inventory.

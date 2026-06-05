@@ -103,6 +103,7 @@ commands, or filesystem paths.
 | P0 | [78](moves78.md) Refreshed submission evidence pack | 0.5d | Refreshes tracked judge-facing evidence with current compiler diagnostics, MCP proof, public export, and Playwright screenshots. |
 | P0 | [79](moves79.md) MCP proof workbench view | 0.5d | Makes the MCP proof loop, Splunk MCP boundary, resources, and prompts first-class in the Vite workbench. |
 | P0 | [80](moves80.md) MCP proof evidence screenshot | 0.5d | Tracks the Playwright-verified MCP proof workbench view in the judge-facing evidence pack. |
+| P0 | [81](moves81.md) Public demo static export | 0.5d | Packages the built Vite workbench and tracked credential-free evidence into a static folder for hosted demo deployment. |
 
 ## Non-Negotiable Boundaries
 

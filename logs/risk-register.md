@@ -335,3 +335,9 @@ the Playwright-verified MCP proof workbench screenshot to
 claim ledger, and SHA-256 ledger. Remaining evidence risks are unchanged:
 hosted demo URL, public package publication, and live proof export still need
 separate release/redaction work.
+
+Move 81 reduces the hosted-demo reproducibility risk by creating a local static
+export primitive for the workbench and tracked credential-free evidence. This
+does not eliminate the no-clickable-URL cap until the export is deployed, but it
+removes the need for a static host to understand repository internals or ignored
+artifact paths. The exporter refuses symlinks to reduce secret-smuggling risk.

@@ -9792,6 +9792,71 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Hosted demo, public package publication, live proof export, and external
   MCP-client evidence remain open probability caps.
+
+## 2026-06-06 - Move 81 Public Demo Static Export
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/scripts/public-demo-export.test.ts`
+- `npx vitest run tests/ui/app.test.ts tests/scripts/public-demo-export.test.ts --testNamePattern "MCP proof|static-host|public demo"`
+- `npm run public-demo:build`
+- `npx vite --host 127.0.0.1 --port 4338 artifacts/public-demo`
+- `bash "$PWCLI" open 'http://127.0.0.1:4338/?artifacts=artifacts%2Fmcp-proof#mcp-proof'`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/move81-public-demo-mcp-proof.png --full-page`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for public demo export tests:
+  - 1 test file passed;
+  - 2 tests passed.
+- PASS for focused UI/export tests:
+  - 2 test files passed;
+  - 4 tests passed;
+  - 23 tests skipped by focused pattern.
+- PASS for public demo build:
+  - `artifacts/public-demo` was generated from the built Vite workbench and
+    tracked credential-free evidence.
+- PASS for Playwright static-export verification:
+  - the served MCP proof page rendered `PASS`;
+  - showed `splunk_get_knowledge_objects` and `splunk_run_saved_search`;
+  - showed the reusable MCP certification-loop resource and prompt;
+  - showed deterministic authority and `Mutation no`;
+  - screenshot captured at
+    `output/playwright/move81-public-demo-mcp-proof.png`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 152 packed files;
+  - 56 test files passed;
+  - 346 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for standalone diff whitespace:
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- The static server was stopped after Playwright verification.
+- `.playwright-cli/` was removed after browser evidence capture.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Actual external demo deployment remains a release action.
+- Public package publication and live proof export remain open probability caps.
 ## 2026-06-06 - Move 77 CLI Orphan Helper Cleanup
 
 Commands:
