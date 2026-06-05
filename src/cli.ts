@@ -8,7 +8,6 @@ import { createGeminiConfigFromEnv } from "./agents/gemini-model.js";
 import { scoreMissionReadiness } from "./grader/scoring.js";
 import { validateLiveSecurityKit } from "./live-security-kit/validator.js";
 import { generateReadinessReceipt } from "./receipts/generator.js";
-import { readinessReceiptSchema } from "./schemas/core.js";
 import {
   compileCommand,
   compileContract,
@@ -41,11 +40,6 @@ import {
   runFixtureCertification,
   runFixtureCertificationWorkflow
 } from "./workflows/fixture-certification.js";
-import {
-  writeSuiteCompilerDiagnostics,
-  type SuiteProofMissionSummary,
-  type SuiteProofSummary
-} from "./workflows/compiler-diagnostics.js";
 import type {
   LiveActionWorkflowInput,
   LiveActionWorkflowResult
@@ -74,11 +68,12 @@ import {
   type ManifestVerificationWorkflowResult
 } from "./workflows/manifest-verification.js";
 import { runMcpProofWorkflow } from "./workflows/mcp-proof.js";
-import { classifyProofLoop, runProofAuditWorkflow } from "./workflows/proof-audit.js";
+import { runProofAuditWorkflow } from "./workflows/proof-audit.js";
 import {
   runFirewallCheckWorkflow,
   runPolicyBackedRerunWorkflow
 } from "./workflows/policy-actions.js";
+import { runSuiteProofWorkflow } from "./workflows/suite-proof.js";
 
 const defaultFixturePath = "fixtures/acme-soc-dev/adapter-fixture.json";
 const defaultMissionPath = "fixtures/acme-soc-dev/missions/security-investigation-readiness.json";
@@ -405,50 +400,6 @@ const resolveCliInputPaths = async (options: CliOptions): Promise<CliOptions> =>
   transcript: options.transcript ? await resolveBundledInputPath(options.transcript) : options.transcript
 });
 
-interface SuiteDefinition {
-  id: string;
-  title: string;
-  missionPaths: string[];
-}
-
-const parseSuiteDefinition = (input: unknown, suitePath: string): SuiteDefinition => {
-  if (!isRecord(input)) {
-    throw new Error(`Suite manifest at ${suitePath} must be a JSON object.`);
-  }
-
-  const id = input.id;
-  const title = input.title;
-  const missionPaths = input.missionPaths;
-
-  if (typeof id !== "string" || id.trim().length === 0) {
-    throw new Error(`Suite manifest at ${suitePath} must include a non-empty id.`);
-  }
-
-  if (typeof title !== "string" || title.trim().length === 0) {
-    throw new Error(`Suite manifest at ${suitePath} must include a non-empty title.`);
-  }
-
-  if (
-    !Array.isArray(missionPaths) ||
-    missionPaths.length === 0 ||
-    missionPaths.some((missionPath) => typeof missionPath !== "string" || missionPath.trim().length === 0)
-  ) {
-    throw new Error(`Suite manifest at ${suitePath} must include a non-empty missionPaths string array.`);
-  }
-
-  return {
-    id,
-    title,
-    missionPaths: missionPaths.map((missionPath) => (missionPath as string).trim())
-  };
-};
-
-const loadSuite = async (suitePath: string): Promise<SuiteDefinition> =>
-  parseSuiteDefinition(JSON.parse(await readFile(suitePath, "utf8")) as unknown, suitePath);
-
-const suiteMissionPath = (suitePath: string, missionPath: string): string =>
-  isAbsolute(missionPath) ? missionPath : join(dirname(suitePath), missionPath);
-
 const gradeTraceCommand = async (options: CliOptions): Promise<string[]> => {
   const { artifacts } = await runGradeExternalTraceWorkflow({
     outDir: options.out,
@@ -640,120 +591,25 @@ const certificationIndexCommand = async (options: CliOptions): Promise<string[]>
 };
 
 const suiteProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  if (options.mode !== "fixture") {
-    throw new Error("suite-proof currently supports fixture mode only; use live-security-proof for live Splunk evidence.");
-  }
-
-  const suite = await loadSuite(options.suite);
-  const missionSummaries: SuiteProofMissionSummary[] = [];
-  const artifacts: string[] = [];
-
-  for (const missionPathInput of suite.missionPaths) {
-    const missionPath = suiteMissionPath(options.suite, missionPathInput);
-    const mission = await loadMission(missionPath);
-    const missionOutDir = join(options.out, mission.id);
-    const missionOptions: CliOptions = { ...options, mission: missionPath, out: missionOutDir, mode: "fixture" };
-    const compileArtifacts = await compileCommand(missionOptions, env);
-    const evaluateArtifacts = await evaluateCommand(missionOptions, env);
-    const receiptArtifacts = await receiptCommand(missionOptions, env);
-    const rerunArtifacts = await rerunCommand(missionOptions, env);
-    const afterReceiptArtifacts = await receiptCommand({ ...missionOptions, phase: "after" }, env);
-    const beforeReceipt = readinessReceiptSchema.parse(
-      await readJson(join(missionOutDir, "receipt-before-001.json"), "before receipt")
-    );
-    const afterReceipt = readinessReceiptSchema.parse(
-      await readJson(join(missionOutDir, "receipt-after-001.json"), "after receipt")
-    );
-    const proofLoop = classifyProofLoop(beforeReceipt, afterReceipt);
-
-    missionSummaries.push({
-      missionId: mission.id,
-      title: mission.title,
-      domain: mission.domain,
-      artifactDir: missionOutDir,
-      proofLoop,
-      before: {
-        verdict: beforeReceipt.verdict,
-        score: beforeReceipt.score,
-        violations: beforeReceipt.violations.length
-      },
-      after: {
-        verdict: afterReceipt.verdict,
-        score: afterReceipt.score,
-        violations: afterReceipt.violations.length,
-        evidenceRefs: afterReceipt.evidenceRefs
-      }
-    });
-    artifacts.push(...compileArtifacts, ...evaluateArtifacts, ...receiptArtifacts, ...rerunArtifacts, ...afterReceiptArtifacts);
-  }
-
-  const domains = [...new Set(missionSummaries.map((mission) => mission.domain))].sort();
-  const summary: SuiteProofSummary = {
-    status: missionSummaries.every((mission) => mission.after.verdict === "READY") ? "PASS" : "FAIL",
-    mode: "fixture",
-    mutation: false,
-    suiteId: suite.id,
-    suiteTitle: suite.title,
-    suitePath: options.suite,
-    missionCount: missionSummaries.length,
-    domains,
-    totals: {
-      failToPass: missionSummaries.filter((mission) => mission.proofLoop === "fail-to-pass").length,
-      readyAfterPatch: missionSummaries.filter((mission) => mission.after.verdict === "READY").length,
-      evidenceRefs: missionSummaries.reduce((total, mission) => total + mission.after.evidenceRefs.length, 0)
+  const result = await runSuiteProofWorkflow(
+    {
+      mode: options.mode,
+      suitePath: options.suite,
+      outDir: options.out,
+      requireFailToPass: options.requireFailToPass,
+      generatedAt: compiledAt
     },
-    missions: missionSummaries
-  };
-  const summaryPath = join(options.out, "suite-proof-summary.json");
-  const markdownPath = join(options.out, "suite-proof-summary.md");
-  const markdownRows = missionSummaries
-    .map(
-      (mission) =>
-        `| \`${mission.missionId}\` | ${mission.domain} | ${mission.proofLoop} | ${mission.before.verdict} / ${mission.before.score} | ${mission.after.verdict} / ${mission.after.score} | ${mission.after.evidenceRefs.length} |`
-    )
-    .join("\n");
-  const markdown = `# SplunkReady Suite Proof
+    {
+      compile: ({ missionPath, outDir }) => compileCommand({ ...options, mission: missionPath, out: outDir, mode: "fixture" }, env),
+      evaluate: ({ missionPath, outDir }) => evaluateCommand({ ...options, mission: missionPath, out: outDir, mode: "fixture" }, env),
+      receiptBefore: ({ missionPath, outDir }) => receiptCommand({ ...options, mission: missionPath, out: outDir, mode: "fixture" }, env),
+      rerun: ({ missionPath, outDir }) => rerunCommand({ ...options, mission: missionPath, out: outDir, mode: "fixture" }, env),
+      receiptAfter: ({ missionPath, outDir }) =>
+        receiptCommand({ ...options, mission: missionPath, out: outDir, mode: "fixture", phase: "after" }, env)
+    }
+  );
 
-Generated by: Agent Readiness Compiler
-
-## Summary
-
-- Status: ${summary.status}
-- Suite: ${summary.suiteTitle}
-- Mode: fixture
-- Mutation: false
-- Missions: ${summary.missionCount}
-- Domains: ${domains.join(", ")}
-- Fail-to-pass missions: ${summary.totals.failToPass}
-- READY after patch: ${summary.totals.readyAfterPatch}
-- Evidence refs after patch: ${summary.totals.evidenceRefs}
-
-## Missions
-
-| Mission | Domain | Proof loop | Before | After | Evidence refs |
-|---|---:|---:|---:|---:|---:|
-${markdownRows}
-`;
-
-  await writeJson(summaryPath, summary);
-  await writeText(markdownPath, markdown);
-  const diagnosticsArtifacts = await writeSuiteCompilerDiagnostics({
-    outDir: options.out,
-    summary,
-    generatedAt: compiledAt
-  });
-
-  if (summary.status !== "PASS") {
-    throw new Error(`suite-proof failed. Inspect ${summaryPath}.`);
-  }
-
-  if (options.requireFailToPass && summary.totals.failToPass !== summary.missionCount) {
-    throw new Error(
-      `suite-proof strict fail-to-pass gate failed: ${summary.totals.failToPass}/${summary.missionCount} missions were fail-to-pass. Inspect ${summaryPath}.`
-    );
-  }
-
-  return [...new Set([...artifacts, summaryPath, markdownPath, ...diagnosticsArtifacts])];
+  return result.artifacts;
 };
 
 const judgeProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {

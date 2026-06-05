@@ -9487,3 +9487,57 @@ Open blockers:
   is gone.
 - Hosted demo, refreshed submission evidence, and final reviewer-equivalent
   scrutiny remain open Minimax caps.
+## 2026-06-06 - Move 74 Suite Proof Workflow Extraction
+
+Commands:
+
+- `npx tsc --noEmit && npx vitest run tests/workflows/suite-proof.test.ts && npx vitest run tests/cli/flow.test.ts --testNamePattern "suite proof|judge proof"`
+- `wc -l src/cli.ts src/workflows/suite-proof.ts && rg "\\.\\./cli\\.js|from \\\"\\.\\./cli" src/workflows -n || true`
+- `npm run verify:scaffold`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for focused TypeScript and suite-proof workflow validation:
+  - TypeScript completed with no emit;
+  - 1 suite-proof workflow test file passed;
+  - 2 suite-proof workflow tests passed;
+  - 1 focused CLI test file passed;
+  - 2 focused CLI tests passed.
+- PASS for CLI extraction size and boundary check:
+  - `src/cli.ts` is 925 lines;
+  - `src/workflows/suite-proof.ts` is 233 lines;
+  - no workflow source imports `../cli.js`.
+- PASS for `npm run verify:scaffold`:
+  - scaffold verified;
+  - 85 waves;
+  - 1758 project files.
+- PASS for `git diff --check`:
+  - completed with no output.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 150 dry-run packed files;
+  - 54 test files passed;
+  - 339 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI must still be watched after push.
+- Hosted demo, refreshed submission evidence, stronger MCP category surface,
+  and final reviewer-equivalent scrutiny remain open Minimax caps.

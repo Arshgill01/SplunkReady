@@ -280,3 +280,10 @@ repository workflow to `actions/checkout@v5` and `actions/setup-node@v5`,
 which target the Node 24 JavaScript Actions runtime while keeping the project
 runtime on Node 22. The goal is a clean green GitHub check without the Node 20
 deprecation annotation.
+
+Move 74 further reduces the CLI monolith risk by moving suite proof
+aggregation, fail-to-pass summary generation, and compiler diagnostics into
+`src/workflows/suite-proof.ts`. `src/cli.ts` dropped from 1,069 lines to 925
+lines. Remaining CLI-owned orchestration still includes the standalone
+`llm-agent` command and small command adapters, but the major proof bundle
+orchestration is now workflow-owned.

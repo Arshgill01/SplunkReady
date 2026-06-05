@@ -10554,6 +10554,44 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
+## 2026-06-06 00:08 - Move 74 Suite Proof Workflow Extraction
+
+Scope:
+- Continued the CLI modularization pass without using subagents.
+- Moved suite-proof manifest parsing, mission aggregation, fail-to-pass
+  classification, summary writing, and compiler diagnostics into
+  `src/workflows/suite-proof.ts`.
+- Kept the CLI command as a thin delegator that wires existing compile,
+  evaluate, receipt, and rerun steps.
+- Preserved fixture-only suite-proof behavior and deterministic pass/fail
+  authority.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/workflows/suite-proof.ts`
+- `src/cli.ts`
+- `tests/workflows/suite-proof.test.ts`
+- `moves/README.md`
+- `moves/moves74.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `runSuiteProofWorkflow` now owns suite manifest parsing, mission loops,
+  receipt parsing, suite summary/markdown output, strict fail-to-pass checks,
+  and compiler diagnostics.
+- Added direct workflow tests for suite aggregation and CLI independence.
+- `src/cli.ts` dropped from 1,069 lines to 925 lines.
+
+Open blockers:
+- Hosted demo, refreshed submission evidence, and final reviewer-equivalent
+  scrutiny remain open Minimax caps.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
 ## 2026-06-05 23:58 - Move 73 CI Node 24 Actions Runtime
 
 Scope:
