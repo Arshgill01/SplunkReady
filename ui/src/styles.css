@@ -382,7 +382,7 @@ code {
 
 .run-browser-grid {
   display: grid;
-  grid-template-columns: minmax(340px, 0.82fr) minmax(0, 1.18fr);
+  grid-template-columns: minmax(380px, 0.78fr) minmax(0, 1.22fr);
   gap: 16px;
   align-items: start;
 }
@@ -395,14 +395,21 @@ code {
 
 .run-browser-list {
   min-width: 0;
+  max-height: calc(100vh - 86px);
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .run-filters {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(130px, 0.7fr) minmax(150px, 0.9fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   padding: 14px;
   border-top: 1px solid var(--line);
+}
+
+.run-filters label:first-child {
+  grid-column: 1 / -1;
 }
 
 .run-filters label {
@@ -596,42 +603,80 @@ code {
   border-top: 1px solid var(--line);
 }
 
-.trace-preview-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
+.trace-preview-phases {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-top: 1px solid var(--line);
 }
 
-.trace-preview-table th,
-.trace-preview-table td {
-  padding: 10px 14px;
-  vertical-align: top;
-  text-align: left;
-  border-top: 1px solid var(--line-soft);
-  overflow-wrap: anywhere;
+.trace-preview-phase {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  background: #201c10;
+  border: 1px solid var(--line-soft);
 }
 
-.trace-preview-table th {
-  width: 92px;
+.trace-preview-phase header {
+  display: grid;
+  grid-template-columns: minmax(0, 0.55fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+}
+
+.trace-preview-phase h3 {
+  margin: 0;
   color: var(--text);
-  font-weight: 720;
+  font-size: 14px;
 }
 
-.trace-preview-table td {
+.trace-preview-phase header span,
+.trace-preview-phase p,
+.trace-preview-summary {
+  min-width: 0;
+  margin: 0;
   color: var(--muted);
   font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
   font-size: 12px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
-.trace-preview-table th:nth-child(2),
-.trace-preview-table td:nth-child(2) {
-  width: 185px;
+.trace-preview-phase dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
 }
 
-.trace-preview-table th:nth-child(5),
-.trace-preview-table td:nth-child(5) {
-  width: 132px;
+.trace-preview-phase dl div {
+  min-width: 0;
+  padding: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+}
+
+.trace-preview-phase dt {
+  margin: 0 0 2px;
+  color: var(--quiet);
+  font-size: 11px;
+}
+
+.trace-preview-phase dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.trace-preview-phase strong {
+  display: inline-block;
+  min-width: 78px;
+  color: var(--text);
+  font-family: "Spline Sans Variable", "Spline Sans", sans-serif;
+  font-weight: 720;
 }
 
 .trace-preview-none,
@@ -1259,6 +1304,17 @@ code {
     grid-template-columns: 1fr;
   }
 
+  .run-browser-list {
+    max-height: 520px;
+    overflow: auto;
+  }
+
+  .run-card-title,
+  .trace-preview-phase header,
+  .trace-preview-phase dl {
+    grid-template-columns: 1fr;
+  }
+
   .kit-detail {
     border-right: 0;
   }
@@ -1310,47 +1366,6 @@ code {
   .index-table td > span,
   .index-table td > a {
     grid-column: 2;
-  }
-
-  .trace-preview-table {
-    display: block;
-  }
-
-  .trace-preview-table thead {
-    display: none;
-  }
-
-  .trace-preview-table tbody,
-  .trace-preview-table tr,
-  .trace-preview-table th,
-  .trace-preview-table td {
-    display: block;
-  }
-
-  .trace-preview-table tr {
-    padding: 10px 0;
-    border-top: 1px solid var(--line);
-  }
-
-  .trace-preview-table th {
-    width: auto;
-    padding: 4px 12px 8px;
-    border-top: 0;
-  }
-
-  .trace-preview-table td {
-    display: grid;
-    grid-template-columns: minmax(84px, 32%) minmax(0, 1fr);
-    gap: 10px;
-    padding: 7px 12px;
-    border-top: 0;
-  }
-
-  .trace-preview-table td::before {
-    content: attr(data-label);
-    color: var(--text);
-    font-family: "Spline Sans Variable", "Spline Sans", sans-serif;
-    font-weight: 720;
   }
 
   .policy-simulator {

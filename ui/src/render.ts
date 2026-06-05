@@ -1444,6 +1444,9 @@ const tracePhaseSummary = (events: TraceEvent[], violations: Violation[]): strin
   return `${events.length} event(s) / ${tools.length} tool(s) / ${violations.length} finding(s) / ${evidenceRefs} evidence ref(s)`;
 };
 
+const traceEvidenceRefCount = (events: TraceEvent[]): number =>
+  events.reduce((total, event) => total + event.evidenceRefs.length, 0);
+
 const traceToolsSummary = (events: TraceEvent[]): string => {
   const tools = [...new Set(events.map((event) => event.toolName).filter((toolName): toolName is string => Boolean(toolName)))];
   const visibleTools = tools.slice(0, 3);
@@ -1474,13 +1477,20 @@ const traceSpanSummary = (events: TraceEvent[]): string => {
 const renderTracePreviewRows = (traces: Array<[string, TraceEvent[], Violation[]]>): string =>
   traces
     .map(
-      ([label, events, violations]) => `<tr data-trace-preview-phase="${value(label.toLowerCase())}">
-        <th>${value(label)}</th>
-        <td data-label="Evidence">${value(tracePhaseSummary(events, violations))}</td>
-        <td data-label="Tools">${value(traceToolsSummary(events))}</td>
-        <td data-label="Span">${value(traceSpanSummary(events))}</td>
-        <td data-label="Findings">${renderTracePreviewFindings(violations)}</td>
-      </tr>`
+      ([label, events, violations]) => `<article class="trace-preview-phase" data-trace-preview-phase="${value(label.toLowerCase())}">
+        <header>
+          <h3>${value(label)}</h3>
+          <span>${value(traceToolsSummary(events))}</span>
+        </header>
+        <dl>
+          <div><dt>Events</dt><dd>${events.length}</dd></div>
+          <div><dt>Findings</dt><dd>${violations.length}</dd></div>
+          <div><dt>Evidence refs</dt><dd>${traceEvidenceRefCount(events)}</dd></div>
+        </dl>
+        <p><strong>Span</strong>${value(traceSpanSummary(events))}</p>
+        <p><strong>Rule IDs</strong>${renderTracePreviewFindings(violations)}</p>
+        <span class="trace-preview-summary">${value(tracePhaseSummary(events, violations))}</span>
+      </article>`
     )
     .join("");
 
@@ -1775,8 +1785,8 @@ const renderRunFilters = (runs: WorkbenchRunSummary[], workbench: WorkbenchRende
 
   return `<div class="run-filters">
     <label>
-      <span>Search mission, verdict, rule, or file</span>
-      <input type="search" data-run-filter value="${value(workbench?.runFilter ?? "")}">
+      <span>Search</span>
+      <input type="search" data-run-filter value="${value(workbench?.runFilter ?? "")}" placeholder="mission, verdict, rule, file">
     </label>
     <label>
       <span>Status</span>
@@ -1898,10 +1908,7 @@ const renderTracePreview = (bundle: UiArtifactBundle): string => {
     ${
       traces.length === 0
         ? `<p class="empty">Trace artifact not loaded.</p>`
-        : `<table class="trace-preview-table">
-            <thead><tr><th>Phase</th><th>Evidence</th><th>Tools</th><th>Span</th><th>Findings</th></tr></thead>
-            <tbody>${renderTracePreviewRows(traces)}</tbody>
-          </table>`
+        : `<div class="trace-preview-phases">${renderTracePreviewRows(traces)}</div>`
     }
   </section>`;
 };

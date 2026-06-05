@@ -7350,3 +7350,82 @@ Open blockers:
 - Public video URL is still missing.
 - Official feedback submission confirmation is still missing.
 - Move 25 remains relevant for workbench surface consolidation before final video/public submission.
+
+## 2026-06-05 - Move 25 Workbench UI Consolidation Verification
+
+Commands:
+
+- `npm run test -- tests/ui/app.test.ts`
+- `npm run ui:build`
+- `SPLUNKREADY_WORKBENCH_PORT=4342 npm run workbench`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open "http://127.0.0.1:4342/#certification-replay"`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" click e34`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" click e112 && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" click e349 && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" click e533`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot --filename output/playwright/move25-runs-public-export-desktop.png --full-page`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" resize 390 844`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot --filename output/playwright/move25-runs-public-export-mobile.png --full-page`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" resize 1280 720 && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open "http://127.0.0.1:4342/?artifacts=%2Fapi%2Fartifacts%2Frun-2026-06-05T13-00-55-471Z-8da54521#proof-browser" && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot --filename output/playwright/move25-runs-public-export-desktop-fixed.png --full-page`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" resize 390 844 && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot --filename output/playwright/move25-runs-public-export-mobile-fixed.png --full-page`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval "() => { const width = document.documentElement.clientWidth; const offenders = [...document.querySelectorAll('body *')].map((el) => ({ tag: el.tagName.toLowerCase(), cls: el.className || '', text: (el.textContent || '').trim().slice(0, 80), left: Math.round(el.getBoundingClientRect().left), right: Math.round(el.getBoundingClientRect().right) })).filter((item) => item.right > width + 1 || item.left < -1).slice(0, 12); return { viewportWidth: width, scrollWidth: document.documentElement.scrollWidth, offenderCount: offenders.length, offenders }; }"`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" resize 1280 720 && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval "() => { const width = document.documentElement.clientWidth; const offenders = [...document.querySelectorAll('body *')].map((el) => ({ tag: el.tagName.toLowerCase(), cls: el.className || '', text: (el.textContent || '').trim().slice(0, 80), left: Math.round(el.getBoundingClientRect().left), right: Math.round(el.getBoundingClientRect().right) })).filter((item) => item.right > width + 1 || item.left < -1).slice(0, 12); return { viewportWidth: width, scrollWidth: document.documentElement.scrollWidth, offenderCount: offenders.length, offenders }; }"`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for focused UI test:
+  - 1 test file passed;
+  - 22 tests passed.
+- PASS for standalone `npm run ui:build` after final CSS corrections.
+- PASS for packaged workbench server startup on port `4342`.
+- PASS for Playwright fixture certification:
+  - run `run-2026-06-05T13-00-04-063Z-ddd451be`;
+  - `job-1 / succeeded`;
+  - `READY / 100/100`;
+  - `5 before / 0 after`.
+- PASS for Playwright Trace verification:
+  - before trace retained unsafe broad SPL and deterministic findings;
+  - after trace retained knowledge-object discovery, saved-search rerun, and evidence refs.
+- PASS for Playwright Runs verification:
+  - compact filters rendered;
+  - run list rendered;
+  - receipt comparison rendered;
+  - proof audit rendered;
+  - manifest verification rendered;
+  - trace preview rendered as phase cards with full Trace link.
+- PASS for Playwright public export verification:
+  - public export run `run-2026-06-05T13-00-55-471Z-8da54521`;
+  - `Status REDACTED`;
+  - source run and source commit rendered;
+  - 14 files and 8 schema-validated files rendered;
+  - aggregate hash rendered;
+  - redaction categories rendered;
+  - sanitized derivative bundle boundary rendered.
+- FAIL for first screenshot inspection:
+  - desktop Workflow select was clipped;
+  - mobile full-page screenshot showed too much historical run list before proof panels.
+- PASS after CSS correction:
+  - final desktop screenshot saved at `output/playwright/move25-runs-public-export-desktop-fixed.png`;
+  - final mobile screenshot saved at `output/playwright/move25-runs-public-export-mobile-fixed.png`;
+  - mobile overflow check returned `scrollWidth` 390 and `offenderCount` 0;
+  - desktop overflow check returned `scrollWidth` 1280 and `offenderCount` 0.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 289 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for explicit final `git diff --check`.
+
+Open blockers:
+
+- Public video URL is still missing.
+- Official feedback submission confirmation is still missing.
+- Local branch is still ahead of `origin/splunkready-build`; public-remote proof is incomplete until pushed.

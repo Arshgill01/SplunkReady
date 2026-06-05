@@ -8692,3 +8692,85 @@ Open blockers:
 - Public video URL is not available.
 - Official feedback submission is not confirmed.
 - Move 25 workbench consolidation remains useful for judge-video clarity.
+
+## 2026-06-05 - Move 25 Workbench UI Consolidation
+
+Context:
+- Ran Move 25 locally without subagents, per latest user constraint.
+- Could not append to the active goal with the goal tool; it only supports marking complete. Treating the latest user instructions and this log entry as the durable override.
+- Latest operating constraints recorded for future context compaction:
+  - do all implementation work in the main executor until subagents are explicitly restored;
+  - Playwright/live browser verification is mandatory for UI changes;
+  - do not read, source, print, hardcode, or commit `.splunkready*` secret env files or other secret env files;
+  - keep the larger autonomous hardening goal open after current moves complete;
+  - after current moves, continue with cleanup, efficiency, maintainability, bug fixing, and high-leverage award-readiness work;
+  - keep temporary testing affordances for now and add cleanup as a later move if needed.
+
+Files touched:
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Replaced the Runs view trace-preview table with phase cards that preserve:
+  - phase name;
+  - tool summary;
+  - event count;
+  - finding count;
+  - evidence-ref count;
+  - trace span;
+  - deterministic rule IDs;
+  - compact phase summary.
+- Kept the full event-by-event trace timeline in the Trace view.
+- Shortened the Runs search label and moved the longer guidance into the input placeholder.
+- Changed the Runs filter grid so Search spans the row and Status/Workflow fit without clipping.
+- Kept the workbench run list scroll-contained on desktop and mobile so proof panels remain reachable.
+- Updated UI tests for the new phase-card trace preview.
+
+Playwright evidence:
+- Started `SPLUNKREADY_WORKBENCH_PORT=4342 npm run workbench`.
+- Opened `http://127.0.0.1:4342/#certification-replay`.
+- Clicked `Run fixture certification`.
+- Verified fresh run `run-2026-06-05T13-00-04-063Z-ddd451be` rendered:
+  - `job-1 / succeeded`;
+  - `READY / 100/100`;
+  - `5 before / 0 after`;
+  - before receipt `NOT READY`;
+  - after receipt `READY`;
+  - saved-search rerun evidence.
+- Verified Trace view still exposed:
+  - unsafe before SPL `search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now`;
+  - deterministic rule IDs `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, `ANS-001`;
+  - SAIA recommended SPL;
+  - after rerun through `splunk_get_knowledge_objects` and `splunk_run_saved_search`;
+  - final evidence refs `evt-102`, `evt-118`, `evt-141`.
+- Verified Runs view rendered:
+  - compact filter controls;
+  - run list;
+  - receipt comparison;
+  - proof audit;
+  - manifest verification;
+  - phase-card trace preview with full Trace link.
+- Exported the fresh run and verified public export run `run-2026-06-05T13-00-55-471Z-8da54521` rendered:
+  - `Status REDACTED`;
+  - source run `run-2026-06-05T13-00-04-063Z-ddd451be`;
+  - source commit `0898d38f6959`;
+  - `14` files;
+  - `8` schema-validated files;
+  - aggregate hash;
+  - redaction categories for secrets, private endpoints, private IPs, user paths, and raw MCP error bodies;
+  - sanitized derivative bundle boundary.
+- Initial screenshot inspection found the Workflow filter clipped at desktop width and the mobile run list too tall; fixed both before accepting the UI.
+- Saved final screenshots:
+  - `output/playwright/move25-runs-public-export-desktop-fixed.png`
+  - `output/playwright/move25-runs-public-export-mobile-fixed.png`
+- Measured horizontal overflow with Playwright:
+  - mobile `390x844`: `scrollWidth` 390, `offenderCount` 0;
+  - desktop `1280x720`: `scrollWidth` 1280, `offenderCount` 0.
+
+Open blockers:
+- Public video URL is still missing.
+- Official feedback submission confirmation is still missing.
+- Public remote proof remains blocked until the local branch is pushed.
