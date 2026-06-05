@@ -80,6 +80,42 @@ Notes:
 
 - This move did not change UI source or behavior, so Playwright was not run.
 
+## 2026-06-05 - Move 61 LLM Proof Workflow Extraction
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npm test -- tests/cli/flow.test.ts -t "LLM specimen proof|Gemini-backed specimen|no Gemini key"`
+- `wc -l src/cli.ts src/workflows/llm-proof.ts`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript validation.
+- PASS for focused LLM specimen CLI coverage:
+  - 1 test file passed;
+  - 3 selected tests passed and 36 tests skipped.
+- PASS for CLI shrink check:
+  - `src/cli.ts` line count after Move 60 was 4,166;
+  - `src/cli.ts` line count after extraction is 4,092;
+  - `src/workflows/llm-proof.ts` is 130 lines.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 49 test files passed;
+  - 322 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- This move did not change UI source or behavior, so Playwright was not run.
+
 ## 2026-06-01 15:36 - Wave 39 Demo Orchestration
 
 Commands:

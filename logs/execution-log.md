@@ -68,6 +68,39 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 22:25 - Move 61 LLM Proof Workflow Extraction
+
+Scope:
+- Responded to the competitive audit's CLI modularization cap with a narrow,
+  low-risk extraction instead of a broad CLI rewrite.
+- Extracted the newly added `llm-proof` orchestration into a workflow module.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/cli.ts`
+- `src/workflows/llm-proof.ts`
+- `moves/README.md`
+- `moves/moves61.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Moved `llm-proof` summary construction, before/after receipt parsing, proof
+  audit parsing, artifact de-duplication, and strict-gate enforcement into
+  `runLlmProofWorkflow`.
+- Kept the CLI responsible for env gating, options, and injecting existing
+  compile/evaluate/receipt/rerun/proof-audit steps.
+- Reduced `src/cli.ts` from 4,166 lines after Move 60 to 4,092 lines.
+
+Open blockers:
+- Continue extracting proof/audit/index workflows from `src/cli.ts`; this move
+  starts the follow-up pass but does not finish CLI modularization.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 Future entries must use:
 
 ```text

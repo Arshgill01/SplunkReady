@@ -74,6 +74,7 @@ import type {
   LiveActionWorkflowInput,
   LiveActionWorkflowResult
 } from "./workflows/live-actions.js";
+import { runLlmProofWorkflow } from "./workflows/llm-proof.js";
 import type {
   ManifestVerificationWorkflowInput,
   ManifestVerificationWorkflowResult
@@ -270,35 +271,6 @@ interface JudgeProofSummary {
   certificationIndex: string;
   uiArtifacts: string;
   nextCommands: string[];
-}
-
-interface LlmProofSummary {
-  source: "splunkready-llm-proof";
-  status: ProofAuditStatus;
-  mode: EnvironmentContract["mode"];
-  mutation: false;
-  generatedAt: string;
-  agent: {
-    name: string;
-    version: string;
-  };
-  llmRole: "trace-producer";
-  passFailAuthority: "deterministic-rule-engine";
-  before: {
-    verdict: string;
-    score: number;
-    violations: number;
-  };
-  after: {
-    verdict: string;
-    score: number;
-    violations: number;
-  };
-  audit: {
-    status: ProofAuditStatus;
-    proofType: ProofAuditReport["proofType"];
-  };
-  artifacts: string[];
 }
 
 interface FirewallBlockReport {
@@ -2275,69 +2247,23 @@ const llmProofCommand = async (
 
   const beforeOptions: CliOptions = { ...options, phase: "before" };
   const afterOptions: CliOptions = { ...options, phase: "after" };
-  const compileArtifacts = await compileCommand(options, llmEnv);
-  const evaluateArtifacts = await evaluateCommand(options, llmEnv);
-  const receiptArtifacts = await receiptCommand(beforeOptions, llmEnv);
-  const rerunArtifacts = await rerunCommand(afterOptions, llmEnv);
-  const auditArtifacts = await proofAuditCommand({ ...options, requirePass: false });
-  const beforeReceipt = readinessReceiptSchema.parse(
-    await readJson(join(options.out, "receipt-before-001.json"), "before receipt")
+  const result = await runLlmProofWorkflow(
+    {
+      outDir: options.out,
+      mode: options.mode,
+      requirePass: options.requirePass,
+      generatedAt: compiledAt
+    },
+    {
+      compile: () => compileCommand(options, llmEnv),
+      evaluate: () => evaluateCommand(options, llmEnv),
+      receiptBefore: () => receiptCommand(beforeOptions, llmEnv),
+      rerunAfter: () => rerunCommand(afterOptions, llmEnv),
+      proofAudit: () => proofAuditCommand({ ...options, requirePass: false })
+    }
   );
-  const afterReceipt = readinessReceiptSchema.parse(
-    await readJson(join(options.out, "receipt-after-001.json"), "after receipt")
-  );
-  const audit = await readJson<ProofAuditReport>(join(options.out, "proof-audit.json"), "proof audit");
-  const status: ProofAuditStatus =
-    audit.status !== "FAIL" &&
-    beforeReceipt.verdict === "NOT READY" &&
-    afterReceipt.verdict === "READY" &&
-    afterReceipt.agent.name === "Gemini Splunk MCP Agent"
-      ? "PASS"
-      : "FAIL";
-  const summaryPath = join(options.out, "llm-proof-summary.json");
-  const artifacts = [
-    ...new Set([
-      ...compileArtifacts,
-      ...evaluateArtifacts,
-      ...receiptArtifacts,
-      ...rerunArtifacts,
-      ...auditArtifacts,
-      summaryPath
-    ])
-  ];
-  const summary: LlmProofSummary = {
-    source: "splunkready-llm-proof",
-    status,
-    mode: options.mode,
-    mutation: false,
-    generatedAt: compiledAt,
-    agent: afterReceipt.agent,
-    llmRole: "trace-producer",
-    passFailAuthority: "deterministic-rule-engine",
-    before: {
-      verdict: beforeReceipt.verdict,
-      score: beforeReceipt.score,
-      violations: beforeReceipt.violations.length
-    },
-    after: {
-      verdict: afterReceipt.verdict,
-      score: afterReceipt.score,
-      violations: afterReceipt.violations.length
-    },
-    audit: {
-      status: audit.status,
-      proofType: audit.proofType
-    },
-    artifacts
-  };
 
-  await writeJson(summaryPath, summary);
-
-  if (options.requirePass && status !== "PASS") {
-    throw new Error(`llm-proof strict gate failed with ${status}. Inspect ${summaryPath}.`);
-  }
-
-  return artifacts;
+  return result.artifacts;
 };
 
 const hostedModelProofCommand = async (
