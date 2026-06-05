@@ -11751,5 +11751,8 @@ Files changed:
 - `logs/verification-log.md`
 
 Open blockers:
-- Hosted CI and GitHub Pages still need to run after push for these new commits.
+- Hosted CI and GitHub Pages passed after push:
+  - CI run `27041811522` completed successfully for commit `5acd4e1`;
+  - Public Demo Pages run `27041858369` completed successfully and deployed the
+    public demo export.
 - Future npm versions still need registry/auth preflight before release.

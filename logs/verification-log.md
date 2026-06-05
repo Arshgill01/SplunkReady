@@ -9622,6 +9622,14 @@ Commands:
 - `lsof -ti tcp:4341 | xargs -r kill`
 - `npm run check`
 - `npm run verify:scaffold`
+- `git push origin splunkready-build`
+- `gh run watch 27041811522 --exit-status`
+- `gh workflow run "Public Demo Pages" --ref splunkready-build`
+- `gh run watch 27041858369 --exit-status`
+- `bash "$PWCLI" open 'https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof&v=5acd4e1#proof-browser'`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" console`
+- `bash "$PWCLI" screenshot --filename output/playwright/move100-github-pages-judge-proof.png --full-page`
 
 Result:
 
@@ -9670,6 +9678,21 @@ Result:
 - PASS for final scaffold verification after log/doc edits:
   - waves: 85;
   - project files: 2072.
+- PASS for remote CI after push:
+  - run `27041811522`;
+  - job `npm run check` completed successfully in 55 seconds.
+- PASS for manual GitHub Pages deployment:
+  - run `27041858369`;
+  - build job completed in 20 seconds;
+  - deploy job completed in 9 seconds.
+- PASS for deployed GitHub Pages browser verification:
+  - opened
+    `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof&v=5acd4e1#proof-browser`;
+  - snapshot showed `Status PASS`, `Mutation no`, `LLM evidence
+    NOT_REQUESTED`, and `Pass/fail authority deterministic-rule-engine`;
+  - console reported 0 errors and 0 warnings;
+  - screenshot captured at
+    `output/playwright/move100-github-pages-judge-proof.png`.
 
 Notes:
 
@@ -9680,7 +9703,6 @@ Notes:
 
 Open blockers:
 
-- Hosted CI and GitHub Pages need to run after push for Move 99.
 - Hosted public judge proof intentionally stays credential-free and does not
   call Gemini.
 
@@ -9713,7 +9735,7 @@ Notes:
 
 Open blockers:
 
-- Hosted CI and GitHub Pages need to run after push for Move 100.
+- Future npm versions still need release preflight before publication.
 
 ## 2026-06-06 - Move 97 Static Hosted Demo Request Hygiene
 
