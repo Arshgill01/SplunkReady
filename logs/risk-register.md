@@ -465,6 +465,8 @@ Move 98 targets that workflow-maintenance risk by updating the public demo
 Pages workflow to current upstream action tags:
 `actions/configure-pages@v6`, `actions/upload-pages-artifact@v5`, and
 `actions/deploy-pages@v5`. Local checks passed, including upstream tag
-verification, workflow regression coverage, and `npm run check`. The risk is
-not closed until the pushed workflow is run on GitHub and the Pages annotation
-is confirmed absent.
+verification, workflow regression coverage, and `npm run check`. Hosted CI run
+`27041118568` passed, and Pages run `27041167799` passed without the prior
+`Node.js 20 actions are deprecated` annotation. Residual workflow-maintenance
+risk is limited to raw Node `punycode` deprecation warnings emitted by
+GitHub-owned action internals.

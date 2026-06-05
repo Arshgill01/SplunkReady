@@ -11668,8 +11668,9 @@ Files changed:
 - `logs/risk-register.md`
 
 Open blockers:
-- Hosted CI and the manual Pages workflow still need to run after push to prove
-  the public demo workflow warning is gone.
 - Public npm publication remains blocked by missing npm auth.
 - Live/public MCP-client screencast evidence remains a separate award-positioning
   gap.
+- Raw GitHub-owned Pages action logs still include Node `punycode` deprecation
+  warnings. The prior Node 20 Actions-runtime annotation is gone, but the raw
+  log warning should be rechecked when GitHub updates those actions again.

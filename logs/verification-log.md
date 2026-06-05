@@ -9450,6 +9450,11 @@ Commands:
 - `git ls-remote --tags https://github.com/actions/setup-node.git 'refs/tags/v5*'`
 - `npx vitest run tests/examples/repository-ci-workflow.test.ts`
 - `npm run check`
+- `gh run watch 27041118568 --exit-status`
+- `gh workflow run "Public Demo Pages" --ref splunkready-build`
+- `gh run watch 27041167799 --exit-status`
+- `gh run view 27041167799 --json name,workflowName,conclusion,status,url,event,headBranch,headSha,jobs`
+- `gh run view 27041167799 --log | rg -n "Node\\.js 20|deprecated|configure-pages|upload-pages-artifact|deploy-pages" || true`
 
 Result:
 
@@ -9748,19 +9753,32 @@ Result:
     and 0 failing latest verdicts;
   - submission copy audit passed with 28 required claims;
   - included `git diff --check` completed with no output.
+- PASS for hosted CI:
+  - run `27041118568` passed for commit `61335fa` in 53s.
+- PASS for final GitHub Pages deployment:
+  - run `27041167799` succeeded for commit `61335fa`;
+  - build job passed in 15s;
+  - deploy job passed in 8s;
+  - structured job metadata shows all build and deploy steps succeeded;
+  - raw logs confirm `actions/configure-pages@v6`,
+    `actions/upload-pages-artifact@v5`, and `actions/deploy-pages@v5` were
+    downloaded and run;
+  - the prior `Node.js 20 actions are deprecated` annotation did not appear in
+    the run watch output or the raw log search.
 
 Notes:
 
 - Playwright was not run because this move changed only GitHub workflow
   configuration and workflow regression tests, not UI source or browser
   behavior.
+- Raw GitHub-owned action logs still contain Node `punycode` deprecation
+  warnings from setup/deploy steps. They are not the Node 20 Actions-runtime
+  annotation that Move 98 targeted.
 - Did not read, source, print, or commit `.splunkready*` or `.env*` secret
   files.
 
 Open blockers:
 
-- Hosted CI and the manual Pages workflow still need to run after push to prove
-  the public demo workflow warning is gone.
 - Public npm publication remains blocked until npm auth is configured.
 - Live/public MCP-client screencast evidence remains separate from this workflow
   maintenance move.
