@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import type { AddressInfo } from "node:net";
 import { pathToFileURL } from "node:url";
 
 import { WorkbenchArtifactStore } from "./artifacts.js";
@@ -73,8 +74,11 @@ export const startWorkbenchServer = async (
     });
   });
 
+  const address = server.address() as AddressInfo | null;
+  const port = address?.port ?? config.port;
+
   return {
-    url: `http://${config.host}:${config.port}`,
+    url: `http://${config.host}:${port}`,
     async close() {
       await new Promise<void>((resolve, reject) => {
         server.close((error) => (error ? reject(error) : resolve()));

@@ -8304,3 +8304,31 @@ Playwright evidence:
 
 Open risks:
 - The Runs preview is intentionally summary-level now. Operators still need to use the Trace view for per-event detail.
+
+## 2026-06-05 - Move 16 Browser And API Test Harness
+
+Context:
+- Implemented Move 16 locally without subagents.
+- Added real HTTP server coverage for the workbench backend instead of relying only on in-memory route calls.
+- Kept tests deterministic, fixture-backed, and credential-free.
+- Did not add Playwright as a repo dependency because the repo did not already standardize on it and adding it would be a heavy dependency; browser-facing coverage uses the existing Vite dev middleware and real HTTP APIs in the normal offline gate.
+
+Files touched:
+- `package.json`
+- `src/workbench/server.ts`
+- `tests/workbench/server.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Fixed `startWorkbenchServer` so `port: 0` returns the actual assigned random local port instead of `:0`.
+- Added `npm run test:workbench` for the Move 16 workbench/UI offline gate.
+- Added `tests/workbench/server.test.ts` with real HTTP coverage for:
+  - random local port startup;
+  - health route response and live-secret non-disclosure;
+  - fixture job creation, job polling, job events, artifact reads, and artifact run listing;
+  - artifact path traversal rejection over HTTP;
+  - Vite dev UI shell serving from the same browser-facing server while fixture certification executes through the API.
+
+Open risks:
+- The normal offline gate covers browser-facing server behavior through Vite middleware and HTTP fetch. Full Playwright automation remains an external QA workflow rather than a committed test dependency.

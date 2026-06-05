@@ -12,6 +12,7 @@
     "audit:reviewers": "node scripts/audit-reviewer-inbox.mjs",
     "audit:submission-copy": "node scripts/audit-submission-copy.mjs",
     "check": "npm run verify:scaffold && npm test",
+    "test:workbench": "vitest run tests/workbench tests/ui/app.test.ts",
     "workbench:dev": "npm run build && node dist/src/workbench/server.js --dev-ui",
     "ui:dev": "vite --host 127.0.0.1 --config vite.config.ts",
     "ui:build": "vite build --config vite.config.ts"

@@ -6746,3 +6746,45 @@ Result:
 Open risks:
 
 - The Runs section now provides phase-level trace evidence only; detailed per-event inspection remains in the Trace view.
+
+## 2026-06-05 - Move 16 Browser And API Test Harness
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npm run test:workbench`
+- `npm run check`
+- `npm run ui:build`
+- `git diff --check`
+
+Result:
+
+- PASS for TypeScript validation.
+- PASS for Move 16 focused workbench/UI gate:
+  - `npm run test:workbench`;
+  - 3 test files;
+  - 49 tests passed.
+- PASS for real HTTP workbench server coverage:
+  - random `port: 0` startup returned a concrete `http://127.0.0.1:<port>` URL;
+  - `/api/health` returned fixture/live capabilities without leaking live token or MCP URL values;
+  - `/api/jobs/fixture-certification` created a server-owned fixture job;
+  - `/api/jobs/{id}` reached `succeeded`;
+  - `/api/jobs/{id}/events` returned phase/artifact/complete events;
+  - `/api/artifacts/{runId}/receipt-after-001.json` returned a READY Readiness Receipt;
+  - `/api/artifacts` listed the generated managed run;
+  - encoded traversal under `/api/artifacts/{runId}/...` was rejected without serving files outside the run;
+  - Vite dev UI shell loaded from the same server and the browser-facing fixture API path completed.
+- PASS for Vite production UI build:
+  - 21 modules transformed;
+  - production bundle written to `dist-ui`.
+- PASS for `git diff --check`.
+- PASS for canonical project gate:
+  - scaffold verified;
+  - 85 waves;
+  - 1181 project files;
+  - 42 test files;
+  - 285 tests passed.
+
+Open risks:
+
+- The committed offline gate uses real HTTP and Vite middleware coverage, not a committed Playwright dependency. Playwright remains available for manual UI QA through the local skill wrapper.
