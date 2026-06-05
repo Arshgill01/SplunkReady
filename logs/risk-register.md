@@ -159,3 +159,7 @@ evidence refs, deployment signals, and the advisory-only LLM boundary.
 
 Move 52 carries that proof surface into CI by exposing `diagnostics-path` from
 the composite GitHub Action and rendering it in the GitHub job summary.
+
+Move 53 addresses the Runs trace preview readability risk under R004/R012 by
+making the preview event lanes stable for long trace metadata and by verifying
+the dashboard with Playwright on desktop and narrow viewports.

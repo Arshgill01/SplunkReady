@@ -7,9 +7,11 @@ import {
   artifactUrl,
   defaultArtifactOptions,
   loadUiArtifactBundle,
+  type UiArtifactBundle,
   normalizeArtifactBase
 } from "../../ui/src/artifacts.js";
 import { renderApp } from "../../ui/src/render.js";
+import { renderTracePreview } from "../../ui/src/runBrowser.js";
 import type {
   EnvironmentContract,
   Mission,
@@ -1833,6 +1835,45 @@ describe("Vite UI artifact app", () => {
     expect(html).not.toContain("compact-trace-table");
     expect(html).toContain("splunk_run_query");
     expect(html).toContain("splunk_run_saved_search");
+  });
+
+  it("keeps Runs trace preview rows stable for long metadata and hidden events", () => {
+    const longTrace = Array.from({ length: 10 }, (_, index): TraceEvent => {
+      const sequence = String(index + 1).padStart(2, "0");
+      const previous = index > 0 ? `trace-after-long-${String(index).padStart(2, "0")}` : undefined;
+
+      return {
+        ...afterTrace[0],
+        id: `trace-after-long-${sequence}`,
+        type: index % 2 === 0 ? "tool_call" : "tool_result",
+        toolName: "splunk_run_saved_search_with_enterprise_security_context",
+        queryRef: `saved-search-lateral-movement-investigation-ref-${sequence}-with-long-context`,
+        parentId: previous,
+        resultCount: index % 2 === 0 ? null : index,
+        evidenceRefs: index % 2 === 0 ? [] : [`evt-long-${sequence}`],
+        step: index + 1
+      };
+    });
+    const bundle: UiArtifactBundle = {
+      artifactBase: "/api/artifacts/run-after",
+      missions: [],
+      beforeTrace: [],
+      afterTrace: longTrace,
+      externalTrace: [],
+      importedTrace: [],
+      beforeViolations: [],
+      afterViolations: [{ ...violation, id: "violation-long-009", traceEventId: "trace-after-long-09", ruleId: "EVD-001" }],
+      externalViolations: [],
+      missing: []
+    };
+    const html = renderTracePreview(bundle);
+
+    expect(html).toContain('data-trace-preview-sequence="01"');
+    expect(html).toContain('data-trace-preview-sequence="08"');
+    expect(html).toContain("saved-search-lateral-movement-investigation-ref-08-with-long-context");
+    expect(html).toContain('class="trace-preview-more" data-trace-preview-more');
+    expect(html).toContain("+2 more event(s) in full Trace view");
+    expect(html).not.toContain("trace-preview-event trace-preview-event-more");
   });
 
   it("keeps the app styling away from generic AI dashboard patterns", async () => {

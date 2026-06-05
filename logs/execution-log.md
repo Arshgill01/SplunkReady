@@ -9474,6 +9474,42 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 21:46 - Move 53 Runs Trace Preview Layout
+
+Scope:
+- Fixed the Runs proof-browser trace preview layout reported by the user.
+- Kept the change limited to trace-preview event markup, CSS lane behavior, and
+  focused UI coverage.
+- Verified the UI with Playwright on desktop and narrow viewport.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change trace grading, receipts, artifact schemas, or pass/fail
+  authority.
+
+Files changed:
+- `ui/src/runBrowser.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `moves/README.md`
+- `moves/moves53.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Runs trace preview events now expose a stable sequence attribute and use a
+  three-lane desktop grid for sequence, event body, and findings.
+- Narrow viewports collapse findings below the event body without overlap.
+- Hidden-event overflow rows now use `trace-preview-more` instead of inheriting
+  the normal event-row grid.
+- Added regression coverage for long trace metadata and more-than-eight-event
+  previews.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 21:36 - Move 52 GitHub Action Diagnostics Output
 
 Scope:

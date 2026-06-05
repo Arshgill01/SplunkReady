@@ -7542,6 +7542,38 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 53 Runs Trace Preview Layout
+
+Commands:
+
+- `npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4317/#proof-browser --headed && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open 'http://127.0.0.1:4317/?artifacts=%2Fapi%2Fartifacts%2Frun-2026-06-05T13-16-04-455Z-a1aa17b7#proof-browser' --headed && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `mkdir -p output/playwright && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot output/playwright/move53-runs-trace-before.png`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/move53-runs-trace-before.png --full-page`
+- `npm test -- tests/ui/app.test.ts -t "Runs trace preview|proof bundle browser filters"`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open 'http://127.0.0.1:4317/?artifacts=%2Fapi%2Fartifacts%2Frun-2026-06-05T13-16-04-455Z-a1aa17b7#proof-browser' --headed && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot '.trace-preview' --filename output/playwright/move53-runs-trace-after.png`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 390 900 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh goto 'http://127.0.0.1:4317/?artifacts=%2Fapi%2Fartifacts%2Frun-2026-06-05T13-16-04-455Z-a1aa17b7#proof-browser' && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot '.trace-preview' && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot '.trace-preview' --filename output/playwright/move53-runs-trace-mobile.png`
+- `npm run ui:build`
+- `npm test -- tests/ui/app.test.ts -t "Runs trace preview|proof bundle browser filters|app styling"`
+- `npm run check`
+
+Result:
+
+- PASS for focused UI tests before final validation: 1 file, 2 selected tests.
+- Initial Playwright wrapper execution failed with `permission denied` because the skill wrapper was not executable; rerunning through `bash` worked.
+- Initial screenshot command failed because a bare filename was parsed as a selector; rerunning with `--filename` worked.
+- One baseline screenshot captured the wrong `#live-connect` hash and was not used as verification evidence.
+- PASS for Playwright desktop verification: loaded the Runs view for a managed trace run, snapshot showed `Trace preview`, before/after phases, ordered event rows, and screenshot saved to `output/playwright/move53-runs-trace-after.png`.
+- PASS for Playwright narrow viewport verification: resized to `390x900`, snapshot showed the same trace preview lanes without missing rows, and screenshot saved to `output/playwright/move53-runs-trace-mobile.png`.
+- PASS for `npm run ui:build`.
+- PASS for focused UI/style tests: 1 file, 3 selected tests.
+- PASS for full `npm run check`: scaffold, runtime contracts, build, ui build, 46 files / 315 tests, secret env audit, reviewer audit, submission copy audit, and `git diff --check`.
+
+Notes:
+
+- Playwright artifacts are under ignored `output/playwright/`; no screenshot files are staged.
+
 ## 2026-06-05 - Move 52 GitHub Action Diagnostics Output
 
 Commands:

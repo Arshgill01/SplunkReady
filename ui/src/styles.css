@@ -690,15 +690,12 @@ code {
 
 .trace-preview-event {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
-  grid-template-areas:
-    "step body"
-    "step findings";
-  column-gap: 10px;
-  row-gap: 4px;
+  grid-template-columns: 34px minmax(0, 1fr) minmax(82px, auto);
+  grid-template-areas: "step body findings";
+  column-gap: 12px;
   align-items: start;
   min-width: 0;
-  padding: 8px;
+  padding: 9px 10px;
   border-top: 1px solid var(--line-soft);
 }
 
@@ -709,8 +706,7 @@ code {
 .trace-preview-step,
 .trace-preview-event-body span,
 .trace-preview-event-body time,
-.trace-preview-event-findings,
-.trace-preview-event-more {
+.trace-preview-event-findings {
   color: var(--quiet);
   font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
   font-size: 12px;
@@ -741,19 +737,24 @@ code {
 
 .trace-preview-event-findings {
   grid-area: findings;
+  justify-self: end;
   color: var(--muted);
-  text-align: left;
+  text-align: right;
   white-space: normal;
-}
-
-.trace-preview-event-more {
-  grid-template-columns: 1fr;
-  color: var(--muted);
 }
 
 .trace-preview-step {
   grid-area: step;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  min-height: 24px;
   color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  text-align: center;
 }
 
 .trace-preview-none,
@@ -764,6 +765,17 @@ code {
 
 .trace-preview-rule-summary code {
   color: var(--bad);
+}
+
+.trace-preview-more {
+  min-width: 0;
+  padding: 9px 10px 9px 56px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--muted);
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .run-panel-header {
@@ -1390,6 +1402,23 @@ code {
   .trace-preview-phase header,
   .trace-preview-phase dl {
     grid-template-columns: 1fr;
+  }
+
+  .trace-preview-event {
+    grid-template-columns: 34px minmax(0, 1fr);
+    grid-template-areas:
+      "step body"
+      ". findings";
+    row-gap: 5px;
+  }
+
+  .trace-preview-event-findings {
+    justify-self: start;
+    text-align: left;
+  }
+
+  .trace-preview-more {
+    padding-left: 10px;
   }
 
   .kit-detail {

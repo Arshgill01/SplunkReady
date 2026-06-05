@@ -75,6 +75,7 @@ commands, or filesystem paths.
 | P0 | [50](moves50.md) Package CLI default asset resolution | 0.5d | Lets a local/package-style `splunkready` command run fixture judge proof from outside the repository root. |
 | P0 | [51](moves51.md) Suite compiler diagnostics | 0.5d | Makes deterministic grading visible as compiler evidence with rule activation, resolution, trace refs, and evidence refs. |
 | P0 | [52](moves52.md) GitHub Action diagnostics output | 0.5d | Exposes compiler diagnostics/readiness profile paths directly in CI outputs and job summaries. |
+| P0 | [53](moves53.md) Runs trace preview layout | 0.5d | Stabilizes the Runs trace preview lanes for long metadata, wrapped findings, and hidden-event rows. |
 
 ## Non-Negotiable Boundaries
 

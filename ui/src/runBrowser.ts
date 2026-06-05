@@ -350,7 +350,9 @@ const renderTracePreviewEvents = (events: TraceEvent[], violations: Violation[])
         const eventViolations = groupedViolations.get(event.id) ?? [];
         const sequence = String(index + 1).padStart(2, "0");
 
-        return `<li class="trace-preview-event" data-trace-preview-event="${value(event.type)}" data-trace-preview-id="${value(event.id)}">
+        return `<li class="trace-preview-event" data-trace-preview-event="${value(event.type)}" data-trace-preview-id="${value(
+          event.id
+        )}" data-trace-preview-sequence="${value(sequence)}">
           <span class="trace-preview-step">${value(sequence)}</span>
           <span class="trace-preview-event-body">
             <strong>${value(traceEventTitle(event))}</strong>
@@ -361,7 +363,7 @@ const renderTracePreviewEvents = (events: TraceEvent[], violations: Violation[])
         </li>`;
       })
       .join("")}
-    ${hiddenEvents > 0 ? `<li class="trace-preview-event trace-preview-event-more">+${hiddenEvents} more event(s) in full Trace view</li>` : ""}
+    ${hiddenEvents > 0 ? `<li class="trace-preview-more" data-trace-preview-more>+${hiddenEvents} more event(s) in full Trace view</li>` : ""}
   </ol>`;
 };
 
