@@ -101,6 +101,47 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 22:30 - Move 62 Proof Manifest and Index Workflow Extraction
+
+Scope:
+- Continued the CLI modularization response after Move 61's 74-line reduction
+  proved too small to matter.
+- Extracted proof manifest hashing, proof manifest verification, certification
+  index construction, and certification index workbench verification into
+  workflow modules.
+- Removed the dynamic workflow imports back into `src/cli.ts` for manifest
+  verification and certification indexing.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/cli.ts`
+- `src/workflows/proof-manifest.ts`
+- `src/workflows/manifest-verification.ts`
+- `src/workflows/certification-index.ts`
+- `moves/README.md`
+- `moves/moves62.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Moved proof bundle manifest collection, hashing, parsing, writing, and
+  verification into `src/workflows/proof-manifest.ts`.
+- Replaced CLI-backed manifest-verification workflow loading with a direct
+  workflow implementation.
+- Moved certification index entry construction, UI artifact manifest writing,
+  strict gate handling, and managed proof verification into
+  `src/workflows/certification-index.ts`.
+- Reduced `src/cli.ts` from 4,092 lines after Move 61 to 3,563 lines.
+
+Open blockers:
+- Continue modularizing remaining `src/cli.ts` command families; the file is
+  materially smaller but still too large for the production-quality bar.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 Future entries must use:
 
 ```text

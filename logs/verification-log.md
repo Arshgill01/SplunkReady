@@ -116,6 +116,48 @@ Notes:
 
 - This move did not change UI source or behavior, so Playwright was not run.
 
+## 2026-06-05 - Move 62 Proof Manifest and Index Workflow Extraction
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npm test -- tests/cli/flow.test.ts -t "verify-manifest|certification index|judge proof|MCP server proof"`
+- `npm test -- tests/workbench/workbench.test.ts -t "certification index|manifest"`
+- `wc -l src/cli.ts src/workflows/proof-manifest.ts src/workflows/certification-index.ts src/workflows/manifest-verification.ts`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript validation.
+- PASS for focused CLI proof workflow coverage:
+  - 1 test file passed;
+  - 5 selected tests passed and 34 tests skipped.
+- PASS for focused workbench manifest/index coverage:
+  - 1 test file passed;
+  - 5 selected tests passed and 25 tests skipped.
+- PASS for CLI shrink check:
+  - `src/cli.ts` line count after Move 61 was 4,092;
+  - `src/cli.ts` line count after extraction is 3,563;
+  - `src/workflows/proof-manifest.ts` is 258 lines;
+  - `src/workflows/certification-index.ts` is 425 lines;
+  - `src/workflows/manifest-verification.ts` is 27 lines.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 49 test files passed;
+  - 322 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- This move did not change UI source or behavior, so Playwright was not run.
+
 ## 2026-06-01 15:36 - Wave 39 Demo Orchestration
 
 Commands:

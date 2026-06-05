@@ -1,5 +1,8 @@
+import { verifyProofManifest, type ProofManifestVerification } from "./proof-manifest.js";
+
 export interface ManifestVerificationWorkflowInput {
   outDir: string;
+  generatedAt?: string;
 }
 
 export interface ManifestVerificationWorkflowResult {
@@ -7,28 +10,18 @@ export interface ManifestVerificationWorkflowResult {
   outDir: string;
   artifacts: string[];
   mutation: false;
-  report: unknown;
+  report: ProofManifestVerification;
 }
 
-type ManifestVerificationRunner = (
-  input: ManifestVerificationWorkflowInput
-) => Promise<ManifestVerificationWorkflowResult>;
-
-const loadManifestVerificationRunner = async (): Promise<ManifestVerificationRunner> => {
-  const cli = (await import("../cli.js")) as Record<string, unknown>;
-  const runner = cli.runVerifyManifestFromCli;
-
-  if (typeof runner !== "function") {
-    throw new Error("CLI manifest verification action is unavailable.");
-  }
-
-  return runner as ManifestVerificationRunner;
-};
+const defaultGeneratedAt = "2026-06-01T06:45:00.000Z";
 
 export const runManifestVerificationWorkflow = async (
   input: ManifestVerificationWorkflowInput
 ): Promise<ManifestVerificationWorkflowResult> => {
-  const runner = await loadManifestVerificationRunner();
+  const { report, reportPath } = await verifyProofManifest({
+    outDir: input.outDir,
+    generatedAt: input.generatedAt ?? defaultGeneratedAt
+  });
 
-  return runner(input);
+  return { status: report.status, outDir: input.outDir, artifacts: [reportPath], mutation: false, report };
 };

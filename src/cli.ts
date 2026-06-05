@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-import { createHash } from "node:crypto";
-import { copyFile, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
-import { dirname, isAbsolute, join, relative, sep } from "node:path";
+import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { createFixtureSplunkAccessAdapter, loadFixtureSplunkDatasetFromFile } from "./adapters/fixture.js";
@@ -55,9 +54,12 @@ import {
 } from "./schemas/core.js";
 import { importMcpTranscript, parseMcpTranscriptRecords } from "./traces/mcp-transcript.js";
 import { writeUiShell } from "./ui/shell.js";
-import type {
-  CertificationIndexWorkflowInput,
-  CertificationIndexWorkflowResult
+import {
+  writeCertificationIndex,
+  runCertificationIndexWorkflow,
+  type CertificationIndex,
+  type CertificationIndexWorkflowInput,
+  type CertificationIndexWorkflowResult
 } from "./workflows/certification-index.js";
 import {
   runFixtureCertification,
@@ -75,15 +77,17 @@ import type {
   LiveActionWorkflowResult
 } from "./workflows/live-actions.js";
 import { runLlmProofWorkflow } from "./workflows/llm-proof.js";
-import type {
-  ManifestVerificationWorkflowInput,
-  ManifestVerificationWorkflowResult
+import {
+  runManifestVerificationWorkflow,
+  type ManifestVerificationWorkflowInput,
+  type ManifestVerificationWorkflowResult
 } from "./workflows/manifest-verification.js";
 import { runMcpProofWorkflow } from "./workflows/mcp-proof.js";
 import type {
   PolicyWorkbenchWorkflowInput,
   PolicyWorkbenchWorkflowResult
 } from "./workflows/policy-actions.js";
+import { writeProofManifest, type ProofManifestVerification } from "./workflows/proof-manifest.js";
 
 const defaultFixturePath = "fixtures/acme-soc-dev/adapter-fixture.json";
 const defaultMissionPath = "fixtures/acme-soc-dev/missions/security-investigation-readiness.json";
@@ -159,98 +163,6 @@ interface ProofAuditReport {
   proofLoop?: ProofLoop;
   hostedModelStatus?: string;
   checks: ProofAuditCheck[];
-}
-
-interface ProofManifestFile {
-  path: string;
-  sizeBytes: number;
-  sha256: string;
-}
-
-interface ProofManifest {
-  source: "splunkready-proof-manifest";
-  generatedAt: string;
-  proofDir: string;
-  aggregateSha256: string;
-  files: ProofManifestFile[];
-}
-
-interface ProofManifestVerification {
-  source: "splunkready-proof-manifest-verification";
-  generatedAt: string;
-  status: "PASS" | "FAIL";
-  proofDir: string;
-  manifestPath: string;
-  expectedAggregateSha256: string;
-  actualAggregateSha256: string;
-  expectedFiles: number;
-  actualFiles: number;
-  missingFiles: string[];
-  unexpectedFiles: string[];
-  changedFiles: Array<{
-    path: string;
-    expectedSha256: string;
-    actualSha256: string;
-    expectedSizeBytes: number;
-    actualSizeBytes: number;
-  }>;
-}
-
-interface CertificationIndexEntry {
-  label: string;
-  proofDir: string;
-  proofType: ProofAuditReport["proofType"] | "missing";
-  status: ProofAuditStatus;
-  manifestStatus: ProofManifestVerification["status"] | "UNVERIFIED" | "MISSING";
-  mode?: EnvironmentContract["mode"];
-  mutation: boolean | null;
-  agent: {
-    name: string;
-    version: string;
-  };
-  receipt: {
-    id: string;
-    verdict: string;
-    score: number;
-    violations: number;
-    evidenceRefs: number;
-  } | null;
-  missions: string[];
-  domains: string[];
-  proofLoop?: ProofLoop;
-  hostedModelStatus?: string;
-  manifest?: {
-    aggregateSha256: string;
-    files: number;
-  };
-  href: string;
-}
-
-interface CertificationIndex {
-  status: ProofAuditStatus;
-  source: "splunkready-certification-index";
-  mutation: boolean;
-  generatedAt: string;
-  proofDirs: string[];
-  totals: {
-    proofs: number;
-    ready: number;
-    notReady: number;
-    pass: number;
-    warn: number;
-    fail: number;
-  };
-  entries: CertificationIndexEntry[];
-}
-
-interface UiArtifactManifest {
-  source: "splunkready-ui-artifacts";
-  generatedAt: string;
-  defaultArtifact: string;
-  artifacts: Array<{
-    label: string;
-    path: string;
-  }>;
 }
 
 interface JudgeProofSummary {
@@ -584,112 +496,11 @@ const resolveCliInputPaths = async (options: CliOptions): Promise<CliOptions> =>
   transcript: options.transcript ? await resolveBundledInputPath(options.transcript) : options.transcript
 });
 
-const proofManifestExcludedFiles = new Set(["proof-manifest.json", "proof-manifest-verification.json"]);
-
-const collectProofManifestFiles = async (proofDir: string, currentDir = proofDir): Promise<string[]> => {
-  const entries = await readdir(currentDir, { withFileTypes: true }).catch(() => []);
-  const files = await Promise.all(
-    entries.map(async (entry) => {
-      const filePath = join(currentDir, entry.name);
-
-      if (entry.isDirectory()) {
-        return collectProofManifestFiles(proofDir, filePath);
-      }
-
-      if (!entry.isFile() || proofManifestExcludedFiles.has(entry.name)) {
-        return [];
-      }
-
-      return [filePath];
-    })
-  );
-
-  return files.flat();
-};
-
-const proofManifestPath = (proofDir: string, filePath: string): string =>
-  relative(proofDir, filePath).split(sep).join("/");
-
-const sha256Hex = (value: string | Buffer): string => createHash("sha256").update(value).digest("hex");
-
-const buildProofManifest = async (proofDir: string): Promise<ProofManifest> => {
-  const filePaths = await collectProofManifestFiles(proofDir);
-  const files = (
-    await Promise.all(
-      filePaths.map(async (filePath) => {
-        const content = await readFile(filePath);
-
-        return {
-          path: proofManifestPath(proofDir, filePath),
-          sizeBytes: content.byteLength,
-          sha256: sha256Hex(content)
-        };
-      })
-    )
-  ).sort((left, right) => left.path.localeCompare(right.path));
-  const aggregateInput = files.map((file) => `${file.path}:${file.sizeBytes}:${file.sha256}`).join("\n");
-
-  return {
-    source: "splunkready-proof-manifest",
-    generatedAt: compiledAt,
-    proofDir,
-    aggregateSha256: sha256Hex(aggregateInput),
-    files
-  };
-};
-
-const parseProofManifest = (input: unknown, label: string): ProofManifest => {
-  if (!isRecord(input)) {
-    throw new Error(`${label} is not a proof manifest object.`);
-  }
-
-  const source = stringFromRecord(input, "source");
-  const generatedAtValue = stringFromRecord(input, "generatedAt");
-  const proofDir = stringFromRecord(input, "proofDir");
-  const aggregateSha256 = stringFromRecord(input, "aggregateSha256");
-  const fileInputs = Array.isArray(input.files) ? input.files : undefined;
-
-  if (
-    source !== "splunkready-proof-manifest" ||
-    !generatedAtValue ||
-    !proofDir ||
-    !aggregateSha256 ||
-    !fileInputs
-  ) {
-    throw new Error(`${label} is missing required proof manifest fields.`);
-  }
-
-  const files = fileInputs.map((fileInput, index): ProofManifestFile => {
-    if (!isRecord(fileInput)) {
-      throw new Error(`${label} contains a non-object file entry at index ${index}.`);
-    }
-
-    const path = stringFromRecord(fileInput, "path");
-    const sizeBytes = numberFromRecord(fileInput, "sizeBytes");
-    const sha256 = stringFromRecord(fileInput, "sha256");
-
-    if (!path || sizeBytes === undefined || !sha256) {
-      throw new Error(`${label} contains an incomplete file entry at index ${index}.`);
-    }
-
-    return { path, sizeBytes, sha256 };
-  });
-
-  return {
-    source,
-    generatedAt: generatedAtValue,
-    proofDir,
-    aggregateSha256,
-    files
-  };
-};
-
 const writeProofAuditArtifacts = async (options: CliOptions, report: ProofAuditReport): Promise<string[]> => {
   const auditPath = join(options.out, "proof-audit.json");
-  const manifestPath = join(options.out, "proof-manifest.json");
 
   await writeJson(auditPath, report);
-  await writeJson(manifestPath, await buildProofManifest(options.out));
+  const manifestPath = await writeProofManifest(options.out, compiledAt);
 
   return [auditPath, manifestPath];
 };
@@ -2947,304 +2758,28 @@ const proofDirsFromOptions = (options: CliOptions): string[] =>
     .map((proofDir) => proofDir.trim())
     .filter((proofDir) => proofDir.length > 0);
 
-const verifyProofManifest = async (
-  options: CliOptions
-): Promise<{ report: ProofManifestVerification; reportPath: string }> => {
-  const manifestPath = join(options.out, "proof-manifest.json");
-  const reportPath = join(options.out, "proof-manifest-verification.json");
-  const expected = parseProofManifest(await readJson<unknown>(manifestPath, "proof manifest"), manifestPath);
-  const actual = await buildProofManifest(options.out);
-  const expectedFiles = new Map(expected.files.map((file) => [file.path, file]));
-  const actualFiles = new Map(actual.files.map((file) => [file.path, file]));
-  const missingFiles = expected.files
-    .filter((file) => !actualFiles.has(file.path))
-    .map((file) => file.path)
-    .sort();
-  const unexpectedFiles = actual.files
-    .filter((file) => !expectedFiles.has(file.path))
-    .map((file) => file.path)
-    .sort();
-  const changedFiles = expected.files
-    .flatMap((expectedFile) => {
-      const actualFile = actualFiles.get(expectedFile.path);
-
-      if (!actualFile || (actualFile.sha256 === expectedFile.sha256 && actualFile.sizeBytes === expectedFile.sizeBytes)) {
-        return [];
-      }
-
-      return [
-        {
-          path: expectedFile.path,
-          expectedSha256: expectedFile.sha256,
-          actualSha256: actualFile.sha256,
-          expectedSizeBytes: expectedFile.sizeBytes,
-          actualSizeBytes: actualFile.sizeBytes
-        }
-      ];
-    })
-    .sort((left, right) => left.path.localeCompare(right.path));
-  const status: ProofManifestVerification["status"] =
-    expected.aggregateSha256 === actual.aggregateSha256 &&
-    missingFiles.length === 0 &&
-    unexpectedFiles.length === 0 &&
-    changedFiles.length === 0
-      ? "PASS"
-      : "FAIL";
-  const report: ProofManifestVerification = {
-    source: "splunkready-proof-manifest-verification",
-    generatedAt: compiledAt,
-    status,
-    proofDir: options.out,
-    manifestPath,
-    expectedAggregateSha256: expected.aggregateSha256,
-    actualAggregateSha256: actual.aggregateSha256,
-    expectedFiles: expected.files.length,
-    actualFiles: actual.files.length,
-    missingFiles,
-    unexpectedFiles,
-    changedFiles
-  };
-
-  await writeJson(reportPath, report);
-
-  return { report, reportPath };
-};
-
 const verifyManifestCommand = async (options: CliOptions): Promise<string[]> => {
-  const { report, reportPath } = await verifyProofManifest(options);
+  const result = await runManifestVerificationWorkflow({ outDir: options.out, generatedAt: compiledAt });
+  const [reportPath] = result.artifacts;
 
-  if (report.status !== "PASS") {
-    throw new Error(`verify-manifest failed with ${report.status}. Inspect ${reportPath}.`);
+  if (result.status !== "PASS") {
+    throw new Error(`verify-manifest failed with ${result.status}. Inspect ${reportPath}.`);
   }
 
-  return [reportPath];
+  return result.artifacts;
 };
-
-const labelFromProofDir = (proofDir: string): string => {
-  const parts = proofDir.split(/[\\/]/).filter((part) => part.length > 0);
-
-  return parts.at(-1) ?? proofDir;
-};
-
-const parseProofAuditReport = (input: unknown): ProofAuditReport | undefined => {
-  if (!isRecord(input)) {
-    return undefined;
-  }
-
-  const status = stringFromRecord(input, "status");
-  const proofType = stringFromRecord(input, "proofType");
-  const proofDir = stringFromRecord(input, "proofDir");
-  const mode = stringFromRecord(input, "mode");
-  const proofLoop = stringFromRecord(input, "proofLoop");
-  const proofTypes: ProofAuditReport["proofType"][] = [
-    "live-security",
-    "live",
-    "receipt",
-    "firewall-block",
-    "suite",
-    "external-trace",
-    "unknown"
-  ];
-  const proofLoops: ProofLoop[] = ["fail-to-pass", "ready-without-patch", "not-ready-after-rerun", "mixed-verdict"];
-  const checks = Array.isArray(input.checks) ? input.checks.filter(isRecord) : undefined;
-
-  if (
-    (status !== "PASS" && status !== "WARN" && status !== "FAIL") ||
-    !proofType ||
-    !proofTypes.includes(proofType as ProofAuditReport["proofType"]) ||
-    !proofDir ||
-    !checks
-  ) {
-    return undefined;
-  }
-
-  return {
-    status,
-    proofType: proofType as ProofAuditReport["proofType"],
-    proofDir,
-    mode: mode === "fixture" || mode === "live" ? mode : undefined,
-    mutation: booleanFromRecord(input, "mutation"),
-    failToPass: booleanFromRecord(input, "failToPass"),
-    readyAfterPatch: booleanFromRecord(input, "readyAfterPatch"),
-    readyWithoutPatch: booleanFromRecord(input, "readyWithoutPatch"),
-    proofLoop: proofLoop && proofLoops.includes(proofLoop as ProofLoop) ? (proofLoop as ProofLoop) : undefined,
-    hostedModelStatus: stringFromRecord(input, "hostedModelStatus"),
-    checks: checks.map((check) => {
-      const checkStatus = stringFromRecord(check, "status");
-
-      return {
-        id: stringFromRecord(check, "id") ?? "unknown-check",
-        status:
-          checkStatus === "PASS" || checkStatus === "WARN" || checkStatus === "FAIL"
-            ? checkStatus
-            : "FAIL",
-        detail: stringFromRecord(check, "detail") ?? "No detail recorded.",
-        evidence: check.evidence
-      };
-    })
-  };
-};
-
-const receiptForIndex = async (proofDir: string): Promise<ReadinessReceipt | undefined> => {
-  const candidates = ["receipt-after-001.json", "receipt-external-001.json", "receipt-before-001.json"];
-
-  for (const fileName of candidates) {
-    const input = await readOptionalJson<unknown>(join(proofDir, fileName));
-    const result = input ? readinessReceiptSchema.safeParse(input) : undefined;
-
-    if (result?.success) {
-      return result.data;
-    }
-  }
-
-  return undefined;
-};
-
-const missionFactsForIndex = async (proofDir: string): Promise<{ missions: string[]; domains: string[] }> => {
-  const missionInputs = await readOptionalJson<unknown>(join(proofDir, "missions.json"));
-  const suiteSummary = await readOptionalJson<unknown>(join(proofDir, "suite-proof-summary.json"));
-  const directMissions = Array.isArray(missionInputs) ? missionInputs.filter(isRecord) : [];
-  const suiteMissions = isRecord(suiteSummary) && Array.isArray(suiteSummary.missions) ? suiteSummary.missions.filter(isRecord) : [];
-  const missionIds = [...directMissions, ...suiteMissions]
-    .map((mission) => stringFromRecord(mission, "id") ?? stringFromRecord(mission, "missionId"))
-    .filter((missionId): missionId is string => Boolean(missionId));
-  const domains = [...directMissions, ...suiteMissions]
-    .map((mission) => stringFromRecord(mission, "domain"))
-    .filter((domain): domain is string => Boolean(domain));
-
-  return {
-    missions: [...new Set(missionIds)].sort(),
-    domains: [...new Set(domains)].sort()
-  };
-};
-
-const certificationIndexEntry = async (proofDir: string): Promise<CertificationIndexEntry> => {
-  const audit = parseProofAuditReport(await readOptionalJson<unknown>(join(proofDir, "proof-audit.json")));
-  const manifestInput = await readOptionalJson<unknown>(join(proofDir, "proof-manifest.json"));
-  const verificationInput = await readOptionalJson<unknown>(join(proofDir, "proof-manifest-verification.json"));
-  const manifest = isRecord(manifestInput) ? manifestInput : undefined;
-  const verification = isRecord(verificationInput) ? verificationInput : undefined;
-  const verificationStatus = stringFromRecord(verification, "status");
-  const manifestStatus =
-    verificationStatus === "PASS" || verificationStatus === "FAIL"
-      ? verificationStatus
-      : manifest
-        ? "UNVERIFIED"
-        : "MISSING";
-  const manifestAggregateSha256 = stringFromRecord(manifest, "aggregateSha256");
-  const manifestFiles = Array.isArray(manifest?.files) ? manifest.files.length : undefined;
-  const receipt = await receiptForIndex(proofDir);
-  const suiteSummary = await readOptionalJson<unknown>(join(proofDir, "suite-proof-summary.json"));
-  const suiteTitle = stringFromRecord(suiteSummary, "suiteTitle") ?? stringFromRecord(suiteSummary, "suiteId");
-  const label = receipt ? receipt.agent.name : suiteTitle ?? labelFromProofDir(proofDir);
-  const missionFacts = await missionFactsForIndex(proofDir);
-
-  return {
-    label,
-    proofDir,
-    proofType: audit?.proofType ?? "missing",
-    status: audit?.status ?? "FAIL",
-    manifestStatus,
-    mode: audit?.mode ?? receipt?.mode,
-    mutation: audit?.mutation ?? null,
-    agent: receipt?.agent ?? { name: label, version: "n/a" },
-    receipt: receipt
-      ? {
-          id: receipt.id,
-          verdict: receipt.verdict,
-          score: receipt.score,
-          violations: receipt.violations.length,
-          evidenceRefs: receipt.evidenceRefs.length
-        }
-      : null,
-    missions: missionFacts.missions,
-    domains: missionFacts.domains,
-    proofLoop: audit?.proofLoop,
-    hostedModelStatus: audit?.hostedModelStatus,
-    manifest:
-      manifestAggregateSha256 && manifestFiles !== undefined
-        ? {
-            aggregateSha256: manifestAggregateSha256,
-            files: manifestFiles
-          }
-        : undefined,
-    href: `?artifacts=${encodeURIComponent(proofDir)}#receipt`
-  };
-};
-
-const uniqueUiArtifacts = (
-  artifacts: UiArtifactManifest["artifacts"]
-): UiArtifactManifest["artifacts"] => {
-  const seen = new Set<string>();
-
-  return artifacts.filter((artifact) => {
-    if (seen.has(artifact.path)) {
-      return false;
-    }
-
-    seen.add(artifact.path);
-    return true;
-  });
-};
-
-const artifactLabelForIndexEntry = (entry: CertificationIndexEntry): string => {
-  const suffixes = [entry.agent.version, entry.proofLoop, entry.status]
-    .filter((suffix) => suffix && suffix !== "n/a")
-    .join(" / ");
-
-  return suffixes ? `${entry.label} - ${suffixes}` : entry.label;
-};
-
-const uiArtifactManifestFromIndex = (defaultArtifact: string, entries: CertificationIndexEntry[]): UiArtifactManifest => ({
-  source: "splunkready-ui-artifacts",
-  generatedAt: compiledAt,
-  defaultArtifact,
-  artifacts: uniqueUiArtifacts([
-    { label: "Certification index", path: defaultArtifact },
-    ...entries.map((entry) => ({
-      label: artifactLabelForIndexEntry(entry),
-      path: entry.proofDir
-    }))
-  ])
-});
 
 const certificationIndexCommand = async (options: CliOptions): Promise<string[]> => {
   const proofDirs = proofDirsFromOptions(options);
-
-  if (proofDirs.length === 0) {
-    throw new Error("certification-index requires --proof-dirs <dir[,dir]>.");
-  }
-
-  const entries = await Promise.all(proofDirs.map(certificationIndexEntry));
-  const totals = {
-    proofs: entries.length,
-    ready: entries.filter((entry) => entry.receipt?.verdict === "READY").length,
-    notReady: entries.filter((entry) => entry.receipt && entry.receipt.verdict !== "READY").length,
-    pass: entries.filter((entry) => entry.status === "PASS").length,
-    warn: entries.filter((entry) => entry.status === "WARN").length,
-    fail: entries.filter((entry) => entry.status === "FAIL").length
-  };
-  const status: ProofAuditStatus = totals.fail > 0 ? "FAIL" : totals.warn > 0 ? "WARN" : "PASS";
-  const index: CertificationIndex = {
-    status,
-    source: "splunkready-certification-index",
-    mutation: entries.some((entry) => entry.mutation === true),
-    generatedAt: compiledAt,
+  const { artifacts } = await writeCertificationIndex({
+    outDir: options.out,
     proofDirs,
-    totals,
-    entries
-  };
-  const indexPath = join(options.out, "certification-index.json");
-  const manifestPath = join(options.out, "ui-artifacts.json");
+    requirePass: options.requirePass,
+    generatedAt: compiledAt,
+    verifyInputs: false
+  });
 
-  await writeJson(indexPath, index);
-  await writeJson(manifestPath, uiArtifactManifestFromIndex(options.out, entries));
-
-  if (options.requirePass && status !== "PASS") {
-    throw new Error(`certification-index strict gate failed with ${status}. Inspect ${indexPath}.`);
-  }
-
-  return [indexPath, manifestPath];
+  return artifacts;
 };
 
 const receiptCommand = async (
@@ -3882,82 +3417,18 @@ export const runMcpTranscriptCertificationFromCli = async (
 export const runVerifyManifestFromCli = async (
   input: ManifestVerificationWorkflowInput
 ): Promise<ManifestVerificationWorkflowResult> => {
-  const options = defaultCliOptions({ out: input.outDir });
-  const { report, reportPath } = await verifyProofManifest(options);
-
-  return { status: report.status, outDir: input.outDir, artifacts: [reportPath], mutation: false, report };
-};
-
-const manifestFailureDetail = (report: ProofManifestVerification): string => {
-  const details = [
-    report.missingFiles.length > 0 ? `missing ${report.missingFiles.join(", ")}` : undefined,
-    report.unexpectedFiles.length > 0 ? `unexpected ${report.unexpectedFiles.join(", ")}` : undefined,
-    report.changedFiles.length > 0 ? `changed ${report.changedFiles.map((file) => file.path).join(", ")}` : undefined
-  ].filter((detail): detail is string => Boolean(detail));
-
-  return details.length > 0 ? details.join("; ") : "aggregate hash mismatch";
+  return runManifestVerificationWorkflow({ ...input, generatedAt: input.generatedAt ?? compiledAt });
 };
 
 export const runCertificationIndexFromCli = async (
   input: CertificationIndexWorkflowInput
 ): Promise<CertificationIndexWorkflowResult> => {
-  const proofDirs = [...new Set(input.proofDirs.map((proofDir) => proofDir.trim()).filter((proofDir) => proofDir.length > 0))];
-
-  if (proofDirs.length < 2) {
-    throw new Error("certification-index workbench requires at least two managed proof runs.");
-  }
-
-  const verificationReports = await Promise.all(
-    proofDirs.map(async (proofDir) => {
-      const { report } = await verifyProofManifest(defaultCliOptions({ out: proofDir }));
-
-      return report;
-    })
-  );
-  const failed = verificationReports.filter((report) => report.status !== "PASS");
-
-  if (failed.length > 0) {
-    throw new Error(
-      `Cannot index unverifiable proof bundle(s): ${failed
-        .map((report) => `${report.proofDir} ${report.status} (${manifestFailureDetail(report)})`)
-        .join("; ")}.`
-    );
-  }
-
-  const options = defaultCliOptions({ out: input.outDir, proofDirs: proofDirs.join(","), requirePass: false });
-  const artifacts = await certificationIndexCommand(options);
-  const indexPath = join(input.outDir, "certification-index.json");
-  const manifestPath = join(input.outDir, "ui-artifacts.json");
-  const artifactBases = input.proofArtifactBases;
-  let index = await readJson<CertificationIndex>(indexPath, "certification index");
-
-  if (artifactBases && artifactBases.length === index.entries.length) {
-    const entries = index.entries.map((entry, indexEntry) => {
-      const proofDir = artifactBases[indexEntry] ?? entry.proofDir;
-
-      return {
-        ...entry,
-        proofDir,
-        href: `?artifacts=${encodeURIComponent(proofDir)}#receipt`
-      };
-    });
-
-    index = {
-      ...index,
-      proofDirs: artifactBases,
-      entries
-    };
-    await writeJson(indexPath, index);
-    await writeJson(manifestPath, uiArtifactManifestFromIndex(input.indexArtifactBase ?? options.out, entries));
-  }
-
-  return {
-    status: index.status,
-    outDir: input.outDir,
-    artifacts,
-    mutation: index.mutation,
-    messages: [`Indexed ${proofDirs.length} verified managed proof run(s).`]
-  };
+  return runCertificationIndexWorkflow({
+    ...input,
+    requirePass: input.requirePass ?? false,
+    generatedAt: input.generatedAt ?? compiledAt,
+    verifyInputs: input.verifyInputs ?? true
+  });
 };
 
 const main = async (): Promise<void> => {

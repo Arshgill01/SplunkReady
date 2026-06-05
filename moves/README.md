@@ -84,6 +84,7 @@ commands, or filesystem paths.
 | P0 | [59](moves59.md) Workbench CI timeout stabilization | 0.5d | Gives the Vite dev-shell workbench test enough time on hosted GitHub runners without changing product behavior. |
 | P0 | [60](moves60.md) LLM specimen proof command | 0.5d | Makes the Gemini-backed trace-producer path one-command visible while keeping deterministic grading authoritative. |
 | P0 | [61](moves61.md) LLM proof workflow extraction | 0.5d | Starts the next CLI modularization pass by moving the new LLM proof orchestration into a focused workflow module. |
+| P0 | [62](moves62.md) Proof manifest and index workflow extraction | 0.5d | Continues the CLI modularization pass by moving proof manifest, verification, and certification index logic into workflow modules. |
 
 ## Non-Negotiable Boundaries
 
