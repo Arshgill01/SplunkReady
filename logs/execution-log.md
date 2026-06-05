@@ -8006,3 +8006,49 @@ Result:
 - Vite production UI build passed.
 - `git diff --check` passed.
 - Playwright browser checks passed for policy-backed rerun, firewall check, desktop layout, mobile layout, and overflow after the browser-discovered CSS fix.
+
+## 2026-06-05 - Runs Trace Timeline Defect Fix
+
+Context:
+- User reported that the trace timeline in the Runs section was completely messed up.
+- Subagents remained disabled per user direction; all inspection, implementation, and verification were done locally.
+- The UI fix was live-tested with Playwright before being treated as complete.
+
+Files touched:
+- `src/workbench/routes.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/workbench/workbench.test.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Fixed managed run summaries to derive parseable ISO timestamps from run IDs when no in-memory job timestamp exists.
+- Filtered stale empty managed run directories out of `/api/artifacts` unless an active job still owns the run.
+- Changed the Runs list from alphabetically grouped workflow/status buckets to a single newest-first chronological list.
+- Added timestamp, workflow, and state metadata directly to each run card.
+- Replaced full nested violation cards in the Runs trace preview with compact rule/count summaries so the Runs section stays scannable; the full Trace view still renders detailed findings and SAIA comparison evidence.
+- Added targeted workbench and UI regression coverage for empty-run filtering, normalized timestamps, newest-first ordering, and compact trace preview rendering.
+
+Playwright evidence:
+- Started `SPLUNKREADY_WORKBENCH_PORT=4329 npm run workbench:dev`.
+- Opened `http://127.0.0.1:4329/#proof-browser`.
+- Captured current mobile rendering before the fix and reproduced the issue: stale empty artifact-bundle run folders appeared ahead of real runs, and run ordering was grouped by workflow rather than time.
+- After the fix, verified mobile 390px and desktop 1440px layouts with Playwright DOM checks:
+  - no horizontal document/body overflow;
+  - first cards are newest-first:
+    - `run-2026-06-05T10-00-30-157Z-49170118`;
+    - `run-2026-06-05T10-00-07-693Z-c407c40e`;
+    - `run-2026-06-05T09-39-53-203Z-694704d2`;
+  - stale empty run folders were absent;
+  - the Runs trace preview contained zero `.finding` cards;
+  - the Runs trace preview contained compact `.trace-preview-rule-summary` entries;
+  - the Runs trace preview no longer embedded `SAIA recommended SPL` text.
+- Captured screenshots:
+  - `output/playwright/runs-trace-timeline-after-mobile.png`;
+  - `output/playwright/runs-trace-timeline-after-desktop.png`.
+
+Open risks:
+- Historical ignored run directories still exist on disk for manual inspection; the API no longer presents empty stale ones as successful runs.
+- The Runs preview intentionally stays compact. Detailed finding explanations remain available in the dedicated Trace view.

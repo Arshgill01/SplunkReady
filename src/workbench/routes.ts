@@ -121,6 +121,18 @@ const inferWorkflow = (files: string[]): WorkbenchWorkflow | "artifact-bundle" =
   return "artifact-bundle";
 };
 
+const createdAtFromRunId = (runId: string): string => {
+  const match = runId.match(/^run-(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z-/);
+
+  if (!match) {
+    return runId.replace(/^run-/, "");
+  }
+
+  const [, date, hours, minutes, seconds, milliseconds] = match;
+
+  return `${date}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
+};
+
 const summarizeRun = async (context: WorkbenchRouteContext, runId: string, fileCount: number) => {
   const files = await context.artifactStore.listRunFiles(runId);
   const job = context.jobRunner.listJobs().find((candidate) => candidate.runId === runId);
@@ -163,14 +175,16 @@ const summarizeRun = async (context: WorkbenchRouteContext, runId: string, fileC
     manifestStatus,
     missionIds,
     ruleIds: [...new Set(ruleIds)].sort(),
-    createdAt: job?.createdAt ?? runId.replace(/^run-/, "")
+    createdAt: job?.createdAt ?? createdAtFromRunId(runId)
   };
 };
 
 const listArtifactRuns = async (context: WorkbenchRouteContext) => {
   const runs = await context.artifactStore.listRuns();
+  const activeRunIds = new Set(context.jobRunner.listJobs().map((job) => job.runId));
+  const summaries = await Promise.all(runs.map((run) => summarizeRun(context, run.runId, run.files)));
 
-  return Promise.all(runs.map((run) => summarizeRun(context, run.runId, run.files)));
+  return summaries.filter((run) => run.fileCount > 0 || activeRunIds.has(run.runId));
 };
 
 const contentTypeFor = (fileName: string): string => {

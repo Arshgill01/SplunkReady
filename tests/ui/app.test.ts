@@ -1503,6 +1503,9 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("run-before");
     expect(html).toContain("run-card");
     expect(html).toContain("run-card-facts");
+    expect(html).toContain("2026-06-01 06:45:00Z");
+    expect(html.indexOf("run-after")).toBeLessThan(html.indexOf("run-before"));
+    expect(html).not.toContain("external-trace-certification / failed");
     expect(html).toContain("Receipt comparison");
     expect(html).toContain("NOT READY");
     expect(html).toContain("READY");
@@ -1522,6 +1525,8 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Trace timeline");
     expect(html).toContain("trace-preview-list");
     expect(html).toContain("trace-preview-event");
+    expect(html).toContain("trace-preview-rule-summary");
+    expect(html).not.toContain("SAIA recommended SPL");
     expect(html).not.toContain("compact-trace-table");
     expect(html).toContain("splunk_run_query");
     expect(html).toContain("splunk_run_saved_search");

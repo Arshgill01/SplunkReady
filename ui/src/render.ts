@@ -1254,13 +1254,21 @@ const renderTraceRows = (events: TraceEvent[], violations: Violation[], policyPa
     .join("");
 };
 
+const renderTracePreviewFindings = (violations: Violation[]): string => {
+  if (violations.length === 0) {
+    return `<span class="trace-preview-none">None</span>`;
+  }
+
+  const ruleIds = [...new Set(violations.map((violation) => violation.ruleId))];
+
+  return `<span class="trace-preview-rule-summary">${violations.length} finding(s): ${ruleIds.map((ruleId) => code(ruleId)).join(" / ")}</span>`;
+};
+
 const renderTracePreviewEvents = (
   events: TraceEvent[],
-  violations: Violation[],
-  policyPatch: PolicyPatch | undefined
+  violations: Violation[]
 ): string => {
   const groupedViolations = violationByEvent(violations);
-  const assistanceByViolation = splAssistanceByViolation(policyPatch);
 
   return `<ol class="trace-preview-list">
     ${events
@@ -1286,7 +1294,7 @@ const renderTracePreviewEvents = (
               <span>evidence ${value(event.evidenceRefs.length)}</span>
             </div>
             <div class="trace-preview-findings">
-              ${eventViolations.length > 0 ? renderFindings(eventViolations, assistanceByViolation) : `<span class="trace-preview-none">None</span>`}
+              ${renderTracePreviewFindings(eventViolations)}
             </div>
           </div>
         </li>`;
@@ -1545,15 +1553,36 @@ const filteredRuns = (runs: WorkbenchRunSummary[], workbench: WorkbenchRenderSta
   });
 };
 
-const groupedRuns = (runs: WorkbenchRunSummary[]): Array<[string, WorkbenchRunSummary[]]> => {
-  const groups = new Map<string, WorkbenchRunSummary[]>();
+const runTime = (run: WorkbenchRunSummary): number => {
+  const parsed = Date.parse(run.createdAt);
 
-  for (const run of runs) {
-    const key = `${run.workflow} / ${run.state}`;
-    groups.set(key, [...(groups.get(key) ?? []), run]);
+  if (Number.isFinite(parsed)) {
+    return parsed;
   }
 
-  return [...groups.entries()].sort(([left], [right]) => left.localeCompare(right));
+  return Date.parse(run.runId.replace(/^run-/, "").replace(/^(\d{4}-\d{2}-\d{2}T\d{2})-(\d{2})-(\d{2})-(\d{3})Z-.+$/, "$1:$2:$3.$4Z"));
+};
+
+const sortRunsByCreatedAt = (runs: WorkbenchRunSummary[]): WorkbenchRunSummary[] =>
+  [...runs].sort((left, right) => {
+    const rightTime = runTime(right);
+    const leftTime = runTime(left);
+
+    if (Number.isFinite(rightTime) && Number.isFinite(leftTime) && rightTime !== leftTime) {
+      return rightTime - leftTime;
+    }
+
+    return right.runId.localeCompare(left.runId);
+  });
+
+const formatRunCreatedAt = (createdAt: string): string => {
+  const parsed = Date.parse(createdAt);
+
+  if (!Number.isFinite(parsed)) {
+    return createdAt;
+  }
+
+  return createdAt.replace("T", " ").replace(/\.\d{3}Z$/, "Z");
 };
 
 const uniqueRunValues = (runs: WorkbenchRunSummary[], key: "workflow" | "state"): string[] =>
@@ -1594,7 +1623,7 @@ const renderRunList = (
   runs: WorkbenchRunSummary[],
   workbench: WorkbenchRenderState | undefined
 ): string => {
-  const visibleRuns = filteredRuns(runs, workbench);
+  const visibleRuns = sortRunsByCreatedAt(filteredRuns(runs, workbench));
 
   if (!workbench?.available) {
     return `<section class="panel run-browser-list">
@@ -1609,33 +1638,31 @@ const renderRunList = (
     ${
       visibleRuns.length === 0
         ? `<p class="empty">No managed runs match the current filters.</p>`
-        : groupedRuns(visibleRuns)
-            .map(
-              ([group, groupRuns]) => `<section class="run-group">
-                <h3>${value(group)}</h3>
-                <div class="run-card-list">
-                  ${groupRuns
-                    .map(
-                      (run) => `<article class="run-card ${activeRunMatches(run, bundle) ? "active" : ""}">
-                        <div class="run-card-title">
-                          ${code(run.runId)}
-                          <a href="?artifacts=${encodeURIComponent(run.artifactBase)}#proof-browser" data-proof-artifact="${value(
-                            run.artifactBase
-                          )}" data-proof-view="proof-browser">Open</a>
-                        </div>
-                        <dl class="run-card-facts">
-                          <div><dt>Receipt</dt><dd>${value(run.verdict)} / ${run.score === null ? "score n/a" : `score ${run.score}`}</dd></div>
-                          <div><dt>Audit</dt><dd>${value(run.proofAuditStatus)} / ${value(run.state)}</dd></div>
-                          <div><dt>Manifest</dt><dd>${value(run.manifestStatus)} / ${run.fileCount} file(s)</dd></div>
-                          <div><dt>Evidence</dt><dd>${run.violations} violation(s) / ${run.evidenceRefs} ref(s)</dd></div>
-                        </dl>
-                      </article>`
-                    )
-                    .join("")}
-                </div>
-              </section>`
-            )
-            .join("")
+        : `<div class="run-card-list run-timeline-list">
+            ${visibleRuns
+              .map(
+                (run) => `<article class="run-card ${activeRunMatches(run, bundle) ? "active" : ""}">
+                  <div class="run-card-title">
+                    ${code(run.runId)}
+                    <a href="?artifacts=${encodeURIComponent(run.artifactBase)}#proof-browser" data-proof-artifact="${value(
+                      run.artifactBase
+                    )}" data-proof-view="proof-browser">Open</a>
+                  </div>
+                  <div class="run-card-meta">
+                    <span>${value(formatRunCreatedAt(run.createdAt))}</span>
+                    <span>${value(run.workflow)}</span>
+                    <span>${value(run.state)}</span>
+                  </div>
+                  <dl class="run-card-facts">
+                    <div><dt>Receipt</dt><dd>${value(run.verdict)} / ${run.score === null ? "score n/a" : `score ${run.score}`}</dd></div>
+                    <div><dt>Audit</dt><dd>${value(run.proofAuditStatus)} / ${value(run.state)}</dd></div>
+                    <div><dt>Manifest</dt><dd>${value(run.manifestStatus)} / ${run.fileCount} file(s)</dd></div>
+                    <div><dt>Evidence</dt><dd>${run.violations} violation(s) / ${run.evidenceRefs} ref(s)</dd></div>
+                  </dl>
+                </article>`
+              )
+              .join("")}
+          </div>`
     }
   </section>`;
 };
@@ -1687,7 +1714,7 @@ const renderTracePreview = (bundle: UiArtifactBundle): string => {
             .map(
               ([label, events, violations]) => `<section class="trace-preview-group">
                 <h3>${value(label)}</h3>
-                ${renderTracePreviewEvents(events, violations, bundle.policyPatch)}
+                ${renderTracePreviewEvents(events, violations)}
               </section>`
             )
             .join("")

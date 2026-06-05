@@ -6365,3 +6365,71 @@ Open risks:
 
 - Browser screenshots live under ignored `output/playwright/`; they are local verification artifacts and are not committed.
 - The generated workbench run directories are local ignored artifacts. They are useful for review on this machine but are not committed as product fixtures.
+
+## 2026-06-05 - Runs Trace Timeline Defect Fix
+
+Commands:
+
+- `command -v npx >/dev/null 2>&1 && echo npx-present || echo npx-missing`
+- `SPLUNKREADY_WORKBENCH_PORT=4329 npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4329/#proof-browser`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh goto http://127.0.0.1:4329/#proof-browser`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 390 844`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/runs-trace-timeline-after-mobile.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 1440 1000`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/runs-trace-timeline-after-desktop.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code 'async (page) => page.evaluate(() => { ... Runs ordering, overflow, stale-run, and compact-preview checks ... })'`
+- `npx tsc --noEmit`
+- `npx vitest run tests/workbench/workbench.test.ts tests/ui/app.test.ts`
+- `npm run build`
+- `npm run ui:build`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for Playwright prerequisite: `npx` was available.
+- PASS for targeted TypeScript validation: `npx tsc --noEmit`.
+- PASS for focused regression tests:
+  - `tests/workbench/workbench.test.ts`;
+  - `tests/ui/app.test.ts`;
+  - 2 test files;
+  - 40 tests passed.
+- PASS for `npm run build`.
+- PASS for Vite production UI build:
+  - 21 modules transformed;
+  - production bundle written to `dist-ui`.
+- PASS for canonical project gate:
+  - scaffold verified;
+  - 85 waves;
+  - 1121 project files;
+  - 41 test files;
+  - 275 tests passed.
+- PASS for `git diff --check`.
+- PASS for Playwright mobile browser verification at 390px:
+  - document horizontal overflow: `0`;
+  - run cards: `10`;
+  - newest-first first cards:
+    - `run-2026-06-05T10-00-30-157Z-49170118`;
+    - `run-2026-06-05T10-00-07-693Z-c407c40e`;
+    - `run-2026-06-05T09-39-53-203Z-694704d2`;
+  - stale empty run count: `0`;
+  - `.finding` cards inside Runs trace preview: `0`;
+  - `.trace-preview-rule-summary` entries: `2`;
+  - embedded `SAIA recommended SPL` preview text: `false`.
+- PASS for Playwright desktop browser verification at 1440px:
+  - document horizontal overflow: `0`;
+  - run cards: `10`;
+  - newest-first first cards:
+    - `run-2026-06-05T10-00-30-157Z-49170118`;
+    - `run-2026-06-05T10-00-07-693Z-c407c40e`;
+    - `run-2026-06-05T09-39-53-203Z-694704d2`;
+  - stale empty run count: `0`;
+  - `.finding` cards inside Runs trace preview: `0`;
+  - `.trace-preview-rule-summary` entries: `2`;
+  - embedded `SAIA recommended SPL` preview text: `false`.
+
+Open risks:
+
+- Screenshot artifacts live under ignored `output/playwright/` and are not committed.
+- Existing non-empty historical workbench runs still appear by design; only empty stale folders are filtered from the run browser.

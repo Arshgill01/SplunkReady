@@ -428,6 +428,7 @@ describe("workbench backend", () => {
     const config = await testConfig({ maxRequestBytes: 200_000 });
     const store = new WorkbenchArtifactStore(config.artifactRoot);
     const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const staleEmptyRun = await store.createRunDirectory();
     const trace = JSON.parse(await readFile("examples/sample-external-trace.json", "utf8")) as unknown;
     const response = await callApi(config, runner, store, {
       method: "POST",
@@ -441,6 +442,7 @@ describe("workbench backend", () => {
     expect(response.status).toBe(202);
     expect(completed.state).toBe("succeeded");
     expect(list.status).toBe(200);
+    expect((list.json as { runs: Array<{ runId: string }> }).runs.map((run) => run.runId)).not.toContain(staleEmptyRun.runId);
     expect(list.json).toMatchObject({
       runs: [
         {
@@ -457,6 +459,7 @@ describe("workbench backend", () => {
         }
       ]
     });
+    expect((list.json as { runs: Array<{ createdAt: string }> }).runs[0]?.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   });
 
   it("verifies managed proof manifests through the artifact API without hiding FAIL reports", async () => {
