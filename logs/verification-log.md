@@ -7539,6 +7539,43 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 37 Workbench Cross-Site API Guard Verification
+
+Commands:
+
+- `npm test -- tests/workbench/workbench.test.ts`
+- `npm run check && git diff --check`
+
+Result:
+
+- PASS for focused workbench backend tests:
+  - 1 test file passed;
+  - 26 tests passed.
+- PASS for cross-site API guard regression coverage:
+  - non-local `Origin: https://example.test` remained rejected with
+    `WORKBENCH_ORIGIN_FORBIDDEN`;
+  - `Sec-Fetch-Site: cross-site` on a workflow-starting POST was rejected with
+    `WORKBENCH_ORIGIN_FORBIDDEN`;
+  - `Sec-Fetch-Site: same-origin` on `/api/health` remained allowed.
+- PASS for full `npm run check && git diff --check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 292 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output;
+  - explicit final `git diff --check` completed with no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 36 Local Artifact Base Guard Verification
 
 Commands:

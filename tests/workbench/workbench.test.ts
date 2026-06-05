@@ -945,6 +945,16 @@ describe("workbench backend", () => {
       path: "/api/health",
       headers: { origin: "https://example.test" }
     });
+    const crossSiteFetch = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/fixture-certification",
+      headers: { "sec-fetch-site": "cross-site" }
+    });
+    const sameOriginFetch = await callApi(config, runner, store, {
+      method: "GET",
+      path: "/api/health",
+      headers: { "sec-fetch-site": "same-origin" }
+    });
     const tooLarge = await callApi(config, runner, store, {
       method: "POST",
       path: "/api/jobs/fixture-certification",
@@ -953,6 +963,9 @@ describe("workbench backend", () => {
 
     expect(badOrigin.status).toBe(403);
     expect(badOrigin.json).toMatchObject({ error: { code: "WORKBENCH_ORIGIN_FORBIDDEN" } });
+    expect(crossSiteFetch.status).toBe(403);
+    expect(crossSiteFetch.json).toMatchObject({ error: { code: "WORKBENCH_ORIGIN_FORBIDDEN" } });
+    expect(sameOriginFetch.status).toBe(200);
     expect(tooLarge.status).toBe(400);
     expect(tooLarge.json).toMatchObject({ error: { code: "WORKBENCH_REQUEST_FAILED" } });
   });

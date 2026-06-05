@@ -264,6 +264,18 @@ const localhostOriginAllowed = (request: IncomingMessage): boolean => {
   }
 };
 
+const browserFetchSiteAllowed = (request: IncomingMessage): boolean => {
+  const fetchSite = request.headers["sec-fetch-site"];
+
+  if (!fetchSite) {
+    return true;
+  }
+
+  const value = Array.isArray(fetchSite) ? fetchSite[0] : fetchSite;
+
+  return value === "none" || value === "same-origin" || value === "same-site";
+};
+
 const workflows = new Set<WorkbenchWorkflow>([
   "fixture-certification",
   "external-trace-certification",
@@ -370,8 +382,8 @@ export const createWorkbenchApiHandler =
     }
 
     try {
-      if (!localhostOriginAllowed(request)) {
-        structuredError(response, 403, "WORKBENCH_ORIGIN_FORBIDDEN", "Workbench API accepts localhost origins only.");
+      if (!localhostOriginAllowed(request) || !browserFetchSiteAllowed(request)) {
+        structuredError(response, 403, "WORKBENCH_ORIGIN_FORBIDDEN", "Workbench API accepts local browser origins only.");
         return true;
       }
 

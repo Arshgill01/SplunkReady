@@ -8915,6 +8915,39 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 37 Workbench Cross-Site API Guard
+
+Context:
+- Continued development hardening after Move 36.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- User explicitly deferred video/submission work; this move stayed on local
+  workbench API safety.
+- The workbench backend can start server-owned workflows, including live-mode
+  workflows when server env is configured, so cross-site browser requests should
+  be rejected before route handling.
+
+Files touched:
+- `src/workbench/routes.ts`
+- `tests/workbench/workbench.test.ts`
+- `moves/README.md`
+- `moves/moves37.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Kept the existing non-local `Origin` rejection boundary.
+- Added a `Sec-Fetch-Site` guard that rejects browser-marked `cross-site`
+  requests to `/api/*`.
+- Preserved same-origin/same-site/none fetch metadata and local non-browser
+  clients that omit fetch metadata.
+- Added focused backend regression coverage for rejected cross-site metadata
+  and allowed same-origin metadata.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 36 Local Artifact Base Guard
 
 Context:

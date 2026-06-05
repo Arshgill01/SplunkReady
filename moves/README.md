@@ -59,6 +59,7 @@ commands, or filesystem paths.
 | P0 | [34](moves34.md) SplunkReady secret env ignore | 0.5d | Ensures `.splunkready*` local secret files are ignored by default. |
 | P0 | [35](moves35.md) Secret env ignore gate | 0.5d | Adds the `.splunkready*` and `.env*` ignore boundary to the canonical check. |
 | P0 | [36](moves36.md) Local artifact base guard | 0.5d | Keeps browser artifact loading on local paths even if query parameters or manifests provide URL-like bases. |
+| P0 | [37](moves37.md) Workbench cross-site API guard | 0.5d | Rejects browser-marked cross-site requests before they can start local workbench workflows. |
 
 ## Non-Negotiable Boundaries
 
