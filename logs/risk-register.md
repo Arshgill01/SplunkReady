@@ -383,3 +383,10 @@ lines, down from 634 lines before the move, while proof behavior remains
 covered by CLI tests and the canonical check. Remaining CLI risk: root dispatch
 and non-proof command wrappers still live in `src/cli.ts`, so the next useful
 slice is either live/external command extraction or a small command registry.
+
+Move 88 further reduces the CLI-monolith risk by extracting external trace,
+captured transcript, LLM-agent, and demo command wrappers into
+`src/cli/external-commands.ts`. `src/cli.ts` is now 367 lines, down from 437
+lines before the move and 634 lines before Moves 87-88. Remaining CLI risk:
+root dispatch and live command orchestration still live in `src/cli.ts`, so the
+next useful slice is live command extraction or a small command registry.

@@ -12,6 +12,13 @@ import {
   type CliOutput
 } from "./cli/options.js";
 import {
+  certifyMcpTranscriptCommand,
+  demoCommand,
+  gradeTraceCommand,
+  importMcpTranscriptCommand,
+  llmAgentCommand
+} from "./cli/external-commands.js";
+import {
   certificationIndexCommand,
   hostedModelDiagnosticCommand,
   hostedModelProofCommand,
@@ -22,31 +29,14 @@ import {
   suiteProofCommand,
   verifyManifestCommand
 } from "./cli/proof-commands.js";
-import { validateLiveSecurityKit } from "./live-security-kit/validator.js";
 import {
   compileCommand,
-  compileContract,
-  createSplunkAccessAdapter,
   evaluateCommand,
   firewallCheckCommand,
-  fixtureCertificationSteps,
-  gradeTrace,
-  llmEnabled,
-  loadContract,
   receiptCommand,
-  rerunCommand,
-  writeCompiledArtifacts
+  rerunCommand
 } from "./workflows/certification-actions.js";
-import {
-  runExternalTraceCertificationFromPathWorkflow,
-  runGradeExternalTraceWorkflow,
-  runImportMcpTranscriptWorkflow,
-  runMcpTranscriptCertificationFromPathWorkflow
-} from "./workflows/external-certification.js";
-import {
-  runFixtureCertification,
-  runFixtureCertificationWorkflow
-} from "./workflows/fixture-certification.js";
+import { runFixtureCertificationWorkflow } from "./workflows/fixture-certification.js";
 import type {
   LiveActionWorkflowInput,
   LiveActionWorkflowResult
@@ -67,7 +57,6 @@ import {
   type HostedModelWorkflowInput,
   type HostedModelWorkflowResult
 } from "./workflows/hosted-model-actions.js";
-import { runLlmAgentWorkflow } from "./workflows/llm-agent.js";
 import {
   runFirewallCheckWorkflow,
   runPolicyBackedRerunWorkflow
@@ -129,65 +118,6 @@ const resolveCliInputPaths = async (options: CliOptions): Promise<CliOptions> =>
   trace: options.trace ? await resolveBundledInputPath(options.trace) : options.trace,
   transcript: options.transcript ? await resolveBundledInputPath(options.transcript) : options.transcript
 });
-
-const gradeTraceCommand = async (options: CliOptions): Promise<string[]> => {
-  const { artifacts } = await runGradeExternalTraceWorkflow({
-    outDir: options.out,
-    tracePath: options.trace,
-    missionPath: options.mission,
-    agentName: options.agentName,
-    agentVersion: options.agentVersion
-  });
-
-  return artifacts;
-};
-
-const importMcpTranscriptCommand = async (options: CliOptions): Promise<string[]> => {
-  const { artifacts } = await runImportMcpTranscriptWorkflow({
-    outDir: options.out,
-    transcriptPath: options.transcript,
-    missionPath: options.mission,
-    strictImport: options.strictImport,
-    agentName: options.agentName,
-    agentVersion: options.agentVersion
-  });
-
-  return artifacts;
-};
-
-const certifyMcpTranscriptCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  void env;
-  const { artifacts } = await runMcpTranscriptCertificationFromPathWorkflow({
-    outDir: options.out,
-    transcriptPath: options.transcript,
-    fixturePath: options.fixture,
-    missionPath: options.mission,
-    strictImport: options.strictImport,
-    requirePass: options.requirePass,
-    agentName: options.agentName,
-    agentVersion: options.agentVersion
-  });
-
-  return artifacts;
-};
-
-const llmAgentCommand = async (
-  options: CliOptions,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<string[]> => {
-  const { artifacts } = await runLlmAgentWorkflow(options, env);
-
-  return artifacts;
-};
-
-const demoCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const workflow = await runFixtureCertification(
-    { outDir: options.out, includeProofAudit: false },
-    fixtureCertificationSteps(options, env)
-  );
-
-  return workflow.artifacts;
-};
 
 export const runFixtureCertificationFromCli = runFixtureCertificationWorkflow;
 

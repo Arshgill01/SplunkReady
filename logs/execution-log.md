@@ -11254,3 +11254,41 @@ Open blockers:
   or a small command registry.
 - This move is not a UI change and does not address hosted demo, public package
   publication, or live proof export caps.
+
+## 2026-06-06 02:35 - Move 88 CLI External Command Extraction
+
+Scope:
+- Continued the Minimax CLI-monolith cap work without using subagents.
+- Added `moves/moves88.md` for a focused external/demo command extraction.
+- Created `src/cli/external-commands.ts` for `grade-trace`,
+  `import-mcp-transcript`, `certify-mcp-transcript`, `llm-agent`, and `demo`
+  command wrappers.
+- Removed stale root CLI imports made unnecessary by prior workflow and command
+  extractions.
+- Kept command names, flags, defaults, JSON output, package bin behavior,
+  fixture/live parity, deterministic grading authority, external trace import
+  semantics, MCP behavior, and Splunk mutation boundaries unchanged.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+
+Files changed:
+- `src/cli.ts`
+- `src/cli/external-commands.ts`
+- `moves/README.md`
+- `moves/moves88.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `src/cli.ts` dropped from 437 lines before Move 88 to 367 lines after the
+  extraction.
+- `src/cli/external-commands.ts` now owns 70 lines of external trace,
+  transcript, LLM-agent, and demo command wrappers.
+
+Open blockers:
+- Root CLI dispatch and live command orchestration still remain in
+  `src/cli.ts`; future modularization can extract live command wrappers or add
+  a small command registry.
+- This move is not a UI change and does not address hosted demo, public package
+  publication, or live proof export caps.

@@ -110,6 +110,7 @@ commands, or filesystem paths.
 | P0 | [85](moves85.md) MCP composition scorecard | 0.5d | Makes the MCP proof grade the composed use of existing Splunk MCP plus SplunkReady certification as a first-class evidence artifact. |
 | P0 | [86](moves86.md) CLI option parser extraction | 0.5d | Extracts CLI defaults, usage, option types, and argument parsing out of the command executor. |
 | P0 | [87](moves87.md) CLI proof command extraction | 0.5d | Extracts proof-oriented command wrappers out of the root CLI executor while preserving proof behavior. |
+| P0 | [88](moves88.md) CLI external command extraction | 0.5d | Extracts external trace, transcript, LLM-agent, and demo command wrappers out of the root CLI executor. |
 
 ## Non-Negotiable Boundaries
 
