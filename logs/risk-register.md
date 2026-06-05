@@ -231,3 +231,11 @@ SAIA proof and diagnostic artifact generation into
 `src/workflows/hosted-model-actions.ts`. `src/cli.ts` dropped from 2,795 lines
 to 2,660 lines. Remaining CLI-backed workflow wrappers are fixture
 certification, policy actions, and live actions.
+
+Move 67 removes fixture certification from the CLI-backed wrapper list by
+moving reusable compile/evaluate/receipt/rerun/firewall certification actions
+into `src/workflows/certification-actions.ts` and making
+`src/workflows/fixture-certification.ts` construct its default backend workflow
+without importing `../cli.js`. `src/cli.ts` dropped from 2,660 lines to 2,173
+lines. Remaining CLI-backed workflow wrappers are policy actions and live
+actions.

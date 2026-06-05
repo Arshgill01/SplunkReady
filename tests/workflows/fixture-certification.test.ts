@@ -1,4 +1,4 @@
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -150,5 +150,12 @@ describe("fixture certification workflow", () => {
       expect.arrayContaining([join(outDir, "proof-audit.json"), join(outDir, "proof-manifest.json")])
     );
     expect(progress.map((event) => event.phase)).toContain("proof-audit");
+  });
+
+  it("keeps the backend workflow source independent from the CLI module", async () => {
+    const source = await readFile(new URL("../../src/workflows/fixture-certification.ts", import.meta.url), "utf8");
+
+    expect(source).not.toContain("../cli.js");
+    expect(source).toContain("fixtureCertificationSteps");
   });
 });

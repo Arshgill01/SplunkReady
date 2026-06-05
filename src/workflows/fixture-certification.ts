@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 
+import { defaultFixtureCertificationOptions, fixtureCertificationSteps } from "./certification-actions.js";
+
 export type FixtureCertificationPhase =
   | "compile"
   | "evaluate"
@@ -234,7 +236,8 @@ export const runFixtureCertificationWorkflow = async (
   input: FixtureCertificationWorkflowInput,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<FixtureCertificationWorkflowResult> => {
-  const { runFixtureCertificationFromCli } = await import("../cli.js");
-
-  return runFixtureCertificationFromCli(input, env);
+  return runFixtureCertification(
+    { ...input, includeProofAudit: input.includeProofAudit ?? true },
+    fixtureCertificationSteps(defaultFixtureCertificationOptions(input.outDir), env)
+  );
 };

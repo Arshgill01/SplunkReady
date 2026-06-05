@@ -7786,6 +7786,63 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 67 Fixture Certification Workflow Extraction
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/workflows/fixture-certification.test.ts`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "demo|firewall-check|judge-proof"`
+- `npx vitest run tests/workbench/server.test.ts --testNamePattern "fixture certification"`
+- `npm run verify:runtime-contracts`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for initial TypeScript validation.
+- PASS for focused fixture certification workflow coverage:
+  - 1 test file passed;
+  - 4 tests passed, including the regression that
+    `src/workflows/fixture-certification.ts` does not import `../cli.js`.
+- PASS for focused CLI demo/firewall/judge-proof coverage:
+  - 1 test file passed;
+  - 2 selected tests passed and 37 tests skipped.
+- PASS for focused workbench fixture certification HTTP route coverage:
+  - 1 test file passed;
+  - 2 selected tests passed and 6 tests skipped.
+- FAIL for the first `npm run check` attempt:
+  - `verify:runtime-contracts` still expected the all-rules registry in
+    `src/cli.ts`;
+  - the implementation had correctly moved it to
+    `src/workflows/certification-actions.ts`.
+- PASS for targeted runtime verifier rerun after updating the ownership check:
+  - 19 rules;
+  - 4 fixture missions;
+  - 20 evidence refs.
+- PASS for `git diff --check`.
+- PASS for final full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 51 test files passed;
+  - 327 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for CLI shrink check:
+  - `src/cli.ts` line count after Move 66 was 2,660;
+  - `src/cli.ts` line count after Move 67 is 2,173.
+
+Notes:
+
+- This move did not change UI source or behavior, so Playwright was not run.
+- Remaining dynamic CLI imports are policy actions and live actions; fixture
+  certification is no longer CLI-owned.
+
 ## 2026-06-05 - Move 58 MCP Resources And Prompts
 
 Commands:

@@ -4,53 +4,46 @@ import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises
 import { dirname, isAbsolute, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { createFixtureSplunkAccessAdapter, loadFixtureSplunkDatasetFromFile } from "./adapters/fixture.js";
 import {
   createHttpLiveSplunkTransport,
   createLiveSplunkAccessAdapter,
   createLiveSplunkAdapterConfigFromEnv
 } from "./adapters/live.js";
-import type { SplunkAccessAdapter, SplunkAdapterError } from "./adapters/splunk-access.js";
-import { createGeminiConfigFromEnv, createGeminiLlmAgentModel } from "./agents/gemini-model.js";
-import { LlmSpecimenAgent } from "./agents/llm-specimen.js";
-import { NaiveSpecimenAgent, type SpecimenAgentRun } from "./agents/specimen.js";
+import { createGeminiConfigFromEnv } from "./agents/gemini-model.js";
 import { compileEnvironmentContract } from "./compiler/environment.js";
 import { compileReadinessProfile } from "./compiler/readiness-profile.js";
-import { createAnswerRules } from "./grader/answer.js";
-import { createAppContextRules } from "./grader/app-context.js";
-import { createBudgetRules } from "./grader/budget.js";
-import { createContractLookupRules } from "./grader/contract.js";
-import { createEvidenceRules } from "./grader/evidence.js";
-import { createInjectionRules } from "./grader/injection.js";
-import { runRuleEngine, type GraderRule } from "./grader/engine.js";
-import { createSafetyRules } from "./grader/safety.js";
-import { createSavedSearchRules } from "./grader/saved-search.js";
 import { scoreMissionReadiness } from "./grader/scoring.js";
-import { createSplStructuralRules } from "./grader/spl.js";
-import { firewallBlockedCode, SplunkFirewallGateway } from "./gateway/firewall.js";
 import {
   liveSecurityKitCleanupGuidance,
   liveSecurityKitOperatorWarnings,
   validateLiveSecurityKit
 } from "./live-security-kit/validator.js";
-import { parseMissionDefinition, type MissionDefinition } from "./missions/dsl.js";
 import { deriveLiveMission, type LiveSavedSearchCandidateResult } from "./missions/live.js";
-import { compileAgentPolicy, type AgentPolicy } from "./policy/compiler.js";
-import { generatePolicyPatch } from "./policy/patch.js";
 import { generateReadinessReceipt } from "./receipts/generator.js";
 import {
   readOnlySplunkToolNameSchema,
-  environmentContractSchema,
-  policyPatchSchema,
   readinessReceiptSchema,
   type EnvironmentContract,
   type PolicyPatch,
-  type ReadOnlySplunkToolName,
-  type ReadinessReceipt,
-  type TraceEvent,
-  type Violation
+  type ReadOnlySplunkToolName
 } from "./schemas/core.js";
-import { writeUiShell } from "./ui/shell.js";
+import {
+  compileCommand,
+  compileContract,
+  createLlmSpecimenAgent,
+  createSplunkAccessAdapter,
+  evaluateCommand,
+  firewallCheckCommand,
+  fixtureCertificationSteps,
+  gradeTrace,
+  llmEnabled,
+  loadContract,
+  loadMission,
+  readOptionalPolicyPatch,
+  receiptCommand,
+  rerunCommand,
+  writeCompiledArtifacts
+} from "./workflows/certification-actions.js";
 import {
   writeCertificationIndex,
   runCertificationIndexWorkflow,
@@ -66,9 +59,7 @@ import {
 } from "./workflows/external-certification.js";
 import {
   runFixtureCertification,
-  type FixtureCertificationWorkflowInput,
-  type FixtureCertificationWorkflowResult,
-  type FixtureCertificationWorkflowSteps
+  runFixtureCertificationWorkflow
 } from "./workflows/fixture-certification.js";
 import {
   writeSuiteCompilerDiagnostics,
@@ -171,33 +162,6 @@ interface JudgeProofSummary {
   uiArtifacts: string;
   nextCommands: string[];
 }
-
-interface FirewallBlockReport {
-  status: "BLOCKED";
-  code: "FIREWALL_POLICY_BLOCKED";
-  phase: "before" | "after";
-  mode: CliOptions["mode"];
-  mutation: false;
-  blockedBeforeSplunk: true;
-  toolName: string;
-  requestId: string;
-  missionId?: string;
-  message: string;
-  query?: string;
-  violations?: unknown;
-}
-
-const allRules = (): GraderRule[] => [
-  ...createSplStructuralRules(),
-  ...createContractLookupRules(),
-  ...createSavedSearchRules(),
-  ...createAppContextRules(),
-  ...createEvidenceRules(),
-  ...createAnswerRules(),
-  ...createInjectionRules(),
-  ...createBudgetRules(),
-  ...createSafetyRules()
-];
 
 const usage = `SplunkReady CLI
 
@@ -480,16 +444,6 @@ const removeOptionalFile = async (filePath: string): Promise<void> => {
   await rm(filePath, { force: true });
 };
 
-const readOptionalPolicyPatch = async (outDir: string): Promise<PolicyPatch | undefined> => {
-  const patchPath = join(outDir, "policy-patch.json");
-
-  if (!(await exists(patchPath))) {
-    return undefined;
-  }
-
-  return policyPatchSchema.parse(await readJson<unknown>(patchPath, "policy patch"));
-};
-
 const copyRequiredArtifact = async (sourceDir: string, outDir: string, fileName: string, label: string): Promise<string> => {
   const sourcePath = join(sourceDir, fileName);
   const outPath = join(outDir, fileName);
@@ -515,9 +469,6 @@ const copyOptionalArtifact = async (sourceDir: string, outDir: string, fileName:
   await copyFile(sourcePath, outPath);
   return outPath;
 };
-
-const loadMission = async (missionPath: string): Promise<MissionDefinition> =>
-  parseMissionDefinition(JSON.parse(await readFile(missionPath, "utf8")) as unknown);
 
 interface SuiteDefinition {
   id: string;
@@ -562,81 +513,6 @@ const loadSuite = async (suitePath: string): Promise<SuiteDefinition> =>
 
 const suiteMissionPath = (suitePath: string, missionPath: string): string =>
   isAbsolute(missionPath) ? missionPath : join(dirname(suitePath), missionPath);
-
-const loadContract = async (outDir: string): Promise<EnvironmentContract> =>
-  environmentContractSchema.parse(await readJson(join(outDir, "environment-contract.json"), "environment contract"));
-
-const loadTrace = async (outDir: string, phase: string): Promise<TraceEvent[]> =>
-  readJson(join(outDir, `trace-${phase}.json`), `${phase} trace`);
-
-const loadViolations = async (outDir: string, phase: string): Promise<Violation[]> =>
-  readJson(join(outDir, `violations-${phase}.json`), `${phase} violations`);
-
-const gradeTrace = (contract: EnvironmentContract, mission: MissionDefinition, traceEvents: TraceEvent[]): Violation[] =>
-  runRuleEngine({ contract, mission, traceEvents }, allRules()).violations;
-
-const splAssistanceRuleIds = new Set(["SPL-001", "SPL-003", "SPL-004"]);
-
-const queryFromViolation = (violation: Violation): string | undefined => {
-  const query = violation.evidence["query"];
-  return typeof query === "string" && query.trim().length > 0 ? query : undefined;
-};
-
-const collectSplAssistance = async (
-  adapter: SplunkAccessAdapter,
-  violations: Violation[]
-): Promise<PolicyPatch["splAssistance"]> => {
-  if (!adapter.explainSpl || !adapter.optimizeSpl) {
-    return undefined;
-  }
-
-  const assistance: NonNullable<PolicyPatch["splAssistance"]> = [];
-  const cache = new Map<
-    string,
-    {
-      explanation: Awaited<ReturnType<NonNullable<SplunkAccessAdapter["explainSpl"]>>>;
-      optimization: Awaited<ReturnType<NonNullable<SplunkAccessAdapter["optimizeSpl"]>>>;
-    }
-  >();
-
-  for (const violation of violations) {
-    if (!splAssistanceRuleIds.has(violation.ruleId)) {
-      continue;
-    }
-
-    const query = queryFromViolation(violation);
-    if (!query) {
-      continue;
-    }
-
-    let result = cache.get(query);
-    if (!result) {
-      const callOptions = {
-        requestId: `req-saia-${cache.size + 1}`,
-        missionId: violation.missionId,
-        traceEventId: violation.traceEventId
-      };
-      const [explanation, optimization] = await Promise.all([
-        adapter.explainSpl({ query }, callOptions),
-        adapter.optimizeSpl({ query }, callOptions)
-      ]);
-      result = { explanation, optimization };
-      cache.set(query, result);
-    }
-
-    assistance.push({
-      violationRef: violation.id,
-      ruleId: violation.ruleId,
-      query,
-      explanation: result.explanation.explanation,
-      optimizedQuery: result.optimization.optimizedQuery,
-      rationale: result.optimization.rationale,
-      warnings: [...result.explanation.warnings, ...result.optimization.warnings]
-    });
-  }
-
-  return assistance.length > 0 ? assistance : undefined;
-};
 
 const summarizeHostedModels = (
   contract: EnvironmentContract,
@@ -709,155 +585,6 @@ const summarizeHostedModels = (
     notes:
       "SAIA explain/optimize tools were available, but this proof did not produce SPL-rule violations with query evidence."
   };
-};
-
-const llmEnabled = (env: NodeJS.ProcessEnv = process.env): boolean => env.SPLUNKREADY_LLM_ENABLED === "true";
-
-const createLlmSpecimenAgent = (
-  contract: EnvironmentContract,
-  options: CliOptions,
-  env: NodeJS.ProcessEnv = process.env
-): LlmSpecimenAgent => {
-  const geminiConfig = createGeminiConfigFromEnv(env);
-
-  if (!geminiConfig) {
-    throw new Error("SPLUNKREADY_LLM_ENABLED=true requires GEMINI_API_KEY. No Gemini request was made.");
-  }
-
-  return new LlmSpecimenAgent({
-    contract,
-    model: createGeminiLlmAgentModel({
-      ...geminiConfig,
-      model: options.agentModel || geminiConfig.model
-    })
-  });
-};
-
-const specimenAgentDescriptor = (
-  options: CliOptions,
-  env: NodeJS.ProcessEnv = process.env
-): { name: string; version: string } => {
-  if (!llmEnabled(env)) {
-    return { name: "Naive SOC MCP Agent", version: "0.1.0" };
-  }
-
-  const geminiConfig = createGeminiConfigFromEnv(env);
-
-  return {
-    name: "Gemini Splunk MCP Agent",
-    version: options.agentModel || geminiConfig?.model || "gemini-3.1-flash-lite"
-  };
-};
-
-const createSplunkAccessAdapter = async (
-  options: CliOptions,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<SplunkAccessAdapter> => {
-  if (options.mode === "live") {
-    return createLiveSplunkAccessAdapter({
-      ...createLiveSplunkAdapterConfigFromEnv(env),
-      transport: createHttpLiveSplunkTransport()
-    });
-  }
-
-  const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
-  return createFixtureSplunkAccessAdapter(fixture);
-};
-
-const maybeWrapFirewall = (
-  adapter: SplunkAccessAdapter,
-  contract: EnvironmentContract,
-  policy: AgentPolicy,
-  options: CliOptions
-): SplunkAccessAdapter =>
-  options.firewall ? new SplunkFirewallGateway(adapter, contract, policy) : adapter;
-
-const isFirewallBlockedError = (error: unknown): error is SplunkAdapterError =>
-  Boolean(
-    error &&
-      typeof error === "object" &&
-      "name" in error &&
-      error.name === "SplunkAdapterError" &&
-      "code" in error &&
-      error.code === firewallBlockedCode
-  );
-
-const writeFirewallBlockReport = async (
-  options: CliOptions,
-  phase: "before" | "after",
-  error: SplunkAdapterError
-): Promise<string> => {
-  const cause =
-    error.cause && typeof error.cause === "object"
-      ? (error.cause as { query?: unknown; violations?: unknown })
-      : {};
-  const report: FirewallBlockReport = {
-    status: "BLOCKED",
-    code: firewallBlockedCode,
-    phase,
-    mode: options.mode,
-    mutation: false,
-    blockedBeforeSplunk: true,
-    toolName: error.context.toolName,
-    requestId: error.context.requestId,
-    missionId: error.context.missionId,
-    message: error.message,
-    query: typeof cause.query === "string" ? cause.query : undefined,
-    violations: cause.violations
-  };
-  const reportPath = join(options.out, `firewall-block-${phase}.json`);
-
-  await writeJson(reportPath, report);
-  return reportPath;
-};
-
-const compileContract = async (
-  options: CliOptions,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<EnvironmentContract> => {
-  const adapter = await createSplunkAccessAdapter(options, env);
-  return compileEnvironmentContract(adapter, {
-    requestId: `req-cli-${options.mode}-compile-001`,
-    contractVersion: "2026.06.01",
-    generatedAt
-  });
-};
-
-const writeCompiledArtifacts = async (
-  outDir: string,
-  contract: EnvironmentContract,
-  mission: MissionDefinition,
-  versions: {
-    policyVersion: string;
-    profileVersion: string;
-  } = {
-    policyVersion: "policy-2026.06.01",
-    profileVersion: "profile-2026.06.01"
-  }
-): Promise<string[]> => {
-  const policy = compileAgentPolicy(contract, { policyVersion: versions.policyVersion, compiledAt });
-  const readinessProfile = compileReadinessProfile(contract, [mission], {
-    profileVersion: versions.profileVersion,
-    generatedAt: compiledAt
-  });
-
-  await writeJson(join(outDir, "environment-contract.json"), contract);
-  await writeJson(join(outDir, "missions.json"), [mission]);
-  await writeJson(join(outDir, "agent-policy.json"), policy);
-  await writeJson(join(outDir, "readiness-profile.json"), readinessProfile);
-
-  return [
-    join(outDir, "environment-contract.json"),
-    join(outDir, "missions.json"),
-    join(outDir, "agent-policy.json"),
-    join(outDir, "readiness-profile.json")
-  ];
-};
-
-const compileCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const contract = await compileContract(options, env);
-  const mission = await loadMission(options.mission);
-  return writeCompiledArtifacts(options.out, contract, mission);
 };
 
 const liveSmokeMissingEnvFields = (env: NodeJS.ProcessEnv): string[] => {
@@ -1725,77 +1452,6 @@ const liveSecurityProofCommand = async (options: CliOptions, env: NodeJS.Process
   ];
 };
 
-const evaluateCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const baseAdapter = await createSplunkAccessAdapter(options, env);
-  const contract = await loadContract(options.out);
-  const mission = await loadMission(options.mission);
-  const policy = options.firewall ? await readJson<AgentPolicy>(join(options.out, "agent-policy.json"), "agent policy") : undefined;
-  const adapter = policy ? maybeWrapFirewall(baseAdapter, contract, policy, options) : baseAdapter;
-  const agent = llmEnabled(env) ? createLlmSpecimenAgent(contract, options, env) : new NaiveSpecimenAgent();
-  let run: SpecimenAgentRun;
-
-  try {
-    run = await agent.run({ mission, adapter });
-  } catch (error) {
-    if (isFirewallBlockedError(error)) {
-      await writeFirewallBlockReport(options, "before", error);
-    }
-
-    throw error;
-  }
-
-  const violations = gradeTrace(contract, mission, run.traceEvents);
-  const score = scoreMissionReadiness(mission, violations);
-
-  await writeJson(join(options.out, "trace-before.json"), run.traceEvents);
-  await writeJson(join(options.out, "violations-before.json"), violations);
-  await writeJson(join(options.out, "score-before.json"), score);
-
-  return [
-    join(options.out, "trace-before.json"),
-    join(options.out, "violations-before.json"),
-    join(options.out, "score-before.json")
-  ];
-};
-
-const firewallCheckCommand = async (
-  options: CliOptions,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<string[]> => {
-  const firewallOptions: CliOptions = { ...options, firewall: true, requirePass: true };
-  await Promise.all([
-    removeOptionalFile(join(options.out, "firewall-block-before.json")),
-    removeOptionalFile(join(options.out, "firewall-block-after.json")),
-    removeOptionalFile(join(options.out, "proof-audit.json"))
-  ]);
-
-  const compileArtifacts = await compileCommand(options, env);
-
-  try {
-    const evaluateArtifacts = await evaluateCommand(firewallOptions, env);
-    const reportPath = join(options.out, "firewall-check.json");
-    await writeJson(reportPath, {
-      status: "ALLOWED",
-      phase: "before",
-      mode: options.mode,
-      mutation: false,
-      blockedBeforeSplunk: false,
-      message:
-        "The specimen completed before-phase evaluation without a firewall block. Inspect trace-before.json and violations-before.json for deterministic readiness results.",
-      artifacts: evaluateArtifacts
-    });
-    return [...compileArtifacts, ...evaluateArtifacts, reportPath];
-  } catch (error) {
-    if (!isFirewallBlockedError(error)) {
-      throw error;
-    }
-
-    const blockPath = join(options.out, "firewall-block-before.json");
-    const auditArtifacts = await proofAuditCommand(firewallOptions);
-    return [...compileArtifacts, blockPath, ...auditArtifacts];
-  }
-};
-
 const gradeTraceCommand = async (options: CliOptions): Promise<string[]> => {
   const { artifacts } = await runGradeExternalTraceWorkflow({
     outDir: options.out,
@@ -1984,117 +1640,6 @@ const certificationIndexCommand = async (options: CliOptions): Promise<string[]>
   });
 
   return artifacts;
-};
-
-const receiptCommand = async (
-  options: CliOptions,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<string[]> => {
-  const contract = await loadContract(options.out);
-  const mission = await loadMission(options.mission);
-  const traceEvents = await loadTrace(options.out, options.phase);
-  const violations = await loadViolations(options.out, options.phase);
-  const receiptId = `receipt-${options.phase}-001`;
-  const generated = generateReadinessReceipt({
-    id: receiptId,
-    agent: specimenAgentDescriptor(options, env),
-    environment: contract,
-    missionSuiteVersion: "security-readiness-1",
-    missions: [mission],
-    traceEvents,
-    violations,
-    policyPatchSummary: options.phase === "before" && violations.length > 0 ? [{ id: "patch-security-readiness", status: "exported" }] : [],
-    rerunComparison: {}
-  });
-  const jsonPath = join(options.out, `${receiptId}.json`);
-  const markdownPath = join(options.out, `${receiptId}.md`);
-
-  await writeText(jsonPath, generated.json);
-  await writeText(markdownPath, generated.markdown);
-
-  if (options.phase === "before" && violations.length > 0) {
-    const adapter = await createSplunkAccessAdapter(options, env);
-    const splAssistance = await collectSplAssistance(adapter, violations);
-    const patch = generatePolicyPatch({
-      id: "patch-security-readiness",
-      createdAt: compiledAt,
-      sourceReceipt: generated.receipt,
-      targetAgent: generated.receipt.agent,
-      environment: contract,
-      violations,
-      splAssistance
-    });
-
-    await writeText(join(options.out, "policy-patch.json"), patch.json);
-    await writeText(join(options.out, "policy-patch.md"), patch.markdown);
-
-    return [jsonPath, markdownPath, join(options.out, "policy-patch.json"), join(options.out, "policy-patch.md")];
-  }
-
-  return [jsonPath, markdownPath];
-};
-
-const rerunCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
-  const baseAdapter = await createSplunkAccessAdapter(options, env);
-  const contract = await loadContract(options.out);
-  const mission = await loadMission(options.mission);
-  const policy = await readJson<AgentPolicy>(join(options.out, "agent-policy.json"), "agent policy");
-  const adapter = maybeWrapFirewall(baseAdapter, contract, policy, options);
-  const agent = llmEnabled(env) ? createLlmSpecimenAgent(contract, options, env) : new NaiveSpecimenAgent();
-  let run: SpecimenAgentRun;
-
-  try {
-    run = await agent.run({ mission, adapter, policy });
-  } catch (error) {
-    if (isFirewallBlockedError(error)) {
-      await writeFirewallBlockReport(options, "after", error);
-    }
-
-    throw error;
-  }
-
-  const violations = gradeTrace(contract, mission, run.traceEvents);
-  const score = scoreMissionReadiness(mission, violations);
-
-  await writeJson(join(options.out, "trace-after.json"), run.traceEvents);
-  await writeJson(join(options.out, "violations-after.json"), violations);
-  await writeJson(join(options.out, "score-after.json"), score);
-
-  const beforeReceipt = readinessReceiptSchema.safeParse(
-    await readJson(join(options.out, "receipt-before-001.json"), "before receipt")
-  );
-  const resolvedViolations = beforeReceipt.success
-    ? beforeReceipt.data.violations.filter((violationId) => !violations.some((violation) => violation.id === violationId))
-    : [];
-  const generated = generateReadinessReceipt({
-    id: "receipt-after-001",
-    agent: specimenAgentDescriptor(options, env),
-    environment: contract,
-    missionSuiteVersion: "security-readiness-1",
-    missions: [mission],
-    traceEvents: run.traceEvents,
-    violations,
-    rerunComparison: beforeReceipt.success
-      ? {
-          beforeScore: beforeReceipt.data.score,
-          afterScore: score.score,
-          beforeVerdict: beforeReceipt.data.verdict,
-          afterVerdict: score.verdict,
-          resolvedViolations
-        }
-      : {}
-  });
-
-  await writeText(join(options.out, "receipt-after-001.json"), generated.json);
-  await writeText(join(options.out, "receipt-after-001.md"), generated.markdown);
-
-  return [
-    join(options.out, "trace-after.json"),
-    join(options.out, "violations-after.json"),
-    join(options.out, "score-after.json"),
-    join(options.out, "receipt-after-001.json"),
-    join(options.out, "receipt-after-001.md")
-  ];
 };
 
 const suiteProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
@@ -2343,24 +1888,6 @@ const mcpProofCommand = async (options: CliOptions): Promise<string[]> => {
   return result.artifacts;
 };
 
-const fixtureCertificationSteps = (
-  options: CliOptions,
-  env: NodeJS.ProcessEnv = process.env
-): FixtureCertificationWorkflowSteps => {
-  const beforeOptions = { ...options, phase: "before" as const };
-  const afterOptions = { ...options, phase: "after" as const };
-
-  return {
-    compile: () => compileCommand(beforeOptions, env),
-    evaluate: () => evaluateCommand(beforeOptions, env),
-    receiptBefore: () => receiptCommand(beforeOptions, env),
-    rerun: () => rerunCommand(afterOptions, env),
-    receiptAfter: async () => [join(options.out, "receipt-after-001.json"), join(options.out, "receipt-after-001.md")],
-    writeUiShell: () => writeUiShell(options.out),
-    proofAudit: () => proofAuditCommand({ ...options, requirePass: false })
-  };
-};
-
 const demoCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
   const workflow = await runFixtureCertification(
     { outDir: options.out, includeProofAudit: false },
@@ -2370,18 +1897,7 @@ const demoCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process
   return workflow.artifacts;
 };
 
-export const runFixtureCertificationFromCli = async (
-  input: FixtureCertificationWorkflowInput,
-  env: NodeJS.ProcessEnv = process.env
-): Promise<FixtureCertificationWorkflowResult> => {
-  const options = defaultCliOptions({ mode: "fixture", out: input.outDir });
-  return runFixtureCertification(
-    { ...input, includeProofAudit: true },
-    fixtureCertificationSteps(options, env)
-  );
-};
-
-export const runFixtureCertificationWorkflow = runFixtureCertificationFromCli;
+export const runFixtureCertificationFromCli = runFixtureCertificationWorkflow;
 
 export const runPolicyBackedRerunFromCli = async (
   input: PolicyWorkbenchWorkflowInput,
@@ -2390,15 +1906,12 @@ export const runPolicyBackedRerunFromCli = async (
   const options = defaultCliOptions({ mode: "fixture", out: input.outDir });
   const beforeOptions = { ...options, phase: "before" as const, firewall: false };
   const afterOptions = { ...options, phase: "after" as const, firewall: true };
+  const steps = fixtureCertificationSteps(beforeOptions, env);
   const workflow = await runFixtureCertification(
     { outDir: input.outDir, includeProofAudit: true },
     {
-      compile: () => compileCommand(beforeOptions, env),
-      evaluate: () => evaluateCommand(beforeOptions, env),
-      receiptBefore: () => receiptCommand(beforeOptions, env),
+      ...steps,
       rerun: () => rerunCommand(afterOptions, env),
-      receiptAfter: async () => [join(input.outDir, "receipt-after-001.json"), join(input.outDir, "receipt-after-001.md")],
-      writeUiShell: () => writeUiShell(input.outDir),
       proofAudit: () => proofAuditCommand({ ...options, requirePass: false })
     }
   );

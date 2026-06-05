@@ -38,7 +38,7 @@ const assertSameSet = (label, expected, actual) => {
 
 const coreSource = readText("src/schemas/core.ts");
 const engineSource = readText("src/grader/engine.ts");
-const cliSource = readText("src/cli.ts");
+const certificationActionsSource = readText("src/workflows/certification-actions.ts");
 const canonicalRuleIds = extractEnumValues(coreSource, "graderRuleIdSchema");
 const readOnlyTools = extractEnumValues(coreSource, "readOnlySplunkToolNameSchema");
 const catalogRuleIds = unique([...readText("docs/grader-rule-catalog.md").matchAll(/`([A-Z]{2,3}-\d{3})`/g)].map((match) => match[1])).sort();
@@ -53,7 +53,8 @@ const duplicateImplementedRules = implementedRuleIds.filter((ruleId, index) => i
 const ruleFactoryNames = graderFiles.flatMap((path) =>
   [...readText(path).matchAll(/export\s+const\s+(create[A-Z]\w+Rules)\s*=/g)].map((match) => match[1])
 );
-const allRulesBlock = /const\s+allRules\s*=\s*\(\)\s*:\s*GraderRule\[\]\s*=>\s*\[([\s\S]*?)\];/.exec(cliSource)?.[1] ?? "";
+const allRulesBlock =
+  /const\s+allRules\s*=\s*\(\)\s*:\s*GraderRule\[\]\s*=>\s*\[([\s\S]*?)\];/.exec(certificationActionsSource)?.[1] ?? "";
 const missingAllRulesFactories = ruleFactoryNames.filter((factoryName) => !allRulesBlock.includes(`${factoryName}()`));
 
 assertSameSet("Catalog rule id", canonicalRuleIds, catalogRuleIds);
@@ -65,7 +66,7 @@ if (duplicateImplementedRules.length > 0) {
 }
 
 if (missingAllRulesFactories.length > 0) {
-  fail("CLI allRules registry does not include every grader rule factory.", { missingAllRulesFactories });
+  fail("Certification action allRules registry does not include every grader rule factory.", { missingAllRulesFactories });
 }
 
 const fixturePath = "fixtures/acme-soc-dev/adapter-fixture.json";

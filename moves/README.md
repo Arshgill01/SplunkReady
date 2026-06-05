@@ -89,6 +89,7 @@ commands, or filesystem paths.
 | P0 | [64](moves64.md) Official hackathon rubric grounding | 0.5d | Captures official criteria and corrects MCP award positioning against Splunk MCP Server usage. |
 | P0 | [65](moves65.md) Proof audit workflow extraction | 0.5d | Removes the 500+ line proof audit implementation from the CLI and gives it a direct workflow test surface. |
 | P0 | [66](moves66.md) Hosted model workflow extraction | 0.5d | Makes SAIA proof and diagnostic workflows module-owned while preserving advisory-only hosted-model authority. |
+| P0 | [67](moves67.md) Fixture certification workflow extraction | 0.5d | Makes the workbench fixture certification path workflow-owned instead of CLI-owned and materially shrinks the CLI monolith. |
 
 ## Non-Negotiable Boundaries
 

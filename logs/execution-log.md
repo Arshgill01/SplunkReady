@@ -226,6 +226,51 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
+
+## 2026-06-05 23:12 - Move 67 Fixture Certification Workflow Extraction
+
+Scope:
+- Responded to the Minimax CLI monolith cap with a material workflow ownership
+  extraction instead of a small line-count-only change.
+- Moved reusable compile/evaluate/receipt/rerun/firewall fixture certification
+  actions into `src/workflows/certification-actions.ts`.
+- Made `src/workflows/fixture-certification.ts` build its default backend
+  workflow steps without importing `../cli.js`.
+- Updated the runtime contract verifier so the grader-rule factory registry is
+  checked in the new workflow-owned module.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/cli.ts`
+- `src/workflows/certification-actions.ts`
+- `src/workflows/fixture-certification.ts`
+- `tests/workflows/fixture-certification.test.ts`
+- `scripts/verify-runtime-contracts.mjs`
+- `moves/README.md`
+- `moves/moves67.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `src/cli.ts` dropped from 2,660 lines after Move 66 to 2,173 lines.
+- The workbench fixture certification workflow now calls workflow-owned
+  certification actions directly.
+- Added a regression test that fails if the fixture workflow source imports the
+  CLI again.
+- Preserved deterministic pass/fail authority, advisory-only LLM/SAIA output,
+  fixture/live adapter parity, and no Splunk mutation.
+
+Open blockers:
+- Policy and live workflow wrappers still import the CLI dynamically and remain
+  the next modularization targets.
+- Public npm publication, hosted demo, refreshed submission evidence, and final
+  reviewer-equivalent pass remain open Minimax audit caps.
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
 - Npm publication, hosted workbench URL, and refreshed submission evidence pack
   remain separate high-leverage gaps.
 
