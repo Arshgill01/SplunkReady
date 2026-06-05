@@ -10748,3 +10748,37 @@ Open blockers:
   wiring.
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
+## 2026-06-06 00:21 - Move 77 CLI Orphan Helper Cleanup
+
+Scope:
+- Continued the CLI modularization cleanup without using subagents.
+- Inspected the remaining `demoCommand` candidate and found it was already a
+  thin workflow delegator, so extracting it would have been cosmetic.
+- Removed CLI-local JSON/text IO helpers and record-field helpers that became
+  unused after prior workflow extractions.
+- Removed now-unused filesystem imports.
+- Did not change command arguments, command output, fixture/live behavior,
+  receipt semantics, or deterministic grading.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/cli.ts`
+- `moves/README.md`
+- `moves/moves77.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- Removed orphaned `writeJson`, `writeText`, `readJson`, `readOptionalJson`,
+  `isRecord`, `stringFromRecord`, `booleanFromRecord`, and `numberFromRecord`
+  helpers from `src/cli.ts`.
+- Removed now-unused `mkdir`, `readFile`, and `writeFile` imports.
+- `src/cli.ts` dropped from 883 lines to 827 lines.
+
+Open blockers:
+- CLI still owns argument parsing and command adapter dispatch.
+- Hosted demo, refreshed submission evidence, public package publication, and
+  live proof export remain open Minimax caps.

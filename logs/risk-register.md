@@ -302,3 +302,9 @@ orchestration into `src/workflows/llm-agent.ts`. `src/cli.ts` dropped from 925
 lines to 883 lines and no longer imports receipt generation or readiness scoring
 internals for that command. Remaining CLI risk: argument parsing, demo shell
 generation, and small command adapters still live in `src/cli.ts`.
+
+Move 77 reduces the CLI monolith risk by removing helper code orphaned by prior
+workflow extractions. Inspection showed `demoCommand` was already a thin
+workflow delegator, so extracting it would not have materially improved the
+architecture. `src/cli.ts` dropped from 883 lines to 827 lines. Remaining CLI
+risk: argument parsing and command adapter dispatch still live in `src/cli.ts`.

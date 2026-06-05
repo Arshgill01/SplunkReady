@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { stat } from "node:fs/promises";
 import { dirname, isAbsolute, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -288,16 +288,6 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
   return { command, options };
 };
 
-const writeJson = async (filePath: string, value: unknown): Promise<void> => {
-  await mkdir(dirname(filePath), { recursive: true });
-  await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-};
-
-const writeText = async (filePath: string, value: string): Promise<void> => {
-  await mkdir(dirname(filePath), { recursive: true });
-  await writeFile(filePath, value.endsWith("\n") ? value : `${value}\n`, "utf8");
-};
-
 const printCliOutput = (output: CliOutput, options: CliOptions): void => {
   if (options.json) {
     console.log(JSON.stringify(output, null, 2));
@@ -311,52 +301,6 @@ const printCliOutput = (output: CliOutput, options: CliOptions): void => {
   for (const artifact of output.artifacts) {
     console.log(`artifact ${artifact}`);
   }
-};
-
-const readJson = async <T>(filePath: string, label: string): Promise<T> => {
-  try {
-    return JSON.parse(await readFile(filePath, "utf8")) as T;
-  } catch (error) {
-    throw new Error(`Unable to read ${label} at ${filePath}. Run the prerequisite CLI command first.`);
-  }
-};
-
-const readOptionalJson = async <T>(filePath: string): Promise<T | undefined> => {
-  if (!(await exists(filePath))) {
-    return undefined;
-  }
-
-  return JSON.parse(await readFile(filePath, "utf8")) as T;
-};
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
-const stringFromRecord = (value: unknown, key: string): string | undefined => {
-  if (!isRecord(value)) {
-    return undefined;
-  }
-
-  const field = value[key];
-  return typeof field === "string" ? field : undefined;
-};
-
-const booleanFromRecord = (value: unknown, key: string): boolean | undefined => {
-  if (!isRecord(value)) {
-    return undefined;
-  }
-
-  const field = value[key];
-  return typeof field === "boolean" ? field : undefined;
-};
-
-const numberFromRecord = (value: unknown, key: string): number | undefined => {
-  if (!isRecord(value)) {
-    return undefined;
-  }
-
-  const field = value[key];
-  return typeof field === "number" ? field : undefined;
 };
 
 const exists = async (filePath: string): Promise<boolean> =>

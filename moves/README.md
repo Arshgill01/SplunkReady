@@ -99,6 +99,7 @@ commands, or filesystem paths.
 | P0 | [74](moves74.md) Suite proof workflow extraction | 0.5d | Moves suite proof aggregation and diagnostics out of the CLI monolith into a workflow-owned module. |
 | P0 | [75](moves75.md) MCP client certification loop | 0.5d | Makes the MCP proof show an agent-driven Splunk MCP investigation loop that is certified through SplunkReady. |
 | P0 | [76](moves76.md) LLM agent workflow extraction | 0.5d | Moves the `llm-agent` trace, grading, scoring, and receipt artifact writes out of the CLI monolith. |
+| P0 | [77](moves77.md) CLI orphan helper cleanup | 0.5d | Removes CLI-local helper code made obsolete by prior workflow extractions. |
 
 ## Non-Negotiable Boundaries
 

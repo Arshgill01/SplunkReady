@@ -9601,6 +9601,52 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
+## 2026-06-06 - Move 77 CLI Orphan Helper Cleanup
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "compile|demo|judge proof|mcp-proof|llm-proof"`
+- `wc -l src/cli.ts && rg -n "writeJson|writeText|readJson|readOptionalJson|booleanFromRecord|numberFromRecord|stringFromRecord|isRecord" src/cli.ts || true`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused CLI command validation:
+  - 1 test file passed;
+  - 7 tests passed;
+  - 33 tests skipped by focused pattern.
+- PASS for CLI cleanup inspection:
+  - `src/cli.ts` is 827 lines;
+  - orphaned helper names were not found in `src/cli.ts`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 152 dry-run packed files;
+  - 55 test files passed;
+  - 341 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Hosted demo, refreshed submission evidence, public package publication, and
+  live proof export remain open Minimax caps.
 ## 2026-06-06 - Move 76 LLM Agent Workflow Extraction
 
 Commands:
