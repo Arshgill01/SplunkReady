@@ -9601,6 +9601,75 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
+
+## 2026-06-06 - Move 84 Package Installability Audit
+
+Commands:
+
+- `npm whoami 2>&1 || true`
+- `npm view splunkready version 2>&1 || true`
+- `npm view @splunkready/cli version 2>&1 || true`
+- `npm run build && npm run audit:package-readiness && npm run audit:package-installability`
+- `npm run check`
+- `gh auth status`
+- `gh run list --branch splunkready-build --limit 5`
+
+Result:
+
+- PASS for npm registry/name probe:
+  - local npm auth is unavailable (`ENEEDAUTH`);
+  - `splunkready` and `@splunkready/cli` returned package-not-found from
+    `npm view`.
+- FAIL on the first focused package installability run before the CLI fix:
+  - `npm run build` passed;
+  - `audit:package-readiness` passed with 152 packed files checked;
+  - `audit:package-installability` failed with
+    `Unexpected end of JSON input`;
+  - manual reproduction showed the installed npm bin exited 0 with empty
+    stdout/stderr and wrote no proof files because the direct-entry guard did
+    not run through npm's `.bin` symlink.
+- PASS after the CLI entrypoint fix:
+  - `npm run build` passed;
+  - `audit:package-readiness` passed with 152 packed files checked;
+  - `audit:package-installability` passed:
+    `splunkready-0.1.0.tgz` installed and
+    `npx splunkready judge-proof` returned `PASS`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 152 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and ran
+    `npx splunkready judge-proof`;
+  - 56 test files passed;
+  - 346 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for current pushed branch CI inspection:
+  - `gh auth status` confirmed GitHub CLI auth without printing token contents;
+  - `gh run list --branch splunkready-build --limit 5` showed the latest five
+    pushed `CI` runs completed successfully through
+    `c5bbe52 Add Netlify static demo config`.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not run `npm publish` because local npm auth is unavailable.
+
+Open blockers:
+
+- Hosted CI still needs to run after the Move 84 push.
+- Actual public npm publication remains blocked until an authenticated operator
+  runs the publish path.
+- Hosted demo deployment and live proof export remain open Minimax caps.
 ## 2026-06-06 - Move 78 Refreshed Submission Evidence Pack
 
 Commands:

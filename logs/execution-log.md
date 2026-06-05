@@ -11066,3 +11066,56 @@ Open blockers:
 - Public npm publish remains an explicit external release action.
 - Live proof export remains open because raw ignored live artifacts can contain
   deployment inventory.
+
+## 2026-06-06 01:30 - Move 84 Package Installability Audit
+
+Scope:
+- Continued the public package / DevX cap work without using subagents.
+- Checked npm registry/auth state before touching package behavior:
+  `npm whoami 2>&1 || true` returned npm auth required, and both
+  `npm view splunkready version 2>&1 || true` and
+  `npm view @splunkready/cli version 2>&1 || true` returned package-not-found.
+- Added a package installability audit that packs the repository package,
+  installs the tarball into a fresh temporary npm project, runs
+  `npx splunkready judge-proof --out <temp>/proof --json`, and asserts
+  `PASS` plus `mutation: false`.
+- Added the audit to the canonical `npm run check` gate after the package
+  readiness audit.
+- Found a real installed-bin regression on the first focused run:
+  `npm run audit:package-installability` failed with
+  `Unexpected end of JSON input` because the installed `splunkready` bin
+  exited 0 with empty stdout/stderr.
+- Root cause: the CLI direct-entry guard compared `import.meta.url` with
+  `process.argv[1]`. Through npm's `.bin/splunkready` symlink, the invoked path
+  is the symlink while `import.meta.url` is the real compiled file path, so
+  `main()` never ran.
+- Fixed the CLI entrypoint guard by resolving `process.argv[1]` through
+  `realpathSync` before comparing it to `fileURLToPath(import.meta.url)`, while
+  keeping the direct file URL fallback.
+- Did not run `npm publish`, log in to npm, read npm auth tokens, or read,
+  source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `src/cli.ts`
+- `scripts/audit-package-installability.mjs`
+- `package.json`
+- `moves/README.md`
+- `moves/moves84.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- The packed package is now tested as an installed package, not only as a repo
+  checkout.
+- `npx splunkready judge-proof --json` works from a clean temp project after
+  installing `splunkready-0.1.0.tgz`.
+- The canonical check gate now fails if the published/installable CLI path
+  regresses.
+
+Open blockers:
+- Actual public npm publication remains blocked by missing local npm auth.
+- Actual hosted demo deployment remains open until an authenticated Netlify
+  deploy succeeds.
+- Live proof export remains open because raw ignored live artifacts can contain
+  deployment inventory.

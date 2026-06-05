@@ -106,6 +106,7 @@ commands, or filesystem paths.
 | P0 | [81](moves81.md) Public demo static export | 0.5d | Packages the built Vite workbench and tracked credential-free evidence into a static folder for hosted demo deployment. |
 | P0 | [82](moves82.md) Dual MCP client kit | 0.5d | Makes the MCP proof expose a credential-free two-server client kit for existing Splunk MCP plus SplunkReady certification. |
 | P0 | [83](moves83.md) Netlify static demo config | 0.5d | Adds Netlify-ready build, publish, redirect, and header configuration for the public demo export. |
+| P0 | [84](moves84.md) Package installability audit | 0.5d | Proves the packed npm tarball installs in a clean temp project and runs `npx splunkready judge-proof`. |
 
 ## Non-Negotiable Boundaries
 

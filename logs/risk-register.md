@@ -352,3 +352,10 @@ Move 83 reduces the no-hosted-demo friction by adding Netlify static deploy
 configuration for the public demo export. It does not eliminate the hosted URL
 risk because `npx netlify status` hung before auth/link status could be
 confirmed and no external deploy was completed.
+
+Move 84 reduces the public-package DevX risk by proving the packed
+`splunkready-0.1.0.tgz` installs into a clean temporary npm project and that
+`npx splunkready judge-proof --json` returns `PASS` with `mutation: false` from
+outside the repository. It also fixed an installed-bin entrypoint bug caused by
+npm's `.bin` symlink path. The public registry risk remains open because local
+npm auth is unavailable and no `npm publish` was run.

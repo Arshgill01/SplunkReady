@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { realpathSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import { dirname, isAbsolute, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -800,7 +801,21 @@ const formatCliError = (error: unknown): string => {
   return String(error);
 };
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+const isCliEntrypoint = (): boolean => {
+  if (!process.argv[1]) {
+    return false;
+  }
+
+  const currentPath = fileURLToPath(import.meta.url);
+
+  try {
+    return currentPath === realpathSync(process.argv[1]);
+  } catch {
+    return import.meta.url === pathToFileURL(process.argv[1]).href;
+  }
+};
+
+if (isCliEntrypoint()) {
   main().catch((error: unknown) => {
     const formattedError = formatCliError(error);
 
