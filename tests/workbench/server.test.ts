@@ -45,6 +45,13 @@ const fetchJson = async <T>(baseUrl: string, path: string, init?: RequestInit): 
   return { ...result, json: JSON.parse(result.text) as T };
 };
 
+const expectWorkbenchSecurityHeaders = (response: Response): void => {
+  expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+  expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+  expect(response.headers.get("cross-origin-resource-policy")).toBe("same-origin");
+  expect(response.headers.get("x-frame-options")).toBe("DENY");
+};
+
 const terminalStates = new Set(["succeeded", "failed", "cancelled"]);
 
 const waitForHttpJob = async (baseUrl: string, jobId: string): Promise<WorkbenchJobSnapshot> => {
@@ -95,6 +102,7 @@ describe("workbench HTTP server", () => {
       }>(server.url, "/api/health");
 
       expect(response.status).toBe(200);
+      expectWorkbenchSecurityHeaders(response);
       expect(json).toMatchObject({
         source: "splunkready-workbench",
         capabilities: { fixtureCertification: true, live: true },
@@ -247,12 +255,15 @@ describe("workbench HTTP server", () => {
       const completed = await waitForHttpJob(server.url, created.json.job.id);
 
       expect(shell.response.status).toBe(200);
+      expectWorkbenchSecurityHeaders(shell.response);
       expect(shell.response.headers.get("content-type")).toContain("text/html");
       expect(shell.text).toContain('<div id="app"></div>');
       expect(asset.response.status).toBe(200);
+      expectWorkbenchSecurityHeaders(asset.response);
       expect(asset.response.headers.get("content-type")).toContain("text/javascript");
       expect(asset.text).toContain("splunkready");
       expect(missingJson.response.status).toBe(204);
+      expectWorkbenchSecurityHeaders(missingJson.response);
       expect(missingJson.text).toBe("");
       expect(health.json).toMatchObject({
         source: "splunkready-workbench",

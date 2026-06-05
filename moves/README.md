@@ -52,6 +52,7 @@ commands, or filesystem paths.
 | P0 | [27](moves27.md) Run browser module boundary | 0.5d | Keeps the Runs proof-browser maintainable while preserving live UI evidence. |
 | P0 | [28](moves28.md) Browser health path privacy | 0.5d | Prevents browser-visible workbench health from exposing local filesystem paths. |
 | P0 | [29](moves29.md) Workbench route error redaction | 0.5d | Applies the same secret redaction boundary to route-level API failures. |
+| P0 | [30](moves30.md) Workbench response security headers | 0.5d | Adds conservative browser hardening headers to local API and UI responses. |
 
 ## Non-Negotiable Boundaries
 

@@ -8915,6 +8915,38 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 30 Workbench Response Security Headers
+
+Context:
+- Continued development hardening after Move 29.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Kept this to conservative response headers rather than adding CSP, because CSP
+  can break Vite dev middleware and local ES module loading if tuned too
+  broadly.
+
+Files touched:
+- `src/workbench/server.ts`
+- `tests/workbench/server.test.ts`
+- `moves/README.md`
+- `moves/moves30.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added a local workbench server helper that sets:
+  - `x-content-type-options: nosniff`;
+  - `referrer-policy: no-referrer`;
+  - `cross-origin-resource-policy: same-origin`;
+  - `x-frame-options: DENY`.
+- Applied the helper before API, packaged static UI, or dev UI routing.
+- Added real HTTP tests that verify the headers on `/api/health`, packaged
+  `index.html`, packaged JavaScript assets, and the 204 missing-artifact shim.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 29 Workbench Route Error Redaction
 
 Context:

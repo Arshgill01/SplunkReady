@@ -63,6 +63,13 @@ const staticContentTypeFor = (path: string): string => {
   return "application/octet-stream";
 };
 
+const setWorkbenchSecurityHeaders = (response: ServerResponse): void => {
+  response.setHeader("x-content-type-options", "nosniff");
+  response.setHeader("referrer-policy", "no-referrer");
+  response.setHeader("cross-origin-resource-policy", "same-origin");
+  response.setHeader("x-frame-options", "DENY");
+};
+
 const serveStaticUi = async (root: string, request: IncomingMessage, response: ServerResponse): Promise<void> => {
   const url = new URL(request.url ?? "/", "http://127.0.0.1");
   const relativePath = decodeURIComponent(url.pathname)
@@ -139,6 +146,8 @@ export const startWorkbenchServer = async (
   const viteServer = options.devUi ? await startViteMiddleware() : undefined;
   const staticUiRoot = resolve(options.staticUiRoot ?? "dist-ui");
   const server = createServer((request, response) => {
+    setWorkbenchSecurityHeaders(response);
+
     void (async () => {
       const handled = await apiHandler(request, response);
 
