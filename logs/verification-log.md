@@ -9750,6 +9750,57 @@ Open blockers:
   remains an open evidence gap.
 - Hosted demo deployment, public package publication, and redacted live proof
   export remain open probability caps.
+
+## 2026-06-06 - Move 86 CLI Option Parser Extraction
+
+Commands:
+
+- `wc -l src/cli.ts src/cli/options.ts`
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "compile|demo|judge proof|mcp-proof|llm-proof|package"`
+- `npm run check`
+
+Result:
+
+- PASS for line-count inspection:
+  - `src/cli.ts` is 634 lines after the extraction;
+  - `src/cli/options.ts` is 214 lines;
+  - previous `src/cli.ts` count before Move 86 was 842 lines.
+- PASS for TypeScript:
+  - `npx tsc --noEmit` completed with no output.
+- PASS for focused CLI flow validation:
+  - 1 test file passed;
+  - 7 focused tests passed;
+  - 33 tests skipped by focused pattern.
+- PASS for full `npm run check`:
+  - scaffold verified with 85 waves;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 154 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and ran
+    `npx splunkready judge-proof`;
+  - 56 test files passed;
+  - 346 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after the Move 86 push.
+- Further CLI modularization remains useful; command dispatch and command
+  wrappers are still in `src/cli.ts`.
 ## 2026-06-06 - Move 78 Refreshed Submission Evidence Pack
 
 Commands:

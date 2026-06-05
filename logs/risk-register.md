@@ -368,3 +368,11 @@ evidence, deterministic receipt authority, and `mutation=false`. This does not
 fully eliminate the award risk because the tracked evidence is still a
 credential-free captured transcript and Playwright-verified workbench view, not
 a public live MCP-client screencast.
+
+Move 86 reduces the CLI-monolith risk by extracting CLI defaults, usage text,
+option/output types, and argument parsing into `src/cli/options.ts`.
+`src/cli.ts` is now 634 lines, down from 842 lines before the move, and the
+packed installability audit still proves `npx splunkready judge-proof` works
+from a clean temp project. Remaining CLI risk: command dispatch and several
+command wrappers still live in `src/cli.ts`, so future modularization should
+extract cohesive command groups rather than treat line count as the only target.

@@ -108,6 +108,7 @@ commands, or filesystem paths.
 | P0 | [83](moves83.md) Netlify static demo config | 0.5d | Adds Netlify-ready build, publish, redirect, and header configuration for the public demo export. |
 | P0 | [84](moves84.md) Package installability audit | 0.5d | Proves the packed npm tarball installs in a clean temp project and runs `npx splunkready judge-proof`. |
 | P0 | [85](moves85.md) MCP composition scorecard | 0.5d | Makes the MCP proof grade the composed use of existing Splunk MCP plus SplunkReady certification as a first-class evidence artifact. |
+| P0 | [86](moves86.md) CLI option parser extraction | 0.5d | Extracts CLI defaults, usage, option types, and argument parsing out of the command executor. |
 
 ## Non-Negotiable Boundaries
 

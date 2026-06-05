@@ -11179,3 +11179,38 @@ Open blockers:
   not a live public MCP-client screencast.
 - Hosted demo deployment, public npm publication, and redacted live proof export
   remain open probability caps.
+
+## 2026-06-06 01:40 - Move 86 CLI Option Parser Extraction
+
+Scope:
+- Continued the CLI modularization cap work without using subagents.
+- Added `moves/moves86.md` for a focused CLI option parser extraction.
+- Created `src/cli/options.ts` for CLI defaults, usage text, option/output
+  types, default option construction, and argument parsing.
+- Removed the same parser/defaults block from `src/cli.ts` and imported the
+  extracted module.
+- Kept command execution behavior, package bin behavior, fixture/live parity,
+  grading behavior, MCP behavior, and Splunk mutation boundaries unchanged.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+
+Files changed:
+- `src/cli.ts`
+- `src/cli/options.ts`
+- `moves/README.md`
+- `moves/moves86.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `src/cli.ts` dropped from 842 lines before Move 86 to 634 lines after the
+  extraction.
+- `src/cli/options.ts` now owns 214 lines of option parsing/default behavior.
+- The packed package includes the new CLI module and still runs
+  `npx splunkready judge-proof` successfully from a clean temp project.
+
+Open blockers:
+- `src/cli.ts` is materially smaller, but command dispatch and several command
+  wrappers still remain in the root CLI file. Further CLI modularization should
+  extract cohesive command groups rather than chase line count alone.
