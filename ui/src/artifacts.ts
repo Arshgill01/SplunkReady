@@ -811,6 +811,58 @@ const publicProofExportManifestSchema = z
 
 export type PublicProofExportManifest = z.infer<typeof publicProofExportManifestSchema>;
 
+const judgeProofSummarySchema = z
+  .object({
+    source: z.literal("splunkready-judge-proof"),
+    status: z.enum(["PASS", "WARN", "FAIL"]),
+    mode: z.literal("fixture"),
+    mutation: z.literal(false),
+    generatedAt: z.string().min(1),
+    llmActivation: z
+      .object({
+        policy: z.literal("include-when-requested-or-env-enabled"),
+        includeRequested: z.boolean(),
+        enabledByEnv: z.boolean(),
+        configured: z.boolean(),
+        included: z.boolean()
+      })
+      .strict(),
+    proofDirs: z
+      .object({
+        suite: z.string().min(1),
+        firewall: z.string().min(1),
+        llm: z.string().min(1).optional()
+      })
+      .strict(),
+    gates: z.array(
+      z
+        .object({
+          id: z.string().min(1),
+          status: z.enum(["PASS", "WARN", "FAIL"]),
+          artifacts: z.array(z.string().min(1))
+        })
+        .strict()
+    ),
+    llmEvidence: z
+      .object({
+        status: z.enum(["NOT_REQUESTED", "NOT_CONFIGURED", "PASS", "WARN", "FAIL"]),
+        role: z.literal("trace-producer"),
+        passFailAuthority: z.literal("deterministic-rule-engine"),
+        proofDir: z.string().min(1),
+        summaryPath: z.string().min(1).optional(),
+        artifacts: z.array(z.string().min(1)),
+        reason: z.string().min(1).optional(),
+        nextCommand: z.string().min(1)
+      })
+      .strict(),
+    certificationIndex: z.string().min(1),
+    uiArtifacts: z.string().min(1),
+    nextCommands: z.array(z.string().min(1))
+  })
+  .strict();
+
+export type JudgeProofSummary = z.infer<typeof judgeProofSummarySchema>;
+
 export interface UiArtifactBundle {
   artifactBase: string;
   contract?: EnvironmentContract;
@@ -836,6 +888,7 @@ export interface UiArtifactBundle {
   mcpTranscriptImport?: McpTranscriptImport;
   mcpProofSummary?: McpProofSummary;
   publicProofExport?: PublicProofExportManifest;
+  judgeProofSummary?: JudgeProofSummary;
   beforeTrace: TraceEvent[];
   afterTrace: TraceEvent[];
   externalTrace: TraceEvent[];
@@ -872,6 +925,7 @@ const optionalFiles = [
   "mcp-proof-summary.json",
   "mcp-transcript-import.json",
   "public-proof-export-manifest.json",
+  "judge-proof-summary.json",
   "trace-before.json",
   "trace-after.json",
   "trace-external.json",
@@ -896,6 +950,7 @@ export const defaultArtifactOptions: ArtifactOption[] = [
   { label: "Live security proof", path: "artifacts/live-security-ui" },
   { label: "Certification index", path: "artifacts/certification-index" },
   { label: "Suite proof", path: "artifacts/suite-proof" },
+  { label: "Judge proof", path: "artifacts/judge-proof" },
   { label: "MCP proof", path: "artifacts/mcp-proof" },
   { label: "MCP transcript import", path: "artifacts/mcp-transcript" },
   { label: "LLM fixture proof", path: "artifacts/llm-fixture-proof" },
@@ -1033,6 +1088,7 @@ export const loadUiArtifactBundle = async (
     publicProofExport: publicProofExportManifestSchema
       .optional()
       .parse(loaded.get("public-proof-export-manifest.json")),
+    judgeProofSummary: judgeProofSummarySchema.optional().parse(loaded.get("judge-proof-summary.json")),
     beforeTrace: traceEventSchema.array().optional().parse(loaded.get("trace-before.json")) ?? [],
     afterTrace: traceEventSchema.array().optional().parse(loaded.get("trace-after.json")) ?? [],
     externalTrace: traceEventSchema.array().optional().parse(loaded.get("trace-external.json")) ?? [],
@@ -1063,6 +1119,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   indexStory: string;
   mcpProofStory: string;
   transcriptStory: string;
+  judgeProofStory: string;
 } => {
   const receipt = bundle.receipt;
   const contract = bundle.liveSmokeContract ?? bundle.contract;
@@ -1122,6 +1179,9 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
       : "mcp proof not loaded",
     transcriptStory: bundle.mcpTranscriptImport
       ? `mcp import ${bundle.mcpTranscriptImport.strictImport ? "strict" : "loaded"}`
-      : "mcp import not loaded"
+      : "mcp import not loaded",
+    judgeProofStory: bundle.judgeProofSummary
+      ? `judge proof ${bundle.judgeProofSummary.status.toLowerCase()} / llm ${bundle.judgeProofSummary.llmEvidence.status.toLowerCase()}`
+      : "judge proof not loaded"
   };
 };

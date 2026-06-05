@@ -8,6 +8,7 @@ import {
   type HostedModelDiagnostic,
   type HostedModelProof,
   type HostedModelSummary,
+  type JudgeProofSummary,
   type McpProofSummary,
   type McpTranscriptImport,
   type ProofAudit,
@@ -629,6 +630,37 @@ const renderPublicProofExportPanel = (manifest: PublicProofExportManifest | unde
       ["Aggregate hash", manifest.aggregateSha256],
       ["Redactions", Object.entries(manifest.redaction).map(([key, status]) => `${key}: ${status}`).join(" / ")],
       ["Boundary", "sanitized derivative bundle; not the unredacted source proof"]
+    ])}
+  </section>`;
+};
+
+const renderJudgeProofPanel = (summary: JudgeProofSummary | undefined): string => {
+  if (!summary) {
+    return "";
+  }
+
+  const failingGates = summary.gates.filter((gate) => gate.status !== "PASS");
+
+  return `<section class="panel judge-proof-panel">
+    <h2>Judge proof</h2>
+    ${renderFactTable([
+      ["Status", summary.status],
+      ["Mode", summary.mode],
+      ["Mutation", summary.mutation ? "yes" : "no"],
+      ["Suite proof", summary.proofDirs.suite],
+      ["Firewall proof", summary.proofDirs.firewall],
+      ["LLM evidence", summary.llmEvidence.status],
+      ["LLM role", summary.llmEvidence.role],
+      ["Pass/fail authority", summary.llmEvidence.passFailAuthority],
+      ["LLM included", summary.llmActivation.included ? "yes" : "no"],
+      ["LLM configured", summary.llmActivation.configured ? "yes" : "no"],
+      ["Credential-free reason", summary.llmEvidence.reason ?? "n/a"],
+      ["Gates", summary.gates.map((gate) => `${gate.id} / ${gate.status}`).join(" / ")],
+      [
+        "Warnings or failures",
+        failingGates.length > 0 ? failingGates.map((gate) => `${gate.id}: ${gate.status}`).join(" / ") : "none"
+      ],
+      ["Next LLM command", summary.llmEvidence.nextCommand]
     ])}
   </section>`;
 };
@@ -1769,6 +1801,7 @@ const renderProofBrowser = (bundle: UiArtifactBundle, options: RenderOptions): s
         ${renderRunList(bundle, runs, options.workbench)}
         <div class="run-browser-detail">
           ${renderReceiptComparison(bundle)}
+          ${renderJudgeProofPanel(bundle.judgeProofSummary)}
           ${renderPublicProofExportPanel(bundle.publicProofExport)}
           ${renderProofAuditPanel(bundle.proofAudit)}
           ${renderManifestVerificationPanel(bundle, options.workbench)}
@@ -1813,7 +1846,8 @@ const optionalRailStories = (summary: ReturnType<typeof summarizeBundle>): strin
     summary.suiteStory,
     summary.indexStory,
     summary.mcpProofStory,
-    summary.transcriptStory
+    summary.transcriptStory,
+    summary.judgeProofStory
   ].filter((story) => !story.includes("not loaded"));
 
 const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: RenderOptions): string => {

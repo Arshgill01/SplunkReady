@@ -4,6 +4,8 @@
 
 SplunkReady
 
+[![npm version](https://badge.fury.io/js/splunkready.svg)](https://www.npmjs.com/package/splunkready)
+
 ## Tagline
 
 Certify AI agents before they touch production Splunk.
@@ -38,6 +40,15 @@ The tracked evidence pack is in `submission-evidence/`:
 The demo uses security investigation readiness. A naive Splunk-facing agent investigates possible lateral movement, searches too broadly, uses the wrong field, ignores validated saved-search provenance, and gives an unsupported answer. SplunkReady catches the unsafe trace with deterministic rule IDs, exports a reviewable policy patch, reruns the mission, and produces a READY receipt with evidence refs.
 
 The local fixture path requires no live Splunk credentials:
+
+```bash
+npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json
+```
+
+That clean-folder command returns `PASS`, records `mutation: false`, and writes
+the judge proof bundle without requiring a repository clone.
+
+For the full local workbench from a clone:
 
 ```bash
 npm install
@@ -108,6 +119,7 @@ The tracked evidence pack does not claim live hosted-model entitlement. The work
 - Zod
 - Vitest
 - Vite
+- Published npm CLI: `npm install -g splunkready` or `npx splunkready@latest judge-proof`
 - Splunk MCP adapter boundary
 - Deterministic trace grader rules
 - Local workbench API and UI

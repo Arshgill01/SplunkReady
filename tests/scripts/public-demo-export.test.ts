@@ -29,13 +29,53 @@ const createSourceTree = async (): Promise<string> => {
   return root;
 };
 
+const generateJudgeProofFixture = async ({ targetArtifactDir }: { targetArtifactDir: string }): Promise<void> => {
+  await writeFixture(
+    join(targetArtifactDir, "judge-proof-summary.json"),
+    `${JSON.stringify({
+      source: "splunkready-judge-proof",
+      status: "PASS",
+      mode: "fixture",
+      mutation: false,
+      generatedAt: "2026-06-06T00:00:00.000Z",
+      llmActivation: {
+        policy: "include-when-requested-or-env-enabled",
+        includeRequested: false,
+        enabledByEnv: false,
+        configured: false,
+        included: false
+      },
+      proofDirs: {
+        suite: "out/public-demo/artifacts/judge-proof/suite-proof",
+        firewall: "out/public-demo/artifacts/judge-proof/firewall-check",
+        llm: "out/public-demo/artifacts/judge-proof/llm-proof"
+      },
+      gates: [],
+      llmEvidence: {
+        status: "NOT_REQUESTED",
+        role: "trace-producer",
+        passFailAuthority: "deterministic-rule-engine",
+        proofDir: "out/public-demo/artifacts/judge-proof/llm-proof",
+        artifacts: [],
+        reason: "credential-free public export",
+        nextCommand: "npm run splunkready -- judge-proof --out artifacts/judge-proof --include-llm-proof true --json"
+      },
+      certificationIndex: "out/public-demo/artifacts/judge-proof/certification-index.json",
+      uiArtifacts: "out/public-demo/artifacts/judge-proof/ui-artifacts.json",
+      nextCommands: ["npm run workbench"]
+    })}\n`
+  );
+  await writeFixture(join(targetArtifactDir, "judge-proof-summary.md"), "# SplunkReady Judge Proof\n");
+};
+
 describe("public demo export", () => {
   it("copies the built UI and credential-free proof evidence into one static folder", async () => {
     const root = await createSourceTree();
     const result = await exportPublicDemo({
       root,
       outDir: "out/public-demo",
-      generatedAt: "2026-06-06T00:00:00.000Z"
+      generatedAt: "2026-06-06T00:00:00.000Z",
+      generateJudgeProof: generateJudgeProofFixture
     });
 
     await expect(readFile(join(root, "out/public-demo/index.html"), "utf8")).resolves.toContain("app");
@@ -47,10 +87,21 @@ describe("public demo export", () => {
       "mcp-proof-summary.json"
     );
     await expect(readFile(join(root, "out/public-demo/screenshots/workbench-mcp-proof.png"), "utf8")).resolves.toBe("png-bytes");
+    await expect(readFile(join(root, "out/public-demo/artifacts/judge-proof/judge-proof-summary.json"), "utf8")).resolves.toContain(
+      "deterministic-rule-engine"
+    );
+    await expect(readFile(join(root, "out/public-demo/artifacts/judge-proof/artifact-manifest.json"), "utf8")).resolves.toContain(
+      "judge-proof-summary.json"
+    );
     await expect(readFile(join(root, "out/public-demo/public-demo-manifest.json"), "utf8")).resolves.toContain(
       "?artifacts=artifacts%2Fmcp-proof#mcp-proof"
     );
-    expect(result.copiedArtifactBases).toEqual(["artifacts/mcp-proof", "artifacts/suite-proof", "artifacts/public-proof-export"]);
+    expect(result.copiedArtifactBases).toEqual([
+      "artifacts/mcp-proof",
+      "artifacts/suite-proof",
+      "artifacts/public-proof-export",
+      "artifacts/judge-proof"
+    ]);
     expect(result.manifest.mutation).toBe(false);
   });
 
@@ -62,7 +113,9 @@ describe("public demo export", () => {
       join(root, "submission-evidence", "mcp-proof", "linked-secret.txt")
     );
 
-    await expect(exportPublicDemo({ root, outDir: "out/public-demo" })).rejects.toThrow(
+    await expect(
+      exportPublicDemo({ root, outDir: "out/public-demo", generateJudgeProof: generateJudgeProofFixture })
+    ).rejects.toThrow(
       "Refusing to copy symbolic link into public demo export"
     );
   });

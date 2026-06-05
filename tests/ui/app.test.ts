@@ -506,6 +506,46 @@ const mcpProofSummary = {
   ]
 } as const;
 
+const judgeProofSummary = {
+  source: "splunkready-judge-proof",
+  status: "PASS",
+  mode: "fixture",
+  mutation: false,
+  generatedAt: "2026-06-01T06:45:00.000Z",
+  llmActivation: {
+    policy: "include-when-requested-or-env-enabled",
+    includeRequested: false,
+    enabledByEnv: false,
+    configured: false,
+    included: false
+  },
+  proofDirs: {
+    suite: "artifacts/judge-proof/suite-proof",
+    firewall: "artifacts/judge-proof/firewall-check",
+    llm: "artifacts/judge-proof/llm-proof"
+  },
+  gates: [
+    { id: "suite-proof", status: "PASS", artifacts: ["artifacts/judge-proof/suite-proof/suite-proof-summary.json"] },
+    { id: "firewall-check", status: "PASS", artifacts: ["artifacts/judge-proof/firewall-check/firewall-block-before.json"] },
+    { id: "certification-index", status: "PASS", artifacts: ["artifacts/judge-proof/certification-index.json"] }
+  ],
+  llmEvidence: {
+    status: "NOT_REQUESTED",
+    role: "trace-producer",
+    passFailAuthority: "deterministic-rule-engine",
+    proofDir: "artifacts/judge-proof/llm-proof",
+    artifacts: [],
+    reason: "judge-proof stayed credential-free; pass --include-llm-proof true when GEMINI_API_KEY is available.",
+    nextCommand: "npm run splunkready -- judge-proof --out artifacts/judge-proof --include-llm-proof true --json"
+  },
+  certificationIndex: "artifacts/judge-proof/certification-index.json",
+  uiArtifacts: "artifacts/judge-proof/ui-artifacts.json",
+  nextCommands: [
+    "npm run workbench",
+    "npm run splunkready -- judge-proof --out artifacts/judge-proof --include-llm-proof true --json"
+  ]
+} as const;
+
 const liveProofSummary = {
   status: "PASS",
   mode: "live",
@@ -1052,6 +1092,7 @@ describe("Vite UI artifact app", () => {
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/live-security-ui");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/certification-index");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/suite-proof");
+    expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/judge-proof");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/mcp-proof");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/mcp-transcript");
     expect(artifactUrl("/custom", "receipt-after-001.json")).toBe("/custom/receipt-after-001.json");
@@ -1118,6 +1159,33 @@ describe("Vite UI artifact app", () => {
     expect(bundle.mcpProofSummary?.status).toBe("PASS");
     expect(requested).toEqual(["artifact-manifest.json", "mcp-proof-summary.json"]);
     expect(bundle.missing).toEqual([]);
+  });
+
+  it("loads and renders the public judge proof LLM evidence boundary", async () => {
+    const requested: string[] = [];
+    const bundle = await loadUiArtifactBundle("artifacts/judge-proof", async (url) => {
+      const fileName = decodeURIComponent(url.split("/").at(-1) ?? "");
+      requested.push(fileName);
+
+      if (fileName === "artifact-manifest.json") {
+        return jsonResponse({
+          source: "splunkready-artifact-file-manifest",
+          generatedAt: "2026-06-06T00:00:00.000Z",
+          files: ["judge-proof-summary.json"]
+        });
+      }
+
+      return fileName === "judge-proof-summary.json" ? jsonResponse(judgeProofSummary) : htmlResponse();
+    });
+    const html = renderApp(bundle, "proof-browser", { artifactOptions: defaultArtifactOptions });
+
+    expect(bundle.judgeProofSummary?.status).toBe("PASS");
+    expect(bundle.judgeProofSummary?.llmEvidence.status).toBe("NOT_REQUESTED");
+    expect(requested).toEqual(["artifact-manifest.json", "judge-proof-summary.json"]);
+    expect(html).toContain("Judge proof");
+    expect(html).toContain("trace-producer");
+    expect(html).toContain("deterministic-rule-engine");
+    expect(html).toContain("--include-llm-proof true");
   });
 
   it("loads artifact selector options from a generated UI manifest", async () => {

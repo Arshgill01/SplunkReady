@@ -9606,6 +9606,114 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
+## 2026-06-06 - Move 99 Public Judge Proof LLM Evidence Surface
+
+Commands:
+
+- `npx vitest run tests/scripts/public-demo-export.test.ts`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "judge proof|artifact manifests|default artifact"`
+- `npm run public-demo:build && npm run audit:public-demo-export`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok`
+- `npx vite --host 127.0.0.1 --port 4341 artifacts/public-demo`
+- `bash "$PWCLI" open 'http://127.0.0.1:4341/?artifacts=artifacts%2Fjudge-proof#proof-browser'`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" console`
+- `bash "$PWCLI" screenshot --filename output/playwright/move99-public-judge-proof.png --full-page`
+- `lsof -ti tcp:4341 | xargs -r kill`
+- `npm run check`
+- `npm run verify:scaffold`
+
+Result:
+
+- PASS for public demo export unit coverage:
+  - 1 test file passed;
+  - 2 tests passed.
+- PASS for focused UI artifact/rendering coverage:
+  - 1 test file passed;
+  - 2 tests passed;
+  - 25 tests skipped by focused pattern.
+- Initial `npm run public-demo:build && npm run audit:public-demo-export`
+  failed because `scripts/export-public-demo.d.ts` did not expose the
+  injected `generateJudgeProof` test hook. The declaration was updated.
+- PASS after declaration fix for public demo build and audit:
+  - TypeScript build completed;
+  - production UI build completed;
+  - static export generated `artifacts/public-demo`;
+  - public demo manifest includes `artifacts/judge-proof`;
+  - audit passed with 182 files, `mutation=false`, and default route
+    `mcp-proof`.
+- PASS for Playwright static-host verification:
+  - opened
+    `http://127.0.0.1:4341/?artifacts=artifacts%2Fjudge-proof#proof-browser`;
+  - snapshot showed the Judge proof panel with `Status PASS`, `Mutation no`,
+    `LLM evidence NOT_REQUESTED`, and `Pass/fail authority
+    deterministic-rule-engine`;
+  - console reported 0 errors and 0 warnings;
+  - screenshot captured at
+    `output/playwright/move99-public-judge-proof.png`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 182 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and returned
+    `PASS` from `npx splunkready judge-proof`;
+  - 56 test files passed;
+  - 349 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for final scaffold verification after log/doc edits:
+  - waves: 85;
+  - project files: 2072.
+
+Notes:
+
+- The temporary static server was stopped after Playwright verification.
+- `.playwright-cli/` was removed after browser evidence capture.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI and GitHub Pages need to run after push for Move 99.
+- Hosted public judge proof intentionally stays credential-free and does not
+  call Gemini.
+
+## 2026-06-06 - Move 100 Published Package Judge Smoke
+
+Commands:
+
+- `tmp=$(mktemp -d /tmp/splunkready-publish-smoke-XXXXXX); cd "$tmp"; npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json`
+- `tmp=$(mktemp -d /tmp/splunkready-publish-smoke-XXXXXX); cd "$tmp"; npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json >/tmp/splunkready-publish-smoke-output.json; node -e 'const fs=require("fs"); const summary=JSON.parse(fs.readFileSync("judge-proof/judge-proof-summary.json","utf8")); console.log(JSON.stringify({tmp:process.cwd(), status:summary.status, mutation:summary.mutation, llmEvidence:summary.llmEvidence.status, authority:summary.llmEvidence.passFailAuthority}, null, 2));'`
+- `npm run check`
+
+Result:
+
+- PASS for clean temp-folder published package smoke:
+  - `npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json`
+    returned `"status": "PASS"`;
+  - the generated summary parse returned:
+    - `tmp: /private/tmp/splunkready-publish-smoke-6HRgmn`;
+    - `status: PASS`;
+    - `mutation: false`;
+    - `llmEvidence: NOT_REQUESTED`;
+    - `authority: deterministic-rule-engine`.
+- PASS for full `npm run check` as recorded in Move 99.
+
+Notes:
+
+- Did not run `npm publish`; publication was completed by the user.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI and GitHub Pages need to run after push for Move 100.
 
 ## 2026-06-06 - Move 97 Static Hosted Demo Request Hygiene
 

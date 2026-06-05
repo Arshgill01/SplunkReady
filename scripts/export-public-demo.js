@@ -1,8 +1,12 @@
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { copyFile, lstat, mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const requiredArtifactDirs = ["mcp-proof", "suite-proof", "public-proof-export"];
+const generatedArtifactDirs = ["judge-proof"];
+const execFileAsync = promisify(execFile);
 
 const isContained = (root, target) => {
   const relativePath = relative(root, target);
@@ -72,10 +76,53 @@ const parseArgs = (argv) => {
   };
 };
 
+const credentialFreeEnv = () =>
+  Object.fromEntries(
+    Object.entries({
+      PATH: process.env.PATH,
+      HOME: process.env.HOME,
+      TMPDIR: process.env.TMPDIR,
+      TEMP: process.env.TEMP,
+      TMP: process.env.TMP,
+      NODE_ENV: process.env.NODE_ENV,
+      NO_COLOR: "1",
+      SPLUNKREADY_LLM_ENABLED: "false",
+      GEMINI_API_KEY: ""
+    }).filter(([, value]) => value !== undefined)
+  );
+
+const runCredentialFreeJudgeProof = async ({ repoRoot, targetArtifactDir }) => {
+  const cliPath = resolve(repoRoot, "dist/src/cli.js");
+  const relativeOutDir = relative(repoRoot, targetArtifactDir).split(sep).join("/");
+
+  await execFileAsync(process.execPath, [cliPath, "judge-proof", "--out", relativeOutDir, "--json"], {
+    cwd: repoRoot,
+    env: credentialFreeEnv(),
+    maxBuffer: 10 * 1024 * 1024
+  });
+};
+
+const writeArtifactManifest = async (targetArtifactDir, generatedAt) => {
+  await writeFile(
+    resolve(targetArtifactDir, "artifact-manifest.json"),
+    `${JSON.stringify(
+      {
+        source: "splunkready-artifact-file-manifest",
+        generatedAt,
+        files: await listRelativeFiles(targetArtifactDir)
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+};
+
 export const exportPublicDemo = async ({
   root = process.cwd(),
   outDir = "artifacts/public-demo",
-  generatedAt = new Date().toISOString()
+  generatedAt = new Date().toISOString(),
+  generateJudgeProof = runCredentialFreeJudgeProof
 } = {}) => {
   const repoRoot = resolve(root);
   const targetRoot = resolve(repoRoot, outDir);
@@ -89,32 +136,28 @@ export const exportPublicDemo = async ({
     const targetArtifactDir = resolve(targetRoot, "artifacts", artifactDir);
 
     await copyTree(resolve(evidenceRoot, artifactDir), targetArtifactDir);
-    await writeFile(
-      resolve(targetArtifactDir, "artifact-manifest.json"),
-      `${JSON.stringify(
-        {
-          source: "splunkready-artifact-file-manifest",
-          generatedAt,
-          files: await listRelativeFiles(targetArtifactDir)
-        },
-        null,
-        2
-      )}\n`,
-      "utf8"
-    );
+    await writeArtifactManifest(targetArtifactDir, generatedAt);
+  }
+
+  for (const artifactDir of generatedArtifactDirs) {
+    const targetArtifactDir = resolve(targetRoot, "artifacts", artifactDir);
+
+    await generateJudgeProof({ repoRoot, targetArtifactDir });
+    await writeArtifactManifest(targetArtifactDir, generatedAt);
   }
 
   await copyTree(resolve(evidenceRoot, "screenshots"), resolve(targetRoot, "screenshots"));
 
+  const artifactBases = [...requiredArtifactDirs, ...generatedArtifactDirs].map((artifactDir) => `artifacts/${artifactDir}`);
   const manifest = {
     source: "splunkready-public-demo-export",
     generatedAt,
     mutation: false,
     defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
-    artifactBases: requiredArtifactDirs.map((artifactDir) => `artifacts/${artifactDir}`),
+    artifactBases,
     screenshots: "screenshots",
     notes:
-      "Static export for hosting the Vite workbench with tracked credential-free evidence. Live Splunk credentials and .env files are not copied."
+      "Static export for hosting the Vite workbench with tracked credential-free evidence. The judge-proof bundle is generated with LLM mode disabled for hosting. Live Splunk credentials and .env files are not copied."
   };
 
   await writeFile(resolve(targetRoot, "public-demo-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");

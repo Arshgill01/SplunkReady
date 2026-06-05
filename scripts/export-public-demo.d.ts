@@ -12,8 +12,14 @@ export interface PublicDemoExportResult {
   copiedArtifactBases: string[];
 }
 
+export type PublicDemoJudgeProofGenerator = (input: {
+  repoRoot: string;
+  targetArtifactDir: string;
+}) => Promise<void>;
+
 export function exportPublicDemo(input?: {
   root?: string;
   outDir?: string;
   generatedAt?: string;
+  generateJudgeProof?: PublicDemoJudgeProofGenerator;
 }): Promise<PublicDemoExportResult>;

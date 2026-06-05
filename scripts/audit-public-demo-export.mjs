@@ -56,6 +56,12 @@ try {
     "artifacts/mcp-proof/mcp-client-walkthrough.md",
     "artifacts/suite-proof/artifact-manifest.json",
     "artifacts/suite-proof/suite-proof-summary.json",
+    "artifacts/judge-proof/artifact-manifest.json",
+    "artifacts/judge-proof/judge-proof-summary.json",
+    "artifacts/judge-proof/judge-proof-summary.md",
+    "artifacts/judge-proof/suite-proof/suite-proof-summary.json",
+    "artifacts/judge-proof/firewall-check/firewall-block-before.json",
+    "artifacts/judge-proof/certification-index.json",
     "artifacts/public-proof-export/artifact-manifest.json",
     "artifacts/public-proof-export/public-proof-summary.json",
     "screenshots/workbench-mcp-proof.png"
@@ -80,7 +86,12 @@ try {
     fail("public demo manifest must point at the relative MCP proof workbench route");
   }
 
-  const expectedArtifactBases = ["artifacts/mcp-proof", "artifacts/suite-proof", "artifacts/public-proof-export"];
+  const expectedArtifactBases = [
+    "artifacts/mcp-proof",
+    "artifacts/suite-proof",
+    "artifacts/public-proof-export",
+    "artifacts/judge-proof"
+  ];
 
   if (JSON.stringify(manifest.artifactBases) !== JSON.stringify(expectedArtifactBases)) {
     fail("public demo manifest artifactBases changed unexpectedly");
@@ -99,6 +110,29 @@ try {
     if (!Array.isArray(artifactManifest.files) || artifactManifest.files.length === 0) {
       fail(`artifact manifest has no files for ${artifactBase}`);
     }
+  }
+
+  const judgeProofPath = join(outDir, "artifacts/judge-proof/judge-proof-summary.json");
+  const judgeProof = existsSync(judgeProofPath) ? JSON.parse(readFileSync(judgeProofPath, "utf8")) : {};
+
+  if (judgeProof.source !== "splunkready-judge-proof") {
+    fail("public demo judge proof source must be splunkready-judge-proof");
+  }
+
+  if (judgeProof.status !== "PASS") {
+    fail("public demo judge proof must pass");
+  }
+
+  if (judgeProof.mutation !== false) {
+    fail("public demo judge proof must preserve mutation=false");
+  }
+
+  if (judgeProof.llmEvidence?.passFailAuthority !== "deterministic-rule-engine") {
+    fail("public demo judge proof must keep deterministic pass/fail authority");
+  }
+
+  if (judgeProof.llmEvidence?.status !== "NOT_REQUESTED") {
+    fail("public demo judge proof must stay credential-free with LLM evidence NOT_REQUESTED");
   }
 
   const indexHtmlPath = join(outDir, "index.html");

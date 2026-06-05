@@ -11674,3 +11674,82 @@ Open blockers:
 - Raw GitHub-owned Pages action logs still include Node `punycode` deprecation
   warnings. The prior Node 20 Actions-runtime annotation is gone, but the raw
   log warning should be rechecked when GitHub updates those actions again.
+
+## 2026-06-06 03:15 - Move 99 Public Judge Proof LLM Evidence Surface
+
+Scope:
+- Targeted the remaining hosted-demo LLM visibility cap without making LLM
+  output authoritative.
+- Changed `public-demo:build` so the static export builds the TypeScript CLI
+  before the Vite UI and generates a real credential-free `artifacts/judge-proof`
+  bundle inside `artifacts/public-demo`.
+- The public demo exporter runs `judge-proof` with a minimal environment:
+  `SPLUNKREADY_LLM_ENABLED=false` and no `GEMINI_API_KEY`, so local credentials
+  are not used for hosted evidence generation.
+- Added `judge-proof` to `public-demo-manifest.json` artifact bases and tightened
+  `audit:public-demo-export` so the generated judge proof must report
+  `status=PASS`, `mutation=false`, `llmEvidence.status=NOT_REQUESTED`, and
+  `llmEvidence.passFailAuthority=deterministic-rule-engine`.
+- Added UI schema support for `judge-proof-summary.json`.
+- Rendered the judge proof and LLM evidence boundary in the existing Runs proof
+  browser instead of adding another top-level view.
+- Verified the generated static route with Playwright at
+  `?artifacts=artifacts%2Fjudge-proof#proof-browser`; the page rendered
+  `PASS`, `Mutation no`, `LLM evidence NOT_REQUESTED`, and
+  `Pass/fail authority deterministic-rule-engine`.
+- Captured screenshot:
+  `output/playwright/move99-public-judge-proof.png`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `package.json`
+- `scripts/export-public-demo.js`
+- `scripts/export-public-demo.d.ts`
+- `scripts/audit-public-demo-export.mjs`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/scripts/public-demo-export.test.ts`
+- `tests/ui/app.test.ts`
+- `moves/README.md`
+- `moves/moves99.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Open blockers:
+- Public demo still defaults to the MCP proof route to keep the first screen
+  focused; judge proof is available through the artifact selector or direct
+  artifact URL.
+- The hosted public judge proof intentionally stays credential-free and does
+  not call Gemini.
+
+## 2026-06-06 03:15 - Move 100 Published Package Judge Smoke
+
+Scope:
+- User completed the external `splunkready` npm publication.
+- Smoke-tested the published `splunkready@0.1.0` package from clean temp
+  folders with `npx`.
+- Verified the generated package smoke summary reports `status=PASS`,
+  `mutation=false`, `llmEvidence.status=NOT_REQUESTED`, and
+  `llmEvidence.passFailAuthority=deterministic-rule-engine`.
+- Added npm package badge and clean-folder `npx` judge-proof command to README.
+- Added npm badge, clean-folder `npx` proof command, and install snippet to the
+  Devpost draft.
+- Updated the submission claim ledger from publish-ready conditional language to
+  published-package supported evidence.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `README.md`
+- `docs/devpost-submission.md`
+- `submission-evidence/claim-ledger.md`
+- `moves/README.md`
+- `moves/moves100.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Open blockers:
+- Hosted CI and GitHub Pages still need to run after push for these new commits.
+- Future npm versions still need registry/auth preflight before release.

@@ -69,7 +69,7 @@
     "test:workbench": "vitest run tests/workbench tests/ui/app.test.ts",
     "workbench": "npm run build && npm run ui:build && node dist/src/workbench/server.js",
     "workbench:dev": "npm run build && node dist/src/workbench/server.js --dev-ui",
-    "public-demo:build": "npm run ui:build && node scripts/export-public-demo.js",
+    "public-demo:build": "npm run build && npm run ui:build && node scripts/export-public-demo.js",
     "public-demo:deploy:netlify": "npm run public-demo:build && npx netlify deploy --dir=artifacts/public-demo",
     "ui:dev": "vite --host 127.0.0.1 --config vite.config.ts",
     "ui:build": "vite build --config vite.config.ts"

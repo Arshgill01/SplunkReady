@@ -1,5 +1,7 @@
 # SplunkReady
 
+[![npm version](https://badge.fury.io/js/splunkready.svg)](https://www.npmjs.com/package/splunkready)
+
 Certify AI agents before they touch production Splunk.
 
 SplunkReady is a Splunk-native certification harness and local workbench for teams shipping agents that can call Splunk. It does not answer alerts for the operator. It proves whether a specific agent can safely operate against a specific Splunk deployment.
@@ -28,6 +30,15 @@ For the fastest local proof, run:
 npm install
 npm run judge-proof
 ```
+
+For the judge path from any clean folder, use the published package:
+
+```bash
+npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json
+```
+
+That command returns `PASS` with `mutation: false` and writes the same
+credential-free judge proof bundle without cloning the repository.
 
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, writes `compiler-diagnostics.json` / `.md` showing deterministic rule activation and resolution from readiness profiles and receipts, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 
@@ -60,10 +71,17 @@ splunkready judge-proof --out artifacts/judge-proof --json
 ```
 
 The `splunkready` bin resolves the bundled default fixture, mission, and suite
-paths even when it is run from outside the repository root. The repository is
-configured for public package publication and the canonical gate runs a package
-readiness audit with `npm pack --dry-run`; actual registry publication remains
-an explicit release action. To check the final npm blocker without publishing,
+paths even when it is run from outside the repository root. The package is also
+published on npm, so developers can install it globally when they want a local
+`splunkready` command:
+
+```bash
+npm install -g splunkready
+splunkready judge-proof --out ./judge-proof --json
+```
+
+The canonical gate still runs a package readiness audit with
+`npm pack --dry-run`. To re-check registry/auth readiness for the next version,
 run:
 
 ```bash
