@@ -211,6 +211,41 @@ Notes:
 
 - This move did not change UI source or behavior, so Playwright was not run.
 
+## 2026-06-05 - Move 64 Official Hackathon Rubric Grounding
+
+Commands:
+
+- `npm run verify:scaffold`
+- `npm run audit:submission-copy`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for scaffold verification:
+  - scaffold verified;
+  - project files count reported as 1,738.
+- PASS for submission-copy audit:
+  - 28 required claims audited.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 49 test files passed;
+  - 322 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for explicit `git diff --check`.
+
+Notes:
+
+- This move does not change UI source or behavior, so Playwright is not
+  required.
+
 ## 2026-06-01 15:36 - Wave 39 Demo Orchestration
 
 Commands:

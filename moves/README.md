@@ -86,6 +86,7 @@ commands, or filesystem paths.
 | P0 | [61](moves61.md) LLM proof workflow extraction | 0.5d | Starts the next CLI modularization pass by moving the new LLM proof orchestration into a focused workflow module. |
 | P0 | [62](moves62.md) Proof manifest and index workflow extraction | 0.5d | Continues the CLI modularization pass by moving proof manifest, verification, and certification index logic into workflow modules. |
 | P0 | [63](moves63.md) External MCP certification workflow extraction | 0.5d | Makes external trace and captured Splunk MCP transcript certification workflow-owned instead of CLI-owned. |
+| P0 | [64](moves64.md) Official hackathon rubric grounding | 0.5d | Captures official criteria and corrects MCP award positioning against Splunk MCP Server usage. |
 
 ## Non-Negotiable Boundaries
 

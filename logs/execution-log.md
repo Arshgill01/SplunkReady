@@ -190,6 +190,45 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 22:45 - Move 64 Official Hackathon Rubric Grounding
+
+Scope:
+- Captured the official Splunk Agentic Ops Hackathon rules, track framing,
+  equally weighted judging criteria, required submission evidence, and bonus
+  prize framing in a tracked rubric file.
+- Corrected the MCP award implication in-repo: SplunkReady should compete by
+  certifying behavior at the Splunk MCP Server boundary, while its local MCP
+  server remains a composable certification interface.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `docs/hackathon-rubric.md`
+- `MANIFEST.md`
+- `README.md`
+- `logs/risk-register.md`
+- `moves/README.md`
+- `moves/moves64.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `docs/hackathon-rubric.md` with Devpost/Splunk source URLs, Platform &
+  Developer Experience track implications, Stage One/Stage Two criteria, and
+  bonus-prize implications for MCP, Developer Tools, and Hosted Models.
+- Added the rubric to the required reading path in `MANIFEST.md`.
+- Linked the rubric from README submission materials.
+- Updated the risk register to replace MCP-award guesswork with the official
+  Splunk MCP Server framing.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+- Npm publication, hosted workbench URL, and refreshed submission evidence pack
+  remain separate high-leverage gaps.
+
 Future entries must use:
 
 ```text

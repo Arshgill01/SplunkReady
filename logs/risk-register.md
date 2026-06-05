@@ -211,3 +211,11 @@ certification server and by updating the product story: SplunkReady's standout
 MCP use is certifying Splunk MCP agent behavior, while the local MCP server is a
 composable certification interface for clients that want posture resources,
 prompts, and receipts.
+
+Move 64 reduces the official-criteria uncertainty by adding
+`docs/hackathon-rubric.md`, sourced from the Splunk Agentic Ops Hackathon
+Devpost rules and Splunk announcement. The rubric explicitly corrects the MCP
+award framing: SplunkReady should compete by certifying behavior at the Splunk
+MCP Server boundary and by using its local MCP server as a composable
+certification interface, not by claiming that building a separate MCP server is
+the category-winning action by itself.

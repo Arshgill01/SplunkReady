@@ -380,6 +380,7 @@ npm run check
 
 ## Submission Materials
 
+- Official rubric grounding: [docs/hackathon-rubric.md](docs/hackathon-rubric.md)
 - Devpost copy: [docs/devpost-submission.md](docs/devpost-submission.md)
 - Demo script: [docs/demo-script.md](docs/demo-script.md)
 - Architecture diagram: [architecture_diagram.md](architecture_diagram.md)

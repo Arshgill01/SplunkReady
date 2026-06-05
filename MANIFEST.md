@@ -27,10 +27,11 @@ This repository turns the locked SplunkReady idea into an implemented certificat
 10. `docs/prompts/README.md`
 11. `docs/prompts/main-executor-goal.md`
 12. `docs/prompts/reviewer-goal.md`
-13. `docs/waves/README.md`
-14. Current wave file under `docs/waves/`
-15. `logs/reviewer-inbox/README.md`
-16. `logs/risk-register.md`
+13. `docs/hackathon-rubric.md`
+14. `docs/waves/README.md`
+15. Current wave file under `docs/waves/`
+16. `logs/reviewer-inbox/README.md`
+17. `logs/risk-register.md`
 
 ## Directory Map
 
@@ -47,6 +48,7 @@ This repository turns the locked SplunkReady idea into an implemented certificat
 - `docs/live-proof-gap.md`: current live MCP/Gemini proof status, including the green flagship live security proof.
 - `docs/live-demo-data-plan.md`: operator-approved setup and proof paths for live security readiness without SplunkReady mutation.
 - `docs/live-setup-checklist.md`: Phase Live checklist for producing the required real Splunk MCP live-smoke proof.
+- `docs/hackathon-rubric.md`: official Devpost/Splunk rubric capture used to ground award positioning and future move priority.
 - `docs/llm-specimen-agent.md`: env-gated Gemini specimen agent flow for model-produced traces.
 - `ui/`: Vite artifact app for inspecting proof bundles, receipts, traces, live security readiness, hosted-model status, and policy simulation.
 - `fixtures/acme-soc-dev/adapter-fixture.json`: expanded fixture deployment with security, CloudTrail, network, and platform-latency evidence paths.
