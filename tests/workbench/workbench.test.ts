@@ -227,9 +227,20 @@ describe("workbench backend", () => {
     const store = new WorkbenchArtifactStore(config.artifactRoot);
     const runner = new WorkbenchJobRunner({ config, artifactStore: store });
     const response = await callApi(config, runner, store, { method: "POST", path: "/api/jobs/live-smoke" });
+    const hostedResponse = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/hosted-model-diagnostic"
+    });
 
     expect(response.status).toBe(400);
     expect(response.json).toMatchObject({
+      error: {
+        code: "WORKBENCH_REQUEST_FAILED",
+        message: expect.stringContaining("SPLUNKREADY_SPLUNK_MCP_TOKEN")
+      }
+    });
+    expect(hostedResponse.status).toBe(400);
+    expect(hostedResponse.json).toMatchObject({
       error: {
         code: "WORKBENCH_REQUEST_FAILED",
         message: expect.stringContaining("SPLUNKREADY_SPLUNK_MCP_TOKEN")
@@ -264,6 +275,47 @@ describe("workbench backend", () => {
     });
     expect(completed.events.map((event) => event.message)).toEqual(
       expect.arrayContaining(["Queued live smoke.", "Running Agent Readiness Compiler live smoke.", "live smoke completed."])
+    );
+  });
+
+  it("runs hosted-model diagnostic as an allowlisted server-owned live workflow", async () => {
+    const config = await testConfig({ liveAvailable: true, liveMissing: [] });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({
+      config,
+      artifactStore: store,
+      workflows: {
+        "hosted-model-diagnostic": async ({ outDir }) => {
+          await writeFile(
+            join(outDir, "hosted-model-diagnostic.json"),
+            "{\"status\":\"BLOCKED\",\"mutation\":false,\"deterministicAuthority\":\"deterministic-rule-engine\"}\n",
+            "utf8"
+          );
+
+          return { artifacts: [join(outDir, "hosted-model-diagnostic.json")] };
+        }
+      }
+    });
+    const response = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/hosted-model-diagnostic"
+    });
+    const started = response.json as { job: { id: string; workflow: string } };
+    const completed = await waitForJob(runner, started.job.id);
+
+    expect(response.status).toBe(202);
+    expect(started.job.workflow).toBe("hosted-model-diagnostic");
+    expect(completed).toMatchObject({
+      workflow: "hosted-model-diagnostic",
+      state: "succeeded",
+      artifacts: ["hosted-model-diagnostic.json"]
+    });
+    expect(completed.events.map((event) => event.message)).toEqual(
+      expect.arrayContaining([
+        "Queued hosted model diagnostic.",
+        "Running Agent Readiness Compiler hosted model diagnostic.",
+        "hosted model diagnostic completed."
+      ])
     );
   });
 

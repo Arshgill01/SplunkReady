@@ -3354,6 +3354,47 @@ export const runLiveSecurityProofFromCli = async (
   };
 };
 
+export interface HostedModelWorkflowInput {
+  outDir: string;
+}
+
+export interface HostedModelWorkflowResult {
+  status: "PASS" | "BLOCKED";
+  outDir: string;
+  artifacts: string[];
+  mutation: false;
+  messages: string[];
+}
+
+const hostedModelStatusFromArtifact = async (artifactPath: string): Promise<"PASS" | "BLOCKED"> => {
+  const artifact = await readJson<unknown>(artifactPath, "hosted-model workflow artifact");
+  const status = stringFromRecord(artifact, "status");
+
+  return status === "PASS" ? "PASS" : "BLOCKED";
+};
+
+export const runHostedModelDiagnosticFromCli = async (
+  input: HostedModelWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<HostedModelWorkflowResult> => {
+  const options = defaultCliOptions({ mode: "live", out: input.outDir, requirePass: false });
+  const artifacts = await hostedModelDiagnosticCommand(options, env);
+  const status = await hostedModelStatusFromArtifact(join(input.outDir, "hosted-model-diagnostic.json"));
+
+  return { status, outDir: input.outDir, artifacts, mutation: false, messages: [] };
+};
+
+export const runHostedModelProofFromCli = async (
+  input: HostedModelWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<HostedModelWorkflowResult> => {
+  const options = defaultCliOptions({ mode: "live", out: input.outDir });
+  const artifacts = await hostedModelProofCommand(options, env);
+  const status = await hostedModelStatusFromArtifact(join(input.outDir, "hosted-model-proof.json"));
+
+  return { status, outDir: input.outDir, artifacts, mutation: false, messages: [] };
+};
+
 const main = async (): Promise<void> => {
   const { command, options } = parseArgs(process.argv.slice(2));
   let artifacts: string[];

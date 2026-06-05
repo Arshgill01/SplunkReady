@@ -1052,6 +1052,9 @@ describe("Vite UI artifact app", () => {
     expect(unavailable).toContain("Scan saved searches");
     expect(unavailable).toContain("Check security readiness");
     expect(unavailable).toContain("Run security proof");
+    expect(unavailable).toContain("Check SAIA entitlement");
+    expect(unavailable).toContain("Run hosted-model proof");
+    expect(unavailable).toContain("SAIA authority</th><td>advisory only");
     expect(unavailable).toContain("disabled");
     expect(unavailable).toContain("Browser credentials</th><td>not accepted");
     expect(unavailable).not.toContain("<input");
@@ -1060,6 +1063,22 @@ describe("Vite UI artifact app", () => {
     expect(running).toContain("job-live-1 / live-smoke / running");
     expect(running).toContain("Running Agent Readiness Compiler live smoke.");
     expect(running).toContain("SAIA</th><td>available");
+
+    const blocked = renderApp(bundle, "live-connect", {
+      workbench: {
+        available: true,
+        healthStatus: "available",
+        liveAvailable: true,
+        saiaAvailable: false,
+        liveMissing: []
+      }
+    });
+
+    expect(blocked).toContain("SAIA</th><td>not confirmed; diagnostic may return BLOCKED");
+    expect(blocked).toContain("Check SAIA entitlement");
+    expect(blocked).toContain("Call hosted-model helper tools only; report PASS or BLOCKED.");
+    expect(blocked).toContain("Run hosted-model proof");
+    expect(blocked).not.toContain("type=\"password\"");
   });
 
   it("renders live proof summaries without implying a fake patch loop", async () => {

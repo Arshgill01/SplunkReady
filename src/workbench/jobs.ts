@@ -1,6 +1,7 @@
 import { relative } from "node:path";
 
 import { runFixtureCertificationWorkflow } from "../workflows/fixture-certification.js";
+import { runHostedModelDiagnosticWorkflow, runHostedModelProofWorkflow } from "../workflows/hosted-model-actions.js";
 import {
   runLiveCandidatesWorkflow,
   runLiveSecurityProofWorkflow,
@@ -26,7 +27,9 @@ const liveWorkflows = new Set<WorkbenchWorkflow>([
   "live-smoke",
   "live-candidates",
   "live-security-readiness",
-  "live-security-proof"
+  "live-security-proof",
+  "hosted-model-diagnostic",
+  "hosted-model-proof"
 ]);
 
 const workflowLabel = (workflow: WorkbenchWorkflow): string => {
@@ -40,6 +43,14 @@ const workflowLabel = (workflow: WorkbenchWorkflow): string => {
 
   if (workflow === "live-security-proof") {
     return "live security proof";
+  }
+
+  if (workflow === "hosted-model-diagnostic") {
+    return "hosted model diagnostic";
+  }
+
+  if (workflow === "hosted-model-proof") {
+    return "hosted model proof";
   }
 
   return workflow.replaceAll("-", " ");
@@ -61,6 +72,8 @@ export class WorkbenchJobRunner {
       "live-candidates": async ({ outDir }) => runLiveCandidatesWorkflow({ outDir }),
       "live-security-readiness": async ({ outDir }) => runLiveSecurityReadinessWorkflow({ outDir }),
       "live-security-proof": async ({ outDir }) => runLiveSecurityProofWorkflow({ outDir }),
+      "hosted-model-diagnostic": async ({ outDir }) => runHostedModelDiagnosticWorkflow({ outDir }),
+      "hosted-model-proof": async ({ outDir }) => runHostedModelProofWorkflow({ outDir }),
       ...options.workflows
     };
   }

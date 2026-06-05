@@ -722,6 +722,11 @@ const liveActionRows = [
   ["live-security-proof", "Run security proof", "Execute the strict LLM fail-to-pass proof only when readiness is green."]
 ] as const;
 
+const hostedModelActionRows = [
+  ["hosted-model-diagnostic", "Check SAIA entitlement", "Call hosted-model helper tools only; report PASS or BLOCKED."],
+  ["hosted-model-proof", "Run hosted-model proof", "Collect advisory explain/optimize output without executing SPL."]
+] as const;
+
 const renderLiveActionPanel = (workbench: WorkbenchRenderState | undefined): string => {
   const job = workbench?.job;
   const running = job?.state === "queued" || job?.state === "running";
@@ -739,12 +744,30 @@ const renderLiveActionPanel = (workbench: WorkbenchRenderState | undefined): str
     ${renderFactTable([
       ["Backend", workbench?.available ? (workbench.healthStatus ?? "available") : "not connected"],
       ["Live mode", status],
-      ["SAIA", workbench?.saiaAvailable ? "available" : "not available"],
+      [
+        "SAIA",
+        workbench?.saiaAvailable
+          ? "available"
+          : liveAvailable
+            ? "not confirmed; diagnostic may return BLOCKED"
+            : "not available"
+      ],
+      ["SAIA authority", "advisory only"],
       ["Browser credentials", "not accepted"],
       ["Mutation", "false"]
     ])}
     <div class="live-action-list">
       ${liveActionRows
+        .map(
+          ([workflow, label, detail]) => `<button class="replay-button live-action-button" type="button" data-run-workflow="${workflow}" ${disabled ? "disabled" : ""}>
+            <strong>${value(label)}</strong>
+            <span>${value(detail)}</span>
+          </button>`
+        )
+        .join("")}
+    </div>
+    <div class="live-action-list hosted-model-action-list">
+      ${hostedModelActionRows
         .map(
           ([workflow, label, detail]) => `<button class="replay-button live-action-button" type="button" data-run-workflow="${workflow}" ${disabled ? "disabled" : ""}>
             <strong>${value(label)}</strong>

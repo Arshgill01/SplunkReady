@@ -85,7 +85,9 @@ const workflows = new Set<WorkbenchWorkflow>([
   "live-smoke",
   "live-candidates",
   "live-security-readiness",
-  "live-security-proof"
+  "live-security-proof",
+  "hosted-model-diagnostic",
+  "hosted-model-proof"
 ]);
 
 const parseWorkflow = (value: string): WorkbenchWorkflow | undefined =>

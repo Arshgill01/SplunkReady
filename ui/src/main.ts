@@ -230,7 +230,7 @@ const bindInteractions = (): void => {
         return;
       }
 
-      void runWorkbenchWorkflow(workflow, workflow.startsWith("live-") ? "live-connect" : "certification-replay");
+      void runWorkbenchWorkflow(workflow, workflow === "fixture-certification" ? "certification-replay" : "live-connect");
     });
   }
 

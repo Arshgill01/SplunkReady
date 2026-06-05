@@ -3,7 +3,9 @@ export type WorkbenchWorkflow =
   | "live-smoke"
   | "live-candidates"
   | "live-security-readiness"
-  | "live-security-proof";
+  | "live-security-proof"
+  | "hosted-model-diagnostic"
+  | "hosted-model-proof";
 
 export type WorkbenchJobState = "queued" | "running" | "succeeded" | "failed" | "cancelled";
 

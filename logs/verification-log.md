@@ -6078,3 +6078,52 @@ Open risks:
 
 - The workbench UI live path is browser-verified, but this environment still cannot complete a live MCP smoke run. No `live-smoke-contract.json` was written from the Playwright live attempts.
 - The local TLS override was used only for diagnosis and should not be copied into production guidance.
+
+## 2026-06-05 - Move 09 SAIA Hosted-Model Workbench Workflow
+
+Commands:
+
+- `npx tsc --noEmit && npx vitest run tests/workbench/workbench.test.ts tests/ui/app.test.ts tests/cli/flow.test.ts`
+- `set -a; source ./.splunkready-live.env; set +a; npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh goto http://127.0.0.1:4317/#live-connect && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh eval "(() => { const text = document.body.innerText; const workflows = Array.from(document.querySelectorAll('[data-run-workflow]')).map((button) => ({ workflow: button.getAttribute('data-run-workflow'), disabled: button.hasAttribute('disabled'), text: button.textContent?.replace(/\\s+/g, ' ').trim() })); const result = { url: location.href, hasDiagnostic: text.includes('Check SAIA entitlement'), hasProof: text.includes('Run hosted-model proof'), hasAdvisory: text.includes('SAIA authority') && text.includes('advisory only'), hasNoCredentials: text.includes('Browser credentials') && text.includes('not accepted'), inputCount: document.querySelectorAll('input, textarea').length, workflows }; for (const key of ['hasDiagnostic','hasProof','hasAdvisory','hasNoCredentials']) { if (!result[key]) throw new Error(key + ' missing: ' + JSON.stringify(result)); } if (result.inputCount !== 0) throw new Error('unexpected inputs: ' + result.inputCount); for (const workflow of ['hosted-model-diagnostic','hosted-model-proof']) { const button = workflows.find((candidate) => candidate.workflow === workflow); if (!button) throw new Error('missing hosted workflow button ' + workflow); if (button.disabled) throw new Error('hosted workflow disabled despite live env: ' + workflow); } return result; })()"`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click "text=Check SAIA entitlement"`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh requests`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh request 63 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh request-body 63 && bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh response-body 64`
+- `npx vitest run tests/adapters/live.test.ts tests/cli/flow.test.ts tests/workbench tests/ui/app.test.ts && npm run build && npm run check && git diff --check`
+- `npm run ui:build && git diff --check`
+
+Result:
+
+- PASS for focused TypeScript/workbench/UI/CLI hosted-model verification:
+  - 3 test files;
+  - 64 tests passed.
+- PASS for Playwright hosted-model UI assertions against live-env workbench:
+  - `Check SAIA entitlement` and `Run hosted-model proof` rendered;
+  - `SAIA authority` rendered as `advisory only`;
+  - `Browser credentials` rendered as `not accepted`;
+  - zero `input` or `textarea` elements;
+  - `hosted-model-diagnostic` and `hosted-model-proof` buttons were enabled from server live env.
+- PARTIAL for Playwright hosted-model diagnostic execution:
+  - browser submitted fixed `POST /api/jobs/hosted-model-diagnostic`;
+  - request body was empty;
+  - job failed before SAIA entitlement check because live MCP transport returned `fetch failed`;
+  - UI rendered redacted `LIVE_ADAPTER_TRANSPORT_ERROR` with no endpoint or token values.
+- PASS for Move 09 required focused verification:
+  - 4 test files;
+  - 73 tests passed.
+- PASS for canonical build/check gate:
+  - production TypeScript build passed;
+  - scaffold verified;
+  - 85 waves;
+  - 964 project files;
+  - 41 test files;
+  - 266 tests passed.
+- PASS for Vite production UI build:
+  - 21 modules transformed;
+  - production bundle written to `dist-ui`.
+- PASS for `git diff --check`.
+
+Open risks:
+
+- Live SAIA entitlement remains unverified locally because the MCP endpoint transport fails before hosted-model tool calls.
+- Existing CLI mock coverage verifies the truthful `BLOCKED` diagnostic artifact and strict gate behavior when hosted-model tools are not entitled.

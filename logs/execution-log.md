@@ -7724,3 +7724,61 @@ Result:
   - live-env enabled UI;
   - fixed live-smoke browser request shape;
   - redacted live adapter transport error rendering.
+
+## 2026-06-05 - Move 09 SAIA Hosted-Model Workbench Workflow
+
+Scope:
+- Expose existing `hosted-model-diagnostic` and `hosted-model-proof` behavior through the local workbench.
+- Keep SAIA hosted-model output advisory-only.
+- Show live-unavailable, entitlement-not-confirmed/blocked, and invoked/proof artifact states truthfully.
+- Keep browser requests fixed to allowlisted workflow names with no credentials or arbitrary SPL.
+
+Files expected/touched:
+- `src/workflows/hosted-model-actions.ts`
+- `src/cli.ts`
+- `src/workbench/events.ts`
+- `src/workbench/jobs.ts`
+- `src/workbench/routes.ts`
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `tests/workbench/workbench.test.ts`
+- `tests/ui/app.test.ts`
+- `docs/live-adapter.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `src/workflows/hosted-model-actions.ts` with backend-callable workflow entrypoints for:
+  - `hosted-model-diagnostic`;
+  - `hosted-model-proof`.
+- Added narrow CLI step-provider exports for hosted-model diagnostic/proof. They call the existing CLI commands in live mode, return structured artifact metadata, and report `mutation: false`.
+- Extended workbench workflow types, route parsing, and job handlers to allow only the two fixed hosted-model jobs.
+- Treated hosted-model jobs as live-server-owned jobs, so they require server live env and never accept browser credentials.
+- Added Live connect controls for `Check SAIA entitlement` and `Run hosted-model proof`.
+- Updated the UI controller so hosted-model job completion reloads artifacts into the Live connect view.
+- Added UI copy showing SAIA as `advisory only` and showing live-enabled-but-SAIA-unconfirmed state as a diagnostic that may return `BLOCKED`.
+- Documented hosted-model workbench actions and the advisory-only boundary in `docs/live-adapter.md`.
+
+Product impact:
+- Operators can now run hosted-model diagnostic/proof actions from the workbench without shell commands.
+- A `BLOCKED` hosted-model diagnostic remains a truthful artifact state and does not imply the app failed.
+- SAIA evidence can explain or optimize SPL, but deterministic rules remain the only readiness authority.
+
+Playwright evidence:
+- Started the workbench from `./.splunkready-live.env` and opened `http://127.0.0.1:4317/#live-connect`.
+- Browser assertions confirmed hosted-model controls rendered, were enabled from server live env, showed `SAIA authority` as `advisory only`, showed browser credentials as `not accepted`, and rendered zero `input` or `textarea` elements.
+- Clicked `Check SAIA entitlement` in the browser. The request was `POST /api/jobs/hosted-model-diagnostic` with no request body.
+- The real live-configured job failed at the existing MCP transport boundary (`fetch failed`) before entitlement could be tested. The UI rendered the redacted `LIVE_ADAPTER_TRANSPORT_ERROR`; no endpoint or token values were displayed.
+
+Reviewer findings:
+- Subagents are disabled per user direction; no reviewer loop was run for this slice.
+
+Open risks:
+- Real hosted-model entitlement could not be verified in this environment because the live MCP transport fails before contract compilation reaches SAIA calls.
+- `SPLUNKREADY_SAIA_ENABLED` was not set in the local env file; the UI therefore shows SAIA as not confirmed and routes the operator to diagnostic proof instead of claiming entitlement.
+
+Result:
+- Focused Move 09 verification passed.
+- Canonical build/check gate passed.
+- Vite production UI build passed.
+- `git diff --check` passed.
