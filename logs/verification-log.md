@@ -7574,6 +7574,50 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 41 Agent Trace Bridge Verification
+
+Commands:
+
+- `npm test -- tests/integrations/agent-trace-bridge.test.ts`
+- `npm test -- tests/integrations/agent-trace-bridge.test.ts`
+- `npm run check && git diff --check`
+
+Result:
+
+- FAIL for the first focused bridge integration test:
+  - the bridge output certified successfully, but the test expected only row
+    event IDs in `receipt.evidenceRefs`;
+  - the actual receipt also preserved knowledge-object provenance:
+    `saved-search-lateral-movement`, `macro-security-content-ctime`, and
+    `lookup-asset-lookup`.
+- PASS after correcting the assertion to match the receipt provenance contract:
+  - 1 test file passed;
+  - 1 test passed;
+  - the bridge payload parsed through `parseExternalTraceCertificationPayload`;
+  - `runExternalTraceCertificationWorkflow` produced a `READY / 100` external
+    receipt for `LangChain Security Agent callback-bridge-test`.
+- PASS for full `npm run check && git diff --check` before log updates:
+  - scaffold verified with 85 waves and 1747 project files;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 43 test files passed;
+  - 297 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output;
+  - explicit final `git diff --check` completed with no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+- Framework-specific native adapter packages remain future work; Move 41 added
+  the stable bridge they can wrap.
+
 ## 2026-06-05 - Move 39 Atomic Workbench Job Limit Verification
 
 Commands:

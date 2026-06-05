@@ -42,6 +42,70 @@ npm run splunkready -- proof-audit --out "$tmp" --require-pass true --json
 
 The checked-in `sample-pass-receipt.md` was generated from this flow. It returns `READY / 100` with no violations, proving the SDK path can certify an external agent trace when the trace uses validated knowledge objects and carries evidence provenance.
 
+## Capture from agent framework callbacks
+
+External agents do not need to hand-shape SplunkReady trace JSON. Use the dependency-free trace bridge from a LangChain callback, AutoGen tool wrapper, CrewAI tool, LlamaIndex tool handler, or any other agent runtime that exposes tool start/result/final-answer events:
+
+```ts
+import { writeFile } from "node:fs/promises";
+import { createSplunkReadyTraceBridge } from "../dist/src/integrations/agent-trace-bridge.js";
+
+const bridge = createSplunkReadyTraceBridge({
+  missionId: "mission-security-lateral-movement-readiness"
+});
+
+const callId = bridge.recordToolCall({
+  toolName: "splunk_run_saved_search",
+  toolInput: {
+    name: "ES - Lateral Movement Auth Chain",
+    app: "SplunkEnterpriseSecuritySuite",
+    tokens: { host: "win-finance-07", earliest: "-24h", latest: "now" }
+  },
+  timeWindow: { earliest: "-24h", latest: "now" }
+});
+
+bridge.recordToolResult({
+  parentId: callId,
+  toolName: "splunk_run_saved_search",
+  outputSummary: "Saved search returned three authentication chain events.",
+  queryRef: "saved-search-lateral-movement",
+  timeWindow: { earliest: "-24h", latest: "now" },
+  resultCount: 3,
+  evidenceRefs: ["evt-102", "evt-118", "evt-141"]
+});
+
+bridge.recordFinalAnswer({
+  outputSummary: "The answer cites saved-search-lateral-movement and the three supporting event rows.",
+  timeWindow: { earliest: "-24h", latest: "now" },
+  resultCount: 3,
+  evidenceRefs: ["evt-102", "evt-118", "evt-141"]
+});
+
+const payload = bridge.externalTracePayload({
+  requirePass: true,
+  agentName: "My Splunk Agent",
+  agentVersion: "pr-1042"
+});
+
+await writeFile("splunkready-trace.json", `${JSON.stringify(payload.trace, null, 2)}\n`);
+```
+
+Then certify the captured trace:
+
+```bash
+npm run build
+tmp=$(mktemp -d /tmp/splunkready-agent-bridge-XXXXXX)
+npm run splunkready -- compile --out "$tmp"
+npm run splunkready -- grade-trace \
+  --trace splunkready-trace.json \
+  --out "$tmp" \
+  --agent-name "My Splunk Agent" \
+  --agent-version "pr-1042"
+npm run splunkready -- proof-audit --out "$tmp" --require-pass true --json
+```
+
+The bridge is not a second grader. It only records tool calls, adapter results, errors, and final answers in the canonical trace schema. The deterministic rule engine still decides readiness.
+
 ## Import an MCP JSON-RPC transcript
 
 External agents do not have to emit SplunkReady trace events directly. If an agent can log Splunk MCP JSON-RPC `tools/call` requests and responses, SplunkReady can certify that transcript directly:

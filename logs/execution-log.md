@@ -8947,6 +8947,52 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 41 Agent Trace Bridge
+
+Context:
+- Continued development hardening after Move 40.
+- Did not use subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- User explicitly deferred video/submission work; this move stayed on
+  development and integration friction.
+- User supplied a competitive audit warning that manual trace JSON, fixture-only
+  security data, and deterministic rules could read as friction or insufficient
+  AI flash under judging pressure.
+- Chose the conservative product response: reduce agent-framework integration
+  friction while preserving deterministic grading authority.
+
+Files touched:
+- `src/integrations/agent-trace-bridge.ts`
+- `tests/integrations/agent-trace-bridge.test.ts`
+- `examples/README.md`
+- `logs/risk-register.md`
+- `moves/README.md`
+- `moves/moves41.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added a dependency-free `createSplunkReadyTraceBridge` wrapper over the
+  canonical `TraceRecorder`.
+- Exposed methods for recording external-agent tool calls, tool results, tool
+  errors, final answers, schema-valid trace events, and external trace payloads.
+- Added a focused integration regression that drives bridge output through the
+  real external trace certification workflow and verifies a `READY / 100`
+  receipt for a callback-captured security agent trace.
+- Documented how LangChain, AutoGen, CrewAI, LlamaIndex, and custom agents can
+  call the bridge from their own callback/tool wrapper surfaces without adding
+  those frameworks as project dependencies.
+- Logged new audit-driven risks for native integration friction, determinism
+  perception, and flagship live security data availability.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+- A broader native package integration, such as a published npm package or
+  framework-specific adapter, remains future work.
+- No UI code changed in this move, so no Playwright run was required for this
+  specific commit.
+
 ## 2026-06-05 - Move 39 Atomic Workbench Job Limit
 
 Context:
