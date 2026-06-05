@@ -9602,6 +9602,54 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-06 - Move 87 CLI Proof Command Extraction
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "judge proof|mcp-proof|proof-audit|verify-manifest|suite-proof|certification-index|llm-proof|hosted-model"`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused proof CLI validation:
+  - 1 test file passed;
+  - 5 tests passed;
+  - 35 tests skipped by focused pattern.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness audit checked 156 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and
+    `npx splunkready judge-proof` returned `PASS`;
+  - 56 test files passed;
+  - 346 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for explicit `git diff --check`:
+  - completed with no output.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Root CLI dispatch and non-proof command wrappers remain as the next CLI
+  modularization candidates.
+
 ## 2026-06-06 - Move 84 Package Installability Audit
 
 Commands:

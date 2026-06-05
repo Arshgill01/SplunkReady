@@ -11214,3 +11214,43 @@ Open blockers:
 - `src/cli.ts` is materially smaller, but command dispatch and several command
   wrappers still remain in the root CLI file. Further CLI modularization should
   extract cohesive command groups rather than chase line count alone.
+
+## 2026-06-06 02:15 - Move 87 CLI Proof Command Extraction
+
+Scope:
+- Continued the Minimax CLI-monolith cap work without using subagents.
+- Added `moves/moves87.md` for a focused proof command extraction.
+- Created `src/cli/proof-commands.ts` for proof audit, manifest verification,
+  certification index, suite proof, judge proof, MCP proof, LLM proof, and
+  hosted-model proof command wrappers.
+- Re-exported manifest verification and certification index CLI workflow
+  helpers from the new proof command module to preserve public CLI imports.
+- Kept command names, flags, defaults, JSON output, package bin behavior,
+  deterministic grading authority, MCP proof content, and Splunk mutation
+  boundaries unchanged.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+
+Files changed:
+- `src/cli.ts`
+- `src/cli/proof-commands.ts`
+- `moves/README.md`
+- `moves/moves87.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- `src/cli.ts` dropped from 634 lines before Move 87 to 437 lines after the
+  extraction.
+- `src/cli/proof-commands.ts` now owns 237 lines of proof command
+  orchestration.
+- The MCP proof command now resolves the compiled MCP server path relative to
+  the new nested CLI module location.
+
+Open blockers:
+- Root CLI dispatch and non-proof command wrappers still remain in
+  `src/cli.ts`; future modularization can extract live/external command groups
+  or a small command registry.
+- This move is not a UI change and does not address hosted demo, public package
+  publication, or live proof export caps.

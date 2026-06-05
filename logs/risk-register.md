@@ -376,3 +376,10 @@ packed installability audit still proves `npx splunkready judge-proof` works
 from a clean temp project. Remaining CLI risk: command dispatch and several
 command wrappers still live in `src/cli.ts`, so future modularization should
 extract cohesive command groups rather than treat line count as the only target.
+
+Move 87 further reduces the CLI-monolith risk by extracting proof-oriented
+command wrappers into `src/cli/proof-commands.ts`. `src/cli.ts` is now 437
+lines, down from 634 lines before the move, while proof behavior remains
+covered by CLI tests and the canonical check. Remaining CLI risk: root dispatch
+and non-proof command wrappers still live in `src/cli.ts`, so the next useful
+slice is either live/external command extraction or a small command registry.
