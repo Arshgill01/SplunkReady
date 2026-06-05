@@ -6831,3 +6831,59 @@ Result:
 Open risks:
 
 - Live Splunk and hosted-model verification remains intentionally opt-in and was not run as part of the default gate.
+
+## 2026-06-05 - Move 18 Critical Vitest Advisory Resolution
+
+Commands:
+
+- `npm audit --json`
+- `npm audit --omit=dev --json`
+- `npm view vitest version`
+- `npm view vite version`
+- `npm install --save-dev vitest@4.1.8`
+- `npm audit --json`
+- `npm audit --omit=dev --json`
+- `npm run check`
+- `npm run test:workbench`
+- `npm run build`
+- `npm run ui:build`
+- `git diff --check`
+
+Result:
+
+- PRE-FIX FAIL for `npm audit --json`:
+  - one critical vulnerability;
+  - direct dev dependency `vitest`;
+  - advisory GHSA-5xrq-8626-4rwp;
+  - affected range `<4.1.0`;
+  - suggested fix `vitest@4.1.8`.
+- PRE-FIX PASS for `npm audit --omit=dev --json`:
+  - 0 production vulnerabilities.
+- PASS for narrow dependency upgrade:
+  - installed `vitest@4.1.8`;
+  - no `npm audit fix --force`;
+  - no broad dependency refresh.
+- POST-FIX PASS for `npm audit --json`:
+  - 0 vulnerabilities.
+- POST-FIX PASS for `npm audit --omit=dev --json`:
+  - 0 production vulnerabilities.
+- PASS for canonical project gate under Vitest 4.1.8:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 285 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - `git diff --check` passed.
+- PASS for focused workbench/UI gate:
+  - 3 test files passed;
+  - 49 tests passed.
+- PASS for explicit `npm run build`.
+- PASS for explicit `npm run ui:build`.
+- PASS for explicit `git diff --check`.
+
+Open risks:
+
+- Vitest 4.1.8 is a semver-major dev dependency upgrade. Existing repo tests passed without config or test changes.

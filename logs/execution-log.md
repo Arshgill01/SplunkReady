@@ -8368,3 +8368,30 @@ What changed:
 
 Open risks:
 - The runtime verifier intentionally uses repository structure and source-registry checks rather than importing the full TypeScript application. This keeps it lightweight, but future large refactors may require updating its source patterns.
+
+## 2026-06-05 - Move 18 Critical Vitest Advisory Resolution
+
+Context:
+- Implemented Move 18 locally without subagents.
+- Confirmed `npm audit --json` reported one critical direct dev dependency advisory before the fix:
+  - `vitest <4.1.0`;
+  - GHSA-5xrq-8626-4rwp;
+  - "When Vitest UI server is listening, arbitrary file can be read and executed".
+- Confirmed `npm audit --omit=dev --json` was already production-clean before the fix.
+- Did not run `npm audit fix --force`.
+- Did not do a broad dependency refresh.
+
+Files touched:
+- `package.json`
+- `package-lock.json`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Upgraded the direct dev dependency `vitest` from `^3.2.4` to `^4.1.8`.
+- Regenerated `package-lock.json` through `npm install --save-dev vitest@4.1.8`.
+- Left production dependencies unchanged.
+- Verified the test suite and workbench tests under Vitest 4.1.8.
+
+Open risks:
+- This is a semver-major test-runner upgrade. The full suite and focused workbench/UI tests pass, but future Vitest plugin/config additions should use Vitest 4 APIs.
