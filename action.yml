@@ -1,0 +1,74 @@
+name: SplunkReady Gate
+author: SplunkReady
+description: Deterministically certify Splunk-connected agent traces and MCP transcripts.
+
+inputs:
+  mode:
+    description: "Gate mode: judge-proof, mcp-transcript, or external-trace."
+    required: false
+    default: judge-proof
+  out-dir:
+    description: "Proof artifact directory, resolved relative to the caller workspace unless absolute."
+    required: false
+    default: artifacts/splunkready-gate
+  transcript:
+    description: "MCP JSON-RPC transcript path for mode=mcp-transcript."
+    required: false
+  trace:
+    description: "SplunkReady trace JSON path for mode=external-trace."
+    required: false
+  agent-name:
+    description: "Agent name recorded in external-trace and mcp-transcript receipts."
+    required: false
+    default: External MCP Agent
+  agent-version:
+    description: "Agent version recorded in external-trace and mcp-transcript receipts."
+    required: false
+  require-pass:
+    description: "When true, fail the action unless the proof audit or transcript certification is PASS."
+    required: false
+    default: "true"
+  strict-import:
+    description: "When true, mcp-transcript mode rejects incomplete JSON-RPC transcripts."
+    required: false
+    default: "true"
+
+outputs:
+  out-dir:
+    description: "Absolute proof artifact directory."
+    value: ${{ steps.splunkready-gate.outputs.out-dir }}
+  receipt-path:
+    description: "Primary Readiness Receipt JSON path for the selected gate."
+    value: ${{ steps.splunkready-gate.outputs.receipt-path }}
+  summary-path:
+    description: "Primary proof summary JSON path for the selected gate."
+    value: ${{ steps.splunkready-gate.outputs.summary-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install SplunkReady action dependencies
+      run: npm ci
+      shell: bash
+      working-directory: ${{ github.action_path }}
+
+    - name: Build SplunkReady action runtime
+      run: npm run build
+      shell: bash
+      working-directory: ${{ github.action_path }}
+
+    - name: Run SplunkReady gate
+      id: splunkready-gate
+      run: node dist/src/ci/github-action.js
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        SPLUNKREADY_ACTION_PATH: ${{ github.action_path }}
+        INPUT_MODE: ${{ inputs.mode }}
+        INPUT_OUT_DIR: ${{ inputs.out-dir }}
+        INPUT_TRANSCRIPT: ${{ inputs.transcript }}
+        INPUT_TRACE: ${{ inputs.trace }}
+        INPUT_AGENT_NAME: ${{ inputs.agent-name }}
+        INPUT_AGENT_VERSION: ${{ inputs.agent-version }}
+        INPUT_REQUIRE_PASS: ${{ inputs.require-pass }}
+        INPUT_STRICT_IMPORT: ${{ inputs.strict-import }}

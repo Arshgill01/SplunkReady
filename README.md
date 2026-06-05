@@ -139,6 +139,32 @@ npm run splunkready -- certify-mcp-transcript \
 
 This single gate writes the full evidence chain: compiled contract, imported canonical trace, deterministic violations, external receipt, proof audit, and `mcp-transcript-certification.json`. `--strict-import true` rejects incomplete JSON-RPC logs; `--require-pass true` blocks CI unless the external MCP agent receives a deterministic `READY` receipt.
 
+To use the same transcript gate as a GitHub Action step:
+
+```yaml
+- uses: Arshgill01/SplunkReady@splunkready-build
+  id: splunkready
+  with:
+    mode: mcp-transcript
+    transcript: traces/splunk-mcp.jsonl
+    out-dir: artifacts/splunkready-mcp-gate
+    agent-name: External MCP Agent
+    agent-version: pr-${{ github.event.pull_request.number }}
+    strict-import: "true"
+    require-pass: "true"
+
+- uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: splunkready-proof
+    path: ${{ steps.splunkready.outputs.out-dir }}
+```
+
+The repository-root `action.yml` is a composite action. It installs and builds
+SplunkReady from the action checkout, writes proof artifacts into the caller
+workspace, and exposes `out-dir`, `receipt-path`, and `summary-path` outputs.
+Pin it to a tag or commit for production CI.
+
 To exercise the same certification path through the stdio MCP server itself:
 
 ```bash

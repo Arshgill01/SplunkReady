@@ -5,6 +5,35 @@ on:
   workflow_dispatch:
 
 jobs:
+  mcp-transcript-action:
+    name: MCP transcript action gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+
+      - name: Certify captured Splunk MCP transcript
+        id: splunkready
+        uses: Arshgill01/SplunkReady@splunkready-build
+        with:
+          mode: mcp-transcript
+          transcript: examples/sample-mcp-transcript-pass.jsonl
+          out-dir: artifacts/action-mcp-transcript
+          agent-name: External MCP Agent
+          agent-version: ci-jsonrpc-transcript-pass
+          strict-import: "true"
+          require-pass: "true"
+
+      - name: Upload action proof artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: splunkready-action-mcp-transcript
+          path: ${{ steps.splunkready.outputs.out-dir }}
+
   external-trace-sdk:
     name: External trace SDK gate
     runs-on: ubuntu-latest

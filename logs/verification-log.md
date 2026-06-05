@@ -8251,6 +8251,45 @@ Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
 
+## 2026-06-05 - Move 48 Composite GitHub Action Gate
+
+Commands:
+
+- `npm test -- tests/ci/github-action.test.ts`
+- `npm run build`
+- `GITHUB_ACTION_PATH="$PWD" GITHUB_WORKSPACE="$PWD" INPUT_MODE=mcp-transcript INPUT_TRANSCRIPT=examples/sample-mcp-transcript-pass.jsonl INPUT_OUT_DIR=artifacts/action-mcp-transcript-smoke INPUT_AGENT_NAME="External MCP Agent" INPUT_AGENT_VERSION="action-smoke" node dist/src/ci/github-action.js`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for focused GitHub Action runner tests:
+  - 1 test file passed;
+  - 5 tests passed.
+- PASS for `npm run build`.
+- PASS for local action-like MCP transcript smoke:
+  - action runner invoked `certify-mcp-transcript`;
+  - status was `PASS`;
+  - wrote `receipt-external-001.json`, `proof-audit.json`, `proof-manifest.json`, and `mcp-transcript-certification.json` under `artifacts/action-mcp-transcript-smoke`;
+  - strict import and require-pass were enabled.
+- PASS for explicit `git diff --check`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 46 test files passed;
+  - 312 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.
+
 ## 2026-06-05 - Move 47 Live Security Strict Readiness Contract
 
 Commands:

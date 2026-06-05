@@ -9474,6 +9474,45 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 21:06 - Move 48 Composite GitHub Action Gate
+
+Scope:
+- Responded to the competitive audit's developer-workflow friction concern.
+- Added a CI-native integration path without publishing an npm package, adding a
+  dependency, or accepting live Splunk secrets in browser/action inputs.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `action.yml`
+- `src/ci/github-action.ts`
+- `tests/ci/github-action.test.ts`
+- `README.md`
+- `examples/README.md`
+- `examples/github-workflow-example.yml`
+- `moves/README.md`
+- `moves/moves48.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added a repository-root composite GitHub Action named `SplunkReady Gate`.
+- The action supports credential-free `judge-proof`, `mcp-transcript`, and
+  `external-trace` modes.
+- Added a testable runner that resolves caller trace/transcript paths relative
+  to `GITHUB_WORKSPACE`, runs SplunkReady from the action checkout, and writes
+  proof artifacts into the caller workspace.
+- Exposed `out-dir`, `receipt-path`, and `summary-path` action outputs.
+- Updated README and example workflow docs to show a single Action step for
+  MCP transcript certification while retaining the expanded CLI workflow.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 20:55 - Move 47 Live Security Strict Readiness Contract
 
 Scope:

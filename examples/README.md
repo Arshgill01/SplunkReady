@@ -249,6 +249,32 @@ npm run splunkready -- certification-index \
 
 `github-workflow-example.yml` shows how a repository can use SplunkReady as a pull-request gate.
 
+For the shortest path, use the repository-root composite action. This keeps the
+calling repository's workflow small while still producing a full proof bundle:
+
+```yaml
+- uses: Arshgill01/SplunkReady@splunkready-build
+  id: splunkready
+  with:
+    mode: mcp-transcript
+    transcript: traces/splunk-mcp.jsonl
+    out-dir: artifacts/splunkready-mcp-gate
+    agent-name: External MCP Agent
+    agent-version: pr-${{ github.event.pull_request.number }}
+    strict-import: "true"
+    require-pass: "true"
+
+- uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: splunkready-proof
+    path: ${{ steps.splunkready.outputs.out-dir }}
+```
+
+The action supports `mode: judge-proof`, `mode: mcp-transcript`, and
+`mode: external-trace`. It does not accept live Splunk credentials as action
+inputs; live proof remains an explicit operator-owned workflow.
+
 The default `fixture-smoke` job runs without live Splunk credentials. It compiles the fixture contract, evaluates the specimen, issues the receipt, reruns with the compiled policy, writes a diagnostic `proof-audit.json`, and blocks the merge unless the final receipt is `READY`.
 
 The job also runs `suite-proof --require-fail-to-pass true` against the default suite manifest, then audits that bundle with `proof-audit --require-pass true`. That stricter gate proves the security and observability fixture missions all execute the full NOT READY -> patch -> READY certification loop, rather than merely ending in a READY state. Repositories can pass `--suite <path>` to point the same gate at their own mission manifests.
