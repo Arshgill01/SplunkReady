@@ -9474,6 +9474,49 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 21:27 - Move 51 Suite Compiler Diagnostics
+
+Scope:
+- Responded to the competitive audit's R014 concern that deterministic grading
+  can look boring without a clear compiler evidence surface.
+- Added suite-level `compiler-diagnostics.json` / `.md` artifacts generated
+  from readiness profiles, before/after receipts, and deterministic violation
+  files.
+- Included diagnostics in `suite-proof`, which also carries them into
+  `judge-proof`.
+- Preserved deterministic pass/fail authority; LLM/SAIA roles remain advisory
+  only.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/cli.ts`
+- `src/workflows/compiler-diagnostics.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `moves/README.md`
+- `moves/moves51.md`
+- `logs/competitive-audit-2026-06-05.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added typed suite compiler diagnostics with per-mission rule outcomes:
+  activated rule, severity, binding source, contract refs, mission refs,
+  evidence refs, before/after violation counts, and resolved status.
+- Added markdown diagnostics for judge-readable proof review.
+- Added focused CLI assertions for the suite diagnostics and judge-proof
+  artifact inclusion.
+- Updated README and audit/risk logs to position deterministic grading as
+  compiler-grade proof, not LLM-judged scoring.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 21:20 - Move 50 Package CLI Default Asset Resolution
 
 Scope:

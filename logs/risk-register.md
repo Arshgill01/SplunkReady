@@ -151,3 +151,8 @@ three active risks already tracked here:
 Move 50 addresses one concrete Developer Tools gap: the local/package-style
 `splunkready` bin can run the fixture judge proof from outside the repository
 root by resolving bundled default fixture assets.
+
+Move 51 addresses one concrete R014 gap: `suite-proof` now emits
+`compiler-diagnostics.json` / `.md`, a deterministic report that maps active
+rule bindings to before/after violation counts, resolved rules, trace refs,
+evidence refs, deployment signals, and the advisory-only LLM boundary.

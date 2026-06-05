@@ -501,6 +501,42 @@ describe("SplunkReady CLI flow", () => {
       }>;
     };
     const markdown = await readFile(join(outDir, "suite-proof-summary.md"), "utf8");
+    const diagnostics = JSON.parse(await readFile(join(outDir, "compiler-diagnostics.json"), "utf8")) as {
+      source: string;
+      compiler: string;
+      status: string;
+      mode: string;
+      mutation: boolean;
+      passFailAuthority: string;
+      advisoryOnly: { allowedRoles: string[]; prohibitedRoles: string[] };
+      totals: {
+        activeRules: number;
+        beforeViolations: number;
+        afterViolations: number;
+        resolvedRules: number;
+        evidenceRefsAfterPatch: number;
+        traceRefsAfterPatch: number;
+      };
+      missions: Array<{
+        missionId: string;
+        readinessProfileId: string;
+        before: { verdict: string; violations: number; traceRefs: number; evidenceRefs: number };
+        after: { verdict: string; violations: number; traceRefs: number; evidenceRefs: number };
+        ruleOutcomes: Array<{
+          ruleId: string;
+          severity: string;
+          source: string;
+          beforeViolations: number;
+          afterViolations: number;
+          resolved: boolean;
+          contractRefs: string[];
+          missionRefs: string[];
+          evidenceRefs: string[];
+          rationale: string;
+        }>;
+      }>;
+    };
+    const diagnosticsMarkdown = await readFile(join(outDir, "compiler-diagnostics.md"), "utf8");
 
     expect(output).toMatchObject({
       command: "suite-proof",
@@ -508,6 +544,8 @@ describe("SplunkReady CLI flow", () => {
       artifacts: expect.arrayContaining([
         join(outDir, "suite-proof-summary.json"),
         join(outDir, "suite-proof-summary.md"),
+        join(outDir, "compiler-diagnostics.json"),
+        join(outDir, "compiler-diagnostics.md"),
         join(outDir, "mission-security-lateral-movement-readiness", "receipt-after-001.json"),
         join(outDir, "mission-security-exfiltration-readiness", "receipt-after-001.json"),
         join(outDir, "mission-observability-latency-readiness", "receipt-after-001.json")
@@ -543,6 +581,51 @@ describe("SplunkReady CLI flow", () => {
     expect(markdown).toContain("SplunkReady Suite Proof");
     expect(markdown).toContain("Phase Live multi-mission readiness proof");
     expect(markdown).toContain("mission-observability-latency-readiness");
+    expect(diagnostics).toMatchObject({
+      source: "splunkready-suite-compiler-diagnostics",
+      compiler: "Agent Readiness Compiler",
+      status: "PASS",
+      mode: "fixture",
+      mutation: false,
+      passFailAuthority: "deterministic-rule-engine",
+      totals: {
+        beforeViolations: expect.any(Number),
+        afterViolations: 0,
+        evidenceRefsAfterPatch: 15
+      }
+    });
+    expect(diagnostics.totals.activeRules).toBeGreaterThan(0);
+    expect(diagnostics.totals.resolvedRules).toBeGreaterThan(0);
+    expect(diagnostics.advisoryOnly.prohibitedRoles).toEqual(expect.arrayContaining(["decide pass/fail readiness"]));
+    expect(diagnostics.missions).toHaveLength(3);
+    expect(diagnostics.missions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          missionId: "mission-security-lateral-movement-readiness",
+          readinessProfileId: "readiness-profile-contract-acme-soc-dev-profile-2026-06-01",
+          before: expect.objectContaining({ verdict: "NOT READY" }),
+          after: expect.objectContaining({ verdict: "READY", violations: 0 }),
+          ruleOutcomes: expect.arrayContaining([
+            expect.objectContaining({
+              ruleId: "SPL-001",
+              source: "splunk_contract",
+              beforeViolations: 1,
+              afterViolations: 0,
+              resolved: true,
+              contractRefs: expect.arrayContaining(["contract-acme-soc-dev.forbiddenQueryPatterns"])
+            }),
+            expect.objectContaining({
+              ruleId: "KO-001",
+              source: "splunk_contract",
+              evidenceRefs: expect.arrayContaining(["contract-acme-soc-dev.savedSearches"])
+            })
+          ])
+        })
+      ])
+    );
+    expect(diagnosticsMarkdown).toContain("SplunkReady Compiler Diagnostics");
+    expect(diagnosticsMarkdown).toContain("Pass/fail authority: deterministic-rule-engine");
+    expect(diagnosticsMarkdown).toContain("SPL-001");
 
     const auditOutput = parseCliJsonOutput(
       (await runCli(["proof-audit", "--out", outDir, "--require-pass", "true", "--json"])).stdout
@@ -593,7 +676,8 @@ describe("SplunkReady CLI flow", () => {
       status: "PASS",
       artifacts: expect.arrayContaining([
         join(strictOutDir, "suite-proof-summary.json"),
-        join(strictOutDir, "suite-proof-summary.md")
+        join(strictOutDir, "suite-proof-summary.md"),
+        join(strictOutDir, "compiler-diagnostics.json")
       ])
     });
 
@@ -702,6 +786,7 @@ describe("SplunkReady CLI flow", () => {
         join(outDir, "judge-proof-summary.md"),
         join(outDir, "certification-index.json"),
         join(outDir, "ui-artifacts.json"),
+        join(outDir, "suite-proof", "compiler-diagnostics.json"),
         join(outDir, "suite-proof", "proof-audit.json"),
         join(outDir, "suite-proof", "proof-manifest-verification.json"),
         join(outDir, "firewall-check", "proof-audit.json"),

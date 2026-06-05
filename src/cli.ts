@@ -65,6 +65,11 @@ import {
   type FixtureCertificationWorkflowResult,
   type FixtureCertificationWorkflowSteps
 } from "./workflows/fixture-certification.js";
+import {
+  writeSuiteCompilerDiagnostics,
+  type SuiteProofMissionSummary,
+  type SuiteProofSummary
+} from "./workflows/compiler-diagnostics.js";
 import type {
   LiveActionWorkflowInput,
   LiveActionWorkflowResult
@@ -3325,7 +3330,7 @@ const suiteProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = p
   }
 
   const suite = await loadSuite(options.suite);
-  const missionSummaries = [];
+  const missionSummaries: SuiteProofMissionSummary[] = [];
   const artifacts: string[] = [];
 
   for (const missionPathInput of suite.missionPaths) {
@@ -3368,7 +3373,7 @@ const suiteProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = p
   }
 
   const domains = [...new Set(missionSummaries.map((mission) => mission.domain))].sort();
-  const summary = {
+  const summary: SuiteProofSummary = {
     status: missionSummaries.every((mission) => mission.after.verdict === "READY") ? "PASS" : "FAIL",
     mode: "fixture",
     mutation: false,
@@ -3417,6 +3422,11 @@ ${markdownRows}
 
   await writeJson(summaryPath, summary);
   await writeText(markdownPath, markdown);
+  const diagnosticsArtifacts = await writeSuiteCompilerDiagnostics({
+    outDir: options.out,
+    summary,
+    generatedAt: compiledAt
+  });
 
   if (summary.status !== "PASS") {
     throw new Error(`suite-proof failed. Inspect ${summaryPath}.`);
@@ -3428,7 +3438,7 @@ ${markdownRows}
     );
   }
 
-  return [...new Set([...artifacts, summaryPath, markdownPath])];
+  return [...new Set([...artifacts, summaryPath, markdownPath, ...diagnosticsArtifacts])];
 };
 
 const cleanJudgeProofArtifacts = async (outDir: string): Promise<void> => {

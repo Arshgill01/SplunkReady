@@ -58,6 +58,9 @@ LLM-judging-LLM. Instead:
 - Move 48: composite GitHub Action gate.
 - Move 49: GitHub Action job summary.
 - Move 50: local package CLI bin plus bundled default input resolution.
+- Move 51: suite compiler diagnostics that turn deterministic rules into a
+  visible activation/resolution report backed by readiness profiles, receipts,
+  traces, and violation files.
 
 ## Remaining Considerations
 
