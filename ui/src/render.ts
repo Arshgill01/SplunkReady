@@ -28,6 +28,20 @@ export const views: Array<{ id: ViewId; label: string }> = [
 export interface RenderOptions {
   disabledRuleIds?: ReadonlySet<string>;
   artifactOptions?: ArtifactOption[];
+  workbench?: WorkbenchRenderState;
+}
+
+export interface WorkbenchRenderState {
+  available: boolean;
+  healthStatus?: string;
+  job?: {
+    id: string;
+    state: string;
+    runId: string;
+    artifactBase: string;
+    error?: string;
+    events: Array<{ id: number; type: string; message: string; artifact?: string }>;
+  };
 }
 
 export const normalizeView = (value: string | undefined): ViewId =>
@@ -662,7 +676,42 @@ const renderLiveSecurityKit = (bundle: UiArtifactBundle): string => {
   </section>`;
 };
 
-const renderReplay = (bundle: UiArtifactBundle): string => {
+const renderWorkbenchRunPanel = (workbench: WorkbenchRenderState | undefined): string => {
+  const job = workbench?.job;
+  const events = job?.events ?? [];
+  const disabled = !workbench?.available || job?.state === "queued" || job?.state === "running";
+
+  return `<section class="panel workbench-run-panel">
+    <div class="run-panel-header">
+      <h2>Fixture certification run</h2>
+      <button class="replay-button" type="button" data-run-fixture-certification ${disabled ? "disabled" : ""}>
+        Run fixture certification
+      </button>
+    </div>
+    ${renderFactTable([
+      ["Backend", workbench?.available ? (workbench.healthStatus ?? "available") : "not connected"],
+      ["Job", job ? `${job.id} / ${job.state}` : "none"],
+      ["Run", job ? job.runId : "server-owned run directory allocated after start"],
+      ["Artifact base", job ? job.artifactBase : "n/a"],
+      ["Error", job?.error ?? "none"]
+    ])}
+    ${
+      events.length > 0
+        ? `<ol class="job-events" aria-label="Workbench job events">
+            ${events
+              .map((event) => `<li data-job-event="${value(event.type)}"><strong>${value(event.type)}</strong><span>${value(event.message)}</span></li>`)
+              .join("")}
+          </ol>`
+        : `<p class="empty">${value(
+            workbench?.available
+              ? "Start a server-owned fixture certification to produce fresh artifacts."
+              : "Start the local workbench backend to execute runs from this screen."
+          )}</p>`
+    }
+  </section>`;
+};
+
+const renderReplay = (bundle: UiArtifactBundle, options: RenderOptions): string => {
   const before = bundle.beforeReceipt;
   const after = bundle.afterReceipt;
   const patch = bundle.policyPatch;
@@ -689,8 +738,8 @@ const renderReplay = (bundle: UiArtifactBundle): string => {
     <section class="workbench">
       <div class="section-title">
         <h1>Certification replay</h1>
-        <button class="replay-button" type="button" data-run-replay>Run replay</button>
       </div>
+      ${renderWorkbenchRunPanel(options.workbench)}
       ${renderProofArtifactWarning(bundle)}
       <ol class="stage-line" aria-label="Certification replay stages">
         ${stages.map(([title, status, detail], index) => renderStage(index + 1, title, status, detail)).join("")}
@@ -1106,7 +1155,7 @@ const renderActiveView = (bundle: UiArtifactBundle, activeView: ViewId, options:
     return renderLiveConnect(bundle);
   }
 
-  return renderReplay(bundle);
+    return renderReplay(bundle, options);
 };
 
 export const renderApp = (bundle: UiArtifactBundle, activeView: ViewId, options: RenderOptions = {}): string =>

@@ -10,7 +10,7 @@ import {
   type ArtifactOption,
   type UiArtifactBundle
 } from "./artifacts.js";
-import { normalizeView, renderApp, renderError, type ViewId } from "./render.js";
+import { normalizeView, renderApp, renderError, type ViewId, type WorkbenchRenderState } from "./render.js";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -20,6 +20,7 @@ if (!app) {
 
 let bundle: UiArtifactBundle | undefined;
 let artifactOptions: ArtifactOption[] = defaultArtifactOptions;
+let workbench: WorkbenchRenderState = { available: false, healthStatus: "not connected" };
 const disabledRuleIds = new Set<string>();
 
 const activeViewFromHash = (): ViewId => normalizeView(window.location.hash.replace(/^#/, ""));
@@ -29,7 +30,7 @@ const render = (): void => {
     return;
   }
 
-  app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds, artifactOptions });
+  app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds, artifactOptions, workbench });
   bindInteractions();
 };
 
@@ -60,6 +61,20 @@ const loadArtifactFromLocation = async (): Promise<void> => {
   }
 };
 
+const loadWorkbenchHealth = async (): Promise<void> => {
+  try {
+    const response = await fetch("/api/health");
+
+    if (!response.ok) {
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+
+    workbench = { ...workbench, available: true, healthStatus: "available" };
+  } catch {
+    workbench = { available: false, healthStatus: "not connected" };
+  }
+};
+
 const navigateToArtifact = async (artifactBase: string, view: ViewId): Promise<void> => {
   const nextUrl = new URL(window.location.href);
 
@@ -67,6 +82,92 @@ const navigateToArtifact = async (artifactBase: string, view: ViewId): Promise<v
   nextUrl.hash = `#${view}`;
   window.history.pushState(null, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
   await loadArtifactFromLocation();
+};
+
+interface WorkbenchJobResponse {
+  job: NonNullable<WorkbenchRenderState["job"]>;
+}
+
+const fetchJob = async (jobId: string): Promise<NonNullable<WorkbenchRenderState["job"]>> => {
+  const response = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`);
+
+  if (!response.ok) {
+    throw new Error(`Unable to load workbench job ${jobId}: ${response.status} ${response.statusText}`);
+  }
+
+  return ((await response.json()) as WorkbenchJobResponse).job;
+};
+
+const pollFixtureJob = async (jobId: string): Promise<void> => {
+  for (let attempt = 0; attempt < 240; attempt += 1) {
+    const job = await fetchJob(jobId);
+
+    workbench = { ...workbench, job };
+    render();
+
+    if (job.state === "succeeded") {
+      const nextUrl = new URL(window.location.href);
+
+      nextUrl.searchParams.set("artifacts", job.artifactBase);
+      nextUrl.hash = "#certification-replay";
+      window.history.pushState(null, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+      bundle = await loadUiArtifactBundle(job.artifactBase);
+      artifactOptions = [{ label: `Workbench ${job.runId}`, path: job.artifactBase }, ...artifactOptions];
+      render();
+      return;
+    }
+
+    if (job.state === "failed" || job.state === "cancelled") {
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 750));
+  }
+
+  workbench = {
+    ...workbench,
+    job: {
+      ...(workbench.job ?? {
+        id: jobId,
+        state: "failed",
+        runId: "unknown",
+        artifactBase: "",
+        events: []
+      }),
+      state: "failed",
+      error: "Timed out waiting for fixture certification job."
+    }
+  };
+  render();
+};
+
+const runFixtureCertification = async (): Promise<void> => {
+  try {
+    const response = await fetch("/api/jobs/fixture-certification", { method: "POST" });
+
+    if (!response.ok) {
+      throw new Error(`Unable to start fixture certification: ${response.status} ${response.statusText}`);
+    }
+
+    const { job } = (await response.json()) as WorkbenchJobResponse;
+
+    workbench = { ...workbench, available: true, job };
+    render();
+    await pollFixtureJob(job.id);
+  } catch (error) {
+    workbench = {
+      ...workbench,
+      job: {
+        id: "job-start-failed",
+        state: "failed",
+        runId: "not allocated",
+        artifactBase: "",
+        error: error instanceof Error ? error.message : String(error),
+        events: []
+      }
+    };
+    render();
+  }
 };
 
 const bindInteractions = (): void => {
@@ -79,7 +180,8 @@ const bindInteractions = (): void => {
 
         app.innerHTML = renderApp(bundle, activeViewFromHash(), {
           disabledRuleIds,
-          artifactOptions
+          artifactOptions,
+          workbench
         });
         bindInteractions();
       });
@@ -87,6 +189,10 @@ const bindInteractions = (): void => {
   }
 
   document.querySelector("[data-run-replay]")?.addEventListener("click", markReplayRunning);
+  document.querySelector("[data-run-fixture-certification]")?.addEventListener("click", () => {
+    markReplayRunning();
+    void runFixtureCertification();
+  });
 
   for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-proof-artifact]")) {
     link.addEventListener("click", (event) => {
@@ -123,7 +229,8 @@ const bindInteractions = (): void => {
 
       app.innerHTML = renderApp(bundle, activeViewFromHash(), {
         disabledRuleIds,
-        artifactOptions
+        artifactOptions,
+        workbench
       });
       bindInteractions();
     });
@@ -135,4 +242,5 @@ window.addEventListener("popstate", () => {
   void loadArtifactFromLocation();
 });
 
+await loadWorkbenchHealth();
 await loadArtifactFromLocation();

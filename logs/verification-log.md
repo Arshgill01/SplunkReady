@@ -5772,3 +5772,63 @@ Result:
 Open risks:
 
 - Browser inspection was manual through the open Zen window, not a Playwright assertion, because Playwright is not a project dependency in this repo.
+
+## 2026-06-05 - Moves 05-07 Local Workbench Backend And Executable Fixture UI
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/workbench`
+- `npx vitest run tests/workbench tests/ui/app.test.ts -t "workbench backend|executable fixture certification"`
+- `npm run build`
+- `npm run ui:build`
+- `node --input-type=module -e "const out='artifacts/workbench-smoke/run-' + Date.now(); const mod=await import('./dist/src/cli.js'); const result=await mod.runFixtureCertificationWorkflow({outDir: out}); console.log(JSON.stringify({status: result.status, outDir: result.outDir, artifacts: result.artifacts.map((p)=>p.replace(out + '/', '')).sort()}, null, 2));"`
+- `node -e "const fs=require('fs'); const dir='artifacts/workbench-smoke/run-1780646091324'; const before=JSON.parse(fs.readFileSync(dir+'/receipt-before-001.json','utf8')); const after=JSON.parse(fs.readFileSync(dir+'/receipt-after-001.json','utf8')); const audit=JSON.parse(fs.readFileSync(dir+'/proof-audit.json','utf8')); console.log(JSON.stringify({before: before.verdict, beforeScore: before.score, after: after.verdict, afterScore: after.score, audit: audit.status, mutation: audit.mutation, failToPass: audit.failToPass}, null, 2));"`
+- `npx vitest run tests/workbench tests/ui/app.test.ts tests/ui/shell.test.ts`
+- `npm run check`
+- `npm run check` with local listener permission after the sandboxed run failed on `listen EPERM: operation not permitted 127.0.0.1`
+- `npm run build`
+- `npm run ui:build`
+- `git diff --check`
+
+Result:
+
+- PASS for `npx tsc --noEmit`.
+- PASS for focused workbench tests:
+  - 1 test file;
+  - 7 tests passed.
+- PASS for focused backend/UI checks:
+  - 2 test files;
+  - 8 tests passed;
+  - 17 skipped by focused filter.
+- PASS for affected UI/workbench/shell suite:
+  - 3 test files;
+  - 37 tests passed.
+- PASS for production TypeScript build.
+- PASS for Vite production build.
+- PASS for direct fixture workbench workflow smoke:
+  - emitted `PASS`;
+  - wrote a fresh `artifacts/workbench-smoke/run-1780646091324` proof directory;
+  - artifacts included before/after receipts, traces, violations, policy patch, `proof-audit.json`, and `proof-manifest.json`.
+- PASS for direct receipt/audit inspection of the workbench smoke:
+  - before verdict `NOT READY`;
+  - before score `0`;
+  - after verdict `READY`;
+  - after score `100`;
+  - proof audit status `WARN`;
+  - `failToPass: true`.
+- FAIL for the first sandboxed `npm run check`:
+  - scaffold verifier passed;
+  - many suites passed including `tests/workbench/workbench.test.ts`;
+  - listener-backed suites timed out because the sandbox blocked `127.0.0.1` mock servers with `listen EPERM`.
+- PASS for escalated `npm run check` with local listener permission:
+  - scaffold verified;
+  - 85 waves;
+  - 898 project files;
+  - 39 test files;
+  - 239 tests passed.
+- PASS for final `git diff --check`.
+
+Open risks:
+
+- The full workbench UI click path still needs browser automation once a local server can stay running for inspection. The API and renderer behavior are covered, and the actual fixture workflow smoke produced receipt/audit artifacts.

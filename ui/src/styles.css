@@ -235,6 +235,60 @@ code {
   background: #38301b;
 }
 
+.replay-button:disabled {
+  cursor: not-allowed;
+  color: var(--quiet);
+  background: #2d291d;
+  border-color: var(--line-soft);
+}
+
+.workbench-run-panel {
+  margin-top: 18px;
+}
+
+.run-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  margin-bottom: 14px;
+}
+
+.run-panel-header h2 {
+  margin: 0;
+}
+
+.job-events {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.job-events li {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 10px 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.job-events strong {
+  color: var(--ready);
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.job-events span {
+  min-width: 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
 .stage-line {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

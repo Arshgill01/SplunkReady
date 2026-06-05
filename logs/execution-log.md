@@ -7383,3 +7383,73 @@ Result:
   - 38 test files;
   - 229 tests.
 - `git diff --check` passed.
+
+## 2026-06-05 - Moves 05-07 Local Workbench Backend And Executable Fixture UI
+
+Scope:
+- Implement the smallest real local workbench path across Moves 05, 06, and 07:
+  - localhost-only backend API;
+  - server-owned artifact root;
+  - allowlisted fixture certification job;
+  - in-memory job state/events;
+  - contained artifact reads;
+  - executable Vite Replay UI action that starts a backend job and reloads the resulting artifact bundle.
+- Preserve SplunkReady boundaries:
+  - no browser-submitted credentials;
+  - no generic CLI-over-HTTP;
+  - no arbitrary output paths;
+  - no Splunk mutation;
+  - deterministic receipt artifacts remain authoritative.
+
+Files expected/touched:
+- `src/cli.ts`
+- `src/workbench/config.ts`
+- `src/workbench/redaction.ts`
+- `src/workbench/events.ts`
+- `src/workbench/artifacts.ts`
+- `src/workbench/jobs.ts`
+- `src/workbench/routes.ts`
+- `src/workbench/server.ts`
+- `tests/workbench/workbench.test.ts`
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `package.json`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `runFixtureCertificationWorkflow` as a narrow backend-callable wrapper around the existing fixture demo/proof-audit path, and guarded `src/cli.ts` so importing it no longer executes `main()`.
+- Added `src/workbench/*` with:
+  - server-side config and health summary;
+  - redaction helpers for secret-looking diagnostics;
+  - managed artifact store with path containment;
+  - in-memory job runner with structured phase/artifact/error/complete events;
+  - HTTP API handler for `/api/health`, `/api/jobs`, `/api/jobs/:id`, `/api/jobs/:id/events`, and `/api/artifacts/:runId/:file`;
+  - local server entrypoint with optional Vite middleware.
+- Added `npm run workbench:dev`, which builds TypeScript then starts the local workbench backend with the Vite UI mounted.
+- Updated the Vite Replay screen:
+  - renders backend health/job state;
+  - provides `Run fixture certification`;
+  - posts only to the allowlisted fixture workflow;
+  - polls job state;
+  - reloads artifacts from `/api/artifacts/<runId>/` after success without client-side score or receipt mutation.
+- Added backend tests for health redaction, path containment, allowlisted jobs, failed-job redaction, structured route errors, localhost-origin rejection, and request-size rejection.
+- Added UI renderer coverage for idle, running, and failed workbench job states.
+
+Product impact:
+- SplunkReady now has the first real operator workbench execution path instead of only static artifact browsing.
+- The fixture fail-to-pass demo can be launched through a backend-owned workflow and inspected through the existing receipt-led UI.
+- The backend is intentionally not a general command proxy; browser input cannot choose commands, flags, credentials, or filesystem output paths.
+
+Open risks:
+- The backend workflow export is a narrow bridge around the current CLI monolith. Move 15 should still modularize more CLI internals once more workbench workflows are added.
+- The job runner is in-memory and single-process. That is acceptable for local demo use, but not a durable multi-user service.
+- Browser automation of the live button path was not completed in this slice because the default sandbox blocks local TCP listeners; API behavior is covered with direct handler tests and the full listener-backed suite passed with escalation.
+
+Reviewer findings:
+- Reviewer is off indefinitely per user direction. A read-only sidecar inspected the backend/API shape and highlighted the same CLI-bridge risk recorded above.
+
+Result:
+- Focused backend/UI checks, production builds, direct fixture workflow smoke, full project check with local listener permission, and `git diff --check` passed.

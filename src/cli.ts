@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { copyFile, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, sep } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { createFixtureSplunkAccessAdapter, loadFixtureSplunkDatasetFromFile } from "./adapters/fixture.js";
 import {
@@ -273,9 +274,7 @@ Defaults:
   --out ${defaultOutDir}
 `;
 
-const parseArgs = (argv: string[]): { command: string; options: CliOptions } => {
-  const [command = "help", ...rest] = argv;
-  const options: CliOptions = {
+const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptions => ({
     mode: "fixture",
     fixture: defaultFixturePath,
     mission: defaultMissionPath,
@@ -298,8 +297,13 @@ const parseArgs = (argv: string[]): { command: string; options: CliOptions } => 
     proofDirs: "",
     strictImport: false,
     firewall: false,
-    json: false
-  };
+    json: false,
+    ...overrides
+  });
+
+const parseArgs = (argv: string[]): { command: string; options: CliOptions } => {
+  const [command = "help", ...rest] = argv;
+  const options: CliOptions = defaultCliOptions();
 
   for (let index = 0; index < rest.length; index += 1) {
     const flag = rest[index];
@@ -3236,13 +3240,13 @@ ${markdownRows}
   return [...new Set([...artifacts, summaryPath, markdownPath])];
 };
 
-const demoCommand = async (options: CliOptions): Promise<string[]> => {
+const demoCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = process.env): Promise<string[]> => {
   const startedAt = Date.now();
   const beforeOptions = { ...options, phase: "before" as const };
-  const compileArtifacts = await compileCommand(beforeOptions);
-  const evaluateArtifacts = await evaluateCommand(beforeOptions);
-  const receiptArtifacts = await receiptCommand(beforeOptions);
-  const rerunArtifacts = await rerunCommand(beforeOptions);
+  const compileArtifacts = await compileCommand(beforeOptions, env);
+  const evaluateArtifacts = await evaluateCommand(beforeOptions, env);
+  const receiptArtifacts = await receiptCommand(beforeOptions, env);
+  const rerunArtifacts = await rerunCommand(beforeOptions, env);
   const uiShellPath = await writeUiShell(options.out);
   const rehearsalPath = join(options.out, "demo-rehearsal.json");
   const notesPath = join(options.out, "demo-rehearsal.md");
@@ -3290,6 +3294,31 @@ Open the UI shell at the route above and follow docs/demo-script.md for the spok
   );
 
   return expectedArtifacts;
+};
+
+export interface FixtureCertificationWorkflowInput {
+  outDir: string;
+}
+
+export interface FixtureCertificationWorkflowResult {
+  status: "PASS";
+  outDir: string;
+  artifacts: string[];
+}
+
+export const runFixtureCertificationWorkflow = async (
+  input: FixtureCertificationWorkflowInput,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<FixtureCertificationWorkflowResult> => {
+  const options = defaultCliOptions({ mode: "fixture", out: input.outDir });
+  const demoArtifacts = await demoCommand(options, env);
+  const auditArtifacts = await proofAuditCommand({ ...options, requirePass: false });
+
+  return {
+    status: "PASS",
+    outDir: input.outDir,
+    artifacts: [...new Set([...demoArtifacts, ...auditArtifacts])]
+  };
 };
 
 const main = async (): Promise<void> => {
@@ -3390,26 +3419,28 @@ const formatCliError = (error: unknown): string => {
   return String(error);
 };
 
-main().catch((error: unknown) => {
-  const formattedError = formatCliError(error);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error: unknown) => {
+    const formattedError = formatCliError(error);
 
-  if (process.argv.includes("--json")) {
-    console.error(
-      JSON.stringify(
-        {
-          command: process.argv[2] ?? "help",
-          status: "FAIL",
-          artifacts: [],
-          error: formattedError
-        } satisfies CliOutput,
-        null,
-        2
-      )
-    );
+    if (process.argv.includes("--json")) {
+      console.error(
+        JSON.stringify(
+          {
+            command: process.argv[2] ?? "help",
+            status: "FAIL",
+            artifacts: [],
+            error: formattedError
+          } satisfies CliOutput,
+          null,
+          2
+        )
+      );
+      process.exitCode = 1;
+      return;
+    }
+
+    console.error(formattedError);
     process.exitCode = 1;
-    return;
-  }
-
-  console.error(formattedError);
-  process.exitCode = 1;
-});
+  });
+}

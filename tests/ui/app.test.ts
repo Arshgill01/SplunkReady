@@ -954,6 +954,63 @@ describe("Vite UI artifact app", () => {
     expect(trace).toContain("search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now");
   });
 
+  it("renders executable fixture certification job states from workbench data", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": contract,
+        "missions.json": [mission],
+        "receipt-before-001.json": receipt({ id: "receipt-before-001", verdict: "NOT READY", score: 0, violations: [violation.id] }),
+        "receipt-after-001.json": receipt({}),
+        "policy-patch.json": policyPatch,
+        "trace-before.json": beforeTrace,
+        "trace-after.json": afterTrace,
+        "violations-before.json": [violation],
+        "violations-after.json": []
+      })
+    );
+    const idle = renderApp(bundle, "certification-replay", {
+      workbench: { available: true, healthStatus: "available" }
+    });
+    const running = renderApp(bundle, "certification-replay", {
+      workbench: {
+        available: true,
+        healthStatus: "available",
+        job: {
+          id: "job-1",
+          state: "running",
+          runId: "run-001",
+          artifactBase: "/api/artifacts/run-001",
+          events: [{ id: 1, type: "phase", message: "Running Agent Readiness Compiler fixture certification." }]
+        }
+      }
+    });
+    const failed = renderApp(bundle, "certification-replay", {
+      workbench: {
+        available: true,
+        healthStatus: "available",
+        job: {
+          id: "job-2",
+          state: "failed",
+          runId: "run-002",
+          artifactBase: "/api/artifacts/run-002",
+          error: "TOKEN=[REDACTED] failed",
+          events: [{ id: 1, type: "error", message: "TOKEN=[REDACTED] failed" }]
+        }
+      }
+    });
+
+    expect(idle).toContain("Fixture certification run");
+    expect(idle).toContain("Run fixture certification");
+    expect(idle).toContain("Start a server-owned fixture certification");
+    expect(running).toContain("job-1 / running");
+    expect(running).toContain("Running Agent Readiness Compiler fixture certification.");
+    expect(running).toContain("disabled");
+    expect(failed).toContain("job-2 / failed");
+    expect(failed).toContain("TOKEN=[REDACTED] failed");
+    expect(failed).not.toContain("secret-value");
+  });
+
   it("renders live proof summaries without implying a fake patch loop", async () => {
     const bundle = await loadUiArtifactBundle(
       "/artifact-base",
