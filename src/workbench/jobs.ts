@@ -17,6 +17,7 @@ import {
   runLiveSmokeWorkflow
 } from "../workflows/live-actions.js";
 import { runFirewallCheckWorkflow, runPolicyBackedRerunWorkflow } from "../workflows/policy-actions.js";
+import { runPublicProofExportWorkflow } from "../workflows/public-proof-export.js";
 import { WorkbenchArtifactStore } from "./artifacts.js";
 import { redactUnknownError } from "./redaction.js";
 import type { WorkbenchConfig } from "./config.js";
@@ -37,7 +38,14 @@ export interface CertificationIndexPayload {
   };
 }
 
-export type WorkbenchWorkflowPayload = ExternalCertificationPayload | CertificationIndexPayload;
+export interface PublicProofExportPayload {
+  kind: "public-proof-export";
+  value: {
+    sourceRunId: string;
+  };
+}
+
+export type WorkbenchWorkflowPayload = ExternalCertificationPayload | CertificationIndexPayload | PublicProofExportPayload;
 
 export interface WorkbenchJobRunnerOptions {
   config: WorkbenchConfig;
@@ -73,6 +81,10 @@ const workflowLabel = (workflow: WorkbenchWorkflow): string => {
     return "certification index";
   }
 
+  if (workflow === "public-proof-export") {
+    return "public proof export";
+  }
+
   if (workflow === "live-security-proof") {
     return "live security proof";
   }
@@ -95,6 +107,10 @@ const inputSummaryForPayload = (payload: WorkbenchWorkflowPayload | undefined): 
 
   if (payload.kind === "certification-index") {
     return `${payload.value.runIds.length} managed proof run(s)`;
+  }
+
+  if (payload.kind === "public-proof-export") {
+    return payload.value.sourceRunId;
   }
 
   return externalCertificationInputSummary(payload);
@@ -138,6 +154,19 @@ export class WorkbenchJobRunner {
           proofDirs: payload.value.runIds.map((runId) => this.artifactStore.resolveRun(runId)),
           proofArtifactBases: payload.value.runIds.map((runId) => `/api/artifacts/${runId}`),
           indexArtifactBase: artifactBase
+        });
+      },
+      "public-proof-export": async ({ outDir, artifactBase, payload }) => {
+        if (payload?.kind !== "public-proof-export") {
+          throw new Error("Public proof export requires a selected managed proof run.");
+        }
+
+        return runPublicProofExportWorkflow({
+          outDir,
+          sourceRunId: payload.value.sourceRunId,
+          sourceDir: this.artifactStore.resolveRun(payload.value.sourceRunId),
+          sourceArtifactBase: `/api/artifacts/${payload.value.sourceRunId}`,
+          exportArtifactBase: artifactBase
         });
       },
       "live-smoke": async ({ outDir }) => runLiveSmokeWorkflow({ outDir }),

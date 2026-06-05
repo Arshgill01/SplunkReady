@@ -8395,3 +8395,67 @@ What changed:
 
 Open risks:
 - This is a semver-major test-runner upgrade. The full suite and focused workbench/UI tests pass, but future Vitest plugin/config additions should use Vitest 4 APIs.
+
+## 2026-06-05 - Move 19 Public Proof Export From Workbench
+
+Context:
+- Implemented Move 19 locally without subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Treated public proof export as a redacted derivative bundle, not an unredacted source bundle.
+- User explicitly clarified that testing/debug UI affordances can stay during implementation, but a later cleanup/consolidation move should handle final dashboard surface area.
+- Added Move 25 to capture that final UI consolidation work.
+- User also raised the project bar: current moves are a floor, not a ceiling; after listed moves pass, continue autonomous hardening/refactoring/bug fixing/high-leverage additions before marking the goal complete.
+
+Files touched:
+- `moves/moves25.md`
+- `src/workflows/public-proof-export.ts`
+- `src/workbench/events.ts`
+- `src/workbench/jobs.ts`
+- `src/workbench/routes.ts`
+- `src/workbench/server.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/workbench/workbench.test.ts`
+- `tests/workbench/server.test.ts`
+- `tests/ui/app.test.ts`
+- `logs/decision-log.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added a public proof export workflow that:
+  - copies selected proof artifacts into a managed export run;
+  - redacts secrets, private endpoints, private IPs, user paths, and raw MCP error bodies;
+  - validates exported receipts, traces, violations, environment contracts, and policy patches against schemas where applicable;
+  - writes `public-proof-summary.json`;
+  - writes `public-proof-export-manifest.json` with source run ID, source commit, redaction status, file hashes, schema validation flags, and aggregate hash;
+  - writes a normal export `proof-manifest.json` over the redacted bundle.
+- Added a workbench `public-proof-export` job type and HTTP route.
+- Added Runs-view Export buttons that start public proof exports from managed runs.
+- Added UI parsing and rendering for the public proof export manifest, including explicit redaction and boundary labels.
+- Fixed exported `ui-artifacts.json` to point only at the sanitized export run and include `generatedAt`, preventing a public bundle from offering a source-run shortcut.
+- Fixed workbench server shutdown so Vite-backed tests close idle and lingering HTTP sockets under concurrent validation.
+- Added regression coverage for:
+  - redacted export contents and hashes;
+  - unmanaged source-run rejection;
+  - real HTTP export from a fixture proof;
+  - UI rendering of public proof export status, redactions, and boundary text.
+- Added `moves/moves25.md` for final workbench UI consolidation after proof-building moves.
+- Logged the owner's post-move hardening directive and new risks around premature completion and workbench surface creep.
+
+Playwright evidence:
+- Ran the local workbench at `http://127.0.0.1:4336`.
+- Used Playwright CLI to run fixture certification from the UI, open Runs, click Export, and inspect the generated export run.
+- Verified in the browser that `run-2026-06-05T12-06-19-135Z-44163c4f` shows the `Public proof export` panel with:
+  - `REDACTED` status;
+  - source run `run-2026-06-05T12-05-39-854Z-7a57b488`;
+  - all configured redaction categories marked `redacted`;
+  - boundary text `sanitized derivative bundle; not the unredacted source proof`.
+- Screenshot saved at `output/playwright/public-proof-export-proof-browser.png`.
+
+Open risks:
+- The export is intentionally a sanitized derivative bundle. Do not describe it as unredacted source proof.
+- Final workbench UI may still be too broad for judges; Move 25 now tracks deliberate end-stage consolidation.

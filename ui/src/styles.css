@@ -492,6 +492,17 @@ code {
   overflow-wrap: anywhere;
 }
 
+.run-card-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.run-export-button {
+  padding: 5px 9px;
+  font-size: 12px;
+}
+
 .run-card-meta {
   display: flex;
   flex-wrap: wrap;

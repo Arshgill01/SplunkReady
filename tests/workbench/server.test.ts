@@ -158,6 +158,49 @@ describe("workbench HTTP server", () => {
     }
   });
 
+  it("exports a fixture proof through real HTTP without serving the raw source directory", async () => {
+    const { server } = await startTestWorkbench();
+
+    try {
+      const created = await fetchJson<{ job: WorkbenchJobSnapshot }>(server.url, "/api/jobs/fixture-certification", { method: "POST" });
+      const source = await waitForHttpJob(server.url, created.json.job.id);
+      const exported = await fetchJson<{ job: WorkbenchJobSnapshot }>(server.url, "/api/jobs/public-proof-export", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ sourceRunId: source.runId })
+      });
+      const completed = await waitForHttpJob(server.url, exported.json.job.id);
+      const manifest = await fetchJson<{
+        source: string;
+        sourceRunId: string;
+        redactionStatus: string;
+        files: Array<{ path: string; redacted: boolean }>;
+      }>(server.url, `${completed.artifactBase}/public-proof-export-manifest.json`);
+
+      expect(exported.response.status).toBe(202);
+      expect(completed).toMatchObject({
+        workflow: "public-proof-export",
+        state: "succeeded",
+        artifactBase: `/api/artifacts/${completed.runId}`
+      });
+      expect(manifest.response.status).toBe(200);
+      expect(manifest.json).toMatchObject({
+        source: "splunkready-public-proof-export",
+        sourceRunId: source.runId,
+        redactionStatus: "REDACTED"
+      });
+      expect(manifest.json.files).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "receipt-after-001.json", redacted: true }),
+          expect.objectContaining({ path: "proof-audit.json", redacted: true })
+        ])
+      );
+      expect(manifest.text).not.toContain(server.url);
+    } finally {
+      await server.close();
+    }
+  });
+
   it("rejects HTTP artifact path traversal without serving files outside the managed run", async () => {
     const { server } = await startTestWorkbench();
 
@@ -197,5 +240,5 @@ describe("workbench HTTP server", () => {
     } finally {
       await server.close();
     }
-  });
+  }, 15_000);
 });

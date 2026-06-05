@@ -11,6 +11,7 @@ import {
   type McpTranscriptImport,
   type ProofAudit,
   type ProofManifestVerification,
+  type PublicProofExportManifest,
   type SuiteProofSummary,
   type UiArtifactBundle
 } from "./artifacts.js";
@@ -546,6 +547,28 @@ const renderProofAuditPanel = (audit: ProofAudit | undefined): string => {
         "Warnings or failures",
         failingChecks.length > 0 ? failingChecks.map((check) => `${check.id}: ${check.detail}`).join(" / ") : "none"
       ]
+    ])}
+  </section>`;
+};
+
+const renderPublicProofExportPanel = (manifest: PublicProofExportManifest | undefined): string => {
+  if (!manifest) {
+    return "";
+  }
+
+  const schemaValidated = manifest.files.filter((file) => file.schemaValidated).length;
+
+  return `<section class="panel public-proof-export-panel">
+    <h2>Public proof export</h2>
+    ${renderFactTable([
+      ["Status", manifest.redactionStatus],
+      ["Source run", manifest.sourceRunId],
+      ["Source commit", manifest.sourceCommit],
+      ["Files", manifest.files.length],
+      ["Schema-validated files", schemaValidated],
+      ["Aggregate hash", manifest.aggregateSha256],
+      ["Redactions", Object.entries(manifest.redaction).map(([key, status]) => `${key}: ${status}`).join(" / ")],
+      ["Boundary", "sanitized derivative bundle; not the unredacted source proof"]
     ])}
   </section>`;
 };
@@ -1802,9 +1825,12 @@ const renderRunList = (
                 (run) => `<article class="run-card ${activeRunMatches(run, bundle) ? "active" : ""}">
                   <div class="run-card-title">
                     ${code(run.runId)}
-                    <a href="?artifacts=${encodeURIComponent(run.artifactBase)}#proof-browser" data-proof-artifact="${value(
-                      run.artifactBase
-                    )}" data-proof-view="proof-browser">Open</a>
+                    <span class="run-card-actions">
+                      <a href="?artifacts=${encodeURIComponent(run.artifactBase)}#proof-browser" data-proof-artifact="${value(
+                        run.artifactBase
+                      )}" data-proof-view="proof-browser">Open</a>
+                      <button class="replay-button run-export-button" type="button" data-public-proof-export="${value(run.runId)}">Export</button>
+                    </span>
                   </div>
                   <div class="run-card-meta">
                     <span>${value(formatRunCreatedAt(run.createdAt))}</span>
@@ -1922,6 +1948,7 @@ const renderProofBrowser = (bundle: UiArtifactBundle, options: RenderOptions): s
         ${renderRunList(bundle, runs, options.workbench)}
         <div class="run-browser-detail">
           ${renderReceiptComparison(bundle)}
+          ${renderPublicProofExportPanel(bundle.publicProofExport)}
           ${renderProofAuditPanel(bundle.proofAudit)}
           ${renderManifestVerificationPanel(bundle, options.workbench)}
           ${renderTracePreview(bundle)}

@@ -3,6 +3,7 @@ export type WorkbenchWorkflow =
   | "external-trace-certification"
   | "mcp-transcript-certification"
   | "certification-index"
+  | "public-proof-export"
   | "policy-backed-rerun"
   | "firewall-check"
   | "live-smoke"

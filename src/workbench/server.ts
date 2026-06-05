@@ -27,6 +27,25 @@ const startViteMiddleware = async (): Promise<ViteDevServerLike> => {
   }) as Promise<ViteDevServerLike>;
 };
 
+const closeHttpServer = async (server: ReturnType<typeof createServer>): Promise<void> => {
+  let forceClose: NodeJS.Timeout | undefined;
+
+  await new Promise<void>((resolve, reject) => {
+    forceClose = setTimeout(() => {
+      server.closeIdleConnections?.();
+      server.closeAllConnections?.();
+    }, 1_000);
+    forceClose.unref();
+
+    server.close((error) => (error ? reject(error) : resolve()));
+    server.closeIdleConnections?.();
+  });
+
+  if (forceClose) {
+    clearTimeout(forceClose);
+  }
+};
+
 export const startWorkbenchServer = async (
   config: WorkbenchConfig = createWorkbenchConfig(),
   options: { devUi?: boolean } = {}
@@ -80,9 +99,7 @@ export const startWorkbenchServer = async (
   return {
     url: `http://${config.host}:${port}`,
     async close() {
-      await new Promise<void>((resolve, reject) => {
-        server.close((error) => (error ? reject(error) : resolve()));
-      });
+      await closeHttpServer(server);
       await viteServer?.close();
     }
   };

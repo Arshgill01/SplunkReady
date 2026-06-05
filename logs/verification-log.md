@@ -6887,3 +6887,67 @@ Result:
 Open risks:
 
 - Vitest 4.1.8 is a semver-major dev dependency upgrade. Existing repo tests passed without config or test changes.
+
+## 2026-06-05 - Move 19 Public Proof Export From Workbench
+
+Commands:
+
+- `command -v npx >/dev/null 2>&1`
+- `npx tsc --noEmit`
+- `npx vitest run tests/workbench tests/ui/app.test.ts`
+- `SPLUNKREADY_WORKBENCH_PORT=4336 npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4336/#certification-replay`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e35`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e177`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e445`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot`
+- `cp .playwright-cli/page-2026-06-05T12-06-52-130Z.png output/playwright/public-proof-export-proof-browser.png`
+- `if rg -n "(Bearer\\s+[A-Za-z0-9._~+/=-]{8,}|TOKEN=|SECRET=|PASSWORD=|splunk\\.local|10\\.1\\.2\\.3|/Users/alice|server-test-super-secret-token|https?://(?:localhost|127\\.|10\\.|192\\.168|172\\.))" artifacts/workbench-runs/run-2026-06-05T12-06-19-135Z-44163c4f; then exit 1; else exit 0; fi`
+- `npx vitest run tests/workbench tests/cli/flow.test.ts`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for Playwright prerequisite:
+  - `npx` was available.
+- PASS for `npx tsc --noEmit`.
+- PASS for focused workbench/UI regression suite after the export schema fix:
+  - 3 test files passed;
+  - 52 tests passed.
+- PASS for Playwright browser verification:
+  - fixture certification ran from the workbench UI;
+  - source run `run-2026-06-05T12-05-39-854Z-7a57b488` was exported from the Runs view;
+  - export run `run-2026-06-05T12-06-19-135Z-44163c4f` rendered the `Public proof export` panel;
+  - panel showed `REDACTED`, source run ID, source commit, aggregate hash, all redaction categories, and the redacted-derivative boundary text.
+- PASS for tracked-secret scan over generated export run `run-2026-06-05T12-06-19-135Z-44163c4f`:
+  - no matches for bearer tokens, token/secret/password markers, known synthetic secret strings, private endpoint patterns, `splunk.local`, `10.1.2.3`, or `/Users/alice`.
+- FAIL for an intermediate `npx vitest run tests/workbench tests/cli/flow.test.ts` run:
+  - existing Vite-backed server smoke timed out while running concurrently with CLI flow tests.
+- FAIL for another intermediate run after only widening the test timeout:
+  - same Vite-backed server smoke timed out at 120 seconds.
+- PASS after fixing workbench server shutdown:
+  - `npx vitest run tests/workbench tests/cli/flow.test.ts`;
+  - 3 test files passed;
+  - 64 tests passed.
+- PASS after tightening the Vite-backed smoke timeout back to 15 seconds:
+  - `npx vitest run tests/workbench tests/cli/flow.test.ts`;
+  - 3 test files passed;
+  - 64 tests passed.
+- PASS for canonical gate `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 288 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - `git diff --check` passed.
+- PASS for explicit `git diff --check`.
+
+Open risks:
+
+- Move 19 validates fixture public proof export through UI and HTTP, plus a synthetic live-shaped managed run in the workbench unit test. A real live export should only be produced when live artifacts exist and raw live artifacts are not exposed.
+- Public proof exports are redacted derivative bundles; claims must not imply unredacted source export.

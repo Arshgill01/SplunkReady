@@ -566,6 +566,42 @@ const proofManifestVerification = {
   changedFiles: []
 } as const;
 
+const publicProofExportManifest = {
+  source: "splunkready-public-proof-export",
+  generatedAt: "2026-06-01T06:47:00.000Z",
+  sourceRunId: "run-source",
+  sourceCommit: "abcdef123456",
+  sourceArtifactBase: "/api/artifacts/run-source",
+  exportArtifactBase: "/api/artifacts/run-after",
+  redactionStatus: "REDACTED",
+  redaction: {
+    secrets: "redacted",
+    privateEndpoints: "redacted",
+    privateIps: "redacted",
+    userPaths: "redacted",
+    rawMcpErrorBodies: "redacted"
+  },
+  aggregateSha256: "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  files: [
+    {
+      path: "receipt-after-001.json",
+      sourcePath: "receipt-after-001.json",
+      sizeBytes: 1200,
+      sha256: "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      redacted: true,
+      schemaValidated: true
+    },
+    {
+      path: "trace-after.json",
+      sourcePath: "trace-after.json",
+      sizeBytes: 900,
+      sha256: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      redacted: true,
+      schemaValidated: true
+    }
+  ]
+} as const;
+
 const firewallBlock = {
   status: "BLOCKED",
   code: "FIREWALL_POLICY_BLOCKED",
@@ -1608,6 +1644,7 @@ describe("Vite UI artifact app", () => {
         "policy-patch.json": policyPatch,
         "proof-audit.json": proofAudit,
         "proof-manifest-verification.json": proofManifestVerification,
+        "public-proof-export-manifest.json": publicProofExportManifest,
         "trace-before.json": beforeTrace,
         "trace-after.json": runAfterTrace,
         "violations-before.json": [violation],
@@ -1670,6 +1707,8 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("run-before");
     expect(html).toContain("run-card");
     expect(html).toContain("run-card-facts");
+    expect(html).toContain('data-public-proof-export="run-after"');
+    expect(html).toContain("Export");
     expect(html).toContain("2026-06-01 06:45:00Z");
     expect(html.indexOf("run-after")).toBeLessThan(html.indexOf("run-before"));
     expect(html).not.toContain("external-trace-certification / failed");
@@ -1684,6 +1723,11 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("/api/artifacts/run-after/receipt-before-001.json");
     expect(html).toContain("/api/artifacts/run-after/receipt-after-001.json");
     expect(html).toContain("Proof audit");
+    expect(html).toContain("Public proof export");
+    expect(html).toContain("REDACTED");
+    expect(html).toContain("rawMcpErrorBodies: redacted");
+    expect(html).toContain("sanitized derivative bundle; not the unredacted source proof");
+    expect(html).toContain("cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
     expect(html).toContain("contract-loaded / PASS");
     expect(html).toContain("Manifest verification");
     expect(html).toContain("<th>Expected files</th><td>12</td>");

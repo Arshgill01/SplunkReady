@@ -313,6 +313,10 @@ const runCertificationIndex = async (): Promise<void> => {
   await runWorkbenchWorkflow("certification-index", "agent-index", { runIds });
 };
 
+const runPublicProofExport = async (sourceRunId: string): Promise<void> => {
+  await runWorkbenchWorkflow("public-proof-export", "proof-browser", { sourceRunId });
+};
+
 const showStartFailure = (workflow: string, error: unknown): void => {
   workbench = {
     ...workbench,
@@ -422,6 +426,18 @@ const bindInteractions = (): void => {
     event.preventDefault();
     void runCertificationIndex().catch((error: unknown) => showStartFailure("certification-index", error));
   });
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-public-proof-export]")) {
+    button.addEventListener("click", () => {
+      const sourceRunId = button.dataset.publicProofExport;
+
+      if (!sourceRunId) {
+        return;
+      }
+
+      void runPublicProofExport(sourceRunId).catch((error: unknown) => showStartFailure("public-proof-export", error));
+    });
+  }
 
   for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-proof-artifact]")) {
     link.addEventListener("click", (event) => {

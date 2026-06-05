@@ -713,6 +713,164 @@ describe("workbench backend", () => {
     expect(completed.error).toContain("unexpected receipt.json");
   });
 
+  it("exports a redacted public proof bundle from a managed live artifact run", async () => {
+    const config = await testConfig({ maxRequestBytes: 2_000 });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const sourceRun = await store.createRunDirectory();
+    const secretText = "Bearer live-secret-token TOKEN=live-secret-token https://splunk.local:8089 10.1.2.3 /Users/alice/.splunkready";
+    const receipt = {
+      id: "receipt-live-001",
+      agent: { name: "Live MCP Agent", version: "0.1.0" },
+      environment: { id: "contract-live", name: "live-prod" },
+      mode: "live",
+      contractVersion: "2026.06.01",
+      missionSuiteVersion: "security-readiness-1",
+      verdict: "READY",
+      score: 100,
+      passedMissions: ["mission-security-lateral-movement-readiness"],
+      failedMissions: [],
+      criticalViolations: [],
+      violations: [],
+      traceRefs: ["trace-live-call"],
+      evidenceRefs: ["evt-live-001"],
+      policyPatchSummary: [],
+      rerunComparison: {},
+      generatedBy: "Agent Readiness Compiler"
+    };
+    const trace = [
+      {
+        id: "trace-live-call",
+        missionId: "mission-security-lateral-movement-readiness",
+        timestamp: "2026-06-01T06:31:00.000Z",
+        actor: "specimen_agent",
+        type: "tool_call",
+        toolName: "splunk_run_query",
+        toolInput: { query: `search index=wineventlog src=${secretText}` },
+        toolOutputSummary: secretText,
+        queryRef: "query-live-001",
+        timeWindow: { earliest: "-24h", latest: "now" },
+        resultCount: null,
+        evidenceRefs: ["evt-live-001"],
+        error: { rawBody: secretText }
+      }
+    ];
+
+    await writeFile(join(sourceRun.path, "receipt-after-001.json"), `${JSON.stringify(receipt, null, 2)}\n`, "utf8");
+    await writeFile(join(sourceRun.path, "trace-after.json"), `${JSON.stringify(trace, null, 2)}\n`, "utf8");
+    await writeFile(
+      join(sourceRun.path, "proof-audit.json"),
+      `${JSON.stringify(
+        {
+          status: "PASS",
+          proofType: "live-security",
+          proofDir: sourceRun.path,
+          mode: "live",
+          mutation: false,
+          checks: [{ id: "redaction-source", status: "PASS", detail: secretText }]
+        },
+        null,
+        2
+      )}\n`,
+      "utf8"
+    );
+    await writeFile(join(sourceRun.path, "proof-manifest.json"), `${JSON.stringify(emptyProofManifest(sourceRun.path), null, 2)}\n`, "utf8");
+
+    const response = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/public-proof-export",
+      body: JSON.stringify({ sourceRunId: sourceRun.runId })
+    });
+    const started = response.json as { job: { id: string; inputSummary: string } };
+    const completed = await waitForJob(runner, started.job.id);
+    const exportRoot = join(config.artifactRoot, completed.runId);
+    const manifest = JSON.parse(await readFile(join(exportRoot, "public-proof-export-manifest.json"), "utf8")) as {
+      source: string;
+      sourceRunId: string;
+      redactionStatus: string;
+      aggregateSha256: string;
+      files: Array<{ path: string; sizeBytes: number; sha256: string; redacted: boolean; schemaValidated: boolean }>;
+    };
+    const uiArtifacts = JSON.parse(await readFile(join(exportRoot, "ui-artifacts.json"), "utf8")) as {
+      source: string;
+      generatedAt: string;
+      defaultArtifact: string;
+      artifacts: Array<{ label: string; path: string }>;
+    };
+    const exportedTrace = JSON.parse(await readFile(join(exportRoot, "trace-after.json"), "utf8")) as Array<{ error: unknown }>;
+    const exportedFiles = await store.listRunFiles(completed.runId);
+    const exportedText = (
+      await Promise.all(exportedFiles.map((fileName) => readFile(join(exportRoot, fileName), "utf8")))
+    ).join("\n");
+    const aggregateInput = manifest.files
+      .map((file) => `${file.path}:${file.sizeBytes}:${file.sha256}`)
+      .sort()
+      .join("\n");
+
+    expect(response.status).toBe(202);
+    expect(started.job.inputSummary).toBe(sourceRun.runId);
+    expect(completed).toMatchObject({
+      workflow: "public-proof-export",
+      state: "succeeded",
+      artifacts: expect.arrayContaining([
+        "receipt-after-001.json",
+        "trace-after.json",
+        "proof-audit.json",
+        "source-proof-manifest.json",
+        "public-proof-summary.json",
+        "public-proof-export-manifest.json",
+        "ui-artifacts.json",
+        "proof-manifest.json"
+      ])
+    });
+    expect(manifest).toMatchObject({
+      source: "splunkready-public-proof-export",
+      sourceRunId: sourceRun.runId,
+      redactionStatus: "REDACTED"
+    });
+    expect(manifest.aggregateSha256).toBe(createHash("sha256").update(aggregateInput).digest("hex"));
+    for (const file of manifest.files) {
+      const content = await readFile(join(exportRoot, file.path));
+
+      expect(file.sha256).toBe(createHash("sha256").update(content).digest("hex"));
+      expect(file.sizeBytes).toBe(content.byteLength);
+      expect(file.redacted).toBe(true);
+    }
+    expect(manifest.files).toEqual(expect.arrayContaining([expect.objectContaining({ path: "receipt-after-001.json", schemaValidated: true })]));
+    expect(uiArtifacts).toMatchObject({
+      source: "splunkready-ui-artifacts",
+      defaultArtifact: `/api/artifacts/${completed.runId}`,
+      artifacts: [{ label: `Redacted export ${sourceRun.runId}`, path: `/api/artifacts/${completed.runId}` }]
+    });
+    expect(uiArtifacts.generatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(exportedTrace[0].error).toEqual({ rawBody: "[REDACTED]" });
+    expect(exportedText).toContain("[REDACTED]");
+    expect(exportedText).not.toContain("live-secret-token");
+    expect(exportedText).not.toContain("10.1.2.3");
+    expect(exportedText).not.toContain("splunk.local");
+    expect(exportedText).not.toContain("/Users/alice");
+  });
+
+  it("rejects unmanaged public proof export paths before allocating a job", async () => {
+    const config = await testConfig({ maxRequestBytes: 1_000 });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const response = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/public-proof-export",
+      body: JSON.stringify({ sourceRunId: "../artifacts/live-security-ui" })
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.json).toMatchObject({
+      error: {
+        code: "WORKBENCH_REQUEST_FAILED",
+        message: "Public proof export accepts managed artifact run IDs only."
+      }
+    });
+    expect(runner.listJobs()).toHaveLength(0);
+  });
+
   it("runs hosted-model diagnostic as an allowlisted server-owned live workflow", async () => {
     const config = await testConfig({ liveAvailable: true, liveMissing: [] });
     const store = new WorkbenchArtifactStore(config.artifactRoot);

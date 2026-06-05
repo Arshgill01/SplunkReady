@@ -9,7 +9,12 @@ import {
 } from "../workflows/external-certification.js";
 import { runManifestVerificationWorkflow } from "../workflows/manifest-verification.js";
 import { WorkbenchArtifactStore } from "./artifacts.js";
-import { WorkbenchJobRunner, type CertificationIndexPayload, type WorkbenchWorkflowPayload } from "./jobs.js";
+import {
+  WorkbenchJobRunner,
+  type CertificationIndexPayload,
+  type PublicProofExportPayload,
+  type WorkbenchWorkflowPayload
+} from "./jobs.js";
 import type { WorkbenchWorkflow } from "./events.js";
 
 export interface WorkbenchRouteContext {
@@ -81,6 +86,10 @@ const inferWorkflow = (files: string[]): WorkbenchWorkflow | "artifact-bundle" =
 
   if (has("certification-index.json")) {
     return "certification-index";
+  }
+
+  if (has("public-proof-export-manifest.json")) {
+    return "public-proof-export";
   }
 
   if (has("receipt-external-001.json")) {
@@ -259,6 +268,7 @@ const workflows = new Set<WorkbenchWorkflow>([
   "external-trace-certification",
   "mcp-transcript-certification",
   "certification-index",
+  "public-proof-export",
   "policy-backed-rerun",
   "firewall-check",
   "live-smoke",
@@ -305,6 +315,24 @@ const parseCertificationIndexPayload = (input: unknown): CertificationIndexPaylo
   return { runIds: uniqueRunIds };
 };
 
+const parseManagedRunId = (value: unknown, label: string): string => {
+  const runId = typeof value === "string" ? value.trim() : "";
+
+  if (!/^run-[A-Za-z0-9._-]+$/.test(runId)) {
+    throw new Error(`${label} accepts managed artifact run IDs only.`);
+  }
+
+  return runId;
+};
+
+const parsePublicProofExportPayload = (input: unknown): PublicProofExportPayload["value"] => {
+  if (!isRecord(input)) {
+    throw new Error("Public proof export requires sourceRunId.");
+  }
+
+  return { sourceRunId: parseManagedRunId(input.sourceRunId ?? input.runId, "Public proof export") };
+};
+
 const payloadForWorkflow = (workflow: WorkbenchWorkflow, body: string): WorkbenchWorkflowPayload | undefined => {
   if (workflow === "external-trace-certification") {
     return { kind: "external-trace", value: parseExternalTraceCertificationPayload(parseJsonBody(body)) };
@@ -316,6 +344,10 @@ const payloadForWorkflow = (workflow: WorkbenchWorkflow, body: string): Workbenc
 
   if (workflow === "certification-index") {
     return { kind: "certification-index", value: parseCertificationIndexPayload(parseJsonBody(body)) };
+  }
+
+  if (workflow === "public-proof-export") {
+    return { kind: "public-proof-export", value: parsePublicProofExportPayload(parseJsonBody(body)) };
   }
 
   return undefined;

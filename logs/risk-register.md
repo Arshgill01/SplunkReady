@@ -75,3 +75,15 @@ Mitigation: log the friction in `logs/splunk-feedback.md`; keep it local-command
 Risk: the Live Agent Firewall Gateway can block a query that the receipt grader might have accepted under a mission-specific exception, because the gateway is constructed from `EnvironmentContract` and `AgentPolicy` rather than a mission.
 
 Mitigation: keep the firewall conservative and transparent. It only blocks pre-execution violations it can prove from the compiled deployment policy: forbidden SPL, unknown contract metadata, restricted/sensitive indexes, or disallowed tools. Mission-specific pass/fail remains the deterministic receipt grader's job.
+
+### R011 Premature Completion / Under-Hardening
+
+Risk: treating the current `moves/` directory as the finish line could leave the product below the owner's target for major award competitiveness.
+
+Mitigation: use the current moves as a floor. After they pass, continue with product hardening moves that improve maintainability, clarity, modularity, judge flow, evidence quality, and high-leverage award positioning. Do not mark the active goal complete merely because the current move files are implemented.
+
+### R012 Workbench Surface Creep
+
+Risk: keeping every testing/debug affordance visible in the dashboard could overload the final judge experience.
+
+Mitigation: keep instrumentation while it is needed for verification, then execute a final UI consolidation move to collapse, relabel, or relocate secondary controls without hiding deterministic evidence, redaction boundaries, or fixture/live parity.

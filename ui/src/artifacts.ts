@@ -565,6 +565,38 @@ const mcpTranscriptImportSchema = z
 
 export type McpTranscriptImport = z.infer<typeof mcpTranscriptImportSchema>;
 
+const publicProofExportManifestSchema = z
+  .object({
+    source: z.literal("splunkready-public-proof-export"),
+    generatedAt: z.string().min(1),
+    sourceRunId: z.string().min(1),
+    sourceCommit: z.string().min(1),
+    sourceArtifactBase: z.string().min(1),
+    exportArtifactBase: z.string().min(1),
+    redactionStatus: z.literal("REDACTED"),
+    redaction: z.object({
+      secrets: z.literal("redacted"),
+      privateEndpoints: z.literal("redacted"),
+      privateIps: z.literal("redacted"),
+      userPaths: z.literal("redacted"),
+      rawMcpErrorBodies: z.literal("redacted")
+    }),
+    aggregateSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    files: z.array(
+      z.object({
+        path: z.string().min(1),
+        sourcePath: z.string().min(1).optional(),
+        sizeBytes: z.number().int().nonnegative(),
+        sha256: z.string().regex(/^[a-f0-9]{64}$/),
+        redacted: z.literal(true),
+        schemaValidated: z.boolean()
+      })
+    )
+  })
+  .strict();
+
+export type PublicProofExportManifest = z.infer<typeof publicProofExportManifestSchema>;
+
 export interface UiArtifactBundle {
   artifactBase: string;
   contract?: EnvironmentContract;
@@ -588,6 +620,7 @@ export interface UiArtifactBundle {
   certificationIndex?: CertificationIndex;
   firewallBlock?: FirewallBlock;
   mcpTranscriptImport?: McpTranscriptImport;
+  publicProofExport?: PublicProofExportManifest;
   beforeTrace: TraceEvent[];
   afterTrace: TraceEvent[];
   externalTrace: TraceEvent[];
@@ -622,6 +655,7 @@ const optionalFiles = [
   "firewall-block-before.json",
   "firewall-block-after.json",
   "mcp-transcript-import.json",
+  "public-proof-export-manifest.json",
   "trace-before.json",
   "trace-after.json",
   "trace-external.json",
@@ -747,6 +781,9 @@ export const loadUiArtifactBundle = async (
       .optional()
       .parse(loaded.get("firewall-block-before.json") ?? loaded.get("firewall-block-after.json")),
     mcpTranscriptImport: mcpTranscriptImportSchema.optional().parse(loaded.get("mcp-transcript-import.json")),
+    publicProofExport: publicProofExportManifestSchema
+      .optional()
+      .parse(loaded.get("public-proof-export-manifest.json")),
     beforeTrace: traceEventSchema.array().optional().parse(loaded.get("trace-before.json")) ?? [],
     afterTrace: traceEventSchema.array().optional().parse(loaded.get("trace-after.json")) ?? [],
     externalTrace: traceEventSchema.array().optional().parse(loaded.get("trace-external.json")) ?? [],
