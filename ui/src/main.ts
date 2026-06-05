@@ -243,6 +243,10 @@ const successViewForWorkflow = (workflow: string): ViewId => {
     return "certification-replay";
   }
 
+  if (workflow === "certification-index") {
+    return "agent-index";
+  }
+
   if (workflow === "policy-backed-rerun" || workflow === "firewall-check") {
     return "policy-firewall";
   }
@@ -297,6 +301,16 @@ const runMcpTranscriptImport = async (): Promise<void> => {
     agentName: stringInput("[data-mcp-transcript-agent-name]"),
     agentVersion: stringInput("[data-mcp-transcript-agent-version]")
   });
+};
+
+const runCertificationIndex = async (): Promise<void> => {
+  const runIds = [...document.querySelectorAll<HTMLInputElement>("[data-index-run]:checked")].map((input) => input.value);
+
+  if (runIds.length < 2) {
+    throw new Error("Select at least two managed proof runs.");
+  }
+
+  await runWorkbenchWorkflow("certification-index", "agent-index", { runIds });
 };
 
 const showStartFailure = (workflow: string, error: unknown): void => {
@@ -402,6 +416,11 @@ const bindInteractions = (): void => {
   document.querySelector<HTMLFormElement>("[data-mcp-transcript-form]")?.addEventListener("submit", (event) => {
     event.preventDefault();
     void runMcpTranscriptImport().catch((error: unknown) => showStartFailure("mcp-transcript-certification", error));
+  });
+
+  document.querySelector<HTMLFormElement>("[data-certification-index-form]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void runCertificationIndex().catch((error: unknown) => showStartFailure("certification-index", error));
   });
 
   for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-proof-artifact]")) {

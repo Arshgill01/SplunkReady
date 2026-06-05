@@ -228,6 +228,7 @@ const certificationIndexSchema = z
           proofDir: z.string().min(1),
           proofType: z.enum(["live-security", "live", "receipt", "firewall-block", "suite", "external-trace", "unknown", "missing"]),
           status: z.enum(["PASS", "WARN", "FAIL"]),
+          manifestStatus: z.enum(["PASS", "FAIL", "UNVERIFIED", "MISSING"]).default("UNVERIFIED"),
           mode: z.enum(["fixture", "live"]).optional(),
           mutation: z.boolean().nullable(),
           agent: z
@@ -246,6 +247,8 @@ const certificationIndexSchema = z
             })
             .strict()
             .nullable(),
+          missions: z.array(z.string().min(1)).default([]),
+          domains: z.array(z.string().min(1)).default([]),
           proofLoop: proofLoopSchema.optional(),
           hostedModelStatus: z.string().min(1).optional(),
           manifest: z

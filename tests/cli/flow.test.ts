@@ -1146,9 +1146,12 @@ describe("SplunkReady CLI flow", () => {
         proofDir: string;
         proofType: string;
         status: string;
+        manifestStatus: string;
         mutation: boolean | null;
         agent: { name: string; version: string };
         receipt: { id: string; verdict: string; score: number; violations: number; evidenceRefs: number } | null;
+        missions: string[];
+        domains: string[];
         manifest?: { aggregateSha256: string; files: number };
         href: string;
       }>;
@@ -1178,9 +1181,12 @@ describe("SplunkReady CLI flow", () => {
           proofDir: passDir,
           proofType: "external-trace",
           status: "PASS",
+          manifestStatus: "UNVERIFIED",
           mutation: false,
           agent: { name: "External MCP Agent", version: "jsonrpc-pass-001" },
           receipt: expect.objectContaining({ id: "receipt-external-001", verdict: "READY", score: 100, violations: 0, evidenceRefs: 6 }),
+          missions: ["mission-security-lateral-movement-readiness"],
+          domains: ["security"],
           manifest: expect.objectContaining({ aggregateSha256: expect.stringMatching(/^[a-f0-9]{64}$/), files: expect.any(Number) }),
           href: `?artifacts=${encodeURIComponent(passDir)}#receipt`
         }),
@@ -1189,9 +1195,12 @@ describe("SplunkReady CLI flow", () => {
           proofDir: failDir,
           proofType: "external-trace",
           status: "FAIL",
+          manifestStatus: "UNVERIFIED",
           mutation: false,
           agent: { name: "External MCP Agent", version: "jsonrpc-fail-001" },
           receipt: expect.objectContaining({ id: "receipt-external-001", verdict: "NOT READY", score: 0 }),
+          missions: ["mission-security-lateral-movement-readiness"],
+          domains: ["security"],
           manifest: expect.objectContaining({ aggregateSha256: expect.stringMatching(/^[a-f0-9]{64}$/), files: expect.any(Number) }),
           href: `?artifacts=${encodeURIComponent(failDir)}#receipt`
         })

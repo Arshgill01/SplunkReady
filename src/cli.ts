@@ -176,6 +176,7 @@ interface CertificationIndexEntry {
   proofDir: string;
   proofType: ProofAuditReport["proofType"] | "missing";
   status: ProofAuditStatus;
+  manifestStatus: ProofManifestVerification["status"] | "UNVERIFIED" | "MISSING";
   mode?: EnvironmentContract["mode"];
   mutation: boolean | null;
   agent: {
@@ -189,6 +190,8 @@ interface CertificationIndexEntry {
     violations: number;
     evidenceRefs: number;
   } | null;
+  missions: string[];
+  domains: string[];
   proofLoop?: ProofLoop;
   hostedModelStatus?: string;
   manifest?: {
@@ -2939,22 +2942,51 @@ const receiptForIndex = async (proofDir: string): Promise<ReadinessReceipt | und
   return undefined;
 };
 
+const missionFactsForIndex = async (proofDir: string): Promise<{ missions: string[]; domains: string[] }> => {
+  const missionInputs = await readOptionalJson<unknown>(join(proofDir, "missions.json"));
+  const suiteSummary = await readOptionalJson<unknown>(join(proofDir, "suite-proof-summary.json"));
+  const directMissions = Array.isArray(missionInputs) ? missionInputs.filter(isRecord) : [];
+  const suiteMissions = isRecord(suiteSummary) && Array.isArray(suiteSummary.missions) ? suiteSummary.missions.filter(isRecord) : [];
+  const missionIds = [...directMissions, ...suiteMissions]
+    .map((mission) => stringFromRecord(mission, "id") ?? stringFromRecord(mission, "missionId"))
+    .filter((missionId): missionId is string => Boolean(missionId));
+  const domains = [...directMissions, ...suiteMissions]
+    .map((mission) => stringFromRecord(mission, "domain"))
+    .filter((domain): domain is string => Boolean(domain));
+
+  return {
+    missions: [...new Set(missionIds)].sort(),
+    domains: [...new Set(domains)].sort()
+  };
+};
+
 const certificationIndexEntry = async (proofDir: string): Promise<CertificationIndexEntry> => {
   const audit = parseProofAuditReport(await readOptionalJson<unknown>(join(proofDir, "proof-audit.json")));
   const manifestInput = await readOptionalJson<unknown>(join(proofDir, "proof-manifest.json"));
+  const verificationInput = await readOptionalJson<unknown>(join(proofDir, "proof-manifest-verification.json"));
   const manifest = isRecord(manifestInput) ? manifestInput : undefined;
+  const verification = isRecord(verificationInput) ? verificationInput : undefined;
+  const verificationStatus = stringFromRecord(verification, "status");
+  const manifestStatus =
+    verificationStatus === "PASS" || verificationStatus === "FAIL"
+      ? verificationStatus
+      : manifest
+        ? "UNVERIFIED"
+        : "MISSING";
   const manifestAggregateSha256 = stringFromRecord(manifest, "aggregateSha256");
   const manifestFiles = Array.isArray(manifest?.files) ? manifest.files.length : undefined;
   const receipt = await receiptForIndex(proofDir);
   const suiteSummary = await readOptionalJson<unknown>(join(proofDir, "suite-proof-summary.json"));
   const suiteTitle = stringFromRecord(suiteSummary, "suiteTitle") ?? stringFromRecord(suiteSummary, "suiteId");
   const label = receipt ? receipt.agent.name : suiteTitle ?? labelFromProofDir(proofDir);
+  const missionFacts = await missionFactsForIndex(proofDir);
 
   return {
     label,
     proofDir,
     proofType: audit?.proofType ?? "missing",
     status: audit?.status ?? "FAIL",
+    manifestStatus,
     mode: audit?.mode ?? receipt?.mode,
     mutation: audit?.mutation ?? null,
     agent: receipt?.agent ?? { name: label, version: "n/a" },
@@ -2967,6 +2999,8 @@ const certificationIndexEntry = async (proofDir: string): Promise<CertificationI
           evidenceRefs: receipt.evidenceRefs.length
         }
       : null,
+    missions: missionFacts.missions,
+    domains: missionFacts.domains,
     proofLoop: audit?.proofLoop,
     hostedModelStatus: audit?.hostedModelStatus,
     manifest:
@@ -3003,12 +3037,12 @@ const artifactLabelForIndexEntry = (entry: CertificationIndexEntry): string => {
   return suffixes ? `${entry.label} - ${suffixes}` : entry.label;
 };
 
-const uiArtifactManifestFromIndex = (options: CliOptions, entries: CertificationIndexEntry[]): UiArtifactManifest => ({
+const uiArtifactManifestFromIndex = (defaultArtifact: string, entries: CertificationIndexEntry[]): UiArtifactManifest => ({
   source: "splunkready-ui-artifacts",
   generatedAt: compiledAt,
-  defaultArtifact: options.out,
+  defaultArtifact,
   artifacts: uniqueUiArtifacts([
-    { label: "Certification index", path: options.out },
+    { label: "Certification index", path: defaultArtifact },
     ...entries.map((entry) => ({
       label: artifactLabelForIndexEntry(entry),
       path: entry.proofDir
@@ -3046,7 +3080,7 @@ const certificationIndexCommand = async (options: CliOptions): Promise<string[]>
   const manifestPath = join(options.out, "ui-artifacts.json");
 
   await writeJson(indexPath, index);
-  await writeJson(manifestPath, uiArtifactManifestFromIndex(options, entries));
+  await writeJson(manifestPath, uiArtifactManifestFromIndex(options.out, entries));
 
   if (options.requirePass && status !== "PASS") {
     throw new Error(`certification-index strict gate failed with ${status}. Inspect ${indexPath}.`);
@@ -3596,6 +3630,93 @@ export const runVerifyManifestFromCli = async (
   const { report, reportPath } = await verifyProofManifest(options);
 
   return { status: report.status, outDir: input.outDir, artifacts: [reportPath], mutation: false, report };
+};
+
+export interface CertificationIndexWorkflowInput {
+  outDir: string;
+  proofDirs: string[];
+  proofArtifactBases?: string[];
+  indexArtifactBase?: string;
+}
+
+export interface CertificationIndexWorkflowResult {
+  status: "PASS" | "WARN" | "FAIL";
+  outDir: string;
+  artifacts: string[];
+  mutation: boolean;
+  messages: string[];
+}
+
+const manifestFailureDetail = (report: ProofManifestVerification): string => {
+  const details = [
+    report.missingFiles.length > 0 ? `missing ${report.missingFiles.join(", ")}` : undefined,
+    report.unexpectedFiles.length > 0 ? `unexpected ${report.unexpectedFiles.join(", ")}` : undefined,
+    report.changedFiles.length > 0 ? `changed ${report.changedFiles.map((file) => file.path).join(", ")}` : undefined
+  ].filter((detail): detail is string => Boolean(detail));
+
+  return details.length > 0 ? details.join("; ") : "aggregate hash mismatch";
+};
+
+export const runCertificationIndexFromCli = async (
+  input: CertificationIndexWorkflowInput
+): Promise<CertificationIndexWorkflowResult> => {
+  const proofDirs = [...new Set(input.proofDirs.map((proofDir) => proofDir.trim()).filter((proofDir) => proofDir.length > 0))];
+
+  if (proofDirs.length < 2) {
+    throw new Error("certification-index workbench requires at least two managed proof runs.");
+  }
+
+  const verificationReports = await Promise.all(
+    proofDirs.map(async (proofDir) => {
+      const { report } = await verifyProofManifest(defaultCliOptions({ out: proofDir }));
+
+      return report;
+    })
+  );
+  const failed = verificationReports.filter((report) => report.status !== "PASS");
+
+  if (failed.length > 0) {
+    throw new Error(
+      `Cannot index unverifiable proof bundle(s): ${failed
+        .map((report) => `${report.proofDir} ${report.status} (${manifestFailureDetail(report)})`)
+        .join("; ")}.`
+    );
+  }
+
+  const options = defaultCliOptions({ out: input.outDir, proofDirs: proofDirs.join(","), requirePass: false });
+  const artifacts = await certificationIndexCommand(options);
+  const indexPath = join(input.outDir, "certification-index.json");
+  const manifestPath = join(input.outDir, "ui-artifacts.json");
+  const artifactBases = input.proofArtifactBases;
+  let index = await readJson<CertificationIndex>(indexPath, "certification index");
+
+  if (artifactBases && artifactBases.length === index.entries.length) {
+    const entries = index.entries.map((entry, indexEntry) => {
+      const proofDir = artifactBases[indexEntry] ?? entry.proofDir;
+
+      return {
+        ...entry,
+        proofDir,
+        href: `?artifacts=${encodeURIComponent(proofDir)}#receipt`
+      };
+    });
+
+    index = {
+      ...index,
+      proofDirs: artifactBases,
+      entries
+    };
+    await writeJson(indexPath, index);
+    await writeJson(manifestPath, uiArtifactManifestFromIndex(input.indexArtifactBase ?? options.out, entries));
+  }
+
+  return {
+    status: index.status,
+    outDir: input.outDir,
+    artifacts,
+    mutation: index.mutation,
+    messages: [`Indexed ${proofDirs.length} verified managed proof run(s).`]
+  };
 };
 
 const main = async (): Promise<void> => {

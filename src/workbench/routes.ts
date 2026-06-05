@@ -8,7 +8,7 @@ import {
   type ExternalCertificationPayload
 } from "../workflows/external-certification.js";
 import { WorkbenchArtifactStore } from "./artifacts.js";
-import { WorkbenchJobRunner } from "./jobs.js";
+import { WorkbenchJobRunner, type CertificationIndexPayload, type WorkbenchWorkflowPayload } from "./jobs.js";
 import type { WorkbenchWorkflow } from "./events.js";
 
 export interface WorkbenchRouteContext {
@@ -76,6 +76,10 @@ const inferWorkflow = (files: string[]): WorkbenchWorkflow | "artifact-bundle" =
 
   if (has("mcp-transcript-import.json")) {
     return "mcp-transcript-certification";
+  }
+
+  if (has("certification-index.json")) {
+    return "certification-index";
   }
 
   if (has("receipt-external-001.json")) {
@@ -253,6 +257,7 @@ const workflows = new Set<WorkbenchWorkflow>([
   "fixture-certification",
   "external-trace-certification",
   "mcp-transcript-certification",
+  "certification-index",
   "policy-backed-rerun",
   "firewall-check",
   "live-smoke",
@@ -275,13 +280,41 @@ const parseJsonBody = (body: string): unknown => {
   return JSON.parse(body) as unknown;
 };
 
-const payloadForWorkflow = (workflow: WorkbenchWorkflow, body: string): ExternalCertificationPayload | undefined => {
+const parseCertificationIndexPayload = (input: unknown): CertificationIndexPayload["value"] => {
+  if (!isRecord(input) || !Array.isArray(input.runIds)) {
+    throw new Error("Certification index requires runIds as a string array.");
+  }
+
+  const runIds = input.runIds.map((runId) => (typeof runId === "string" ? runId.trim() : ""));
+
+  if (runIds.length < 2) {
+    throw new Error("Certification index requires at least two selected managed runs.");
+  }
+
+  if (runIds.some((runId) => !/^run-[A-Za-z0-9._-]+$/.test(runId))) {
+    throw new Error("Certification index accepts managed artifact run IDs only.");
+  }
+
+  const uniqueRunIds = [...new Set(runIds)];
+
+  if (uniqueRunIds.length < 2) {
+    throw new Error("Certification index requires at least two distinct managed runs.");
+  }
+
+  return { runIds: uniqueRunIds };
+};
+
+const payloadForWorkflow = (workflow: WorkbenchWorkflow, body: string): WorkbenchWorkflowPayload | undefined => {
   if (workflow === "external-trace-certification") {
     return { kind: "external-trace", value: parseExternalTraceCertificationPayload(parseJsonBody(body)) };
   }
 
   if (workflow === "mcp-transcript-certification") {
     return { kind: "mcp-transcript", value: parseMcpTranscriptCertificationPayload(parseJsonBody(body)) };
+  }
+
+  if (workflow === "certification-index") {
+    return { kind: "certification-index", value: parseCertificationIndexPayload(parseJsonBody(body)) };
   }
 
   return undefined;

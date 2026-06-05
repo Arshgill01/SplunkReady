@@ -8160,3 +8160,67 @@ Playwright evidence:
 Open risks:
 - The proof browser page is still long on mobile because the run ledger and proof-audit tables are intentionally visible. This fix bounds the trace section specifically; it does not redesign the whole Runs page.
 - The full trace timeline remains available in the dedicated Trace view.
+
+## 2026-06-05 - Move 14 Certification Index Workbench
+
+Context:
+- Implemented Move 14 locally without subagents.
+- Followed the managed-artifact boundary: the browser submits run IDs only, and the backend resolves them through `WorkbenchArtifactStore`.
+- Did not read, source, or print the local live secrets env file.
+
+Files touched:
+- `src/cli.ts`
+- `src/workbench/events.ts`
+- `src/workbench/jobs.ts`
+- `src/workbench/routes.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/cli/flow.test.ts`
+- `tests/workbench/workbench.test.ts`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `certification-index` as a workbench workflow.
+- Added a server-side certification index workflow wrapper that:
+  - accepts selected managed run IDs;
+  - resolves them to artifact-store run directories;
+  - verifies every selected proof manifest before indexing;
+  - rejects stale or unverifiable bundles;
+  - rewrites generated proof links to `/api/artifacts/{runId}` browser URLs.
+- Added request validation so certification indexing rejects unmanaged or path-like inputs before a job is allocated.
+- Extended certification index entries with missions, domains, and manifest status.
+- Added the Agents view form for selecting existing managed proof runs and generating an index.
+- Expanded the certification index table to show domains, missions, audit status, receipt verdict, loop/mutation posture, manifest status, and receipt/trace links.
+- Added responsive mobile rendering for the certification index table after Playwright exposed that the raw table compressed into unreadable vertical text.
+- Added CLI, workbench API, and UI regression coverage for index generation, stale bundle rejection, managed-boundary rejection, domains/missions, manifest status, and proof links.
+
+Playwright evidence:
+- Confirmed `npx` was available and used the Playwright skill wrapper.
+- Started `SPLUNKREADY_WORKBENCH_PORT=4332 npm run workbench:dev`.
+- Opened `http://127.0.0.1:4332/#agent-index`.
+- Generated a certification index through the UI from two selected managed proof runs.
+- Verified the generated artifact URL used `/api/artifacts/run-...`.
+- Verified in-browser DOM assertions on desktop 1440px and mobile 390px:
+  - managed-run index form was visible;
+  - managed artifact boundary text was visible;
+  - server-side manifest verification text was visible;
+  - generated `ui-artifacts.json` used `/api/artifacts/{runId}` as `defaultArtifact`;
+  - artifact picker selected the generated Workbench run;
+  - index summary and proof table rendered;
+  - domains and mission IDs rendered;
+  - manifest status rendered as `PASS`;
+  - receipt and trace links existed for both rows;
+  - proof links targeted `/api/artifacts/run-...`;
+  - horizontal overflow was `0`.
+- Captured screenshots:
+  - `output/playwright/move14-certification-index-desktop.png`
+  - `output/playwright/move14-certification-index-mobile.png`
+
+Open risks:
+- Workbench-generated certification-index runs are browsable output artifacts and currently do not generate their own proof manifest; constituent proof manifests are verified before indexing.
+- The generated index can include proof bundles without receipts, such as firewall-block proofs; the table renders those explicitly as `NO RECEIPT`.
+- Browser screenshots and generated workbench runs are local ignored artifacts and are not committed.

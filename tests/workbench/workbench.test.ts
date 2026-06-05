@@ -556,6 +556,152 @@ describe("workbench backend", () => {
     expect(failReport).toMatchObject({ status: "FAIL", unexpectedFiles: ["receipt.json"] });
   });
 
+  it("generates a certification index from selected managed proof runs", async () => {
+    const config = await testConfig({ maxRequestBytes: 200_000 });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const passTrace = JSON.parse(await readFile("examples/sample-external-trace-pass.json", "utf8")) as unknown;
+    const failTrace = JSON.parse(await readFile("examples/sample-external-trace.json", "utf8")) as unknown;
+    const passResponse = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/external-trace-certification",
+      body: JSON.stringify({ trace: passTrace, agentName: "Passing Agent", agentVersion: "pass" })
+    });
+    const passRun = await waitForJob(runner, (passResponse.json as { job: { id: string } }).job.id);
+    const failResponse = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/external-trace-certification",
+      body: JSON.stringify({ trace: failTrace, agentName: "Failing Agent", agentVersion: "fail" })
+    });
+    const failRun = await waitForJob(runner, (failResponse.json as { job: { id: string } }).job.id);
+    const indexResponse = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/certification-index",
+      body: JSON.stringify({ runIds: [passRun.runId, failRun.runId] })
+    });
+    const started = indexResponse.json as { job: { id: string; inputSummary: string } };
+    const completed = await waitForJob(runner, started.job.id);
+    const index = JSON.parse(
+      await readFile(join(config.artifactRoot, completed.runId, "certification-index.json"), "utf8")
+    ) as {
+      status: string;
+      mutation: boolean;
+      proofDirs: string[];
+      totals: { proofs: number; pass: number; fail: number };
+      entries: Array<{
+        proofDir: string;
+        domains: string[];
+        missions: string[];
+        href: string;
+        status: string;
+        manifestStatus: string;
+      }>;
+    };
+    const manifest = JSON.parse(await readFile(join(config.artifactRoot, completed.runId, "ui-artifacts.json"), "utf8")) as {
+      defaultArtifact: string;
+      artifacts: Array<{ label: string; path: string }>;
+    };
+    const list = await callApi(config, runner, store, { method: "GET", path: "/api/artifacts" });
+
+    expect(indexResponse.status).toBe(202);
+    expect(started.job.inputSummary).toBe("2 managed proof run(s)");
+    expect(completed).toMatchObject({
+      workflow: "certification-index",
+      state: "succeeded",
+      artifacts: ["certification-index.json", "ui-artifacts.json"]
+    });
+    expect(index).toMatchObject({
+      status: "FAIL",
+      mutation: false,
+      proofDirs: [`/api/artifacts/${passRun.runId}`, `/api/artifacts/${failRun.runId}`],
+      totals: { proofs: 2, pass: 1, fail: 1 }
+    });
+    expect(index.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          proofDir: `/api/artifacts/${passRun.runId}`,
+          domains: ["security"],
+          missions: ["mission-security-lateral-movement-readiness"],
+          href: `?artifacts=${encodeURIComponent(`/api/artifacts/${passRun.runId}`)}#receipt`,
+          status: "PASS",
+          manifestStatus: "PASS"
+        }),
+        expect.objectContaining({
+          proofDir: `/api/artifacts/${failRun.runId}`,
+          status: "FAIL",
+          manifestStatus: "PASS"
+        })
+      ])
+    );
+    expect(manifest).toMatchObject({
+      defaultArtifact: `/api/artifacts/${completed.runId}`,
+      artifacts: expect.arrayContaining([
+        { label: "Certification index", path: `/api/artifacts/${completed.runId}` },
+        expect.objectContaining({ path: `/api/artifacts/${passRun.runId}` }),
+        expect.objectContaining({ path: `/api/artifacts/${failRun.runId}` })
+      ])
+    });
+    expect((list.json as { runs: unknown[] }).runs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          runId: completed.runId,
+          workflow: "certification-index",
+          state: "succeeded",
+          verdict: "NO RECEIPT",
+          manifestStatus: "MISSING"
+        })
+      ])
+    );
+  });
+
+  it("rejects unmanaged certification index paths before allocating a job", async () => {
+    const config = await testConfig({ maxRequestBytes: 1_000 });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const response = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/certification-index",
+      body: JSON.stringify({ runIds: ["run-valid", "../artifacts/live-security-ui"] })
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.json).toMatchObject({
+      error: {
+        code: "WORKBENCH_REQUEST_FAILED",
+        message: "Certification index accepts managed artifact run IDs only."
+      }
+    });
+    expect(runner.listJobs()).toHaveLength(0);
+  });
+
+  it("fails certification index jobs when a selected proof manifest is stale", async () => {
+    const config = await testConfig({ maxRequestBytes: 1_000 });
+    const store = new WorkbenchArtifactStore(config.artifactRoot);
+    const runner = new WorkbenchJobRunner({ config, artifactStore: store });
+    const cleanRun = await store.createRunDirectory();
+    const staleRun = await store.createRunDirectory();
+
+    await writeFile(join(cleanRun.path, "proof-manifest.json"), `${JSON.stringify(emptyProofManifest(cleanRun.path), null, 2)}\n`, "utf8");
+    await writeFile(join(staleRun.path, "proof-manifest.json"), `${JSON.stringify(emptyProofManifest(staleRun.path), null, 2)}\n`, "utf8");
+    await writeFile(join(staleRun.path, "receipt.json"), "{}\n", "utf8");
+
+    const response = await callApi(config, runner, store, {
+      method: "POST",
+      path: "/api/jobs/certification-index",
+      body: JSON.stringify({ runIds: [cleanRun.runId, staleRun.runId] })
+    });
+    const started = response.json as { job: { id: string } };
+    const completed = await waitForJob(runner, started.job.id);
+
+    expect(response.status).toBe(202);
+    expect(completed).toMatchObject({
+      workflow: "certification-index",
+      state: "failed",
+      error: expect.stringContaining("Cannot index unverifiable proof bundle")
+    });
+    expect(completed.error).toContain("unexpected receipt.json");
+  });
+
   it("runs hosted-model diagnostic as an allowlisted server-owned live workflow", async () => {
     const config = await testConfig({ liveAvailable: true, liveMissing: [] });
     const store = new WorkbenchArtifactStore(config.artifactRoot);

@@ -700,6 +700,7 @@ const certificationIndex = {
       proofDir: "artifacts/mcp-transcript-pass",
       proofType: "external-trace",
       status: "PASS",
+      manifestStatus: "PASS",
       mode: "fixture",
       mutation: false,
       agent: { name: "External MCP Agent", version: "jsonrpc-pass-001" },
@@ -710,6 +711,8 @@ const certificationIndex = {
         violations: 0,
         evidenceRefs: 6
       },
+      missions: ["mission-security-lateral-movement-readiness"],
+      domains: ["security"],
       proofLoop: "ready-without-patch",
       hostedModelStatus: "not-applicable",
       manifest: {
@@ -723,10 +726,17 @@ const certificationIndex = {
       proofDir: "artifacts/suite-proof",
       proofType: "suite",
       status: "FAIL",
+      manifestStatus: "UNVERIFIED",
       mode: "fixture",
       mutation: false,
       agent: { name: "Phase Live multi-mission readiness proof", version: "n/a" },
       receipt: null,
+      missions: [
+        "mission-security-lateral-movement-readiness",
+        "mission-security-exfiltration-readiness",
+        "mission-observability-latency-readiness"
+      ],
+      domains: ["observability", "security"],
       proofLoop: "fail-to-pass",
       manifest: {
         aggregateSha256: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
@@ -870,7 +880,66 @@ describe("Vite UI artifact app", () => {
         "certification-index.json": certificationIndex
       })
     );
-    const html = renderApp(bundle, "agent-index", { artifactOptions: defaultArtifactOptions });
+    const html = renderApp(bundle, "agent-index", {
+      artifactOptions: defaultArtifactOptions,
+      workbench: {
+        available: true,
+        healthStatus: "available",
+        runs: [
+          {
+            runId: "run-proof-ready",
+            artifactBase: "/api/artifacts/run-proof-ready",
+            fileCount: 12,
+            files: ["receipt-external-001.json", "proof-audit.json", "proof-manifest.json"],
+            workflow: "external-trace-certification",
+            state: "succeeded",
+            verdict: "READY",
+            score: 100,
+            violations: 0,
+            evidenceRefs: 6,
+            proofAuditStatus: "PASS",
+            manifestStatus: "UNVERIFIED",
+            missionIds: [mission.id],
+            ruleIds: [],
+            createdAt: "2026-06-01T07:02:00.000Z"
+          },
+          {
+            runId: "run-proof-fail",
+            artifactBase: "/api/artifacts/run-proof-fail",
+            fileCount: 13,
+            files: ["receipt-external-001.json", "proof-audit.json", "proof-manifest.json"],
+            workflow: "external-trace-certification",
+            state: "succeeded",
+            verdict: "NOT READY",
+            score: 0,
+            violations: 5,
+            evidenceRefs: 0,
+            proofAuditStatus: "FAIL",
+            manifestStatus: "PASS",
+            missionIds: [mission.id],
+            ruleIds: ["SPL-001"],
+            createdAt: "2026-06-01T07:01:00.000Z"
+          },
+          {
+            runId: "run-kit",
+            artifactBase: "/api/artifacts/run-kit",
+            fileCount: 7,
+            files: ["live-security-kit.json"],
+            workflow: "live-security-kit",
+            state: "succeeded",
+            verdict: "NO RECEIPT",
+            score: null,
+            violations: 0,
+            evidenceRefs: 0,
+            proofAuditStatus: "not loaded",
+            manifestStatus: "MISSING",
+            missionIds: [],
+            ruleIds: [],
+            createdAt: "2026-06-01T07:03:00.000Z"
+          }
+        ]
+      }
+    });
 
     expect(bundle.certificationIndex?.totals.proofs).toBe(2);
     expect(html).toContain('data-view="agent-index"');
@@ -879,17 +948,32 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Agent certification index");
     expect(html).toContain("Index summary");
     expect(html).toContain("Agent proofs");
+    expect(html).toContain("Generate from managed runs");
+    expect(html).toContain("managed artifact run IDs only");
+    expect(html).toContain("server verifies every proof manifest before indexing");
+    expect(html).toContain('data-certification-index-form');
+    expect(html.match(/data-index-run/g)).toHaveLength(2);
+    expect(html).toContain('value="run-proof-ready" data-index-run checked');
+    expect(html).toContain('value="run-proof-fail" data-index-run checked');
+    expect(html).not.toContain('value="run-kit" data-index-run');
     expect(html).toContain("FAIL");
     expect(html).toContain("External MCP Agent");
     expect(html).toContain("jsonrpc-pass-001");
+    expect(html).toContain("Domain / mission");
+    expect(html).toContain("security");
+    expect(html).toContain("mission-security-lateral-movement-readiness");
     expect(html).toContain("Phase Live multi-mission readiness proof");
+    expect(html).toContain("observability / security");
     expect(html).toContain("ready-without-patch");
     expect(html).toContain("fail-to-pass");
+    expect(html).toContain("UNVERIFIED");
     expect(html).toContain("12 files");
     expect(html).toContain("aaaaaaaaaaaa");
     expect(html).toContain("?artifacts=artifacts%2Fmcp-transcript-pass#receipt");
+    expect(html).toContain("?artifacts=artifacts%2Fmcp-transcript-pass#trace-timeline");
     expect(html).toContain('data-proof-artifact="artifacts/mcp-transcript-pass"');
     expect(html).toContain('data-proof-view="receipt"');
+    expect(html).toContain('data-proof-view="trace-timeline"');
     expect(html).toContain("artifacts/suite-proof");
     expect(html).toContain("fail 2 proof index");
     expect(html).not.toContain("Artifact bundle incomplete");

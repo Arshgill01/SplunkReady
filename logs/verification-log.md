@@ -6588,3 +6588,70 @@ Open risks:
 
 - Browser screenshots live under ignored `output/playwright/` and are not committed.
 - This was a targeted Runs trace preview repair, not a full proof-browser redesign.
+
+## 2026-06-05 - Move 14 Certification Index Workbench
+
+Commands:
+
+- `command -v npx >/dev/null 2>&1 && echo npx-present || echo npx-missing`
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts tests/workbench tests/ui/app.test.ts`
+- `SPLUNKREADY_WORKBENCH_PORT=4332 npm run workbench:dev`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh open http://127.0.0.1:4332/#agent-index`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh snapshot`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh click e104`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 1440 1000`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code 'async (page) => page.evaluate(() => { ... certification index desktop assertions ... })'`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/move14-certification-index-desktop.png --full-page`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh resize 390 844`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh run-code 'async (page) => page.evaluate(() => { ... certification index mobile assertions ... })'`
+- `bash /Users/arshdeepsingh/.codex/skills/playwright/scripts/playwright_cli.sh screenshot --filename output/playwright/move14-certification-index-mobile.png --full-page`
+- `npx tsc --noEmit`
+- `npx vitest run tests/ui/app.test.ts tests/workbench/workbench.test.ts`
+- `npm run build`
+- `npm run ui:build`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for Playwright prerequisite: `npx` was available.
+- PASS for targeted TypeScript validation.
+- PASS for Move 14 focused tests:
+  - 3 test files;
+  - 78 tests passed.
+- PASS for live browser generation of a certification index from selected managed proof runs.
+- PASS for Playwright desktop 1440px assertions:
+  - generated artifact URL used `/api/artifacts/run-...`;
+  - generated `ui-artifacts.json.defaultArtifact` used `/api/artifacts/run-...`;
+  - artifact picker selected the generated Workbench run;
+  - managed boundary and server manifest verification text rendered;
+  - index summary and proof table rendered;
+  - domains, missions, manifest status, receipt links, and trace links rendered;
+  - proof links targeted managed `/api/artifacts/run-...` URLs;
+  - horizontal overflow was `0`.
+- PASS for Playwright mobile 390px assertions:
+  - index content remained visible;
+  - responsive row labels were present;
+  - manifest status and proof links rendered;
+  - horizontal overflow was `0`.
+- PASS for responsive visual check after Playwright initially exposed unreadable mobile table compression; the mobile table now renders as labeled records.
+- PASS for focused UI/workbench regression tests:
+  - 2 test files;
+  - 44 tests passed.
+- PASS for `npm run build`.
+- PASS for Vite production UI build:
+  - 21 modules transformed;
+  - production bundle written to `dist-ui`.
+- PASS for `git diff --check`.
+- PASS for canonical project gate:
+  - scaffold verified;
+  - 85 waves;
+  - 1172 project files;
+  - 41 test files;
+  - 280 tests passed.
+
+Open risks:
+
+- Workbench certification-index output runs are browsable artifacts and do not themselves carry a proof manifest; selected constituent proof manifests are verified before index generation.
+- Browser screenshots and generated workbench runs live under ignored local artifact paths and are not committed.

@@ -2,6 +2,7 @@ import { relative } from "node:path";
 
 import {
   runFirewallCheckFromCli,
+  runCertificationIndexFromCli,
   runLiveSecurityKitFromCli,
   runPolicyBackedRerunFromCli
 } from "../cli.js";
@@ -26,10 +27,20 @@ import type { WorkbenchEvent, WorkbenchJobSnapshot, WorkbenchWorkflow } from "./
 
 export interface WorkbenchWorkflowInput {
   outDir: string;
-  payload?: ExternalCertificationPayload;
+  artifactBase: string;
+  payload?: WorkbenchWorkflowPayload;
 }
 
 export type WorkbenchWorkflowHandler = (input: WorkbenchWorkflowInput) => Promise<{ artifacts: string[] }>;
+
+export interface CertificationIndexPayload {
+  kind: "certification-index";
+  value: {
+    runIds: string[];
+  };
+}
+
+export type WorkbenchWorkflowPayload = ExternalCertificationPayload | CertificationIndexPayload;
 
 export interface WorkbenchJobRunnerOptions {
   config: WorkbenchConfig;
@@ -61,6 +72,10 @@ const workflowLabel = (workflow: WorkbenchWorkflow): string => {
     return "live security kit";
   }
 
+  if (workflow === "certification-index") {
+    return "certification index";
+  }
+
   if (workflow === "live-security-proof") {
     return "live security proof";
   }
@@ -74,6 +89,18 @@ const workflowLabel = (workflow: WorkbenchWorkflow): string => {
   }
 
   return workflow.replaceAll("-", " ");
+};
+
+const inputSummaryForPayload = (payload: WorkbenchWorkflowPayload | undefined): string | undefined => {
+  if (!payload) {
+    return undefined;
+  }
+
+  if (payload.kind === "certification-index") {
+    return `${payload.value.runIds.length} managed proof run(s)`;
+  }
+
+  return externalCertificationInputSummary(payload);
 };
 
 export class WorkbenchJobRunner {
@@ -104,6 +131,18 @@ export class WorkbenchJobRunner {
 
         return runMcpTranscriptCertificationWorkflow({ outDir, payload: payload.value });
       },
+      "certification-index": async ({ outDir, artifactBase, payload }) => {
+        if (payload?.kind !== "certification-index") {
+          throw new Error("Certification index requires selected managed proof runs.");
+        }
+
+        return runCertificationIndexFromCli({
+          outDir,
+          proofDirs: payload.value.runIds.map((runId) => this.artifactStore.resolveRun(runId)),
+          proofArtifactBases: payload.value.runIds.map((runId) => `/api/artifacts/${runId}`),
+          indexArtifactBase: artifactBase
+        });
+      },
       "live-smoke": async ({ outDir }) => runLiveSmokeWorkflow({ outDir }),
       "live-candidates": async ({ outDir }) => runLiveCandidatesWorkflow({ outDir }),
       "live-security-kit": async ({ outDir }) => runLiveSecurityKitFromCli({ outDir }),
@@ -123,7 +162,7 @@ export class WorkbenchJobRunner {
     return this.jobs.get(id);
   }
 
-  async createJob(workflow: WorkbenchWorkflow, payload?: ExternalCertificationPayload): Promise<WorkbenchJobSnapshot> {
+  async createJob(workflow: WorkbenchWorkflow, payload?: WorkbenchWorkflowPayload): Promise<WorkbenchJobSnapshot> {
     const handler = this.workflows[workflow];
 
     if (!handler) {
@@ -148,7 +187,7 @@ export class WorkbenchJobRunner {
       runId: run.runId,
       artifactBase: `/api/artifacts/${run.runId}`,
       createdAt: now(),
-      inputSummary: payload ? externalCertificationInputSummary(payload) : undefined,
+      inputSummary: inputSummaryForPayload(payload),
       artifacts: [],
       events: []
     };
@@ -164,14 +203,14 @@ export class WorkbenchJobRunner {
     job: WorkbenchJobSnapshot,
     handler: WorkbenchWorkflowHandler,
     outDir: string,
-    payload?: ExternalCertificationPayload
+    payload?: WorkbenchWorkflowPayload
   ): Promise<void> {
     job.state = "running";
     job.startedAt = now();
     this.addEvent(job, "phase", `Running Agent Readiness Compiler ${workflowLabel(job.workflow)}.`);
 
     try {
-      const result = await handler({ outDir, payload });
+      const result = await handler({ outDir, artifactBase: job.artifactBase, payload });
       job.artifacts = result.artifacts.map((artifact) => relative(outDir, artifact).replaceAll("\\", "/"));
       for (const artifact of job.artifacts) {
         this.addEvent(job, "artifact", `Wrote ${artifact}.`, artifact);
