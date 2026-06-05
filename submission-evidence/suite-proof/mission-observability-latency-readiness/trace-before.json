@@ -1,0 +1,62 @@
+[
+  {
+    "id": "mission-observability-latency-readiness-trace-001",
+    "missionId": "mission-observability-latency-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "tool_call",
+    "toolName": "splunk_run_query",
+    "toolInput": {
+      "query": "search index=* src_ip=* earliest=-15m latest=now",
+      "timeWindow": {
+        "earliest": "-15m",
+        "latest": "now"
+      },
+      "maxRows": 10
+    },
+    "toolOutputSummary": null,
+    "queryRef": null,
+    "timeWindow": null,
+    "resultCount": null,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 1
+  },
+  {
+    "id": "mission-observability-latency-readiness-trace-001-result",
+    "missionId": "mission-observability-latency-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "splunk_adapter",
+    "type": "tool_result",
+    "toolName": "splunk_run_query",
+    "toolInput": null,
+    "toolOutputSummary": "Query returned 0 row(s).",
+    "queryRef": "fixture-query-miss:c2VhcmNoIGluZGV4PSogc3JjX2lwPSogZWFybGllc3Q9LTE1bSBsYXRlc3Q9bm93",
+    "timeWindow": null,
+    "resultCount": 0,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 2,
+    "parentId": "mission-observability-latency-readiness-trace-001"
+  },
+  {
+    "id": "mission-observability-latency-readiness-trace-003",
+    "missionId": "mission-observability-latency-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "final_answer",
+    "toolName": null,
+    "toolInput": null,
+    "toolOutputSummary": "No evidence was found by the naive broad search.",
+    "queryRef": null,
+    "timeWindow": {
+      "earliest": "-15m",
+      "latest": "now"
+    },
+    "resultCount": 0,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 3,
+    "parentId": "mission-observability-latency-readiness-trace-001-result"
+  }
+]

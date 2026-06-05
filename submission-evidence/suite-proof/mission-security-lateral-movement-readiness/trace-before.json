@@ -1,0 +1,62 @@
+[
+  {
+    "id": "mission-security-lateral-movement-readiness-trace-001",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "tool_call",
+    "toolName": "splunk_run_query",
+    "toolInput": {
+      "query": "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now",
+      "timeWindow": {
+        "earliest": "-24h",
+        "latest": "now"
+      },
+      "maxRows": 10
+    },
+    "toolOutputSummary": null,
+    "queryRef": null,
+    "timeWindow": null,
+    "resultCount": null,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 1
+  },
+  {
+    "id": "mission-security-lateral-movement-readiness-trace-001-result",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "splunk_adapter",
+    "type": "tool_result",
+    "toolName": "splunk_run_query",
+    "toolInput": null,
+    "toolOutputSummary": "Query returned 0 row(s).",
+    "queryRef": "query-naive-lateral-movement",
+    "timeWindow": null,
+    "resultCount": 0,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 2,
+    "parentId": "mission-security-lateral-movement-readiness-trace-001"
+  },
+  {
+    "id": "mission-security-lateral-movement-readiness-trace-003",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "final_answer",
+    "toolName": null,
+    "toolInput": null,
+    "toolOutputSummary": "No evidence was found by the naive broad search.",
+    "queryRef": null,
+    "timeWindow": {
+      "earliest": "-24h",
+      "latest": "now"
+    },
+    "resultCount": 0,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 3,
+    "parentId": "mission-security-lateral-movement-readiness-trace-001-result"
+  }
+]

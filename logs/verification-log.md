@@ -7021,3 +7021,81 @@ Open risks:
 
 - Move 20 validates fixture workflow through both packaged and Vite-backed UI paths. Live actions remain disabled until live env vars are set in the server shell.
 - The packaged command prioritizes reliable one-command judging over startup speed by rebuilding before serving.
+
+## 2026-06-05 - Move 21 Submission Evidence Pack
+
+Commands:
+
+- `git rev-parse --short HEAD`
+- `rm -rf artifacts/submission-fixture-proof && npm run splunkready -- demo --out artifacts/submission-fixture-proof --json`
+- `npm run splunkready -- proof-audit --out artifacts/submission-fixture-proof --require-pass true --json`
+- `npm run splunkready -- verify-manifest --out artifacts/submission-fixture-proof --json`
+- `rm -rf artifacts/submission-suite-proof && npm run splunkready -- suite-proof --out artifacts/submission-suite-proof --require-fail-to-pass true --json`
+- `npm run splunkready -- proof-audit --out artifacts/submission-suite-proof --require-pass true --json`
+- `npm run splunkready -- verify-manifest --out artifacts/submission-suite-proof --json`
+- `npm run splunkready -- verify-manifest --out submission-evidence/suite-proof --json`
+- `npm run splunkready -- proof-audit --out submission-evidence/suite-proof --require-pass true --json`
+- `npm run splunkready -- verify-manifest --out submission-evidence/suite-proof --json`
+- `if rg -n "(Bearer\\s+[A-Za-z0-9._~+/=-]{8,}|TOKEN=|SECRET=|PASSWORD=|splunk\\.local|10\\.1\\.2\\.3|/Users/[A-Za-z0-9._-]+|https?://(?:localhost|127\\.|10\\.|192\\.168|172\\.))" submission-evidence; then exit 1; else exit 0; fi`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for source commit capture:
+  - source commit was `606e2e6`.
+- PASS for `npm run splunkready -- demo --out artifacts/submission-fixture-proof --json`.
+- FAIL for strict audit on the single receipt demo proof:
+  - `proof-audit --require-pass true` returned WARN because the single receipt bundle lacks explicit mutation and hosted-model summary fields.
+  - This bundle was not used as the tracked final evidence proof.
+- FAIL for the first manifest verification on `artifacts/submission-fixture-proof`:
+  - no manifest existed because the strict audit failed.
+- PASS for credential-free suite proof generation:
+  - `suite-proof --require-fail-to-pass true` generated 3 mission proof bundles and a suite summary.
+- PASS for strict suite proof audit:
+  - `npm run splunkready -- proof-audit --out artifacts/submission-suite-proof --require-pass true --json`.
+- FAIL for one intermediate parallel manifest verification:
+  - `verify-manifest` ran before the audit finished writing `proof-manifest.json`.
+- PASS after rerunning manifest verification sequentially:
+  - `npm run splunkready -- verify-manifest --out artifacts/submission-suite-proof --json`.
+- PASS after copying the complete suite proof into `submission-evidence/suite-proof`:
+  - `npm run splunkready -- verify-manifest --out submission-evidence/suite-proof --json`.
+- PASS for strict audit against the tracked evidence pack:
+  - `npm run splunkready -- proof-audit --out submission-evidence/suite-proof --require-pass true --json`;
+  - suite proof status `PASS`;
+  - proof type `suite`;
+  - mode `fixture`;
+  - mutation `false`;
+  - fail-to-pass `true`;
+  - ready-after-patch `true`.
+- PASS for final tracked manifest verification:
+  - `npm run splunkready -- verify-manifest --out submission-evidence/suite-proof --json`;
+  - expected aggregate SHA-256 matched actual aggregate SHA-256;
+  - expected files `51`;
+  - actual files `51`;
+  - no missing, unexpected, or changed files.
+- PASS for manual screenshot inspection:
+  - kept `workbench-packaged-fixture.png`, `workbench-dev-fixture.png`, and `public-proof-export-proof-browser.png`;
+  - excluded trace-preview screenshots because the mobile trace-preview panel still needs final consolidation.
+- PASS for tracked evidence secret/private identifier scan:
+  - no matches for bearer tokens, token/secret/password markers, known private endpoint strings, `/Users/<name>`, or private URL patterns.
+  - an intermediate scan caught a local absolute path in the copied public export `proof-manifest.json`; that file was removed and replaced with the redacted `source-proof-manifest.json`.
+- PASS for `npm run audit:submission-copy`:
+  - 28 required claims audited.
+- PASS for explicit `git diff --check`.
+- PASS for canonical gate `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 42 test files passed;
+  - 289 tests passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - `git diff --check` passed.
+
+Open risks:
+
+- The tracked pack does not include raw live artifacts. Live claims remain conditional unless a separate operator-approved redacted live evidence pack is produced.
+- The public export metadata is a sanitized derivative; do not describe it as an unredacted source proof.

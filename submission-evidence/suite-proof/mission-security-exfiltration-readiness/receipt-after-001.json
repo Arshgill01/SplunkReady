@@ -1,0 +1,40 @@
+{
+  "id": "receipt-after-001",
+  "agent": {
+    "name": "Naive SOC MCP Agent",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "id": "contract-acme-soc-dev",
+    "name": "acme-soc-dev"
+  },
+  "mode": "fixture",
+  "contractVersion": "2026.06.01",
+  "missionSuiteVersion": "security-readiness-1",
+  "verdict": "READY",
+  "score": 100,
+  "passedMissions": [
+    "mission-security-exfiltration-readiness"
+  ],
+  "failedMissions": [],
+  "criticalViolations": [],
+  "violations": [],
+  "traceRefs": [
+    "mission-security-exfiltration-readiness-trace-001",
+    "mission-security-exfiltration-readiness-trace-001-result",
+    "mission-security-exfiltration-readiness-trace-003",
+    "mission-security-exfiltration-readiness-trace-003-result",
+    "mission-security-exfiltration-readiness-trace-005"
+  ],
+  "evidenceRefs": [
+    "saved-search-dns-exfiltration-beacon",
+    "dns-501",
+    "dns-502",
+    "dns-503",
+    "dns-504",
+    "dns-505"
+  ],
+  "policyPatchSummary": [],
+  "rerunComparison": {},
+  "generatedBy": "Agent Readiness Compiler"
+}

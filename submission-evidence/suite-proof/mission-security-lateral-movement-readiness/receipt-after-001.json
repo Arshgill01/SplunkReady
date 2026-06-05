@@ -1,0 +1,39 @@
+{
+  "id": "receipt-after-001",
+  "agent": {
+    "name": "Naive SOC MCP Agent",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "id": "contract-acme-soc-dev",
+    "name": "acme-soc-dev"
+  },
+  "mode": "fixture",
+  "contractVersion": "2026.06.01",
+  "missionSuiteVersion": "security-readiness-1",
+  "verdict": "READY",
+  "score": 100,
+  "passedMissions": [
+    "mission-security-lateral-movement-readiness"
+  ],
+  "failedMissions": [],
+  "criticalViolations": [],
+  "violations": [],
+  "traceRefs": [
+    "mission-security-lateral-movement-readiness-trace-001",
+    "mission-security-lateral-movement-readiness-trace-001-result",
+    "mission-security-lateral-movement-readiness-trace-003",
+    "mission-security-lateral-movement-readiness-trace-003-result",
+    "mission-security-lateral-movement-readiness-trace-005"
+  ],
+  "evidenceRefs": [
+    "saved-search-lateral-movement",
+    "saved-search-lateral-movement-wrong-app",
+    "evt-102",
+    "evt-118",
+    "evt-141"
+  ],
+  "policyPatchSummary": [],
+  "rerunComparison": {},
+  "generatedBy": "Agent Readiness Compiler"
+}

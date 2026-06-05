@@ -1,0 +1,54 @@
+{
+  "missionId": "mission-observability-latency-readiness",
+  "score": 35,
+  "verdict": "NOT READY",
+  "passed": false,
+  "violationIds": [
+    "violation-mission-observability-latency-readiness-spl-001-mission-observability-latency-readiness-trace-001",
+    "violation-mission-observability-latency-readiness-evd-001-mission-observability-latency-readiness-trace-003",
+    "violation-mission-observability-latency-readiness-ans-003-mission-observability-latency-readiness-trace-003"
+  ],
+  "criticalViolationIds": [
+    "violation-mission-observability-latency-readiness-spl-001-mission-observability-latency-readiness-trace-001",
+    "violation-mission-observability-latency-readiness-evd-001-mission-observability-latency-readiness-trace-003"
+  ],
+  "highViolationIds": [
+    "violation-mission-observability-latency-readiness-ans-003-mission-observability-latency-readiness-trace-003"
+  ],
+  "breakdown": {
+    "baseScore": 100,
+    "deductions": [
+      {
+        "severity": "Critical",
+        "count": 2,
+        "weight": 25,
+        "total": 50
+      },
+      {
+        "severity": "High",
+        "count": 1,
+        "weight": 15,
+        "total": 15
+      }
+    ],
+    "totalDeduction": 65,
+    "score": 35,
+    "thresholds": {
+      "readyMinimumScore": 90,
+      "reviewMinimumScore": 75,
+      "readyBlockedBySeverities": [
+        "Critical",
+        "High"
+      ],
+      "notReadyBlockedBySeverities": [
+        "Critical"
+      ]
+    },
+    "blockers": [
+      "Critical violations force a NOT READY verdict.",
+      "Critical or High violations block a READY verdict.",
+      "Score 35 is below the review threshold 75."
+    ]
+  },
+  "explanation": "Score 35 = 100 - 65; deductions: 2 Critical x 25 = 50; 1 High x 15 = 15. Verdict: NOT READY."
+}

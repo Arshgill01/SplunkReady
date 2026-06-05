@@ -1,0 +1,108 @@
+{
+  "source": "splunkready-proof-manifest",
+  "generatedAt": "2026-06-01T06:45:00.000Z",
+  "proofDir": "/Users/[REDACTED]",
+  "aggregateSha256": "7ae241acb64af7caf728730c5660319949ac0c4c874870ae7ecfaf67cd06aa5a",
+  "files": [
+    {
+      "path": "agent-policy.json",
+      "sizeBytes": 10118,
+      "sha256": "30507775728779cd8768799da077c3b0c2415d8dca9d2c1b552e241e518a19c9"
+    },
+    {
+      "path": "demo-rehearsal.json",
+      "sizeBytes": 3272,
+      "sha256": "68e5c28f1a5471a889e827e363b760ecc6111a39614b41135b448cf6706e556d"
+    },
+    {
+      "path": "demo-rehearsal.md",
+      "sizeBytes": 426,
+      "sha256": "80dab411752f2b628b1b2a09bd6d2f7df9e7dd1f7fcbe1c39fcb068d94358055"
+    },
+    {
+      "path": "environment-contract.json",
+      "sizeBytes": 14654,
+      "sha256": "d59ea9376707ded4e705746734416133427caa45adb824f66038d8e9a0ca7b81"
+    },
+    {
+      "path": "missions.json",
+      "sizeBytes": 2338,
+      "sha256": "d8299285a80192e9433f3108748def64009ac363f6493d3395dbfe97827790fa"
+    },
+    {
+      "path": "policy-patch.json",
+      "sizeBytes": 6386,
+      "sha256": "857bab42967bbbe6996f6e718e6f2e20a5ad10a3ef7694d982448d9f859f230e"
+    },
+    {
+      "path": "policy-patch.md",
+      "sizeBytes": 5921,
+      "sha256": "39a486150e1cd0bf2f43c7be6c62616b7bc65dabf697560ff183092437b968dd"
+    },
+    {
+      "path": "proof-audit.json",
+      "sizeBytes": 2777,
+      "sha256": "065780e9bedaa7987f53cea11f9c49db344112f3ee12060adee20a24fff1fbc2"
+    },
+    {
+      "path": "readiness-profile.json",
+      "sizeBytes": 22750,
+      "sha256": "fe42848a4756e193a7e1333d3fbbfc1c8a3e8960ee353862caff3af562f4d0fb"
+    },
+    {
+      "path": "receipt-after-001.json",
+      "sizeBytes": 1845,
+      "sha256": "5992bc4ce85d41fe99a3be1de1bb55ecc7cc956bb1ecef2366bda26d3ae3eed2"
+    },
+    {
+      "path": "receipt-after-001.md",
+      "sizeBytes": 2011,
+      "sha256": "b2af0f49245e80cc57c0769b061eef620d2a4b50c72553c8b24023063fad9887"
+    },
+    {
+      "path": "receipt-before-001.json",
+      "sizeBytes": 2012,
+      "sha256": "ab1128bb735e8c92767d304054ac64e5aefd2edf103aa2644973b66df6b6be11"
+    },
+    {
+      "path": "receipt-before-001.md",
+      "sizeBytes": 4268,
+      "sha256": "ef9a24ad063d4ff837948789c69b954681c1ba8dd59bef8be7dc38a1a4b10ea9"
+    },
+    {
+      "path": "score-after.json",
+      "sizeBytes": 647,
+      "sha256": "ad0d3eabc3c3f26892ff87fb76cb6a5c48fe55b123bdd89728fd321f7d3f13c1"
+    },
+    {
+      "path": "score-before.json",
+      "sizeBytes": 2308,
+      "sha256": "97bf86def5d0cc05e1d834431b8239797e58578dfa69d578192c0a616fa817c2"
+    },
+    {
+      "path": "splunkready-shell.html",
+      "sizeBytes": 62265,
+      "sha256": "b95bce2574be1d22c7f69387267c2b9e7690fe016dd4675bb2036d165cc94d11"
+    },
+    {
+      "path": "trace-after.json",
+      "sizeBytes": 3413,
+      "sha256": "c19a6acc975996d7ed6570382f31a40266cdd9cc9da24a34b8eda40466b88241"
+    },
+    {
+      "path": "trace-before.json",
+      "sizeBytes": 1863,
+      "sha256": "32bbb5f63d94cf3f72c2fd1dba09066185c119487bcc8ac478504eb3c202d94d"
+    },
+    {
+      "path": "violations-after.json",
+      "sizeBytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "violations-before.json",
+      "sizeBytes": 4422,
+      "sha256": "7c52db6bfcb2b3ae93573e9c8f5b80b1090ece52a0b01879449aa30c1f4c93d0"
+    }
+  ]
+}

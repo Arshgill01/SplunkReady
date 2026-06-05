@@ -1,0 +1,111 @@
+{
+  "status": "WARN",
+  "proofType": "receipt",
+  "proofDir": "/Users/[REDACTED]",
+  "mode": "fixture",
+  "failToPass": true,
+  "readyAfterPatch": true,
+  "readyWithoutPatch": false,
+  "proofLoop": "fail-to-pass",
+  "checks": [
+    {
+      "id": "contract-loaded",
+      "status": "PASS",
+      "detail": "Environment contract is present and schema-valid.",
+      "evidence": {
+        "id": "contract-acme-soc-dev",
+        "mode": "fixture"
+      }
+    },
+    {
+      "id": "receipt-before-loaded",
+      "status": "PASS",
+      "detail": "Before receipt is present and schema-valid.",
+      "evidence": {
+        "id": "receipt-before-001",
+        "verdict": "NOT READY",
+        "score": 0
+      }
+    },
+    {
+      "id": "receipt-after-loaded",
+      "status": "PASS",
+      "detail": "After receipt is present and schema-valid.",
+      "evidence": {
+        "id": "receipt-after-001",
+        "verdict": "READY",
+        "score": 100
+      }
+    },
+    {
+      "id": "before-not-ready",
+      "status": "PASS",
+      "detail": "The proof begins from a NOT READY receipt.",
+      "evidence": {
+        "verdict": "NOT READY",
+        "score": 0,
+        "violations": 5
+      }
+    },
+    {
+      "id": "after-ready",
+      "status": "PASS",
+      "detail": "The proof ends with a READY receipt.",
+      "evidence": {
+        "verdict": "READY",
+        "score": 100,
+        "violations": 0
+      }
+    },
+    {
+      "id": "fail-to-pass",
+      "status": "PASS",
+      "detail": "The proof demonstrates NOT READY -> READY.",
+      "evidence": {
+        "before": {
+          "verdict": "NOT READY",
+          "score": 0
+        },
+        "after": {
+          "verdict": "READY",
+          "score": 100
+        }
+      }
+    },
+    {
+      "id": "mutation-false",
+      "status": "WARN",
+      "detail": "No mutation field was found in the available proof summaries.",
+      "evidence": {
+        "observed": []
+      }
+    },
+    {
+      "id": "evidence-refs-present",
+      "status": "PASS",
+      "detail": "The final receipt contains evidence references.",
+      "evidence": {
+        "evidenceRefs": [
+          "saved-search-lateral-movement",
+          "saved-search-lateral-movement-wrong-app",
+          "evt-102",
+          "evt-118",
+          "evt-141"
+        ]
+      }
+    },
+    {
+      "id": "live-security-summary",
+      "status": "WARN",
+      "detail": "No live-security-proof-summary.json was found; this is not the flagship live security proof."
+    },
+    {
+      "id": "hosted-model-status",
+      "status": "WARN",
+      "detail": "Hosted-model status was not present in this proof bundle.",
+      "evidence": {
+        "status": null
+      }
+    }
+  ]
+}

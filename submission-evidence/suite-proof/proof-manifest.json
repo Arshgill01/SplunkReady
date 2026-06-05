@@ -1,0 +1,263 @@
+{
+  "source": "splunkready-proof-manifest",
+  "generatedAt": "2026-06-01T06:45:00.000Z",
+  "proofDir": "submission-evidence/suite-proof",
+  "aggregateSha256": "0d1a4a34afb3f9e799a865e8928de8289c2134baf698bbff554538bfe5f6c54c",
+  "files": [
+    {
+      "path": "mission-observability-latency-readiness/agent-policy.json",
+      "sizeBytes": 10118,
+      "sha256": "30507775728779cd8768799da077c3b0c2415d8dca9d2c1b552e241e518a19c9"
+    },
+    {
+      "path": "mission-observability-latency-readiness/environment-contract.json",
+      "sizeBytes": 14654,
+      "sha256": "d59ea9376707ded4e705746734416133427caa45adb824f66038d8e9a0ca7b81"
+    },
+    {
+      "path": "mission-observability-latency-readiness/missions.json",
+      "sizeBytes": 1770,
+      "sha256": "66876e4f8da74ab7562e836c07cae001c9e0f9f208cfcc4b8e44ee292760bc08"
+    },
+    {
+      "path": "mission-observability-latency-readiness/policy-patch.json",
+      "sizeBytes": 3185,
+      "sha256": "a54a197bcf3c35c2926f3dc795df089eddc720dd8a95af5cc47d41b56985d97f"
+    },
+    {
+      "path": "mission-observability-latency-readiness/policy-patch.md",
+      "sizeBytes": 2861,
+      "sha256": "a3798b4eae4bbe6e205a18b81d89c371c50ccfb534b05327231b88911598655d"
+    },
+    {
+      "path": "mission-observability-latency-readiness/readiness-profile.json",
+      "sizeBytes": 19661,
+      "sha256": "3103c479474310938b9afcf5ad809118ebfcbd5720326166e953bad740d54644"
+    },
+    {
+      "path": "mission-observability-latency-readiness/receipt-after-001.json",
+      "sizeBytes": 863,
+      "sha256": "2ef08ca420d9c98ed5c8279cf316b674d84cb3437d6294f17b396bd66ddc713b"
+    },
+    {
+      "path": "mission-observability-latency-readiness/receipt-after-001.md",
+      "sizeBytes": 1058,
+      "sha256": "69bae34b5ef4c64862b4e7f818f5f5acd146198cf1e475a9ab877dd2720fea05"
+    },
+    {
+      "path": "mission-observability-latency-readiness/receipt-before-001.json",
+      "sizeBytes": 1466,
+      "sha256": "25c2cd996e78df06e0a11bc9822f2fb1f5edbe1a1f320617397756826a954b66"
+    },
+    {
+      "path": "mission-observability-latency-readiness/receipt-before-001.md",
+      "sizeBytes": 2815,
+      "sha256": "c37204c50d05d061593095a5102eb4052b4d6fb87e7be362ff3af70b3c2a7342"
+    },
+    {
+      "path": "mission-observability-latency-readiness/score-after.json",
+      "sizeBytes": 643,
+      "sha256": "b8c042a676223272c9fc6a55e47ca802a3e773e6d38ffb821919ea784391aa71"
+    },
+    {
+      "path": "mission-observability-latency-readiness/score-before.json",
+      "sizeBytes": 1766,
+      "sha256": "6ba1ea2501c29ab72a104b17c55faa520785b571d128e6ccc2b66de92b504f1d"
+    },
+    {
+      "path": "mission-observability-latency-readiness/trace-after.json",
+      "sizeBytes": 2174,
+      "sha256": "555bf91525e00ae1c1906457263ec18b6337c43f3825c80bb00f908eff775f49"
+    },
+    {
+      "path": "mission-observability-latency-readiness/trace-before.json",
+      "sizeBytes": 1866,
+      "sha256": "3d4fef1d0cef506339101563461321ed42798444c830b9d52727731ebca9237a"
+    },
+    {
+      "path": "mission-observability-latency-readiness/violations-after.json",
+      "sizeBytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "mission-observability-latency-readiness/violations-before.json",
+      "sizeBytes": 2590,
+      "sha256": "b3842b82c6f20cb80593c3369a430aa8f013dd83d95160e2e2c4b9a394f5bafc"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/agent-policy.json",
+      "sizeBytes": 10118,
+      "sha256": "30507775728779cd8768799da077c3b0c2415d8dca9d2c1b552e241e518a19c9"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/environment-contract.json",
+      "sizeBytes": 14654,
+      "sha256": "d59ea9376707ded4e705746734416133427caa45adb824f66038d8e9a0ca7b81"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/missions.json",
+      "sizeBytes": 1986,
+      "sha256": "0dbe31d50a9c5c07ee7fe220277f087a95be237725bfd9724a3a8916307cb4da"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/policy-patch.json",
+      "sizeBytes": 5714,
+      "sha256": "671a90dfc0c46074c59fe1dbf0c35f0ccff61fe1036fce1ab2f1242da2fb2304"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/policy-patch.md",
+      "sizeBytes": 5251,
+      "sha256": "afa8ae24be94496079ccb1041b3ac01184aa1d0abb2c0515d2b941dc0bb1da4b"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/readiness-profile.json",
+      "sizeBytes": 21860,
+      "sha256": "f8113e688127e90115d1b84fccc41baf59e762c8e0d473da79cb46a60c5b7c4c"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/receipt-after-001.json",
+      "sizeBytes": 1043,
+      "sha256": "379824da371ed7c8979e2e51e436fd33b48da3de2d11c9bee9296f34013ca9db"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/receipt-after-001.md",
+      "sizeBytes": 1226,
+      "sha256": "0e5390efc4a6485c8d8e2108bad1aa4f8a453ce7e2882b486fd4f57dd2ff2e84"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/receipt-before-001.json",
+      "sizeBytes": 1924,
+      "sha256": "fcce1041bb30de330f8f80b2d7882b818e7ce86713ad836219a176c263ea08dd"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/receipt-before-001.md",
+      "sizeBytes": 4100,
+      "sha256": "ac62d456d3003ea96bc110de02d36b58ff43049079a6db3c5364686e32226e17"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/score-after.json",
+      "sizeBytes": 643,
+      "sha256": "c8fc241491e2f5c252730d2bd676192eef09c60fb3d4ac73e7a096c2d6961831"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/score-before.json",
+      "sizeBytes": 2224,
+      "sha256": "53771ccff28725aa7999d147faecc947db5b3e321635bf24cf908f7a82b5d3ba"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/trace-after.json",
+      "sizeBytes": 3372,
+      "sha256": "1c9491c4b0801713ae8f565da7bb71fe326859749dbd25d3f8e342a097f5644f"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/trace-before.json",
+      "sizeBytes": 1866,
+      "sha256": "57880f8a2de3ca857cdd4afa4a63984a247f157127fd9a2dd3525a827d81eeda"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/violations-after.json",
+      "sizeBytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "mission-security-exfiltration-readiness/violations-before.json",
+      "sizeBytes": 4331,
+      "sha256": "3b36821021e22af3bdf9a60190e363979d1be2d438180c00ff793cd72d403016"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/agent-policy.json",
+      "sizeBytes": 10118,
+      "sha256": "30507775728779cd8768799da077c3b0c2415d8dca9d2c1b552e241e518a19c9"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/environment-contract.json",
+      "sizeBytes": 14654,
+      "sha256": "d59ea9376707ded4e705746734416133427caa45adb824f66038d8e9a0ca7b81"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/missions.json",
+      "sizeBytes": 2338,
+      "sha256": "d8299285a80192e9433f3108748def64009ac363f6493d3395dbfe97827790fa"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/policy-patch.json",
+      "sizeBytes": 6386,
+      "sha256": "857bab42967bbbe6996f6e718e6f2e20a5ad10a3ef7694d982448d9f859f230e"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/policy-patch.md",
+      "sizeBytes": 5921,
+      "sha256": "39a486150e1cd0bf2f43c7be6c62616b7bc65dabf697560ff183092437b968dd"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/readiness-profile.json",
+      "sizeBytes": 22750,
+      "sha256": "fe42848a4756e193a7e1333d3fbbfc1c8a3e8960ee353862caff3af562f4d0fb"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/receipt-after-001.json",
+      "sizeBytes": 1077,
+      "sha256": "4506c2a1f1c7ee5d41b962eed6f01d21cb89110be10a242b4bd11d408f31fbf8"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/receipt-after-001.md",
+      "sizeBytes": 1267,
+      "sha256": "455a9232ec82680cd953bd92dbc5b2e0619abcdde1f96100d390e30e33e0507d"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/receipt-before-001.json",
+      "sizeBytes": 2012,
+      "sha256": "ab1128bb735e8c92767d304054ac64e5aefd2edf103aa2644973b66df6b6be11"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/receipt-before-001.md",
+      "sizeBytes": 4268,
+      "sha256": "ef9a24ad063d4ff837948789c69b954681c1ba8dd59bef8be7dc38a1a4b10ea9"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/score-after.json",
+      "sizeBytes": 647,
+      "sha256": "ad0d3eabc3c3f26892ff87fb76cb6a5c48fe55b123bdd89728fd321f7d3f13c1"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/score-before.json",
+      "sizeBytes": 2308,
+      "sha256": "97bf86def5d0cc05e1d834431b8239797e58578dfa69d578192c0a616fa817c2"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/trace-after.json",
+      "sizeBytes": 3413,
+      "sha256": "c19a6acc975996d7ed6570382f31a40266cdd9cc9da24a34b8eda40466b88241"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/trace-before.json",
+      "sizeBytes": 1863,
+      "sha256": "32bbb5f63d94cf3f72c2fd1dba09066185c119487bcc8ac478504eb3c202d94d"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/violations-after.json",
+      "sizeBytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "mission-security-lateral-movement-readiness/violations-before.json",
+      "sizeBytes": 4422,
+      "sha256": "7c52db6bfcb2b3ae93573e9c8f5b80b1090ece52a0b01879449aa30c1f4c93d0"
+    },
+    {
+      "path": "proof-audit.json",
+      "sizeBytes": 1873,
+      "sha256": "106250f901bde63b93f52a58b212b88a79f2229439dd6c2dcad25b1a60a55d77"
+    },
+    {
+      "path": "suite-proof-summary.json",
+      "sizeBytes": 2453,
+      "sha256": "4d81d7a182dd8a9e63ef723f9f9d518bc9ad603fc1422dae181514ff96fb98e6"
+    },
+    {
+      "path": "suite-proof-summary.md",
+      "sizeBytes": 749,
+      "sha256": "1969668ef39721ed31424e13956317903acf8f4a2c286b8318f360f64a540826"
+    }
+  ]
+}

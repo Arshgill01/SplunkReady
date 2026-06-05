@@ -1,0 +1,11 @@
+{
+  "source": "splunkready-ui-artifacts",
+  "generatedAt": "2026-06-05T12:06:19.254Z",
+  "defaultArtifact": "/api/artifacts/run-2026-06-05T12-06-19-135Z-44163c4f",
+  "artifacts": [
+    {
+      "label": "Redacted export run-2026-06-05T12-05-39-854Z-7a57b488",
+      "path": "/api/artifacts/run-2026-06-05T12-06-19-135Z-44163c4f"
+    }
+  ]
+}

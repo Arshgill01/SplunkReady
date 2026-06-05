@@ -1,0 +1,115 @@
+[
+  {
+    "id": "mission-security-lateral-movement-readiness-trace-001",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "tool_call",
+    "toolName": "splunk_get_knowledge_objects",
+    "toolInput": {
+      "types": [
+        "saved_searches",
+        "macros",
+        "lookups"
+      ],
+      "query": "ES - Lateral Movement Auth Chain"
+    },
+    "toolOutputSummary": null,
+    "queryRef": null,
+    "timeWindow": null,
+    "resultCount": null,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 1
+  },
+  {
+    "id": "mission-security-lateral-movement-readiness-trace-001-result",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "splunk_adapter",
+    "type": "tool_result",
+    "toolName": "splunk_get_knowledge_objects",
+    "toolInput": null,
+    "toolOutputSummary": "Found 2 knowledge object(s).",
+    "queryRef": null,
+    "timeWindow": null,
+    "resultCount": 2,
+    "evidenceRefs": [
+      "saved-search-lateral-movement",
+      "saved-search-lateral-movement-wrong-app"
+    ],
+    "error": null,
+    "step": 2,
+    "parentId": "mission-security-lateral-movement-readiness-trace-001"
+  },
+  {
+    "id": "mission-security-lateral-movement-readiness-trace-003",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "tool_call",
+    "toolName": "splunk_run_saved_search",
+    "toolInput": {
+      "name": "ES - Lateral Movement Auth Chain",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "tokens": {
+        "host": "win-finance-07",
+        "earliest": "-24h",
+        "latest": "now"
+      },
+      "maxRows": 10
+    },
+    "toolOutputSummary": null,
+    "queryRef": null,
+    "timeWindow": null,
+    "resultCount": null,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 3
+  },
+  {
+    "id": "mission-security-lateral-movement-readiness-trace-003-result",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "splunk_adapter",
+    "type": "tool_result",
+    "toolName": "splunk_run_saved_search",
+    "toolInput": null,
+    "toolOutputSummary": "Saved search returned 3 row(s).",
+    "queryRef": "saved-search-lateral-movement",
+    "timeWindow": null,
+    "resultCount": 3,
+    "evidenceRefs": [
+      "evt-102",
+      "evt-118",
+      "evt-141"
+    ],
+    "error": null,
+    "step": 4,
+    "parentId": "mission-security-lateral-movement-readiness-trace-003"
+  },
+  {
+    "id": "mission-security-lateral-movement-readiness-trace-005",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "final_answer",
+    "toolName": null,
+    "toolInput": null,
+    "toolOutputSummary": "Evidence supports the investigation: 3 result(s) from saved-search-lateral-movement in time window -24h to now, evidence evt-102, evt-118, evt-141.",
+    "queryRef": null,
+    "timeWindow": {
+      "earliest": "-24h",
+      "latest": "now"
+    },
+    "resultCount": 3,
+    "evidenceRefs": [
+      "evt-102",
+      "evt-118",
+      "evt-141"
+    ],
+    "error": null,
+    "step": 5,
+    "parentId": "mission-security-lateral-movement-readiness-trace-003-result"
+  }
+]

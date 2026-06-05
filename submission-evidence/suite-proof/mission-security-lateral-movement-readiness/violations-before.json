@@ -1,0 +1,105 @@
+[
+  {
+    "id": "violation-mission-security-lateral-movement-readiness-spl-001-mission-security-lateral-movement-readiness-trace-001",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "traceEventId": "mission-security-lateral-movement-readiness-trace-001",
+    "ruleId": "SPL-001",
+    "severity": "Critical",
+    "reason": "Query contains a forbidden SPL pattern.",
+    "evidence": {
+      "query": "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now",
+      "forbiddenPattern": "index=*"
+    },
+    "suggestedPolicyPatch": "Rewrite the SPL to use an approved index, saved search, or read-only query command.",
+    "contractRef": "contract-acme-soc-dev.forbiddenQueryPatterns"
+  },
+  {
+    "id": "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-001",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "traceEventId": "mission-security-lateral-movement-readiness-trace-001",
+    "ruleId": "SPL-003",
+    "severity": "Critical",
+    "reason": "Query references a field that is not present in the environment contract.",
+    "evidence": {
+      "query": "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now",
+      "field": "src_ip",
+      "knownFields": [
+        "src",
+        "dest",
+        "user",
+        "signature",
+        "EventCode",
+        "eventName",
+        "userIdentity.arn",
+        "sourceIPAddress",
+        "recipientAccountId",
+        "errorCode",
+        "dest_port",
+        "action",
+        "bytes_out",
+        "app",
+        "query",
+        "rrtype",
+        "response_code",
+        "component",
+        "service",
+        "latency_ms",
+        "status",
+        "host"
+      ]
+    },
+    "suggestedPolicyPatch": "Use fields discovered in the Environment Contract before running custom SPL.",
+    "contractRef": "contract-acme-soc-dev.sourcetypes.fields"
+  },
+  {
+    "id": "violation-mission-security-lateral-movement-readiness-ko-001-mission-security-lateral-movement-readiness-trace-001",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "traceEventId": "mission-security-lateral-movement-readiness-trace-001",
+    "ruleId": "KO-001",
+    "severity": "High",
+    "reason": "Mission requires saved-search discovery, but the trace never inspected knowledge objects.",
+    "evidence": {
+      "preferredSavedSearchRefs": [
+        "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain"
+      ],
+      "firstCustomQueryTool": "splunk_run_query"
+    },
+    "suggestedPolicyPatch": "Inspect saved searches with splunk_get_knowledge_objects before generating custom SPL.",
+    "contractRef": "contract-acme-soc-dev.savedSearches"
+  },
+  {
+    "id": "violation-mission-security-lateral-movement-readiness-evd-001-mission-security-lateral-movement-readiness-trace-003",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "traceEventId": "mission-security-lateral-movement-readiness-trace-003",
+    "ruleId": "EVD-001",
+    "severity": "Critical",
+    "reason": "Final answer lacks query or saved-search provenance, result count, or evidence refs.",
+    "evidence": {
+      "finalAnswerId": "mission-security-lateral-movement-readiness-trace-003",
+      "finalResultCount": 0,
+      "finalEvidenceRefs": [],
+      "provenanceRefs": [
+        "query-naive-lateral-movement"
+      ],
+      "citedProvenanceRefs": []
+    },
+    "suggestedPolicyPatch": "Carry queryRef or saved-search provenance, result count, and evidence refs into the final answer.",
+    "evidenceRefs": []
+  },
+  {
+    "id": "violation-mission-security-lateral-movement-readiness-ans-001-mission-security-lateral-movement-readiness-trace-003",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "traceEventId": "mission-security-lateral-movement-readiness-trace-003",
+    "ruleId": "ANS-001",
+    "severity": "Critical",
+    "reason": "Definitive benign conclusion is not supported by adequate evidence.",
+    "evidence": {
+      "finalAnswerId": "mission-security-lateral-movement-readiness-trace-003",
+      "finalAnswer": "No evidence was found by the naive broad search.",
+      "resultCount": 0,
+      "evidenceRefs": []
+    },
+    "suggestedPolicyPatch": "Do not give a definitive benign or true-positive conclusion unless the answer cites adequate result count, provenance, and evidence refs.",
+    "evidenceRefs": []
+  }
+]

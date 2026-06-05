@@ -1,0 +1,50 @@
+{
+  "source": "splunkready-public-proof-summary",
+  "generatedAt": "2026-06-05T12:06:19.254Z",
+  "sourceRunId": "run-2026-06-05T12-05-39-854Z-7a57b488",
+  "sourceArtifactBase": "/api/artifacts/run-2026-06-05T12-05-39-854Z-7a57b488",
+  "exportArtifactBase": "/api/artifacts/run-2026-06-05T12-06-19-135Z-44163c4f",
+  "redactionStatus": "REDACTED",
+  "label": "Redacted public proof export",
+  "includedFiles": [
+    "environment-contract.json",
+    "missions.json",
+    "policy-patch.json",
+    "proof-audit.json",
+    "readiness-profile.json",
+    "receipt-after-001.json",
+    "receipt-before-001.json",
+    "source-proof-manifest.json",
+    "trace-after.json",
+    "trace-before.json",
+    "violations-after.json",
+    "violations-before.json"
+  ],
+  "omittedFiles": [
+    "live-smoke-contract.json",
+    "receipt-external-001.json",
+    "trace-external.json",
+    "trace-imported.json",
+    "violations-external.json",
+    "proof-manifest-verification.json",
+    "live-proof-summary.json",
+    "live-security-proof-summary.json",
+    "suite-proof-summary.json",
+    "hosted-model-proof.json",
+    "hosted-model-diagnostic.json",
+    "mcp-transcript-import.json",
+    "firewall-block-before.json",
+    "firewall-block-after.json"
+  ],
+  "receiptFiles": [
+    "receipt-before-001.json",
+    "receipt-after-001.json"
+  ],
+  "traceFiles": [
+    "trace-before.json",
+    "trace-after.json"
+  ],
+  "proofAuditIncluded": true,
+  "policyPatchIncluded": true,
+  "warning": "This bundle is sanitized for sharing. It is not the unredacted source proof bundle."
+}

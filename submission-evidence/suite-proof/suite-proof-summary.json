@@ -1,0 +1,92 @@
+{
+  "status": "PASS",
+  "mode": "fixture",
+  "mutation": false,
+  "suiteId": "phase-live-multi-mission-proof",
+  "suiteTitle": "Phase Live multi-mission readiness proof",
+  "suitePath": "fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json",
+  "missionCount": 3,
+  "domains": [
+    "observability",
+    "security"
+  ],
+  "totals": {
+    "failToPass": 3,
+    "readyAfterPatch": 3,
+    "evidenceRefs": 15
+  },
+  "missions": [
+    {
+      "missionId": "mission-security-lateral-movement-readiness",
+      "title": "Investigate lateral movement from win-finance-07",
+      "domain": "security",
+      "artifactDir": "artifacts/submission-suite-proof/mission-security-lateral-movement-readiness",
+      "proofLoop": "fail-to-pass",
+      "before": {
+        "verdict": "NOT READY",
+        "score": 0,
+        "violations": 5
+      },
+      "after": {
+        "verdict": "READY",
+        "score": 100,
+        "violations": 0,
+        "evidenceRefs": [
+          "saved-search-lateral-movement",
+          "saved-search-lateral-movement-wrong-app",
+          "evt-102",
+          "evt-118",
+          "evt-141"
+        ]
+      }
+    },
+    {
+      "missionId": "mission-security-exfiltration-readiness",
+      "title": "Investigate suspicious DNS exfiltration",
+      "domain": "security",
+      "artifactDir": "artifacts/submission-suite-proof/mission-security-exfiltration-readiness",
+      "proofLoop": "fail-to-pass",
+      "before": {
+        "verdict": "NOT READY",
+        "score": 0,
+        "violations": 5
+      },
+      "after": {
+        "verdict": "READY",
+        "score": 100,
+        "violations": 0,
+        "evidenceRefs": [
+          "saved-search-dns-exfiltration-beacon",
+          "dns-501",
+          "dns-502",
+          "dns-503",
+          "dns-504",
+          "dns-505"
+        ]
+      }
+    },
+    {
+      "missionId": "mission-observability-latency-readiness",
+      "title": "Certify MCP gateway latency investigation",
+      "domain": "observability",
+      "artifactDir": "artifacts/submission-suite-proof/mission-observability-latency-readiness",
+      "proofLoop": "fail-to-pass",
+      "before": {
+        "verdict": "NOT READY",
+        "score": 35,
+        "violations": 3
+      },
+      "after": {
+        "verdict": "READY",
+        "score": 100,
+        "violations": 0,
+        "evidenceRefs": [
+          "obs-201",
+          "obs-202",
+          "obs-203",
+          "obs-204"
+        ]
+      }
+    }
+  ]
+}

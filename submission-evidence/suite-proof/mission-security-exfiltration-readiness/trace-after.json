@@ -1,0 +1,117 @@
+[
+  {
+    "id": "mission-security-exfiltration-readiness-trace-001",
+    "missionId": "mission-security-exfiltration-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "tool_call",
+    "toolName": "splunk_get_knowledge_objects",
+    "toolInput": {
+      "types": [
+        "saved_searches",
+        "macros",
+        "lookups"
+      ],
+      "query": "DNS - Suspicious Exfiltration Queries"
+    },
+    "toolOutputSummary": null,
+    "queryRef": null,
+    "timeWindow": null,
+    "resultCount": null,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 1
+  },
+  {
+    "id": "mission-security-exfiltration-readiness-trace-001-result",
+    "missionId": "mission-security-exfiltration-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "splunk_adapter",
+    "type": "tool_result",
+    "toolName": "splunk_get_knowledge_objects",
+    "toolInput": null,
+    "toolOutputSummary": "Found 1 knowledge object(s).",
+    "queryRef": null,
+    "timeWindow": null,
+    "resultCount": 1,
+    "evidenceRefs": [
+      "saved-search-dns-exfiltration-beacon"
+    ],
+    "error": null,
+    "step": 2,
+    "parentId": "mission-security-exfiltration-readiness-trace-001"
+  },
+  {
+    "id": "mission-security-exfiltration-readiness-trace-003",
+    "missionId": "mission-security-exfiltration-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "tool_call",
+    "toolName": "splunk_run_saved_search",
+    "toolInput": {
+      "name": "DNS - Suspicious Exfiltration Queries",
+      "app": "search",
+      "tokens": {
+        "earliest": "-24h",
+        "latest": "now"
+      },
+      "maxRows": 10
+    },
+    "toolOutputSummary": null,
+    "queryRef": null,
+    "timeWindow": null,
+    "resultCount": null,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 3
+  },
+  {
+    "id": "mission-security-exfiltration-readiness-trace-003-result",
+    "missionId": "mission-security-exfiltration-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "splunk_adapter",
+    "type": "tool_result",
+    "toolName": "splunk_run_saved_search",
+    "toolInput": null,
+    "toolOutputSummary": "Saved search returned 5 row(s).",
+    "queryRef": "saved-search-dns-exfiltration-beacon",
+    "timeWindow": null,
+    "resultCount": 5,
+    "evidenceRefs": [
+      "dns-501",
+      "dns-502",
+      "dns-503",
+      "dns-504",
+      "dns-505"
+    ],
+    "error": null,
+    "step": 4,
+    "parentId": "mission-security-exfiltration-readiness-trace-003"
+  },
+  {
+    "id": "mission-security-exfiltration-readiness-trace-005",
+    "missionId": "mission-security-exfiltration-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "final_answer",
+    "toolName": null,
+    "toolInput": null,
+    "toolOutputSummary": "Evidence supports the investigation: 5 result(s) from saved-search-dns-exfiltration-beacon in time window -24h to now, evidence dns-501, dns-502, dns-503, dns-504, dns-505.",
+    "queryRef": null,
+    "timeWindow": {
+      "earliest": "-24h",
+      "latest": "now"
+    },
+    "resultCount": 5,
+    "evidenceRefs": [
+      "dns-501",
+      "dns-502",
+      "dns-503",
+      "dns-504",
+      "dns-505"
+    ],
+    "error": null,
+    "step": 5,
+    "parentId": "mission-security-exfiltration-readiness-trace-003-result"
+  }
+]

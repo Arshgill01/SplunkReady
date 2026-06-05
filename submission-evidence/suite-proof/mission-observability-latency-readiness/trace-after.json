@@ -1,0 +1,73 @@
+[
+  {
+    "id": "mission-observability-latency-readiness-trace-001",
+    "missionId": "mission-observability-latency-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "tool_call",
+    "toolName": "splunk_run_query",
+    "toolInput": {
+      "query": "search index=_internal component=HttpPubSubConnection earliest=-15m latest=now | stats p95(latency_ms) as p95_latency_ms by service",
+      "timeWindow": {
+        "earliest": "-15m",
+        "latest": "now"
+      },
+      "maxRows": 10,
+      "app": "search"
+    },
+    "toolOutputSummary": null,
+    "queryRef": null,
+    "timeWindow": null,
+    "resultCount": null,
+    "evidenceRefs": [],
+    "error": null,
+    "step": 1
+  },
+  {
+    "id": "mission-observability-latency-readiness-trace-001-result",
+    "missionId": "mission-observability-latency-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "splunk_adapter",
+    "type": "tool_result",
+    "toolName": "splunk_run_query",
+    "toolInput": null,
+    "toolOutputSummary": "Query returned 4 row(s).",
+    "queryRef": "query-observability-latency",
+    "timeWindow": null,
+    "resultCount": 4,
+    "evidenceRefs": [
+      "obs-201",
+      "obs-202",
+      "obs-203",
+      "obs-204"
+    ],
+    "error": null,
+    "step": 2,
+    "parentId": "mission-observability-latency-readiness-trace-001"
+  },
+  {
+    "id": "mission-observability-latency-readiness-trace-003",
+    "missionId": "mission-observability-latency-readiness",
+    "timestamp": "2026-06-01T07:00:00.000Z",
+    "actor": "specimen_agent",
+    "type": "final_answer",
+    "toolName": null,
+    "toolInput": null,
+    "toolOutputSummary": "Evidence supports the latency investigation: 4 result(s) from query-observability-latency in time window -15m to now, evidence obs-201, obs-202, obs-203, obs-204.",
+    "queryRef": null,
+    "timeWindow": {
+      "earliest": "-15m",
+      "latest": "now"
+    },
+    "resultCount": 4,
+    "evidenceRefs": [
+      "obs-201",
+      "obs-202",
+      "obs-203",
+      "obs-204"
+    ],
+    "error": null,
+    "step": 3,
+    "parentId": "mission-observability-latency-readiness-trace-001-result"
+  }
+]

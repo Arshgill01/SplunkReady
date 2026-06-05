@@ -8506,3 +8506,51 @@ Playwright evidence:
 Open risks:
 - `npm run workbench` intentionally rebuilds on every start. This is simple and reliable for judging, but later cleanup could add a faster already-built mode if startup time becomes a problem.
 - The workbench surface remains broad during implementation. Move 25 tracks final consolidation after proof-building moves are complete.
+
+## 2026-06-05 - Move 21 Submission Evidence Pack
+
+Context:
+- Implemented Move 21 locally without subagents.
+- Did not read, source, or print `.splunkready*` secret env files.
+- Built a tracked, sanitized `submission-evidence/` pack so judges can inspect evidence from a clone without ignored local `artifacts/`, `output/`, or live credentials.
+- Regenerated credential-free fixture proof artifacts from source commit `606e2e6`.
+
+Files touched:
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/suite-proof/**`
+- `submission-evidence/public-proof-export/**`
+- `submission-evidence/screenshots/**`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added a tracked evidence pack under `submission-evidence/`.
+- Added a complete self-verifiable suite proof bundle:
+  - 3 missions;
+  - security and observability domains;
+  - `mutation: false`;
+  - 3 fail-to-pass loops;
+  - 3 READY-after-patch receipts;
+  - 15 final evidence refs;
+  - strict `proof-audit.json`;
+  - `proof-manifest.json`;
+  - `proof-manifest-verification.json`.
+- Added redacted public proof export metadata:
+  - public export manifest;
+  - public export summary;
+  - redacted proof audit;
+  - redacted source proof manifest;
+  - UI artifact selector.
+- Added manually inspected Playwright screenshots:
+  - packaged workbench fixture run;
+  - Vite-backed workbench fixture run;
+  - public proof export Runs view.
+- Excluded trace-preview screenshots from the tracked pack because the mobile trace-preview text still needs final consolidation tracked by Move 25.
+- Added a claim ledger mapping public claims to concrete evidence paths and verification commands.
+- Added a pack-level SHA-256 list.
+
+Open risks:
+- This tracked pack intentionally contains credential-free fixture proof and a redacted public export. Raw live artifacts remain ignored and must not be cited from this pack.
+- Live proof claims remain conditional unless an operator intentionally generates and sanitizes a live evidence export.

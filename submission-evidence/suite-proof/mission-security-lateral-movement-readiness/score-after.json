@@ -1,0 +1,28 @@
+{
+  "missionId": "mission-security-lateral-movement-readiness",
+  "score": 100,
+  "verdict": "READY",
+  "passed": true,
+  "violationIds": [],
+  "criticalViolationIds": [],
+  "highViolationIds": [],
+  "breakdown": {
+    "baseScore": 100,
+    "deductions": [],
+    "totalDeduction": 0,
+    "score": 100,
+    "thresholds": {
+      "readyMinimumScore": 90,
+      "reviewMinimumScore": 75,
+      "readyBlockedBySeverities": [
+        "Critical",
+        "High"
+      ],
+      "notReadyBlockedBySeverities": [
+        "Critical"
+      ]
+    },
+    "blockers": []
+  },
+  "explanation": "Score 100 = 100 - 0; deductions: no deductions. Verdict: READY."
+}

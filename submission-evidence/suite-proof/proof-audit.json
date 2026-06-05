@@ -1,0 +1,73 @@
+{
+  "status": "PASS",
+  "proofType": "suite",
+  "proofDir": "submission-evidence/suite-proof",
+  "mode": "fixture",
+  "mutation": false,
+  "failToPass": true,
+  "readyAfterPatch": true,
+  "proofLoop": "fail-to-pass",
+  "checks": [
+    {
+      "id": "suite-summary-loaded",
+      "status": "PASS",
+      "detail": "Suite proof summary must be present with suite identity and mission count.",
+      "evidence": {
+        "suiteId": "phase-live-multi-mission-proof",
+        "missionCount": 3,
+        "missionIds": [
+          "mission-security-lateral-movement-readiness",
+          "mission-security-exfiltration-readiness",
+          "mission-observability-latency-readiness"
+        ]
+      }
+    },
+    {
+      "id": "suite-status-pass",
+      "status": "PASS",
+      "detail": "Suite proof summary must report PASS.",
+      "evidence": {
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "suite-mutation-false",
+      "status": "PASS",
+      "detail": "Suite proof must declare mutation=false.",
+      "evidence": {
+        "mutation": false
+      }
+    },
+    {
+      "id": "suite-fail-to-pass",
+      "status": "PASS",
+      "detail": "Every mission in the suite must demonstrate NOT READY -> READY.",
+      "evidence": {
+        "missionCount": 3,
+        "failToPass": 3,
+        "missionLoops": [
+          "fail-to-pass",
+          "fail-to-pass",
+          "fail-to-pass"
+        ]
+      }
+    },
+    {
+      "id": "suite-ready-after-patch",
+      "status": "PASS",
+      "detail": "Every mission in the suite must end READY after patch.",
+      "evidence": {
+        "missionCount": 3,
+        "readyAfterPatch": 3
+      }
+    },
+    {
+      "id": "suite-evidence-refs-present",
+      "status": "PASS",
+      "detail": "Suite proof must carry evidence references from final receipts.",
+      "evidence": {
+        "evidenceRefs": 15
+      }
+    }
+  ]
+}

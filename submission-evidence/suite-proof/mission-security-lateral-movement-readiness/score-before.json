@@ -1,0 +1,58 @@
+{
+  "missionId": "mission-security-lateral-movement-readiness",
+  "score": 0,
+  "verdict": "NOT READY",
+  "passed": false,
+  "violationIds": [
+    "violation-mission-security-lateral-movement-readiness-spl-001-mission-security-lateral-movement-readiness-trace-001",
+    "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-001",
+    "violation-mission-security-lateral-movement-readiness-ko-001-mission-security-lateral-movement-readiness-trace-001",
+    "violation-mission-security-lateral-movement-readiness-evd-001-mission-security-lateral-movement-readiness-trace-003",
+    "violation-mission-security-lateral-movement-readiness-ans-001-mission-security-lateral-movement-readiness-trace-003"
+  ],
+  "criticalViolationIds": [
+    "violation-mission-security-lateral-movement-readiness-spl-001-mission-security-lateral-movement-readiness-trace-001",
+    "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-001",
+    "violation-mission-security-lateral-movement-readiness-evd-001-mission-security-lateral-movement-readiness-trace-003",
+    "violation-mission-security-lateral-movement-readiness-ans-001-mission-security-lateral-movement-readiness-trace-003"
+  ],
+  "highViolationIds": [
+    "violation-mission-security-lateral-movement-readiness-ko-001-mission-security-lateral-movement-readiness-trace-001"
+  ],
+  "breakdown": {
+    "baseScore": 100,
+    "deductions": [
+      {
+        "severity": "Critical",
+        "count": 4,
+        "weight": 25,
+        "total": 100
+      },
+      {
+        "severity": "High",
+        "count": 1,
+        "weight": 15,
+        "total": 15
+      }
+    ],
+    "totalDeduction": 115,
+    "score": 0,
+    "thresholds": {
+      "readyMinimumScore": 90,
+      "reviewMinimumScore": 75,
+      "readyBlockedBySeverities": [
+        "Critical",
+        "High"
+      ],
+      "notReadyBlockedBySeverities": [
+        "Critical"
+      ]
+    },
+    "blockers": [
+      "Critical violations force a NOT READY verdict.",
+      "Critical or High violations block a READY verdict.",
+      "Score 0 is below the review threshold 75."
+    ]
+  },
+  "explanation": "Score 0 = 100 - 115; deductions: 4 Critical x 25 = 100; 1 High x 15 = 15. Verdict: NOT READY."
+}

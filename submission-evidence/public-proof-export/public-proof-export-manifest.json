@@ -1,0 +1,129 @@
+{
+  "source": "splunkready-public-proof-export",
+  "generatedAt": "2026-06-05T12:06:19.254Z",
+  "sourceRunId": "run-2026-06-05T12-05-39-854Z-7a57b488",
+  "sourceCommit": "f6406d7478d6",
+  "sourceArtifactBase": "/api/artifacts/run-2026-06-05T12-05-39-854Z-7a57b488",
+  "exportArtifactBase": "/api/artifacts/run-2026-06-05T12-06-19-135Z-44163c4f",
+  "redactionStatus": "REDACTED",
+  "redaction": {
+    "secrets": "redacted",
+    "privateEndpoints": "redacted",
+    "privateIps": "redacted",
+    "userPaths": "redacted",
+    "rawMcpErrorBodies": "redacted"
+  },
+  "aggregateSha256": "8d0001500eea4ed0deffb6dfda68d21ad9cd89f7bc228f6a2753dc881e27b990",
+  "files": [
+    {
+      "path": "environment-contract.json",
+      "sourcePath": "environment-contract.json",
+      "sizeBytes": 14654,
+      "sha256": "d59ea9376707ded4e705746734416133427caa45adb824f66038d8e9a0ca7b81",
+      "redacted": true,
+      "schemaValidated": true
+    },
+    {
+      "path": "missions.json",
+      "sourcePath": "missions.json",
+      "sizeBytes": 2338,
+      "sha256": "d8299285a80192e9433f3108748def64009ac363f6493d3395dbfe97827790fa",
+      "redacted": true,
+      "schemaValidated": false
+    },
+    {
+      "path": "policy-patch.json",
+      "sourcePath": "policy-patch.json",
+      "sizeBytes": 6386,
+      "sha256": "857bab42967bbbe6996f6e718e6f2e20a5ad10a3ef7694d982448d9f859f230e",
+      "redacted": true,
+      "schemaValidated": true
+    },
+    {
+      "path": "proof-audit.json",
+      "sourcePath": "proof-audit.json",
+      "sizeBytes": 2689,
+      "sha256": "3f74558af0632051006c954c10815daca386654c25667d4ba49c5c61ee49831d",
+      "redacted": true,
+      "schemaValidated": false
+    },
+    {
+      "path": "public-proof-summary.json",
+      "sizeBytes": 1554,
+      "sha256": "1313b47d2f2b62a330928e1faa605459f8243783b13bf58100367fefdb8cd7a8",
+      "redacted": true,
+      "schemaValidated": false
+    },
+    {
+      "path": "readiness-profile.json",
+      "sourcePath": "readiness-profile.json",
+      "sizeBytes": 22750,
+      "sha256": "fe42848a4756e193a7e1333d3fbbfc1c8a3e8960ee353862caff3af562f4d0fb",
+      "redacted": true,
+      "schemaValidated": false
+    },
+    {
+      "path": "receipt-after-001.json",
+      "sourcePath": "receipt-after-001.json",
+      "sizeBytes": 1845,
+      "sha256": "5992bc4ce85d41fe99a3be1de1bb55ecc7cc956bb1ecef2366bda26d3ae3eed2",
+      "redacted": true,
+      "schemaValidated": true
+    },
+    {
+      "path": "receipt-before-001.json",
+      "sourcePath": "receipt-before-001.json",
+      "sizeBytes": 2012,
+      "sha256": "ab1128bb735e8c92767d304054ac64e5aefd2edf103aa2644973b66df6b6be11",
+      "redacted": true,
+      "schemaValidated": true
+    },
+    {
+      "path": "source-proof-manifest.json",
+      "sourcePath": "proof-manifest.json",
+      "sizeBytes": 3388,
+      "sha256": "8ea2dec19b9ef7bbe97a2170586f80092a8e8080986300109c67c96390f9c587",
+      "redacted": true,
+      "schemaValidated": false
+    },
+    {
+      "path": "trace-after.json",
+      "sourcePath": "trace-after.json",
+      "sizeBytes": 3330,
+      "sha256": "be99120a52f6b19e9a816e13dcb6bae380bff5b2b3ebeeacb02bb72c50f540bc",
+      "redacted": true,
+      "schemaValidated": true
+    },
+    {
+      "path": "trace-before.json",
+      "sourcePath": "trace-before.json",
+      "sizeBytes": 1863,
+      "sha256": "32bbb5f63d94cf3f72c2fd1dba09066185c119487bcc8ac478504eb3c202d94d",
+      "redacted": true,
+      "schemaValidated": true
+    },
+    {
+      "path": "ui-artifacts.json",
+      "sizeBytes": 340,
+      "sha256": "f5c364572b68f6abb6a38bf7eb2f569582a5666262acd44efed0cc32db1673ca",
+      "redacted": true,
+      "schemaValidated": false
+    },
+    {
+      "path": "violations-after.json",
+      "sourcePath": "violations-after.json",
+      "sizeBytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "redacted": true,
+      "schemaValidated": true
+    },
+    {
+      "path": "violations-before.json",
+      "sourcePath": "violations-before.json",
+      "sizeBytes": 4422,
+      "sha256": "7c52db6bfcb2b3ae93573e9c8f5b80b1090ece52a0b01879449aa30c1f4c93d0",
+      "redacted": true,
+      "schemaValidated": true
+    }
+  ]
+}

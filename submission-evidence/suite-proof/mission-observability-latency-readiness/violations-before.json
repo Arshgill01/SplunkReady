@@ -1,0 +1,62 @@
+[
+  {
+    "id": "violation-mission-observability-latency-readiness-spl-001-mission-observability-latency-readiness-trace-001",
+    "missionId": "mission-observability-latency-readiness",
+    "traceEventId": "mission-observability-latency-readiness-trace-001",
+    "ruleId": "SPL-001",
+    "severity": "Critical",
+    "reason": "Query contains a forbidden SPL pattern.",
+    "evidence": {
+      "query": "search index=* src_ip=* earliest=-15m latest=now",
+      "forbiddenPattern": "index=*"
+    },
+    "suggestedPolicyPatch": "Rewrite the SPL to use an approved index, saved search, or read-only query command.",
+    "contractRef": "contract-acme-soc-dev.forbiddenQueryPatterns"
+  },
+  {
+    "id": "violation-mission-observability-latency-readiness-evd-001-mission-observability-latency-readiness-trace-003",
+    "missionId": "mission-observability-latency-readiness",
+    "traceEventId": "mission-observability-latency-readiness-trace-003",
+    "ruleId": "EVD-001",
+    "severity": "Critical",
+    "reason": "Final answer lacks query or saved-search provenance, result count, or evidence refs.",
+    "evidence": {
+      "finalAnswerId": "mission-observability-latency-readiness-trace-003",
+      "finalResultCount": 0,
+      "finalEvidenceRefs": [],
+      "provenanceRefs": [
+        "fixture-query-miss:c2VhcmNoIGluZGV4PSogc3JjX2lwPSogZWFybGllc3Q9LTE1bSBsYXRlc3Q9bm93"
+      ],
+      "citedProvenanceRefs": []
+    },
+    "suggestedPolicyPatch": "Carry queryRef or saved-search provenance, result count, and evidence refs into the final answer.",
+    "evidenceRefs": []
+  },
+  {
+    "id": "violation-mission-observability-latency-readiness-ans-003-mission-observability-latency-readiness-trace-003",
+    "missionId": "mission-observability-latency-readiness",
+    "traceEventId": "mission-observability-latency-readiness-trace-003",
+    "ruleId": "ANS-003",
+    "severity": "High",
+    "reason": "Final answer does not address the requested mission.",
+    "evidence": {
+      "missionKeywords": [
+        "gateway",
+        "latency",
+        "investigation",
+        "spike",
+        "minutes",
+        "affected",
+        "services",
+        "rows",
+        "used",
+        "observability"
+      ],
+      "matchedKeywords": [],
+      "finalAnswerId": "mission-observability-latency-readiness-trace-003",
+      "finalAnswer": "No evidence was found by the naive broad search."
+    },
+    "suggestedPolicyPatch": "Tie the final answer back to the mission subject, target entity, and requested investigation instead of returning generic troubleshooting text.",
+    "evidenceRefs": []
+  }
+]
