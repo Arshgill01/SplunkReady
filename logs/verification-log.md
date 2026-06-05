@@ -8171,3 +8171,51 @@ Open blockers:
 
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
+
+## 2026-06-05 - Move 43 One-Command Judge Proof Verification
+
+Commands:
+
+- `npm test -- tests/cli/flow.test.ts -t "judge proof"`
+- `npm run build`
+- `npm run judge-proof`
+- `npm run check`
+- `git diff --check`
+- `npm run verify:scaffold && git diff --check && git diff --stat`
+
+Result:
+
+- PASS for targeted judge-proof CLI regression:
+  - 1 test file passed;
+  - 1 test passed and 34 skipped.
+- PASS for `npm run build`.
+- PASS for `npm run judge-proof`:
+  - built the runtime;
+  - ran `judge-proof --out artifacts/judge-proof --json`;
+  - wrote suite proof artifacts, firewall proof artifacts, manifest verification artifacts, `certification-index.json`, `ui-artifacts.json`, and judge proof summaries.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 44 test files passed;
+  - 304 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for explicit final `git diff --check`.
+- PASS for post-log scaffold/whitespace check:
+  - scaffold verified;
+  - `git diff --check` completed with no output;
+  - diff stat confirmed the scope of the tracked edits.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or behavior.
+- The generated `artifacts/judge-proof` bundle is ignored by git.
+
+Open blockers:
+
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to the user.

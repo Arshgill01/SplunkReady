@@ -65,6 +65,7 @@ commands, or filesystem paths.
 | P0 | [40](moves40.md) Artifact symlink read guard | 0.5d | Keeps managed artifact reads from following symlinks out of a run directory. |
 | P0 | [41](moves41.md) Agent trace bridge | 0.5d | Reduces native-agent integration friction without adding framework dependencies or weakening deterministic grading. |
 | P0 | [42](moves42.md) SplunkReady MCP server | 0.5d | Exposes the Agent Readiness Compiler as local MCP certification tools without turning SplunkReady into a Splunk copilot. |
+| P0 | [43](moves43.md) One-command judge proof | 0.5d | Reduces fresh-clone judge friction by composing suite, firewall, audit, manifest, and index proofs into one command. |
 
 ## Non-Negotiable Boundaries
 

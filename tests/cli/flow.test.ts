@@ -661,6 +661,108 @@ describe("SplunkReady CLI flow", () => {
     ]);
   });
 
+  it("runs a one-command judge proof bundle", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-judge-proof-"));
+
+    const output = parseCliJsonOutput((await runCli(["judge-proof", "--out", outDir, "--json"])).stdout);
+    const summary = JSON.parse(await readFile(join(outDir, "judge-proof-summary.json"), "utf8")) as {
+      source: string;
+      status: string;
+      mode: string;
+      mutation: boolean;
+      proofDirs: { suite: string; firewall: string };
+      gates: Array<{ id: string; status: string; artifacts: string[] }>;
+      certificationIndex: string;
+      uiArtifacts: string;
+      nextCommands: string[];
+    };
+    const index = JSON.parse(await readFile(join(outDir, "certification-index.json"), "utf8")) as {
+      status: string;
+      mutation: boolean;
+      totals: { proofs: number; pass: number; warn: number; fail: number };
+      entries: Array<{
+        label: string;
+        proofDir: string;
+        proofType: string;
+        status: string;
+        manifestStatus: string;
+        mutation: boolean | null;
+        missions: string[];
+        domains: string[];
+        proofLoop?: string;
+      }>;
+    };
+    const markdown = await readFile(join(outDir, "judge-proof-summary.md"), "utf8");
+
+    expect(output).toMatchObject({
+      command: "judge-proof",
+      status: "PASS",
+      artifacts: expect.arrayContaining([
+        join(outDir, "judge-proof-summary.json"),
+        join(outDir, "judge-proof-summary.md"),
+        join(outDir, "certification-index.json"),
+        join(outDir, "ui-artifacts.json"),
+        join(outDir, "suite-proof", "proof-audit.json"),
+        join(outDir, "suite-proof", "proof-manifest-verification.json"),
+        join(outDir, "firewall-check", "proof-audit.json"),
+        join(outDir, "firewall-check", "proof-manifest-verification.json")
+      ])
+    });
+    expect(summary).toMatchObject({
+      source: "splunkready-judge-proof",
+      status: "PASS",
+      mode: "fixture",
+      mutation: false,
+      proofDirs: {
+        suite: join(outDir, "suite-proof"),
+        firewall: join(outDir, "firewall-check")
+      },
+      certificationIndex: join(outDir, "certification-index.json"),
+      uiArtifacts: join(outDir, "ui-artifacts.json")
+    });
+    expect(summary.gates).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "suite-proof", status: "PASS" }),
+        expect.objectContaining({ id: "suite-proof-manifest", status: "PASS" }),
+        expect.objectContaining({ id: "firewall-check", status: "PASS" }),
+        expect.objectContaining({ id: "firewall-check-manifest", status: "PASS" }),
+        expect.objectContaining({ id: "certification-index", status: "PASS" })
+      ])
+    );
+    expect(summary.nextCommands).toEqual(expect.arrayContaining(["npm run workbench"]));
+    expect(index).toMatchObject({
+      status: "PASS",
+      mutation: false,
+      totals: { proofs: 2, pass: 2, warn: 0, fail: 0 }
+    });
+    expect(index.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Phase Live multi-mission readiness proof",
+          proofDir: join(outDir, "suite-proof"),
+          proofType: "suite",
+          status: "PASS",
+          manifestStatus: "PASS",
+          mutation: false,
+          domains: ["observability", "security"],
+          proofLoop: "fail-to-pass"
+        }),
+        expect.objectContaining({
+          label: "firewall-check",
+          proofDir: join(outDir, "firewall-check"),
+          proofType: "firewall-block",
+          status: "PASS",
+          manifestStatus: "PASS",
+          mutation: false,
+          missions: ["mission-security-lateral-movement-readiness"],
+          domains: ["security"]
+        })
+      ])
+    );
+    expect(markdown).toContain("SplunkReady Judge Proof");
+    expect(markdown).toContain("certification-index.json");
+  });
+
   it("runs the clean fixture demo orchestration and writes rehearsal artifacts", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-demo-"));
 

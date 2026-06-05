@@ -9390,3 +9390,39 @@ What changed:
 Open blockers:
 - Public video URL remains intentionally deferred to the user.
 - Official feedback submission confirmation remains intentionally deferred to the user.
+
+## 2026-06-05 20:18 - Move 43 One-Command Judge Proof
+
+Scope:
+- Responded to the competitive audit that Platform & Developer Experience could be docked for setup friction and deterministic proof presentation.
+- Added a fixture-only one-command proof bundle path rather than changing the deterministic grading model.
+- Kept live flagship security proof separate because a fresh Splunk trial may not contain operator-owned ES/security datasets.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not touch UI source in this move, so Playwright was not required.
+
+Files changed:
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `package.json`
+- `README.md`
+- `moves/README.md`
+- `moves/moves43.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Commands:
+- `npm test -- tests/cli/flow.test.ts -t "judge proof"`
+- `npm run build`
+- `npm run judge-proof`
+- `npm run check`
+- `git diff --check`
+
+Result:
+- PASS
+
+Notes:
+- `judge-proof` composes the existing strict gates: multi-mission suite proof with fail-to-pass required, suite proof audit, suite manifest verification, firewall proof, firewall manifest verification, and strict certification index generation.
+- `npm run judge-proof` writes the generated proof bundle to ignored `artifacts/judge-proof`.
+- This reduces fresh-clone judge friction without introducing a new grader path, a new dependency, Splunk mutation, or LLM pass/fail authority.

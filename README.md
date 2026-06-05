@@ -22,6 +22,17 @@ Fixture mode is the default path. It requires no Splunk credentials and does not
 
 Prerequisite: Node.js 22 or newer. If you use `nvm`, run `nvm use 22` from the repo root.
 
+For the fastest local proof, run:
+
+```bash
+npm install
+npm run judge-proof
+```
+
+`npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
+
+For the single-mission static replay shell, run:
+
 ```bash
 npm install
 npm run build
