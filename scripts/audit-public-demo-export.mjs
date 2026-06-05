@@ -51,6 +51,8 @@ try {
     "index.html",
     "public-demo-manifest.json",
     "artifacts/mcp-proof/mcp-proof-summary.json",
+    "artifacts/mcp-proof/mcp-client-walkthrough.json",
+    "artifacts/mcp-proof/mcp-client-walkthrough.md",
     "artifacts/suite-proof/suite-proof-summary.json",
     "artifacts/public-proof-export/public-proof-summary.json",
     "screenshots/workbench-mcp-proof.png"

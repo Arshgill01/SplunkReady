@@ -1,0 +1,71 @@
+{
+  "source": "splunkready-mcp-client-walkthrough",
+  "status": "PASS",
+  "artifactPath": "artifacts/mcp-proof/mcp-client-walkthrough.json",
+  "markdownPath": "artifacts/mcp-proof/mcp-client-walkthrough.md",
+  "deterministicAuthority": true,
+  "mutation": false,
+  "servers": [
+    {
+      "name": "splunk",
+      "role": "Existing Splunk MCP Server performs the read-only investigation and returns deployment evidence.",
+      "existingMcpServer": true
+    },
+    {
+      "name": "splunkready",
+      "role": "SplunkReady MCP certifies the captured Splunk MCP transcript into a deterministic Readiness Receipt.",
+      "existingMcpServer": false
+    }
+  ],
+  "stages": [
+    {
+      "id": "client-discovers-two-servers",
+      "title": "MCP client is configured with existing Splunk MCP plus SplunkReady MCP",
+      "server": "client",
+      "evidence": "splunkready://client-config/splunk-and-splunkready"
+    },
+    {
+      "id": "splunk-mcp-investigates",
+      "title": "Agent investigates through read-only Splunk MCP tools",
+      "server": "splunk",
+      "evidence": "splunk_get_knowledge_objects, splunk_run_saved_search"
+    },
+    {
+      "id": "transcript-preserved",
+      "title": "MCP JSON-RPC request/response transcript is preserved without secrets",
+      "server": "client",
+      "evidence": "examples/sample-mcp-transcript-pass.jsonl"
+    },
+    {
+      "id": "splunkready-certifies",
+      "title": "SplunkReady certifies the captured transcript",
+      "server": "splunkready",
+      "evidence": "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json"
+    },
+    {
+      "id": "receipt-is-authoritative",
+      "title": "Readiness Receipt is the authoritative verdict",
+      "server": "splunkready",
+      "evidence": "certificationStatus=PASS; deterministicAuthority=true; mutation=false"
+    }
+  ],
+  "transcript": {
+    "path": "examples/sample-mcp-transcript-pass.jsonl",
+    "splunkToolNames": [
+      "splunk_get_knowledge_objects",
+      "splunk_run_saved_search"
+    ],
+    "splunkToolCallCount": 2,
+    "includesSavedSearchExecution": true,
+    "evidenceRefs": [
+      "evt-102",
+      "evt-118",
+      "evt-141"
+    ]
+  },
+  "receipt": {
+    "path": "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+    "status": "PASS",
+    "authoritative": true
+  }
+}

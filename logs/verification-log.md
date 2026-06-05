@@ -9850,6 +9850,86 @@ Open blockers:
 - External Netlify URL remains blocked until auth/link status can be confirmed
   non-interactively.
 
+## 2026-06-06 - Move 92 MCP Client Walkthrough Evidence
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "one-command MCP server proof"`
+- `npm run mcp-proof`
+- `npm run splunkready -- verify-manifest --out artifacts/mcp-proof/mcp-transcript-certification --json`
+- `rm -rf submission-evidence/mcp-proof && mkdir -p submission-evidence/mcp-proof && cp -R artifacts/mcp-proof/. submission-evidence/mcp-proof/`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:public-demo-export`
+- `npm run audit:submission-copy`
+- `npm run check`
+- `git diff --check`
+- `npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused MCP proof CLI validation:
+  - 1 test file passed;
+  - 1 test passed;
+  - 39 tests skipped by focused pattern.
+- PASS for built CLI MCP proof:
+  - `mcp-proof` returned `PASS`;
+  - artifacts now include `mcp-client-walkthrough.json` and
+    `mcp-client-walkthrough.md`;
+  - walkthrough reports two servers, 5 stages, 2 captured `splunk_*` tool calls,
+    saved-search execution, 3 evidence refs, deterministic authority, and
+    `mutation=false`.
+- PASS for artifact manifest verification:
+  - `artifacts/mcp-proof/mcp-transcript-certification/proof-manifest-verification.json`
+    was written with status `PASS`.
+- PASS for tracked submission evidence refresh:
+  - copied credential-free MCP proof artifacts into `submission-evidence/mcp-proof`;
+  - added `mcp-client-walkthrough.json` and `mcp-client-walkthrough.md`;
+  - regenerated and verified `submission-evidence/evidence-pack-sha256.txt`.
+- PASS for targeted public demo and submission audits:
+  - public demo export audit passed with 111 files, `mutation=false`, and the
+    MCP proof default route;
+  - submission copy audit passed with 28 required claims.
+- PASS for full `npm run check`:
+  - scaffold verified with 85 waves and 1985 project files;
+  - runtime contracts verified 19 rules, 4 fixture missions, and 20 evidence
+    refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 111 files;
+  - package readiness audit checked 162 dry-run packed files;
+  - package installability audit installed the package tarball and verified
+    `npx splunkready judge-proof` returned PASS;
+  - 56 test files passed;
+  - 346 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for tracked submission MCP manifest verification:
+  - `submission-evidence/mcp-proof/mcp-transcript-certification/proof-manifest-verification.json`
+    was written with status `PASS`;
+  - evidence SHA-256 ledger was regenerated and verified again after that
+    tracked verification update.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- The proof is still captured credential-free MCP transcript evidence, not a
+  public live MCP-client screencast.
+- Public npm publication and external hosted URL remain open release gaps.
+
 ## 2026-06-06 - Move 84 Package Installability Audit
 
 Commands:

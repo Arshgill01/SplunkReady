@@ -1,13 +1,13 @@
 # SplunkReady Submission Evidence
 
-Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82 MCP workbench evidence.
+Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence.
 
 This directory is the judge-facing evidence pack. It is tracked in git so it can be inspected from a clean clone without access to ignored local `artifacts/`, `.splunkready*` env files, live credentials, or private deployment details.
 
 ## Contents
 
 - `suite-proof/`: credential-free multi-mission fixture proof. It includes the full proof bundle, compiler diagnostics, strict `proof-audit.json`, `proof-manifest.json`, and `proof-manifest-verification.json`.
-- `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, discovers tools/resources/prompts, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript, and verifies the nested transcript proof manifest.
+- `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, discovers tools/resources/prompts, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript, writes a client walkthrough showing existing Splunk MCP investigation followed by SplunkReady certification, and verifies the nested transcript proof manifest.
 - `public-proof-export/`: redacted derivative export generated from a managed workbench run. It includes the public export manifest, summary, audit, receipts, traces, redacted source proof manifest, and manifest verification. It is intentionally not the unredacted source proof.
 - `screenshots/`: Playwright screenshots for the packaged workbench fixture run, trace timeline, MCP proof view, and verified public proof export UI. The earlier Vite-backed fixture screenshot is retained as historical evidence but is not the primary refreshed screenshot.
 - `claim-ledger.md`: public claim to evidence mapping.
@@ -40,9 +40,10 @@ Expected proof status:
 - manifest verification: `PASS`
 - compiler diagnostics: present
 - MCP proof status: `PASS`
-- MCP resources: `7`
-- MCP prompts: `4`
+- MCP resources: `8`
+- MCP prompts: `5`
 - dual-server MCP client kit: `splunkready://client-config/splunk-and-splunkready`
+- MCP client walkthrough: `PASS`
 - certified Splunk MCP tools: `splunk_get_knowledge_objects`, `splunk_run_saved_search`
 
 ## Redaction Boundary

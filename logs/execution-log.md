@@ -11410,3 +11410,46 @@ Open blockers:
   status could not be confirmed non-interactively.
 - Public npm publication, external hosted URL, refreshed evidence beyond the
   current tracked pack, and live/public MCP demonstration gaps remain open.
+
+## 2026-06-06 04:20 - Move 92 MCP Client Walkthrough Evidence
+
+Scope:
+- Continued without subagents per user instruction.
+- Targeted Minimax's Best Use of MCP cap: the stronger story is existing Splunk
+  MCP usage plus SplunkReady certification, not a larger local certifier server.
+- Added generated `mcp-client-walkthrough.json` and
+  `mcp-client-walkthrough.md` artifacts to the `mcp-proof` workflow.
+- The walkthrough records two MCP servers:
+  - `splunk`: existing Splunk MCP Server for read-only investigation and
+    deployment evidence.
+  - `splunkready`: local certification MCP server for deterministic Readiness
+    Receipts.
+- The walkthrough records five stages: client discovers two servers, Splunk MCP
+  investigates, transcript is preserved, SplunkReady certifies, and the receipt
+  remains authoritative.
+- Refreshed tracked credential-free `submission-evidence/mcp-proof` from the
+  regenerated proof bundle.
+- Updated the public demo export audit to require the walkthrough JSON and
+  Markdown files.
+- Updated the evidence README, claim ledger, and SHA-256 ledger.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+
+Files changed:
+- `src/workflows/mcp-proof.ts`
+- `tests/cli/flow.test.ts`
+- `scripts/audit-public-demo-export.mjs`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/mcp-proof/**`
+- `moves/README.md`
+- `moves/moves92.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- This is still captured credential-free MCP transcript evidence, not a live
+  public MCP-client screencast.
+- Public npm publication and external hosted URL remain separate release gaps.

@@ -412,3 +412,10 @@ manifest/default-route/proof-bundle/screenshot/no-symlink/no-secret-filename
 invariants. It does not eliminate the external hosted URL cap: `npx netlify
 status` still hung before auth/link status could be confirmed, so no Netlify
 deploy was attempted.
+
+Move 92 reduces the MCP award-positioning risk by adding generated
+`mcp-client-walkthrough.json` and `.md` artifacts to the MCP proof and tracked
+submission evidence. The walkthrough makes the existing Splunk MCP Server the
+read-only investigation server and SplunkReady MCP the deterministic
+certification server, with saved-search evidence refs and mutation=false. This
+still does not eliminate the live/public MCP-client screencast gap.

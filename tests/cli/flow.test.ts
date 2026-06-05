@@ -1364,7 +1364,40 @@ describe("SplunkReady CLI flow", () => {
         deterministicAuthority: boolean;
         mutation: boolean;
       };
+      clientWalkthrough: {
+        source: string;
+        status: string;
+        artifactPath: string;
+        markdownPath: string;
+        deterministicAuthority: boolean;
+        mutation: boolean;
+        servers: Array<{ name: string; role: string; existingMcpServer: boolean }>;
+        stages: Array<{ id: string; title: string; server: string; evidence: string }>;
+        transcript: {
+          path: string;
+          splunkToolNames: string[];
+          splunkToolCallCount: number;
+          includesSavedSearchExecution: boolean;
+          evidenceRefs: string[];
+        };
+        receipt: { path: string; status: string; authoritative: boolean };
+      };
       artifacts: string[];
+    };
+    const clientWalkthrough = JSON.parse(await readFile(join(outDir, "mcp-client-walkthrough.json"), "utf8")) as {
+      source: string;
+      status: string;
+      mutation: boolean;
+      deterministicAuthority: boolean;
+      servers: Array<{ name: string; role: string; existingMcpServer: boolean }>;
+      stages: Array<{ id: string; server: string; evidence: string }>;
+      transcript: {
+        splunkToolNames: string[];
+        splunkToolCallCount: number;
+        includesSavedSearchExecution: boolean;
+        evidenceRefs: string[];
+      };
+      receipt: { status: string; authoritative: boolean };
     };
     const transcriptProofDir = join(outDir, "mcp-transcript-certification");
 
@@ -1374,6 +1407,8 @@ describe("SplunkReady CLI flow", () => {
       artifacts: expect.arrayContaining([
         join(outDir, "mcp-proof-summary.json"),
         join(outDir, "mcp-proof-summary.md"),
+        join(outDir, "mcp-client-walkthrough.json"),
+        join(outDir, "mcp-client-walkthrough.md"),
         join(transcriptProofDir, "receipt-external-001.json")
       ])
     });
@@ -1430,6 +1465,26 @@ describe("SplunkReady CLI flow", () => {
         ],
         deterministicAuthority: true,
         mutation: false
+      },
+      clientWalkthrough: {
+        source: "splunkready-mcp-client-walkthrough",
+        status: "PASS",
+        artifactPath: join(outDir, "mcp-client-walkthrough.json"),
+        markdownPath: join(outDir, "mcp-client-walkthrough.md"),
+        deterministicAuthority: true,
+        mutation: false,
+        transcript: {
+          path: "examples/sample-mcp-transcript-pass.jsonl",
+          splunkToolNames: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+          splunkToolCallCount: 2,
+          includesSavedSearchExecution: true,
+          evidenceRefs: ["evt-102", "evt-118", "evt-141"]
+        },
+        receipt: {
+          path: join(transcriptProofDir, "receipt-external-001.json"),
+          status: "PASS",
+          authoritative: true
+        }
       }
     });
     expect(summary.splunkMcpBoundary.localMcpServerRole).toContain("certification interface");
@@ -1473,9 +1528,46 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.agentDrivenWorkflow.splunkMcpServerRole).toContain("read-only investigation");
     expect(summary.agentDrivenWorkflow.splunkReadyMcpServerRole).toContain("deterministic certification");
     expect(summary.agentDrivenWorkflow.stages).toHaveLength(4);
+    expect(summary.clientWalkthrough.servers).toEqual([
+      expect.objectContaining({ name: "splunk", existingMcpServer: true }),
+      expect.objectContaining({ name: "splunkready", existingMcpServer: false })
+    ]);
+    expect(summary.clientWalkthrough.stages.map((stage) => stage.id)).toEqual([
+      "client-discovers-two-servers",
+      "splunk-mcp-investigates",
+      "transcript-preserved",
+      "splunkready-certifies",
+      "receipt-is-authoritative"
+    ]);
+    expect(clientWalkthrough).toMatchObject({
+      source: "splunkready-mcp-client-walkthrough",
+      status: "PASS",
+      mutation: false,
+      deterministicAuthority: true,
+      transcript: {
+        splunkToolNames: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+        splunkToolCallCount: 2,
+        includesSavedSearchExecution: true,
+        evidenceRefs: ["evt-102", "evt-118", "evt-141"]
+      },
+      receipt: { status: "PASS", authoritative: true }
+    });
+    expect(clientWalkthrough.servers).toEqual([
+      expect.objectContaining({ name: "splunk", existingMcpServer: true }),
+      expect.objectContaining({ name: "splunkready", existingMcpServer: false })
+    ]);
+    expect(clientWalkthrough.stages.map((stage) => stage.server)).toEqual([
+      "client",
+      "splunk",
+      "client",
+      "splunkready",
+      "splunkready"
+    ]);
     expect(summary.tools.every((tool) => tool.destructiveHint === false)).toBe(true);
     expect(summary.artifacts).toEqual(
       expect.arrayContaining([
+        join(outDir, "mcp-client-walkthrough.json"),
+        join(outDir, "mcp-client-walkthrough.md"),
         join(transcriptProofDir, "uploaded-mcp-transcript.jsonl"),
         join(transcriptProofDir, "trace-external.json"),
         join(transcriptProofDir, "receipt-external-001.json"),

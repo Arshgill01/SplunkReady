@@ -110,6 +110,37 @@ interface McpProofSummary {
     deterministicAuthority: true;
     mutation: false;
   };
+  clientWalkthrough: {
+    source: "splunkready-mcp-client-walkthrough";
+    status: "PASS" | "FAIL";
+    artifactPath: string;
+    markdownPath: string;
+    deterministicAuthority: true;
+    mutation: false;
+    servers: Array<{
+      name: string;
+      role: string;
+      existingMcpServer: boolean;
+    }>;
+    stages: Array<{
+      id: string;
+      title: string;
+      server: string;
+      evidence: string;
+    }>;
+    transcript: {
+      path: string;
+      splunkToolNames: string[];
+      splunkToolCallCount: number;
+      includesSavedSearchExecution: boolean;
+      evidenceRefs: string[];
+    };
+    receipt: {
+      path: string;
+      status: "PASS" | "FAIL";
+      authoritative: true;
+    };
+  };
   artifacts: string[];
   nextCommands: string[];
 }
@@ -260,7 +291,45 @@ Splunk MCP boundary: ${summary.splunkMcpBoundary.status}
 MCP composition scorecard: ${summary.mcpComposition.status} (${summary.mcpComposition.score}/100)
 ${summary.mcpComposition.checks.map((check) => `- ${check.id}: ${check.status} - ${check.evidence}`).join("\n")}
 
+MCP client walkthrough: ${summary.clientWalkthrough.status}
+- Artifact: ${summary.clientWalkthrough.artifactPath}
+- Markdown: ${summary.clientWalkthrough.markdownPath}
+- Existing Splunk MCP server: ${summary.clientWalkthrough.servers.find((server) => server.name === "splunk")?.role ?? ""}
+- SplunkReady role: ${summary.clientWalkthrough.servers.find((server) => server.name === "splunkready")?.role ?? ""}
+${summary.clientWalkthrough.stages.map((stage) => `- ${stage.id}: ${stage.title} (${stage.server}) - ${stage.evidence}`).join("\n")}
+
 Receipt: ${stringFromRecord(summary.transcriptCertification, "outDir")}/receipt-external-001.json
+`;
+
+const mcpClientWalkthroughMarkdown = (walkthrough: McpProofSummary["clientWalkthrough"]): string => `# Splunk MCP Client Walkthrough
+
+Status: ${walkthrough.status}
+
+Mutation: ${walkthrough.mutation ? "yes" : "no"}
+
+Deterministic authority: ${walkthrough.deterministicAuthority ? "yes" : "no"}
+
+## Servers
+
+${walkthrough.servers.map((server) => `- ${server.name}: ${server.role} existingMcpServer=${server.existingMcpServer}`).join("\n")}
+
+## Stages
+
+${walkthrough.stages.map((stage) => `- ${stage.id}: ${stage.title}\n  - Server: ${stage.server}\n  - Evidence: ${stage.evidence}`).join("\n")}
+
+## Transcript
+
+- Path: ${walkthrough.transcript.path}
+- Splunk tools: ${walkthrough.transcript.splunkToolNames.join(", ")}
+- Splunk tool calls: ${walkthrough.transcript.splunkToolCallCount}
+- Saved-search execution: ${walkthrough.transcript.includesSavedSearchExecution ? "yes" : "no"}
+- Evidence refs: ${walkthrough.transcript.evidenceRefs.join(", ")}
+
+## Receipt
+
+- Path: ${walkthrough.receipt.path}
+- Status: ${walkthrough.receipt.status}
+- Authoritative: ${walkthrough.receipt.authoritative ? "yes" : "no"}
 `;
 
 const stringArray = (value: unknown): string[] =>
@@ -474,11 +543,94 @@ const buildMcpCompositionScorecard = (input: {
   };
 };
 
+const buildMcpClientWalkthrough = (input: {
+  artifactPath: string;
+  markdownPath: string;
+  transcriptPath: string;
+  splunkMcpBoundary: McpProofSummary["splunkMcpBoundary"];
+  transcriptCertification: Record<string, unknown>;
+}): McpProofSummary["clientWalkthrough"] => {
+  const certificationStatus =
+    stringFromRecord(input.transcriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
+  const hasSplunkEvidence =
+    input.splunkMcpBoundary.splunkToolCallCount > 0 &&
+    input.splunkMcpBoundary.includesSavedSearchExecution &&
+    input.splunkMcpBoundary.evidenceRefs.length > 0;
+  const status = certificationStatus === "PASS" && hasSplunkEvidence ? "PASS" : "FAIL";
+
+  return {
+    source: "splunkready-mcp-client-walkthrough",
+    status,
+    artifactPath: input.artifactPath,
+    markdownPath: input.markdownPath,
+    deterministicAuthority: true,
+    mutation: false,
+    servers: [
+      {
+        name: "splunk",
+        role: "Existing Splunk MCP Server performs the read-only investigation and returns deployment evidence.",
+        existingMcpServer: true
+      },
+      {
+        name: "splunkready",
+        role: "SplunkReady MCP certifies the captured Splunk MCP transcript into a deterministic Readiness Receipt.",
+        existingMcpServer: false
+      }
+    ],
+    stages: [
+      {
+        id: "client-discovers-two-servers",
+        title: "MCP client is configured with existing Splunk MCP plus SplunkReady MCP",
+        server: "client",
+        evidence: "splunkready://client-config/splunk-and-splunkready"
+      },
+      {
+        id: "splunk-mcp-investigates",
+        title: "Agent investigates through read-only Splunk MCP tools",
+        server: "splunk",
+        evidence: input.splunkMcpBoundary.certifiedToolNames.join(", ")
+      },
+      {
+        id: "transcript-preserved",
+        title: "MCP JSON-RPC request/response transcript is preserved without secrets",
+        server: "client",
+        evidence: input.transcriptPath
+      },
+      {
+        id: "splunkready-certifies",
+        title: "SplunkReady certifies the captured transcript",
+        server: "splunkready",
+        evidence: input.splunkMcpBoundary.receiptPath
+      },
+      {
+        id: "receipt-is-authoritative",
+        title: "Readiness Receipt is the authoritative verdict",
+        server: "splunkready",
+        evidence: `certificationStatus=${certificationStatus}; deterministicAuthority=true; mutation=false`
+      }
+    ],
+    transcript: {
+      path: input.transcriptPath,
+      splunkToolNames: input.splunkMcpBoundary.certifiedToolNames,
+      splunkToolCallCount: input.splunkMcpBoundary.splunkToolCallCount,
+      includesSavedSearchExecution: input.splunkMcpBoundary.includesSavedSearchExecution,
+      evidenceRefs: input.splunkMcpBoundary.evidenceRefs
+    },
+    receipt: {
+      path: input.splunkMcpBoundary.receiptPath,
+      status: certificationStatus,
+      authoritative: true
+    }
+  };
+};
+
 export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise<McpProofWorkflowResult> => {
   const transcriptPath = input.transcriptPath ?? defaultTranscriptPath;
   const transcriptOutDir = join(input.outDir, "mcp-transcript-certification");
   const summaryPath = join(input.outDir, "mcp-proof-summary.json");
   const markdownPath = join(input.outDir, "mcp-proof-summary.md");
+  const clientWalkthroughPath = join(input.outDir, "mcp-client-walkthrough.json");
+  const clientWalkthroughMarkdownPath = join(input.outDir, "mcp-client-walkthrough.md");
 
   await mkdir(input.outDir, { recursive: true });
   await mkdir(transcriptOutDir, { recursive: true });
@@ -612,6 +764,13 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       agentDrivenWorkflow,
       splunkMcpBoundary
     });
+    const clientWalkthrough = buildMcpClientWalkthrough({
+      artifactPath: clientWalkthroughPath,
+      markdownPath: clientWalkthroughMarkdownPath,
+      transcriptPath,
+      splunkMcpBoundary,
+      transcriptCertification
+    });
     const summary: McpProofSummary = {
       source: "splunkready-mcp-proof",
       status: certificationStatus,
@@ -640,7 +799,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       agentDrivenWorkflow,
       splunkMcpBoundary,
       mcpComposition,
-      artifacts: [summaryPath, markdownPath, ...toolArtifacts],
+      clientWalkthrough,
+      artifacts: [summaryPath, markdownPath, clientWalkthroughPath, clientWalkthroughMarkdownPath, ...toolArtifacts],
       nextCommands: [
         `npm run mcp`,
         `npm run splunkready -- certify-mcp-transcript --transcript ${transcriptPath} --out ${transcriptOutDir} --strict-import true --require-pass true --agent-name "External MCP Agent" --agent-version "mcp-proof-jsonrpc-pass" --json`
@@ -649,6 +809,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
 
     await writeFile(summaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
     await writeFile(markdownPath, mcpProofMarkdown(summary), "utf8");
+    await writeFile(clientWalkthroughPath, `${JSON.stringify(clientWalkthrough, null, 2)}\n`, "utf8");
+    await writeFile(clientWalkthroughMarkdownPath, mcpClientWalkthroughMarkdown(clientWalkthrough), "utf8");
 
     return {
       status: summary.status,
