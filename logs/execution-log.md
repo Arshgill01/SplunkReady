@@ -11371,3 +11371,42 @@ Open blockers:
   evidence, and live/public MCP demonstration gaps.
 - This move is not a UI change and does not address hosted demo, public package
   publication, or live proof export caps.
+
+## 2026-06-06 03:40 - Move 91 Public Demo Export Gate
+
+Scope:
+- Shifted from CLI cleanup to the hosted-demo cap without using subagents.
+- Checked `npx netlify status`; it fetched the Netlify CLI and then hung with
+  no auth/link status, matching the existing risk register blocker. The probe
+  was killed and no external deploy was attempted.
+- Added `scripts/audit-public-demo-export.mjs`.
+- Added `audit:public-demo-export` to `package.json` and included it in
+  `npm run check` after `ui:build`.
+- The audit regenerates `artifacts/public-demo` from `dist-ui` and tracked
+  `submission-evidence`, then verifies the manifest source, default MCP proof
+  route, required proof bundles, screenshots, no symlinks, no secret-named
+  files, and `mutation=false`.
+- Removed ignored local `.playwright-cli/` scratch output.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+
+Files changed:
+- `scripts/audit-public-demo-export.mjs`
+- `package.json`
+- `moves/README.md`
+- `moves/moves91.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+What changed:
+- The public demo static export is now continuously verified by the canonical
+  gate.
+- Targeted verification produced `artifacts/public-demo` with 109 files,
+  `mutation=false`, and `defaultRoute=mcp-proof`.
+
+Open blockers:
+- This does not create a public Netlify URL because local Netlify auth/link
+  status could not be confirmed non-interactively.
+- Public npm publication, external hosted URL, refreshed evidence beyond the
+  current tracked pack, and live/public MCP demonstration gaps remain open.

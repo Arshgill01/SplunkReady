@@ -113,6 +113,7 @@ commands, or filesystem paths.
 | P0 | [88](moves88.md) CLI external command extraction | 0.5d | Extracts external trace, transcript, LLM-agent, and demo command wrappers out of the root CLI executor. |
 | P0 | [89](moves89.md) CLI live command extraction | 0.5d | Extracts live-mode command wrappers and live CLI helper exports out of the root CLI executor. |
 | P0 | [90](moves90.md) CLI dispatch extraction | 0.5d | Extracts command routing out of the root CLI entrypoint while preserving CLI behavior. |
+| P0 | [91](moves91.md) Public demo export gate | 0.5d | Makes the credential-free public demo export a canonical verified artifact. |
 
 ## Non-Negotiable Boundaries
 

@@ -9794,6 +9794,62 @@ Open blockers:
 - Remaining high-leverage caps are now package publication, hosted demo proof,
   refreshed evidence, and live/public MCP demonstration gaps.
 
+## 2026-06-06 - Move 91 Public Demo Export Gate
+
+Commands:
+
+- `npx netlify status`
+- `pkill -f "netlify status" || true`
+- `rm -rf .playwright-cli`
+- `npm run ui:build && npm run audit:public-demo-export`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PARTIAL for Netlify status:
+  - `npx netlify status` fetched `netlify@26.1.0` and then hung without
+    reporting auth/link status;
+  - the probe was killed;
+  - no external deploy was attempted.
+- PASS for targeted public demo export:
+  - production UI build completed;
+  - public demo export audit passed with 109 files;
+  - manifest preserved `mutation=false`;
+  - default route is the MCP proof workbench route.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 109 files, `mutation=false`, and the
+    MCP proof default route;
+  - package readiness audit checked 162 dry-run packed files;
+  - package installability audit installed the package tarball and verified
+    `npx splunkready judge-proof` returned PASS;
+  - 56 test files passed;
+  - 346 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for explicit whitespace check:
+  - `git diff --check` completed with no output after the full gate.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- External Netlify URL remains blocked until auth/link status can be confirmed
+  non-interactively.
+
 ## 2026-06-06 - Move 84 Package Installability Audit
 
 Commands:

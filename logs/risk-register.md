@@ -404,3 +404,11 @@ dispatch into `src/cli/dispatch.ts` and moving hosted-model helper exports into
 before the move and 634 lines before Moves 87-90. Remaining CLI risk is no
 longer a major probability cap; package publication, hosted demo proof,
 refreshed evidence, and live/public MCP demonstration gaps are higher leverage.
+
+Move 91 reduces the hosted-demo reproducibility risk by adding a canonical
+`audit:public-demo-export` gate. The gate regenerates `artifacts/public-demo`
+from the built Vite workbench plus tracked credential-free evidence and verifies
+manifest/default-route/proof-bundle/screenshot/no-symlink/no-secret-filename
+invariants. It does not eliminate the external hosted URL cap: `npx netlify
+status` still hung before auth/link status could be confirmed, so no Netlify
+deploy was attempted.
