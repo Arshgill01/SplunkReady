@@ -9986,6 +9986,67 @@ Open blockers:
 - This does not provide public hosted-model credentials or a live public LLM
   run; it makes the configured LLM path part of the main judge proof.
 
+## 2026-06-06 - Move 94 NPM Release Preflight
+
+Commands:
+
+- `npm whoami`
+- `npm view splunkready version --json`
+- `npm view splunkready name versions --json`
+- `npm run audit:npm-release-preflight`
+- `npm run check`
+
+Result:
+
+- BLOCKED for npm auth probe:
+  - `npm whoami` returned `ENEEDAUTH`;
+  - no npm token or secret file was read or printed.
+- PASS for npm package-name availability probe:
+  - `npm view splunkready ...` returned npm `E404`;
+  - interpreted as package name `splunkready` currently unclaimed on npm.
+- BLOCKED for release preflight:
+  - source: `splunkready-npm-release-preflight`;
+  - status: `BLOCKED`;
+  - package `splunkready@0.1.0`;
+  - `publishConfig.access=public`;
+  - registry status `UNCLAIMED`;
+  - current version available: `true`;
+  - `npm pack --dry-run --json` succeeded with 162 files;
+  - blocker: npm auth is not configured;
+  - release command remains `npm publish --access public`;
+  - mutation: `false`.
+- PASS for full `npm run check`:
+  - scaffold verified with 85 waves and 1988 project files;
+  - runtime contracts verified 19 rules, 4 fixture missions, and 20 evidence
+    refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 111 files;
+  - package readiness audit checked 162 dry-run packed files;
+  - package installability audit installed the package tarball and verified
+    `npx splunkready judge-proof` returned PASS;
+  - 56 test files passed;
+  - 346 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- Did not run `npm publish`.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Actual npm publication remains blocked until npm auth is configured and the
+  external release action is approved/executed.
+
 ## 2026-06-06 - Move 84 Package Installability Audit
 
 Commands:

@@ -63,7 +63,16 @@ The `splunkready` bin resolves the bundled default fixture, mission, and suite
 paths even when it is run from outside the repository root. The repository is
 configured for public package publication and the canonical gate runs a package
 readiness audit with `npm pack --dry-run`; actual registry publication remains
-an explicit release action.
+an explicit release action. To check the final npm blocker without publishing,
+run:
+
+```bash
+npm run audit:npm-release-preflight
+```
+
+That preflight checks package metadata, dry-run pack contents, npm registry
+version availability, and local npm authentication. It prints `BLOCKED` when the
+package is ready but the machine is not logged in to npm.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:

@@ -11488,3 +11488,37 @@ Open blockers:
 - This does not provide public hosted-model credentials or a live public LLM
   run; it makes the configured path part of the main judge proof.
 - Deterministic grading remains authoritative by design.
+
+## 2026-06-06 05:10 - Move 94 NPM Release Preflight
+
+Scope:
+- Targeted the public npm package cap without performing the external publish
+  action.
+- Added `scripts/audit-npm-release-preflight.mjs`.
+- Added `npm run audit:npm-release-preflight`.
+- The preflight checks:
+  - package metadata and public publish config;
+  - `npm whoami` auth state;
+  - npm registry package/version availability;
+  - `npm pack --dry-run --json` file count;
+  - release command to run after auth is configured.
+- Current result is `BLOCKED`, not `FAIL`: `splunkready` is unclaimed on npm,
+  version `0.1.0` is available, and the dry-run tarball has 162 files, but
+  local npm auth is missing.
+- Did not run `npm publish`.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+
+Files changed:
+- `scripts/audit-npm-release-preflight.mjs`
+- `package.json`
+- `README.md`
+- `moves/README.md`
+- `moves/moves94.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Actual npm publication remains blocked until npm auth is configured and the
+  external release action is approved/executed.

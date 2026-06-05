@@ -116,6 +116,7 @@ commands, or filesystem paths.
 | P0 | [91](moves91.md) Public demo export gate | 0.5d | Makes the credential-free public demo export a canonical verified artifact. |
 | P0 | [92](moves92.md) MCP client walkthrough evidence | 0.5d | Makes the MCP proof show an existing Splunk MCP client workflow before SplunkReady certification. |
 | P0 | [93](moves93.md) Judge proof LLM activation | 0.5d | Makes judge proof include model-produced trace evidence when LLM mode is operator-enabled. |
+| P0 | [94](moves94.md) NPM release preflight | 0.5d | Makes public npm package readiness and publish blockers machine-checkable without publishing. |
 
 ## Non-Negotiable Boundaries
 

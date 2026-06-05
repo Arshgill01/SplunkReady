@@ -427,3 +427,9 @@ suite and firewall proofs are forced back to deterministic fixture mode so LLM
 mode cannot accidentally leak into the credential-free gate. If LLM mode is
 enabled without `GEMINI_API_KEY`, `judge-proof` now reports
 `llmEvidence.status=NOT_CONFIGURED` instead of failing the base proof.
+
+Move 94 reduces the public-package release risk by adding
+`audit:npm-release-preflight`. Current preflight status is `BLOCKED`: npm
+reports package name `splunkready` as unclaimed and `0.1.0` as available, and
+`npm pack --dry-run` succeeds with 162 files, but local npm auth is missing
+(`ENEEDAUTH`). No publish action was attempted.
