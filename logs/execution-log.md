@@ -9474,6 +9474,45 @@ Open blockers:
 - Official feedback submission confirmation remains intentionally deferred to
   the user.
 
+## 2026-06-05 20:44 - Move 46 MCP Server Proof Command
+
+Scope:
+- Responded to the competitive audit's Best Use of MCP positioning concern.
+- Added a one-command local proof for SplunkReady's stdio MCP certification
+  server rather than expanding into a Splunk search/copilot MCP server.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret files.
+- Did not change UI source in this move, so Playwright is not required.
+
+Files changed:
+- `src/workflows/mcp-proof.ts`
+- `src/cli.ts`
+- `tests/cli/flow.test.ts`
+- `package.json`
+- `README.md`
+- `examples/README.md`
+- `moves/README.md`
+- `moves/moves46.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+What changed:
+- Added `mcp-proof`, a fixture-only command that starts the built MCP stdio
+  server as a child process and exercises MCP JSON-RPC directly.
+- The proof negotiates `initialize`, lists non-destructive certification tools,
+  calls `splunkready_describe_certification`, and certifies the passing MCP
+  transcript through `splunkready_certify_mcp_transcript`.
+- Added `npm run mcp-proof` for the fresh-clone proof path.
+- Added a CLI regression that verifies the proof summary, tool list,
+  no-mutation posture, and generated Readiness Receipt artifacts.
+- Documented the MCP proof path in README and examples.
+
+Open blockers:
+- Public video URL remains intentionally deferred to the user.
+- Official feedback submission confirmation remains intentionally deferred to
+  the user.
+
 ## 2026-06-05 20:38 - Move 45 Callback Trace Capture
 
 Scope:

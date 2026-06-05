@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { copyFile, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, sep } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { createFixtureSplunkAccessAdapter, loadFixtureSplunkDatasetFromFile } from "./adapters/fixture.js";
 import {
@@ -71,6 +71,7 @@ import type {
   ManifestVerificationWorkflowInput,
   ManifestVerificationWorkflowResult
 } from "./workflows/manifest-verification.js";
+import { runMcpProofWorkflow } from "./workflows/mcp-proof.js";
 import type {
   PolicyWorkbenchWorkflowInput,
   PolicyWorkbenchWorkflowResult
@@ -307,6 +308,7 @@ Commands:
   verify-manifest --out <dir> [--json]
   certification-index --proof-dirs <dir[,dir]> --out <dir> [--require-pass true|false] [--json]
   judge-proof --out <dir> [--json]
+  mcp-proof --out <dir> [--transcript <path>] [--json]
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]
   live-security-kit --out <dir> [--json]
@@ -3463,6 +3465,21 @@ const judgeProofCommand = async (options: CliOptions, env: NodeJS.ProcessEnv = p
   return [...new Set([...artifacts, ...indexArtifacts, summaryPath, markdownPath])];
 };
 
+const mcpProofCommand = async (options: CliOptions): Promise<string[]> => {
+  const cliDir = dirname(fileURLToPath(import.meta.url));
+  const result = await runMcpProofWorkflow({
+    outDir: options.out,
+    serverPath: join(cliDir, "mcp", "server.js"),
+    transcriptPath: options.transcript || undefined
+  });
+
+  if (options.requirePass && result.status !== "PASS") {
+    throw new Error(`mcp-proof strict gate failed with ${result.status}. Inspect ${join(options.out, "mcp-proof-summary.json")}.`);
+  }
+
+  return result.artifacts;
+};
+
 const fixtureCertificationSteps = (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
@@ -3860,6 +3877,8 @@ const main = async (): Promise<void> => {
     artifacts = await certificationIndexCommand(options);
   } else if (command === "judge-proof") {
     artifacts = await judgeProofCommand(options);
+  } else if (command === "mcp-proof") {
+    artifacts = await mcpProofCommand(options);
   } else if (command === "live-candidates") {
     artifacts = await liveCandidatesCommand(options);
   } else if (command === "live-security-check") {

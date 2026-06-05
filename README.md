@@ -31,6 +31,21 @@ npm run judge-proof
 
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 
+To prove the local MCP certification server path, run:
+
+```bash
+npm run mcp-proof
+```
+
+`npm run mcp-proof` starts the built SplunkReady stdio MCP server, negotiates
+`initialize`, lists non-destructive certification tools, calls
+`splunkready_describe_certification`, then certifies the checked-in passing MCP
+JSON-RPC transcript through `splunkready_certify_mcp_transcript`. It writes
+`artifacts/mcp-proof/mcp-proof-summary.json` / `.md` plus the generated
+Readiness Receipt artifacts. This is still fixture-only, credential-free, and
+non-mutating; it proves SplunkReady as an MCP certification server, not a Splunk
+search copilot.
+
 For the single-mission static replay shell, run:
 
 ```bash
@@ -123,6 +138,17 @@ npm run splunkready -- certify-mcp-transcript \
 ```
 
 This single gate writes the full evidence chain: compiled contract, imported canonical trace, deterministic violations, external receipt, proof audit, and `mcp-transcript-certification.json`. `--strict-import true` rejects incomplete JSON-RPC logs; `--require-pass true` blocks CI unless the external MCP agent receives a deterministic `READY` receipt.
+
+To exercise the same certification path through the stdio MCP server itself:
+
+```bash
+npm run mcp-proof
+```
+
+That command writes an MCP proof summary, the uploaded transcript copy,
+`trace-imported.json`, `trace-external.json`, `receipt-external-001.json`,
+`proof-audit.json`, and the transcript certification summary under
+`artifacts/mcp-proof/`.
 
 To summarize several proof bundles for one environment, generate a certification index:
 

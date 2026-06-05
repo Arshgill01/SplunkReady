@@ -68,6 +68,7 @@ commands, or filesystem paths.
 | P0 | [43](moves43.md) One-command judge proof | 0.5d | Reduces fresh-clone judge friction by composing suite, firewall, audit, manifest, and index proofs into one command. |
 | P0 | [44](moves44.md) Runs trace preview ordering | 0.5d | Repairs scrambled trace timelines in the Runs proof browser and verifies the UI with Playwright. |
 | P0 | [45](moves45.md) Callback trace capture | 0.5d | Lets framework callback run IDs map into SplunkReady traces without adding agent-framework dependencies. |
+| P0 | [46](moves46.md) MCP server proof command | 0.5d | Makes the local SplunkReady MCP certification server one-command demonstrable without live credentials. |
 
 ## Non-Negotiable Boundaries
 

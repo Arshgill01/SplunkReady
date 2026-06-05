@@ -168,6 +168,18 @@ Build and launch the stdio server:
 npm run mcp
 ```
 
+To prove the server end to end without configuring a separate MCP client, run:
+
+```bash
+npm run mcp-proof
+```
+
+The proof command starts the built stdio server as a local MCP client would,
+negotiates `initialize`, lists tools, calls the describe tool, and certifies
+`examples/sample-mcp-transcript-pass.jsonl` through
+`splunkready_certify_mcp_transcript`. It writes
+`artifacts/mcp-proof/mcp-proof-summary.json` and the generated receipt bundle.
+
 For MCP clients that accept a command configuration, use:
 
 ```json

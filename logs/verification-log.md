@@ -7587,6 +7587,46 @@ Result:
   - included `git diff --check` completed with no output.
 - PASS for final explicit `git diff --check` after log update.
 
+## 2026-06-05 - Move 46 MCP Server Proof Command Verification
+
+Commands:
+
+- `npm test -- tests/cli/flow.test.ts -t "MCP server proof" && npm run build && npm run mcp-proof`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for focused MCP proof CLI regression:
+  - 1 test file passed;
+  - 1 test passed and 35 skipped;
+  - the test exercised a compiled CLI that spawned the built stdio MCP server.
+- PASS for `npm run build`.
+- PASS for `npm run mcp-proof`:
+  - built the runtime;
+  - started the SplunkReady MCP stdio server;
+  - negotiated MCP initialize/tools;
+  - certified `examples/sample-mcp-transcript-pass.jsonl` through
+    `splunkready_certify_mcp_transcript`;
+  - wrote `artifacts/mcp-proof/mcp-proof-summary.json`,
+    `artifacts/mcp-proof/mcp-proof-summary.md`, and the generated receipt
+    bundle under `artifacts/mcp-proof/mcp-transcript-certification`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - 45 test files passed;
+  - 307 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0 failing latest verdicts;
+  - submission copy audit passed with 28 required claims;
+  - included `git diff --check` completed with no output.
+
+Pending before commit:
+
+- PASS for final explicit `git diff --check` after log update.
+
 ## 2026-06-05 - Move 45 Callback Trace Capture Verification
 
 Commands:

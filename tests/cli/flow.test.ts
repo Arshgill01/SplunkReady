@@ -1123,6 +1123,68 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.artifacts.receipt).toBe(join(outDir, "receipt-external-001.json"));
   });
 
+  it("runs a one-command MCP server proof through stdio tools", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-proof-"));
+
+    const output = parseCliJsonOutput((await runCli(["mcp-proof", "--out", outDir, "--json"])).stdout);
+    const summary = JSON.parse(await readFile(join(outDir, "mcp-proof-summary.json"), "utf8")) as {
+      status: string;
+      source: string;
+      mutation: boolean;
+      handshake: { protocolVersion: string; serverName: string; instructions: string };
+      tools: Array<{ name: string; destructiveHint: boolean; readOnlyHint: boolean }>;
+      describe: { product: string; engine: string; mutation: boolean; deterministicAuthority: boolean };
+      transcriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
+      artifacts: string[];
+    };
+    const transcriptProofDir = join(outDir, "mcp-transcript-certification");
+
+    expect(output).toMatchObject({
+      command: "mcp-proof",
+      status: "PASS",
+      artifacts: expect.arrayContaining([
+        join(outDir, "mcp-proof-summary.json"),
+        join(outDir, "mcp-proof-summary.md"),
+        join(transcriptProofDir, "receipt-external-001.json")
+      ])
+    });
+    expect(summary).toMatchObject({
+      source: "splunkready-mcp-proof",
+      status: "PASS",
+      mutation: false,
+      handshake: {
+        protocolVersion: "2025-06-18",
+        serverName: "splunkready",
+        instructions: expect.stringContaining("Deterministic rules decide readiness")
+      },
+      describe: {
+        product: "SplunkReady",
+        engine: "Agent Readiness Compiler",
+        mutation: false,
+        deterministicAuthority: true
+      },
+      transcriptCertification: {
+        status: "PASS",
+        mutation: false,
+        outDir: transcriptProofDir
+      }
+    });
+    expect(summary.tools.map((tool) => tool.name)).toEqual([
+      "splunkready_describe_certification",
+      "splunkready_certify_external_trace",
+      "splunkready_certify_mcp_transcript"
+    ]);
+    expect(summary.tools.every((tool) => tool.destructiveHint === false)).toBe(true);
+    expect(summary.artifacts).toEqual(
+      expect.arrayContaining([
+        join(transcriptProofDir, "uploaded-mcp-transcript.jsonl"),
+        join(transcriptProofDir, "trace-external.json"),
+        join(transcriptProofDir, "receipt-external-001.json"),
+        join(transcriptProofDir, "proof-audit.json")
+      ])
+    );
+  });
+
   it("keeps failed MCP transcript certification artifacts while enforcing require-pass", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-certify-fail-"));
 
