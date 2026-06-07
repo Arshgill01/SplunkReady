@@ -881,3 +881,15 @@ boundary: `live-proof --live-mock`, `live-security-proof --live-mock`, and
 `mcp-proof --live-mock` are not wired yet, and SAIA route-state simulation,
 Docker packaging, CI live-mock proof, and `submission-evidence/live-mock/`
 remain pending.
+
+Move 147 third slice reduces the largest live-mode reproducibility risk by
+making `live-proof --live-mock` produce a credential-free live-adapter
+fail-to-pass proof with `mode: live`, `mutation=false`,
+`derivedMission.strategy=saved-search-with-evidence`, and
+`proofLoop=fail-to-pass`. `live-security-check --live-mock` also reports strict
+flagship readiness with fallback disabled. Residual risk remains release and
+evidence related: the public npm package does not yet include this source-only
+flag, CI does not yet run the live-mock proof, `submission-evidence/live-mock/`
+is not tracked, Docker packaging is absent, SAIA route-state simulation is not
+implemented, and `live-security-proof --live-mock` still requires explicit
+operator-owned LLM credentials.

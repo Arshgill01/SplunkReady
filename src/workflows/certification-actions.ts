@@ -7,6 +7,7 @@ import {
   createLiveSplunkAccessAdapter,
   createLiveSplunkAdapterConfigFromEnv
 } from "../adapters/live.js";
+import { createMockSplunkMcpLiveTransport } from "../mock-splunk-mcp/server.js";
 import type { SplunkAccessAdapter, SplunkAdapterError } from "../adapters/splunk-access.js";
 import { createGeminiConfigFromEnv, createGeminiLlmAgentModel } from "../agents/gemini-model.js";
 import { LlmSpecimenAgent } from "../agents/llm-specimen.js";
@@ -56,6 +57,7 @@ export interface CertificationActionOptions {
   firewall: boolean;
   agentModel: string;
   requirePass?: boolean;
+  liveMock?: boolean;
 }
 
 interface FirewallBlockReport {
@@ -246,6 +248,19 @@ export const createSplunkAccessAdapter = async (
   env: NodeJS.ProcessEnv = process.env
 ): Promise<SplunkAccessAdapter> => {
   if (options.mode === "live") {
+    if (options.liveMock) {
+      const fixture = await loadFixtureSplunkDatasetFromFile(options.fixture);
+
+      return createLiveSplunkAccessAdapter({
+        enabled: true,
+        endpointUrl: "mock://splunkready",
+        authToken: "mock-token",
+        defaultApp: env.SPLUNKREADY_SPLUNK_APP,
+        capabilities: fixture.readOnlyTools,
+        transport: createMockSplunkMcpLiveTransport(fixture)
+      });
+    }
+
     return createLiveSplunkAccessAdapter({
       ...createLiveSplunkAdapterConfigFromEnv(env),
       transport: createHttpLiveSplunkTransport()

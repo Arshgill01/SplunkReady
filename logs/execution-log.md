@@ -13928,3 +13928,67 @@ Notes:
 - This remains a credential-free mock path and does not claim live Splunk
   deployment evidence.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07T16:37:14Z - Move 147 live-mock proof wiring slice
+
+Intent:
+
+- Make live-mode proof reproducible without Splunk credentials by wiring the
+  fixture-backed mock Splunk MCP server into the existing live adapter boundary.
+
+Actions:
+
+- Inspected the live adapter, live workflows, CLI option parsing, and existing
+  live-proof tests.
+- Added mock tools required by live environment compilation:
+  - `splunk_get_user_info`;
+  - `splunk_get_indexes`;
+  - `splunk_get_metadata`.
+- Added fixture-backed SAIA happy-path tools needed for advisory policy-patch
+  output:
+  - `saia_generate_spl`;
+  - `saia_explain_spl`;
+  - `saia_optimize_spl`;
+  - `saia_ask_splunk_question`.
+- Added `createMockSplunkMcpLiveTransport`, which calls the same mock MCP
+  handler in memory and returns `structuredContent` through the live adapter's
+  transport contract.
+- Updated the mock handler to accept both SplunkReady internal arguments and
+  Splunk MCP-style arguments such as `type`, `search`, and
+  `saved_search_name`.
+- Added `--live-mock` CLI option plumbing for live candidate, security-check,
+  security-proof, and proof workflows.
+- Added a stripped-env CLI regression test proving `live-proof --live-mock`
+  returns a live-mode fail-to-pass proof without Splunk MCP URL/token env vars.
+- Smoke-tested built CLI `live-proof --live-mock --json` and
+  `live-security-check --live-mock --json` with a stripped environment.
+
+Files changed:
+
+- `src/mock-splunk-mcp/server.ts`
+- `src/cli/options.ts`
+- `src/cli/live-commands.ts`
+- `src/workflows/certification-actions.ts`
+- `src/workflows/live-actions.ts`
+- `tests/mcp/mock-splunk-server.test.ts`
+- `tests/cli/flow.test.ts`
+- `moves/moves147.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Deferred:
+
+- Docker and docker-compose packaging.
+- SAIA route-not-found/degraded-state simulation.
+- CI live-mock proof and `submission-evidence/live-mock/`.
+- `mcp-proof --live-mock` composition evidence.
+- Full `live-security-proof --live-mock` without operator-owned LLM
+  credentials; the current strict proof command still requires
+  `SPLUNKREADY_LLM_ENABLED=true`.
+
+Notes:
+
+- `live-proof --live-mock` is a credential-free live-adapter proof, not real
+  operator-owned Splunk deployment evidence.
+- No secret env file values were read, sourced, printed, or committed.

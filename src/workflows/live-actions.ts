@@ -58,6 +58,7 @@ export interface LiveActionWorkflowInput {
   compileFirst?: boolean;
   firewall?: boolean;
   agentModel?: string;
+  liveMock?: boolean;
 }
 
 export interface LiveSecurityUiBundleInput {
@@ -176,6 +177,7 @@ const liveCertificationOptions = (
   firewall: input.firewall ?? false,
   agentModel: input.agentModel ?? "",
   requirePass: input.requirePass,
+  liveMock: input.liveMock ?? false,
   ...overrides
 });
 

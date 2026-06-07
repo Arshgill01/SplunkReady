@@ -28,12 +28,13 @@ export const liveCandidatesCommand = async (options: CliOptions): Promise<string
     await runLiveCandidatesWorkflow({
       outDir: options.out,
       fixturePath: options.fixture,
-      missionPath: options.mission,
-      candidateLimit: options.candidateLimit,
-      compileFirst: false,
-      firewall: options.firewall,
-      agentModel: options.agentModel
-    })
+    missionPath: options.mission,
+    candidateLimit: options.candidateLimit,
+    compileFirst: false,
+    firewall: options.firewall,
+    agentModel: options.agentModel,
+    liveMock: options.liveMock
+  })
   ).artifacts;
 };
 
@@ -42,10 +43,11 @@ export const liveSecurityCheckCommand = async (options: CliOptions): Promise<str
     await runLiveSecurityReadinessWorkflow({
       outDir: options.out,
       fixturePath: options.fixture,
-      missionPath: options.mission,
-      firewall: options.firewall,
-      agentModel: options.agentModel
-    })
+    missionPath: options.mission,
+    firewall: options.firewall,
+    agentModel: options.agentModel,
+    liveMock: options.liveMock
+  })
   ).artifacts;
 };
 
@@ -60,7 +62,8 @@ export const liveSecurityProofCommand = async (options: CliOptions): Promise<str
     missionPath: options.mission,
     firewall: options.firewall,
     agentModel: options.agentModel,
-    requirePass: options.requirePass
+    requirePass: options.requirePass,
+    liveMock: options.liveMock
   });
 };
 
@@ -85,7 +88,8 @@ export const liveProofCommand = async (options: CliOptions): Promise<string[]> =
       candidateLimit: options.candidateLimit,
       firewall: options.firewall,
       agentModel: options.agentModel,
-      requirePass: options.requirePass
+      requirePass: options.requirePass,
+      liveMock: options.liveMock
     })
   ).artifacts;
 };

@@ -4551,6 +4551,55 @@ describe("SplunkReady CLI flow", () => {
     );
   });
 
+  it("runs live proof through the credential-free mock Splunk MCP path", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-mock-proof-"));
+    const output = parseCliJsonOutput(
+      (
+        await execFileAsync(process.execPath, [cliPath, "live-proof", "--out", outDir, "--live-mock", "--json"], {
+          cwd: process.cwd(),
+          env: { HOME: process.env.HOME ?? "", PATH: process.env.PATH ?? "" }
+        })
+      ).stdout
+    );
+
+    expect(output).toMatchObject({
+      command: "live-proof",
+      status: "PASS",
+      artifacts: expect.arrayContaining([
+        join(outDir, "environment-contract.json"),
+        join(outDir, "live-candidates.json"),
+        join(outDir, "live-derived-mission.json"),
+        join(outDir, "trace-before.json"),
+        join(outDir, "receipt-before-001.json"),
+        join(outDir, "policy-patch.json"),
+        join(outDir, "trace-after.json"),
+        join(outDir, "receipt-after-001.json"),
+        join(outDir, "live-proof-summary.json")
+      ])
+    });
+
+    const summary = JSON.parse(await readFile(join(outDir, "live-proof-summary.json"), "utf8")) as {
+      mode: string;
+      mutation: boolean;
+      failToPass: boolean;
+      proofLoop: string;
+      derivedMission: { strategy: string };
+      before: { verdict: string; violations: number };
+      after: { verdict: string; score: number; violations: number };
+    };
+
+    expect(summary).toMatchObject({
+      mode: "live",
+      mutation: false,
+      failToPass: true,
+      proofLoop: "fail-to-pass",
+      derivedMission: { strategy: "saved-search-with-evidence" },
+      before: { verdict: "NOT READY" },
+      after: { verdict: "READY", score: 100, violations: 0 }
+    });
+    expect(summary.before.violations).toBeGreaterThan(0);
+  });
+
   it("derives a bounded internal mission when live saved-search candidates return no rows", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-candidates-fallback-"));
     const server = await startMockMcpServer({

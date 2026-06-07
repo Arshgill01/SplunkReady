@@ -14256,3 +14256,89 @@ Results:
 Notes:
 
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 - Move 147 live-mock proof wiring slice
+
+Commands:
+
+- `gh run watch 27098261666 --exit-status`
+- `npx vitest run tests/mcp/mock-splunk-server.test.ts`
+- `npm run build`
+- `npx vitest run tests/mcp/mock-splunk-server.test.ts`
+- `npm run build`
+- `tmp=$(mktemp -d /tmp/splunkready-live-mock-proof-XXXXXX) && env -i PATH="$PATH" HOME="$HOME" node dist/src/cli.js live-proof --out "$tmp" --candidate-limit 1 --live-mock --json`
+- `summary=$(ls -td /tmp/splunkready-live-mock-proof-* | head -n 1)/live-proof-summary.json && node -e "..."`
+- `tmp=$(mktemp -d /tmp/splunkready-live-mock-proof-XXXXXX) && env -i PATH="$PATH" HOME="$HOME" node dist/src/cli.js live-proof --out "$tmp" --live-mock --json`
+- `npx vitest run tests/mcp/mock-splunk-server.test.ts`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "credential-free mock Splunk MCP path"`
+- `npm run build`
+- `tmp=$(mktemp -d /tmp/splunkready-live-mock-proof-XXXXXX) && env -i PATH="$PATH" HOME="$HOME" node dist/src/cli.js live-proof --out "$tmp" --live-mock --json`
+- `tmp=$(mktemp -d /tmp/splunkready-live-mock-security-check-XXXXXX) && env -i PATH="$PATH" HOME="$HOME" node dist/src/cli.js live-security-check --out "$tmp" --live-mock --json`
+- `npm run check`
+
+Results:
+
+- PASS for GitHub CI run `27098261666` on commit `e936569`:
+  - `npm run check` completed in 1m03s.
+- FAIL for the first focused mock-server test run after adding live transport:
+  - 1 test file ran;
+  - 10 tests passed;
+  - 1 test failed because metadata passed an empty sourcetype filter and
+    returned no rows.
+- FAIL for the first TypeScript build after adding live transport:
+  - `src/mock-splunk-mcp/server.ts` had an implicit `any` parameter in
+    `createMockSplunkMcpLiveTransport`.
+- PASS after fixing metadata filtering and the transport request type:
+  - focused mock-server test passed;
+  - 1 test file passed;
+  - 11 tests passed.
+- PASS for TypeScript build:
+  - `tsc --outDir dist` completed with no output.
+- PASS for the initial stripped-env built CLI `live-proof --live-mock` smoke:
+  - command returned `PASS`;
+  - `mode: live`;
+  - `mutation=false`;
+  - with `--candidate-limit 1`, the proof correctly selected the wrong-app
+    trap candidate first and derived the internal fallback mission; this was
+    not accepted as the final proof because `failToPass=false`.
+- PASS for the final stripped-env built CLI `live-proof --live-mock` smoke:
+  - command returned `PASS`;
+  - `mode: live`;
+  - `mutation=false`;
+  - `derivedMission.strategy=saved-search-with-evidence`;
+  - before verdict `NOT READY`, score 10, violations 4;
+  - after verdict `READY`, score 100, violations 0;
+  - `failToPass=true`;
+  - `proofLoop=fail-to-pass`.
+- PASS for the focused CLI regression:
+  - 1 test file passed;
+  - 1 test passed;
+  - 46 tests skipped by the test-name pattern.
+- PASS for the stripped-env built CLI `live-security-check --live-mock` smoke:
+  - command returned `PASS`;
+  - readiness status `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`;
+  - proof mode `strict-flagship-security`;
+  - fallback allowed `false`;
+  - `mutation=false`.
+- PASS for the full canonical gate:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 62 test files passed;
+  - 390 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 101 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- The stripped-env smokes used only `PATH` and `HOME`, with no Splunk MCP URL or
+  token env vars.
+- No secret env file values were read, sourced, printed, or committed.

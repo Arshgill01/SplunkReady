@@ -5,6 +5,7 @@ import {
   loadFixtureSplunkDatasetFromFile,
   type FixtureSplunkDataset
 } from "../adapters/fixture.js";
+import type { LiveSplunkTransport, LiveSplunkTransportRequest } from "../adapters/live.js";
 import type { KnowledgeObjectType } from "../adapters/splunk-access.js";
 
 const protocolVersion = "2025-06-18";
@@ -55,6 +56,11 @@ const recordFromUnknown = (value: unknown): Record<string, unknown> =>
 const stringArrayFromUnknown = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.length > 0) : [];
 
+const optionalStringArrayFromUnknown = (value: unknown): string[] | undefined => {
+  const parsed = stringArrayFromUnknown(value);
+  return parsed.length > 0 ? parsed : undefined;
+};
+
 const stringFromUnknown = (value: unknown): string | undefined => (typeof value === "string" && value.length > 0 ? value : undefined);
 
 const numberFromUnknown = (value: unknown): number | undefined => (typeof value === "number" && Number.isFinite(value) ? value : undefined);
@@ -93,6 +99,47 @@ export const mockSplunkMcpTools: MockSplunkMcpTool[] = [
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
   },
   {
+    name: "splunk_get_user_info",
+    title: "Get Splunk User Info",
+    description: "Return read-only mock Splunk user metadata generated from the SplunkReady fixture dataset.",
+    inputSchema: objectSchema({}),
+    outputSchema: objectSchema({
+      username: stringProperty("Mock Splunk username."),
+      roles: { type: "array", items: { type: "string" }, description: "Mock Splunk roles." },
+      defaultApp: stringProperty("Mock default app."),
+      capabilities: { type: "array", items: { type: "string" }, description: "Mock Splunk capabilities." }
+    }),
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
+  },
+  {
+    name: "splunk_get_indexes",
+    title: "Get Splunk Indexes",
+    description: "Return read-only mock Splunk indexes generated from the SplunkReady fixture dataset.",
+    inputSchema: objectSchema({}),
+    outputSchema: { type: "array", items: { type: "object" } },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
+  },
+  {
+    name: "splunk_get_metadata",
+    title: "Get Splunk Metadata",
+    description: "Return read-only mock sourcetype metadata generated from the SplunkReady fixture dataset.",
+    inputSchema: objectSchema({
+      indexes: { type: "array", items: { type: "string" }, description: "Optional indexes to inspect." },
+      sourcetypes: { type: "array", items: { type: "string" }, description: "Optional sourcetypes to inspect." },
+      index: stringProperty("Optional single Splunk MCP index filter."),
+      type: stringProperty("Optional Splunk MCP metadata type."),
+      earliest_time: stringProperty("Optional earliest time bound."),
+      latest_time: stringProperty("Optional latest time bound.")
+    }),
+    outputSchema: objectSchema({
+      indexes: { type: "array", items: { type: "object" }, description: "Matching mock indexes." },
+      sourcetypes: { type: "array", items: { type: "object" }, description: "Matching mock sourcetypes." },
+      source: stringProperty("Adapter source."),
+      warnings: { type: "array", items: { type: "string" }, description: "Non-fatal mock warnings." }
+    }),
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
+  },
+  {
     name: "splunk_get_knowledge_objects",
     title: "Get Knowledge Objects",
     description: "Return mock Splunk knowledge objects from the SplunkReady fixture dataset.",
@@ -105,6 +152,52 @@ export const mockSplunkMcpTools: MockSplunkMcpTool[] = [
       objects: { type: "array", items: { type: "object" }, description: "Matching knowledge objects." },
       resultCount: { type: "number", description: "Number of matching objects." },
       warnings: { type: "array", items: { type: "string" }, description: "Non-fatal mock warnings." }
+    }),
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
+  },
+  {
+    name: "saia_generate_spl",
+    title: "Generate SPL",
+    description: "Return fixture-backed advisory SPL generation output. It is not used for pass/fail grading.",
+    inputSchema: objectSchema({ prompt: stringProperty("Prompt for advisory SPL generation."), app: stringProperty("Optional app context.") }, ["prompt"]),
+    outputSchema: objectSchema({
+      query: stringProperty("Generated SPL."),
+      rationale: stringProperty("Advisory rationale."),
+      warnings: { type: "array", items: { type: "string" }, description: "Non-fatal advisory warnings." }
+    }),
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
+  },
+  {
+    name: "saia_explain_spl",
+    title: "Explain SPL",
+    description: "Return fixture-backed advisory SPL explanation output. It is not used for pass/fail grading.",
+    inputSchema: objectSchema({ spl: stringProperty("SPL to explain."), query: stringProperty("SPL to explain.") }),
+    outputSchema: objectSchema({
+      explanation: stringProperty("Advisory explanation."),
+      warnings: { type: "array", items: { type: "string" }, description: "Non-fatal advisory warnings." }
+    }),
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
+  },
+  {
+    name: "saia_optimize_spl",
+    title: "Optimize SPL",
+    description: "Return fixture-backed advisory SPL optimization output. It is not used for pass/fail grading.",
+    inputSchema: objectSchema({ spl: stringProperty("SPL to optimize."), query: stringProperty("SPL to optimize.") }),
+    outputSchema: objectSchema({
+      optimizedQuery: stringProperty("Optimized SPL."),
+      rationale: stringProperty("Advisory rationale."),
+      warnings: { type: "array", items: { type: "string" }, description: "Non-fatal advisory warnings." }
+    }),
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
+  },
+  {
+    name: "saia_ask_splunk_question",
+    title: "Ask Splunk Question",
+    description: "Return fixture-backed advisory Splunk AI Assistant output. It is not used for pass/fail grading.",
+    inputSchema: objectSchema({ prompt: stringProperty("Question to ask."), question: stringProperty("Question to ask.") }),
+    outputSchema: objectSchema({
+      answer: stringProperty("Advisory answer."),
+      warnings: { type: "array", items: { type: "string" }, description: "Non-fatal advisory warnings." }
     }),
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
   },
@@ -166,7 +259,9 @@ const readToolCall = (params: unknown): { name: string; args: Record<string, unk
 };
 
 const readKnowledgeObjectTypes = (args: Record<string, unknown>): KnowledgeObjectType[] => {
-  const types = stringArrayFromUnknown(args.types);
+  const rawTypes = stringArrayFromUnknown(args.types);
+  const singularType = stringFromUnknown(args.type);
+  const types = singularType ? [singularType] : rawTypes;
   const fallbackTypes: KnowledgeObjectType[] = ["saved_searches", "macros", "lookups", "dashboards", "data_models"];
   const allowed = new Set<KnowledgeObjectType>([
     "saved_searches",
@@ -177,7 +272,9 @@ const readKnowledgeObjectTypes = (args: Record<string, unknown>): KnowledgeObjec
     "field_aliases",
     "data_models"
   ]);
-  const parsed = types.filter((type): type is KnowledgeObjectType => allowed.has(type as KnowledgeObjectType));
+  const parsed = types
+    .map((type) => (type === "views" ? "dashboards" : type))
+    .filter((type): type is KnowledgeObjectType => allowed.has(type as KnowledgeObjectType));
 
   return parsed.length > 0 ? parsed : fallbackTypes;
 };
@@ -196,6 +293,23 @@ const readStringRecord = (value: unknown): Record<string, string> | undefined =>
 
   return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 };
+
+const readMetadataIndexes = (args: Record<string, unknown>): string[] | undefined => {
+  const indexes = stringArrayFromUnknown(args.indexes);
+  const index = stringFromUnknown(args.index);
+
+  if (indexes.length > 0) {
+    return indexes;
+  }
+
+  if (index && index !== "*") {
+    return [index];
+  }
+
+  return undefined;
+};
+
+const readSplInput = (args: Record<string, unknown>): string | undefined => stringFromUnknown(args.query) ?? stringFromUnknown(args.spl);
 
 export const handleMockSplunkMcpMessage = async (
   request: JsonRpcRequest,
@@ -237,13 +351,41 @@ export const handleMockSplunkMcpMessage = async (
       });
     }
 
+    if (name === "splunk_get_user_info") {
+      return success(id, {
+        content: [{ type: "text", text: "Mock Splunk user metadata loaded." }],
+        structuredContent: await adapter.getUserInfo(callOptions)
+      });
+    }
+
+    if (name === "splunk_get_indexes") {
+      return success(id, {
+        content: [{ type: "text", text: "Mock Splunk indexes loaded." }],
+        structuredContent: await adapter.getIndexes(callOptions)
+      });
+    }
+
+    if (name === "splunk_get_metadata") {
+      return success(id, {
+        content: [{ type: "text", text: "Mock Splunk metadata loaded." }],
+        structuredContent: await adapter.getMetadata(
+          {
+            indexes: readMetadataIndexes(args),
+            sourcetypes: optionalStringArrayFromUnknown(args.sourcetypes),
+            timeWindow: readTimeWindow(args)
+          },
+          callOptions
+        )
+      });
+    }
+
     if (name === "splunk_get_knowledge_objects") {
       return success(id, {
         content: [{ type: "text", text: "Mock Splunk knowledge objects loaded." }],
         structuredContent: await adapter.getKnowledgeObjects(
           {
             types: readKnowledgeObjectTypes(args),
-            query: typeof args.query === "string" ? args.query : undefined,
+            query: stringFromUnknown(args.query) ?? stringFromUnknown(args.search),
             app: typeof args.app === "string" ? args.app : undefined
           },
           callOptions
@@ -273,7 +415,7 @@ export const handleMockSplunkMcpMessage = async (
     }
 
     if (name === "splunk_run_saved_search") {
-      const savedSearchName = stringFromUnknown(args.name);
+      const savedSearchName = stringFromUnknown(args.name) ?? stringFromUnknown(args.saved_search_name);
       const app = stringFromUnknown(args.app);
 
       if (!savedSearchName || !app) {
@@ -299,11 +441,102 @@ export const handleMockSplunkMcpMessage = async (
       }
     }
 
+    if (name === "saia_generate_spl") {
+      const prompt = stringFromUnknown(args.prompt);
+
+      if (!prompt) {
+        return error(id, -32602, "saia_generate_spl requires a non-empty prompt argument.");
+      }
+
+      return success(id, {
+        content: [{ type: "text", text: "Mock Splunk AI Assistant generated SPL." }],
+        structuredContent: await adapter.generateSpl?.({ prompt, app: stringFromUnknown(args.app) }, callOptions)
+      });
+    }
+
+    if (name === "saia_explain_spl") {
+      const query = readSplInput(args);
+
+      if (!query) {
+        return error(id, -32602, "saia_explain_spl requires a non-empty spl or query argument.");
+      }
+
+      return success(id, {
+        content: [{ type: "text", text: "Mock Splunk AI Assistant explained SPL." }],
+        structuredContent: await adapter.explainSpl?.({ query, app: stringFromUnknown(args.app) }, callOptions)
+      });
+    }
+
+    if (name === "saia_optimize_spl") {
+      const query = readSplInput(args);
+
+      if (!query) {
+        return error(id, -32602, "saia_optimize_spl requires a non-empty spl or query argument.");
+      }
+
+      return success(id, {
+        content: [{ type: "text", text: "Mock Splunk AI Assistant optimized SPL." }],
+        structuredContent: await adapter.optimizeSpl?.({ query, app: stringFromUnknown(args.app) }, callOptions)
+      });
+    }
+
+    if (name === "saia_ask_splunk_question") {
+      const question = stringFromUnknown(args.question) ?? stringFromUnknown(args.prompt);
+
+      if (!question) {
+        return error(id, -32602, "saia_ask_splunk_question requires a non-empty question or prompt argument.");
+      }
+
+      return success(id, {
+        content: [{ type: "text", text: "Mock Splunk AI Assistant answered a question." }],
+        structuredContent: await adapter.askSplunkQuestion?.({ question, app: stringFromUnknown(args.app) }, callOptions)
+      });
+    }
+
     return error(id, -32602, `Unknown mock Splunk tool ${name}.`);
   }
 
   return error(id, -32601, `Method not found: ${request.method}`);
 };
+
+export const createMockSplunkMcpLiveTransport = (fixture: FixtureSplunkDataset): LiveSplunkTransport => ({
+  async call<TInput, TOutput>(request: LiveSplunkTransportRequest<TInput>): Promise<TOutput> {
+    const response = await handleMockSplunkMcpMessage(
+      {
+        jsonrpc: "2.0",
+        id: `${request.options.requestId}:${request.toolName}`,
+        method: "tools/call",
+        params: { name: request.toolName, arguments: request.input }
+      },
+      { fixture }
+    );
+
+    if (!response) {
+      throw new Error(`Mock Splunk MCP did not return a response for ${request.toolName}.`);
+    }
+
+    if ("error" in response) {
+      throw new Error(response.error.message);
+    }
+
+    const result = recordFromUnknown(response.result);
+    const structuredContent = result.structuredContent;
+
+    if (request.toolName === "splunk_get_metadata") {
+      const metadata = recordFromUnknown(structuredContent);
+      const sourcetypes = Array.isArray(metadata.sourcetypes) ? metadata.sourcetypes : [];
+
+      return {
+        results: sourcetypes
+          .map((sourcetype) => recordFromUnknown(sourcetype))
+          .map((sourcetype) => ({ sourcetype: stringFromUnknown(sourcetype.name) ?? "unknown-sourcetype" })),
+        total_rows: sourcetypes.length
+      } as TOutput;
+    }
+
+    return structuredContent as TOutput;
+  }
+});
 
 export const startStdioMockSplunkMcpServer = async (input: { fixturePath: string }): Promise<void> => {
   const fixture = await loadFixtureSplunkDatasetFromFile(input.fixturePath);

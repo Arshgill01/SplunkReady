@@ -15,13 +15,17 @@ transport boundary.
 - Add tests for initialize, tools/list, and tools/call.
 - Extend the proven mock transport with read-only `splunk_run_query` and
   `splunk_run_saved_search` fixture-backed calls.
+- Wire `--live-mock` into the live proof path using a fixture-backed mock live
+  transport that still exercises the live adapter normalization boundary.
 
 ## Deferred Scope
 
-- `--live-mock` wiring for `live-proof`, `live-security-proof`, and `mcp-proof`.
 - Dockerfile and docker-compose packaging.
 - SAIA route states plus realistic latency, pagination, and degraded-state behavior.
 - CI live-mock proof and `submission-evidence/live-mock/`.
+- `mcp-proof --live-mock` composition evidence.
+- Full `live-security-proof --live-mock` without operator-owned LLM credentials;
+  the strict proof command still requires `SPLUNKREADY_LLM_ENABLED=true`.
 
 ## Verification
 
@@ -40,6 +44,14 @@ knowledge objects, and reports no mutation.
 Second slice implemented. The mock server now also lists and serves
 `splunk_run_query` and `splunk_run_saved_search` through the same fixture
 adapter. Focused tests and a built CLI stdio smoke verify evidence-bearing
-query and saved-search outputs. Full `--live-mock` workflow wiring, SAIA route
-states, Docker packaging, CI live-mock proof, and `submission-evidence/live-mock/`
-remain deferred.
+query and saved-search outputs.
+
+Third slice implemented. `live-proof --live-mock` and
+`live-security-check --live-mock` now run through a fixture-backed mock live
+transport with no Splunk credentials. A stripped-env built CLI smoke verifies
+`live-proof --live-mock --json` returns `PASS`, `mode: live`,
+`mutation: false`, `failToPass: true`, and `proofLoop: fail-to-pass`.
+`live-security-check --live-mock --json` reports
+`READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF` with fallback disabled. Route-state
+simulation, Docker packaging, CI live-mock proof, `mcp-proof --live-mock`, and
+`submission-evidence/live-mock/` remain deferred.

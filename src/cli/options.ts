@@ -28,6 +28,7 @@ export interface CliOptions {
   strictImport: boolean;
   includeLlmProof: boolean;
   firewall: boolean;
+  liveMock: boolean;
   json: boolean;
 }
 
@@ -59,12 +60,12 @@ Commands:
   mcp       Start the SplunkReady stdio MCP server
   mock-splunk-mcp --fixture <path> Start the credential-free mock Splunk stdio MCP server
   mcp-proof --out <dir> [--transcript <path>] [--json]
-  live-candidates --out <dir> [--candidate-limit <n>]
-  live-security-check --out <dir> [--json]
+  live-candidates --out <dir> [--candidate-limit <n>] [--live-mock]
+  live-security-check --out <dir> [--live-mock] [--json]
   live-security-kit --out <dir> [--json]
-  live-security-proof --out <dir> [--firewall] [--json]
+  live-security-proof --out <dir> [--firewall] [--live-mock] [--json]
   live-security-ui-bundle --out <dir> [--proof-dir <dir>] [--security-check-dir <dir>] [--security-kit-dir <dir>] [--hosted-model-proof-dir <dir>] [--json]
-  live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--json]
+  live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--live-mock] [--json]
   suite-proof --mode fixture --suite <path> --out <dir> [--require-fail-to-pass true|false] [--json]
   receipt   --out <dir> [--phase before|after] [--json]
   rerun     --mode fixture|live --out <dir> [--firewall] [--json]
@@ -104,6 +105,7 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
   strictImport: false,
   includeLlmProof: false,
   firewall: false,
+  liveMock: false,
   json: false,
   ...overrides
 });
@@ -123,6 +125,11 @@ export const parseArgs = (argv: string[]): { command: string; options: CliOption
 
     if (flag === "--firewall") {
       options.firewall = true;
+      continue;
+    }
+
+    if (flag === "--live-mock") {
+      options.liveMock = true;
       continue;
     }
 
