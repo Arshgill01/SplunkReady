@@ -32,6 +32,7 @@ import {
 } from "../workflows/manifest-verification.js";
 import { runMcpProofWorkflow } from "../workflows/mcp-proof.js";
 import { runProofAuditWorkflow } from "../workflows/proof-audit.js";
+import { runReceiptChainWorkflow } from "../workflows/receipt-chain.js";
 import { runSuiteProofWorkflow } from "../workflows/suite-proof.js";
 
 const compiledAt = "2026-06-01T06:45:00.000Z";
@@ -58,6 +59,22 @@ export const verifyManifestCommand = async (options: CliOptions): Promise<string
 
   if (result.status !== "PASS") {
     throw new Error(`verify-manifest failed with ${result.status}. Inspect ${reportPath}.`);
+  }
+
+  return result.artifacts;
+};
+
+export const receiptChainCommand = async (options: CliOptions): Promise<string[]> => {
+  const dir = options.dir || options.out;
+  const result = await runReceiptChainWorkflow({
+    dir,
+    publicKeyPath: options.publicKey || undefined,
+    generatedAt: compiledAt
+  });
+  const [reportPath] = result.artifacts;
+
+  if (result.status !== "PASS") {
+    throw new Error(`verify-receipt-chain failed with ${result.status}. Inspect ${reportPath}.`);
   }
 
   return result.artifacts;

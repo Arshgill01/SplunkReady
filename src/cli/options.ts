@@ -9,6 +9,7 @@ export interface CliOptions {
   mission: string;
   suite: string;
   out: string;
+  dir: string;
   proofDir: string;
   securityCheckDir: string;
   securityKitDir: string;
@@ -20,6 +21,7 @@ export interface CliOptions {
   requireFailToPass: boolean;
   trace: string;
   transcript: string;
+  publicKey: string;
   agentName: string;
   agentVersion: string;
   agentModel: string;
@@ -56,6 +58,7 @@ Commands:
   hosted-model-diagnostic --mode fixture|live --out <dir> [--env-file <path>] [--require-pass true|false] [--json]
   proof-audit --out <dir> [--require-pass true|false] [--json]
   verify-manifest --out <dir> [--json]
+  verify-receipt-chain --dir <dir> [--public-key <path>] [--json]
   certification-index --proof-dirs <dir[,dir]> --out <dir> [--require-pass true|false] [--json]
   judge-proof --out <dir> [--include-llm-proof true|false] [--json]
   mcp       Start the SplunkReady stdio MCP server
@@ -87,6 +90,7 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
   mission: defaultMissionPath,
   suite: defaultSuitePath,
   out: defaultOutDir,
+  dir: "",
   proofDir: "artifacts/live-proof",
   securityCheckDir: "artifacts/live-security-check",
   securityKitDir: "artifacts/live-security-kit",
@@ -98,6 +102,7 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
   requireFailToPass: false,
   trace: "",
   transcript: "",
+  publicKey: "",
   agentName: "External Splunk MCP Agent",
   agentVersion: "unversioned",
   agentModel: "",
@@ -155,6 +160,8 @@ export const parseArgs = (argv: string[]): { command: string; options: CliOption
       options.suite = value;
     } else if (flag === "--out") {
       options.out = value;
+    } else if (flag === "--dir") {
+      options.dir = value;
     } else if (flag === "--proof-dir") {
       options.proofDir = value;
     } else if (flag === "--security-check-dir") {
@@ -207,6 +214,8 @@ export const parseArgs = (argv: string[]): { command: string; options: CliOption
       options.trace = value;
     } else if (flag === "--transcript") {
       options.transcript = value;
+    } else if (flag === "--public-key") {
+      options.publicKey = value;
     } else if (flag === "--agent-name") {
       options.agentName = value;
     } else if (flag === "--agent-version") {

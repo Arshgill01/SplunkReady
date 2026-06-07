@@ -14185,3 +14185,65 @@ Notes:
 - Public npm registry metadata still reported `splunkready@0.1.2` as `latest`
   during this check.
 - No source code was changed.
+
+## 2026-06-07T17:18:11Z - Move 148 receipt-chain verifier first slice
+
+Intent:
+
+- Start Move 148 with a deterministic receipt-chain verifier before adding
+  embedded receipt fields, signatures, or replay re-derivation.
+
+Actions:
+
+- Added `src/workflows/receipt-chain.ts`.
+- Added CLI support for `verify-receipt-chain --dir <dir> [--public-key
+  <path>]`.
+- Added `--dir` and `--public-key` parsing.
+- Added workflow tests for chain generation and missing public-key failure.
+- Added a CLI-flow assertion that runs `verify-receipt-chain` through the built
+  CLI against generated receipt artifacts.
+- Generated tracked `submission-evidence/suite-proof/receipt-chain.json`.
+- Refreshed `submission-evidence/suite-proof/proof-audit.json`,
+  `proof-manifest.json`, and `proof-manifest-verification.json` so the new
+  chain artifact is covered by the suite proof manifest.
+- Added README and claim-ledger copy for the receipt-chain command.
+- Added submission-copy audit guards for the new receipt-chain claim.
+- Regenerated `submission-evidence/evidence-pack-sha256.txt`.
+- Fixed receipt-chain discovery to exclude its own `receipt-chain.json` output,
+  making repeated verification idempotent.
+
+Files changed:
+
+- `README.md`
+- `scripts/audit-submission-copy.mjs`
+- `src/cli/dispatch.ts`
+- `src/cli/options.ts`
+- `src/cli/proof-commands.ts`
+- `src/workflows/receipt-chain.ts`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/suite-proof/proof-audit.json`
+- `submission-evidence/suite-proof/proof-manifest.json`
+- `submission-evidence/suite-proof/proof-manifest-verification.json`
+- `submission-evidence/suite-proof/receipt-chain.json`
+- `tests/cli/flow.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `tests/workflows/receipt-chain.test.ts`
+- `moves/moves148.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Deferred:
+
+- Embedded receipt hash fields.
+- Key initialization and receipt signatures.
+- Deterministic receipt replay re-derivation.
+
+Notes:
+
+- The first slice computes and verifies chain lineage from existing receipts; it
+  does not claim signed receipts yet.
+- The verifier intentionally ignores `receipt-chain.json` during discovery so
+  the command can be rerun on an already chained proof bundle.
+- Full `npm run check` passed after the first slice.
+- No secret env file values were read, sourced, printed, or committed.

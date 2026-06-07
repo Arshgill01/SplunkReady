@@ -313,6 +313,19 @@ The compile command also writes `readiness-profile.json`, which binds active rul
 
 For external-agent CI, `proof-audit --require-pass true` recognizes `receipt-external-001.json` as an `external-trace` proof and fails the gate unless the deterministic receipt is `READY`. Each audit also writes `proof-manifest.json`, a SHA-256 manifest for the proof bundle files so shared artifacts can be checked without re-running the agent. `verify-manifest` re-hashes the bundle and fails if any audited artifact was changed, removed, or added after the manifest was created.
 
+To add replay lineage over all receipt artifacts in a bundle:
+
+```bash
+npm run splunkready -- verify-receipt-chain \
+  --dir submission-evidence/suite-proof \
+  --json
+```
+
+This writes `receipt-chain.json`, a deterministic SHA-256 chain over every
+schema-valid `receipt-*.json` artifact in the directory tree. The chain report
+records `mutation: false` and keeps deterministic grading as the authority; it
+does not make any model or Splunk calls.
+
 See [examples/README.md](examples/README.md) for runnable external-trace capture scripts and generated sample receipts for both `NOT READY` and `READY / 100` external agent traces.
 
 If an external agent only logs Splunk MCP JSON-RPC calls, certify the transcript directly:

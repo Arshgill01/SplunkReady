@@ -61,6 +61,14 @@ const checks = [
   ],
   ["Claim ledger hosted demo currentness artifact", files.claimLedger, "submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json"],
   ["Claim ledger hosted demo currentness command", files.claimLedger, "npm run audit:hosted-demo-currentness"],
+  [
+    "Claim ledger receipt chain lineage",
+    files.claimLedger,
+    "The tracked suite proof has deterministic receipt-chain lineage."
+  ],
+  ["Claim ledger receipt chain artifact", files.claimLedger, "submission-evidence/suite-proof/receipt-chain.json"],
+  ["Claim ledger receipt chain source", files.claimLedger, "splunkready-receipt-chain"],
+  ["Claim ledger receipt chain command", files.claimLedger, "verify-receipt-chain --dir submission-evidence/suite-proof --json"],
   ["README hosted MCP proof URL", files.readme, hostedMcpProofUrl],
   ["README hosted judge proof URL", files.readme, hostedJudgeProofUrl],
   ["Devpost hosted MCP proof URL", files.devpost, hostedMcpProofUrl],
@@ -144,6 +152,8 @@ const checks = [
   ["README SAIA realm header placeholder", files.readme, "SPLUNKREADY_SAIA_REALM"],
   ["README SAIA tenant header placeholder", files.readme, "SPLUNKREADY_SAIA_TENANT"],
   ["README package MCP entrypoint", files.readme, "splunkready mcp"],
+  ["README receipt chain command", files.readme, "verify-receipt-chain"],
+  ["README receipt chain artifact", files.readme, "receipt-chain.json"],
   ["Demo no LLM vibes", files.demo, "not another LLM judging vibes"],
   ["Demo no mutation", files.demo, "does not mutate Splunk"],
   ["Demo route", files.demo, "splunkready-shell.html#rerun-receipts"],

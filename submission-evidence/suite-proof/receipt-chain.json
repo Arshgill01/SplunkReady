@@ -1,0 +1,84 @@
+{
+  "source": "splunkready-receipt-chain",
+  "generatedAt": "2026-06-01T06:45:00.000Z",
+  "status": "PASS",
+  "directory": "submission-evidence/suite-proof",
+  "algorithm": "sha256-canonical-json",
+  "mutation": false,
+  "deterministicAuthority": true,
+  "chainValid": true,
+  "receiptCount": 6,
+  "publicKey": {
+    "path": "",
+    "status": "NOT_PROVIDED"
+  },
+  "entries": [
+    {
+      "sequence": 1,
+      "path": "mission-observability-latency-readiness/receipt-before-001.json",
+      "receiptId": "receipt-before-001",
+      "verdict": "NOT READY",
+      "score": 35,
+      "previousReceiptHash": null,
+      "receiptHash": "80e0160c2fa45dbef7939b4bdaf61b194b35f282fd3fc85072dd270719cc9fc8",
+      "traceRefs": 3,
+      "evidenceRefs": 0
+    },
+    {
+      "sequence": 2,
+      "path": "mission-observability-latency-readiness/receipt-after-001.json",
+      "receiptId": "receipt-after-001",
+      "verdict": "READY",
+      "score": 100,
+      "previousReceiptHash": "80e0160c2fa45dbef7939b4bdaf61b194b35f282fd3fc85072dd270719cc9fc8",
+      "receiptHash": "cd9765e451dcc9df52667b36328d0dfeb71f0c154cc63e6ee8868aa1159b0518",
+      "traceRefs": 3,
+      "evidenceRefs": 4
+    },
+    {
+      "sequence": 3,
+      "path": "mission-security-exfiltration-readiness/receipt-before-001.json",
+      "receiptId": "receipt-before-001",
+      "verdict": "NOT READY",
+      "score": 0,
+      "previousReceiptHash": "cd9765e451dcc9df52667b36328d0dfeb71f0c154cc63e6ee8868aa1159b0518",
+      "receiptHash": "6fdd221b133567945af21d86e6a28279b907cc72f12777d61f1d2cd187b58e0f",
+      "traceRefs": 3,
+      "evidenceRefs": 0
+    },
+    {
+      "sequence": 4,
+      "path": "mission-security-exfiltration-readiness/receipt-after-001.json",
+      "receiptId": "receipt-after-001",
+      "verdict": "READY",
+      "score": 100,
+      "previousReceiptHash": "6fdd221b133567945af21d86e6a28279b907cc72f12777d61f1d2cd187b58e0f",
+      "receiptHash": "b7e9e0ceeb231e2ce92587a65365c44f3f11e53aff477388cc9d29e1d06f9356",
+      "traceRefs": 5,
+      "evidenceRefs": 6
+    },
+    {
+      "sequence": 5,
+      "path": "mission-security-lateral-movement-readiness/receipt-before-001.json",
+      "receiptId": "receipt-before-001",
+      "verdict": "NOT READY",
+      "score": 0,
+      "previousReceiptHash": "b7e9e0ceeb231e2ce92587a65365c44f3f11e53aff477388cc9d29e1d06f9356",
+      "receiptHash": "78dd849432c9e479d1ddcbcf7ddb1a7cc3f80bd3fc5121c6f8f6b2c4e891e1e1",
+      "traceRefs": 3,
+      "evidenceRefs": 0
+    },
+    {
+      "sequence": 6,
+      "path": "mission-security-lateral-movement-readiness/receipt-after-001.json",
+      "receiptId": "receipt-after-001",
+      "verdict": "READY",
+      "score": 100,
+      "previousReceiptHash": "78dd849432c9e479d1ddcbcf7ddb1a7cc3f80bd3fc5121c6f8f6b2c4e891e1e1",
+      "receiptHash": "dc12747d0699e6233719f3b7d7a6bc1da1ab514e9dff063bba5df39e9a842992",
+      "traceRefs": 5,
+      "evidenceRefs": 5
+    }
+  ],
+  "failures": []
+}

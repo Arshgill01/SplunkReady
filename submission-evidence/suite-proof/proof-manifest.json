@@ -2,7 +2,7 @@
   "source": "splunkready-proof-manifest",
   "generatedAt": "2026-06-01T06:45:00.000Z",
   "proofDir": "submission-evidence/suite-proof",
-  "aggregateSha256": "2fe227e950a1a0dcf21ca2a2cc6afb1e94fa925e04c11a324bce52247b57bd5f",
+  "aggregateSha256": "5e88a231e846db0f494c0787f81d87300a75f161f41a2e34148cc356ec0d8c23",
   "files": [
     {
       "path": "compiler-diagnostics.json",
@@ -258,6 +258,11 @@
       "path": "proof-audit.json",
       "sizeBytes": 1873,
       "sha256": "106250f901bde63b93f52a58b212b88a79f2229439dd6c2dcad25b1a60a55d77"
+    },
+    {
+      "path": "receipt-chain.json",
+      "sizeBytes": 2952,
+      "sha256": "cb419c877c4a180004391acb9f3e4ebe6bf365706aafc7ffb3f627af9bf9fec4"
     },
     {
       "path": "suite-proof-summary.json",

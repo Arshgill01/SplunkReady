@@ -564,6 +564,17 @@ describe("SplunkReady CLI flow", () => {
       actualAggregateSha256: string;
       changedFiles: Array<{ path: string }>;
     };
+    const receiptChainOutput = parseCliJsonOutput(
+      (await runCli(["verify-receipt-chain", "--dir", outDir, "--json"])).stdout
+    );
+    const receiptChain = JSON.parse(await readFile(join(outDir, "receipt-chain.json"), "utf8")) as {
+      status: string;
+      chainValid: boolean;
+      mutation: boolean;
+      deterministicAuthority: boolean;
+      receiptCount: number;
+      entries: Array<{ path: string; previousReceiptHash: string | null; receiptHash: string }>;
+    };
 
     expect(manifestVerification).toMatchObject({
       command: "verify-manifest",
@@ -576,6 +587,25 @@ describe("SplunkReady CLI flow", () => {
       actualAggregateSha256: proofManifest.aggregateSha256,
       changedFiles: []
     });
+    expect(receiptChainOutput).toMatchObject({
+      command: "verify-receipt-chain",
+      status: "PASS",
+      artifacts: [join(outDir, "receipt-chain.json")]
+    });
+    expect(receiptChain).toMatchObject({
+      status: "PASS",
+      chainValid: true,
+      mutation: false,
+      deterministicAuthority: true,
+      receiptCount: 3
+    });
+    expect(receiptChain.entries.map((entry) => entry.path)).toEqual([
+      "receipt-before-001.json",
+      "receipt-after-001.json",
+      "receipt-external-001.json"
+    ]);
+    expect(receiptChain.entries[0].previousReceiptHash).toBeNull();
+    expect(receiptChain.entries[1].previousReceiptHash).toBe(receiptChain.entries[0].receiptHash);
     await expect(runCli(["proof-audit", "--out", outDir, "--require-pass", "true"])).rejects.toMatchObject({
       stderr: expect.stringContaining("proof-audit strict gate failed with WARN")
     });

@@ -23,6 +23,7 @@ import {
   llmProofCommand,
   mcpProofCommand,
   proofAuditCommand,
+  receiptChainCommand,
   suiteProofCommand,
   verifyManifestCommand
 } from "./proof-commands.js";
@@ -72,6 +73,8 @@ export const runCliCommand = async (command: string, options: CliOptions): Promi
     artifacts = await proofAuditCommand(options);
   } else if (command === "verify-manifest") {
     artifacts = await verifyManifestCommand(options);
+  } else if (command === "verify-receipt-chain") {
+    artifacts = await receiptChainCommand(options);
   } else if (command === "certification-index") {
     artifacts = await certificationIndexCommand(options);
   } else if (command === "judge-proof") {

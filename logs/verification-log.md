@@ -217,6 +217,11 @@ Commands:
 
 - `npm run verify:scaffold`
 - `npm run audit:submission-copy`
+- `node dist/src/cli.js verify-receipt-chain --dir submission-evidence/suite-proof --json && node -e "const r=require('./submission-evidence/suite-proof/receipt-chain.json'); ..."`
+- `node dist/src/cli.js verify-manifest --out submission-evidence/suite-proof --json && find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt >/tmp/splunkready-sha-check.log && tail -n 5 /tmp/splunkready-sha-check.log`
+- `git diff --check`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "machine-readable"`
+- `npm run check`
 - `npm run check`
 - `git diff --check`
 
@@ -14599,3 +14604,90 @@ Notes:
 - Public npm registry still reported `splunkready@0.1.2` as `latest` during
   this check.
 - Worktree was clean before this log-only update.
+
+## 2026-06-07 - Move 148 receipt-chain verifier first slice
+
+Commands:
+
+- `npm run build`
+- `npx vitest run tests/workflows/receipt-chain.test.ts`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "machine-readable|receipt chain|fixture compile"`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "machine-readable"`
+- `node dist/src/cli.js verify-receipt-chain --dir submission-evidence/suite-proof --json`
+- `node -e "const r=require('./submission-evidence/suite-proof/receipt-chain.json'); ..."`
+- `node dist/src/cli.js proof-audit --out submission-evidence/suite-proof --require-pass true --json`
+- `node dist/src/cli.js verify-manifest --out submission-evidence/suite-proof --json`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npx vitest run tests/workflows/receipt-chain.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+
+Results:
+
+- PASS for TypeScript build.
+- PASS for focused receipt-chain workflow tests:
+  - 1 test file passed;
+  - 2 tests passed.
+- The first focused CLI-flow run failed because the test expected two receipts,
+  but the generated proof directory correctly contained three receipts after
+  `grade-trace`; the assertion was corrected to include
+  `receipt-external-001.json`.
+- PASS for focused CLI-flow rerun:
+  - 1 test file passed;
+  - 1 test passed;
+  - 47 tests skipped by test-name filter.
+- PASS for tracked suite receipt-chain generation:
+  - `status: "PASS"`;
+  - `chainValid: true`;
+  - `receiptCount: 6`;
+  - first receipt path
+    `mission-observability-latency-readiness/receipt-before-001.json`;
+  - last receipt path
+    `mission-security-lateral-movement-readiness/receipt-after-001.json`.
+- PASS for suite proof audit refresh with `--require-pass true`.
+- PASS for suite proof manifest verification.
+- PASS for evidence pack hash regeneration and verification, including
+  `submission-evidence/suite-proof/receipt-chain.json`.
+- PASS for focused receipt-chain plus submission-copy tests:
+  - 2 test files passed;
+  - 5 tests passed.
+- PASS for submission-copy audit:
+  - 114 required claims audited.
+- PASS for receipt-chain idempotence verification against an existing
+  `submission-evidence/suite-proof/receipt-chain.json`:
+  - `status: "PASS"`;
+  - `chainValid: true`;
+  - `receiptCount: 6`;
+  - `failures: []`.
+- PASS for suite proof manifest verification after the idempotence rerun.
+- PASS for evidence pack hash regeneration and verification after the
+  idempotence rerun.
+- PASS for `git diff --check`.
+- PASS for focused CLI-flow test after the idempotence fix:
+  - 1 test file passed;
+  - 1 test passed;
+  - 47 tests skipped by test-name filter.
+- PASS for full canonical gate:
+  - scaffold verified with 85 waves;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 209 files and `mutation=false`;
+  - package readiness audit passed with 170 packed files checked;
+  - package installability audit passed for `splunkready-0.1.2.tgz`,
+    clean `judge-proof`, and MCP initialization;
+  - 63 test files passed;
+  - 396 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission-copy audit passed with 114 required claims;
+  - final `git diff --check` completed with no output.
+
+Notes:
+
+- The first slice verifies deterministic chain lineage but does not yet sign
+  receipts or embed hash fields in generated receipts.
+- The verifier excludes `receipt-chain.json` from receipt discovery, so the
+  command can be rerun on an already chained proof directory.
+- No secret env file values were read, sourced, printed, or committed.
