@@ -142,6 +142,19 @@ Live mock Splunk MCP: PASS
 - Evidence refs: evt-102, evt-118, evt-141
 - Saved-search execution: yes
 
+AppInspect MCP composition: PASS
+- Artifact: submission-evidence/mcp-proof/appinspect-mcp-composition.json
+- Markdown: submission-evidence/mcp-proof/appinspect-mcp-composition.md
+- Server: AVAILABLE (AppInspect MCP Server 2.14.7)
+- Tools: inspect_app
+- App package: submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
+- Validation: SUCCESS
+- AppInspect failures: 2
+- AppInspect errors: 0
+- AppInspect warnings: 0
+- Receipt authority: splunkready
+- AppInspect authority: advisory-static-validation
+
 MCP composition recorder: PASS
 - Artifact: submission-evidence/mcp-proof/dual-server-session.jsonl
 - Markdown: submission-evidence/mcp-proof/dual-server-session.md

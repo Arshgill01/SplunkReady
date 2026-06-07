@@ -15063,3 +15063,65 @@ Files changed:
 - `submission-evidence/mcp-proof/*`
 - `tests/cli/flow.test.ts`
 - `tests/scripts/submission-copy-audit.test.ts`
+
+## 2026-06-07T20:59:25Z - Move 164 Splunk AppInspect MCP composition
+
+Intent:
+
+- Strengthen the MCP award story by composing three Splunk-relevant MCP roles in
+  one credential-free proof: mock Splunk MCP for read-only investigation,
+  Splunk AppInspect MCP for advisory static package validation, and SplunkReady
+  MCP for deterministic transcript certification and Readiness Receipt output.
+
+Actions:
+
+- Probed the official Splunk AppInspect MCP command documented for IDE MCP
+  integration: `uvx splunk-appinspect[mcp] mcp-server`.
+- Added `src/workflows/appinspect-composition.ts`, which starts the AppInspect
+  MCP server when live-mock MCP proof is requested, calls `inspect_app` against
+  the tracked `.spl` package, redacts local path/endpoint/token-like material,
+  and writes `appinspect-mcp-composition.json` plus Markdown.
+- Wired `mcp-proof --live-mock` to include an `appInspectComposition` block and
+  artifact paths without making AppInspect output part of the SplunkReady
+  readiness verdict.
+- Surfaced the AppInspect MCP composition panel in the workbench MCP proof view.
+- Added focused parser/blocked-artifact tests and updated UI schema/render tests.
+- Refreshed `submission-evidence/mcp-proof/` so the tracked MCP proof now
+  includes AppInspect MCP evidence.
+- Updated README, Devpost copy, submission evidence README, claim ledger,
+  submission-copy audit guards, and the ambitious move plan.
+
+Files changed:
+
+- `README.md`
+- `docs/ambitious-award-move-plan.md`
+- `docs/devpost-submission.md`
+- `logs/execution-log.md`
+- `logs/risk-register.md`
+- `logs/verification-log.md`
+- `scripts/audit-submission-copy.mjs`
+- `src/workflows/appinspect-composition.ts`
+- `src/workflows/mcp-proof.ts`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/mcp-proof/appinspect-mcp-composition.json`
+- `submission-evidence/mcp-proof/appinspect-mcp-composition.md`
+- `submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `submission-evidence/mcp-proof/mcp-proof-summary.md`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `tests/ui/app.test.ts`
+- `tests/workflows/appinspect-composition.test.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+
+Result:
+
+- PASS: `mcp-proof --live-mock` still returns `status: "PASS"`.
+- PASS: `appInspectComposition` reports AppInspect MCP server `AVAILABLE`,
+  server name `AppInspect MCP Server`, version `2.14.7`, tool `inspect_app`,
+  validation `SUCCESS`, deterministic receipt authority `splunkready`,
+  AppInspect authority `advisory-static-validation`, and `mutation: false`.
+- HONEST FINDING: the current `.spl` package has 2 AppInspect validation
+  failures, 0 errors, and 0 warnings. This is recorded as advisory evidence and
+  is not claimed as Splunkbase approval.

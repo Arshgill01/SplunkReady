@@ -258,6 +258,34 @@ const renderMcpCompositionRecorder = (summary: McpProofSummary): string => {
   ]);
 };
 
+const renderAppInspectComposition = (summary: McpProofSummary): string => {
+  const appInspect = summary.appInspectComposition;
+
+  return `${renderFactTable([
+    ["Status", appInspect.status],
+    ["Command", appInspect.command],
+    ["Server", appInspect.server.name ? `${appInspect.server.name} ${appInspect.server.version}` : appInspect.server.status],
+    ["Tools", appInspect.server.tools.join(" / ") || "none"],
+    ["Blocked reason", appInspect.server.blockedReason || "none"],
+    ["App package", appInspect.appPackagePath],
+    ["Package present", appInspect.appPackagePresent ? "yes" : "no"],
+    ["Validation", appInspect.validation.status],
+    ["Failures", appInspect.validation.failureCount],
+    ["Errors", appInspect.validation.errorCount],
+    ["Warnings", appInspect.validation.warningCount],
+    ["Receipt authority", appInspect.composition.deterministicReceiptAuthority],
+    ["AppInspect authority", appInspect.composition.appInspectAuthority],
+    ["Deterministic authority", appInspect.deterministicAuthority ? "yes" : "no"],
+    ["Mutation", appInspect.mutation ? "yes" : "no"],
+    ["Artifact", appInspect.artifactPath],
+    ["Markdown", appInspect.markdownPath]
+  ])}
+  ${renderMcpProofList(
+    appInspect.composition.servers.map((server) => `${server.name}: ${server.role} - ${server.authority}`),
+    "stage-list"
+  )}`;
+};
+
 const renderOperatorLiveHostedModelStatus = (summary: McpProofSummary): string => {
   const status = summary.operatorLiveHostedModelStatus;
 
@@ -320,6 +348,10 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
               <section class="panel mcp-proof-panel">
                 <h2>MCP composition recorder</h2>
                 ${renderMcpCompositionRecorder(summary)}
+              </section>
+              <section class="panel mcp-proof-panel">
+                <h2>AppInspect MCP composition</h2>
+                ${renderAppInspectComposition(summary)}
               </section>
               <section class="panel mcp-proof-panel">
                 <h2>Official Splunk MCP tool coverage</h2>

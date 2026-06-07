@@ -630,6 +630,63 @@ const mcpProofSummary = {
     deterministicAuthority: true,
     mutation: false
   },
+  appInspectComposition: {
+    source: "splunkready-appinspect-mcp-composition",
+    status: "PASS",
+    generatedAt: "2026-06-01T06:45:00.000Z",
+    artifactPath: "submission-evidence/mcp-proof/appinspect-mcp-composition.json",
+    markdownPath: "submission-evidence/mcp-proof/appinspect-mcp-composition.md",
+    appPackagePath: "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+    appPackagePresent: true,
+    command: "uvx splunk-appinspect[mcp] mcp-server",
+    server: {
+      status: "AVAILABLE",
+      name: "AppInspect MCP Server",
+      version: "2.14.7",
+      tools: ["inspect_app"],
+      blockedReason: ""
+    },
+    validation: {
+      status: "SUCCESS",
+      toolStatus: "success",
+      summary: {
+        error: 0,
+        failure: 2,
+        success: 8,
+        warning: 0
+      },
+      failureCount: 2,
+      errorCount: 0,
+      warningCount: 0,
+      validationGroupCount: 1,
+      nextSteps: ["Review AppInspect findings before claiming Splunkbase readiness."],
+      logsPreview: "Validated package.",
+      publicSafe: true
+    },
+    composition: {
+      servers: [
+        {
+          name: "splunk",
+          role: "Read-only investigation MCP server for deployment data, saved searches, and evidence rows.",
+          authority: "operational-evidence-source"
+        },
+        {
+          name: "appinspect",
+          role: "Splunk AppInspect MCP server for advisory static validation of the packaged Splunk app.",
+          authority: "advisory-static-validation"
+        },
+        {
+          name: "splunkready",
+          role: "SplunkReady MCP server for deterministic transcript certification and Readiness Receipt output.",
+          authority: "deterministic-receipt-authority"
+        }
+      ],
+      deterministicReceiptAuthority: "splunkready",
+      appInspectAuthority: "advisory-static-validation"
+    },
+    deterministicAuthority: true,
+    mutation: false
+  },
   clientWalkthrough: {
     source: "splunkready-mcp-client-walkthrough",
     status: "PASS",
@@ -1708,6 +1765,7 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Certification loop");
     expect(html).toContain("MCP composition scorecard");
     expect(html).toContain("MCP composition recorder");
+    expect(html).toContain("AppInspect MCP composition");
     expect(html).toContain("Official Splunk MCP tool coverage");
     expect(html).toContain("MCP client session");
     expect(html).toContain("dual-server-client-config: PASS");
@@ -1722,6 +1780,10 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Endpoint material");
     expect(html).toContain("Token material");
     expect(html).toContain("Local path material");
+    expect(html).toContain("AppInspect MCP Server 2.14.7");
+    expect(html).toContain("inspect_app");
+    expect(html).toContain("advisory-static-validation");
+    expect(html).toContain("submission-evidence/mcp-proof/appinspect-mcp-composition.json");
     expect(html).toContain("splunk: Existing Splunk MCP server");
     expect(html).toContain("splunkready://client-config/claude-desktop");
     expect(html).toContain("splunkready://client-config/cursor");

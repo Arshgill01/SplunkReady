@@ -91,6 +91,14 @@ the recorder transcript with strict import and zero skipped records. In
 gateway against mock Splunk MCP plus SplunkReady MCP, not by a closed desktop
 client recording.
 
+The same MCP proof records an AppInspect MCP composition artifact at
+`submission-evidence/mcp-proof/appinspect-mcp-composition.json`. It invokes
+`uvx splunk-appinspect[mcp] mcp-server`, calls `inspect_app` against the tracked
+`.spl` package, and keeps AppInspect as advisory static validation only.
+SplunkReady remains the deterministic receipt authority. Current evidence
+reports validation `SUCCESS` with 2 package failures, 0 errors, and 0 warnings;
+it does not claim Splunkbase approval.
+
 The tracked Splunk app package evidence is
 `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`. It embeds the
 public artifact workbench as static Splunk app content and intentionally avoids

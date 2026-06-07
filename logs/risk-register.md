@@ -1056,3 +1056,11 @@ this pass-through gateway for the tracked `compositionRecorder` evidence.
 Residual risk: this is still a credential-free mock Splunk MCP path, not an
 observed closed-client Antigravity/Zed/Claude/Cursor session, and it does not
 yet support remote HTTP/SSE MCP targets or arbitrary client config discovery.
+
+Move 164 reduces the MCP-category composition gap by adding a credential-free
+AppInspect MCP role beside mock Splunk MCP investigation and SplunkReady MCP
+certification. The proof uses Splunk's documented AppInspect MCP server command
+and records the result as advisory static package validation only. Residual
+risk: the current `.spl` package still has 2 AppInspect validation failures, so
+this is not Splunkbase approval, Splunk Cloud vetting, or an install-grade app
+claim. Move 161 remains the follow-on for AppInspect-grade Splunk app evidence.

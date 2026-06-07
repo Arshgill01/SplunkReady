@@ -208,6 +208,13 @@ and SplunkReady MCP sides, and, when `--live-mock` is used, captures a real
 pass-through recorder-gateway session against the mock Splunk MCP server plus
 the SplunkReady MCP server. It certifies that recorder transcript through the
 same deterministic transcript importer with zero skipped records. It also includes an
+`appInspectComposition` block when `--live-mock` is used for AppInspect MCP composition. That block starts the Splunk AppInspect MCP server through `uvx splunk-appinspect[mcp] mcp-server`,
+calls `inspect_app` against the tracked `.spl` package, and records AppInspect
+as advisory static validation while SplunkReady remains the deterministic
+Readiness Receipt authority. Current evidence reports AppInspect validation
+`SUCCESS` with 2 package failures, 0 errors, and 0 warnings; it is not claimed
+as Splunkbase approval.
+It also includes an
 `agentDrivenWorkflow` block showing the intended loop: an MCP client
 investigates with Splunk MCP, captures the JSON-RPC transcript, calls
 SplunkReady MCP for certification, then explains the Readiness Receipt without

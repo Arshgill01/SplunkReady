@@ -995,6 +995,58 @@ const mcpProofSummarySchema = z
         mutation: z.boolean()
       })
       .strict(),
+    appInspectComposition: z
+      .object({
+        source: z.literal("splunkready-appinspect-mcp-composition"),
+        status: z.enum(["NOT_REQUESTED", "PASS", "BLOCKED", "ERROR"]),
+        generatedAt: z.string().min(1),
+        artifactPath: z.string().min(1),
+        markdownPath: z.string().min(1),
+        appPackagePath: z.string().min(1),
+        appPackagePresent: z.boolean(),
+        command: z.literal("uvx splunk-appinspect[mcp] mcp-server"),
+        server: z
+          .object({
+            status: z.enum(["NOT_REQUESTED", "AVAILABLE", "UNAVAILABLE"]),
+            name: z.string(),
+            version: z.string(),
+            tools: z.array(z.string().min(1)),
+            blockedReason: z.string()
+          })
+          .strict(),
+        validation: z
+          .object({
+            status: z.enum(["NOT_RUN", "SUCCESS", "EXCEPTION", "ERROR"]),
+            toolStatus: z.string().min(1),
+            summary: z.record(z.string(), z.number()),
+            failureCount: z.number().int().nonnegative(),
+            errorCount: z.number().int().nonnegative(),
+            warningCount: z.number().int().nonnegative(),
+            validationGroupCount: z.number().int().nonnegative(),
+            nextSteps: z.array(z.string().min(1)),
+            logsPreview: z.string(),
+            publicSafe: z.literal(true)
+          })
+          .strict(),
+        composition: z
+          .object({
+            servers: z.array(
+              z
+                .object({
+                  name: z.enum(["splunk", "appinspect", "splunkready"]),
+                  role: z.string().min(1),
+                  authority: z.string().min(1)
+                })
+                .strict()
+            ),
+            deterministicReceiptAuthority: z.literal("splunkready"),
+            appInspectAuthority: z.literal("advisory-static-validation")
+          })
+          .strict(),
+        deterministicAuthority: z.boolean(),
+        mutation: z.boolean()
+      })
+      .strict(),
     clientWalkthrough: z
       .object({
         source: z.literal("splunkready-mcp-client-walkthrough"),

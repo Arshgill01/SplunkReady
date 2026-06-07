@@ -15854,3 +15854,88 @@ Result:
 - PASS: `Dockerfile.mock-splunk-mcp` built locally against the final source
   state, and the container initialized `splunkready-mock-splunk-mcp`, returned
   11 tools, and included `splunk_run_saved_search`.
+
+## 2026-06-07T20:59:25Z - Move 164 Splunk AppInspect MCP composition verification
+
+Pre-implementation AppInspect probe:
+
+- `timeout 20 uvx splunk-appinspect --help`
+- `timeout 20 uvx 'splunk-appinspect[mcp]' mcp-server --help`
+- Node stdio probe of `uvx splunk-appinspect[mcp] mcp-server` with
+  `initialize`, `tools/list`, and `tools/call inspect_app` against
+  `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`
+
+Result:
+
+- PASS: `uvx` is installed and AppInspect MCP server mode is available.
+- PASS: AppInspect MCP initialized as `AppInspect MCP Server` version `2.14.7`.
+- PASS: `tools/list` advertised `inspect_app`.
+- PASS: `inspect_app` returned `status: "success"`, summary failure `2`, error
+  `0`, warning `0`, success `8`, skipped `237`.
+
+Focused validation:
+
+- `npm run build`
+- `npx vitest run tests/workflows/appinspect-composition.test.ts`
+- `npx vitest run tests/ui/app.test.ts -t "MCP proof summary"`
+- `npx vitest run tests/cli/flow.test.ts -t "runs MCP proof with a credential-free live mock Splunk MCP session"`
+
+Result:
+
+- PASS: TypeScript build succeeded.
+- PASS: AppInspect workflow tests passed with 2 tests.
+- PASS: MCP proof UI render test passed.
+- PASS: live-mock MCP proof CLI slice passed.
+
+Tracked MCP proof regeneration:
+
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json`
+
+Result:
+
+- PASS: command returned `status: "PASS"`.
+- PASS: generated `submission-evidence/mcp-proof/appinspect-mcp-composition.json`
+  and `.md`.
+- PASS: `appInspectComposition` records AppInspect as advisory static validation
+  and keeps SplunkReady as deterministic receipt authority.
+
+Evidence and copy gates:
+
+- `rg -n "/Users/|/private/|Bearer |https?://|SPLUNK_|TOKEN|SECRET|PASSWORD" submission-evidence/mcp-proof/appinspect-mcp-composition.json submission-evidence/mcp-proof/appinspect-mcp-composition.md submission-evidence/mcp-proof/mcp-proof-summary.json submission-evidence/mcp-proof/mcp-proof-summary.md`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `git diff --check`
+
+Result:
+
+- PASS: new AppInspect artifacts contain no local paths, bearer tokens, or
+  endpoints. The broader MCP summary still contains documented placeholder env
+  names in client-config resources; no secret values were copied.
+- PASS: submission-copy audit tests passed with 3 tests.
+- PASS: submission-copy audit passed with 200 required claims.
+- PASS: tracked evidence SHA file regenerated and verified.
+- PASS: `git diff --check` returned clean.
+
+Full gate:
+
+- `npm run check`
+
+Result:
+
+- PASS: scaffold verified with 85 waves and 2502 project files.
+- PASS: runtime contracts verified with 19 rules, 4 fixture missions, and 20
+  evidence refs.
+- PASS: TypeScript build and production UI build.
+- PASS: public demo export audit with 276 files, default route `mcp-proof`, and
+  `mutation=false`.
+- PASS: package readiness audit with 183 packed files checked.
+- PASS: package installability audit; packed `splunkready-0.1.3.tgz` installed,
+  clean `npx splunkready judge-proof` returned `PASS`, and clean
+  `npx splunkready mcp` initialized.
+- PASS: Vitest suite with 69 test files and 421 tests passed.
+- PASS: secret env ignore audit.
+- PASS: reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and 0
+  failing latest verdicts.
+- PASS: submission-copy audit with 200 required claims.
+- PASS: final `git diff --check`.
