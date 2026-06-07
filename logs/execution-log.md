@@ -13992,3 +13992,58 @@ Notes:
 - `live-proof --live-mock` is a credential-free live-adapter proof, not real
   operator-owned Splunk deployment evidence.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07T16:43:15Z - Move 147 live-mock CI and evidence slice
+
+Intent:
+
+- Make the credential-free live-mock proof durable as tracked judge evidence
+  and as a CI-guarded path.
+
+Actions:
+
+- Added `npm run live-mock-proof`, which builds the package and runs
+  `live-proof --out submission-evidence/live-mock --live-mock --json`.
+- Added a CI step named `Run credential-free live mock proof` after the
+  canonical gate.
+- Generated `submission-evidence/live-mock/` from the new script.
+- Verified `submission-evidence/live-mock/live-proof-summary.json` reports:
+  - status `PASS`;
+  - mode `live`;
+  - mutation `false`;
+  - `failToPass: true`;
+  - `proofLoop: fail-to-pass`;
+  - `derivedMission.strategy: saved-search-with-evidence`;
+  - before verdict `NOT READY`;
+  - after verdict `READY`.
+- Updated `submission-evidence/README.md` and
+  `submission-evidence/claim-ledger.md` with the live-mock proof claim.
+- Added submission-copy audit guards for the live-mock claim and evidence path.
+- Regenerated and verified `submission-evidence/evidence-pack-sha256.txt`.
+
+Files changed:
+
+- `.github/workflows/ci.yml`
+- `package.json`
+- `scripts/audit-submission-copy.mjs`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/live-mock/*`
+- `moves/moves147.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Deferred:
+
+- Docker and docker-compose packaging.
+- SAIA route-not-found/degraded-state simulation.
+- `mcp-proof --live-mock` composition evidence.
+- Publishing the post-`0.1.2` source changes to npm.
+
+Notes:
+
+- This evidence is self-hostable and credential-free, but it is still mock live
+  evidence rather than operator-owned Splunk evidence.
+- No secret env file values were read, sourced, printed, or committed.

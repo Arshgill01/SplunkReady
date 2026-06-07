@@ -82,6 +82,14 @@ const checks = [
   ["Claim ledger MCP composition review scorecard", files.claimLedger, "composition-review-tool"],
   ["Claim ledger MCP composition review Splunk knowledge objects", files.claimLedger, "splunk_get_knowledge_objects"],
   ["Claim ledger MCP composition review Splunk saved search", files.claimLedger, "splunk_run_saved_search"],
+  [
+    "Claim ledger live mock proof",
+    files.claimLedger,
+    "The self-hostable mock Splunk MCP path produces a credential-free live-mode proof without Splunk credentials."
+  ],
+  ["Claim ledger live mock evidence", files.claimLedger, "submission-evidence/live-mock/live-proof-summary.json"],
+  ["Claim ledger live mock fail-to-pass", files.claimLedger, "proofLoop: \"fail-to-pass\""],
+  ["Claim ledger live mock saved-search strategy", files.claimLedger, "derivedMission.strategy: \"saved-search-with-evidence\""],
   ["Claim ledger operator live hosted-model status", files.claimLedger, "operatorLiveHostedModelStatus"],
   ["Claim ledger operator live SAIA route blocker", files.claimLedger, "SAIA_REST_HANDLERS_NOT_REGISTERED"],
   ["Claim ledger operator live route probe status", files.claimLedger, "restHandlerProbeStatus"],

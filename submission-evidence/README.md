@@ -7,6 +7,7 @@ This directory is the judge-facing evidence pack. It is tracked in git so it can
 ## Contents
 
 - `suite-proof/`: credential-free multi-mission fixture proof. It includes the full proof bundle, compiler diagnostics, strict `proof-audit.json`, `proof-manifest.json`, and `proof-manifest-verification.json`.
+- `live-mock/`: credential-free live-mode proof generated through `live-proof --live-mock`. It exercises the live adapter normalization boundary against the fixture-backed mock Splunk MCP transport and produces a saved-search fail-to-pass proof with `mode: live` and `mutation: false`.
 - `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, records the raw JSON-RPC client session, discovers tools/resources/resource templates/prompts, reads a templated Readiness Receipt resource, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript through both path-based and inline-content MCP tools, checks hosted-model SAIA access through the MCP server in fixture mode, writes a client walkthrough showing existing Splunk MCP investigation followed by SplunkReady certification, and verifies the nested transcript proof manifests.
 - `public-proof-export/`: redacted derivative export generated from a managed workbench run. It includes the public export manifest, summary, audit, receipts, traces, redacted source proof manifest, and manifest verification. It is intentionally not the unredacted source proof.
 - `screenshots/`: Playwright screenshots for the packaged workbench fixture run, trace timeline, MCP proof view, verified public proof export UI, and hosted public judge-proof view. The earlier Vite-backed fixture screenshot is retained as historical evidence but is not the primary refreshed screenshot.
@@ -20,6 +21,7 @@ Run these from the repository root:
 ```bash
 npm run splunkready -- proof-audit --out submission-evidence/suite-proof --require-pass true --json
 npm run splunkready -- verify-manifest --out submission-evidence/suite-proof --json
+npm run live-mock-proof
 npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json
 npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-inline-transcript-certification --json
 npm run splunkready -- verify-manifest --out submission-evidence/public-proof-export --json
@@ -40,6 +42,13 @@ Expected proof status:
 - final evidence refs: `15`
 - manifest verification: `PASS`
 - compiler diagnostics: present
+- live-mock status: `PASS`
+- live-mock mode: `live`
+- live-mock mutation: `false`
+- live-mock proof loop: `fail-to-pass`
+- live-mock derived strategy: `saved-search-with-evidence`
+- live-mock before verdict: `NOT READY`
+- live-mock after verdict: `READY`
 - MCP proof status: `PASS`
 - MCP tools: `5`
 - MCP resources: `8`

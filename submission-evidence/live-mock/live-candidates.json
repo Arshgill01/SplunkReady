@@ -1,0 +1,204 @@
+{
+  "mode": "live",
+  "contractId": "contract-acme-soc-dev",
+  "checked": 10,
+  "maxRowsPerSavedSearch": 5,
+  "mutation": false,
+  "candidates": [
+    {
+      "ref": "search::ES - Lateral Movement Auth Chain",
+      "app": "search",
+      "name": "ES - Lateral Movement Auth Chain",
+      "resultCount": null,
+      "evidenceRefs": [],
+      "warnings": [],
+      "error": "LIVE_ADAPTER_TRANSPORT_ERROR while calling splunk_run_saved_search: Live Splunk adapter transport failed for splunk_run_saved_search. Cause: No mock saved-search result for search::ES - Lateral Movement Auth Chain."
+    },
+    {
+      "ref": "SplunkEnterpriseSecuritySuite::ES - Dashboard Lateral Movement By Source",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "name": "ES - Dashboard Lateral Movement By Source",
+      "resultCount": null,
+      "evidenceRefs": [],
+      "warnings": [],
+      "error": "LIVE_ADAPTER_TRANSPORT_ERROR while calling splunk_run_saved_search: Live Splunk adapter transport failed for splunk_run_saved_search. Cause: No mock saved-search result for SplunkEnterpriseSecuritySuite::ES - Dashboard Lateral Movement By Source."
+    },
+    {
+      "ref": "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "name": "ES - Lateral Movement Auth Chain",
+      "resultCount": 3,
+      "evidenceRefs": [
+        "evt-102",
+        "evt-118",
+        "evt-141"
+      ],
+      "warnings": []
+    },
+    {
+      "ref": "search::CloudTrail - All Management Events",
+      "app": "search",
+      "name": "CloudTrail - All Management Events",
+      "resultCount": null,
+      "evidenceRefs": [],
+      "warnings": [],
+      "error": "LIVE_ADAPTER_TRANSPORT_ERROR while calling splunk_run_saved_search: Live Splunk adapter transport failed for splunk_run_saved_search. Cause: No mock saved-search result for search::CloudTrail - All Management Events."
+    },
+    {
+      "ref": "search::CloudTrail - IAM Access Key Anomalies",
+      "app": "search",
+      "name": "CloudTrail - IAM Access Key Anomalies",
+      "resultCount": 3,
+      "evidenceRefs": [
+        "aws-301",
+        "aws-302",
+        "aws-303"
+      ],
+      "warnings": []
+    },
+    {
+      "ref": "search::DNS - All Queries Last 24h",
+      "app": "search",
+      "name": "DNS - All Queries Last 24h",
+      "resultCount": null,
+      "evidenceRefs": [],
+      "warnings": [],
+      "error": "LIVE_ADAPTER_TRANSPORT_ERROR while calling splunk_run_saved_search: Live Splunk adapter transport failed for splunk_run_saved_search. Cause: No mock saved-search result for search::DNS - All Queries Last 24h."
+    },
+    {
+      "ref": "search::DNS - Suspicious Exfiltration Queries",
+      "app": "search",
+      "name": "DNS - Suspicious Exfiltration Queries",
+      "resultCount": 5,
+      "evidenceRefs": [
+        "dns-501",
+        "dns-502",
+        "dns-503",
+        "dns-504",
+        "dns-505"
+      ],
+      "warnings": []
+    },
+    {
+      "ref": "search::Network - Suspicious Egress Spike",
+      "app": "search",
+      "name": "Network - Suspicious Egress Spike",
+      "resultCount": 4,
+      "evidenceRefs": [
+        "net-401",
+        "net-402",
+        "net-403",
+        "net-404"
+      ],
+      "warnings": []
+    },
+    {
+      "ref": "search::Platform - MCP Gateway Latency",
+      "app": "search",
+      "name": "Platform - MCP Gateway Latency",
+      "resultCount": 4,
+      "evidenceRefs": [
+        "obs-201",
+        "obs-202",
+        "obs-203",
+        "obs-204"
+      ],
+      "warnings": []
+    },
+    {
+      "ref": "SplunkEnterpriseSecuritySuite::ES - Prompt Injection Event Sample",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "name": "ES - Prompt Injection Event Sample",
+      "resultCount": 1,
+      "evidenceRefs": [
+        "evt-injection-001"
+      ],
+      "warnings": []
+    }
+  ],
+  "candidatesWithRows": [
+    {
+      "ref": "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "name": "ES - Lateral Movement Auth Chain",
+      "resultCount": 3,
+      "evidenceRefs": [
+        "evt-102",
+        "evt-118",
+        "evt-141"
+      ],
+      "warnings": []
+    },
+    {
+      "ref": "search::CloudTrail - IAM Access Key Anomalies",
+      "app": "search",
+      "name": "CloudTrail - IAM Access Key Anomalies",
+      "resultCount": 3,
+      "evidenceRefs": [
+        "aws-301",
+        "aws-302",
+        "aws-303"
+      ],
+      "warnings": []
+    },
+    {
+      "ref": "search::DNS - Suspicious Exfiltration Queries",
+      "app": "search",
+      "name": "DNS - Suspicious Exfiltration Queries",
+      "resultCount": 5,
+      "evidenceRefs": [
+        "dns-501",
+        "dns-502",
+        "dns-503",
+        "dns-504",
+        "dns-505"
+      ],
+      "warnings": []
+    },
+    {
+      "ref": "search::Network - Suspicious Egress Spike",
+      "app": "search",
+      "name": "Network - Suspicious Egress Spike",
+      "resultCount": 4,
+      "evidenceRefs": [
+        "net-401",
+        "net-402",
+        "net-403",
+        "net-404"
+      ],
+      "warnings": []
+    },
+    {
+      "ref": "search::Platform - MCP Gateway Latency",
+      "app": "search",
+      "name": "Platform - MCP Gateway Latency",
+      "resultCount": 4,
+      "evidenceRefs": [
+        "obs-201",
+        "obs-202",
+        "obs-203",
+        "obs-204"
+      ],
+      "warnings": []
+    },
+    {
+      "ref": "SplunkEnterpriseSecuritySuite::ES - Prompt Injection Event Sample",
+      "app": "SplunkEnterpriseSecuritySuite",
+      "name": "ES - Prompt Injection Event Sample",
+      "resultCount": 1,
+      "evidenceRefs": [
+        "evt-injection-001"
+      ],
+      "warnings": []
+    }
+  ],
+  "derivedMission": {
+    "strategy": "saved-search-with-evidence",
+    "reason": "Generated from live saved search SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain with 3 row(s).",
+    "missionId": "mission-live-saved-search-readiness",
+    "artifacts": [
+      "submission-evidence/live-mock/live-derived-mission.json",
+      "submission-evidence/live-mock/live-derived-readiness-profile.json"
+    ]
+  }
+}

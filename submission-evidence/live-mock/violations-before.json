@@ -1,0 +1,66 @@
+[
+  {
+    "id": "violation-mission-live-saved-search-readiness-spl-001-mission-live-saved-search-readiness-trace-001",
+    "missionId": "mission-live-saved-search-readiness",
+    "traceEventId": "mission-live-saved-search-readiness-trace-001",
+    "ruleId": "SPL-001",
+    "severity": "Critical",
+    "reason": "Query contains a forbidden SPL pattern.",
+    "evidence": {
+      "query": "search index=* src_ip=* earliest=-24h latest=now",
+      "forbiddenPattern": "index=*"
+    },
+    "suggestedPolicyPatch": "Rewrite the SPL to use an approved index, saved search, or read-only query command.",
+    "contractRef": "contract-acme-soc-dev.forbiddenQueryPatterns"
+  },
+  {
+    "id": "violation-mission-live-saved-search-readiness-spl-003-mission-live-saved-search-readiness-trace-001",
+    "missionId": "mission-live-saved-search-readiness",
+    "traceEventId": "mission-live-saved-search-readiness-trace-001",
+    "ruleId": "SPL-003",
+    "severity": "Critical",
+    "reason": "Query references a field that is not present in the environment contract.",
+    "evidence": {
+      "query": "search index=* src_ip=* earliest=-24h latest=now",
+      "field": "src_ip",
+      "knownFields": []
+    },
+    "suggestedPolicyPatch": "Use fields discovered in the Environment Contract before running custom SPL.",
+    "contractRef": "contract-acme-soc-dev.sourcetypes.fields"
+  },
+  {
+    "id": "violation-mission-live-saved-search-readiness-ko-001-mission-live-saved-search-readiness-trace-001",
+    "missionId": "mission-live-saved-search-readiness",
+    "traceEventId": "mission-live-saved-search-readiness-trace-001",
+    "ruleId": "KO-001",
+    "severity": "High",
+    "reason": "Mission requires saved-search discovery, but the trace never inspected knowledge objects.",
+    "evidence": {
+      "preferredSavedSearchRefs": [
+        "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain"
+      ],
+      "firstCustomQueryTool": "splunk_run_query"
+    },
+    "suggestedPolicyPatch": "Inspect saved searches with splunk_get_knowledge_objects before generating custom SPL.",
+    "contractRef": "contract-acme-soc-dev.savedSearches"
+  },
+  {
+    "id": "violation-mission-live-saved-search-readiness-evd-001-mission-live-saved-search-readiness-trace-003",
+    "missionId": "mission-live-saved-search-readiness",
+    "traceEventId": "mission-live-saved-search-readiness-trace-003",
+    "ruleId": "EVD-001",
+    "severity": "Critical",
+    "reason": "Final answer lacks query or saved-search provenance, result count, or evidence refs.",
+    "evidence": {
+      "finalAnswerId": "mission-live-saved-search-readiness-trace-003",
+      "finalResultCount": 0,
+      "finalEvidenceRefs": [],
+      "provenanceRefs": [
+        "search index=* src_ip=* earliest=-24h latest=now"
+      ],
+      "citedProvenanceRefs": []
+    },
+    "suggestedPolicyPatch": "Carry queryRef or saved-search provenance, result count, and evidence refs into the final answer.",
+    "evidenceRefs": []
+  }
+]

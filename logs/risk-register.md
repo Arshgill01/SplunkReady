@@ -893,3 +893,12 @@ flag, CI does not yet run the live-mock proof, `submission-evidence/live-mock/`
 is not tracked, Docker packaging is absent, SAIA route-state simulation is not
 implemented, and `live-security-proof --live-mock` still requires explicit
 operator-owned LLM credentials.
+
+Move 147 fourth slice closes the live-mock CI/evidence gap. The repository now
+tracks `submission-evidence/live-mock/`, `npm run live-mock-proof` regenerates
+the credential-free live-adapter fail-to-pass proof, CI runs that script after
+`npm run check`, and the evidence hash file verifies the new bundle. Residual
+risk shifts to release and packaging: npm latest `0.1.2` does not yet include
+`--live-mock`, Docker/docker-compose packaging is still absent, SAIA
+route-not-found/degraded-state simulation is not implemented, and
+`mcp-proof --live-mock` composition evidence remains pending.

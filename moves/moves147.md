@@ -17,12 +17,13 @@ transport boundary.
   `splunk_run_saved_search` fixture-backed calls.
 - Wire `--live-mock` into the live proof path using a fixture-backed mock live
   transport that still exercises the live adapter normalization boundary.
+- Track `submission-evidence/live-mock/` and run the credential-free live-mock
+  proof in CI.
 
 ## Deferred Scope
 
 - Dockerfile and docker-compose packaging.
 - SAIA route states plus realistic latency, pagination, and degraded-state behavior.
-- CI live-mock proof and `submission-evidence/live-mock/`.
 - `mcp-proof --live-mock` composition evidence.
 - Full `live-security-proof --live-mock` without operator-owned LLM credentials;
   the strict proof command still requires `SPLUNKREADY_LLM_ENABLED=true`.
@@ -53,5 +54,13 @@ transport with no Splunk credentials. A stripped-env built CLI smoke verifies
 `mutation: false`, `failToPass: true`, and `proofLoop: fail-to-pass`.
 `live-security-check --live-mock --json` reports
 `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF` with fallback disabled. Route-state
-simulation, Docker packaging, CI live-mock proof, `mcp-proof --live-mock`, and
-`submission-evidence/live-mock/` remain deferred.
+simulation, Docker packaging, `mcp-proof --live-mock`, and
+`submission-evidence/live-mock/` remained deferred.
+
+Fourth slice implemented. Added `npm run live-mock-proof`, tracked
+`submission-evidence/live-mock/`, added a CI step that runs the same
+credential-free proof, updated the claim ledger and submission evidence README,
+and regenerated `submission-evidence/evidence-pack-sha256.txt`. Docker
+packaging, route-state simulation, `mcp-proof --live-mock`, and full
+`live-security-proof --live-mock` without operator-owned LLM credentials remain
+deferred.

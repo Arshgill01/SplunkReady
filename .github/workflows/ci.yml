@@ -34,3 +34,6 @@ jobs:
 
       - name: Run canonical gate
         run: npm run check
+
+      - name: Run credential-free live mock proof
+        run: npm run live-mock-proof

@@ -1,0 +1,56 @@
+{
+  "missionId": "mission-live-saved-search-readiness",
+  "score": 10,
+  "verdict": "NOT READY",
+  "passed": false,
+  "violationIds": [
+    "violation-mission-live-saved-search-readiness-spl-001-mission-live-saved-search-readiness-trace-001",
+    "violation-mission-live-saved-search-readiness-spl-003-mission-live-saved-search-readiness-trace-001",
+    "violation-mission-live-saved-search-readiness-ko-001-mission-live-saved-search-readiness-trace-001",
+    "violation-mission-live-saved-search-readiness-evd-001-mission-live-saved-search-readiness-trace-003"
+  ],
+  "criticalViolationIds": [
+    "violation-mission-live-saved-search-readiness-spl-001-mission-live-saved-search-readiness-trace-001",
+    "violation-mission-live-saved-search-readiness-spl-003-mission-live-saved-search-readiness-trace-001",
+    "violation-mission-live-saved-search-readiness-evd-001-mission-live-saved-search-readiness-trace-003"
+  ],
+  "highViolationIds": [
+    "violation-mission-live-saved-search-readiness-ko-001-mission-live-saved-search-readiness-trace-001"
+  ],
+  "breakdown": {
+    "baseScore": 100,
+    "deductions": [
+      {
+        "severity": "Critical",
+        "count": 3,
+        "weight": 25,
+        "total": 75
+      },
+      {
+        "severity": "High",
+        "count": 1,
+        "weight": 15,
+        "total": 15
+      }
+    ],
+    "totalDeduction": 90,
+    "score": 10,
+    "thresholds": {
+      "readyMinimumScore": 90,
+      "reviewMinimumScore": 75,
+      "readyBlockedBySeverities": [
+        "Critical",
+        "High"
+      ],
+      "notReadyBlockedBySeverities": [
+        "Critical"
+      ]
+    },
+    "blockers": [
+      "Critical violations force a NOT READY verdict.",
+      "Critical or High violations block a READY verdict.",
+      "Score 10 is below the review threshold 75."
+    ]
+  },
+  "explanation": "Score 10 = 100 - 90; deductions: 3 Critical x 25 = 75; 1 High x 15 = 15. Verdict: NOT READY."
+}

@@ -14342,3 +14342,79 @@ Notes:
 - The stripped-env smokes used only `PATH` and `HOME`, with no Splunk MCP URL or
   token env vars.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 - Move 147 live-mock CI and evidence slice
+
+Commands:
+
+- `npm run live-mock-proof`
+- `node -e "const s=require('./submission-evidence/live-mock/live-proof-summary.json'); ..."`
+- `find submission-evidence/live-mock -maxdepth 1 -type f | sort`
+- `node -e "const c=require('./submission-evidence/live-mock/environment-contract.json'); ..."`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `npm run check`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run check`
+
+Results:
+
+- PASS for `npm run live-mock-proof`:
+  - TypeScript build completed;
+  - `live-proof --out submission-evidence/live-mock --live-mock --json`
+    returned `PASS`;
+  - 20 live-mock proof artifacts were written.
+- PASS for live-mock summary inspection:
+  - status `PASS`;
+  - mode `live`;
+  - mutation `false`;
+  - `failToPass=true`;
+  - `proofLoop=fail-to-pass`;
+  - `derivedMission.strategy=saved-search-with-evidence`;
+  - before verdict `NOT READY`, score 10, violations 4;
+  - after verdict `READY`, score 100, violations 0.
+- PASS for environment-contract inspection:
+  - mode `live`;
+  - deployment name `acme-soc-dev`;
+  - mock live contract includes `splunk_get_info`,
+    `splunk_get_user_info`, `splunk_get_indexes`, `splunk_get_metadata`,
+    `splunk_get_knowledge_objects`, `splunk_run_query`,
+    `splunk_run_saved_search`, `saia_generate_spl`, `saia_explain_spl`,
+    `saia_optimize_spl`, and `saia_ask_splunk_question`;
+  - saved-search inventory includes the flagship
+    `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`.
+- PASS for evidence pack hash regeneration and verification:
+  - every file listed in `submission-evidence/evidence-pack-sha256.txt`
+    returned OK, including all new `submission-evidence/live-mock/*` files.
+- PASS for submission-copy audit:
+  - 105 required claims audited.
+- FAIL for the first full `npm run check` after adding the audit guards:
+  - 61 test files passed;
+  - 1 test file failed;
+  - `tests/scripts/submission-copy-audit.test.ts` failed because its temporary
+    claim-ledger fixture lacked the new live-mock guarded claim strings.
+- PASS for targeted submission-copy audit tests after updating the fixture:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for the final full canonical gate:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 62 test files passed;
+  - 390 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 105 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- The live-mock evidence path is credential-free and does not require Splunk
+  MCP URL/token env vars.
+- No secret env file values were read, sourced, printed, or committed.
