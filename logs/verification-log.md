@@ -4039,6 +4039,22 @@ Result:
   - 205 tests.
 - PASS for final `git diff --check`.
 
+## 2026-06-07 — Move 149 Remote CI
+
+Commit:
+
+- `d9c8e83` (`Add interactive hosted certification demo`)
+
+Remote verification:
+
+- `gh run watch 27100662796 --exit-status`
+
+Result:
+
+- PASS for GitHub Actions run `27100662796`.
+- PASS for job `npm run check` in 1m16s.
+- PASS for the credential-free live mock proof step.
+
 Open risks:
 
 - The browser URL still depends on the running dev server's artifact root; if the dev server is restarted without `SPLUNKREADY_UI_ARTIFACT_DIR=artifacts/live-security-ui`, it will fall back to `artifacts/fixture-demo`.

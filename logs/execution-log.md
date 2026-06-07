@@ -14471,3 +14471,17 @@ Notes:
   deterministic certifier in-browser. The local workbench backend still provides
   the existing server-side import/certification job path.
 - No secret env files were read, sourced, printed, or copied.
+
+## 2026-06-07 — Move 149 Remote CI Log
+
+Recorded the remote GitHub Actions result for commit `d9c8e83`.
+
+Run:
+
+- `27100662796`
+
+Result:
+
+- GitHub Actions `CI / npm run check` passed in 1m16s.
+- The remote canonical gate passed.
+- The remote credential-free live mock proof passed.
