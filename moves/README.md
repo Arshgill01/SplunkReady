@@ -137,6 +137,7 @@ commands, or filesystem paths.
 | P0 | [112](moves112.md) Inline MCP transcript certification | 0.5d | Adds a read-only MCP tool that certifies transcript JSONL content directly, with secret rejection and tracked path-vs-inline proof evidence. |
 | P0 | [113](moves113.md) MCP hosted model access check | 0.5d | Adds a read-only MCP tool that proves hosted-model SAIA access as advisory evidence and records it in the MCP proof. |
 | P0 | [114](moves114.md) Hosted model env file support | 0.5d | Lets hosted-model proof commands load operator-owned live variables from an explicit env file while keeping artifacts secret-safe. |
+| P0 | [115](moves115.md) MCP hosted model diagnostic resource | 0.5d | Adds a hosted-model diagnostic MCP resource and prompt so SAIA readiness is discoverable in agent MCP clients, not only callable as a tool. |
 
 ## Non-Negotiable Boundaries
 

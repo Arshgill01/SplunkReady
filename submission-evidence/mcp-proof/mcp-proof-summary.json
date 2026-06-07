@@ -77,6 +77,11 @@
       "uri": "splunkready://workflows/mcp-composition-scorecard",
       "name": "mcp-composition-scorecard",
       "mimeType": "text/markdown"
+    },
+    {
+      "uri": "splunkready://workflows/hosted-model-diagnostic",
+      "name": "hosted-model-diagnostic",
+      "mimeType": "text/markdown"
     }
   ],
   "resourceTemplates": [
@@ -106,6 +111,10 @@
     {
       "name": "splunkready_mcp_composition_review",
       "argumentCount": 1
+    },
+    {
+      "name": "splunkready_hosted_model_diagnostic",
+      "argumentCount": 2
     }
   ],
   "describe": {
@@ -130,7 +139,8 @@
       "splunkready://client-config/stdio",
       "splunkready://client-config/splunk-and-splunkready",
       "splunkready://workflows/splunk-mcp-certification-loop",
-      "splunkready://workflows/mcp-composition-scorecard"
+      "splunkready://workflows/mcp-composition-scorecard",
+      "splunkready://workflows/hosted-model-diagnostic"
     ],
     "resourceTemplates": [
       "splunkready://receipts/{receiptId}"
@@ -140,7 +150,8 @@
       "splunkready_capture_trace",
       "splunkready_explain_receipt",
       "splunkready_splunk_mcp_certification_loop",
-      "splunkready_mcp_composition_review"
+      "splunkready_mcp_composition_review",
+      "splunkready_hosted_model_diagnostic"
     ]
   },
   "postureResource": {
@@ -148,7 +159,7 @@
       {
         "uri": "splunkready://certification/posture",
         "mimeType": "application/json",
-        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_certify_mcp_transcript_content\",\n    \"splunkready_check_hosted_model_access\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://client-config/splunk-and-splunkready\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\",\n    \"splunkready://workflows/mcp-composition-scorecard\"\n  ],\n  \"resourceTemplates\": [\n    \"splunkready://receipts/{receiptId}\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\",\n    \"splunkready_mcp_composition_review\"\n  ]\n}"
+        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_certify_mcp_transcript_content\",\n    \"splunkready_check_hosted_model_access\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://client-config/splunk-and-splunkready\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\",\n    \"splunkready://workflows/mcp-composition-scorecard\",\n    \"splunkready://workflows/hosted-model-diagnostic\"\n  ],\n  \"resourceTemplates\": [\n    \"splunkready://receipts/{receiptId}\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\",\n    \"splunkready_mcp_composition_review\",\n    \"splunkready_hosted_model_diagnostic\"\n  ]\n}"
       }
     ]
   },
@@ -185,6 +196,15 @@
         "uri": "splunkready://workflows/mcp-composition-scorecard",
         "mimeType": "text/markdown",
         "text": "# MCP Composition Scorecard\n\nA competitive MCP proof should show composition, not replacement.\nRequired evidence:\n1. The MCP client config contains both an existing Splunk MCP server named `splunk` and a local `splunkready` MCP server.\n2. The transcript contains read-only `splunk_*` tool calls produced by the Splunk MCP server.\n3. The transcript includes deployment evidence, preferably saved-search output with event refs.\n4. SplunkReady MCP certifies the captured transcript into a Readiness Receipt.\n5. Deterministic rules decide READY or NOT READY; LLM, SAIA, or assistant text may only explain.\n6. SplunkReady reports `mutation=false` and does not mutate Splunk.\n\nUse this scorecard to review `mcp-proof-summary.json` before presenting the MCP category story."
+      }
+    ]
+  },
+  "hostedModelDiagnosticResource": {
+    "contents": [
+      {
+        "uri": "splunkready://workflows/hosted-model-diagnostic",
+        "mimeType": "text/markdown",
+        "text": "# Hosted Model Diagnostic\n\nUse this workflow when an MCP client needs evidence that Splunk AI Assistant helper tools are available.\n1. Keep SAIA credentials in the operator-owned environment or MCP client configuration; do not include tokens in transcripts.\n2. Call `splunkready_check_hosted_model_access` with `mode=fixture` for public proof or `mode=live` only from an operator-owned shell.\n3. Require `saia_explain_spl` and `saia_optimize_spl` to be available for a PASS diagnostic.\n4. Treat SAIA explain/optimize output as advisory only; SAIA is not the judge.\n5. Deterministic SplunkReady rules remain the pass/fail authority, and SplunkReady reports `mutation=false`.\n\nThe diagnostic calls hosted-model helper tools only. It does not execute the unsafe SPL query and does not mutate Splunk."
       }
     ]
   },
@@ -229,6 +249,18 @@
         "content": {
           "type": "text",
           "text": "Review this MCP composition proof before presenting it.\n\nProof summary path: submission-evidence/mcp-proof/mcp-proof-summary.json\n\nConfirm the proof composes two MCP servers: existing Splunk MCP for read-only investigation and SplunkReady MCP for deterministic certification.\nCheck for a dual-server client config, captured splunk_* tool calls, saved-search evidence refs, a generated Readiness Receipt, deterministic authority, and mutation=false.\nCall out any missing evidence directly. Do not treat LLM output as pass/fail authority."
+        }
+      }
+    ]
+  },
+  "hostedModelDiagnosticPrompt": {
+    "description": "Guide an MCP-capable agent to run the hosted-model access diagnostic while preserving deterministic authority.",
+    "messages": [
+      {
+        "role": "user",
+        "content": {
+          "type": "text",
+          "text": "Check Splunk AI Assistant hosted-model access through SplunkReady.\n\nMode: fixture\nOutput directory: submission-evidence/mcp-proof/mcp-hosted-model-access\n\nCall splunkready_check_hosted_model_access with requirePass=true when you need a strict PASS gate.\nFor public evidence, use fixture mode. For live evidence, run only from an operator-owned shell or explicit env file with Splunk MCP credentials already configured.\nConfirm required tools include saia_explain_spl and saia_optimize_spl, permissionStatus is OK, and mutation=false.\nSAIA output may explain or optimize SPL, but deterministic SplunkReady rules remain the pass/fail authority."
         }
       }
     ]
@@ -360,7 +392,7 @@
       {
         "id": "discoverable-resources-and-prompts",
         "status": "PASS",
-        "evidence": "8 resources, 1 resource template(s), and 5 prompts expose the composed workflow."
+        "evidence": "9 resources, 1 resource template(s), and 6 prompts expose the composed workflow."
       },
       {
         "id": "existing-splunk-mcp-boundary",
@@ -468,8 +500,8 @@
     "artifactPath": "submission-evidence/mcp-proof/mcp-client-session.jsonl",
     "markdownPath": "submission-evidence/mcp-proof/mcp-client-session.md",
     "protocol": "stdio-jsonrpc",
-    "requestCount": 18,
-    "responseCount": 18,
+    "requestCount": 20,
+    "responseCount": 20,
     "methods": [
       "initialize",
       "tools/list",
@@ -486,12 +518,14 @@
       "splunkready://client-config/splunk-and-splunkready",
       "splunkready://workflows/splunk-mcp-certification-loop",
       "splunkready://workflows/mcp-composition-scorecard",
+      "splunkready://workflows/hosted-model-diagnostic",
       "splunkready://receipts/pass"
     ],
     "promptNames": [
       "splunkready_certify_mcp_transcript",
       "splunkready_splunk_mcp_certification_loop",
-      "splunkready_mcp_composition_review"
+      "splunkready_mcp_composition_review",
+      "splunkready_hosted_model_diagnostic"
     ],
     "toolNames": [
       "splunkready_describe_certification",

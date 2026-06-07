@@ -358,6 +358,14 @@ export const splunkReadyMcpResources: McpResource[] = [
     description:
       "Checklist for proving an MCP client composed an existing Splunk MCP server with SplunkReady certification.",
     mimeType: "text/markdown"
+  },
+  {
+    uri: "splunkready://workflows/hosted-model-diagnostic",
+    name: "hosted-model-diagnostic",
+    title: "Hosted Model Diagnostic",
+    description:
+      "Agent workflow for proving SAIA explain/optimize access as advisory evidence without making hosted-model output authoritative.",
+    mimeType: "text/markdown"
   }
 ];
 
@@ -460,6 +468,24 @@ export const splunkReadyMcpPrompts: McpPrompt[] = [
         name: "proofSummaryPath",
         description: "Local path to the generated mcp-proof-summary.json artifact.",
         required: true
+      }
+    ]
+  },
+  {
+    name: "splunkready_hosted_model_diagnostic",
+    title: "Check SAIA Hosted Model Access",
+    description:
+      "Guide an MCP-capable agent to run the hosted-model access diagnostic while preserving deterministic authority.",
+    arguments: [
+      {
+        name: "outDir",
+        description: "Local output directory for hosted-model diagnostic artifacts.",
+        required: true
+      },
+      {
+        name: "mode",
+        description: "Use fixture for public proof or live for operator-owned SAIA checks.",
+        required: false
       }
     ]
   }
@@ -674,6 +700,29 @@ const readResource = async (uri: string): Promise<Record<string, unknown>> => {
     };
   }
 
+  if (uri === "splunkready://workflows/hosted-model-diagnostic") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "text/markdown",
+          text: [
+            "# Hosted Model Diagnostic",
+            "",
+            "Use this workflow when an MCP client needs evidence that Splunk AI Assistant helper tools are available.",
+            "1. Keep SAIA credentials in the operator-owned environment or MCP client configuration; do not include tokens in transcripts.",
+            "2. Call `splunkready_check_hosted_model_access` with `mode=fixture` for public proof or `mode=live` only from an operator-owned shell.",
+            "3. Require `saia_explain_spl` and `saia_optimize_spl` to be available for a PASS diagnostic.",
+            "4. Treat SAIA explain/optimize output as advisory only; SAIA is not the judge.",
+            "5. Deterministic SplunkReady rules remain the pass/fail authority, and SplunkReady reports `mutation=false`.",
+            "",
+            "The diagnostic calls hosted-model helper tools only. It does not execute the unsafe SPL query and does not mutate Splunk."
+          ].join("\n")
+        }
+      ]
+    };
+  }
+
   throw new Error(`Unknown resource: ${uri}`);
 };
 
@@ -739,6 +788,20 @@ const promptText = (name: string, args: Record<string, unknown>): string => {
       "Confirm the proof composes two MCP servers: existing Splunk MCP for read-only investigation and SplunkReady MCP for deterministic certification.",
       "Check for a dual-server client config, captured splunk_* tool calls, saved-search evidence refs, a generated Readiness Receipt, deterministic authority, and mutation=false.",
       "Call out any missing evidence directly. Do not treat LLM output as pass/fail authority."
+    ].join("\n");
+  }
+
+  if (name === "splunkready_hosted_model_diagnostic") {
+    return [
+      "Check Splunk AI Assistant hosted-model access through SplunkReady.",
+      "",
+      `Mode: ${String(args.mode ?? "fixture")}`,
+      `Output directory: ${String(args.outDir ?? "<outDir>")}`,
+      "",
+      "Call splunkready_check_hosted_model_access with requirePass=true when you need a strict PASS gate.",
+      "For public evidence, use fixture mode. For live evidence, run only from an operator-owned shell or explicit env file with Splunk MCP credentials already configured.",
+      "Confirm required tools include saia_explain_spl and saia_optimize_spl, permissionStatus is OK, and mutation=false.",
+      "SAIA output may explain or optimize SPL, but deterministic SplunkReady rules remain the pass/fail authority."
     ].join("\n");
   }
 

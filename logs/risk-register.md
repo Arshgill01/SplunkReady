@@ -560,3 +560,14 @@ hosted-model proof or diagnostic JSON. Residual risk remains actual live
 availability: the operator still needs to run the command with a real ignored
 env file or exported variables in a shell that can reach the Splunk MCP
 endpoint.
+
+Move 115 reduces MCP-category thin-surface risk by making hosted-model / SAIA
+diagnostics discoverable through MCP resources and prompts, not only callable
+through a tool. The server now exposes
+`splunkready://workflows/hosted-model-diagnostic` and
+`splunkready_hosted_model_diagnostic`; the tracked proof reads/fetches both,
+then calls `splunkready_check_hosted_model_access`. The public MCP proof now
+shows 5 tools, 9 resources, 1 resource template, 6 prompts, and 20 recorded
+JSON-RPC requests/responses. Residual risk remains live hosted-model proof and
+external-client storytelling: this is credential-free protocol evidence, not a
+claim that this shell has real SAIA access.

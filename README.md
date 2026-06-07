@@ -120,7 +120,9 @@ npm run mcp-proof
 `initialize`, lists non-destructive certification tools, resources, and prompts,
 discovers a templated Readiness Receipt resource, reads the certification
 posture resource and MCP-client configuration, fetches reusable transcript and
-Splunk MCP certification-loop prompts, then certifies the checked-in passing
+Splunk MCP certification-loop prompts, reads
+`splunkready://workflows/hosted-model-diagnostic`, fetches
+`splunkready_hosted_model_diagnostic`, then certifies the checked-in passing
 MCP JSON-RPC transcript through
 `splunkready_certify_mcp_transcript` and also proves the direct-content MCP
 tool `splunkready_certify_mcp_transcript_content`. It also calls
@@ -299,7 +301,9 @@ npm run mcp-proof
 ```
 
 That command writes an MCP proof summary with explicit Splunk MCP boundary
-evidence, MCP resource-template discovery, inline transcript certification, hosted-model access, the uploaded transcript copy, `trace-imported.json`,
+evidence, MCP resource-template discovery, hosted-model diagnostic
+resource/prompt discovery, inline transcript certification, hosted-model
+access, the uploaded transcript copy, `trace-imported.json`,
 `trace-external.json`, `receipt-external-001.json`, `proof-audit.json`, and the
 transcript certification summary under `artifacts/mcp-proof/`.
 

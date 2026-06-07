@@ -12307,3 +12307,54 @@ Open blockers:
 - A real live SAIA PASS still requires the operator-owned token-bearing env
   file or exported variables to be used in a shell where the live endpoint is
   reachable.
+
+## 2026-06-07 15:40 - Move 115 MCP Hosted Model Diagnostic Resource
+
+Scope:
+- Added `splunkready://workflows/hosted-model-diagnostic` as a discoverable MCP
+  resource describing the safe hosted-model / SAIA readiness diagnostic loop.
+- Added `splunkready_hosted_model_diagnostic` as a reusable MCP prompt for
+  agents that need to prove SAIA `explain` / `optimize` helper access.
+- Extended `mcp-proof` so the recorded stdio MCP client reads the hosted-model
+  diagnostic resource and fetches the hosted-model diagnostic prompt before
+  calling `splunkready_check_hosted_model_access`.
+- Tightened the MCP composition scorecard and client-session PASS criteria so
+  hosted-model diagnostic discovery is required.
+- Refreshed tracked MCP proof evidence: `mcp-proof-summary.json` now reports
+  5 tools, 9 resources, 1 resource template, 6 prompts, 20 requests, and
+  20 responses.
+- Refreshed the public demo export and Playwright-verified the MCP proof route
+  at `http://127.0.0.1:4342/?artifacts=artifacts%2Fmcp-proof#mcp-proof`.
+- Extended submission-copy audit coverage so README and claim-ledger copy must
+  retain the hosted-model diagnostic resource and prompt names.
+- Did not read, source, print, or commit real `.splunkready*` / `.env*` secret
+  files.
+- Did not make SAIA or any LLM output authoritative.
+- Did not mutate Splunk.
+- Did not use subagents.
+
+Files changed:
+- `src/mcp/server.ts`
+- `src/workflows/mcp-proof.ts`
+- `ui/src/artifacts.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `scripts/audit-submission-copy.mjs`
+- `README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/mcp-proof/*`
+- `moves/README.md`
+- `moves/moves115.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 115.
+- A real live SAIA PASS still requires an operator-owned token-bearing env
+  file or exported variables in a shell that can reach the Splunk MCP endpoint.
+- MCP award storytelling still benefits from a public external-client capture,
+  but the local MCP protocol surface is now stronger than a two-tool certifier.

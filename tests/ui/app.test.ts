@@ -336,6 +336,9 @@ const mcpProofSummary = {
   ],
   resources: [
     { uri: "splunkready://certification/posture", name: "certification-posture", mimeType: "application/json" },
+    { uri: "splunkready://examples/external-trace-pass", name: "external-trace-pass", mimeType: "application/json" },
+    { uri: "splunkready://examples/mcp-transcript-pass", name: "mcp-transcript-pass", mimeType: "text/plain" },
+    { uri: "splunkready://examples/pass-receipt", name: "pass-receipt", mimeType: "application/json" },
     { uri: "splunkready://client-config/stdio", name: "stdio-client-config", mimeType: "application/json" },
     {
       uri: "splunkready://client-config/splunk-and-splunkready",
@@ -345,6 +348,16 @@ const mcpProofSummary = {
     {
       uri: "splunkready://workflows/splunk-mcp-certification-loop",
       name: "splunk-mcp-certification-loop",
+      mimeType: "text/markdown"
+    },
+    {
+      uri: "splunkready://workflows/mcp-composition-scorecard",
+      name: "mcp-composition-scorecard",
+      mimeType: "text/markdown"
+    },
+    {
+      uri: "splunkready://workflows/hosted-model-diagnostic",
+      name: "hosted-model-diagnostic",
       mimeType: "text/markdown"
     }
   ],
@@ -357,7 +370,11 @@ const mcpProofSummary = {
   ],
   prompts: [
     { name: "splunkready_certify_mcp_transcript", argumentCount: 3 },
-    { name: "splunkready_splunk_mcp_certification_loop", argumentCount: 3 }
+    { name: "splunkready_capture_trace", argumentCount: 2 },
+    { name: "splunkready_explain_receipt", argumentCount: 2 },
+    { name: "splunkready_splunk_mcp_certification_loop", argumentCount: 3 },
+    { name: "splunkready_mcp_composition_review", argumentCount: 1 },
+    { name: "splunkready_hosted_model_diagnostic", argumentCount: 2 }
   ],
   describe: { deterministicAuthority: true, advisoryLlmOnly: true, mutation: false },
   postureResource: { contents: [] },
@@ -365,10 +382,12 @@ const mcpProofSummary = {
   dualServerClientConfigResource: { contents: [] },
   certificationLoopResource: { contents: [] },
   compositionScorecardResource: { contents: [] },
+  hostedModelDiagnosticResource: { contents: [] },
   receiptTemplateResource: { contents: [] },
   transcriptPrompt: { messages: [] },
   certificationLoopPrompt: { messages: [] },
   compositionReviewPrompt: { messages: [] },
+  hostedModelDiagnosticPrompt: { messages: [] },
   transcriptCertification: {
     status: "PASS",
     outDir: "submission-evidence/mcp-proof/mcp-transcript-certification",
@@ -456,7 +475,7 @@ const mcpProofSummary = {
       {
         id: "discoverable-resources-and-prompts",
         status: "PASS",
-        evidence: "8 resources, 1 resource template, and 5 prompts expose the composed workflow."
+        evidence: "9 resources, 1 resource template, and 6 prompts expose the composed workflow."
       },
       {
         id: "existing-splunk-mcp-boundary",
@@ -542,8 +561,8 @@ const mcpProofSummary = {
     artifactPath: "submission-evidence/mcp-proof/mcp-client-session.jsonl",
     markdownPath: "submission-evidence/mcp-proof/mcp-client-session.md",
     protocol: "stdio-jsonrpc",
-    requestCount: 18,
-    responseCount: 18,
+    requestCount: 20,
+    responseCount: 20,
     methods: [
       "initialize",
       "tools/list",
@@ -556,11 +575,19 @@ const mcpProofSummary = {
     ],
     resourceUris: [
       "splunkready://certification/posture",
+      "splunkready://client-config/stdio",
       "splunkready://client-config/splunk-and-splunkready",
       "splunkready://workflows/splunk-mcp-certification-loop",
+      "splunkready://workflows/mcp-composition-scorecard",
+      "splunkready://workflows/hosted-model-diagnostic",
       "splunkready://receipts/pass"
     ],
-    promptNames: ["splunkready_splunk_mcp_certification_loop", "splunkready_mcp_composition_review"],
+    promptNames: [
+      "splunkready_certify_mcp_transcript",
+      "splunkready_splunk_mcp_certification_loop",
+      "splunkready_mcp_composition_review",
+      "splunkready_hosted_model_diagnostic"
+    ],
     toolNames: [
       "splunkready_describe_certification",
       "splunkready_certify_mcp_transcript",
@@ -1537,9 +1564,11 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("existing-splunk-mcp-boundary: PASS");
     expect(html).toContain("splunk: Existing Splunk MCP server");
     expect(html).toContain("splunkready://workflows/splunk-mcp-certification-loop");
+    expect(html).toContain("splunkready://workflows/hosted-model-diagnostic");
     expect(html).toContain("splunkready://receipts/{receiptId}");
     expect(html).toContain("splunkready://receipts/pass");
     expect(html).toContain("splunkready_splunk_mcp_certification_loop");
+    expect(html).toContain("splunkready_hosted_model_diagnostic");
     expect(html).toContain("splunkready_certify_mcp_transcript");
     expect(html).toContain("splunkready_certify_mcp_transcript_content");
     expect(html).toContain("splunkready_check_hosted_model_access");

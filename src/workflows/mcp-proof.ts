@@ -82,10 +82,12 @@ interface McpProofSummary {
   dualServerClientConfigResource: Record<string, unknown>;
   certificationLoopResource: Record<string, unknown>;
   compositionScorecardResource: Record<string, unknown>;
+  hostedModelDiagnosticResource: Record<string, unknown>;
   receiptTemplateResource: Record<string, unknown>;
   transcriptPrompt: Record<string, unknown>;
   certificationLoopPrompt: Record<string, unknown>;
   compositionReviewPrompt: Record<string, unknown>;
+  hostedModelDiagnosticPrompt: Record<string, unknown>;
   transcriptCertification: Record<string, unknown>;
   inlineTranscriptCertification: Record<string, unknown>;
   hostedModelAccess: Record<string, unknown>;
@@ -603,9 +605,11 @@ const buildMcpCompositionScorecard = (input: {
       status:
         resourceUris.includes("splunkready://client-config/splunk-and-splunkready") &&
         resourceUris.includes("splunkready://workflows/mcp-composition-scorecard") &&
+        resourceUris.includes("splunkready://workflows/hosted-model-diagnostic") &&
         resourceTemplates.includes("splunkready://receipts/{receiptId}") &&
         promptNames.includes("splunkready_splunk_mcp_certification_loop") &&
-        promptNames.includes("splunkready_mcp_composition_review")
+        promptNames.includes("splunkready_mcp_composition_review") &&
+        promptNames.includes("splunkready_hosted_model_diagnostic")
           ? "PASS"
           : "FAIL",
       evidence: `${resourceUris.length} resources, ${resourceTemplates.length} resource template(s), and ${promptNames.length} prompts expose the composed workflow.`
@@ -807,7 +811,9 @@ const buildMcpClientSession = (
     methods.includes("prompts/list") &&
     resourceUris.includes("splunkready://client-config/splunk-and-splunkready") &&
     resourceUris.includes("splunkready://receipts/pass") &&
+    resourceUris.includes("splunkready://workflows/hosted-model-diagnostic") &&
     promptNames.includes("splunkready_splunk_mcp_certification_loop") &&
+    promptNames.includes("splunkready_hosted_model_diagnostic") &&
     toolNames.includes("splunkready_certify_mcp_transcript") &&
     toolNames.includes("splunkready_certify_mcp_transcript_content") &&
     toolNames.includes("splunkready_check_hosted_model_access")
@@ -871,6 +877,9 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
     const compositionScorecardResource = await client.request("resources/read", {
       uri: "splunkready://workflows/mcp-composition-scorecard"
     });
+    const hostedModelDiagnosticResource = await client.request("resources/read", {
+      uri: "splunkready://workflows/hosted-model-diagnostic"
+    });
     const receiptTemplateResource = await client.request("resources/read", { uri: "splunkready://receipts/pass" });
     const promptsList = await client.request("prompts/list");
     const transcriptPrompt = await client.request("prompts/get", {
@@ -893,6 +902,13 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       name: "splunkready_mcp_composition_review",
       arguments: {
         proofSummaryPath: summaryPath
+      }
+    });
+    const hostedModelDiagnosticPrompt = await client.request("prompts/get", {
+      name: "splunkready_hosted_model_diagnostic",
+      arguments: {
+        outDir: hostedModelAccessOutDir,
+        mode: "fixture"
       }
     });
     const describeResult = await client.request("tools/call", {
@@ -1064,10 +1080,12 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       dualServerClientConfigResource,
       certificationLoopResource,
       compositionScorecardResource,
+      hostedModelDiagnosticResource,
       receiptTemplateResource,
       transcriptPrompt,
       certificationLoopPrompt,
       compositionReviewPrompt,
+      hostedModelDiagnosticPrompt,
       transcriptCertification,
       inlineTranscriptCertification,
       hostedModelAccess,

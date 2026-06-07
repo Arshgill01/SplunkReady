@@ -83,7 +83,8 @@ describe("SplunkReady MCP server", () => {
       "splunkready://client-config/stdio",
       "splunkready://client-config/splunk-and-splunkready",
       "splunkready://workflows/splunk-mcp-certification-loop",
-      "splunkready://workflows/mcp-composition-scorecard"
+      "splunkready://workflows/mcp-composition-scorecard",
+      "splunkready://workflows/hosted-model-diagnostic"
     ]);
 
     const readResponse = await handleMcpMessage({
@@ -142,6 +143,20 @@ describe("SplunkReady MCP server", () => {
     expect(String(scorecardContents[0].text)).toContain("existing Splunk MCP server");
     expect(String(scorecardContents[0].text)).toContain("mutation");
 
+    const hostedModelWorkflowResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "hosted-model-workflow-read",
+      method: "resources/read",
+      params: { uri: "splunkready://workflows/hosted-model-diagnostic" }
+    });
+    const hostedModelWorkflowResult = resultOf(hostedModelWorkflowResponse);
+    const hostedModelWorkflowContents = hostedModelWorkflowResult.contents as Array<Record<string, unknown>>;
+
+    expect(String(hostedModelWorkflowContents[0].text)).toContain("splunkready_check_hosted_model_access");
+    expect(String(hostedModelWorkflowContents[0].text)).toContain("saia_explain_spl");
+    expect(String(hostedModelWorkflowContents[0].text)).toContain("advisory only");
+    expect(String(hostedModelWorkflowContents[0].text)).toContain("mutation=false");
+
     const templatesResponse = await handleMcpMessage({
       jsonrpc: "2.0",
       id: "resource-templates",
@@ -181,7 +196,8 @@ describe("SplunkReady MCP server", () => {
       "splunkready_capture_trace",
       "splunkready_explain_receipt",
       "splunkready_splunk_mcp_certification_loop",
-      "splunkready_mcp_composition_review"
+      "splunkready_mcp_composition_review",
+      "splunkready_hosted_model_diagnostic"
     ]);
 
     const getResponse = await handleMcpMessage({
@@ -242,6 +258,26 @@ describe("SplunkReady MCP server", () => {
     expect(reviewMessages[0].content.text).toContain("two MCP servers");
     expect(reviewMessages[0].content.text).toContain("saved-search evidence refs");
     expect(reviewMessages[0].content.text).toContain("mutation=false");
+
+    const hostedModelPromptResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "prompt-hosted-model",
+      method: "prompts/get",
+      params: {
+        name: "splunkready_hosted_model_diagnostic",
+        arguments: {
+          outDir: "artifacts/mcp-proof/mcp-hosted-model-access",
+          mode: "fixture"
+        }
+      }
+    });
+    const hostedModelPromptResult = resultOf(hostedModelPromptResponse);
+    const hostedModelPromptMessages = hostedModelPromptResult.messages as Array<{ content: { text: string } }>;
+
+    expect(hostedModelPromptMessages[0].content.text).toContain("splunkready_check_hosted_model_access");
+    expect(hostedModelPromptMessages[0].content.text).toContain("permissionStatus");
+    expect(hostedModelPromptMessages[0].content.text).toContain("mutation=false");
+    expect(hostedModelPromptMessages[0].content.text).toContain("deterministic");
   });
 
   it("certifies an external trace through tools/call", async () => {

@@ -694,10 +694,12 @@ const mcpProofSummarySchema = z
     dualServerClientConfigResource: z.record(z.unknown()),
     certificationLoopResource: z.record(z.unknown()),
     compositionScorecardResource: z.record(z.unknown()),
+    hostedModelDiagnosticResource: z.record(z.unknown()),
     receiptTemplateResource: z.record(z.unknown()),
     transcriptPrompt: z.record(z.unknown()),
     certificationLoopPrompt: z.record(z.unknown()),
     compositionReviewPrompt: z.record(z.unknown()),
+    hostedModelDiagnosticPrompt: z.record(z.unknown()),
     transcriptCertification: z
       .object({
         status: z.enum(["PASS", "FAIL"]),

@@ -9958,6 +9958,90 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-07 - Move 115 MCP Hosted Model Diagnostic Resource
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/mcp/server.test.ts`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "MCP server proof"`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "MCP proof"`
+- `npm run build && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json`
+- `node dist/src/cli.js verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json && node dist/src/cli.js verify-manifest --out submission-evidence/mcp-proof/mcp-inline-transcript-certification --json`
+- `npm run public-demo:build`
+- `bash "$PWCLI" --session splunkready-move115 open 'http://127.0.0.1:4342/?artifacts=artifacts%2Fmcp-proof#mcp-proof' && bash "$PWCLI" --session splunkready-move115 snapshot`
+- `bash "$PWCLI" --session splunkready-move115 screenshot`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:public-demo-export`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for MCP server contract tests:
+  - 1 test file passed;
+  - 12 tests passed.
+- PASS for focused `mcp-proof` CLI regression:
+  - 1 test file passed;
+  - 1 test passed;
+  - 41 tests skipped by focused pattern.
+- PASS for focused MCP proof UI regression:
+  - 1 test file passed;
+  - 1 test passed;
+  - 26 tests skipped by focused pattern.
+- PASS for submission-copy audit regression:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for tracked MCP proof regeneration:
+  - `mcp-proof` returned `status: "PASS"`;
+  - summary reports 5 tools, 9 resources, 1 resource template, 6 prompts,
+    20 requests, and 20 responses;
+  - composition scorecard remained `PASS` / `100`.
+- PASS for proof manifest verification:
+  - path-based transcript certification manifest verified;
+  - inline transcript certification manifest verified.
+- PASS for public demo build and audit:
+  - Vite production build completed;
+  - public demo export audit passed with 207 files and default route
+    `mcp-proof`.
+- PASS for Playwright browser verification:
+  - opened the local static public demo MCP proof route;
+  - snapshot showed `splunkready://workflows/hosted-model-diagnostic`,
+    `splunkready_hosted_model_diagnostic`, 9 resources, 6 prompts,
+    20 requests, 20 responses, and `mutation no`;
+  - screenshot captured and copied to
+    `submission-evidence/screenshots/workbench-mcp-proof.png`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit checked 164 packed files;
+  - package installability audit passed;
+  - 59 test files passed;
+  - 363 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 51 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- The local static server was stopped after Playwright verification.
+- `.playwright-cli/` was removed after browser evidence capture.
+- No live SAIA token or `.splunkready*` file was read by this move.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Real live SAIA PASS remains an operator-owned credential/environment step.
+
 ## 2026-06-07 - Move 112 Inline MCP Transcript Certification
 
 Commands:

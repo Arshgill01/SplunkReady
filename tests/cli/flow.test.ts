@@ -1370,10 +1370,12 @@ describe("SplunkReady CLI flow", () => {
       dualServerClientConfigResource: { contents: Array<{ uri: string; text: string }> };
       certificationLoopResource: { contents: Array<{ uri: string; text: string }> };
       compositionScorecardResource: { contents: Array<{ uri: string; text: string }> };
+      hostedModelDiagnosticResource: { contents: Array<{ uri: string; text: string }> };
       receiptTemplateResource: { contents: Array<{ uri: string; text: string }> };
       transcriptPrompt: { messages: Array<{ content: { text: string } }> };
       certificationLoopPrompt: { messages: Array<{ content: { text: string } }> };
       compositionReviewPrompt: { messages: Array<{ content: { text: string } }> };
+      hostedModelDiagnosticPrompt: { messages: Array<{ content: { text: string } }> };
       transcriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
       inlineTranscriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
       hostedModelAccess: {
@@ -1576,11 +1578,13 @@ describe("SplunkReady CLI flow", () => {
           "splunkready://client-config/splunk-and-splunkready",
           "splunkready://workflows/splunk-mcp-certification-loop",
           "splunkready://workflows/mcp-composition-scorecard",
+          "splunkready://workflows/hosted-model-diagnostic",
           "splunkready://receipts/pass"
         ]),
         promptNames: expect.arrayContaining([
           "splunkready_splunk_mcp_certification_loop",
-          "splunkready_mcp_composition_review"
+          "splunkready_mcp_composition_review",
+          "splunkready_hosted_model_diagnostic"
         ]),
         toolNames: expect.arrayContaining([
           "splunkready_describe_certification",
@@ -1592,7 +1596,7 @@ describe("SplunkReady CLI flow", () => {
         mutation: false
       }
     });
-    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(18);
+    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(20);
     expect(summary.clientSession.responseCount).toBe(summary.clientSession.requestCount);
     expect(summary.splunkMcpBoundary.localMcpServerRole).toContain("certification interface");
     expect(summary.splunkMcpBoundary.splunkMcpServerRole).toContain("Splunk MCP Server boundary");
@@ -1611,7 +1615,8 @@ describe("SplunkReady CLI flow", () => {
       "splunkready://client-config/stdio",
       "splunkready://client-config/splunk-and-splunkready",
       "splunkready://workflows/splunk-mcp-certification-loop",
-      "splunkready://workflows/mcp-composition-scorecard"
+      "splunkready://workflows/mcp-composition-scorecard",
+      "splunkready://workflows/hosted-model-diagnostic"
     ]);
     expect(summary.resourceTemplates.map((template) => template.uriTemplate)).toEqual([
       "splunkready://receipts/{receiptId}"
@@ -1621,7 +1626,8 @@ describe("SplunkReady CLI flow", () => {
       "splunkready_capture_trace",
       "splunkready_explain_receipt",
       "splunkready_splunk_mcp_certification_loop",
-      "splunkready_mcp_composition_review"
+      "splunkready_mcp_composition_review",
+      "splunkready_hosted_model_diagnostic"
     ]);
     expect(summary.postureResource.contents[0].text).toContain("\"advisoryLlmOnly\": true");
     expect(summary.clientConfigResource.contents[0].text).toContain("\"splunkready\"");
@@ -1633,6 +1639,11 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.certificationLoopResource.contents[0].text).toContain("Splunk MCP Certification Loop");
     expect(summary.certificationLoopResource.contents[0].text).toContain("Configure two MCP servers");
     expect(summary.compositionScorecardResource.contents[0].text).toContain("composition, not replacement");
+    expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain(
+      "splunkready_check_hosted_model_access"
+    );
+    expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("saia_explain_spl");
+    expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("advisory only");
     expect(summary.receiptTemplateResource.contents[0].text).toContain("Verdict: READY");
     expect(summary.inlineTranscriptCertification).toMatchObject({
       status: "PASS",
@@ -1667,6 +1678,11 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.certificationLoopPrompt.messages[0].content.text).toContain("Splunk MCP server: splunk");
     expect(summary.certificationLoopPrompt.messages[0].content.text).toContain("two-server MCP client configuration");
     expect(summary.compositionReviewPrompt.messages[0].content.text).toContain("two MCP servers");
+    expect(summary.hostedModelDiagnosticPrompt.messages[0].content.text).toContain(
+      "splunkready_check_hosted_model_access"
+    );
+    expect(summary.hostedModelDiagnosticPrompt.messages[0].content.text).toContain("permissionStatus");
+    expect(summary.hostedModelDiagnosticPrompt.messages[0].content.text).toContain("mutation=false");
     expect(summary.agentDrivenWorkflow.splunkMcpServerRole).toContain("read-only investigation");
     expect(summary.agentDrivenWorkflow.splunkReadyMcpServerRole).toContain("deterministic certification");
     expect(summary.agentDrivenWorkflow.stages).toHaveLength(4);
