@@ -12411,7 +12411,6 @@ Files changed:
 - `logs/risk-register.md`
 
 Open blockers:
-- Hosted CI needs to run after push for Move 116.
 - The already-published npm `splunkready@0.1.0` package does not include
   `splunkready mcp`; registry users need a later publish after this commit.
 - MCP award storytelling still benefits from a public external-client capture,

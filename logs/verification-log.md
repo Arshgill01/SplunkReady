@@ -10046,10 +10046,11 @@ Notes:
 - The local `splunkready mcp` command is verified in the built CLI. The
   registry package needs a later publish before npm users can run this exact
   command from `splunkready@latest`.
+- Hosted CI run `27089799257` passed for commit
+  `91307d7cce9c3aa846c1ce8e040d797b3deadcfc`.
 
 Open blockers:
 
-- Hosted CI still needs to run after push.
 - A public external-client capture remains the next MCP storytelling gap.
 
 ## 2026-06-07 - Move 115 MCP Hosted Model Diagnostic Resource
