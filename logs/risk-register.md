@@ -856,3 +856,11 @@ clean no-clone `judge-proof`, initializes `mcp`, and `tools/list` exposes
 `splunkready_review_mcp_composition`. Residual risk shifts to future source
 changes: any new post-145 code must either be published in a later package or
 kept out of public `npx @latest` claims until currentness is reverified.
+
+Move 146 reduces planning drift risk by converting the latest ambitious audit
+into a tracked move checklist before implementation. The real external
+MCP-client recording remains on the plan but is parked behind product surfaces
+that do not depend on a closed desktop app: mock live Splunk MCP, receipt-chain
+verification, interactive hosted certification, and signed policy registry.
+Residual risk is execution scope: Moves 147-150 are multi-day features, so each
+must land in small verified slices without broad speculative rewrites.

@@ -168,6 +168,12 @@ commands, or filesystem paths.
 | P0 | [143](moves143.md) MCP composition review tool | 0.5d | Makes the two-server Splunk MCP plus SplunkReady MCP composition review a first-class read-only MCP tool and tracked evidence claim. |
 | P0 | [144](moves144.md) Hosted demo currentness after MCP review | 0.5d | Redeploys GitHub Pages after the MCP composition-review move and refreshes hosted-demo currentness evidence. |
 | P0 | [145](moves145.md) Published package with MCP review tool | 0.5d | Publishes and verifies `splunkready@0.1.2` so `npx splunkready@latest mcp` exposes the MCP composition-review tool. |
+| P0 | [146](moves146.md) Ambitious award move plan | 0.5d | Converts the latest competitive audit into a tracked checklist and parks the external MCP-client recording at the end. |
+| P0 | [147](moves147.md) Self-hostable Splunk MCP mock server | 4-6d | Starts the live-mode-without-Splunk path through a credential-free read-only MCP mock server. |
+| P0 | [148](moves148.md) Hash-chain receipt signing and replay lineage | 4-5d | Turns Readiness Receipts into verifiable, replayable audit artifacts. |
+| P0 | [149](moves149.md) Interactive public certification demo | 5-7d | Lets hosted-demo judges upload a trace and receive a real Readiness Receipt. |
+| P0 | [150](moves150.md) Signed multi-tenant policy registry | 6-8d | Makes policies named, versioned, signed, and shareable. |
+| P2 | [151](moves151.md) Real external MCP-client session evidence | 2-3d | Parked until higher-value product surfaces are complete. |
 
 ## Non-Negotiable Boundaries
 

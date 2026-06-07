@@ -13799,3 +13799,42 @@ Notes:
 
 - The npm publish payload included `dist/src/mcp/composition-review.js`.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07T16:17:18Z - Move 146 ambitious award move plan
+
+Intent:
+
+- Convert the latest competitive audit into a concrete tracked checklist before
+  starting new multi-day implementation work.
+
+Actions:
+
+- Re-read AGENTS, MANIFEST, PLAN, DECISIONS, ARCHITECTURE, QUALITY-BAR,
+  reviewer inbox context, and the current risk register.
+- Added `docs/ambitious-award-move-plan.md` with the new high-value sequence.
+- Moved the real external MCP-client session to the end of the checklist as
+  requested by the user.
+- Added move files 146 through 151 so future implementation work has explicit
+  scope, stop conditions, and verification targets.
+- Defined Move 147's first implementation slice around a credential-free
+  `mock-splunk-mcp` package subpath and CLI command before wiring `--live-mock`
+  into live workflows.
+
+Files changed:
+
+- `docs/ambitious-award-move-plan.md`
+- `moves/README.md`
+- `moves/moves146.md`
+- `moves/moves147.md`
+- `moves/moves148.md`
+- `moves/moves149.md`
+- `moves/moves150.md`
+- `moves/moves151.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Notes:
+
+- No source code changed in this planning move.
+- No secret env file values were read, sourced, printed, or committed.

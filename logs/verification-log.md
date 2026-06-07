@@ -13758,6 +13758,47 @@ Notes:
 
 - No secret env file values were read, sourced, printed, or committed.
 
+## 2026-06-07 - Move 146 ambitious award move plan
+
+Commands:
+
+- `ls PLANS.md MANIFEST.md PLAN.md DECISIONS.md ARCHITECTURE.md QUALITY-BAR.md AGENTS.md`
+- `sed -n '1,220p' MANIFEST.md`
+- `sed -n '1,220p' QUALITY-BAR.md`
+- `sed -n '1,260p' PLAN.md`
+- `sed -n '1,260p' DECISIONS.md`
+- `sed -n '1,260p' ARCHITECTURE.md`
+- `tail -120 logs/risk-register.md`
+- `sed -n '1,180p' logs/reviewer-inbox/README.md`
+- `find logs/reviewer-inbox -maxdepth 1 -type f | sort | tail -20`
+- `rg -n "mock|live-mock|mock-splunk|splunk_get_info|live-proof|live-security-proof|mcp-proof" src tests package.json README.md docs moves | head -200`
+
+Results:
+
+- Confirmed there is no `PLANS.md`; this repo uses `moves/` plus execution,
+  verification, and risk logs as the active plan format.
+- Confirmed non-negotiables from MANIFEST, PLAN, DECISIONS, ARCHITECTURE, and
+  QUALITY-BAR:
+  - SplunkReady remains a certification harness;
+  - deterministic grader remains authoritative;
+  - LLM/SAIA remains advisory;
+  - fixture/live parity stays shared after the adapter;
+  - SplunkReady does not auto-mutate Splunk.
+- Confirmed latest risk state after Move 145:
+  - npm latest is `splunkready@0.1.2`;
+  - published `mcp` exposes `splunkready_review_mcp_composition`;
+  - future post-145 source changes need package currentness before public
+    `npx @latest` claims.
+- Confirmed existing code has live adapter/tool surfaces for
+  `splunk_get_info`, `splunk_get_knowledge_objects`, `live-proof`,
+  `live-security-proof`, and `mcp-proof`, which are the relevant entry points
+  for Move 147.
+
+Notes:
+
+- Verification of the newly written plan is pending `audit:submission-copy` and
+  `git diff --check`.
+
 ## 2026-06-07 - Move 145 published package with MCP review tool
 
 Commands:
