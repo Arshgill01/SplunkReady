@@ -12765,3 +12765,51 @@ Open blockers:
   proof remains `BLOCKED`.
 - The next high-value probability work is still live SAIA route remediation and
   stronger external MCP-client walkthrough evidence, not low-value docs polish.
+
+## 2026-06-07 17:08 - Move 124 Official Splunk MCP Tool Coverage
+
+Scope:
+- Added `officialSplunkMcpToolCoverage` to the MCP proof summary so the Best Use
+  of MCP story is anchored in existing Splunk MCP Server usage plus Splunk AI
+  Assistant hosted-model tools.
+- Recorded official Splunk MCP tools and configuration documentation URLs in
+  proof metadata.
+- Added an MCP composition scorecard check for official Splunk MCP tool
+  coverage.
+- Surfaced the coverage block in the public Vite MCP proof route.
+- Updated the claim ledger with the new MCP coverage evidence.
+- Regenerated tracked MCP proof evidence and rebuilt the public demo.
+- Used Playwright to verify the public route renders the new coverage section
+  with no console errors.
+- Did not use subagents.
+- Did not mutate Splunk.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  contents.
+
+Important finding:
+- An attempted `splunk_get_info` addition to the certified transcript failed
+  strict certification with `SAF-003` because the security mission does not
+  allow that tool. The implementation kept the strict mission boundary instead
+  of weakening it; `splunk_get_info` is now shown as mission-scoped out in the
+  official coverage block.
+
+Files changed:
+- `src/workflows/mcp-proof.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `submission-evidence/mcp-proof/mcp-proof-summary.md`
+- `submission-evidence/claim-ledger.md`
+- `moves/README.md`
+- `moves/moves124.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Live SAIA still needs operator-side endpoint/app route remediation before
+  live hosted-model proof can pass.
+- External MCP-client storytelling can still improve with a real Claude/Cursor
+  capture once package `0.1.1` is published.

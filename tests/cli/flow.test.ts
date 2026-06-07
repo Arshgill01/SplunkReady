@@ -1503,6 +1503,18 @@ describe("SplunkReady CLI flow", () => {
         deterministicAuthority: boolean;
         mutation: boolean;
       };
+      officialSplunkMcpToolCoverage: {
+        source: string;
+        status: string;
+        docs: { toolsUrl: string; configurationUrl: string };
+        capturedCoreTools: string[];
+        investigationTools: string[];
+        hostedModelTools: string[];
+        missionScopedOutTools: string[];
+        checks: Array<{ id: string; status: string; evidence: string }>;
+        deterministicAuthority: boolean;
+        mutation: boolean;
+      };
       clientWalkthrough: {
         source: string;
         status: string;
@@ -1617,10 +1629,36 @@ describe("SplunkReady CLI flow", () => {
           expect.objectContaining({ id: "external-mcp-client-configs", status: "PASS" }),
           expect.objectContaining({ id: "discoverable-resources-and-prompts", status: "PASS" }),
           expect.objectContaining({ id: "existing-splunk-mcp-boundary", status: "PASS" }),
+          expect.objectContaining({ id: "official-splunk-mcp-tool-coverage", status: "PASS" }),
           expect.objectContaining({ id: "saved-search-evidence", status: "PASS" }),
           expect.objectContaining({ id: "readiness-receipt-authority", status: "PASS" }),
           expect.objectContaining({ id: "no-splunkready-mutation", status: "PASS" }),
           expect.objectContaining({ id: "hosted-model-advisory-access", status: "PASS" })
+        ],
+        deterministicAuthority: true,
+        mutation: false
+      },
+      officialSplunkMcpToolCoverage: {
+        source: "splunkready-official-splunk-mcp-tool-coverage",
+        status: "PASS",
+        docs: {
+          toolsUrl: expect.stringContaining("mcp-server-tools"),
+          configurationUrl: expect.stringContaining("connecting-to-the-mcp-server-and-settings")
+        },
+        capturedCoreTools: ["splunk_get_knowledge_objects"],
+        investigationTools: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+        hostedModelTools: [
+          "saia_generate_spl",
+          "saia_explain_spl",
+          "saia_optimize_spl",
+          "saia_ask_splunk_question"
+        ],
+        missionScopedOutTools: ["splunk_get_info"],
+        checks: [
+          expect.objectContaining({ id: "splunk-knowledge-object-context", status: "PASS" }),
+          expect.objectContaining({ id: "splunk-investigation-execution", status: "PASS" }),
+          expect.objectContaining({ id: "mission-scoped-tool-boundary", status: "PASS" }),
+          expect.objectContaining({ id: "saia-hosted-model-tools", status: "PASS" })
         ],
         deterministicAuthority: true,
         mutation: false

@@ -201,6 +201,26 @@ const renderMcpComposition = (summary: McpProofSummary): string => {
   )}`;
 };
 
+const renderOfficialSplunkMcpToolCoverage = (summary: McpProofSummary): string => {
+  const coverage = summary.officialSplunkMcpToolCoverage;
+
+  return `${renderFactTable([
+    ["Status", coverage.status],
+    ["Captured core tools", coverage.capturedCoreTools.join(" / ") || "none"],
+    ["Investigation tools", coverage.investigationTools.join(" / ") || "none"],
+    ["Hosted-model tools", coverage.hostedModelTools.join(" / ") || "none"],
+    ["Mission-scoped out tools", coverage.missionScopedOutTools.join(" / ") || "none"],
+    ["Tools doc", coverage.docs.toolsUrl],
+    ["Configuration doc", coverage.docs.configurationUrl],
+    ["Deterministic authority", coverage.deterministicAuthority ? "yes" : "no"],
+    ["Mutation", coverage.mutation ? "yes" : "no"]
+  ])}
+  ${renderMcpProofList(
+    coverage.checks.map((check) => `${check.id}: ${check.status} - ${check.evidence}`),
+    "stage-list"
+  )}`;
+};
+
 const renderMcpProof = (bundle: UiArtifactBundle): string => {
   const summary = bundle.mcpProofSummary;
 
@@ -230,6 +250,10 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
               <section class="panel mcp-proof-panel">
                 <h2>MCP composition scorecard</h2>
                 ${renderMcpComposition(summary)}
+              </section>
+              <section class="panel mcp-proof-panel">
+                <h2>Official Splunk MCP tool coverage</h2>
+                ${renderOfficialSplunkMcpToolCoverage(summary)}
               </section>
               <section class="panel mcp-proof-panel">
                 <h2>MCP surface</h2>

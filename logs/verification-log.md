@@ -10023,6 +10023,52 @@ Open blockers:
 - Live SAIA endpoint/app routing still needs operator-side remediation before
   SplunkReady can claim hosted-model live PASS.
 
+## 2026-06-07 - Move 124 Official Splunk MCP Tool Coverage
+
+Commands:
+
+- `npx tsc --noEmit && npx vitest run tests/cli/flow.test.ts tests/ui/app.test.ts --testNamePattern "MCP|mcp|certifies an MCP"`
+- `npm run mcp-proof`
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json`
+- `npm run public-demo:build`
+- `python3 -m http.server 4179 --directory artifacts/public-demo`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open 'http://127.0.0.1:4179/?artifacts=artifacts%2Fmcp-proof#mcp-proof'`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" console error`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval "..." --json`
+
+Result:
+
+- PASS for focused TypeScript plus MCP/UI tests:
+  - 2 test files passed;
+  - 9 tests passed;
+  - 63 tests skipped by focused pattern.
+- PASS for `npm run mcp-proof`; regenerated `artifacts/mcp-proof`.
+- PASS for tracked MCP proof regeneration into `submission-evidence/mcp-proof`.
+- PASS for public demo rebuild into `artifacts/public-demo`.
+- PASS for Playwright browser verification:
+  - MCP proof route loaded at `http://127.0.0.1:4179/?artifacts=artifacts%2Fmcp-proof#mcp-proof`;
+  - page title was `SplunkReady`;
+  - route rendered `Official Splunk MCP tool coverage`;
+  - route rendered `official-splunk-mcp-tool-coverage: PASS`;
+  - route rendered `mission-scoped-tool-boundary: PASS`;
+  - route rendered `splunk_get_info` as mission-scoped out;
+  - no artifact-load failure was present;
+  - browser console reported 0 errors and 0 warnings.
+
+Notes:
+
+- A first attempt to add `splunk_get_info` to the certified transcript failed
+  strict certification with `SAF-003`, which confirmed the mission tool
+  boundary is still enforced. The final implementation did not weaken the
+  mission.
+- Playwright scratch output was not committed.
+
+Open blockers:
+
+- Full `npm run check` still needs to run after move/log updates.
+- Hosted CI still needs to run after push.
+
 ## 2026-06-07 - Move 122 Next Package Release Alignment
 
 Commands:

@@ -510,6 +510,11 @@ const mcpProofSummary = {
         evidence: "2 captured splunk_* tool calls are certified."
       },
       {
+        id: "official-splunk-mcp-tool-coverage",
+        status: "PASS",
+        evidence: "1 mission-scoped Splunk MCP core tool(s), 2 investigation tool(s), and 4 SAIA hosted-model tool(s) are covered."
+      },
+      {
         id: "saved-search-evidence",
         status: "PASS",
         evidence: "3 evidence refs from saved-search output."
@@ -531,6 +536,44 @@ const mcpProofSummary = {
         status: "PASS",
         evidence:
           "Hosted-model access check returned PASS; SAIA remains advisory and deterministic rules remain authoritative."
+      }
+    ],
+    deterministicAuthority: true,
+    mutation: false
+  },
+  officialSplunkMcpToolCoverage: {
+    source: "splunkready-official-splunk-mcp-tool-coverage",
+    status: "PASS",
+    docs: {
+      toolsUrl: "https://help.splunk.com/en/splunk-enterprise/mcp-server-for-splunk-platform/1.0/mcp-server-tools",
+      configurationUrl:
+        "https://help.splunk.com/en/splunk-cloud-platform/mcp-server-for-splunk-platform/1.2/connecting-to-the-mcp-server-and-settings"
+    },
+    capturedCoreTools: ["splunk_get_knowledge_objects"],
+    investigationTools: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+    hostedModelTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+    missionScopedOutTools: ["splunk_get_info"],
+    checks: [
+      {
+        id: "splunk-knowledge-object-context",
+        status: "PASS",
+        evidence: "Captured transcript discovers saved searches, macros, and lookups through Splunk MCP."
+      },
+      {
+        id: "splunk-investigation-execution",
+        status: "PASS",
+        evidence: "Captured transcript executes a validated saved search and returns event refs."
+      },
+      {
+        id: "mission-scoped-tool-boundary",
+        status: "PASS",
+        evidence:
+          "The certified security mission does not call splunk_get_info because mission allowedTools scope excludes it; deterministic SAF-003 remains authoritative."
+      },
+      {
+        id: "saia-hosted-model-tools",
+        status: "PASS",
+        evidence: "4/4 SAIA hosted-model tools passed in the MCP proof."
       }
     ],
     deterministicAuthority: true,
@@ -1594,10 +1637,14 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("MCP proof");
     expect(html).toContain("Certification loop");
     expect(html).toContain("MCP composition scorecard");
+    expect(html).toContain("Official Splunk MCP tool coverage");
     expect(html).toContain("MCP client session");
     expect(html).toContain("dual-server-client-config: PASS");
     expect(html).toContain("external-mcp-client-configs: PASS");
     expect(html).toContain("existing-splunk-mcp-boundary: PASS");
+    expect(html).toContain("official-splunk-mcp-tool-coverage: PASS");
+    expect(html).toContain("mission-scoped-tool-boundary: PASS");
+    expect(html).toContain("splunk_get_info");
     expect(html).toContain("splunk: Existing Splunk MCP server");
     expect(html).toContain("splunkready://client-config/claude-desktop");
     expect(html).toContain("splunkready://client-config/cursor");

@@ -656,3 +656,13 @@ live SAIA pass while making the next remediation target concrete. Residual risk
 remains outside SplunkReady's read-only harness: the Splunk MCP endpoint or app
 route must actually invoke the advertised SAIA tools before live hosted-model
 proof can pass.
+
+Move 124 reduces MCP-category positioning risk by making the proof explicitly
+show mission-scoped existing Splunk MCP usage plus Splunk AI Assistant hosted
+model coverage. The MCP composition scorecard now includes an official Splunk
+MCP tool-coverage check, the public route renders the coverage block, and the
+proof records Splunk documentation URLs for tool naming/configuration context.
+Residual MCP risk remains external-client storytelling: a real Claude/Cursor
+session capture would still be stronger than the credential-free proof session,
+and package `0.1.1` must be published before `splunkready@latest mcp` reflects
+all current evidence.

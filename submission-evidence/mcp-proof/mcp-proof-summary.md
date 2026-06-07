@@ -77,10 +77,21 @@ MCP composition scorecard: PASS (100/100)
 - external-mcp-client-configs: PASS - Claude Desktop and Cursor MCP client templates are discoverable as credential-free resources.
 - discoverable-resources-and-prompts: PASS - 11 resources, 1 resource template(s), and 6 prompts expose the composed workflow.
 - existing-splunk-mcp-boundary: PASS - 2 captured splunk_* tool calls are certified.
+- official-splunk-mcp-tool-coverage: PASS - 1 mission-scoped Splunk MCP core tool(s), 2 investigation tool(s), and 4 SAIA hosted-model tool(s) are covered.
 - saved-search-evidence: PASS - 3 evidence refs from saved-search output.
 - readiness-receipt-authority: PASS - Path transcript certification returned PASS; inline transcript certification returned PASS; deterministic rules remain authoritative.
 - no-splunkready-mutation: PASS - SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, hosted-model access, and receipt artifacts.
 - hosted-model-advisory-access: PASS - Hosted-model access check returned PASS; SAIA remains advisory and deterministic rules remain authoritative.
+
+Official Splunk MCP tool coverage: PASS
+- Captured core tools: splunk_get_knowledge_objects
+- Investigation tools: splunk_get_knowledge_objects, splunk_run_saved_search
+- Hosted-model tools: saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question
+- Mission-scoped out tools: splunk_get_info
+- splunk-knowledge-object-context: PASS - Captured transcript discovers saved searches, macros, and lookups through Splunk MCP.
+- splunk-investigation-execution: PASS - Captured transcript executes a validated saved search and returns event refs.
+- mission-scoped-tool-boundary: PASS - The certified security mission does not call splunk_get_info because mission allowedTools scope excludes it; deterministic SAF-003 remains authoritative.
+- saia-hosted-model-tools: PASS - 4/4 SAIA hosted-model tools passed in the MCP proof.
 
 MCP client walkthrough: PASS
 - Artifact: submission-evidence/mcp-proof/mcp-client-walkthrough.json

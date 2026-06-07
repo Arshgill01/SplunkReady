@@ -132,6 +132,25 @@ interface McpProofSummary {
     deterministicAuthority: true;
     mutation: false;
   };
+  officialSplunkMcpToolCoverage: {
+    source: "splunkready-official-splunk-mcp-tool-coverage";
+    status: "PASS" | "FAIL";
+    docs: {
+      toolsUrl: string;
+      configurationUrl: string;
+    };
+    capturedCoreTools: string[];
+    investigationTools: string[];
+    hostedModelTools: string[];
+    missionScopedOutTools: string[];
+    checks: Array<{
+      id: string;
+      status: "PASS" | "FAIL";
+      evidence: string;
+    }>;
+    deterministicAuthority: true;
+    mutation: false;
+  };
   clientWalkthrough: {
     source: "splunkready-mcp-client-walkthrough";
     status: "PASS" | "FAIL";
@@ -186,6 +205,9 @@ const defaultTranscriptPath = "examples/sample-mcp-transcript-pass.jsonl";
 const defaultFinalAnswer =
   "Evidence supports suspicious lateral movement from win-finance-07 through admin-login-02 to dc-01 and finance-sql-03. Provenance saved-search-lateral-movement returned 3 rows for the -24h to now window, with evidence rows evt-102, evt-118, and evt-141.";
 const generatedAt = "2026-06-01T06:45:00.000Z";
+const officialSplunkMcpToolsUrl = "https://help.splunk.com/en/splunk-enterprise/mcp-server-for-splunk-platform/1.0/mcp-server-tools";
+const officialSplunkMcpConfigurationUrl =
+  "https://help.splunk.com/en/splunk-cloud-platform/mcp-server-for-splunk-platform/1.2/connecting-to-the-mcp-server-and-settings";
 
 const isJsonRpcError = (response: JsonRpcResponse): response is JsonRpcError => "error" in response;
 
@@ -384,6 +406,13 @@ Splunk MCP boundary: ${summary.splunkMcpBoundary.status}
 
 MCP composition scorecard: ${summary.mcpComposition.status} (${summary.mcpComposition.score}/100)
 ${summary.mcpComposition.checks.map((check) => `- ${check.id}: ${check.status} - ${check.evidence}`).join("\n")}
+
+Official Splunk MCP tool coverage: ${summary.officialSplunkMcpToolCoverage.status}
+- Captured core tools: ${summary.officialSplunkMcpToolCoverage.capturedCoreTools.join(", ") || "none"}
+- Investigation tools: ${summary.officialSplunkMcpToolCoverage.investigationTools.join(", ") || "none"}
+- Hosted-model tools: ${summary.officialSplunkMcpToolCoverage.hostedModelTools.join(", ") || "none"}
+- Mission-scoped out tools: ${summary.officialSplunkMcpToolCoverage.missionScopedOutTools.join(", ") || "none"}
+${summary.officialSplunkMcpToolCoverage.checks.map((check) => `- ${check.id}: ${check.status} - ${check.evidence}`).join("\n")}
 
 MCP client walkthrough: ${summary.clientWalkthrough.status}
 - Artifact: ${summary.clientWalkthrough.artifactPath}
@@ -589,6 +618,7 @@ const buildMcpCompositionScorecard = (input: {
   hostedModelAccess: Record<string, unknown>;
   agentDrivenWorkflow: McpProofSummary["agentDrivenWorkflow"];
   splunkMcpBoundary: McpProofSummary["splunkMcpBoundary"];
+  officialSplunkMcpToolCoverage: McpProofSummary["officialSplunkMcpToolCoverage"];
 }): McpProofSummary["mcpComposition"] => {
   const dualConfigText = textFromMcpResource(input.dualServerClientConfigResource);
   const resourceUris = input.resources.map((resource) => resource.uri);
@@ -641,6 +671,11 @@ const buildMcpCompositionScorecard = (input: {
       id: "existing-splunk-mcp-boundary",
       status: input.splunkMcpBoundary.splunkToolCallCount > 0 ? "PASS" : "FAIL",
       evidence: `${input.splunkMcpBoundary.splunkToolCallCount} captured splunk_* tool calls are certified.`
+    },
+    {
+      id: "official-splunk-mcp-tool-coverage",
+      status: input.officialSplunkMcpToolCoverage.status,
+      evidence: `${input.officialSplunkMcpToolCoverage.capturedCoreTools.length} mission-scoped Splunk MCP core tool(s), ${input.officialSplunkMcpToolCoverage.investigationTools.length} investigation tool(s), and ${input.officialSplunkMcpToolCoverage.hostedModelTools.length} SAIA hosted-model tool(s) are covered.`
     },
     {
       id: "saved-search-evidence",
@@ -699,6 +734,78 @@ const buildMcpCompositionScorecard = (input: {
         existingMcpServer: false
       }
     ],
+    checks,
+    deterministicAuthority: true,
+    mutation: false
+  };
+};
+
+const buildOfficialSplunkMcpToolCoverage = (input: {
+  splunkMcpBoundary: McpProofSummary["splunkMcpBoundary"];
+  hostedModelAccess: Record<string, unknown>;
+}): McpProofSummary["officialSplunkMcpToolCoverage"] => {
+  const capturedTools = input.splunkMcpBoundary.certifiedToolNames;
+  const capturedCoreTools = capturedTools.filter((toolName) =>
+    ["splunk_get_knowledge_objects", "splunk_run_query"].includes(toolName)
+  );
+  const investigationTools = capturedTools.filter((toolName) =>
+    ["splunk_get_knowledge_objects", "splunk_run_query", "splunk_run_saved_search"].includes(toolName)
+  );
+  const hostedModelTools = stringArrayFromRecord(input.hostedModelAccess, "requiredTools").filter((toolName) =>
+    toolName.startsWith("saia_")
+  );
+  const hostedModelPassedTools = stringArrayFromRecord(input.hostedModelAccess, "passedTools");
+  const missionScopedOutTools = ["splunk_get_info"];
+
+  const checks: McpProofSummary["officialSplunkMcpToolCoverage"]["checks"] = [
+    {
+      id: "splunk-knowledge-object-context",
+      status: capturedTools.includes("splunk_get_knowledge_objects") ? "PASS" : "FAIL",
+      evidence: capturedTools.includes("splunk_get_knowledge_objects")
+        ? "Captured transcript discovers saved searches, macros, and lookups through Splunk MCP."
+        : "Captured transcript does not discover Splunk knowledge objects."
+    },
+    {
+      id: "splunk-investigation-execution",
+      status:
+        capturedTools.includes("splunk_run_saved_search") || capturedTools.includes("splunk_run_query")
+          ? "PASS"
+          : "FAIL",
+      evidence: input.splunkMcpBoundary.includesSavedSearchExecution
+        ? "Captured transcript executes a validated saved search and returns event refs."
+        : "Captured transcript does not show Splunk investigation execution."
+    },
+    {
+      id: "mission-scoped-tool-boundary",
+      status: missionScopedOutTools.every((toolName) => !capturedTools.includes(toolName)) ? "PASS" : "FAIL",
+      evidence:
+        "The certified security mission does not call splunk_get_info because mission allowedTools scope excludes it; deterministic SAF-003 remains authoritative."
+    },
+    {
+      id: "saia-hosted-model-tools",
+      status:
+        hostedModelTools.includes("saia_generate_spl") &&
+        hostedModelTools.includes("saia_explain_spl") &&
+        hostedModelTools.includes("saia_optimize_spl") &&
+        hostedModelTools.includes("saia_ask_splunk_question") &&
+        hostedModelPassedTools.length === hostedModelTools.length
+          ? "PASS"
+          : "FAIL",
+      evidence: `${hostedModelPassedTools.length}/${hostedModelTools.length} SAIA hosted-model tools passed in the MCP proof.`
+    }
+  ];
+
+  return {
+    source: "splunkready-official-splunk-mcp-tool-coverage",
+    status: checks.every((check) => check.status === "PASS") ? "PASS" : "FAIL",
+    docs: {
+      toolsUrl: officialSplunkMcpToolsUrl,
+      configurationUrl: officialSplunkMcpConfigurationUrl
+    },
+    capturedCoreTools,
+    investigationTools,
+    hostedModelTools,
+    missionScopedOutTools,
     checks,
     deterministicAuthority: true,
     mutation: false
@@ -1067,6 +1174,10 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       deterministicAuthority: true,
       mutation: false
     };
+    const officialSplunkMcpToolCoverage = buildOfficialSplunkMcpToolCoverage({
+      splunkMcpBoundary,
+      hostedModelAccess
+    });
     const mcpComposition = buildMcpCompositionScorecard({
       dualServerClientConfigResource,
       resources,
@@ -1076,7 +1187,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       inlineTranscriptCertification,
       hostedModelAccess,
       agentDrivenWorkflow,
-      splunkMcpBoundary
+      splunkMcpBoundary,
+      officialSplunkMcpToolCoverage
     });
     const clientWalkthrough = buildMcpClientWalkthrough({
       artifactPath: clientWalkthroughPath,
@@ -1125,6 +1237,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       agentDrivenWorkflow,
       splunkMcpBoundary,
       mcpComposition,
+      officialSplunkMcpToolCoverage,
       clientWalkthrough,
       clientSession,
       artifacts: [

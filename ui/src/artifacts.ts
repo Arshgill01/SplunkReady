@@ -853,6 +853,33 @@ const mcpProofSummarySchema = z
         mutation: z.boolean()
       })
       .strict(),
+    officialSplunkMcpToolCoverage: z
+      .object({
+        source: z.literal("splunkready-official-splunk-mcp-tool-coverage"),
+        status: z.enum(["PASS", "FAIL"]),
+        docs: z
+          .object({
+            toolsUrl: z.string().url(),
+            configurationUrl: z.string().url()
+          })
+          .strict(),
+        capturedCoreTools: z.array(z.string().min(1)),
+        investigationTools: z.array(z.string().min(1)),
+        hostedModelTools: z.array(hostedModelToolNameSchema),
+        missionScopedOutTools: z.array(z.string().min(1)),
+        checks: z.array(
+          z
+            .object({
+              id: z.string().min(1),
+              status: z.enum(["PASS", "FAIL"]),
+              evidence: z.string().min(1)
+            })
+            .strict()
+        ),
+        deterministicAuthority: z.boolean(),
+        mutation: z.boolean()
+      })
+      .strict(),
     clientWalkthrough: z
       .object({
         source: z.literal("splunkready-mcp-client-walkthrough"),
