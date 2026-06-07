@@ -972,3 +972,13 @@ flow signs `soc2-readiness` and emits a `pci-dss-readiness` receipt policy
 identity. Residual risk returns to future drift: any later public-surface source
 change must either publish a new version or be labeled source-only until this
 audit passes again.
+
+Move 153 closes the hosted-demo drift risk after the package release. The
+public-demo exporter now records the latest public-demo input commit as
+`sourceCommit` and the workflow checkout as `deploymentCommit`, and the
+currentness audit imports the same input-path list. GitHub Pages run
+`27102069779` deployed the corrected export; the hosted currentness audit now
+reports `CURRENT`, hosted source commit `fefd727`, matching UI assets, and
+`mutation=false`. Residual risk is future drift only: any later change to
+public-demo inputs must be followed by a Pages deploy and a passing
+`audit:hosted-demo-currentness` run before claiming the hosted demo is current.

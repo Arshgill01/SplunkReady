@@ -175,6 +175,7 @@ commands, or filesystem paths.
 | P0 | [150](moves150.md) Signed multi-tenant policy registry | 6-8d | Makes policies named, versioned, signed, and shareable. |
 | P2 | [151](moves151.md) Real external MCP-client session evidence | 2-3d | Parked until higher-value product surfaces are complete. |
 | P0 | [152](moves152.md) Published package advanced currentness | 0.5d | Publishes and verifies the package surface for live-mock and policy-registry proof, not only judge-proof and MCP initialize. |
+| P0 | [153](moves153.md) Hosted demo currentness after package release | 0.5d | Keeps the GitHub Pages demo source-current and asset-current after the latest package and UI changes. |
 
 ## Non-Negotiable Boundaries
 

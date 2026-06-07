@@ -15184,6 +15184,90 @@ Result:
 - PASS for submission-copy audit with 148 required claims.
 - PASS for final `git diff --check`.
 
+## 2026-06-07T19:11:56Z - Move 153 hosted demo currentness after package release
+
+Focused gates:
+
+- `npm test -- tests/scripts/public-demo-export.test.ts tests/scripts/hosted-demo-currentness.test.ts`
+- `npm run build`
+- `npm run public-demo:build`
+- `npm run audit:public-demo-export`
+
+Result:
+
+- PASS for focused Vitest coverage:
+  - 2 test files passed;
+  - 4 tests passed.
+- PASS for TypeScript build.
+- PASS for local public demo build:
+  - generated `artifacts/public-demo`;
+  - manifest `sourceCommit` used the latest public-demo input commit;
+  - manifest `deploymentCommit` used the local checkout commit.
+- PASS for public demo export audit:
+  - 228 files;
+  - `mutation=false`;
+  - default route `mcp-proof`.
+
+Hosted deployment:
+
+- `gh workflow run public-demo-pages.yml --ref splunkready-build`
+- `gh run watch 27102069779 --exit-status`
+
+Result:
+
+- PASS for GitHub Pages run `27102069779`.
+- PASS for build job and deploy job.
+
+Hosted currentness:
+
+- `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+
+Result:
+
+- PASS: hosted-demo currentness reports `CURRENT`.
+- PASS: expected public-demo input commit and hosted source commit are both
+  `fefd727196ea188961a53e189ad4e8e88e1efd9f`.
+- PASS: hosted and local asset names match:
+  - `index-Bdarwqdn.css`;
+  - `index-DpJj3Mh4.js`.
+- PASS: hosted manifest keeps `mutation=false` and includes
+  `artifacts/interactive-demo`.
+
+Canonical local gate:
+
+- `npm run check`
+
+Result:
+
+- PASS for scaffold verification with 85 waves and 2263 project files.
+- PASS for runtime contracts with 19 rules, 4 fixture missions, and 20 evidence refs.
+- PASS for TypeScript build and production UI build.
+- PASS for public demo export audit with 228 files and `mutation=false`.
+- PASS for package readiness audit with 177 packed files checked.
+- PASS for package installability audit:
+  - `splunkready-0.1.3.tgz` installed;
+  - clean `npx splunkready judge-proof` returned `PASS`;
+  - clean `npx splunkready mcp` initialized.
+- PASS for full Vitest suite:
+  - 64 test files passed;
+  - 405 tests passed.
+- PASS for secret env ignore audit.
+- PASS for reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS for submission-copy audit with 148 required claims.
+- PASS for final `git diff --check`.
+
+Remote gates:
+
+- GitHub Actions CI run `27102067677`
+- GitHub Pages run `27102069779`
+
+Result:
+
+- PASS: CI completed successfully for commit `fefd727`.
+- PASS: GitHub Pages build and deploy completed successfully for commit
+  `fefd727`.
+
 Pending:
 
 - Closed by the post-publish currentness audit below.

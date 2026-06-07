@@ -14645,3 +14645,40 @@ Post-publish follow-up:
 - Refreshed `submission-evidence/public-package-currentness/`.
 - Marked Move 152 implemented after the audit proved published `judge-proof`,
   MCP required tools, `live-proof --live-mock`, and policy-registry proof.
+
+## 2026-06-07T19:11:56Z - Move 153 hosted demo currentness after package release
+
+Intent:
+
+- Close GitHub Pages demo drift after the package publish and public UI changes.
+  The hosted demo must match the latest public-demo input commit and current
+  built UI asset names.
+
+Actions:
+
+- Fixed `scripts/export-public-demo.js` so `sourceCommit` records the latest
+  public-demo input commit, while `deploymentCommit` records the workflow
+  checkout commit for traceability.
+- Exported the shared `publicDemoInputPaths` list from the exporter and reused
+  it in `scripts/audit-hosted-demo-currentness.mjs` so deploy metadata and the
+  currentness audit cannot drift.
+- Updated `scripts/export-public-demo.d.ts` and focused exporter tests for the
+  new manifest fields.
+- Triggered GitHub Pages workflow run `27102069779`; it deployed successfully.
+- Refreshed `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`.
+- Updated the claim ledger and move index for Move 153.
+
+Files changed:
+
+- `scripts/export-public-demo.js`
+- `scripts/export-public-demo.d.ts`
+- `scripts/audit-hosted-demo-currentness.mjs`
+- `tests/scripts/public-demo-export.test.ts`
+- `moves/README.md`
+- `moves/moves153.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
