@@ -1,0 +1,14 @@
+{
+  "source": "splunkready-proof-manifest-verification",
+  "generatedAt": "2026-06-01T06:45:00.000Z",
+  "status": "PASS",
+  "proofDir": "submission-evidence/mcp-proof/mcp-inline-transcript-certification",
+  "manifestPath": "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-manifest.json",
+  "expectedAggregateSha256": "bc8108d0358c4006d1918e36037511190708c79ecb3ba64045599d4feae94a60",
+  "actualAggregateSha256": "bc8108d0358c4006d1918e36037511190708c79ecb3ba64045599d4feae94a60",
+  "expectedFiles": 14,
+  "actualFiles": 14,
+  "missingFiles": [],
+  "unexpectedFiles": [],
+  "changedFiles": []
+}

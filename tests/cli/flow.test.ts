@@ -1375,6 +1375,7 @@ describe("SplunkReady CLI flow", () => {
       certificationLoopPrompt: { messages: Array<{ content: { text: string } }> };
       compositionReviewPrompt: { messages: Array<{ content: { text: string } }> };
       transcriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
+      inlineTranscriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
       agentDrivenWorkflow: {
         status: string;
         splunkMcpServerRole: string;
@@ -1571,20 +1572,22 @@ describe("SplunkReady CLI flow", () => {
         ]),
         toolNames: expect.arrayContaining([
           "splunkready_describe_certification",
-          "splunkready_certify_mcp_transcript"
+          "splunkready_certify_mcp_transcript",
+          "splunkready_certify_mcp_transcript_content"
         ]),
         deterministicAuthority: true,
         mutation: false
       }
     });
-    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(16);
+    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(17);
     expect(summary.clientSession.responseCount).toBe(summary.clientSession.requestCount);
     expect(summary.splunkMcpBoundary.localMcpServerRole).toContain("certification interface");
     expect(summary.splunkMcpBoundary.splunkMcpServerRole).toContain("Splunk MCP Server boundary");
     expect(summary.tools.map((tool) => tool.name)).toEqual([
       "splunkready_describe_certification",
       "splunkready_certify_external_trace",
-      "splunkready_certify_mcp_transcript"
+      "splunkready_certify_mcp_transcript",
+      "splunkready_certify_mcp_transcript_content"
     ]);
     expect(summary.resources.map((resource) => resource.uri)).toEqual([
       "splunkready://certification/posture",
@@ -1617,6 +1620,17 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.certificationLoopResource.contents[0].text).toContain("Configure two MCP servers");
     expect(summary.compositionScorecardResource.contents[0].text).toContain("composition, not replacement");
     expect(summary.receiptTemplateResource.contents[0].text).toContain("Verdict: READY");
+    expect(summary.inlineTranscriptCertification).toMatchObject({
+      status: "PASS",
+      mutation: false,
+      outDir: join(outDir, "mcp-inline-transcript-certification")
+    });
+    expect(summary.inlineTranscriptCertification.artifacts).toEqual(
+      expect.arrayContaining([
+        join(outDir, "mcp-inline-transcript-certification", "receipt-external-001.json"),
+        join(outDir, "mcp-inline-transcript-certification", "uploaded-mcp-transcript.jsonl")
+      ])
+    );
     expect(summary.describe).toMatchObject({
       resourceTemplates: ["splunkready://receipts/{receiptId}"]
     });

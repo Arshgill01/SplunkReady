@@ -101,13 +101,32 @@ const certifyMcpTranscriptSchema = z
   })
   .strict();
 
+const certifyMcpTranscriptContentSchema = z
+  .object({
+    transcript: z.string().trim().min(1),
+    finalAnswer: z.string().trim().min(1),
+    outDir: z.string().trim().min(1),
+    strictImport: z.boolean().optional().default(true),
+    requirePass: z.boolean().optional().default(false),
+    agentName: optionalName,
+    agentVersion: optionalName
+  })
+  .strict();
+
 const emptyObjectSchema = z.object({}).strict();
 
 const secretPathPattern = /(^|[/\\])(?:\.env(?:\.|$)|\.splunkready(?:\.|$))/i;
+const inlineSecretPattern = /\b(?:authorization|bearer|api[_-]?key|access[_-]?token|refresh[_-]?token|password|splunk_mcp_token)\b/i;
 
 const assertNonSecretPath = (path: string): void => {
   if (secretPathPattern.test(path)) {
     throw new Error("Refusing to read or write secret environment files through the MCP server.");
+  }
+};
+
+const assertNoInlineSecrets = (input: string): void => {
+  if (inlineSecretPattern.test(input)) {
+    throw new Error("Refusing to certify inline MCP transcript content that appears to contain secrets.");
   }
 };
 
@@ -191,6 +210,35 @@ export const splunkReadyMcpTools: McpTool[] = [
     ),
     outputSchema: objectSchema({
       status: stringProperty("PASS when the imported transcript receipt is READY, otherwise FAIL."),
+      outDir: stringProperty("Output directory that received certification artifacts."),
+      mutation: { type: "boolean", description: "Whether SplunkReady mutated Splunk." },
+      artifacts: { type: "array", items: { type: "string" }, description: "Written artifact paths." }
+    }),
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false
+    }
+  },
+  {
+    name: "splunkready_certify_mcp_transcript_content",
+    title: "Certify Inline MCP Transcript",
+    description:
+      "Certify Splunk MCP JSON-RPC transcript content supplied directly by an MCP client and write a deterministic Readiness Receipt.",
+    inputSchema: objectSchema(
+      {
+        transcript: stringProperty("Splunk MCP JSONL transcript content. Do not include tokens or environment files."),
+        finalAnswer: stringProperty("Producer-provided final answer to append before grading."),
+        outDir: stringProperty("Local output directory for certification artifacts."),
+        strictImport: booleanProperty("Reject transcripts with skipped records or unmatched tool calls.", true),
+        requirePass: booleanProperty("Return a tool error if the receipt is not READY.", false),
+        agentName: stringProperty("Optional transcript-producing agent name for the receipt."),
+        agentVersion: stringProperty("Optional transcript-producing agent version for the receipt.")
+      },
+      ["transcript", "finalAnswer", "outDir"]
+    ),
+    outputSchema: objectSchema({
+      status: stringProperty("PASS when the inline transcript receipt is READY, otherwise FAIL."),
       outDir: stringProperty("Output directory that received certification artifacts."),
       mutation: { type: "boolean", description: "Whether SplunkReady mutated Splunk." },
       artifacts: { type: "array", items: { type: "string" }, description: "Written artifact paths." }
@@ -724,6 +772,41 @@ const callTool = async (name: string, args: unknown, env: NodeJS.ProcessEnv): Pr
           outDir: parsed.data.outDir,
           payload: {
             transcript,
+            finalAnswer: parsed.data.finalAnswer,
+            strictImport: parsed.data.strictImport,
+            requirePass: parsed.data.requirePass,
+            agentName: parsed.data.agentName,
+            agentVersion: parsed.data.agentVersion
+          }
+        },
+        env
+      );
+      const receipt = readinessReceiptSchema.parse(
+        JSON.parse(await readFile(join(parsed.data.outDir, "receipt-external-001.json"), "utf8"))
+      );
+      const status = receipt.verdict === "READY" ? "PASS" : "FAIL";
+
+      return toolResult({ ...result, status, outDir: parsed.data.outDir, mutation: false });
+    } catch (caught) {
+      return toolResult({ status: "ERROR", message: redactUnknownError(caught, env) }, true);
+    }
+  }
+
+  if (name === "splunkready_certify_mcp_transcript_content") {
+    const parsed = certifyMcpTranscriptContentSchema.safeParse(args ?? {});
+
+    if (!parsed.success) {
+      return toolResult({ status: "ERROR", message: zodMessage(parsed) }, true);
+    }
+
+    try {
+      assertNoInlineSecrets(parsed.data.transcript);
+      assertNonSecretPath(parsed.data.outDir);
+      const result = await runMcpTranscriptCertificationWorkflow(
+        {
+          outDir: parsed.data.outDir,
+          payload: {
+            transcript: parsed.data.transcript,
             finalAnswer: parsed.data.finalAnswer,
             strictImport: parsed.data.strictImport,
             requirePass: parsed.data.requirePass,

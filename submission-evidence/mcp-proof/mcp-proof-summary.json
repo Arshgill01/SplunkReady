@@ -25,6 +25,11 @@
       "name": "splunkready_certify_mcp_transcript",
       "destructiveHint": false,
       "readOnlyHint": true
+    },
+    {
+      "name": "splunkready_certify_mcp_transcript_content",
+      "destructiveHint": false,
+      "readOnlyHint": true
     }
   ],
   "resources": [
@@ -108,7 +113,8 @@
     "tools": [
       "splunkready_describe_certification",
       "splunkready_certify_external_trace",
-      "splunkready_certify_mcp_transcript"
+      "splunkready_certify_mcp_transcript",
+      "splunkready_certify_mcp_transcript_content"
     ],
     "resources": [
       "splunkready://certification/posture",
@@ -136,7 +142,7 @@
       {
         "uri": "splunkready://certification/posture",
         "mimeType": "application/json",
-        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://client-config/splunk-and-splunkready\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\",\n    \"splunkready://workflows/mcp-composition-scorecard\"\n  ],\n  \"resourceTemplates\": [\n    \"splunkready://receipts/{receiptId}\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\",\n    \"splunkready_mcp_composition_review\"\n  ]\n}"
+        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_certify_mcp_transcript_content\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://client-config/splunk-and-splunkready\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\",\n    \"splunkready://workflows/mcp-composition-scorecard\"\n  ],\n  \"resourceTemplates\": [\n    \"splunkready://receipts/{receiptId}\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\",\n    \"splunkready_mcp_composition_review\"\n  ]\n}"
       }
     ]
   },
@@ -243,6 +249,28 @@
     "outDir": "submission-evidence/mcp-proof/mcp-transcript-certification",
     "mutation": false
   },
+  "inlineTranscriptCertification": {
+    "artifacts": [
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/uploaded-mcp-transcript.jsonl",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/environment-contract.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/missions.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/agent-policy.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/readiness-profile.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/trace-imported.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-import.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/trace-external.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/violations-external.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/score-external.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.md",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-certification.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-audit.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-manifest.json"
+    ],
+    "status": "PASS",
+    "outDir": "submission-evidence/mcp-proof/mcp-inline-transcript-certification",
+    "mutation": false
+  },
   "agentDrivenWorkflow": {
     "status": "PASS",
     "splunkMcpServerRole": "Splunk MCP performs the read-only investigation actions and returns operational data to the agent.",
@@ -318,12 +346,12 @@
       {
         "id": "readiness-receipt-authority",
         "status": "PASS",
-        "evidence": "Transcript certification returned PASS; deterministic rules remain authoritative."
+        "evidence": "Path transcript certification returned PASS; inline transcript certification returned PASS; deterministic rules remain authoritative."
       },
       {
         "id": "no-splunkready-mutation",
         "status": "PASS",
-        "evidence": "SplunkReady certification reports mutation=false across workflow, boundary, and receipt artifacts."
+        "evidence": "SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, and receipt artifacts."
       }
     ],
     "deterministicAuthority": true,
@@ -406,8 +434,8 @@
     "artifactPath": "submission-evidence/mcp-proof/mcp-client-session.jsonl",
     "markdownPath": "submission-evidence/mcp-proof/mcp-client-session.md",
     "protocol": "stdio-jsonrpc",
-    "requestCount": 16,
-    "responseCount": 16,
+    "requestCount": 17,
+    "responseCount": 17,
     "methods": [
       "initialize",
       "tools/list",
@@ -433,7 +461,8 @@
     ],
     "toolNames": [
       "splunkready_describe_certification",
-      "splunkready_certify_mcp_transcript"
+      "splunkready_certify_mcp_transcript",
+      "splunkready_certify_mcp_transcript_content"
     ],
     "deterministicAuthority": true,
     "mutation": false
@@ -459,7 +488,22 @@
     "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.md",
     "submission-evidence/mcp-proof/mcp-transcript-certification/mcp-transcript-certification.json",
     "submission-evidence/mcp-proof/mcp-transcript-certification/proof-audit.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/proof-manifest.json"
+    "submission-evidence/mcp-proof/mcp-transcript-certification/proof-manifest.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/uploaded-mcp-transcript.jsonl",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/environment-contract.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/missions.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/agent-policy.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/readiness-profile.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/trace-imported.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-import.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/trace-external.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/violations-external.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/score-external.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.md",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-certification.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-audit.json",
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-manifest.json"
   ],
   "nextCommands": [
     "npm run mcp",

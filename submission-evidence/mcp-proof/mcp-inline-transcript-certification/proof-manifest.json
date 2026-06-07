@@ -1,0 +1,78 @@
+{
+  "source": "splunkready-proof-manifest",
+  "generatedAt": "2026-06-01T06:45:00.000Z",
+  "proofDir": "submission-evidence/mcp-proof/mcp-inline-transcript-certification",
+  "aggregateSha256": "bc8108d0358c4006d1918e36037511190708c79ecb3ba64045599d4feae94a60",
+  "files": [
+    {
+      "path": "agent-policy.json",
+      "sizeBytes": 10118,
+      "sha256": "30507775728779cd8768799da077c3b0c2415d8dca9d2c1b552e241e518a19c9"
+    },
+    {
+      "path": "environment-contract.json",
+      "sizeBytes": 14654,
+      "sha256": "d59ea9376707ded4e705746734416133427caa45adb824f66038d8e9a0ca7b81"
+    },
+    {
+      "path": "mcp-transcript-certification.json",
+      "sizeBytes": 1999,
+      "sha256": "666148c31f671a3f8fa457d32a6fdf868d8af431260d8da5166c33ec3eeca111"
+    },
+    {
+      "path": "mcp-transcript-import.json",
+      "sizeBytes": 957,
+      "sha256": "4771568752248712c966a413dc315f774800fe5a27d9de19db9f8a3166c0e68f"
+    },
+    {
+      "path": "missions.json",
+      "sizeBytes": 2338,
+      "sha256": "d8299285a80192e9433f3108748def64009ac363f6493d3395dbfe97827790fa"
+    },
+    {
+      "path": "proof-audit.json",
+      "sizeBytes": 2245,
+      "sha256": "2dfd19b4dd7623a04fab2d23e3c982b5422a54fd8616a144113058f18257e471"
+    },
+    {
+      "path": "readiness-profile.json",
+      "sizeBytes": 22750,
+      "sha256": "fe42848a4756e193a7e1333d3fbbfc1c8a3e8960ee353862caff3af562f4d0fb"
+    },
+    {
+      "path": "receipt-external-001.json",
+      "sizeBytes": 1369,
+      "sha256": "5a8ee7cb989f7db59582f83912f41ab577c31e74ac6364338eec34637d032d60"
+    },
+    {
+      "path": "receipt-external-001.md",
+      "sizeBytes": 1550,
+      "sha256": "2a8499ab0d4dbbce69454a9431d222892800e80b88a4452d2db520485e40de98"
+    },
+    {
+      "path": "score-external.json",
+      "sizeBytes": 647,
+      "sha256": "ad0d3eabc3c3f26892ff87fb76cb6a5c48fe55b123bdd89728fd321f7d3f13c1"
+    },
+    {
+      "path": "trace-external.json",
+      "sizeBytes": 5289,
+      "sha256": "3c9ea71250cf8c944bdc8fa4f616020b1cfd0e4076c5ca01da745a3b9a339e8d"
+    },
+    {
+      "path": "trace-imported.json",
+      "sizeBytes": 5289,
+      "sha256": "3c9ea71250cf8c944bdc8fa4f616020b1cfd0e4076c5ca01da745a3b9a339e8d"
+    },
+    {
+      "path": "uploaded-mcp-transcript.jsonl",
+      "sizeBytes": 3153,
+      "sha256": "4d00d2ca68f2bca31426c007cce5b020577d4c25df28d5713cf13ef30ac186a1"
+    },
+    {
+      "path": "violations-external.json",
+      "sizeBytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    }
+  ]
+}

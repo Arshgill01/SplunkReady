@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "source": "mcp-jsonrpc-transcript-certification",
+  "mutation": false,
+  "transcriptPath": "submission-evidence/mcp-proof/mcp-inline-transcript-certification/uploaded-mcp-transcript.jsonl",
+  "missionPath": "fixtures/acme-soc-dev/missions/security-investigation-readiness.json",
+  "agent": {
+    "name": "Inline MCP Agent",
+    "version": "mcp-proof-inline-jsonrpc-pass"
+  },
+  "receipt": {
+    "id": "receipt-external-001",
+    "verdict": "READY",
+    "score": 100,
+    "violations": 0,
+    "traceRefs": 6,
+    "evidenceRefs": 6
+  },
+  "audit": {
+    "status": "PASS",
+    "proofType": "external-trace",
+    "checks": [
+      {
+        "id": "contract-loaded",
+        "status": "PASS"
+      },
+      {
+        "id": "external-receipt-loaded",
+        "status": "PASS"
+      },
+      {
+        "id": "external-trace-loaded",
+        "status": "PASS"
+      },
+      {
+        "id": "external-violations-loaded",
+        "status": "PASS"
+      },
+      {
+        "id": "external-receipt-trace-refs",
+        "status": "PASS"
+      },
+      {
+        "id": "external-verdict-ready",
+        "status": "PASS"
+      },
+      {
+        "id": "external-mutation-false",
+        "status": "PASS"
+      },
+      {
+        "id": "external-mcp-transcript-integrity",
+        "status": "PASS"
+      }
+    ]
+  },
+  "artifacts": {
+    "contract": "submission-evidence/mcp-proof/mcp-inline-transcript-certification/environment-contract.json",
+    "importedTrace": "submission-evidence/mcp-proof/mcp-inline-transcript-certification/trace-imported.json",
+    "externalTrace": "submission-evidence/mcp-proof/mcp-inline-transcript-certification/trace-external.json",
+    "violations": "submission-evidence/mcp-proof/mcp-inline-transcript-certification/violations-external.json",
+    "receipt": "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.json",
+    "audit": "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-audit.json"
+  }
+}

@@ -1,4 +1,4 @@
-import { mkdtemp } from "node:fs/promises";
+import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -13,6 +13,9 @@ import {
 } from "../../src/mcp/server.js";
 
 const sampleTracePath = new URL("../../examples/sample-external-trace-pass.json", import.meta.url);
+const sampleMcpTranscriptPath = new URL("../../examples/sample-mcp-transcript-pass.jsonl", import.meta.url);
+const sampleFinalAnswer =
+  "Evidence supports suspicious lateral movement from win-finance-07 through admin-login-02 to dc-01 and finance-sql-03. Provenance saved-search-lateral-movement returned 3 rows for the -24h to now window, with evidence rows evt-102, evt-118, and evt-141.";
 
 const resultOf = (response: Awaited<ReturnType<typeof handleMcpMessage>>): Record<string, unknown> => {
   expect(response).toBeDefined();
@@ -60,7 +63,8 @@ describe("SplunkReady MCP server", () => {
     expect(splunkReadyMcpTools.map((tool) => tool.name)).toEqual([
       "splunkready_describe_certification",
       "splunkready_certify_external_trace",
-      "splunkready_certify_mcp_transcript"
+      "splunkready_certify_mcp_transcript",
+      "splunkready_certify_mcp_transcript_content"
     ]);
     expect(splunkReadyMcpTools.every((tool) => tool.annotations.destructiveHint === false)).toBe(true);
   });
@@ -264,6 +268,57 @@ describe("SplunkReady MCP server", () => {
     expect(structured.artifacts).toEqual(
       expect.arrayContaining([join(outDir, "receipt-external-001.json"), join(outDir, "trace-external.json")])
     );
+  });
+
+  it("certifies inline MCP transcript content through tools/call", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-inline-"));
+    const transcript = await readFile(sampleMcpTranscriptPath, "utf8");
+    const response = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "inline",
+      method: "tools/call",
+      params: {
+        name: "splunkready_certify_mcp_transcript_content",
+        arguments: {
+          transcript,
+          finalAnswer: sampleFinalAnswer,
+          outDir,
+          strictImport: true,
+          requirePass: true,
+          agentName: "Inline MCP Client Agent",
+          agentVersion: "inline-pass"
+        }
+      }
+    });
+    const result = resultOf(response);
+    const structured = result.structuredContent as Record<string, unknown>;
+
+    expect(result.isError).toBe(false);
+    expect(structured).toMatchObject({ status: "PASS", outDir, mutation: false });
+    expect(structured.artifacts).toEqual(
+      expect.arrayContaining([join(outDir, "receipt-external-001.json"), join(outDir, "uploaded-mcp-transcript.jsonl")])
+    );
+  });
+
+  it("rejects inline MCP transcript content that appears to include secrets", async () => {
+    const response = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "inline-secret",
+      method: "tools/call",
+      params: {
+        name: "splunkready_certify_mcp_transcript_content",
+        arguments: {
+          transcript: '{"jsonrpc":"2.0","method":"tools/call","params":{"authorization":"Bearer secret"}}',
+          finalAnswer: sampleFinalAnswer,
+          outDir: await mkdtemp(join(tmpdir(), "splunkready-mcp-inline-secret-"))
+        }
+      }
+    });
+    const result = resultOf(response);
+    const structured = result.structuredContent as Record<string, unknown>;
+
+    expect(result.isError).toBe(true);
+    expect(structured.message).toBe("Refusing to certify inline MCP transcript content that appears to contain secrets.");
   });
 
   it("returns a tool error instead of reading secret environment files", async () => {

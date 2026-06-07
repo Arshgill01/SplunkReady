@@ -9956,6 +9956,95 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-07 - Move 112 Inline MCP Transcript Certification
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/mcp/server.test.ts`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "MCP proof"`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "MCP server proof"`
+- `npm run build && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json && node dist/src/cli.js verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json && node dist/src/cli.js verify-manifest --out submission-evidence/mcp-proof/mcp-inline-transcript-certification --json`
+- `jq -r '"status=\\(.status):tools=\\(.tools|length):inline=\\(.inlineTranscriptCertification.status):requests=\\(.clientSession.requestCount):session=\\(.clientSession.status):mutation=\\(.inlineTranscriptCertification.mutation)"' submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `npm run public-demo:build`
+- Playwright open/snapshot/screenshot for
+  `http://127.0.0.1:4342/?artifacts=artifacts%2Fmcp-proof#mcp-proof`
+- `npm run audit:public-demo-export`
+- `npm run audit:submission-copy`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `git diff --check`
+- `test ! -d .playwright-cli`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript.
+- PASS for focused MCP server tests:
+  - 1 test file passed;
+  - 10 tests passed.
+- PASS for focused MCP UI route test:
+  - 1 test passed;
+  - 26 tests skipped by focused pattern.
+- PASS for focused MCP CLI proof test after fixing the first failure:
+  - first run failed because
+    `mcp-inline-transcript-certification/uploaded-mcp-transcript.jsonl` was
+    written before the inline output directory existed;
+  - added the missing directory creation;
+  - rerun passed with 1 test passed and 40 tests skipped by focused pattern.
+- PASS for MCP proof regeneration:
+  - `mcp-proof-summary.json` recorded `status=PASS`;
+  - MCP tool count is 4;
+  - inline transcript certification status is `PASS`;
+  - client session status is `PASS`;
+  - client session request count is 17;
+  - inline transcript certification mutation is `false`.
+- PASS for both path-based and inline transcript proof manifest verification.
+- PASS for Playwright verification of the public MCP proof route:
+  - route rendered `mcp proof pass 4 tools`;
+  - route rendered `splunkready_certify_mcp_transcript_content`;
+  - route rendered `Inline transcript certification PASS`;
+  - refreshed `submission-evidence/screenshots/workbench-mcp-proof.png`.
+- PASS for public-demo export audit.
+- PASS for submission-copy audit:
+  - 45 required claims checked.
+- PASS for evidence-pack SHA verification.
+- PASS for focused submission-copy audit tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for CLI cleanup hygiene:
+  - `.playwright-cli` was absent.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and
+    `npx splunkready judge-proof` returned `PASS`;
+  - 59 test files passed;
+  - 360 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 45 required claims;
+  - final `git diff --check` completed with no output.
+
+Notes:
+
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not make LLM or SAIA output authoritative.
+- Did not use subagents.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Live SAIA PASS still requires a token-bearing shell with the required live
+  variables exported.
+
 ## 2026-06-07 - Move 111 MCP Resource Template Proof
 
 Commands:

@@ -55,6 +55,8 @@ const checks = [
   ["Claim ledger MCP client session JSONL", files.claimLedger, "submission-evidence/mcp-proof/mcp-client-session.jsonl"],
   ["Claim ledger MCP resource template", files.claimLedger, "splunkready://receipts/{receiptId}"],
   ["Claim ledger MCP template session", files.claimLedger, "resources/templates/list"],
+  ["Claim ledger inline MCP transcript tool", files.claimLedger, "splunkready_certify_mcp_transcript_content"],
+  ["README inline MCP transcript tool", files.readme, "splunkready_certify_mcp_transcript_content"],
   ["Demo no LLM vibes", files.demo, "not another LLM judging vibes"],
   ["Demo no mutation", files.demo, "does not mutate Splunk"],
   ["Demo route", files.demo, "splunkready-shell.html#rerun-receipts"],

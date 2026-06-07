@@ -531,3 +531,13 @@ file reads. The tracked MCP proof, workbench route, screenshot, claim ledger,
 and evidence hashes were refreshed. Residual MCP risk remains external-client
 storytelling: the proof is stronger MCP protocol evidence, but a public
 Claude/Cursor/client walkthrough recording would still improve the award track.
+
+Move 112 further reduces MCP-category thin-surface risk by adding
+`splunkready_certify_mcp_transcript_content`, a read-only MCP tool that lets a
+client certify captured transcript JSONL directly instead of relying on a local
+path. The recorded proof now certifies the same Splunk MCP transcript through
+both path-based and inline-content tools, rejects obvious inline secret shapes,
+surfaces the result in the public workbench, and tracks both proof manifests in
+submission evidence. Residual MCP risk remains external-client storytelling and
+live client capture: this proves the protocol surface locally, but a public
+Claude/Cursor/client walkthrough would still improve judge perception.

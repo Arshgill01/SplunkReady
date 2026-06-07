@@ -330,7 +330,8 @@ const mcpProofSummary = {
   tools: [
     { name: "splunkready_describe_certification", destructiveHint: false, readOnlyHint: true },
     { name: "splunkready_certify_external_trace", destructiveHint: false, readOnlyHint: true },
-    { name: "splunkready_certify_mcp_transcript", destructiveHint: false, readOnlyHint: true }
+    { name: "splunkready_certify_mcp_transcript", destructiveHint: false, readOnlyHint: true },
+    { name: "splunkready_certify_mcp_transcript_content", destructiveHint: false, readOnlyHint: true }
   ],
   resources: [
     { uri: "splunkready://certification/posture", name: "certification-posture", mimeType: "application/json" },
@@ -374,6 +375,15 @@ const mcpProofSummary = {
     artifacts: [
       "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
       "submission-evidence/mcp-proof/mcp-transcript-certification/proof-audit.json"
+    ]
+  },
+  inlineTranscriptCertification: {
+    status: "PASS",
+    outDir: "submission-evidence/mcp-proof/mcp-inline-transcript-certification",
+    mutation: false,
+    artifacts: [
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.json",
+      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-audit.json"
     ]
   },
   agentDrivenWorkflow: {
@@ -447,12 +457,14 @@ const mcpProofSummary = {
       {
         id: "readiness-receipt-authority",
         status: "PASS",
-        evidence: "Transcript certification returned PASS; deterministic rules remain authoritative."
+        evidence:
+          "Path transcript certification returned PASS; inline transcript certification returned PASS; deterministic rules remain authoritative."
       },
       {
         id: "no-splunkready-mutation",
         status: "PASS",
-        evidence: "SplunkReady certification reports mutation=false across workflow, boundary, and receipt artifacts."
+        evidence:
+          "SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, and receipt artifacts."
       }
     ],
     deterministicAuthority: true,
@@ -510,8 +522,8 @@ const mcpProofSummary = {
     artifactPath: "submission-evidence/mcp-proof/mcp-client-session.jsonl",
     markdownPath: "submission-evidence/mcp-proof/mcp-client-session.md",
     protocol: "stdio-jsonrpc",
-    requestCount: 14,
-    responseCount: 14,
+    requestCount: 17,
+    responseCount: 17,
     methods: [
       "initialize",
       "tools/list",
@@ -529,7 +541,11 @@ const mcpProofSummary = {
       "splunkready://receipts/pass"
     ],
     promptNames: ["splunkready_splunk_mcp_certification_loop", "splunkready_mcp_composition_review"],
-    toolNames: ["splunkready_describe_certification", "splunkready_certify_mcp_transcript"],
+    toolNames: [
+      "splunkready_describe_certification",
+      "splunkready_certify_mcp_transcript",
+      "splunkready_certify_mcp_transcript_content"
+    ],
     deterministicAuthority: true,
     mutation: false
   },
@@ -1504,6 +1520,9 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("splunkready://receipts/pass");
     expect(html).toContain("splunkready_splunk_mcp_certification_loop");
     expect(html).toContain("splunkready_certify_mcp_transcript");
+    expect(html).toContain("splunkready_certify_mcp_transcript_content");
+    expect(html).toContain("Inline transcript certification");
+    expect(html).toContain("submission-evidence/mcp-proof/mcp-inline-transcript-certification");
     expect(html).toContain("resources/read");
     expect(html).toContain("resources/templates/list");
     expect(html).toContain("prompts/get");
@@ -1513,7 +1532,7 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Saved-search execution");
     expect(html).toContain("evt-102 / evt-118 / evt-141");
     expect(html).toContain("Deterministic");
-    expect(html).toContain("mcp proof pass 3 tools");
+    expect(html).toContain("mcp proof pass 4 tools");
     expect(html).toContain("<td>no</td>");
     expect(html).not.toContain("Artifact bundle incomplete");
   });

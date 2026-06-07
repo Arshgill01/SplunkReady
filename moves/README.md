@@ -134,6 +134,7 @@ commands, or filesystem paths.
 | P0 | [109](moves109.md) MCP client session evidence | 0.5d | Tracks the actual MCP JSON-RPC client session behind the MCP proof and surfaces it in the public workbench. |
 | P0 | [110](moves110.md) SAIA live proof readiness | 0.5d | Makes hosted-model diagnostics produce redacted, reviewable artifacts when live SAIA setup is missing and public-export-safe when present. |
 | P0 | [111](moves111.md) MCP resource template proof | 0.5d | Adds MCP resource-template discovery and a templated receipt read to the server, proof session, workbench, and tracked evidence. |
+| P0 | [112](moves112.md) Inline MCP transcript certification | 0.5d | Adds a read-only MCP tool that certifies transcript JSONL content directly, with secret rejection and tracked path-vs-inline proof evidence. |
 
 ## Non-Negotiable Boundaries
 

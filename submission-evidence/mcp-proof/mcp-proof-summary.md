@@ -12,6 +12,7 @@ Tools:
 - splunkready_describe_certification destructive=false readOnly=true
 - splunkready_certify_external_trace destructive=false readOnly=true
 - splunkready_certify_mcp_transcript destructive=false readOnly=true
+- splunkready_certify_mcp_transcript_content destructive=false readOnly=true
 
 Resources:
 - splunkready://certification/posture (application/json)
@@ -49,6 +50,9 @@ Agent-driven workflow: PASS
 
 Transcript certification: PASS
 
+Inline transcript certification: PASS
+- Output: submission-evidence/mcp-proof/mcp-inline-transcript-certification
+
 Splunk MCP boundary: PASS
 - Certified tool calls: splunk_get_knowledge_objects, splunk_run_saved_search
 - Saved-search execution: yes
@@ -60,8 +64,8 @@ MCP composition scorecard: PASS (100/100)
 - discoverable-resources-and-prompts: PASS - 8 resources, 1 resource template(s), and 5 prompts expose the composed workflow.
 - existing-splunk-mcp-boundary: PASS - 2 captured splunk_* tool calls are certified.
 - saved-search-evidence: PASS - 3 evidence refs from saved-search output.
-- readiness-receipt-authority: PASS - Transcript certification returned PASS; deterministic rules remain authoritative.
-- no-splunkready-mutation: PASS - SplunkReady certification reports mutation=false across workflow, boundary, and receipt artifacts.
+- readiness-receipt-authority: PASS - Path transcript certification returned PASS; inline transcript certification returned PASS; deterministic rules remain authoritative.
+- no-splunkready-mutation: PASS - SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, and receipt artifacts.
 
 MCP client walkthrough: PASS
 - Artifact: submission-evidence/mcp-proof/mcp-client-walkthrough.json
@@ -78,11 +82,11 @@ MCP client session: PASS
 - Artifact: submission-evidence/mcp-proof/mcp-client-session.jsonl
 - Markdown: submission-evidence/mcp-proof/mcp-client-session.md
 - Protocol: stdio-jsonrpc
-- Requests: 16
-- Responses: 16
+- Requests: 17
+- Responses: 17
 - Methods: initialize, tools/list, resources/list, resources/templates/list, resources/read, prompts/list, prompts/get, tools/call
 - Resources read: splunkready://certification/posture, splunkready://client-config/stdio, splunkready://client-config/splunk-and-splunkready, splunkready://workflows/splunk-mcp-certification-loop, splunkready://workflows/mcp-composition-scorecard, splunkready://receipts/pass
 - Prompts fetched: splunkready_certify_mcp_transcript, splunkready_splunk_mcp_certification_loop, splunkready_mcp_composition_review
-- Tools called: splunkready_describe_certification, splunkready_certify_mcp_transcript
+- Tools called: splunkready_describe_certification, splunkready_certify_mcp_transcript, splunkready_certify_mcp_transcript_content
 
 Receipt: submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json

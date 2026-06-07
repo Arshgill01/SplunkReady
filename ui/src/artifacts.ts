@@ -706,6 +706,14 @@ const mcpProofSummarySchema = z
         artifacts: z.array(z.string().min(1))
       })
       .strict(),
+    inlineTranscriptCertification: z
+      .object({
+        status: z.enum(["PASS", "FAIL"]),
+        outDir: z.string().min(1),
+        mutation: z.boolean(),
+        artifacts: z.array(z.string().min(1))
+      })
+      .strict(),
     agentDrivenWorkflow: z
       .object({
         status: z.enum(["PASS", "FAIL"]),
