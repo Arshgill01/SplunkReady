@@ -15272,6 +15272,77 @@ Result:
 - PASS: GitHub Pages build and deploy completed successfully for commit
   `fefd727`.
 
+## 2026-06-07T19:22:02Z - Move 154 GitHub Packages scoped mirror
+
+Local registry probe:
+
+- `gh auth status`
+- `npm whoami --registry=https://npm.pkg.github.com`
+- `npm view @arshgill01/splunkready version --registry=https://npm.pkg.github.com --json`
+- local temp-package `npm publish --registry=https://npm.pkg.github.com`
+
+Result:
+
+- PASS: local GitHub auth is active for account `Arshgill01`.
+- PASS: `npm whoami` against GitHub Packages returned `Arshgill01`.
+- PASS: initial `npm view @arshgill01/splunkready` returned `E404`, proving the
+  scoped GitHub package did not exist before publication.
+- BLOCKED: local temp-package publish returned `E403` because the local token
+  lacked the expected GitHub Packages scopes.
+
+GitHub Packages workflow:
+
+- `gh workflow run github-packages.yml --ref splunkready-build`
+- `gh run watch 27102265257 --exit-status`
+- `gh workflow run github-packages.yml --ref splunkready-build`
+- `gh run watch 27102292369 --exit-status`
+
+Result:
+
+- PASS: run `27102265257` completed successfully and published
+  `@arshgill01/splunkready@0.1.3` to GitHub Packages.
+- PASS: run `27102292369` completed successfully and verified the package with
+  `npm view`.
+- PASS: workflow verification reported:
+  - name `@arshgill01/splunkready`;
+  - version `0.1.3`;
+  - repository URL `git+https://github.com/Arshgill01/SplunkReady.git`;
+  - bin `splunkready: dist/src/cli.js`.
+
+Remote CI:
+
+- `gh run watch 27102290866 --exit-status`
+
+Result:
+
+- PASS: CI completed successfully for commit `bdab854`.
+- PASS: CI included canonical gate, credential-free live mock proof, Docker
+  mock image build, and Docker container smoke.
+
+Canonical local gate:
+
+- `npm run check`
+
+Result:
+
+- PASS for scaffold verification with 85 waves and 2265 project files.
+- PASS for runtime contracts with 19 rules, 4 fixture missions, and 20 evidence refs.
+- PASS for TypeScript build and production UI build.
+- PASS for public demo export audit with 228 files and `mutation=false`.
+- PASS for package readiness audit with 177 packed files checked.
+- PASS for package installability audit:
+  - `splunkready-0.1.3.tgz` installed;
+  - clean `npx splunkready judge-proof` returned `PASS`;
+  - clean `npx splunkready mcp` initialized.
+- PASS for full Vitest suite:
+  - 64 test files passed;
+  - 405 tests passed.
+- PASS for secret env ignore audit.
+- PASS for reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS for submission-copy audit with 148 required claims.
+- PASS for final `git diff --check`.
+
 Pending:
 
 - Closed by the post-publish currentness audit below.

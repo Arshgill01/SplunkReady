@@ -37,6 +37,10 @@ The currently published no-clone judge path is:
 npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
 ```
 
+The repo-linked GitHub Packages mirror is `@arshgill01/splunkready@0.1.3`;
+that registry path requires GitHub package authentication, so the npmjs command
+above remains the unauthenticated judge path.
+
 That command is smoke-tested from a clean temp folder and must return `PASS`
 with `mutation: false`. The public package currentness audit also proves the
 published MCP tool surface, credential-free `live-proof --live-mock`, and signed

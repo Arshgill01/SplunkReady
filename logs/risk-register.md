@@ -982,3 +982,12 @@ reports `CURRENT`, hosted source commit `fefd727`, matching UI assets, and
 `mutation=false`. Residual risk is future drift only: any later change to
 public-demo inputs must be followed by a Pages deploy and a passing
 `audit:hosted-demo-currentness` run before claiming the hosted demo is current.
+
+Move 154 closes the GitHub repository package-sidebar gap. GitHub Packages run
+`27102265257` published the scoped npm mirror
+`@arshgill01/splunkready@0.1.3`, and run `27102292369` verified the package
+through `npm view` using the workflow `GITHUB_TOKEN`. The root package remains
+`splunkready` on npmjs for unauthenticated judge installs. Residual risk:
+GitHub Packages npm installs require GitHub package-registry authentication, so
+do not position the GitHub package as the primary public install path; use the
+npmjs package for no-auth judging.

@@ -2443,6 +2443,45 @@ Files changed:
 - `logs/risk-register.md`
 - `logs/execution-log.md`
 - `logs/verification-log.md`
+
+## 2026-06-07T19:22:02Z - Move 154 GitHub Packages scoped mirror
+
+Intent:
+
+- Publish SplunkReady to the repository's GitHub Packages sidebar without
+  replacing the public npmjs package name.
+
+Actions:
+
+- Confirmed GitHub Packages npm registry requires a scoped package name and that
+  the scope/name must be lowercase.
+- Confirmed the local `gh` token can authenticate to GitHub Packages but lacks
+  package publish/read scopes for local publish verification.
+- Attempted a local temp-package publish of `@arshgill01/splunkready@0.1.3`;
+  GitHub Packages rejected it with `E403` because the local token did not match
+  expected package scopes.
+- Added `.github/workflows/github-packages.yml` with `packages: write`.
+- The workflow builds the existing package, packs it, rewrites the temporary
+  package name to `@arshgill01/splunkready`, and publishes to
+  `https://npm.pkg.github.com`.
+- Added an in-workflow verification step that runs `npm view` for the scoped
+  package with `GITHUB_TOKEN`.
+- Triggered GitHub Packages run `27102265257`; it published the package.
+- Triggered GitHub Packages run `27102292369`; it verified the package.
+- Added tracked GitHub Packages evidence and README/claim-ledger copy.
+
+Files changed:
+
+- `.github/workflows/github-packages.yml`
+- `README.md`
+- `moves/README.md`
+- `moves/moves154.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/github-package-currentness/github-package-currentness.json`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
 - `logs/reviewer-inbox/wave-41-20260601-1607-review.md`
 - `logs/reviewer-inbox/wave-41-20260601-1608-rereview.md`
 
