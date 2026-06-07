@@ -14691,3 +14691,25 @@ Notes:
 - The verifier excludes `receipt-chain.json` from receipt discovery, so the
   command can be rerun on an already chained proof directory.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 - Move 148 remote CI verification for receipt-chain slice
+
+Commands:
+
+- `gh run watch 27099489248 --exit-status`
+- `gh run view 27099489248 --json status,conclusion,headSha,displayTitle,url`
+
+Results:
+
+- PASS for GitHub Actions run `27099489248`.
+- PASS for job `npm run check` in 1m13s.
+- PASS for workflow step `Run canonical gate`.
+- PASS for workflow step `Run credential-free live mock proof`.
+- Verified head SHA:
+  `a5a6819c10ab8a1a5cee9c6401543aad8a775a1c`.
+- Run URL:
+  `https://github.com/Arshgill01/SplunkReady/actions/runs/27099489248`.
+
+Notes:
+
+- Remote CI covers the committed Move 148 first slice.
