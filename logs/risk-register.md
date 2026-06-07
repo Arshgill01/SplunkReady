@@ -1078,3 +1078,11 @@ is still package-defined capability, not observed live installation evidence.
 SplunkReady still must not auto-populate the collection or mutate Splunk from
 the default credential-free judge path; explicit operator-approved live setup is
 now allowed and should be logged separately.
+
+Move 165 closes the observed live installation gap for the current `.spl`
+package on the operator-owned local Splunk server. The redacted tracked proof
+reports app install/probe `PASS` and verifies app metadata, launcher view,
+overview view, nav, receipt collection, and receipt lookup. Residual risk:
+Splunk returned `restartRequired: true`, so fresh browser rendering can still
+depend on an operator restart; the proof verifies management API visibility,
+not Splunkbase approval, Splunk Cloud vetting, or a public Splunkbase listing.

@@ -184,13 +184,23 @@ The next five high-leverage moves are therefore:
 
 | Order | Move | Status | Why Now | Done When |
 | --- | --- | --- | --- | --- |
-| 1 | [Move 165](../moves/moves165.md) Operator live Splunk app install proof | Planned | The new `.spl` package and overview surface need observed Splunk evidence, not only archive/AppInspect proof. This directly addresses the user's concern that SplunkReady must integrate with Splunk rather than sit beside it. | A local operator-approved install/probe writes public-safe evidence proving app metadata, nav/view, collection, and lookup presence, without leaking secrets or making install part of default proofs. |
+| 1 | [Move 165](../moves/moves165.md) Operator live Splunk app install proof | Implemented | The new `.spl` package and overview surface need observed Splunk evidence, not only archive/AppInspect proof. This directly addresses the user's concern that SplunkReady must integrate with Splunk rather than sit beside it. | A local operator-approved install/probe wrote public-safe evidence proving app metadata, nav/view, collection, and lookup presence, without leaking secrets or making install part of default proofs. |
 | 2 | [Move 166](../moves/moves166.md) Operator receipt KV ingestion proof | Planned | The package now declares `splunkready_receipts`; the next value jump is proving signed receipts can live inside Splunk and be queried by the overview view. | A bounded signed receipt set is written with an explicit confirm flag, read back through `splunkready_receipts_lookup`, and recorded as redacted evidence. |
 | 3 | [Move 160](../moves/moves160.md) Standalone release artifacts | Planned | Removes Node/npm as the remaining distribution friction cap after npm and GitHub Packages are already published. | Current-OS artifact smoke passes locally, tag workflow builds/checksums per-OS assets, and no-Node claims are guarded. |
 | 4 | [Move 162](../moves/moves162.md) Typed policy SDK | Planned | Turns signed policies from static JSON artifacts into a real developer platform surface with type-safe authoring and package subpath imports. | Clean consumer project imports `splunkready/policy`; example TS policies compile, sign, and grade fixture traces in CI. |
-| 5 | [Move 151](../moves/moves151.md) Real external MCP-client session evidence | Parked until after 1-4 | Still valuable for MCP judging, but only if captured from a real client doing real tool calls. It should not consume time before the Splunk-native and distribution gaps above. | A redacted real-client session exists with actual calls through the recorder, and the session is certified by SplunkReady. |
+| 5 | [Move 167](../moves/moves167.md) Splunkbase submission readiness | Planned | This is the strongest Use-of-Splunk capstone after the package is AppInspect-clean and live-installed. DeepSeek's Splunkbase suggestion is correct, but it must be done without claiming approval before Splunkbase actually lists the app. | A Splunkbase readiness artifact maps official requirements to package evidence, AppInspect, live install proof, and blocked external account/submission requirements. |
+| 6 | [Move 151](../moves/moves151.md) Real external MCP-client session evidence | Parked until after 1-5 | Still valuable for MCP judging, but only if captured from a real client doing real tool calls. It should not consume time before the Splunk-native and distribution gaps above. | A redacted real-client session exists with actual calls through the recorder, and the session is certified by SplunkReady. |
 
 This changes the current execution priority from generic cleanup to
 Splunk-native proof first. It also relaxes the old "never touch Splunk" reading:
 implicit mutation is still prohibited, but explicit operator-approved install
 and receipt-store workflows are now in scope.
+
+DeepSeek's remaining recommendations map to existing work:
+
+- "Ship v0.2.0" is Move 160 plus release notes/versioning/publish work.
+- "Drive a real third-party MCP client through the recorder" is Move 151, but
+  only after it can capture a real client session rather than static-window
+  evidence.
+- "Submit the `.spl` to Splunkbase" is Move 167 and depends on the live install
+  and AppInspect evidence now produced by Move 165.

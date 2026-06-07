@@ -15278,3 +15278,45 @@ Result:
 
 - PASS: the next implementation target is now Move 165, because it turns the
   current `.spl` artifact into observed live Splunk integration evidence.
+
+## 2026-06-08T01:20:00Z - Move 165 operator live Splunk app install proof
+
+Intent:
+
+- Convert the AppInspect-clean `.spl` package from archive-only evidence into
+  observed live Splunk integration evidence.
+
+Actions:
+
+- Added `splunk-app-install-proof` CLI command with an explicit
+  `--confirm-install true` gate.
+- Added env-file loading for the command while keeping raw values out of
+  terminal output and tracked artifacts.
+- Added `src/workflows/splunk-app-install.ts` to install or upgrade the
+  package through Splunk management APIs, then probe app metadata, launcher
+  view, overview view, nav, KV Store collection, and lookup presence.
+- Added public-safe redaction rules for endpoint, username, password, and token
+  values.
+- Added focused tests for the skip path and mocked operator-approved
+  install/probe path.
+- Ran the operator-approved local Splunk install/probe using
+  `--env-file ./.splunkready-live.env --confirm-install true`.
+- Tracked the redacted live proof under `submission-evidence/splunk-app-install/`.
+- Updated README, Devpost copy, evidence README, claim ledger, and
+  submission-copy guards.
+- Narrowly raised the timeout for the existing live-mock MCP proof CLI test to
+  15 seconds after the full gate showed the flow now takes about 9.4 seconds.
+- Added Move 167 for Splunkbase submission readiness, mapping the user's
+  Splunkbase suggestion into a later evidence-driven capstone.
+
+Result:
+
+- PASS: `splunk-app-install-proof` skip path writes `SKIP` with no live calls.
+- PASS: operator-approved live install/probe returned `PASS`.
+- PASS: tracked proof reports `splunkMutation:
+  "operator-approved-app-install"`, `operatorApproved: true`, app install
+  status `PASS`, and six passing probes.
+- PASS: redaction scan found no endpoint, username, bearer/basic auth, password
+  assignment, or token assignment values in the tracked install proof.
+- PASS: AppInspect still reports 0 errors and 0 failures on the same `.spl`.
+- PASS: `npm run check` passed after the targeted MCP proof timeout fix.

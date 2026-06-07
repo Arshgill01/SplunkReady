@@ -97,6 +97,10 @@ Expected proof status:
 - Splunk app package credential files: none
 - Splunk app package Python handlers: none
 - Splunk app package scripted inputs: none
+- Operator live Splunk app install proof: `PASS`
+- Operator live Splunk app install mutation class: `operator-approved-app-install`
+- Operator live Splunk app install probes: app metadata, launcher view, overview view, nav, receipt collection, receipt lookup
+- Operator live Splunk app install redaction: no endpoint, username, password, or token values written
 
 ## Redaction Boundary
 

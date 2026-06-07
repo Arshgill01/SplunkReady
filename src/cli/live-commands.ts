@@ -1,4 +1,5 @@
 import type { CliOptions } from "./options.js";
+import { mergeEnvFile } from "./env-file.js";
 import type {
   LiveActionWorkflowInput,
   LiveActionWorkflowResult
@@ -13,6 +14,10 @@ import {
   runLiveSecurityUiBundleWorkflow,
   runLiveSmokeWorkflow
 } from "../workflows/live-actions.js";
+import {
+  runSplunkAppInstallProofWorkflow,
+  type SplunkAppInstallProofResult
+} from "../workflows/splunk-app-install.js";
 
 export const liveSmokeCommand = async (options: CliOptions): Promise<LiveActionWorkflowResult> => {
   return runLiveSmokeWorkflow({
@@ -96,6 +101,22 @@ export const liveProofCommand = async (options: CliOptions): Promise<string[]> =
       mockState: options.mockState
     })
   ).artifacts;
+};
+
+export const splunkAppInstallProofCommand = async (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<SplunkAppInstallProofResult> => {
+  const liveEnv = await mergeEnvFile(env, options.envFile);
+  return runSplunkAppInstallProofWorkflow(
+    {
+      outDir: options.out,
+      appPackagePath: options.appPackage,
+      confirmInstall: options.confirmInstall,
+      envFileUsed: Boolean(options.envFile)
+    },
+    liveEnv
+  );
 };
 
 export const runLiveSmokeFromCli = async (

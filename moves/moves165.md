@@ -44,3 +44,11 @@ launcher view, overview view, KV Store collection, and lookup are present.
 - AppInspect smoke against the same `.spl`.
 - `npm run check`
 
+## Progress
+
+- 2026-06-08: Implemented. Added `splunk-app-install-proof` with an explicit
+  `--confirm-install true` gate, env-file loading, public-safe redaction, and
+  live install/probe artifacts. The operator-approved local Splunk run reported
+  `PASS`, installed/upgraded `SplunkReady-0.1.3.spl`, and verified app
+  metadata, launcher view, overview view, nav, `splunkready_receipts`, and
+  `splunkready_receipts_lookup`.

@@ -1,0 +1,80 @@
+{
+  "source": "splunkready-operator-live-splunk-app-install-proof",
+  "generatedAt": "2026-06-01T06:45:00.000Z",
+  "appId": "SplunkReady",
+  "mutation": false,
+  "splunkMutation": "operator-approved-app-install",
+  "defaultProofMutation": false,
+  "operatorApproved": true,
+  "appPackage": {
+    "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+    "fileName": "SplunkReady-0.1.3.spl",
+    "sha256": "fc6887ef44332389b4a692c87f8b213904f1be091f52dd1dec4345f3be354d29"
+  },
+  "config": {
+    "envFileUsed": true,
+    "managementUrlConfigured": true,
+    "managementUrlDerivedFromMcpUrl": true,
+    "usernameConfigured": true,
+    "passwordConfigured": true,
+    "tokenConfigured": false,
+    "missing": []
+  },
+  "redaction": {
+    "secretValuesWritten": false,
+    "endpointValueWritten": false,
+    "usernameValueWritten": false
+  },
+  "status": "PASS",
+  "install": {
+    "attempted": true,
+    "status": "PASS",
+    "statusCode": 200,
+    "restartRequired": true,
+    "detail": "Splunk app install or upgrade request returned success."
+  },
+  "probes": [
+    {
+      "id": "app-metadata",
+      "method": "GET",
+      "path": "/services/apps/local/SplunkReady",
+      "status": "PASS",
+      "statusCode": 200
+    },
+    {
+      "id": "launcher-view",
+      "method": "GET",
+      "path": "/servicesNS/nobody/SplunkReady/data/ui/views/splunkready",
+      "status": "PASS",
+      "statusCode": 200
+    },
+    {
+      "id": "overview-view",
+      "method": "GET",
+      "path": "/servicesNS/nobody/SplunkReady/data/ui/views/splunkready_overview",
+      "status": "PASS",
+      "statusCode": 200
+    },
+    {
+      "id": "default-nav",
+      "method": "GET",
+      "path": "/servicesNS/nobody/SplunkReady/data/ui/nav/default",
+      "status": "PASS",
+      "statusCode": 200
+    },
+    {
+      "id": "receipt-collection",
+      "method": "GET",
+      "path": "/servicesNS/nobody/SplunkReady/storage/collections/config/splunkready_receipts",
+      "status": "PASS",
+      "statusCode": 200
+    },
+    {
+      "id": "receipt-lookup",
+      "method": "GET",
+      "path": "/servicesNS/nobody/SplunkReady/data/transforms/lookups/splunkready_receipts_lookup",
+      "status": "PASS",
+      "statusCode": 200
+    }
+  ]
+}

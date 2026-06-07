@@ -335,8 +335,11 @@ The command writes `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
 and `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`.
 The package is static and credential-free: it contains no `local/` directory,
 Python REST handlers, scripted inputs, modular inputs, saved searches, tokens,
-or Splunk write operations. This is packaging evidence, not a Splunkbase-vetted
-or live-installed app claim.
+or default-path Splunk write operations. The tracked operator-approved live
+install proof is `submission-evidence/splunk-app-install/splunk-app-install-proof.json`;
+it installed/upgraded the same `.spl`, verified app metadata, views, nav,
+`splunkready_receipts`, and `splunkready_receipts_lookup`, and redacts endpoint,
+username, password, and token values. This is not a Splunkbase approval claim.
 
 ## Grade a Captured Agent Trace
 

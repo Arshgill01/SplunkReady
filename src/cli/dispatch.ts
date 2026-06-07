@@ -13,7 +13,8 @@ import {
   liveSecurityKitCommand,
   liveSecurityProofCommand,
   liveSecurityUiBundleCommand,
-  liveSmokeCommand
+  liveSmokeCommand,
+  splunkAppInstallProofCommand
 } from "./live-commands.js";
 import {
   certificationIndexCommand,
@@ -108,6 +109,9 @@ export const runCliCommand = async (command: string, options: CliOptions): Promi
     artifacts = await liveSecurityUiBundleCommand(options);
   } else if (command === "live-proof") {
     artifacts = await liveProofCommand(options);
+  } else if (command === "splunk-app-install-proof") {
+    const result = await splunkAppInstallProofCommand(options);
+    return { command, status: result.status, artifacts: result.artifacts, messages: result.messages };
   } else if (command === "suite-proof") {
     artifacts = await suiteProofCommand(options);
   } else if (command === "receipt") {

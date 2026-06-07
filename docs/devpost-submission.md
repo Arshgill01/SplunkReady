@@ -105,8 +105,12 @@ public artifact workbench as static Splunk app content, defines an optional
 operator-owned `splunkready_receipts` KV Store collection plus
 `splunkready_receipts_lookup`, ships `splunkready_overview.xml` for bundled
 evidence and operator-populated receipt rows, and intentionally avoids
-credentials, Python handlers, scripted inputs, and Splunk write operations. It
-is not a Splunkbase approval or live-install claim.
+credentials, Python handlers, scripted inputs, and default-path Splunk write
+operations. The tracked operator-approved live install proof at
+`submission-evidence/splunk-app-install/splunk-app-install-proof.json` verifies
+the installed app metadata, launcher view, overview view, nav, KV Store
+collection, and lookup while redacting endpoint, username, password, and token
+values. It is not a Splunkbase approval claim.
 
 For a strict CLI evidence gate:
 

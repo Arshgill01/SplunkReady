@@ -16026,6 +16026,93 @@ Result:
 - PASS: scaffold verified with 85 waves and 2504 project files.
 - PASS: `git diff --check` returned clean.
 
+## 2026-06-08T01:20:00Z - Move 165 operator live Splunk app install proof
+
+Focused workflow and build checks:
+
+- `npx vitest run tests/workflows/splunk-app-install.test.ts`
+- `npm run build`
+- `node dist/src/cli.js splunk-app-install-proof --out artifacts/splunk-app-install-skip --json`
+
+Result:
+
+- PASS: focused workflow tests passed with 1 file and 2 tests.
+- PASS: TypeScript build passed.
+- PASS: CLI skip path returned `SKIP` and wrote skip artifacts without live
+  calls.
+
+Operator-approved live install/probe:
+
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js splunk-app-install-proof --out artifacts/splunk-app-install-live --env-file ./.splunkready-live.env --confirm-install true --json`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js splunk-app-install-proof --out submission-evidence/splunk-app-install --env-file ./.splunkready-live.env --confirm-install true --json`
+- `jq '{status, appId, mutation, splunkMutation, operatorApproved, config, install, probes, redaction, appPackage}' artifacts/splunk-app-install-live/splunk-app-install-proof.json`
+- `rg -n 'Bearer|Basic|admin|127\\.0\\.0\\.1|localhost|https?://|super-secret|password=|token=' artifacts/splunk-app-install-live submission-evidence/splunk-app-install || true`
+
+Result:
+
+- PASS: live install/probe returned `PASS`.
+- PASS: tracked proof under `submission-evidence/splunk-app-install/` reports
+  app install/probe `PASS`, `splunkMutation:
+  "operator-approved-app-install"`, `operatorApproved: true`, app metadata
+  probe `PASS`, launcher view probe `PASS`, overview view probe `PASS`, nav
+  probe `PASS`, receipt collection probe `PASS`, and receipt lookup probe
+  `PASS`.
+- PASS: redaction scan found no endpoint, username, basic/bearer auth,
+  password assignment, token assignment, or known test secret values in the
+  tracked install proof.
+
+Evidence, copy, and AppInspect checks:
+
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/workflows/splunk-app-install.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `APP=$(pwd)/submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl; uvx splunk-appinspect inspect "$APP" 2>&1 | tee /tmp/splunkready-appinspect-move165.txt`
+- `git diff --check`
+
+Result:
+
+- PASS: tracked evidence SHA file regenerated and verified.
+- PASS: submission-copy audit passed with 225 required claims.
+- PASS: focused workflow/submission tests passed with 2 files and 5 tests.
+- PASS: AppInspect reported 0 errors, 0 failures, 5 warnings, 99 successes,
+  and 145 not-applicable checks.
+- PASS: `git diff --check` returned clean.
+
+Full gate:
+
+- `npm run check`
+
+Initial result:
+
+- FAIL: the existing CLI test "runs MCP proof with a credential-free live mock
+  Splunk MCP session" timed out at the Vitest 5-second default. Isolated rerun
+  after a narrow timeout increase took 9.43 seconds and passed.
+
+Fix verification:
+
+- `npx vitest run tests/cli/flow.test.ts -t "runs MCP proof with a credential-free live mock Splunk MCP session"`
+- `npm run check`
+
+Result:
+
+- PASS: isolated MCP proof CLI test passed with 1 test in 9.43 seconds.
+- PASS: scaffold verified with 85 waves and 2512 project files.
+- PASS: runtime contracts verified with 19 rules, 4 fixture missions, and 20
+  evidence refs.
+- PASS: TypeScript build and production UI build.
+- PASS: public demo export audit with 276 files, default route `mcp-proof`, and
+  `mutation=false`.
+- PASS: package readiness audit with 185 packed files checked.
+- PASS: package installability audit; packed `splunkready-0.1.3.tgz` installed,
+  clean `npx splunkready judge-proof` returned `PASS`, and clean
+  `npx splunkready mcp` initialized.
+- PASS: Vitest suite with 70 test files and 423 tests passed.
+- PASS: secret env ignore audit.
+- PASS: reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and 0
+  failing latest verdicts.
+- PASS: submission-copy audit with 225 required claims.
+- PASS: final `git diff --check`.
+
 ## 2026-06-07T21:05:00Z - Move 161 AppInspect-clean package slice verification
 
 Remote baseline:

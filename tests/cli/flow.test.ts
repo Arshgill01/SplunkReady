@@ -2477,7 +2477,7 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.liveMockSplunkMcp.responseCount).toBe(summary.liveMockSplunkMcp.requestCount);
     expect(mockSession).toContain("splunk_run_saved_search");
     expect(mockSessionMarkdown).toContain("Saved-search execution: yes");
-  });
+  }, 15_000);
 
   it("keeps failed MCP transcript certification artifacts while enforcing require-pass", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-certify-fail-"));

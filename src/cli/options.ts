@@ -15,10 +15,12 @@ export interface CliOptions {
   securityKitDir: string;
   hostedModelProofDir: string;
   envFile: string;
+  appPackage: string;
   phase: "before" | "after";
   requireLive: boolean;
   requirePass: boolean;
   requireFailToPass: boolean;
+  confirmInstall: boolean;
   trace: string;
   transcript: string;
   policy: string;
@@ -79,6 +81,7 @@ Commands:
   live-security-proof --out <dir> [--firewall] [--live-mock] [--json]
   live-security-ui-bundle --out <dir> [--proof-dir <dir>] [--security-check-dir <dir>] [--security-kit-dir <dir>] [--hosted-model-proof-dir <dir>] [--json]
   live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--live-mock] [--json]
+  splunk-app-install-proof --out <dir> [--app-package <path>] [--env-file <path>] [--confirm-install true|false] [--json]
   suite-proof --mode fixture --suite <path> --out <dir> [--require-fail-to-pass true|false] [--json]
   receipt   --out <dir> [--phase before|after] [--json]
   rerun     --mode fixture|live --out <dir> [--firewall] [--json]
@@ -105,10 +108,12 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
   securityKitDir: "artifacts/live-security-kit",
   hostedModelProofDir: "artifacts/hosted-model-proof",
   envFile: "",
+  appPackage: "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
   phase: "before",
   requireLive: false,
   requirePass: false,
   requireFailToPass: false,
+  confirmInstall: false,
   trace: "",
   transcript: "",
   policy: "",
@@ -192,6 +197,8 @@ export const parseArgs = (argv: string[]): { command: string; options: CliOption
       options.hostedModelProofDir = value;
     } else if (flag === "--env-file") {
       options.envFile = value;
+    } else if (flag === "--app-package") {
+      options.appPackage = value;
     } else if (flag === "--proof-dirs") {
       options.proofDirs = value;
     } else if (flag === "--phase") {
@@ -218,6 +225,12 @@ export const parseArgs = (argv: string[]): { command: string; options: CliOption
       }
 
       options.requireFailToPass = value === "true";
+    } else if (flag === "--confirm-install") {
+      if (value !== "true" && value !== "false") {
+        throw new Error("--confirm-install must be true or false.");
+      }
+
+      options.confirmInstall = value === "true";
     } else if (flag === "--strict-import") {
       if (value !== "true" && value !== "false") {
         throw new Error("--strict-import must be true or false.");
