@@ -139,6 +139,7 @@ commands, or filesystem paths.
 | P0 | [114](moves114.md) Hosted model env file support | 0.5d | Lets hosted-model proof commands load operator-owned live variables from an explicit env file while keeping artifacts secret-safe. |
 | P0 | [115](moves115.md) MCP hosted model diagnostic resource | 0.5d | Adds a hosted-model diagnostic MCP resource and prompt so SAIA readiness is discoverable in agent MCP clients, not only callable as a tool. |
 | P0 | [116](moves116.md) External MCP client config resources | 0.5d | Adds the package `splunkready mcp` entrypoint plus Claude Desktop and Cursor MCP client-config resources to make the two-server MCP workflow directly client-usable. |
+| P0 | [117](moves117.md) Live SAIA not-found diagnostic | 0.5d | Runs the operator-owned live hosted-model diagnostic and tightens blocked-result classification when advertised SAIA tools return not found at invocation time. |
 
 ## Non-Negotiable Boundaries
 

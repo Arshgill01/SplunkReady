@@ -217,6 +217,43 @@ const formatHostedModelProofError = (error: unknown): string => {
   return formatted.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 };
 
+const hostedModelBlockedMessage = (error: string, contractAvailable: boolean): string => {
+  if (!contractAvailable) {
+    return "Live hosted-model diagnostic could not compile a Splunk contract because required live configuration is not available in this process.";
+  }
+
+  if (/404|not found/i.test(error)) {
+    return "The MCP contract advertises hosted-model tools, but the live MCP endpoint returned not found when invoking SAIA tools.";
+  }
+
+  return "The MCP contract advertises hosted-model tools, but the current credentials did not return advisory SAIA output.";
+};
+
+const hostedModelBlockedRequiredActions = (error: string, contractAvailable: boolean): string[] => {
+  if (!contractAvailable) {
+    return [
+      "Export SPLUNKREADY_LIVE_ENABLED=true in the shell that runs the proof.",
+      "Export SPLUNKREADY_SPLUNK_MCP_URL without committing or printing it.",
+      "Export SPLUNKREADY_SPLUNK_MCP_TOKEN without committing or printing it.",
+      "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
+    ];
+  }
+
+  if (/404|not found/i.test(error)) {
+    return [
+      "Confirm the Splunk MCP endpoint supports invoking saia_explain_spl and saia_optimize_spl, not only advertising them in tool discovery.",
+      "Confirm the MCP server route or app version that backs hosted-model tools is installed and reachable.",
+      "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
+    ];
+  }
+
+  return [
+    "Grant the Splunk/MCP user permission to invoke saia_explain_spl.",
+    "Grant the Splunk/MCP user permission to invoke saia_optimize_spl.",
+    "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
+  ];
+};
+
 export const writeHostedModelProofArtifact = async (
   input: { outDir: string; mode: "fixture" | "live"; setup?: HostedModelSetup },
   adapter: SplunkAccessAdapter,
@@ -392,22 +429,15 @@ export const runHostedModelDiagnosticWorkflow = async (
     permission: blocked
       ? {
           status: "BLOCKED",
-          message: contract
-            ? "The MCP contract advertises hosted-model tools, but the current credentials did not return advisory SAIA output."
-            : "Live hosted-model diagnostic could not compile a Splunk contract because required live configuration is not available in this process.",
+          message: hostedModelBlockedMessage(
+            stringFromRecord(proof, "error") ?? "Hosted-model proof did not pass.",
+            Boolean(contract)
+          ),
           error: stringFromRecord(proof, "error") ?? "Hosted-model proof did not pass.",
-          requiredActions: contract
-            ? [
-                "Grant the Splunk/MCP user permission to invoke saia_explain_spl.",
-                "Grant the Splunk/MCP user permission to invoke saia_optimize_spl.",
-                "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
-              ]
-            : [
-                "Export SPLUNKREADY_LIVE_ENABLED=true in the shell that runs the proof.",
-                "Export SPLUNKREADY_SPLUNK_MCP_URL without committing or printing it.",
-                "Export SPLUNKREADY_SPLUNK_MCP_TOKEN without committing or printing it.",
-                "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
-              ]
+          requiredActions: hostedModelBlockedRequiredActions(
+            stringFromRecord(proof, "error") ?? "Hosted-model proof did not pass.",
+            Boolean(contract)
+          )
         }
       : {
           status: "OK",

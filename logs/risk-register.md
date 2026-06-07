@@ -582,3 +582,14 @@ requests/responses. Residual MCP risk is now mostly storytelling and release
 timing: the existing npm `splunkready@0.1.0` package does not include this
 entrypoint until a later publish, and a public Claude/Cursor/client capture
 would still improve judge perception.
+
+Move 117 reduces live SAIA ambiguity by running the operator-owned live
+hosted-model diagnostic through the ignored env file and improving the blocked
+classification from the observed result. The current setup has live variables
+set and advertises both `saia_explain_spl` and `saia_optimize_spl`, but
+invoking `saia_explain_spl` returns not found, so the diagnostic is honestly
+`BLOCKED`, `mutation=false`, and not a live hosted-model PASS. The product now
+distinguishes this endpoint/tool-route failure from a generic permission
+failure and gives route/app-version remediation steps. Residual hosted-model
+risk remains live endpoint readiness: the MCP endpoint must actually invoke the
+advertised SAIA tools before this track can claim live SAIA proof.

@@ -10053,6 +10053,86 @@ Open blockers:
 
 - A public external-client capture remains the next MCP storytelling gap.
 
+## 2026-06-07 - Move 117 Live SAIA Not-Found Diagnostic
+
+Commands:
+
+- `find . -maxdepth 3 \( -name '.splunkready*' -o -name '.env*' \) -print`
+- `npm run build`
+- `node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json`
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "hosted-model"`
+- `npx vitest run tests/workflows/hosted-model-actions.test.ts`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for env-file discovery by filename only:
+  - found `./.splunkready-live.env`;
+  - did not read, source, print, or commit its contents.
+- BLOCKED for first live hosted-model diagnostic attempt:
+  - raw stdout/stderr captured to `/tmp`;
+  - no normal hosted-model artifacts were written;
+  - sanitized error shape was
+    `LIVE_ADAPTER_TRANSPORT_ERROR while calling splunk_get_info: ... fetch failed`.
+- BLOCKED but more informative for TLS-disabled live hosted-model diagnostic:
+  - raw stdout/stderr captured to `/tmp`;
+  - local ignored artifacts were written under
+    `artifacts/live-hosted-model-diagnostic`;
+  - `hosted-model-diagnostic.json` reported `status: "BLOCKED"`;
+  - `mutation: false`;
+  - required live variables were all `set`;
+  - required tools were `saia_explain_spl` and `saia_optimize_spl`;
+  - available tools were `saia_explain_spl` and `saia_optimize_spl`;
+  - missing tools were empty;
+  - `permission.status` was `BLOCKED`;
+  - improved `permission.message` now states that the endpoint advertises
+    hosted-model tools but returns not found when invoking SAIA tools;
+  - required actions now point at endpoint/tool-route or app-version checks.
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused CLI hosted-model tests:
+  - 1 test file passed;
+  - 6 tests passed;
+  - 38 tests skipped by focused pattern.
+- PASS for hosted-model workflow tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for standalone diff whitespace:
+  - `git diff --check` completed with no output.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified: 19 rules, 4 fixture missions, 20 evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit checked 164 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and
+    `npx splunkready judge-proof` returned PASS;
+  - 59 test files passed;
+  - 365 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 57 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- `NODE_TLS_REJECT_UNAUTHORIZED=0` was used only for the second diagnostic
+  attempt because the first live run failed at transport before artifacts.
+- The command did not produce a live SAIA PASS claim.
+- Ignored live artifacts were not committed because they include
+  deployment-specific details.
+
+Open blockers:
+
+- The live MCP endpoint still needs to successfully invoke `saia_explain_spl`
+  and `saia_optimize_spl` before SplunkReady can claim live hosted-model PASS.
+- Hosted CI still needs to run after this move is committed.
+
 ## 2026-06-07 - Move 115 MCP Hosted Model Diagnostic Resource
 
 Commands:

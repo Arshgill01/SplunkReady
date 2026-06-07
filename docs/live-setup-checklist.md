@@ -271,6 +271,15 @@ If this command fails with a hosted-model access error:
 - Grant that user permission or entitlement to invoke `saia_optimize_spl`.
 - Rerun the command with `--require-pass true`.
 
+If the diagnostic says the MCP endpoint returned not found while invoking SAIA
+tools:
+
+- Confirm the endpoint can invoke `saia_explain_spl` and `saia_optimize_spl`,
+  not only advertise them in tool discovery.
+- Confirm the MCP server route or app version backing hosted-model tools is
+  installed and reachable.
+- Rerun the command with `--require-pass true`.
+
 This diagnostic is separate from grading. SAIA output may explain or optimize SPL, but deterministic SplunkReady rules still decide pass/fail.
 
 ## 10. Screenshot Requirements

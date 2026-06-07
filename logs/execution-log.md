@@ -12415,3 +12415,51 @@ Open blockers:
   `splunkready mcp`; registry users need a later publish after this commit.
 - MCP award storytelling still benefits from a public external-client capture,
   but the proof now exposes client-ready Claude Desktop and Cursor templates.
+
+## 2026-06-07 16:00 - Move 117 Live SAIA Not-Found Diagnostic
+
+Scope:
+- Located the ignored operator-owned env file as `./.splunkready-live.env`
+  without reading or printing its contents.
+- Ran the live hosted-model diagnostic through the compiled CLI with
+  `--env-file ./.splunkready-live.env` and captured raw stdout/stderr to `/tmp`.
+- First run without TLS override failed before artifacts with a transport
+  `fetch failed` while calling `splunk_get_info`.
+- Second run with `NODE_TLS_REJECT_UNAUTHORIZED=0` compiled the live contract
+  and wrote ignored local artifacts under
+  `artifacts/live-hosted-model-diagnostic`.
+- The live diagnostic result was `BLOCKED`, not `PASS`:
+  - required live variables were `set`;
+  - `saia_explain_spl` and `saia_optimize_spl` were advertised as available;
+  - `mutation` was `false`;
+  - hosted-model assistance was absent because invoking `saia_explain_spl`
+    returned not found.
+- Improved hosted-model diagnostic classification so advertised-but-not-found
+  SAIA failures produce endpoint/tool-route remediation instead of a generic
+  permission-only message.
+- Added CLI regression coverage for the advertised SAIA tool plus not-found
+  invocation path.
+- Updated `docs/live-setup-checklist.md` with the not-found remediation path.
+- Did not read, source, print, or commit real `.splunkready*` / `.env*` secret
+  values.
+- Did not commit ignored live artifacts from
+  `artifacts/live-hosted-model-diagnostic`.
+- Did not make SAIA or any LLM output authoritative.
+- Did not mutate Splunk.
+- Did not use subagents.
+
+Files changed:
+- `src/workflows/hosted-model-actions.ts`
+- `tests/cli/flow.test.ts`
+- `docs/live-setup-checklist.md`
+- `moves/README.md`
+- `moves/moves117.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Live hosted-model / SAIA PASS is still blocked by the operator-owned MCP
+  endpoint returning not found when invoking advertised SAIA tools.
+- The already-published npm `splunkready@0.1.0` package does not include
+  Move 116/117 changes until a later publish.
