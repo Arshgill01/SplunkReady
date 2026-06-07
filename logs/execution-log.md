@@ -13720,3 +13720,36 @@ Notes:
 - The review remains deterministic and does not make LLM or SAIA output
   authoritative.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07T16:07:02Z - Move 144 hosted demo currentness after MCP review
+
+Intent:
+
+- Refresh the hosted GitHub Pages demo after Move 143 changed public-demo input
+  and generated asset names.
+
+Actions:
+
+- Ran hosted-demo currentness audit after Move 143 and confirmed the public demo
+  was `STALE`.
+- Dispatched the manual `Public Demo Pages` workflow from `splunkready-build`.
+- Waited for the Pages build and deploy jobs to complete successfully.
+- Reran hosted-demo currentness audit and refreshed the tracked evidence file
+  with a `CURRENT` result.
+- Updated the move list, claim ledger context, execution log, verification log,
+  and risk register.
+
+Files changed:
+
+- `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `submission-evidence/claim-ledger.md`
+- `moves/README.md`
+- `moves/moves144.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Notes:
+
+- No source code changed in this move.
+- No secret env file values were read, sourced, printed, or committed.

@@ -841,3 +841,11 @@ authority, and `mutation=false`. Residual risk remains experiential: this proves
 the JSON-RPC and evidence path, but it is still not a recorded live external
 client session; that screencast remains intentionally parked unless the user
 chooses to produce it later.
+
+Move 144 closes the hosted-demo staleness introduced by Move 143. GitHub Pages
+now serves public-demo input commit `97d59f4`; hosted/local asset names match;
+the tracked currentness audit reports `CURRENT`, `mutation=false`, and no
+failures. Residual risk remains release alignment: source-only changes after
+Move 143 are not yet published to npm, so package currentness should be rerun or
+the next package version should be published if judges need the new MCP review
+tool through `npx splunkready@latest mcp`.

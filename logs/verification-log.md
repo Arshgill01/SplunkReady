@@ -13758,6 +13758,43 @@ Notes:
 
 - No secret env file values were read, sourced, printed, or committed.
 
+## 2026-06-07 - Move 144 hosted demo currentness after MCP review
+
+Commands:
+
+- `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `gh workflow run "Public Demo Pages" --ref splunkready-build`
+- `gh run list --workflow "Public Demo Pages" --branch splunkready-build --limit 5 --json databaseId,displayTitle,headSha,status,conclusion,url,createdAt`
+- `gh run watch 27097716293 --exit-status`
+- `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+
+Results:
+
+- Initial hosted-demo currentness audit failed as expected:
+  - status `STALE`;
+  - expected public-demo input commit
+    `97d59f44a67a35366bc0551e70a57956c81f78a6`;
+  - hosted source commit
+    `5b44c3b4468bf1302e3b8babc19479c8fe1bdb89`;
+  - hosted/local asset names did not match.
+- PASS for `Public Demo Pages` run `27097716293`:
+  - build job completed in 18s;
+  - deploy job completed in 8s.
+- PASS for refreshed hosted-demo currentness audit:
+  - status `CURRENT`;
+  - hosted source commit
+    `97d59f44a67a35366bc0551e70a57956c81f78a6`;
+  - local head
+    `97d59f44a67a35366bc0551e70a57956c81f78a6`;
+  - hosted and local assets match:
+    `index-BMPTXFQp.css`, `index-TSYoqcYX.js`;
+  - `mutation=false`;
+  - failures empty.
+
+Notes:
+
+- No secret env file values were read, sourced, printed, or committed.
+
 ## 2026-06-07 - Move 143 MCP composition review tool
 
 Commands:

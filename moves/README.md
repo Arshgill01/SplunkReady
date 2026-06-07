@@ -166,6 +166,7 @@ commands, or filesystem paths.
 | P0 | [141](moves141.md) Hosted demo currentness refresh | 0.5d | Redeploys the public demo after Move 140 and refreshes tracked currentness evidence for the hosted source commit. |
 | P0 | [142](moves142.md) Published package currentness refresh | 0.5d | Verifies `splunkready@0.1.1` is npm latest and refreshes no-clone judge-proof plus MCP currentness evidence. |
 | P0 | [143](moves143.md) MCP composition review tool | 0.5d | Makes the two-server Splunk MCP plus SplunkReady MCP composition review a first-class read-only MCP tool and tracked evidence claim. |
+| P0 | [144](moves144.md) Hosted demo currentness after MCP review | 0.5d | Redeploys GitHub Pages after the MCP composition-review move and refreshes hosted-demo currentness evidence. |
 
 ## Non-Negotiable Boundaries
 
