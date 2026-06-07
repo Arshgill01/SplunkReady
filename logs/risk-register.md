@@ -786,3 +786,12 @@ canonical `/ask` route returns 404, so SplunkReady reports
 deterministic compiler: the local Splunk AI Assistant app or MCP tool routing
 must serve the ask handler, or a dedicated SAIA MCP endpoint/token must be
 provided, before SplunkReady can claim live hosted-model PASS.
+
+Move 138 reduces hosted-demo staleness risk by adding source-commit provenance
+to `public-demo-manifest.json` and a network audit that compares the hosted
+manifest plus asset names against the latest public-demo input commit. The
+baseline hosted GitHub Pages URL is currently `STALE` only because the deployed
+manifest predates the new `sourceCommit` field; hosted and local assets match.
+Residual risk remains until the Pages workflow is rerun from the new head and
+`npm run audit:hosted-demo-currentness -- --require-current` returns
+`CURRENT`.

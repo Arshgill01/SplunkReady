@@ -102,6 +102,23 @@ const runCredentialFreeJudgeProof = async ({ repoRoot, targetArtifactDir }) => {
   });
 };
 
+const resolveSourceCommit = async (repoRoot) => {
+  if (process.env.GITHUB_SHA) {
+    return process.env.GITHUB_SHA;
+  }
+
+  try {
+    const { stdout } = await execFileAsync("git", ["rev-parse", "HEAD"], {
+      cwd: repoRoot,
+      maxBuffer: 1024 * 1024
+    });
+
+    return stdout.trim() || "UNKNOWN";
+  } catch {
+    return "UNKNOWN";
+  }
+};
+
 const writeArtifactManifest = async (targetArtifactDir, generatedAt) => {
   await writeFile(
     resolve(targetArtifactDir, "artifact-manifest.json"),
@@ -122,7 +139,8 @@ export const exportPublicDemo = async ({
   root = process.cwd(),
   outDir = "artifacts/public-demo",
   generatedAt = new Date().toISOString(),
-  generateJudgeProof = runCredentialFreeJudgeProof
+  generateJudgeProof = runCredentialFreeJudgeProof,
+  sourceCommit
 } = {}) => {
   const repoRoot = resolve(root);
   const targetRoot = resolve(repoRoot, outDir);
@@ -149,9 +167,12 @@ export const exportPublicDemo = async ({
   await copyTree(resolve(evidenceRoot, "screenshots"), resolve(targetRoot, "screenshots"));
 
   const artifactBases = [...requiredArtifactDirs, ...generatedArtifactDirs].map((artifactDir) => `artifacts/${artifactDir}`);
+  const resolvedSourceCommit = sourceCommit ?? await resolveSourceCommit(repoRoot);
   const manifest = {
     source: "splunkready-public-demo-export",
     generatedAt,
+    sourceCommit: resolvedSourceCommit,
+    sourceCommitShort: resolvedSourceCommit === "UNKNOWN" ? "UNKNOWN" : resolvedSourceCommit.slice(0, 7),
     mutation: false,
     defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
     artifactBases,

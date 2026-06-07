@@ -13641,3 +13641,51 @@ Notes:
 - This move does not claim live SAIA hosted-model PASS.
 - `NODE_TLS_REJECT_UNAUTHORIZED=0` was used only for the local self-signed
   Splunk endpoint probe.
+
+## 2026-06-07 - Move 138 hosted demo currentness audit
+
+Commands:
+
+- `npx vitest run tests/scripts/hosted-demo-currentness.test.ts tests/scripts/public-demo-export.test.ts`
+- `npm run build && npm run ui:build && npm run audit:public-demo-export`
+- `node -e 'const fs=require("fs"); const m=JSON.parse(fs.readFileSync("artifacts/public-demo/public-demo-manifest.json","utf8")); console.log(JSON.stringify({source:m.source, sourceCommit:m.sourceCommit, sourceCommitShort:m.sourceCommitShort, mutation:m.mutation, defaultUrl:m.defaultUrl}, null, 2));'`
+- `npm run audit:hosted-demo-currentness -- --out /tmp/splunkready-hosted-demo-currentness-before.json`
+- `npm run check`
+
+Result:
+
+- PASS for focused script tests:
+  - 2 test files passed;
+  - 4 tests passed.
+- PASS for TypeScript build, Vite build, and public demo export audit.
+- PASS for local public demo manifest source traceability:
+  - `source`: `splunkready-public-demo-export`;
+  - `sourceCommit`: `b1886fb46b495971d592912c27fbdea7ac7ae310`;
+  - `sourceCommitShort`: `b1886fb`;
+  - `mutation`: `false`;
+  - `defaultUrl`: `?artifacts=artifacts%2Fmcp-proof#mcp-proof`.
+- STALE for current hosted GitHub Pages baseline:
+  - hosted manifest did not record `sourceCommit`;
+  - hosted and local asset names matched;
+  - hosted manifest kept `mutation=false` and the MCP proof default route.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 61 test files passed;
+  - 376 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 83 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- The hosted currentness audit is intentionally separate from `npm run check`
+  because it depends on the public GitHub Pages URL.
