@@ -14415,3 +14415,59 @@ Result:
 
 - GitHub Actions `CI / npm run check` passed in 1m7s.
 - The remote gate also ran and passed the credential-free live mock proof.
+
+## 2026-06-07T18:07:30Z - Move 149 interactive public certification demo
+
+Intent:
+
+- Let judges use the hosted public demo to paste or upload a trace and receive a
+  real Readiness Receipt without cloning the repo, running a backend, or
+  providing Splunk credentials.
+
+Actions:
+
+- Added `?demo=interactive` routing that defaults to
+  `artifacts/interactive-demo`.
+- Added `ui/src/interactiveCertifier.ts`, a browser-hosted deterministic
+  certification path using the shared rule engine, scoring, schemas, and Web
+  Crypto receipt hashing.
+- Added the `#interactive-certification` workbench view with trace JSON input,
+  upload control, agent fields, result summary, Readiness Receipt, deterministic
+  violations, evidence refs, receipt hash, and policy patch summary.
+- Updated the public demo export to generate
+  `artifacts/public-demo/artifacts/interactive-demo/` from the credential-free
+  judge-proof security mission and write an artifact manifest for it.
+- Updated public-demo and submission-copy audits so the interactive route,
+  evidence screenshot, artifact bundle, and receipt ID are required claims.
+- Captured `submission-evidence/screenshots/interactive-demo.png` through
+  Playwright after a real click on `Certify trace`.
+- Refreshed `submission-evidence/evidence-pack-sha256.txt`.
+- Logged the open Docker mock-image validation gap in `logs/risk-register.md`.
+
+Files changed:
+
+- `moves/moves149.md`
+- `scripts/audit-public-demo-export.mjs`
+- `scripts/audit-submission-copy.mjs`
+- `scripts/export-public-demo.js`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/screenshots/interactive-demo.png`
+- `tests/scripts/public-demo-export.test.ts`
+- `tests/ui/app.test.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/interactiveCertifier.ts`
+- `ui/src/main.ts`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+
+- GitHub Pages cannot serve a dynamic endpoint, so the hosted route runs the
+  deterministic certifier in-browser. The local workbench backend still provides
+  the existing server-side import/certification job path.
+- No secret env files were read, sourced, printed, or copied.

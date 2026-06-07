@@ -32,6 +32,8 @@ const createSourceTree = async (): Promise<string> => {
 };
 
 const generateJudgeProofFixture = async ({ targetArtifactDir }: { targetArtifactDir: string }): Promise<void> => {
+  const interactiveSource = join(targetArtifactDir, "suite-proof", "mission-security-lateral-movement-readiness");
+
   await writeFixture(
     join(targetArtifactDir, "judge-proof-summary.json"),
     `${JSON.stringify({
@@ -68,6 +70,9 @@ const generateJudgeProofFixture = async ({ targetArtifactDir }: { targetArtifact
     })}\n`
   );
   await writeFixture(join(targetArtifactDir, "judge-proof-summary.md"), "# SplunkReady Judge Proof\n");
+  await writeFixture(join(interactiveSource, "environment-contract.json"), "{\"id\":\"contract-acme-soc-dev\"}\n");
+  await writeFixture(join(interactiveSource, "missions.json"), "[{\"id\":\"mission-security-lateral-movement-readiness\"}]\n");
+  await writeFixture(join(interactiveSource, "trace-after.json"), "[]\n");
 };
 
 describe("public demo export", () => {
@@ -101,11 +106,18 @@ describe("public demo export", () => {
     await expect(readFile(join(root, "out/public-demo/public-demo-manifest.json"), "utf8")).resolves.toContain(
       "?artifacts=artifacts%2Fmcp-proof#mcp-proof"
     );
+    await expect(readFile(join(root, "out/public-demo/public-demo-manifest.json"), "utf8")).resolves.toContain(
+      "?demo=interactive"
+    );
+    await expect(
+      readFile(join(root, "out/public-demo/artifacts/interactive-demo/artifact-manifest.json"), "utf8")
+    ).resolves.toContain("trace-after.json");
     expect(result.copiedArtifactBases).toEqual([
       "artifacts/mcp-proof",
       "artifacts/suite-proof",
       "artifacts/public-proof-export",
-      "artifacts/judge-proof"
+      "artifacts/judge-proof",
+      "artifacts/interactive-demo"
     ]);
     expect(result.manifest.mutation).toBe(false);
   });

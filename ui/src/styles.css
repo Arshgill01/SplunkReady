@@ -331,6 +331,51 @@ code {
   height: 16px;
 }
 
+.interactive-grid {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.82fr) minmax(0, 1.18fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.interactive-results {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.interactive-input-panel textarea {
+  min-height: 420px;
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.interactive-agent-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.interactive-violation-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.interactive-violation-table th,
+.interactive-violation-table td {
+  padding: 10px;
+  vertical-align: top;
+  border-top: 1px solid var(--line-soft);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.interactive-violation-table th {
+  color: var(--muted);
+  font-weight: 620;
+}
+
 .index-run-form {
   display: grid;
   gap: 12px;
@@ -1481,5 +1526,14 @@ code {
   .patch-rules {
     border-left: 0;
     border-top: 1px solid var(--line);
+  }
+
+  .interactive-grid,
+  .interactive-agent-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .interactive-input-panel textarea {
+    min-height: 300px;
   }
 }

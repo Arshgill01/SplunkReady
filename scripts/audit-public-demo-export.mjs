@@ -64,6 +64,10 @@ try {
     "artifacts/judge-proof/suite-proof/suite-proof-summary.json",
     "artifacts/judge-proof/firewall-check/firewall-block-before.json",
     "artifacts/judge-proof/certification-index.json",
+    "artifacts/interactive-demo/artifact-manifest.json",
+    "artifacts/interactive-demo/environment-contract.json",
+    "artifacts/interactive-demo/missions.json",
+    "artifacts/interactive-demo/trace-after.json",
     "artifacts/public-proof-export/artifact-manifest.json",
     "artifacts/public-proof-export/public-proof-summary.json",
     "screenshots/workbench-mcp-proof.png"
@@ -88,11 +92,16 @@ try {
     fail("public demo manifest must point at the relative MCP proof workbench route");
   }
 
+  if (manifest.interactiveUrl !== "?demo=interactive") {
+    fail("public demo manifest must expose the hosted interactive certification route");
+  }
+
   const expectedArtifactBases = [
     "artifacts/mcp-proof",
     "artifacts/suite-proof",
     "artifacts/public-proof-export",
-    "artifacts/judge-proof"
+    "artifacts/judge-proof",
+    "artifacts/interactive-demo"
   ];
 
   if (JSON.stringify(manifest.artifactBases) !== JSON.stringify(expectedArtifactBases)) {

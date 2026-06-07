@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 
 const requiredArtifactDirs = ["mcp-proof", "suite-proof", "public-proof-export"];
 const generatedArtifactDirs = ["judge-proof"];
+const interactiveSourceDir = "judge-proof/suite-proof/mission-security-lateral-movement-readiness";
+const interactiveArtifactDir = "interactive-demo";
 const execFileAsync = promisify(execFile);
 
 const isContained = (root, target) => {
@@ -164,9 +166,15 @@ export const exportPublicDemo = async ({
     await writeArtifactManifest(targetArtifactDir, generatedAt);
   }
 
+  const interactiveTargetDir = resolve(targetRoot, "artifacts", interactiveArtifactDir);
+  await copyTree(resolve(targetRoot, "artifacts", interactiveSourceDir), interactiveTargetDir);
+  await writeArtifactManifest(interactiveTargetDir, generatedAt);
+
   await copyTree(resolve(evidenceRoot, "screenshots"), resolve(targetRoot, "screenshots"));
 
-  const artifactBases = [...requiredArtifactDirs, ...generatedArtifactDirs].map((artifactDir) => `artifacts/${artifactDir}`);
+  const artifactBases = [...requiredArtifactDirs, ...generatedArtifactDirs, interactiveArtifactDir].map(
+    (artifactDir) => `artifacts/${artifactDir}`
+  );
   const resolvedSourceCommit = sourceCommit ?? await resolveSourceCommit(repoRoot);
   const manifest = {
     source: "splunkready-public-demo-export",
@@ -175,6 +183,7 @@ export const exportPublicDemo = async ({
     sourceCommitShort: resolvedSourceCommit === "UNKNOWN" ? "UNKNOWN" : resolvedSourceCommit.slice(0, 7),
     mutation: false,
     defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
+    interactiveUrl: "?demo=interactive",
     artifactBases,
     screenshots: "screenshots",
     notes:

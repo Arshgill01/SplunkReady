@@ -1212,7 +1212,13 @@ export const defaultArtifactOptions: ArtifactOption[] = [
 
 export const artifactBaseFromLocation = (location: Pick<Location, "search">): string => {
   const params = new URLSearchParams(location.search);
-  return normalizeArtifactBase(params.get("artifacts") ?? params.get("artifactBase"));
+  const configured = params.get("artifacts") ?? params.get("artifactBase");
+
+  if (!configured && params.get("demo") === "interactive") {
+    return normalizeArtifactBase("artifacts/interactive-demo");
+  }
+
+  return normalizeArtifactBase(configured);
 };
 
 export const artifactUrl = (artifactBase: string, fileName: string): string =>

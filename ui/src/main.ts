@@ -10,10 +10,12 @@ import {
   type ArtifactOption,
   type UiArtifactBundle
 } from "./artifacts.js";
+import { certifyInteractiveTrace } from "./interactiveCertifier.js";
 import {
   normalizeView,
   renderApp,
   renderError,
+  type InteractiveCertificationState,
   type ViewId
 } from "./render.js";
 import type { ManifestVerificationState, WorkbenchRenderState, WorkbenchRunSummary } from "./workbenchTypes.js";
@@ -28,6 +30,7 @@ let bundle: UiArtifactBundle | undefined;
 let artifactOptions: ArtifactOption[] = defaultArtifactOptions;
 let workbench: WorkbenchRenderState = { available: false, healthStatus: "not connected" };
 let staticPublicDemo = false;
+let interactiveCertification: InteractiveCertificationState = { status: "idle" };
 const disabledRuleIds = new Set<string>();
 
 interface WorkbenchHealthResponse {
@@ -67,14 +70,27 @@ const detectStaticPublicDemo = async (): Promise<boolean> => {
   }
 };
 
-const activeViewFromHash = (): ViewId => normalizeView(window.location.hash.replace(/^#/, ""));
+const activeViewFromHash = (): ViewId => {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("demo") === "interactive" && !window.location.hash) {
+    return "interactive-certification";
+  }
+
+  return normalizeView(window.location.hash.replace(/^#/, ""));
+};
 
 const render = (): void => {
   if (!bundle) {
     return;
   }
 
-  app.innerHTML = renderApp(bundle, activeViewFromHash(), { disabledRuleIds, artifactOptions, workbench });
+  app.innerHTML = renderApp(bundle, activeViewFromHash(), {
+    disabledRuleIds,
+    artifactOptions,
+    workbench,
+    interactiveCertification
+  });
   bindInteractions();
 };
 
@@ -407,7 +423,8 @@ const bindInteractions = (): void => {
         app.innerHTML = renderApp(bundle, activeViewFromHash(), {
           disabledRuleIds,
           artifactOptions,
-          workbench
+          workbench,
+          interactiveCertification
         });
         bindInteractions();
       });
@@ -440,6 +457,56 @@ const bindInteractions = (): void => {
   document.querySelector<HTMLFormElement>("[data-mcp-transcript-form]")?.addEventListener("submit", (event) => {
     event.preventDefault();
     void runMcpTranscriptImport().catch((error: unknown) => showStartFailure("mcp-transcript-certification", error));
+  });
+
+  document.querySelector<HTMLInputElement>("[data-interactive-trace-file]")?.addEventListener("change", (event) => {
+    const input = event.currentTarget as HTMLInputElement | null;
+    const file = input?.files?.[0];
+    const textarea = document.querySelector<HTMLTextAreaElement>("[data-interactive-trace-json]");
+
+    if (!file || !textarea) {
+      return;
+    }
+
+    void file.text().then((text: string) => {
+      textarea.value = text;
+    });
+  });
+
+  document.querySelector<HTMLFormElement>("[data-interactive-certification-form]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    if (!bundle?.contract || !bundle.missions[0]) {
+      interactiveCertification = { status: "failed", error: "Interactive certification requires a loaded contract and mission." };
+      render();
+      return;
+    }
+
+    const traceJson = document.querySelector<HTMLTextAreaElement>("[data-interactive-trace-json]")?.value ?? "";
+    const agentName = stringInput("[data-interactive-agent-name]");
+    const agentVersion = stringInput("[data-interactive-agent-version]");
+
+    interactiveCertification = { status: "running" };
+    render();
+
+    void certifyInteractiveTrace({
+      contract: bundle.contract,
+      mission: bundle.missions[0],
+      traceJson,
+      agentName,
+      agentVersion
+    })
+      .then((result) => {
+        interactiveCertification = { status: "succeeded", result };
+        render();
+      })
+      .catch((error: unknown) => {
+        interactiveCertification = {
+          status: "failed",
+          error: error instanceof Error ? error.message : String(error)
+        };
+        render();
+      });
   });
 
   document.querySelector<HTMLFormElement>("[data-certification-index-form]")?.addEventListener("submit", (event) => {
@@ -509,7 +576,8 @@ const bindInteractions = (): void => {
       app.innerHTML = renderApp(bundle, activeViewFromHash(), {
         disabledRuleIds,
         artifactOptions,
-        workbench
+        workbench,
+        interactiveCertification
       });
       bindInteractions();
     });

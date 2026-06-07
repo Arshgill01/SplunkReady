@@ -10,6 +10,7 @@ import {
   type UiArtifactBundle,
   normalizeArtifactBase
 } from "../../ui/src/artifacts.js";
+import { certifyInteractiveTrace } from "../../ui/src/interactiveCertifier.js";
 import { renderApp } from "../../ui/src/render.js";
 import { renderTracePreview } from "../../ui/src/runBrowser.js";
 import type {
@@ -1340,6 +1341,7 @@ describe("Vite UI artifact app", () => {
     expect(artifactBaseFromLocation({ search: "?artifacts=https%3A%2F%2Fexample.test%2Fproof" })).toBe(
       "/__splunkready_artifacts/"
     );
+    expect(artifactBaseFromLocation({ search: "?demo=interactive" })).toBe("artifacts/interactive-demo/");
   });
 
   it("loads and summarizes schema-backed artifacts from a configurable base", async () => {
@@ -1960,6 +1962,67 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("3 trace event(s); requirePass=false");
     expect(html).toContain("Receipt</th><td>receipt-external-001");
     expect(html).not.toContain("SDK");
+  });
+
+  it("certifies an uploaded trace in the browser without workbench backend state", async () => {
+    const proofRoot = "submission-evidence/suite-proof/mission-security-lateral-movement-readiness";
+    const proofContract = JSON.parse(await readFile(`${proofRoot}/environment-contract.json`, "utf8")) as EnvironmentContract;
+    const proofMission = (JSON.parse(await readFile(`${proofRoot}/missions.json`, "utf8")) as Mission[])[0];
+    const proofTrace = JSON.parse(await readFile(`${proofRoot}/trace-after.json`, "utf8")) as TraceEvent[];
+
+    if (!proofMission) {
+      throw new Error("Missing security proof mission fixture.");
+    }
+
+    const result = await certifyInteractiveTrace({
+      contract: proofContract,
+      mission: proofMission,
+      traceJson: JSON.stringify(proofTrace),
+      agentName: "Hosted Demo Agent",
+      agentVersion: "browser"
+    });
+
+    expect(result.status).toBe("PASS");
+    expect(result.mutation).toBe(false);
+    expect(result.receipt.id).toBe("receipt-interactive-001");
+    expect(result.receipt.agent).toEqual({ name: "Hosted Demo Agent", version: "browser" });
+    expect(result.receipt.verdict).toBe("READY");
+    expect(result.receipt.score).toBe(100);
+    expect(result.receipt.traceRefs).toEqual(proofTrace.map((event) => event.id));
+    expect(result.violations).toHaveLength(0);
+  });
+
+  it("renders the interactive certification route with receipt, violations, and patch summary", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": contract,
+        "missions.json": [mission],
+        "trace-after.json": afterTrace
+      })
+    );
+    const failed = await certifyInteractiveTrace({
+      contract,
+      mission,
+      traceJson: JSON.stringify(beforeTrace),
+      agentName: "Hosted Demo Agent",
+      agentVersion: "browser"
+    });
+    const html = renderApp(bundle, "interactive-certification", {
+      interactiveCertification: { status: "succeeded", result: failed },
+      workbench: { available: false, healthStatus: "static demo" }
+    });
+
+    expect(html).toContain('data-view="interactive-certification"');
+    expect(html).toContain('class="active">Certify</a>');
+    expect(html).toContain("browser-hosted deterministic certifier");
+    expect(html).toContain('data-interactive-certification-form');
+    expect(html).toContain("Interactive Readiness Receipt");
+    expect(html).toContain("receipt-interactive-001");
+    expect(html).toContain("Deterministic violations");
+    expect(html).toContain("patch-interactive-certification / draft");
+    expect(html).toContain("Mutation</th><td>false");
+    expect(html).not.toContain("type=\"password\"");
   });
 
   it("renders live proof summaries without implying a fake patch loop", async () => {

@@ -14881,3 +14881,74 @@ Result:
 - PASS for GitHub Actions run `27100144741`.
 - PASS for job `npm run check` in 1m7s.
 - PASS for the credential-free live mock proof step.
+
+## 2026-06-07T18:07:30Z - Move 149 interactive public certification demo
+
+Commands run:
+
+- `npm run build && npm run ui:build`
+- `npm run build && npm run ui:build && npx vitest run tests/ui/app.test.ts --testNamePattern "interactive certification|browser without workbench|external import"`
+- `npm run build && npm run ui:build && npm run audit:public-demo-export && npx vitest run tests/ui/app.test.ts tests/scripts/public-demo-export.test.ts --testNamePattern "interactive certification|browser without workbench|external import|public demo export|normalizes artifact"`
+- `npx http-server artifacts/public-demo -p 4179 -a 127.0.0.1`
+- `bash "$PWCLI" open 'http://127.0.0.1:4179/?demo=interactive'`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/move149-interactive-before.png --full-page`
+- `bash "$PWCLI" click e71`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/move149-interactive-after.png --full-page`
+- `cp output/playwright/move149-interactive-after.png submission-evidence/screenshots/interactive-demo.png`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Results:
+
+- Initial focused UI test failed because the test used a local `afterTrace`
+  fixture that was not READY under the full rule set. The implementation was not
+  weakened; the test now uses the real tracked suite-proof passing security
+  trace.
+- PASS for TypeScript build.
+- PASS for Vite production UI build.
+- PASS for public demo export audit with `227` files, `mutation=false`, and the
+  new interactive demo artifact bundle.
+- PASS for focused UI/public-demo tests:
+  - 2 test files passed;
+  - 6 tests passed;
+  - 25 tests skipped by test-name filter.
+- PASS for Playwright hosted-style static flow:
+  - opened `http://127.0.0.1:4179/?demo=interactive`;
+  - clicked `Certify trace`;
+  - rendered `PASS`, `READY`, score `100`, `receipt-interactive-001`, receipt
+    hash `fb5e6d83aa6c69bd1b1ae35e1ca62bdb9081c85d20d2085e838037431d4881d0`,
+    evidence refs, and `Mutation false`.
+- PASS for refreshed `submission-evidence/evidence-pack-sha256.txt`, including
+  `submission-evidence/screenshots/interactive-demo.png`.
+
+Open verification:
+
+- Docker mock-server image validation remains open because this move did not run
+  Docker.
+
+Final gate:
+
+- `npm run check`
+
+Result:
+
+- PASS for scaffold verification with 85 waves and 2226 project files.
+- PASS for runtime contracts with 19 rules, 4 fixture missions, and 20 evidence
+  refs.
+- PASS for TypeScript build.
+- PASS for production UI build.
+- PASS for public demo export audit with 228 files and `mutation=false`.
+- PASS for package readiness audit with 172 packed files checked.
+- PASS for package installability audit:
+  - `splunkready-0.1.2.tgz` installed;
+  - clean `npx splunkready judge-proof` returned `PASS`;
+  - clean `npx splunkready mcp` initialized.
+- PASS for full Vitest suite:
+  - 63 test files passed;
+  - 401 tests passed.
+- PASS for secret env ignore audit.
+- PASS for reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS for submission-copy audit with 133 required claims.
+- PASS for final `git diff --check`.

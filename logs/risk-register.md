@@ -920,3 +920,9 @@ mock frames under `submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl`.
 Residual risk remains release-related: npm latest `0.1.2` does not include this
 source-only path until a new OTP-backed publish succeeds. The mock evidence is
 fixture-backed and must not be described as real operator-owned Splunk evidence.
+
+Move 149 does not close the Docker validation gap from Move 147. The mock
+Splunk MCP Dockerfile and compose file remain source-only packaging until a
+machine with a running Docker daemon verifies the image build and container
+smoke. Keep this open before making any claim that the mock server image itself
+is CI-validated.

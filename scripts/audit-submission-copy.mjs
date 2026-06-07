@@ -59,6 +59,16 @@ const checks = [
     files.claimLedger,
     "The hosted public demo is source-current against the latest public-demo input commit."
   ],
+  [
+    "Claim ledger interactive hosted certification",
+    files.claimLedger,
+    "The hosted public demo accepts a trace and runs real in-browser certification without Splunk credentials."
+  ],
+  ["Claim ledger interactive screenshot", files.claimLedger, "submission-evidence/screenshots/interactive-demo.png"],
+  ["Claim ledger interactive public artifact", files.claimLedger, "artifacts/public-demo/artifacts/interactive-demo/artifact-manifest.json"],
+  ["Claim ledger interactive certifier source", files.claimLedger, "ui/src/interactiveCertifier.ts"],
+  ["Claim ledger interactive route", files.claimLedger, "?demo=interactive"],
+  ["Claim ledger interactive receipt", files.claimLedger, "receipt-interactive-001"],
   ["Claim ledger hosted demo currentness artifact", files.claimLedger, "submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json"],
   ["Claim ledger hosted demo currentness command", files.claimLedger, "npm run audit:hosted-demo-currentness"],
   [
