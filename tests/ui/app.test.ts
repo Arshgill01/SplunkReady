@@ -2406,10 +2406,13 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Trace preview");
     expect(html).toContain("Full Trace view");
     expect(html).toContain("Selected run trace events grouped by phase.");
+    expect(html.indexOf("Trace preview")).toBeLessThan(html.indexOf("Proof audit"));
     expect(html).toContain("trace-preview-phases");
     expect(html).toContain("trace-preview-phase");
     expect(html).toContain('data-trace-preview-phase="before"');
     expect(html).toContain('data-trace-preview-phase="after"');
+    expect(html).toContain('data-trace-preview-sequence="B01"');
+    expect(html).toContain('data-trace-preview-sequence="A01"');
     expect(html).toContain("<dt>Events</dt><dd>4</dd>");
     expect(html).toContain("<dt>Evidence refs</dt><dd>3</dd>");
     expect(html).toContain("<strong>Span</strong>after-call to after-final");
@@ -2475,8 +2478,8 @@ describe("Vite UI artifact app", () => {
     };
     const html = renderTracePreview(bundle);
 
-    expect(html).toContain('data-trace-preview-sequence="01"');
-    expect(html).toContain('data-trace-preview-sequence="08"');
+    expect(html).toContain('data-trace-preview-sequence="A01"');
+    expect(html).toContain('data-trace-preview-sequence="A08"');
     expect(html).toContain("saved-search-lateral-movement-investigation-ref-08-with-long-context");
     expect(html).toContain('class="trace-preview-more" data-trace-preview-more');
     expect(html).toContain("+2 more event(s) in full Trace view");

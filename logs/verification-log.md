@@ -13505,3 +13505,69 @@ Result:
 - PASS for remote CI status inspection:
   - latest 10 `splunkready-build` push workflow runs were all `success`;
   - latest checked remote HEAD was `fa8b64d`.
+
+## 2026-06-07 - Move 136 Runs trace preview repair
+
+Commands:
+
+- `gh run list --branch splunkready-build --limit 5 --json databaseId,displayTitle,workflowName,status,conclusion,headSha,url,createdAt`
+- `npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness`
+- `npm run audit:npm-release-preflight`
+- `npm view splunkready versions --json && npm view splunkready dist-tags --json`
+- `npm run workbench:dev`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open "http://127.0.0.1:4317/?artifacts=%2Fapi%2Fartifacts%2Frun-2026-06-05T13-16-04-455Z-a1aa17b7#proof-browser" --headed`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval "JSON.stringify({grid: getComputedStyle(document.querySelector('.run-browser-grid')).gridTemplateColumns, traceTop: Math.round(document.querySelector('.trace-preview').getBoundingClientRect().top), receiptTop: Math.round(document.querySelector('.receipt-comparison').getBoundingClientRect().top), auditTop: Math.round(document.querySelector('.proof-audit-panel').getBoundingClientRect().top), phaseGrid: getComputedStyle(document.querySelector('.trace-preview-phases')).gridTemplateColumns, overflow: [...document.querySelectorAll('.trace-preview-event')].some(el => el.scrollWidth > el.clientWidth)})"`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" resize 390 844 && bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval "JSON.stringify({width: innerWidth, grid: getComputedStyle(document.querySelector('.run-browser-grid')).gridTemplateColumns, phaseGrid: getComputedStyle(document.querySelector('.trace-preview-phases')).gridTemplateColumns, sequences: [...document.querySelectorAll('.trace-preview-event')].map(el => el.getAttribute('data-trace-preview-sequence')).slice(0,5), overflow: [...document.querySelectorAll('.trace-preview-event')].some(el => el.scrollWidth > el.clientWidth)})"`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "Runs trace preview|proof bundle browser|app styling"`
+- `npm run ui:build`
+- `npm run check`
+
+Result:
+
+- PASS for remote CI status inspection:
+  - latest Move 135 push run completed `success` at head
+    `7c20312fa6dd539331a04ac9878b3bb1d85542f9`.
+- BLOCKED for npm currentness, as expected:
+  - registry versions were only `["0.1.0"]`;
+  - dist-tag latest was `0.1.0`;
+  - local source version was `0.1.1`;
+  - release preflight reported `BLOCKED` because this shell is not
+    npm-authenticated;
+  - dry-run pack was OK with 164 files and release command
+    `npm publish --access public`.
+- PASS for focused UI tests:
+  - 1 test file passed;
+  - 3 tests passed;
+  - 24 tests skipped by focused pattern.
+- PASS for Vite production build:
+  - `npm run ui:build` completed.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 60 test files passed;
+  - 374 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 83 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for Playwright desktop verification:
+  - opened the live workbench Runs route for a managed proof run;
+  - `.run-browser-grid` rendered two columns at 1440px;
+  - `.trace-preview` appeared after receipt comparison and before proof audit;
+  - `.trace-preview-phases` rendered two columns;
+  - sequence labels were `B01`, `B02`, `B03`, `A01`, `A02`, `A03`, `A04`,
+    `A05`;
+  - no trace preview event/header overflow was detected.
+- PASS for Playwright mobile verification:
+  - resized to 390x844;
+  - Runs layout collapsed to one column;
+  - trace phase grid collapsed to one column;
+  - sequence labels remained phase-scoped;
+  - no trace preview event overflow was detected.

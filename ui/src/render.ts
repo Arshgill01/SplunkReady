@@ -1940,11 +1940,11 @@ const renderProofBrowser = (bundle: UiArtifactBundle, options: RenderOptions): s
         ${renderRunList(bundle, runs, options.workbench)}
         <div class="run-browser-detail">
           ${renderReceiptComparison(bundle)}
+          ${renderTracePreview(bundle)}
           ${renderJudgeProofPanel(bundle.judgeProofSummary)}
           ${renderPublicProofExportPanel(bundle.publicProofExport)}
           ${renderProofAuditPanel(bundle.proofAudit)}
           ${renderManifestVerificationPanel(bundle, options.workbench)}
-          ${renderTracePreview(bundle)}
         </div>
       </div>
     </section>

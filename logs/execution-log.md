@@ -13146,6 +13146,48 @@ Notes:
 - Did not read, source, print, or commit `.splunkready*` or `.env*` secret
   contents.
 
+## 2026-06-07T14:56:07Z - Move 136 Runs trace preview repair
+
+Intent:
+
+- Stop the low-value external-client screencast path and fix the judge-visible
+  Runs trace preview instead.
+- Make the selected run's trace visible before proof-audit/manifest detail and
+  make before/after event numbering unambiguous.
+
+Actions:
+
+- Confirmed the prior Move 135 cleanup commit was green in GitHub CI.
+- Verified npm registry state before moving on:
+  - local source version is `0.1.1`;
+  - npm registry latest is still `splunkready@0.1.0`;
+  - `0.1.1` is available to publish, but this shell is not npm-authenticated.
+- Reproduced the Runs UI in the live Vite workbench through Playwright at
+  `http://127.0.0.1:4317/?artifacts=%2Fapi%2Fartifacts%2Frun-2026-06-05T13-16-04-455Z-a1aa17b7#proof-browser`.
+- Moved the Runs trace preview directly below receipt comparison.
+- Rendered trace phase cards in responsive columns when there is room.
+- Changed trace preview event sequence labels from repeated `01`, `02`, ...
+  per phase to phase-scoped `B01`, `A01`, `E01`, and `I01`.
+- Stacked each trace phase header so long Splunk tool names wrap cleanly inside
+  the card.
+
+Files changed:
+
+- `ui/src/render.ts`
+- `ui/src/runBrowser.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `moves/README.md`
+- `moves/moves136.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Notes:
+
+- No subagents were used.
+- No `.splunkready*` or `.env*` files were read, sourced, printed, or changed.
+
 ## 2026-06-07T14:46:13Z - Move 135 Splunk MCP transcript compatibility
 
 Intent:

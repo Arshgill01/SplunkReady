@@ -766,3 +766,12 @@ external to SplunkReady: the live SAIA/cloud hosted-model route must be fixed
 before the operator-live status can become `PASS`, and npm latest must still be
 updated before judges can run all current MCP/SAIA source work from
 `splunkready@latest`.
+
+Move 136 reduces judge-facing Runs UI risk by moving the selected run trace
+preview above audit/manifest detail, rendering trace phases side by side at
+desktop width, and making preview event labels phase-scoped (`B01`, `A01`,
+`E01`, `I01`) instead of repeated numeric labels. Playwright verified the live
+workbench Runs route at desktop and mobile widths with no trace preview
+overflow. Residual risk remains public-package currentness: npm latest is still
+`splunkready@0.1.0`, so judges do not receive current MCP/SAIA source work from
+`splunkready@latest` until an npm-authenticated publish of `0.1.1` completes.

@@ -329,6 +329,26 @@ const formatTraceTimestamp = (timestamp: string): string => {
   return timestamp.replace("T", " ").replace(/\.\d{3}Z$/, "Z");
 };
 
+const tracePhaseSequencePrefix = (label: string): string => {
+  if (label === "Before") {
+    return "B";
+  }
+
+  if (label === "After") {
+    return "A";
+  }
+
+  if (label === "External") {
+    return "E";
+  }
+
+  if (label === "Imported") {
+    return "I";
+  }
+
+  return "T";
+};
+
 const traceViolationsByEvent = (violations: Violation[]): Map<string, Violation[]> => {
   const grouped = new Map<string, Violation[]>();
 
@@ -339,16 +359,17 @@ const traceViolationsByEvent = (violations: Violation[]): Map<string, Violation[
   return grouped;
 };
 
-const renderTracePreviewEvents = (events: TraceEvent[], violations: Violation[]): string => {
+const renderTracePreviewEvents = (label: string, events: TraceEvent[], violations: Violation[]): string => {
   const groupedViolations = traceViolationsByEvent(violations);
   const visibleEvents = orderedTraceEvents(events).slice(0, 8);
   const hiddenEvents = Math.max(0, events.length - visibleEvents.length);
+  const sequencePrefix = tracePhaseSequencePrefix(label);
 
   return `<ol class="trace-preview-list" aria-label="Trace preview events">
     ${visibleEvents
       .map((event, index) => {
         const eventViolations = groupedViolations.get(event.id) ?? [];
-        const sequence = String(index + 1).padStart(2, "0");
+        const sequence = `${sequencePrefix}${String(index + 1).padStart(2, "0")}`;
 
         return `<li class="trace-preview-event" data-trace-preview-event="${value(event.type)}" data-trace-preview-id="${value(
           event.id
@@ -382,7 +403,7 @@ const renderTracePreviewRows = (traces: Array<[string, TraceEvent[], Violation[]
         </dl>
         <p><strong>Span</strong>${value(traceSpanSummary(events))}</p>
         <p><strong>Rule IDs</strong>${renderTracePreviewFindings(violations)}</p>
-        ${renderTracePreviewEvents(events, violations)}
+        ${renderTracePreviewEvents(label, events, violations)}
         <span class="trace-preview-summary">${value(tracePhaseSummary(events, violations))}</span>
       </article>`
     )

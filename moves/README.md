@@ -158,6 +158,7 @@ commands, or filesystem paths.
 | P0 | [133](moves133.md) SAIA cloud route blocker | 0.5d | Separates local Splunk AI Assistant REST-handler registration failures from downstream SAIA cloud hosted-model 404s. |
 | P0 | [134](moves134.md) MCP operator live hosted-model status | 0.5d | Makes MCP proof evidence distinguish fixture hosted-model PASS from the current operator-live SAIA cloud blocker. |
 | P0 | [135](moves135.md) Splunk MCP transcript compatibility | 0.5d | Accepts real Splunk MCP transcript field aliases during deterministic transcript certification. |
+| P0 | [136](moves136.md) Runs trace preview repair | 0.5d | Makes the Runs detail trace preview visible earlier, phase-scoped, and Playwright-verified across desktop and mobile widths. |
 
 ## Non-Negotiable Boundaries
 
