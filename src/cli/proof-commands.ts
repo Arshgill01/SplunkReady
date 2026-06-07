@@ -2,6 +2,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createGeminiConfigFromEnv } from "../agents/gemini-model.js";
+import { mergeEnvFile } from "./env-file.js";
 import type { CliOptions } from "./options.js";
 import {
   compileCommand,
@@ -136,6 +137,7 @@ export const hostedModelProofCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<string[]> => {
+  const hostedModelEnv = await mergeEnvFile(env, options.envFile);
   const result = await runHostedModelProofWorkflow(
     {
       outDir: options.out,
@@ -143,7 +145,7 @@ export const hostedModelProofCommand = async (
       fixturePath: options.fixture,
       missionPath: options.mission
     },
-    env
+    hostedModelEnv
   );
 
   return result.artifacts;
@@ -153,6 +155,7 @@ export const hostedModelDiagnosticCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<string[]> => {
+  const hostedModelEnv = await mergeEnvFile(env, options.envFile);
   const result = await runHostedModelDiagnosticWorkflow(
     {
       outDir: options.out,
@@ -161,7 +164,7 @@ export const hostedModelDiagnosticCommand = async (
       missionPath: options.mission,
       requirePass: options.requirePass
     },
-    env
+    hostedModelEnv
   );
 
   return result.artifacts;

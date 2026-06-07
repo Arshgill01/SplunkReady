@@ -2348,6 +2348,92 @@ describe("SplunkReady CLI flow", () => {
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
   });
 
+  it("loads hosted-model live configuration from an explicit env file without writing secrets", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-hosted-model-diagnostic-env-file-"));
+    const envDir = await mkdtemp(join(tmpdir(), "splunkready-env-file-"));
+    const envFile = join(envDir, ".splunkready-test");
+    const mcp = await startMockMcpServer();
+    const token = "env-file-test-token";
+
+    await writeFile(
+      envFile,
+      [
+        "SPLUNKREADY_LIVE_ENABLED=true",
+        `SPLUNKREADY_SPLUNK_MCP_URL=${mcp.url}`,
+        `SPLUNKREADY_SPLUNK_MCP_TOKEN=${token}`,
+        "SPLUNKREADY_SAIA_ENABLED=true"
+      ].join("\n"),
+      "utf8"
+    );
+
+    try {
+      const output = parseCliJsonOutput(
+        (
+          await runCli(
+            [
+              "hosted-model-diagnostic",
+              "--mode",
+              "live",
+              "--env-file",
+              envFile,
+              "--out",
+              outDir,
+              "--require-pass",
+              "true",
+              "--json"
+            ],
+            process.cwd(),
+            {
+              SPLUNKREADY_LIVE_ENABLED: "",
+              SPLUNKREADY_SPLUNK_MCP_URL: "",
+              SPLUNKREADY_SPLUNK_MCP_TOKEN: "",
+              SPLUNKREADY_SAIA_ENABLED: ""
+            }
+          )
+        ).stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "hosted-model-diagnostic",
+        status: "PASS",
+        artifacts: expect.arrayContaining([
+          join(outDir, "environment-contract.json"),
+          join(outDir, "hosted-model-proof.json"),
+          join(outDir, "hosted-model-diagnostic.json")
+        ])
+      });
+    } finally {
+      await mcp.close();
+    }
+
+    const diagnosticText = await readFile(join(outDir, "hosted-model-diagnostic.json"), "utf8");
+    const proofText = await readFile(join(outDir, "hosted-model-proof.json"), "utf8");
+    const diagnostic = JSON.parse(diagnosticText) as {
+      status: string;
+      permission: { status: string };
+      setup: { requiredEnvironment: Array<{ name: string; status: string }>; optionalEnvironment: Array<{ name: string; status: string }> };
+    };
+
+    expect(diagnostic).toMatchObject({
+      status: "PASS",
+      permission: { status: "OK" },
+      setup: {
+        requiredEnvironment: [
+          { name: "SPLUNKREADY_LIVE_ENABLED", status: "set" },
+          { name: "SPLUNKREADY_SPLUNK_MCP_URL", status: "set" },
+          { name: "SPLUNKREADY_SPLUNK_MCP_TOKEN", status: "set" }
+        ],
+        optionalEnvironment: [{ name: "SPLUNKREADY_SAIA_ENABLED", status: "set" }]
+      }
+    });
+    expect(diagnosticText).not.toContain(token);
+    expect(proofText).not.toContain(token);
+    expect(mcp.calls.map((call) => call.params.name)).toEqual(
+      expect.arrayContaining(["saia_explain_spl", "saia_optimize_spl"])
+    );
+    expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
+  });
+
   it("writes a blocked hosted-model diagnostic and can strict-gate SAIA access", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-hosted-model-diagnostic-blocked-"));
     const mcp = await startMockMcpServer({ blockHostedModels: true });

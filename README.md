@@ -303,6 +303,10 @@ evidence, MCP resource-template discovery, inline transcript certification, host
 `trace-external.json`, `receipt-external-001.json`, `proof-audit.json`, and the
 transcript certification summary under `artifacts/mcp-proof/`.
 
+For operator-owned live SAIA checks, `hosted-model-proof` and
+`hosted-model-diagnostic` accept `--env-file <path>` so ignored
+`.splunkready*` files can supply live variables without printing token values.
+
 To summarize several proof bundles for one environment, generate a certification index:
 
 ```bash

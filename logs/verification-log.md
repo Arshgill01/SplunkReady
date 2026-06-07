@@ -9096,6 +9096,8 @@ Commands:
 
 - `npx tsc --noEmit`
 - `npx vitest run tests/cli/flow.test.ts --testNamePattern "hosted-model"`
+- `git diff --check`
+- `npm run check`
 - `npx vitest run tests/workbench/workbench.test.ts --testNamePattern "hosted-model diagnostic"`
 - `npx vitest run tests/workflows/hosted-model-actions.test.ts tests/cli/flow.test.ts --testNamePattern "hosted-model"`
 - `git diff --check`
@@ -10044,6 +10046,63 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Live SAIA PASS still requires a token-bearing shell with the required live
   variables exported.
+
+## 2026-06-07 - Move 114 Hosted Model Env File Support
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "hosted-model"`
+
+Result:
+
+- PASS for TypeScript.
+- PASS for focused hosted-model CLI regression tests:
+  - 1 test file passed;
+  - 5 tests passed;
+  - 37 tests skipped by focused pattern.
+- PASS for env-file live diagnostic regression:
+  - test wrote a temporary `.splunkready-test` file with mock live MCP URL and
+    token;
+  - `hosted-model-diagnostic --mode live --env-file <temp> --require-pass true`
+    returned `PASS`;
+  - output artifacts recorded environment variable status as `set`;
+  - token string was not present in `hosted-model-proof.json` or
+    `hosted-model-diagnostic.json`;
+  - mock MCP calls included `saia_explain_spl` and `saia_optimize_spl`;
+  - mock MCP calls did not include `splunk_run_query`.
+- PASS for standalone diff whitespace:
+  - `git diff --check` completed with no output.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit checked 164 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and
+    `npx splunkready judge-proof` returned `PASS`;
+  - 59 test files passed;
+  - 363 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 47 required claims;
+  - final `git diff --check` completed with no output.
+
+Notes:
+
+- Did not read, source, print, or commit real `.splunkready*` or `.env*`
+  secret files.
+- Did not make SAIA or any LLM output authoritative.
+- Did not use subagents.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- A real live SAIA PASS still requires the operator-owned token-bearing env
+  file or exported variables to be used in a shell where the live endpoint is
+  reachable.
 
 ## 2026-06-07 - Move 113 MCP Hosted Model Access Check
 

@@ -219,6 +219,22 @@ NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- hosted-model-diagnostic \
 
 Use `NODE_TLS_REJECT_UNAUTHORIZED=0` only for a local non-production Splunk trial with a self-signed certificate.
 
+If the live variables are stored in an ignored operator-owned env file, pass it
+explicitly instead of sourcing it in an agent transcript:
+
+```bash
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- hosted-model-diagnostic \
+  --mode live \
+  --env-file .splunkready \
+  --out artifacts/hosted-model-diagnostic \
+  --require-pass true \
+  --json
+```
+
+The env file parser supports `KEY=value` and `export KEY=value` lines. The
+diagnostic still writes only variable names and set/missing/invalid status to
+artifacts; token values are not written.
+
 Expected terminal shape when SAIA access is available:
 
 ```json

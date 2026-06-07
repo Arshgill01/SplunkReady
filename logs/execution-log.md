@@ -12268,3 +12268,42 @@ Open blockers:
 - Hosted CI needs to run after push for Move 113.
 - Live SAIA PASS still requires a token-bearing shell with the required live
   variables exported.
+
+## 2026-06-07 15:29 - Move 114 Hosted Model Env File Support
+
+Scope:
+- Added `--env-file <path>` to `hosted-model-proof` and
+  `hosted-model-diagnostic`.
+- Added a small dependency-free env-file parser for `KEY=value` and
+  `export KEY=value` lines.
+- Scoped env-file loading to hosted-model CLI commands only.
+- Let the explicit env file drive the hosted-model proof run when supplied.
+- Added CLI regression coverage with a temporary `.splunkready-test` file,
+  a mock Splunk MCP server, and assertions that the token string is not written
+  into `hosted-model-proof.json` or `hosted-model-diagnostic.json`.
+- Documented the operator workflow in `docs/live-setup-checklist.md` and
+  README.
+- Did not read, source, print, or commit real `.splunkready*` / `.env*`
+  secret files.
+- Did not make SAIA or any LLM output authoritative.
+- Did not add dependencies.
+- Did not use subagents.
+
+Files changed:
+- `src/cli/env-file.ts`
+- `src/cli/options.ts`
+- `src/cli/proof-commands.ts`
+- `tests/cli/flow.test.ts`
+- `docs/live-setup-checklist.md`
+- `README.md`
+- `moves/README.md`
+- `moves/moves114.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 114.
+- A real live SAIA PASS still requires the operator-owned token-bearing env
+  file or exported variables to be used in a shell where the live endpoint is
+  reachable.

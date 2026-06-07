@@ -13,6 +13,7 @@ export interface CliOptions {
   securityCheckDir: string;
   securityKitDir: string;
   hostedModelProofDir: string;
+  envFile: string;
   phase: "before" | "after";
   requireLive: boolean;
   requirePass: boolean;
@@ -49,8 +50,8 @@ Commands:
   certify-mcp-transcript --transcript <path> --mission <path> --out <dir> [--strict-import true|false] [--require-pass true|false] [--agent-name <name>] [--agent-version <version>] [--json]
   llm-agent --mode fixture|live --out <dir> [--agent-model <model>]
   llm-proof --mode fixture|live --out <dir> [--agent-model <model>] [--require-pass true|false] [--json]
-  hosted-model-proof --mode fixture|live --out <dir> [--json]
-  hosted-model-diagnostic --mode fixture|live --out <dir> [--require-pass true|false] [--json]
+  hosted-model-proof --mode fixture|live --out <dir> [--env-file <path>] [--json]
+  hosted-model-diagnostic --mode fixture|live --out <dir> [--env-file <path>] [--require-pass true|false] [--json]
   proof-audit --out <dir> [--require-pass true|false] [--json]
   verify-manifest --out <dir> [--json]
   certification-index --proof-dirs <dir[,dir]> --out <dir> [--require-pass true|false] [--json]
@@ -86,6 +87,7 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
   securityCheckDir: "artifacts/live-security-check",
   securityKitDir: "artifacts/live-security-kit",
   hostedModelProofDir: "artifacts/hosted-model-proof",
+  envFile: "",
   phase: "before",
   requireLive: false,
   requirePass: false,
@@ -150,6 +152,8 @@ export const parseArgs = (argv: string[]): { command: string; options: CliOption
       options.securityKitDir = value;
     } else if (flag === "--hosted-model-proof-dir") {
       options.hostedModelProofDir = value;
+    } else if (flag === "--env-file") {
+      options.envFile = value;
     } else if (flag === "--proof-dirs") {
       options.proofDirs = value;
     } else if (flag === "--phase") {

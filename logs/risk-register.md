@@ -551,3 +551,12 @@ so judge-facing evidence is credential-free, while live mode remains available
 for an operator shell with exported Splunk MCP and SAIA environment variables.
 Residual risk remains live hosted-model proof: this process did not have the
 token-bearing environment exported, so no live SAIA PASS claim was made.
+
+Move 114 reduces live SAIA proof usability risk by allowing hosted-model proof
+commands to load operator-owned live variables from an explicit env file. This
+removes the need to source secrets into an agent transcript while preserving
+secret-safe artifacts: tests prove the temporary token is not written to
+hosted-model proof or diagnostic JSON. Residual risk remains actual live
+availability: the operator still needs to run the command with a real ignored
+env file or exported variables in a shell that can reach the Splunk MCP
+endpoint.
