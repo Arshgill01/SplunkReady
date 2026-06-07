@@ -65,3 +65,12 @@ jobs:
           NODE
 
           npm publish --registry=https://npm.pkg.github.com
+
+      - name: Verify scoped package in GitHub Packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          package_version="$(node -p 'require("./package.json").version')"
+          npm view "@arshgill01/splunkready@${package_version}" name version repository.url bin --registry=https://npm.pkg.github.com --json
