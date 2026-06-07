@@ -593,3 +593,12 @@ distinguishes this endpoint/tool-route failure from a generic permission
 failure and gives route/app-version remediation steps. Residual hosted-model
 risk remains live endpoint readiness: the MCP endpoint must actually invoke the
 advertised SAIA tools before this track can claim live SAIA proof.
+
+Move 118 reduces package/MCP release risk by making the installability audit
+prove the packed tarball can run both `npx splunkready judge-proof` and
+`npx splunkready mcp` from a clean temp project. The MCP smoke sends a real
+JSON-RPC `initialize` request over stdio and requires the installed server to
+identify as SplunkReady with the expected protocol version and deterministic
+readiness instructions. Residual risk remains registry timing: the current
+published npm version must be republished after Move 116+ before public
+`@latest` installs are guaranteed to expose the MCP entrypoint.

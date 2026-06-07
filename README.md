@@ -153,6 +153,14 @@ The client-config resources use `npx -y splunkready@latest mcp` for
 SplunkReady and leave the existing Splunk MCP server URL/token as
 operator-owned placeholders.
 
+The release gate also packs the current source into a clean temp project and
+requires the installed package to complete both `npx splunkready judge-proof`
+and an MCP `initialize` through `npx splunkready mcp`:
+
+```bash
+npm run audit:package-installability
+```
+
 For the single-mission static replay shell, run:
 
 ```bash

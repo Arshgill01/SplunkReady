@@ -9958,6 +9958,59 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-07 - Move 118 Package MCP Installability Audit
+
+Commands:
+
+- `node scripts/audit-package-installability.mjs`
+- `npm run audit:package-installability`
+- `npm run check`
+- `tmp=$(mktemp -d /tmp/splunkready-publish-smoke-XXXXXX); cd "$tmp"; npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json >/tmp/splunkready-publish-smoke-latest.json; node -e 'const fs=require("fs"); const summary=JSON.parse(fs.readFileSync("judge-proof/judge-proof-summary.json","utf8")); console.log(JSON.stringify({status:summary.status, mutation:summary.mutation, missionCount:summary.missionCount, output:process.cwd()}, null, 2));'`
+
+Result:
+
+- PASS for direct package installability:
+  - installed `splunkready-0.1.0.tgz` into a clean temp project;
+  - `npx splunkready judge-proof` returned `PASS`;
+  - `judge-proof-summary.json` preserved `mutation: false`;
+  - `npx splunkready mcp` returned a valid MCP `initialize` response.
+- PASS for npm-script package installability:
+  - same packed-package judge-proof and MCP initialize checks passed through
+    `npm run audit:package-installability`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit checked 164 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz`, ran
+    judge-proof, and initialized `splunkready mcp`;
+  - 59 test files passed;
+  - 365 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 57 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for current registry package smoke:
+  - `npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json`
+    completed from clean temp folder `/private/tmp/splunkready-publish-smoke-1yjEBk`;
+  - generated `judge-proof/judge-proof-summary.json` reported
+    `status: "PASS"` and `mutation: false`.
+
+Notes:
+
+- Playwright is not required unless this move changes UI source or behavior.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Registry package republish remains necessary before public `@latest` users
+  get the new `splunkready mcp` entrypoint and package audit hardening.
+
 ## 2026-06-07 - Move 116 External MCP Client Config Resources
 
 Commands:

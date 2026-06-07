@@ -12463,3 +12463,43 @@ Open blockers:
   endpoint returning not found when invoking advertised SAIA tools.
 - The already-published npm `splunkready@0.1.0` package does not include
   Move 116/117 changes until a later publish.
+
+## 2026-06-07 16:05 - Move 118 Package MCP Installability Audit
+
+Scope:
+- Extended the packed-package installability audit so a clean temp install must
+  prove both the judge path and the MCP stdio entrypoint.
+- The audit still packs the current source, installs the tarball into a temp
+  project, runs `npx splunkready judge-proof --out <proof> --json`, and checks
+  `PASS` plus `mutation: false`.
+- Added an installed-package MCP smoke inside the same temp project by spawning
+  `npx splunkready mcp`, sending MCP `initialize` over stdio, and requiring a
+  valid SplunkReady initialize response.
+- Documented the release gate in README and claim-ledger evidence so package
+  readiness covers the MCP category surface, not just the fixture proof.
+- Ran the current registry package smoke from a clean temp folder and verified
+  the generated `judge-proof-summary.json` reports `status: "PASS"` and
+  `mutation: false`.
+- Did not call live Splunk.
+- Did not read, source, print, or commit real `.splunkready*` / `.env*` secret
+  values.
+- Did not make SAIA or any LLM output authoritative.
+- Did not mutate Splunk.
+- Did not use subagents.
+
+Files changed:
+- `scripts/audit-package-installability.mjs`
+- `README.md`
+- `submission-evidence/claim-ledger.md`
+- `moves/README.md`
+- `moves/moves118.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- The registry package must still be republished after this commit before
+  `npx -y splunkready@latest mcp` is guaranteed to include the Move 116+
+  MCP entrypoint and the Move 118 package audit.
+- Live SAIA remains blocked until the operator-owned MCP endpoint can invoke
+  advertised hosted-model tools successfully.
