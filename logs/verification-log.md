@@ -14481,3 +14481,22 @@ Notes:
 - `.dockerignore` excludes `.splunkready*` and `.env*` so local secrets are not
   sent to Docker build context.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 - Move 147 mock-state and Docker packaging remote CI
+
+Commands:
+
+- `git push origin splunkready-build`
+- `gh run list --branch splunkready-build --limit 3`
+- `gh run watch 27098923531 --exit-status`
+
+Results:
+
+- PASS for push:
+  - `splunkready-build` advanced from `41aba27` to `464a97b`.
+- PASS for GitHub Actions run `27098923531`:
+  - workflow `CI`;
+  - job `npm run check`;
+  - completed in 1m20s;
+  - `Run canonical gate` passed;
+  - `Run credential-free live mock proof` passed.
