@@ -10070,6 +10070,57 @@ Open blockers:
   either canonical names or the new MCP alias names before the diagnostic can
   attempt `dedicated-saia-mcp`.
 
+## 2026-06-07 18:09 - Move 130 Splunk MCP Remote Client Config Evidence
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/mcp/server.test.ts tests/cli/flow.test.ts tests/scripts/submission-copy-audit.test.ts --testNamePattern "client config|MCP proof|mcp-proof|mcp-remote|submission copy"`
+- `npx vitest run tests/mcp/server.test.ts tests/cli/flow.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run mcp-proof && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json && npm run public-demo:build`
+- `command -v npx >/dev/null 2>&1 && python3 -m http.server 4182 --bind 127.0.0.1 --directory artifacts/public-demo`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open "http://127.0.0.1:4182/?artifacts=artifacts%2Fmcp-proof#mcp-proof"`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" console`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval 'async () => { const response = await fetch("/artifacts/mcp-proof/mcp-proof-summary.json"); const summary = await response.json(); const joined = [summary.dualServerClientConfigResource.contents[0].text, summary.claudeDesktopClientConfigResource.contents[0].text, summary.cursorClientConfigResource.contents[0].text].join("\n"); return { hasMcpRemote: joined.includes("mcp-remote"), hasSplunkUrl: joined.includes("SPLUNKREADY_SPLUNK_MCP_URL"), hasSplunkTokenHeader: joined.includes("Authorization: Bearer ${SPLUNKREADY_SPLUNK_MCP_TOKEN}"), hasSaiaAlias: joined.includes("SPLUNKREADY_SAIA_MCP_URL") && joined.includes("SPLUNKREADY_SAIA_MCP_TOKEN"), artifactFailure: document.body.textContent.includes("Artifact load failure") }; }'`
+- `lsof -ti tcp:4182 | xargs -r kill`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused pattern:
+  - 1 test file passed;
+  - 3 tests passed;
+  - 57 tests skipped by focused pattern.
+- PASS for full relevant MCP/CLI/submission-copy test files:
+  - 3 test files passed;
+  - 60 tests passed.
+- PASS for MCP proof and public demo rebuild:
+  - `artifacts/mcp-proof` returned `status: "PASS"`;
+  - `submission-evidence/mcp-proof` returned `status: "PASS"`;
+  - public demo export copied `mcp-proof`, `suite-proof`,
+    `public-proof-export`, and `judge-proof`.
+- PASS for Playwright public route verification:
+  - opened `http://127.0.0.1:4182/?artifacts=artifacts%2Fmcp-proof#mcp-proof`;
+  - snapshot showed MCP proof route loaded from MCP proof artifacts;
+  - console reported 0 errors and 0 warnings;
+  - browser eval returned `hasMcpRemote: true`, `hasSplunkUrl: true`,
+    `hasSplunkTokenHeader: true`, `hasSaiaAlias: true`, and
+    `artifactFailure: false`.
+
+Notes:
+
+- Playwright was run because public MCP proof artifacts changed.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Full `npm run check` still needs to run after the log updates.
+- The `mcp-remote` config is a credential-placeholder template; it does not
+  claim live Splunk MCP credentials are present in the tracked evidence pack.
+
 ## 2026-06-07 17:45 - Move 127 Dedicated SAIA MCP Routing
 
 Commands:

@@ -152,6 +152,7 @@ commands, or filesystem paths.
 | P0 | [127](moves127.md) Dedicated SAIA MCP routing | 0.5d | Lets live hosted-model proof route `saia_*` calls to a dedicated SAIA/cloud MCP endpoint while keeping core Splunk MCP calls separate. |
 | P0 | [128](moves128.md) MCP client config SAIA routing evidence | 0.5d | Exposes dedicated SAIA endpoint/token placeholders through MCP client-config resources, proof evidence, and submission-copy guards. |
 | P0 | [129](moves129.md) SAIA MCP env alias readiness | 0.5d | Accepts SAIA MCP URL/token aliases from operator env files and records alias source names without writing secret values. |
+| P0 | [130](moves130.md) Splunk MCP remote client config evidence | 0.5d | Makes external MCP client resources use Splunk's `mcp-remote` sample-client shape with credential placeholders. |
 
 ## Non-Negotiable Boundaries
 

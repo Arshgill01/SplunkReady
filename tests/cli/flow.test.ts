@@ -1763,28 +1763,52 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.clientConfigResource.contents[0].text).toContain("\"splunkready\"");
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain("\"splunk\"");
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain("\"splunkready\"");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("\"command\": \"npx\"");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("\"mcp-remote\"");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SPLUNK_MCP_URL");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain(
+      "Authorization: Bearer ${SPLUNKREADY_SPLUNK_MCP_TOKEN}"
+    );
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain(
       "\"certificationTool\": \"splunkready_certify_mcp_transcript\""
     );
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_ENDPOINT");
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TOKEN");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_URL");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_TOKEN");
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain(
       "\"hostedModelDiagnosticTool\": \"splunkready_check_hosted_model_access\""
+    );
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"command\": \"npx\"");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"mcp-remote\"");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SPLUNK_MCP_URL");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain(
+      "Authorization: Bearer ${SPLUNKREADY_SPLUNK_MCP_TOKEN}"
     );
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"command\": \"npm\"");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"cwd\": \"/path/to/SplunkReady\"");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"mcp\"");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_ENDPOINT");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TOKEN");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_URL");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_TOKEN");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain(
       "\"certificationTool\": \"splunkready_certify_mcp_transcript_content\""
     );
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"mutation\": false");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"command\": \"npx\"");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"mcp-remote\"");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SPLUNK_MCP_URL");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain(
+      "Authorization: Bearer ${SPLUNKREADY_SPLUNK_MCP_TOKEN}"
+    );
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"command\": \"npm\"");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"cwd\": \"/path/to/SplunkReady\"");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"preserveTranscript\"");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_ENDPOINT");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TOKEN");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_URL");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_TOKEN");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain(
       "\"hostedModelDiagnosticTool\": \"splunkready_check_hosted_model_access\""
     );

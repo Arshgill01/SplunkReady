@@ -151,8 +151,10 @@ npm run mcp
 ```
 
 The client-config resources use `npm run mcp` with a `/path/to/SplunkReady`
-placeholder for SplunkReady and leave the existing Splunk MCP server URL/token
-as operator-owned placeholders. The published `splunkready@0.1.0` package
+placeholder for SplunkReady. The existing Splunk MCP side uses an `npx -y
+mcp-remote` template with `${SPLUNKREADY_SPLUNK_MCP_URL}` and
+`${SPLUNKREADY_SPLUNK_MCP_TOKEN}` placeholders copied from the Splunk MCP Server
+app sample client configuration. The published `splunkready@0.1.0` package
 supports the no-clone `judge-proof` command but does not yet include the
 `splunkready mcp` entrypoint; the local package-installability gate verifies
 that the current source tarball does.

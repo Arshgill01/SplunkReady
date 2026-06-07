@@ -565,18 +565,30 @@ const splunkMcpEnvPlaceholders = (): Record<string, string> => ({
   SPLUNK_MCP_TOKEN: "${SPLUNKREADY_SPLUNK_MCP_TOKEN}",
   SPLUNKREADY_SAIA_ENDPOINT: "${SPLUNKREADY_SAIA_ENDPOINT}",
   SPLUNKREADY_SAIA_TOKEN: "${SPLUNKREADY_SAIA_TOKEN}",
+  SPLUNKREADY_SAIA_MCP_URL: "${SPLUNKREADY_SAIA_MCP_URL}",
+  SPLUNKREADY_SAIA_MCP_TOKEN: "${SPLUNKREADY_SAIA_MCP_TOKEN}",
   SPLUNKREADY_SAIA_ENABLED: "true"
+});
+
+const splunkMcpRemoteServerConfig = (description: string): Record<string, unknown> => ({
+  description,
+  command: "npx",
+  args: [
+    "-y",
+    "mcp-remote",
+    "${SPLUNKREADY_SPLUNK_MCP_URL}",
+    "--header",
+    "Authorization: Bearer ${SPLUNKREADY_SPLUNK_MCP_TOKEN}"
+  ],
+  env: splunkMcpEnvPlaceholders(),
+  source: "Splunk MCP Server app sample client configuration using mcp-remote placeholders."
 });
 
 const dualServerClientConfig = (): Record<string, unknown> => ({
   mcpServers: {
-    splunk: {
-      description:
-        "Operator-provided Splunk MCP Server. Keep credentials in the MCP client or environment, not in captured transcripts. If SAIA hosted-model calls use a separate cloud MCP endpoint, set the SPLUNKREADY_SAIA_* placeholders.",
-      command: "<existing-splunk-mcp-server-command>",
-      args: ["<existing-splunk-mcp-server-args>"],
-      env: splunkMcpEnvPlaceholders()
-    },
+    splunk: splunkMcpRemoteServerConfig(
+      "Operator-provided Splunk MCP Server. Replace placeholders with the endpoint and encrypted token copied from the Splunk MCP Server app sample client configuration. Keep credentials in the MCP client or environment, not in captured transcripts. If SAIA hosted-model calls use a separate cloud MCP endpoint, set the SPLUNKREADY_SAIA_* placeholders or their SAIA_MCP aliases."
+    ),
     splunkready: {
       description: "Local SplunkReady certification server for deterministic Readiness Receipts.",
       command: "npm",
@@ -610,13 +622,9 @@ const sourceCloneMcpServerConfig = (): Record<string, unknown> => ({
 
 const claudeDesktopClientConfig = (): Record<string, unknown> => ({
   mcpServers: {
-    splunk: {
-      description:
-        "Existing Splunk MCP Server. Replace the command/args with the operator-approved Splunk MCP launch command; keep credentials in the operator environment. Use SPLUNKREADY_SAIA_ENDPOINT/TOKEN only when SAIA hosted-model tools use a separate cloud MCP target.",
-      command: "<existing-splunk-mcp-server-command>",
-      args: ["<existing-splunk-mcp-server-args>"],
-      env: splunkMcpEnvPlaceholders()
-    },
+    splunk: splunkMcpRemoteServerConfig(
+      "Existing Splunk MCP Server. Replace placeholders with the endpoint and encrypted token copied from the Splunk MCP Server app sample client configuration. Use SPLUNKREADY_SAIA_ENDPOINT/TOKEN or SPLUNKREADY_SAIA_MCP_URL/TOKEN only when SAIA hosted-model tools use a separate cloud MCP target."
+    ),
     splunkready: {
       description:
         "SplunkReady Agent Readiness Compiler from a source clone. Replace cwd with the checked-out repository path until the next npm package release includes `splunkready mcp`.",
@@ -639,13 +647,9 @@ const claudeDesktopClientConfig = (): Record<string, unknown> => ({
 
 const cursorClientConfig = (): Record<string, unknown> => ({
   mcpServers: {
-    splunk: {
-      description:
-        "Existing Splunk MCP Server. Replace this placeholder with the operator-approved Splunk MCP command and keep tokens outside captured transcripts. Dedicated SAIA/cloud endpoint placeholders are optional and only affect saia_* calls.",
-      command: "<existing-splunk-mcp-server-command>",
-      args: ["<existing-splunk-mcp-server-args>"],
-      env: splunkMcpEnvPlaceholders()
-    },
+    splunk: splunkMcpRemoteServerConfig(
+      "Existing Splunk MCP Server. Replace placeholders with the endpoint and encrypted token copied from the Splunk MCP Server app sample client configuration. Dedicated SAIA/cloud endpoint placeholders are optional and only affect saia_* calls."
+    ),
     splunkready: {
       description:
         "SplunkReady certification server for receipts, resources, prompts, and no-mutation readiness checks from a source clone.",

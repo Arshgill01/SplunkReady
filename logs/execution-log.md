@@ -13029,3 +13029,48 @@ Open blockers:
   the new `SPLUNKREADY_SAIA_MCP_URL` / `SPLUNKREADY_SAIA_MCP_TOKEN` aliases as
   missing. The live diagnostic therefore remains on `shared-splunk-mcp` and
   stays `SAIA_ROUTE_NOT_FOUND`.
+
+## 2026-06-07 18:08 - Move 130 Splunk MCP Remote Client Config Evidence
+
+Scope:
+- Replaced generic existing-Splunk-MCP placeholders in dual-server, Claude
+  Desktop, and Cursor MCP client-config resources with an `npx -y mcp-remote`
+  template.
+- Kept the Splunk MCP endpoint and encrypted token as placeholders:
+  `${SPLUNKREADY_SPLUNK_MCP_URL}` and
+  `Authorization: Bearer ${SPLUNKREADY_SPLUNK_MCP_TOKEN}`.
+- Kept SplunkReady's MCP entrypoint as source-clone `npm run mcp` because npm
+  latest still reports only `splunkready@0.1.0`.
+- Included canonical SAIA placeholders and SAIA MCP alias placeholders in the
+  client-config resources.
+- Regenerated tracked MCP proof evidence and rebuilt the public demo export.
+- Added README, claim-ledger, and submission-copy audit coverage for the
+  `mcp-remote` client-config claim.
+- Used Playwright to verify the exported public MCP proof route loads without
+  console errors and that browser-loaded JSON includes the `mcp-remote`
+  placeholders.
+- Did not use subagents.
+- Did not mutate Splunk.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  contents.
+
+Files changed:
+- `src/mcp/server.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/mcp-client-session.jsonl`
+- `submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `moves/README.md`
+- `moves/moves130.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- The public npm package still reports only `splunkready@0.1.0`, so public MCP
+  client resources continue to use source-clone `npm run mcp` for SplunkReady
+  until a later registry publish includes the MCP entrypoint.

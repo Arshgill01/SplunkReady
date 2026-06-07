@@ -714,3 +714,13 @@ operator-owned env file still reports both canonical and alias SAIA variables
 as missing, so the live diagnostic remains `SAIA_ROUTE_NOT_FOUND` on the shared
 Splunk MCP endpoint. Residual risk is operator configuration, not deterministic
 grading or fixture/live parity.
+
+Move 130 reduces MCP-category external-client risk by replacing generic
+existing-Splunk-MCP command placeholders with a concrete `npx -y mcp-remote`
+template in the dual-server, Claude Desktop, and Cursor client-config
+resources. The generated proof and public export now show
+`${SPLUNKREADY_SPLUNK_MCP_URL}` and
+`Authorization: Bearer ${SPLUNKREADY_SPLUNK_MCP_TOKEN}` placeholders beside the
+source-clone SplunkReady MCP entrypoint. Residual risk remains registry timing:
+until npm latest includes the current MCP entrypoint, SplunkReady's side of the
+external client config must stay source-clone `npm run mcp`.
