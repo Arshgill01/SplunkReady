@@ -9605,6 +9605,53 @@ Open blockers:
 
 - Hosted CI still needs to run after push.
 
+## 2026-06-07 - Move 106 Live Security Public Export Redaction Guard
+
+Commands:
+
+- `npx vitest run tests/workflows/public-proof-export.test.ts`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for focused public-proof export redaction coverage:
+  - 1 test file passed;
+  - 1 test passed.
+- PASS for `git diff --check`:
+  - completed with no output.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 183 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and `npx
+    splunkready judge-proof` returned `PASS`;
+  - 59 test files passed;
+  - 355 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 39 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- The redaction test uses synthetic live-security data only.
+- Did not read or export real ignored live artifacts.
+- Did not use live Splunk credentials.
+- Did not use Gemini credentials.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+
 ## 2026-06-07 - Move 105 Remote Cleanroom After Hosted Copy
 
 Commands:

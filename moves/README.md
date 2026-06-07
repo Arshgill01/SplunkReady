@@ -128,6 +128,7 @@ commands, or filesystem paths.
 | P0 | [103](moves103.md) Public judge proof evidence pack | 0.5d | Tracks the Playwright-verified hosted judge-proof view in the judge-facing evidence pack. |
 | P0 | [104](moves104.md) Hosted demo public copy guard | 0.5d | Requires the hosted MCP proof and judge-proof routes in public submission copy. |
 | P0 | [105](moves105.md) Remote cleanroom after hosted copy | 0.5d | Verifies the pushed branch, hosted routes, evidence pack, and published package from fresh clean-room paths. |
+| P0 | [106](moves106.md) Live security public export redaction guard | 0.5d | Proves live-security proof summaries are redacted before public export. |
 
 ## Non-Negotiable Boundaries
 

@@ -11921,3 +11921,36 @@ Files changed:
 
 Open blockers:
 - Hosted CI needs to run after push for Move 105.
+
+## 2026-06-07 14:23 - Move 106 Live Security Public Export Redaction Guard
+
+Scope:
+- Added focused workflow coverage for redacting
+  `live-security-proof-summary.json` during public proof export.
+- Used synthetic live-security summary data only.
+- Verified redaction of:
+  - endpoint URLs;
+  - private IPs;
+  - user paths;
+  - raw bodies;
+  - bearer strings;
+  - token-like keys.
+- Did not read or export real ignored live artifacts.
+- Did not change production exporter code; the test proved the existing
+  redaction workflow already covers this artifact.
+- Did not use live Splunk credentials.
+- Did not use Gemini credentials.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `tests/workflows/public-proof-export.test.ts`
+- `moves/README.md`
+- `moves/moves106.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 106.

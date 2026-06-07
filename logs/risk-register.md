@@ -486,3 +486,10 @@ verification, hosted MCP/judge-proof fetches, and the published-package `npx`
 judge proof smoke from a separate clean temp folder. Remaining risk is no
 longer clean-room reproducibility; it is live proof redaction and any final
 submission materials the user owns.
+
+Move 106 reduces live proof redaction risk without reading ignored live
+artifacts. A focused workflow test now proves that `public-proof-export`
+redacts `live-security-proof-summary.json` endpoint URLs, private IPs, user
+paths, raw bodies, bearer strings, and token-like keys before writing public
+export files. This still does not claim that the current operator-owned live
+proof has been exported and tracked; it proves the redaction path is guarded.
