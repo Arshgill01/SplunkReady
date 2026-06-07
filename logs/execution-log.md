@@ -14156,3 +14156,32 @@ Notes:
 - The live-mock MCP session is fixture-backed evidence and does not claim a
   real Splunk deployment was contacted.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07T17:09:58Z - Move 147 remote CI verification logged
+
+Intent:
+
+- Record the GitHub Actions result for the pushed live-mock MCP proof evidence
+  commit.
+
+Actions:
+
+- Checked GitHub Actions run `27099171451`.
+- Confirmed the run completed successfully for commit
+  `753fa4ed81a6e4ef5c28a5b0e27e8c515ea648e2`.
+- Confirmed the remote `npm run check` job passed both the canonical gate and
+  the credential-free live mock proof step.
+- Checked the public npm registry metadata for `splunkready`.
+- Checked that the worktree was clean before this log-only update.
+
+Files changed:
+
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `moves/moves147.md`
+
+Notes:
+
+- Public npm registry metadata still reported `splunkready@0.1.2` as `latest`
+  during this check.
+- No source code was changed.

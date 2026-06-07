@@ -82,3 +82,8 @@ in `mock-splunk-mcp-session.jsonl`, and records `liveMockSplunkMcp.status:
 PASS` with evidence refs `evt-102`, `evt-118`, and `evt-141`. `npm run
 mcp-proof` now includes `--live-mock` so regenerated MCP proof evidence keeps
 the two-server composition proof.
+
+Remote CI verification completed for the sixth slice. GitHub Actions run
+`27099171451` passed on commit
+`753fa4ed81a6e4ef5c28a5b0e27e8c515ea648e2`; the `npm run check` job passed the
+canonical gate and the credential-free live mock proof step.

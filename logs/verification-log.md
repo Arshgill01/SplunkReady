@@ -14575,3 +14575,27 @@ Notes:
 - The tracked MCP proof now captures both the SplunkReady MCP proof session and
   a credential-free mock Splunk MCP session.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 - Move 147 remote CI verification for MCP proof live-mock session
+
+Commands:
+
+- `gh run watch 27099171451 --exit-status`
+- `gh run view 27099171451 --json status,conclusion,headSha,displayTitle,url`
+
+Results:
+
+- PASS for GitHub Actions run `27099171451`.
+- PASS for job `npm run check` in 1m47s.
+- PASS for workflow step `Run canonical gate`.
+- PASS for workflow step `Run credential-free live mock proof`.
+- Verified head SHA:
+  `753fa4ed81a6e4ef5c28a5b0e27e8c515ea648e2`.
+- Run URL:
+  `https://github.com/Arshgill01/SplunkReady/actions/runs/27099171451`.
+
+Notes:
+
+- Public npm registry still reported `splunkready@0.1.2` as `latest` during
+  this check.
+- Worktree was clean before this log-only update.
