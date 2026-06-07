@@ -46,6 +46,8 @@ export interface LiveSplunkAdapterConfig {
   enabled?: boolean;
   endpointUrl?: string;
   authToken?: string;
+  hostedModelEndpointUrl?: string;
+  hostedModelAuthToken?: string;
   defaultApp?: string;
   timeoutMs?: number;
   capabilities?: ReadOnlySplunkToolName[];
@@ -62,6 +64,8 @@ export const createLiveSplunkAdapterConfigFromEnv = (
   enabled: env.SPLUNKREADY_LIVE_ENABLED === "true",
   endpointUrl: env.SPLUNKREADY_SPLUNK_MCP_URL,
   authToken: env.SPLUNKREADY_SPLUNK_MCP_TOKEN,
+  hostedModelEndpointUrl: env.SPLUNKREADY_SAIA_ENDPOINT,
+  hostedModelAuthToken: env.SPLUNKREADY_SAIA_TOKEN,
   defaultApp: env.SPLUNKREADY_SPLUNK_APP,
   timeoutMs: env.SPLUNKREADY_SPLUNK_TIMEOUT_MS ? Number(env.SPLUNKREADY_SPLUNK_TIMEOUT_MS) : undefined,
   capabilities: parseCapabilities(env.SPLUNKREADY_SPLUNK_CAPABILITIES)
@@ -487,9 +491,11 @@ const assertLiveAdapterReady = (
     });
   }
 
+  const useHostedModelTarget =
+    context.toolName.startsWith("saia_") && Boolean(config.hostedModelEndpointUrl && config.hostedModelAuthToken);
   return {
-    endpointUrl,
-    authToken,
+    endpointUrl: useHostedModelTarget ? config.hostedModelEndpointUrl ?? endpointUrl : endpointUrl,
+    authToken: useHostedModelTarget ? config.hostedModelAuthToken ?? authToken : authToken,
     timeoutMs: config.timeoutMs ?? 30_000,
     transport
   };

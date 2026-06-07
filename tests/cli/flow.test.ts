@@ -2568,7 +2568,9 @@ describe("SplunkReady CLI flow", () => {
     const envDir = await mkdtemp(join(tmpdir(), "splunkready-env-file-"));
     const envFile = join(envDir, ".splunkready-test");
     const mcp = await startMockMcpServer();
+    const saiaMcp = await startMockMcpServer();
     const token = "env-file-test-token";
+    const saiaToken = "env-file-saia-token";
 
     await writeFile(
       envFile,
@@ -2576,6 +2578,8 @@ describe("SplunkReady CLI flow", () => {
         "SPLUNKREADY_LIVE_ENABLED=true",
         `SPLUNKREADY_SPLUNK_MCP_URL=${mcp.url}`,
         `SPLUNKREADY_SPLUNK_MCP_TOKEN=${token}`,
+        `SPLUNKREADY_SAIA_ENDPOINT=${saiaMcp.url}`,
+        `SPLUNKREADY_SAIA_TOKEN=${saiaToken}`,
         "SPLUNKREADY_SAIA_ENABLED=true"
       ].join("\n"),
       "utf8"
@@ -2602,6 +2606,8 @@ describe("SplunkReady CLI flow", () => {
               SPLUNKREADY_LIVE_ENABLED: "",
               SPLUNKREADY_SPLUNK_MCP_URL: "",
               SPLUNKREADY_SPLUNK_MCP_TOKEN: "",
+              SPLUNKREADY_SAIA_ENDPOINT: "",
+              SPLUNKREADY_SAIA_TOKEN: "",
               SPLUNKREADY_SAIA_ENABLED: ""
             }
           )
@@ -2619,6 +2625,7 @@ describe("SplunkReady CLI flow", () => {
       });
     } finally {
       await mcp.close();
+      await saiaMcp.close();
     }
 
     const diagnosticText = await readFile(join(outDir, "hosted-model-diagnostic.json"), "utf8");
@@ -2627,7 +2634,11 @@ describe("SplunkReady CLI flow", () => {
       status: string;
       blockerClass: string;
       permission: { status: string; blockerClass: string };
-      setup: { requiredEnvironment: Array<{ name: string; status: string }>; optionalEnvironment: Array<{ name: string; status: string }> };
+      setup: {
+        hostedModelTransport: string;
+        requiredEnvironment: Array<{ name: string; status: string }>;
+        optionalEnvironment: Array<{ name: string; status: string }>;
+      };
     };
 
     expect(diagnostic).toMatchObject({
@@ -2635,17 +2646,27 @@ describe("SplunkReady CLI flow", () => {
       blockerClass: "NONE",
       permission: { status: "OK", blockerClass: "NONE" },
       setup: {
+        hostedModelTransport: "dedicated-saia-mcp",
         requiredEnvironment: [
           { name: "SPLUNKREADY_LIVE_ENABLED", status: "set" },
           { name: "SPLUNKREADY_SPLUNK_MCP_URL", status: "set" },
           { name: "SPLUNKREADY_SPLUNK_MCP_TOKEN", status: "set" }
         ],
-        optionalEnvironment: [{ name: "SPLUNKREADY_SAIA_ENABLED", status: "set" }]
+        optionalEnvironment: [
+          { name: "SPLUNKREADY_SAIA_ENABLED", status: "set" },
+          { name: "SPLUNKREADY_SAIA_ENDPOINT", status: "set" },
+          { name: "SPLUNKREADY_SAIA_TOKEN", status: "set" }
+        ]
       }
     });
     expect(diagnosticText).not.toContain(token);
+    expect(diagnosticText).not.toContain(saiaToken);
     expect(proofText).not.toContain(token);
-    expect(mcp.calls.map((call) => call.params.name)).toEqual(
+    expect(proofText).not.toContain(saiaToken);
+    expect(mcp.calls.map((call) => call.params.name)).not.toEqual(
+      expect.arrayContaining(["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"])
+    );
+    expect(saiaMcp.calls.map((call) => call.params.name)).toEqual(
       expect.arrayContaining(["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"])
     );
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));

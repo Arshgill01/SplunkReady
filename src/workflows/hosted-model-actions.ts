@@ -43,6 +43,7 @@ export interface HostedModelSetupVariable {
 export interface HostedModelSetup {
   source: "splunkready-live-hosted-model-preflight";
   configured: boolean;
+  hostedModelTransport: "shared-splunk-mcp" | "dedicated-saia-mcp";
   requiredEnvironment: HostedModelSetupVariable[];
   optionalEnvironment: HostedModelSetupVariable[];
   operatorCommand: string;
@@ -158,6 +159,8 @@ const liveHostedModelSetupFromEnv = (env: NodeJS.ProcessEnv): HostedModelSetup =
   return {
     source: "splunkready-live-hosted-model-preflight",
     configured: requiredEnvironment.every((variable) => variable.status === "set"),
+    hostedModelTransport:
+      env.SPLUNKREADY_SAIA_ENDPOINT && env.SPLUNKREADY_SAIA_TOKEN ? "dedicated-saia-mcp" : "shared-splunk-mcp",
     requiredEnvironment,
     optionalEnvironment: [
       {
@@ -165,6 +168,18 @@ const liveHostedModelSetupFromEnv = (env: NodeJS.ProcessEnv): HostedModelSetup =
         status: envVariableStatus(env, "SPLUNKREADY_SAIA_ENABLED", (value) => value === "true"),
         requiredValue: "true",
         purpose: "Shows SAIA availability in the workbench; the proof still depends on live hosted-model tool calls."
+      },
+      {
+        name: "SPLUNKREADY_SAIA_ENDPOINT",
+        status: envVariableStatus(env, "SPLUNKREADY_SAIA_ENDPOINT"),
+        requiredValue: "set when SAIA uses a dedicated MCP endpoint",
+        purpose: "Routes only saia_* hosted-model tool calls to the operator-owned SAIA/cloud MCP endpoint."
+      },
+      {
+        name: "SPLUNKREADY_SAIA_TOKEN",
+        status: envVariableStatus(env, "SPLUNKREADY_SAIA_TOKEN"),
+        requiredValue: "set when SAIA uses a dedicated MCP token",
+        purpose: "Authenticates only saia_* hosted-model tool calls when a dedicated SAIA endpoint is configured."
       }
     ],
     operatorCommand: hostedModelDiagnosticCommand,
@@ -341,6 +356,7 @@ const hostedModelRemediationChecks = (
     return [
       "Copy the endpoint again from the Splunk MCP Server app sample client configuration; do not guess or hand-edit the path.",
       "Verify tools/list and tools/call use the same endpoint and MCP client configuration.",
+      "If Splunk AI Assistant uses a separate cloud MCP endpoint, set SPLUNKREADY_SAIA_ENDPOINT and SPLUNKREADY_SAIA_TOKEN so only saia_* calls use that target.",
       "Confirm the MCP Server app/version backing SAIA hosted-model tools is installed and reachable, not only tool discovery.",
       "Confirm Splunk AI Assistant and the cloud connection are enabled for the same tenant, user, and token."
     ];

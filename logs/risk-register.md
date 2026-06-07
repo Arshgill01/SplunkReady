@@ -683,3 +683,14 @@ guards, and MCP client-config resources now separate the published no-clone
 judge-proof path from current-source MCP client setup. Residual risk remains
 until an npm-authenticated publish makes the current source MCP entrypoint
 available through `splunkready@latest`.
+
+Move 127 reduces live SAIA and MCP-category risk by supporting a dedicated
+SAIA/cloud MCP endpoint for hosted-model calls. Core Splunk MCP calls still use
+the existing Splunk endpoint/token, while `saia_*` calls can route through
+`SPLUNKREADY_SAIA_ENDPOINT` and `SPLUNKREADY_SAIA_TOKEN` when both are set. The
+operator-owned live diagnostic remains blocked because the ignored env file
+currently reports those two dedicated SAIA variables as missing, so the run
+stays on `shared-splunk-mcp` and returns `SAIA_ROUTE_NOT_FOUND`. Residual risk
+is now operational rather than architectural: add the dedicated SAIA endpoint
+and token to the ignored env file, or fix the shared MCP endpoint so it can
+invoke all four advertised `saia_*` tools.

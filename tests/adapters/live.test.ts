@@ -157,6 +157,50 @@ describe("live Splunk adapter skeleton", () => {
     ]);
   });
 
+  it("routes SAIA tools to a dedicated hosted-model MCP target when configured", async () => {
+    const calls: Array<{ toolName: string; endpointUrl: string; authToken: string }> = [];
+    const transport: LiveSplunkTransport = {
+      async call<TInput, TOutput>(request: LiveSplunkTransportRequest<TInput>): Promise<TOutput> {
+        calls.push({ toolName: request.toolName, endpointUrl: request.endpointUrl, authToken: request.authToken });
+
+        if (request.toolName === "splunk_get_info") {
+          return { deploymentName: "acme-soc-prod", readOnlyTools: ["splunk_get_info"] } as TOutput;
+        }
+
+        if (request.toolName === "saia_explain_spl") {
+          return { explanation: "The SPL uses a broad index wildcard." } as TOutput;
+        }
+
+        throw new Error(`unexpected tool ${request.toolName}`);
+      }
+    };
+    const adapter = createLiveSplunkAccessAdapter({
+      enabled: true,
+      endpointUrl: "https://splunk.example.invalid/mcp",
+      authToken: "splunk-token",
+      hostedModelEndpointUrl: "https://saia.example.invalid/mcp",
+      hostedModelAuthToken: "saia-token",
+      capabilities: ["splunk_get_info", "saia_explain_spl"],
+      transport
+    });
+
+    await adapter.getInfo(requestOptions);
+    await adapter.explainSpl?.({ query: "search index=*" }, requestOptions);
+
+    expect(calls).toEqual([
+      {
+        toolName: "splunk_get_info",
+        endpointUrl: "https://splunk.example.invalid/mcp",
+        authToken: "splunk-token"
+      },
+      {
+        toolName: "saia_explain_spl",
+        endpointUrl: "https://saia.example.invalid/mcp",
+        authToken: "saia-token"
+      }
+    ]);
+  });
+
   it("normalizes live Splunk MCP result envelopes at the adapter boundary", async () => {
     const calls: Array<{ toolName: string; input: unknown }> = [];
     const transport: LiveSplunkTransport = {
@@ -441,6 +485,8 @@ describe("live Splunk adapter skeleton", () => {
       enabled: false,
       endpointUrl: undefined,
       authToken: undefined,
+      hostedModelEndpointUrl: undefined,
+      hostedModelAuthToken: undefined,
       defaultApp: undefined,
       timeoutMs: undefined,
       capabilities: undefined

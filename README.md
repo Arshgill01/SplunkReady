@@ -335,6 +335,10 @@ transcript certification summary under `artifacts/mcp-proof/`.
 For operator-owned live SAIA checks, `hosted-model-proof` and
 `hosted-model-diagnostic` accept `--env-file <path>` so ignored
 `.splunkready*` files can supply live variables without printing token values.
+If Splunk AI Assistant uses a separate cloud MCP endpoint, set
+`SPLUNKREADY_SAIA_ENDPOINT` and `SPLUNKREADY_SAIA_TOKEN`; SplunkReady keeps core
+Splunk MCP calls on `SPLUNKREADY_SPLUNK_MCP_URL` and routes only `saia_*`
+hosted-model calls to the SAIA target.
 
 To summarize several proof bundles for one environment, generate a certification index:
 

@@ -9958,6 +9958,81 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-07 17:45 - Move 127 Dedicated SAIA MCP Routing
+
+Commands:
+
+- `rm -rf artifacts/live-hosted-model-diagnostic && node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json`
+- `rm -rf artifacts/live-hosted-model-diagnostic && NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json`
+- `jq '{status, mutation, blockerClass, requiredTools, availableTools, missingTools, passedTools, blockedTools, permission, remediation, toolResults: [.toolResults[] | {toolName,status,contractAdvertised,error}]}' artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json`
+- `jq '{status, mutation, setup: {configured: .setup.configured, requiredEnvironment: .setup.requiredEnvironment, optionalEnvironment: .setup.optionalEnvironment}, toolCalls, passedTools, blockedTools, toolResults: [.toolResults[] | {toolName,status,contractAdvertised,error}], error}' artifacts/live-hosted-model-diagnostic/hosted-model-proof.json`
+- `npx tsc --noEmit`
+- `npx vitest run tests/adapters/live.test.ts tests/workflows/hosted-model-actions.test.ts tests/cli/flow.test.ts --testNamePattern "SAIA|hosted-model|hosted model|dedicated|env file|live Splunk adapter"`
+- `npm run build`
+- `rm -rf artifacts/live-hosted-model-diagnostic && NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json`
+- `jq '{status, mutation, blockerClass, setup: {configured: .setup.configured, hostedModelTransport: .setup.hostedModelTransport, requiredEnvironment: .setup.requiredEnvironment, optionalEnvironment: .setup.optionalEnvironment}, requiredTools, availableTools, missingTools, passedTools, blockedTools, permission: {status: .permission.status, blockerClass: .permission.blockerClass, message: .permission.message, requiredActions: .permission.requiredActions}, remediation: {status: .remediation.status, blockerClass: .remediation.blockerClass, summary: .remediation.summary, operatorChecks: .remediation.operatorChecks}, toolResults: [.toolResults[] | {toolName,status,contractAdvertised,error}]}' artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json`
+- `npx vitest run tests/adapters/live.test.ts tests/workflows/hosted-model-actions.test.ts tests/cli/flow.test.ts`
+- `npm run check`
+
+Result:
+
+- FAIL, then useful live diagnostic without TLS override:
+  - command failed before hosted-model proof with
+    `LIVE_ADAPTER_TRANSPORT_ERROR while calling splunk_get_info`;
+  - no artifacts were written.
+- FAIL, but artifact-producing live diagnostic with the local TLS workaround
+  before the code change:
+  - strict gate exited failure because hosted-model proof was `BLOCKED`;
+  - `hosted-model-diagnostic.status`: `BLOCKED`;
+  - `mutation`: `false`;
+  - `blockerClass`: `SAIA_ROUTE_NOT_FOUND`;
+  - all four required SAIA tools were advertised;
+  - all four required SAIA tools were blocked by route-not-found;
+  - raw URLs were redacted as `[REDACTED_URL]`.
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused adapter/workflow/CLI tests:
+  - 3 test files passed;
+  - 20 tests passed;
+  - 38 tests skipped by focused pattern.
+- PASS for build:
+  - TypeScript emitted `dist`.
+- FAIL, but expected and more actionable live diagnostic after the code change:
+  - strict gate exited failure because hosted-model proof was still `BLOCKED`;
+  - `hostedModelTransport`: `shared-splunk-mcp`;
+  - `SPLUNKREADY_SAIA_ENDPOINT`: `missing`;
+  - `SPLUNKREADY_SAIA_TOKEN`: `missing`;
+  - `blockerClass`: `SAIA_ROUTE_NOT_FOUND`;
+  - remediation now recommends setting the dedicated SAIA endpoint/token when
+    Splunk AI Assistant uses a separate cloud MCP target.
+- PASS for full affected tests:
+  - 3 test files passed;
+  - 58 tests passed.
+- PASS for full `npm run check` before the log entry:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit checked 164 packed files;
+  - package installability audit passed for the current source tarball;
+  - 59 test files passed;
+  - 367 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 57 required claims.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or rendered
+  public demo artifacts.
+- The ignored live env file was passed only to SplunkReady commands; its
+  contents were not printed or committed.
+- Live SAIA remains blocked until the operator-owned env file includes the
+  dedicated SAIA endpoint/token or the shared MCP endpoint can invoke all four
+  advertised `saia_*` tools.
+
 ## 2026-06-07 - Move 126 Published-Package Copy Hygiene
 
 Commands:

@@ -56,6 +56,16 @@ export SPLUNKREADY_SPLUNK_APP='search'
 export SPLUNKREADY_SPLUNK_TIMEOUT_MS=30000
 ```
 
+If Splunk AI Assistant hosted-model tools are served through a separate cloud
+MCP endpoint, keep the core Splunk MCP variables above and add the dedicated
+SAIA target. SplunkReady will route only `saia_*` calls to this target:
+
+```bash
+export SPLUNKREADY_SAIA_ENABLED=true
+export SPLUNKREADY_SAIA_ENDPOINT='https://<SAIA_MCP_ENDPOINT>'
+export SPLUNKREADY_SAIA_TOKEN='<YOUR_SAIA_MCP_TOKEN>'
+```
+
 Leave `SPLUNKREADY_SPLUNK_CAPABILITIES` unset for `live-smoke`. The command pins its own inventory-only allowlist:
 
 - `splunk_get_info`
@@ -365,6 +375,9 @@ blocked at invocation time:
   returns not found when invoking them.
 - redaction check: hosted-model proof and diagnostic errors contain
   `[REDACTED_URL]` and no raw `https://` endpoint URL.
+- follow-up support: SplunkReady now accepts `SPLUNKREADY_SAIA_ENDPOINT` and
+  `SPLUNKREADY_SAIA_TOKEN` for deployments where SAIA/cloud hosted-model calls
+  use a separate MCP endpoint from core Splunk MCP inventory calls.
 
 Do not claim live SAIA PASS until this same command exits PASS with
 `--require-pass true`.

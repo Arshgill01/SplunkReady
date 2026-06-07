@@ -98,6 +98,7 @@ describe("hosted model workflows", () => {
       mutation: boolean;
       setup: {
         configured: boolean;
+        hostedModelTransport: string;
         requiredEnvironment: Array<{ name: string; status: string }>;
         optionalEnvironment: Array<{ name: string; status: string }>;
         secretHandling: string;
@@ -123,6 +124,7 @@ describe("hosted model workflows", () => {
       permission: { status: string; blockerClass: string; message: string; requiredActions: string[] };
       setup: {
         configured: boolean;
+        hostedModelTransport: string;
         requiredEnvironment: Array<{ name: string; status: string }>;
         optionalEnvironment: Array<{ name: string; status: string }>;
       };
@@ -137,12 +139,17 @@ describe("hosted model workflows", () => {
       mutation: false,
       setup: {
         configured: false,
+        hostedModelTransport: "shared-splunk-mcp",
         requiredEnvironment: [
           { name: "SPLUNKREADY_LIVE_ENABLED", status: "missing" },
           { name: "SPLUNKREADY_SPLUNK_MCP_URL", status: "missing" },
           { name: "SPLUNKREADY_SPLUNK_MCP_TOKEN", status: "missing" }
         ],
-        optionalEnvironment: [{ name: "SPLUNKREADY_SAIA_ENABLED", status: "missing" }]
+        optionalEnvironment: [
+          { name: "SPLUNKREADY_SAIA_ENABLED", status: "missing" },
+          { name: "SPLUNKREADY_SAIA_ENDPOINT", status: "missing" },
+          { name: "SPLUNKREADY_SAIA_TOKEN", status: "missing" }
+        ]
       },
       assistance: null
     });

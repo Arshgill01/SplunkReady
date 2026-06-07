@@ -12901,3 +12901,49 @@ Open blockers:
   package commands can claim the MCP stdio entrypoint.
 - Until then, no-clone package claims are limited to `judge-proof`; MCP client
   proof uses the checked-out source.
+
+## 2026-06-07 17:45 - Move 127 Dedicated SAIA MCP Routing
+
+Scope:
+- Ran the operator-owned live hosted-model diagnostic against
+  `./.splunkready-live.env` without reading, sourcing, printing, or committing
+  the secret file.
+- Confirmed the live core Splunk MCP configuration is set and the endpoint
+  advertises all four hosted-model tools, but `saia_generate_spl`,
+  `saia_explain_spl`, `saia_optimize_spl`, and `saia_ask_splunk_question`
+  still return route-not-found when invoked through the shared endpoint.
+- Added optional `SPLUNKREADY_SAIA_ENDPOINT` and `SPLUNKREADY_SAIA_TOKEN`
+  support so live hosted-model proof can route only `saia_*` calls to a
+  dedicated SAIA/cloud MCP target.
+- Kept core `splunk_*` calls on `SPLUNKREADY_SPLUNK_MCP_URL` and
+  `SPLUNKREADY_SPLUNK_MCP_TOKEN`.
+- Added secret-safe diagnostic setup evidence:
+  `hostedModelTransport: "shared-splunk-mcp" | "dedicated-saia-mcp"`.
+- Updated route-not-found remediation to tell operators when to set the
+  dedicated SAIA endpoint/token.
+- Updated README, the live setup checklist, and move logs.
+- Did not use subagents.
+- Did not mutate Splunk.
+- Did not make SAIA or any LLM output authoritative for pass/fail readiness.
+
+Files changed:
+- `src/adapters/live.ts`
+- `src/workflows/hosted-model-actions.ts`
+- `tests/adapters/live.test.ts`
+- `tests/workflows/hosted-model-actions.test.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `docs/live-setup-checklist.md`
+- `moves/README.md`
+- `moves/moves127.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- The current ignored env file does not report `SPLUNKREADY_SAIA_ENDPOINT` or
+  `SPLUNKREADY_SAIA_TOKEN` as set, so the live rerun remained on
+  `shared-splunk-mcp` and stayed `SAIA_ROUTE_NOT_FOUND`.
+- A real live SAIA PASS still requires either those dedicated SAIA variables or
+  a shared MCP endpoint that can actually invoke all four advertised `saia_*`
+  tools.
