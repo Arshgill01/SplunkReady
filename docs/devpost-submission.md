@@ -110,7 +110,11 @@ operations. The tracked operator-approved live install proof at
 `submission-evidence/splunk-app-install/splunk-app-install-proof.json` verifies
 the installed app metadata, launcher view, overview view, nav, KV Store
 collection, and lookup while redacting endpoint, username, password, and token
-values. It is not a Splunkbase approval claim.
+values. `submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json`
+then uses an explicit operator-approved write to populate six public-safe
+receipt summary rows and verify readback through `splunkready_receipts_lookup`.
+It does not upload raw traces, raw Splunk events, endpoints, usernames,
+passwords, or tokens. This is not a Splunkbase approval claim.
 
 For a strict CLI evidence gate:
 

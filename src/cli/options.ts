@@ -16,6 +16,7 @@ export interface CliOptions {
   hostedModelProofDir: string;
   envFile: string;
   appPackage: string;
+  confirmWrite: boolean;
   phase: "before" | "after";
   requireLive: boolean;
   requirePass: boolean;
@@ -82,6 +83,7 @@ Commands:
   live-security-ui-bundle --out <dir> [--proof-dir <dir>] [--security-check-dir <dir>] [--security-kit-dir <dir>] [--hosted-model-proof-dir <dir>] [--json]
   live-proof --out <dir> [--candidate-limit <n>] [--firewall] [--live-mock] [--json]
   splunk-app-install-proof --out <dir> [--app-package <path>] [--env-file <path>] [--confirm-install true|false] [--json]
+  splunk-receipt-store-proof --out <dir> [--dir <receipt-dir>] [--env-file <path>] [--confirm-write true|false] [--json]
   suite-proof --mode fixture --suite <path> --out <dir> [--require-fail-to-pass true|false] [--json]
   receipt   --out <dir> [--phase before|after] [--json]
   rerun     --mode fixture|live --out <dir> [--firewall] [--json]
@@ -109,6 +111,7 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
   hostedModelProofDir: "artifacts/hosted-model-proof",
   envFile: "",
   appPackage: "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+  confirmWrite: false,
   phase: "before",
   requireLive: false,
   requirePass: false,
@@ -231,6 +234,12 @@ export const parseArgs = (argv: string[]): { command: string; options: CliOption
       }
 
       options.confirmInstall = value === "true";
+    } else if (flag === "--confirm-write") {
+      if (value !== "true" && value !== "false") {
+        throw new Error("--confirm-write must be true or false.");
+      }
+
+      options.confirmWrite = value === "true";
     } else if (flag === "--strict-import") {
       if (value !== "true" && value !== "false") {
         throw new Error("--strict-import must be true or false.");

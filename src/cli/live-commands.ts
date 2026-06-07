@@ -18,6 +18,10 @@ import {
   runSplunkAppInstallProofWorkflow,
   type SplunkAppInstallProofResult
 } from "../workflows/splunk-app-install.js";
+import {
+  runSplunkReceiptStoreProofWorkflow,
+  type SplunkReceiptStoreProofResult
+} from "../workflows/splunk-receipt-store.js";
 
 export const liveSmokeCommand = async (options: CliOptions): Promise<LiveActionWorkflowResult> => {
   return runLiveSmokeWorkflow({
@@ -113,6 +117,22 @@ export const splunkAppInstallProofCommand = async (
       outDir: options.out,
       appPackagePath: options.appPackage,
       confirmInstall: options.confirmInstall,
+      envFileUsed: Boolean(options.envFile)
+    },
+    liveEnv
+  );
+};
+
+export const splunkReceiptStoreProofCommand = async (
+  options: CliOptions,
+  env: NodeJS.ProcessEnv = process.env
+): Promise<SplunkReceiptStoreProofResult> => {
+  const liveEnv = await mergeEnvFile(env, options.envFile);
+  return runSplunkReceiptStoreProofWorkflow(
+    {
+      outDir: options.out,
+      receiptDir: options.dir,
+      confirmWrite: options.confirmWrite,
       envFileUsed: Boolean(options.envFile)
     },
     liveEnv

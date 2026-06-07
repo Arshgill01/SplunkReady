@@ -16206,3 +16206,39 @@ Result:
   failing latest verdicts.
 - PASS: submission-copy audit with 200 required claims.
 - PASS: final `git diff --check`.
+## 2026-06-07 - Move 166 operator receipt KV ingestion proof
+
+Commands:
+
+- `npx vitest run tests/workflows/splunk-receipt-store.test.ts`
+- `npm run build`
+- `node dist/src/cli.js splunk-receipt-store-proof --out artifacts/splunk-receipt-store-skip --json`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js splunk-receipt-store-proof --out artifacts/splunk-receipt-store-live --dir submission-evidence/suite-proof --env-file ./.splunkready-live.env --confirm-write true --json`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js splunk-receipt-store-proof --out submission-evidence/splunk-receipt-store --dir submission-evidence/suite-proof --env-file ./.splunkready-live.env --confirm-write true --json`
+- `jq '{status, splunkMutation, operatorApproved, receiptSource, write, lookup, redaction}' submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json`
+- `rg -n 'Bearer|Basic|admin|127\\.0\\.0\\.1|localhost|https?://|super-secret|password=|token=' submission-evidence/splunk-receipt-store artifacts/splunk-receipt-store-live || true`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/workflows/splunk-receipt-store.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `git diff --check`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `npm run check`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS: focused receipt-store workflow tests passed with 2 tests.
+- PASS: TypeScript build passed.
+- PASS: no-confirm CLI path returned `SKIP` and wrote only skip artifacts.
+- PASS: live operator-approved receipt-store proof returned `PASS`.
+- PASS: tracked proof reports six requested rows, six deleted/rewritten rows,
+  six rows read back through `splunkready_receipts_lookup`, and zero missing
+  receipt hashes.
+- PASS: redaction scan returned no matches for auth, endpoint, username,
+  password, or token patterns in the tracked/live receipt-store proof outputs.
+- PASS: submission-copy audit passed with 241 required claims.
+- PASS: focused receipt-store plus submission-copy tests passed with 2 files
+  and 5 tests.
+- PASS: `npm run check` passed with 71 test files and 425 tests.
+- PASS: evidence pack SHA-256 verification passed, including
+  `submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json`
+  and `.md`.

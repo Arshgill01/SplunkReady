@@ -1086,3 +1086,10 @@ overview view, nav, receipt collection, and receipt lookup. Residual risk:
 Splunk returned `restartRequired: true`, so fresh browser rendering can still
 depend on an operator restart; the proof verifies management API visibility,
 not Splunkbase approval, Splunk Cloud vetting, or a public Splunkbase listing.
+Move 166 closes the "Splunk app receipt store is package-only" gap by writing
+six public-safe signed Readiness Receipt summaries into the installed
+`splunkready_receipts` KV Store collection and reading them back through
+`splunkready_receipts_lookup` on the operator-owned local Splunk server.
+Residual risk: this is explicit operator-approved receipt storage, not a
+default proof path or Splunkbase approval. The proof intentionally excludes raw
+traces, raw Splunk events, endpoint values, usernames, passwords, and tokens.

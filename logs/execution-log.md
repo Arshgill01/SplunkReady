@@ -15320,3 +15320,45 @@ Result:
   assignment, or token assignment values in the tracked install proof.
 - PASS: AppInspect still reports 0 errors and 0 failures on the same `.spl`.
 - PASS: `npm run check` passed after the targeted MCP proof timeout fix.
+## 2026-06-07T21:46:02Z - Move 166 operator receipt KV ingestion proof
+
+Intent:
+
+- Turn the installed Splunk app receipt KV Store from declared package surface
+  into observed operator-approved live Splunk integration evidence.
+
+Actions:
+
+- Added `splunk-receipt-store-proof` CLI command with an explicit
+  `--confirm-write true` gate.
+- Added `src/workflows/splunk-receipt-store.ts` to read the signed tracked
+  `submission-evidence/suite-proof/receipt-chain.json`, derive public-safe
+  receipt summary rows, write them into the installed app's
+  `splunkready_receipts` KV Store collection, and verify readback through
+  `splunkready_receipts_lookup`.
+- Stored only receipt IDs, hashes, verdict, score, mutation=false, policy
+  identity/version, source path, and Splunk-compatible `updated_at` epoch
+  values; raw traces, raw Splunk events, endpoints, usernames, passwords, and
+  tokens are not written to the KV Store proof artifact.
+- Added focused workflow tests for the no-confirm skip path and mocked
+  operator-approved write/readback path.
+- Ran the live proof against the operator-owned local Splunk server with
+  `--env-file ./.splunkready-live.env --confirm-write true`.
+- Tracked the redacted live proof under
+  `submission-evidence/splunk-receipt-store/`.
+- Updated README, Devpost copy, evidence README, claim ledger, submission-copy
+  guards, and the submission-copy fixture test.
+
+Result:
+
+- PASS: no-confirm/no-env CLI path writes `SKIP` and makes no live Splunk call.
+- PASS: operator-approved live receipt KV ingestion wrote six receipt summaries
+  and read all six hashes back through `splunkready_receipts_lookup`.
+- PASS: tracked proof reports `splunkMutation:
+  "operator-approved-receipt-store-write"`, `operatorApproved: true`,
+  `write.writtenRows: 6`, `lookup.status: "PASS"`, and
+  `lookup.missingHashes: []`.
+- PASS: redaction scan found no endpoint, username, bearer/basic auth,
+  password assignment, or token assignment values in the tracked receipt-store
+  proof.
+- PASS: `npm run check` passed with 71 test files and 425 tests.

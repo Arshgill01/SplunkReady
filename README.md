@@ -340,6 +340,12 @@ install proof is `submission-evidence/splunk-app-install/splunk-app-install-proo
 it installed/upgraded the same `.spl`, verified app metadata, views, nav,
 `splunkready_receipts`, and `splunkready_receipts_lookup`, and redacts endpoint,
 username, password, and token values. This is not a Splunkbase approval claim.
+The receipt store proof is
+`submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json`; it
+uses an explicit `--confirm-write true` operator gate to write six public-safe
+receipt summaries into the installed app's KV Store and read them back through
+`splunkready_receipts_lookup`. It does not upload raw traces, raw Splunk events,
+endpoints, usernames, passwords, or tokens.
 
 ## Grade a Captured Agent Trace
 
