@@ -270,6 +270,9 @@ If this command fails with a hosted-model access error:
 - Inspect `blockerClass` first. Stable values are `LIVE_CONFIG_MISSING`,
   `SAIA_TOOLS_NOT_ADVERTISED`, `SAIA_ROUTE_NOT_FOUND`,
   `SAIA_ACTION_FORBIDDEN`, and `SAIA_INVOCATION_BLOCKED`.
+- Inspect `remediation` next. It is safe for public export and records
+  `status`, `blockerClass`, tool evidence, operator checks, and a rerun command
+  without writing endpoint or token values.
 - Keep the same read-only Splunk/MCP user if possible.
 - Grant that user permission or entitlement to invoke `saia_generate_spl`.
 - Grant that user permission or entitlement to invoke `saia_explain_spl`.
@@ -280,6 +283,12 @@ If this command fails with a hosted-model access error:
 If the diagnostic says the MCP endpoint returned not found while invoking SAIA
 tools, `blockerClass` is `SAIA_ROUTE_NOT_FOUND`:
 
+- Use `remediation.operatorChecks` as the source of truth for the next operator
+  steps.
+- Copy the endpoint again from the Splunk MCP Server app sample client
+  configuration; do not guess or hand-edit the path.
+- Verify `tools/list` and `tools/call` use the same endpoint and MCP client
+  configuration.
 - Confirm the endpoint can invoke `saia_generate_spl`, `saia_explain_spl`,
   `saia_optimize_spl`, and `saia_ask_splunk_question`, not only advertise them
   in tool discovery.

@@ -147,6 +147,7 @@ commands, or filesystem paths.
 | P0 | [122](moves122.md) Next package release alignment | 0.5d | Prepares the source, docs, and submission-copy guard for the next public npm version so judges can smoke-test the current MCP/SAIA work after publish. |
 | P0 | [123](moves123.md) Hosted-model blocker evidence | 0.5d | Classifies live SAIA hosted-model blockers and surfaces the class through MCP proof evidence and the public workbench route. |
 | P0 | [124](moves124.md) Official Splunk MCP tool coverage | 0.5d | Makes the MCP proof explicitly show mission-scoped existing Splunk MCP tool usage plus SAIA hosted-model coverage. |
+| P0 | [125](moves125.md) Hosted-model remediation packet | 0.5d | Adds a public-export-safe SAIA remediation packet to CLI diagnostics, MCP tool output, and workbench views. |
 
 ## Non-Negotiable Boundaries
 

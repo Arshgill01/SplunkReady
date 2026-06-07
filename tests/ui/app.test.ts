@@ -425,6 +425,24 @@ const mcpProofSummary = {
     permissionStatus: "OK",
     outDir: "submission-evidence/mcp-proof/mcp-hosted-model-access",
     mutation: false,
+    remediation: {
+      source: "splunkready-hosted-model-remediation",
+      status: "CLEAR",
+      blockerClass: "NONE",
+      safeForPublicExport: true,
+      mutation: false,
+      summary: "No hosted-model remediation is required.",
+      evidence: {
+        requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+        availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+        missingTools: [],
+        passedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+        blockedTools: []
+      },
+      operatorChecks: ["No hosted-model remediation required."],
+      rerunCommand:
+        "splunkready hosted-model-diagnostic --mode live --env-file <operator-env-file> --out artifacts/hosted-model-diagnostic --require-pass true --json"
+    },
     requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
     availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
     missingTools: [],
@@ -993,6 +1011,24 @@ const hostedModelDiagnostic = {
   requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
   availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
   missingTools: [],
+  remediation: {
+    source: "splunkready-hosted-model-remediation",
+    status: "CLEAR",
+    blockerClass: "NONE",
+    safeForPublicExport: true,
+    mutation: false,
+    summary: "No hosted-model remediation is required.",
+    evidence: {
+      requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+      availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+      missingTools: [],
+      passedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+      blockedTools: []
+    },
+    operatorChecks: ["No hosted-model remediation required."],
+    rerunCommand:
+      "splunkready hosted-model-diagnostic --mode live --env-file <operator-env-file> --out artifacts/hosted-model-diagnostic --require-pass true --json"
+  },
   permission: {
     status: "OK",
     blockerClass: "NONE",
@@ -1662,6 +1698,8 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Hosted-model access");
     expect(html).toContain("Hosted-model blocker");
     expect(html).toContain("Hosted-model permission blocker");
+    expect(html).toContain("Hosted-model remediation");
+    expect(html).toContain("No hosted-model remediation is required.");
     expect(html).toContain("Hosted-model passed tools");
     expect(html).toContain("Hosted-model tool results");
     expect(html).toContain("saia_generate_spl:PASS");
@@ -1995,6 +2033,9 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("hosted-model-status / PASS");
     expect(liveConnect).toContain("Permission");
     expect(liveConnect).toContain("OK");
+    expect(liveConnect).toContain("Remediation");
+    expect(liveConnect).toContain("No hosted-model remediation is required.");
+    expect(liveConnect).toContain("--env-file &lt;operator-env-file&gt;");
     expect(liveConnect).toContain("deterministic-rule-engine");
     expect(liveConnect).toContain("Hosted model proof");
     expect(liveConnect).toContain("Live setup");

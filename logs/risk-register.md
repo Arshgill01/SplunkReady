@@ -218,7 +218,7 @@ Devpost rules and Splunk announcement. The rubric explicitly corrects the MCP
 award framing: SplunkReady should compete by certifying behavior at the Splunk
 MCP Server boundary and by using its local MCP server as a composable
 certification interface, not by claiming that building a separate MCP server is
-the category-winning action by itself.
+the prize on its own.
 
 Move 65 materially reduces the CLI monolith risk by moving proof audit report
 generation and strict gate handling into `src/workflows/proof-audit.ts`.
@@ -666,3 +666,11 @@ Residual MCP risk remains external-client storytelling: a real Claude/Cursor
 session capture would still be stronger than the credential-free proof session,
 and package `0.1.1` must be published before `splunkready@latest mcp` reflects
 all current evidence.
+
+Move 125 reduces R019 and the hosted-model portion of the rubric by making SAIA
+blockers actionable for MCP clients and operators. `hosted-model-diagnostic.json`
+and `splunkready_check_hosted_model_access` now include a public-export-safe
+`remediation` packet with blocker class, tool evidence, operator checks, and a
+rerun command. This does not resolve the live operator-side
+`SAIA_ROUTE_NOT_FOUND` blocker, does not mutate Splunk, and does not make SAIA
+authoritative; deterministic SplunkReady rules still decide readiness.

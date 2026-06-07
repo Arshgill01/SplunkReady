@@ -56,6 +56,28 @@ const hostedModelBlockerClassSchema = z.enum([
   "SAIA_INVOCATION_BLOCKED"
 ]);
 
+const hostedModelRemediationSchema = z
+  .object({
+    source: z.literal("splunkready-hosted-model-remediation"),
+    status: z.enum(["CLEAR", "ACTION_REQUIRED"]),
+    blockerClass: hostedModelBlockerClassSchema,
+    safeForPublicExport: z.literal(true),
+    mutation: z.literal(false),
+    summary: z.string().min(1),
+    evidence: z
+      .object({
+        requiredTools: z.array(hostedModelToolNameSchema),
+        availableTools: z.array(hostedModelToolNameSchema),
+        missingTools: z.array(hostedModelToolNameSchema),
+        passedTools: z.array(hostedModelToolNameSchema),
+        blockedTools: z.array(hostedModelToolNameSchema)
+      })
+      .strict(),
+    operatorChecks: z.array(z.string().min(1)),
+    rerunCommand: z.string().min(1)
+  })
+  .strict();
+
 const artifactFileManifestSchema = z
   .object({
     source: z.literal("splunkready-artifact-file-manifest"),
@@ -215,6 +237,7 @@ const hostedModelDiagnosticSchema = z
           .strict()
       )
       .optional(),
+    remediation: hostedModelRemediationSchema.optional(),
     permission: z
       .object({
         status: z.enum(["OK", "BLOCKED"]),
@@ -797,6 +820,7 @@ const mcpProofSummarySchema = z
               .strict()
           )
           .optional(),
+        remediation: hostedModelRemediationSchema.optional(),
         artifacts: z.array(z.string().min(1))
       })
       .strict(),

@@ -416,6 +416,7 @@ describe("SplunkReady MCP server", () => {
       permissionBlockerClass: "NONE",
       outDir,
       mutation: false,
+      remediation: { status: "CLEAR", blockerClass: "NONE", safeForPublicExport: true, mutation: false },
       requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       missingTools: []
@@ -453,6 +454,7 @@ describe("SplunkReady MCP server", () => {
       permissionBlockerClass: "LIVE_CONFIG_MISSING",
       outDir,
       mutation: false,
+      remediation: { status: "ACTION_REQUIRED", blockerClass: "LIVE_CONFIG_MISSING", safeForPublicExport: true, mutation: false },
       requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       availableTools: [],
       missingTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"]

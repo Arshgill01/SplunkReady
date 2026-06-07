@@ -12813,3 +12813,47 @@ Open blockers:
   live hosted-model proof can pass.
 - External MCP-client storytelling can still improve with a real Claude/Cursor
   capture once package `0.1.1` is published.
+
+## 2026-06-07 17:22 - Move 125 Hosted-Model Remediation Packet
+
+Scope:
+- Added a `remediation` packet to hosted-model diagnostics with stable blocker
+  class, public-export-safe flag, mutation boundary, tool evidence, operator
+  checks, and a rerun command that uses an operator-owned env file placeholder.
+- Exposed the packet through `splunkready_check_hosted_model_access` so MCP
+  clients can receive actionable SAIA remediation evidence without parsing raw
+  artifacts.
+- Rendered remediation status, summary, and operator checks in both the
+  hosted-model diagnostic view and the public MCP proof route.
+- Regenerated tracked MCP proof evidence and rebuilt the public demo export.
+- Updated the live setup checklist, claim ledger, and move log.
+- Did not use subagents.
+- Did not mutate Splunk.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  contents.
+
+Files changed:
+- `src/workflows/hosted-model-actions.ts`
+- `src/mcp/server.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/workflows/hosted-model-actions.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/mcp/server.test.ts`
+- `tests/ui/app.test.ts`
+- `docs/live-setup-checklist.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/mcp-client-session.jsonl`
+- `submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-diagnostic.json`
+- `submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `moves/README.md`
+- `moves/moves125.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- The operator-owned live SAIA endpoint still needs route/app remediation before
+  strict live hosted-model proof can pass.
+- The next high-value probability work should continue on MCP category depth
+  and real SAIA live proof once the endpoint can service `tools/call`.

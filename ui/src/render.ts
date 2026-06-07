@@ -293,6 +293,12 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
                   ["Hosted-model blocker", summary.hostedModelAccess.blockerClass ?? "NONE"],
                   ["Hosted-model permission", summary.hostedModelAccess.permissionStatus],
                   ["Hosted-model permission blocker", summary.hostedModelAccess.permissionBlockerClass ?? "NONE"],
+                  ["Hosted-model remediation", summary.hostedModelAccess.remediation?.status ?? "not recorded"],
+                  ["Hosted-model remediation summary", summary.hostedModelAccess.remediation?.summary ?? "not recorded"],
+                  [
+                    "Hosted-model operator checks",
+                    summary.hostedModelAccess.remediation?.operatorChecks.join(" / ") ?? "not recorded"
+                  ],
                   ["Hosted-model passed tools", summary.hostedModelAccess.passedTools?.join(" / ") || "none"],
                   ["Hosted-model blocked tools", summary.hostedModelAccess.blockedTools?.join(" / ") || "none"],
                   [
@@ -669,6 +675,10 @@ const renderHostedModelDiagnostic = (diagnostic: HostedModelDiagnostic | undefin
       ["Permission blocker", diagnostic.permission.blockerClass],
       ["Error", diagnostic.permission.error ?? "none"],
       ["Required actions", diagnostic.permission.requiredActions?.join(" / ") ?? "none"],
+      ["Remediation", diagnostic.remediation?.status ?? "not recorded"],
+      ["Remediation summary", diagnostic.remediation?.summary ?? "not recorded"],
+      ["Operator checks", diagnostic.remediation?.operatorChecks.join(" / ") ?? "not recorded"],
+      ["Rerun", diagnostic.remediation?.rerunCommand ?? "not recorded"],
       ...renderHostedModelSetupRows(diagnostic.setup),
       ["Mutation", diagnostic.mutation ? "yes" : "no"],
       ["Authority", diagnostic.deterministicAuthority],

@@ -52,6 +52,14 @@ describe("hosted model workflows", () => {
       mutation: boolean;
       blockerClass: string;
       deterministicAuthority: string;
+      remediation: {
+        status: string;
+        blockerClass: string;
+        safeForPublicExport: boolean;
+        mutation: boolean;
+        summary: string;
+        operatorChecks: string[];
+      };
       permission: { status: string; blockerClass: string };
     };
 
@@ -62,8 +70,16 @@ describe("hosted model workflows", () => {
       mutation: false,
       blockerClass: "NONE",
       deterministicAuthority: "deterministic-rule-engine",
+      remediation: {
+        status: "CLEAR",
+        blockerClass: "NONE",
+        safeForPublicExport: true,
+        mutation: false,
+        summary: "No hosted-model remediation is required."
+      },
       permission: { status: "OK", blockerClass: "NONE" }
     });
+    expect(diagnostic.remediation.operatorChecks).toEqual(["No hosted-model remediation required."]);
   });
 
   it("writes a blocked live hosted-model diagnostic when live config is not exported", async () => {
@@ -97,6 +113,13 @@ describe("hosted model workflows", () => {
       passedTools: string[];
       blockedTools: string[];
       blockerClass: string;
+      remediation: {
+        status: string;
+        blockerClass: string;
+        evidence: { missingTools: string[]; blockedTools: string[] };
+        operatorChecks: string[];
+        rerunCommand: string;
+      };
       permission: { status: string; blockerClass: string; message: string; requiredActions: string[] };
       setup: {
         configured: boolean;
@@ -134,6 +157,14 @@ describe("hosted model workflows", () => {
       passedTools: [],
       blockedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       blockerClass: "LIVE_CONFIG_MISSING",
+      remediation: {
+        status: "ACTION_REQUIRED",
+        blockerClass: "LIVE_CONFIG_MISSING",
+        evidence: {
+          missingTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+          blockedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"]
+        }
+      },
       permission: {
         status: "BLOCKED",
         blockerClass: "LIVE_CONFIG_MISSING",
@@ -155,5 +186,12 @@ describe("hosted model workflows", () => {
         "Export SPLUNKREADY_SPLUNK_MCP_TOKEN without committing or printing it."
       ])
     );
+    expect(diagnostic.remediation.operatorChecks).toEqual(
+      expect.arrayContaining([
+        "Export SPLUNKREADY_LIVE_ENABLED=true in the shell that runs the proof.",
+        "Export SPLUNKREADY_SPLUNK_MCP_TOKEN without committing or printing it."
+      ])
+    );
+    expect(diagnostic.remediation.rerunCommand).toContain("--env-file <operator-env-file>");
   });
 });

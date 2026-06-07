@@ -288,6 +288,10 @@ export const splunkReadyMcpTools: McpTool[] = [
       requiredTools: { type: "array", items: { type: "string" }, description: "Hosted-model tools required by the diagnostic." },
       availableTools: { type: "array", items: { type: "string" }, description: "Hosted-model tools available to the current adapter." },
       missingTools: { type: "array", items: { type: "string" }, description: "Hosted-model tools missing or blocked for the current adapter." },
+      remediation: {
+        type: "object",
+        description: "Secret-safe remediation packet with blocker evidence, operator checks, and rerun command."
+      },
       artifacts: { type: "array", items: { type: "string" }, description: "Written artifact paths." }
     }),
     annotations: {
@@ -1093,6 +1097,7 @@ const callTool = async (name: string, args: unknown, env: NodeJS.ProcessEnv): Pr
         passedTools: Array.isArray(diagnostic.passedTools) ? diagnostic.passedTools : [],
         blockedTools: Array.isArray(diagnostic.blockedTools) ? diagnostic.blockedTools : [],
         toolResults: Array.isArray(diagnostic.toolResults) ? diagnostic.toolResults : [],
+        remediation: recordFromUnknown(diagnostic.remediation),
         artifacts: result.artifacts
       });
     } catch (caught) {

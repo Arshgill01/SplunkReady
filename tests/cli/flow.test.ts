@@ -1472,6 +1472,7 @@ describe("SplunkReady CLI flow", () => {
         passedTools: string[];
         blockedTools: string[];
         toolResults: Array<{ toolName: string; status: string }>;
+        remediation: { status: string; blockerClass: string; safeForPublicExport: boolean; mutation: boolean };
         artifacts: string[];
       };
       agentDrivenWorkflow: {
@@ -1821,7 +1822,8 @@ describe("SplunkReady CLI flow", () => {
         "saia_optimize_spl",
         "saia_ask_splunk_question"
       ],
-      blockedTools: []
+      blockedTools: [],
+      remediation: { status: "CLEAR", blockerClass: "NONE", safeForPublicExport: true, mutation: false }
     });
     expect(summary.hostedModelAccess.toolResults.map((result: { toolName: string; status: string }) => `${result.toolName}:${result.status}`)).toEqual([
       "saia_generate_spl:PASS",
@@ -2527,6 +2529,7 @@ describe("SplunkReady CLI flow", () => {
       passedTools: string[];
       blockedTools: string[];
       toolResults: Array<{ toolName: string; status: string }>;
+      remediation: { status: string; blockerClass: string; safeForPublicExport: boolean; mutation: boolean };
     };
 
     expect(diagnostic).toMatchObject({
@@ -2543,7 +2546,8 @@ describe("SplunkReady CLI flow", () => {
       requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       passedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
-      blockedTools: []
+      blockedTools: [],
+      remediation: { status: "CLEAR", blockerClass: "NONE", safeForPublicExport: true, mutation: false }
     });
     expect(diagnostic.toolResults.map((result) => `${result.toolName}:${result.status}`)).toEqual([
       "saia_generate_spl:PASS",
@@ -2687,6 +2691,7 @@ describe("SplunkReady CLI flow", () => {
       blockedTools: string[];
       toolResults: Array<{ toolName: string; status: string; error?: string }>;
       blockerClass: string;
+      remediation: { status: string; blockerClass: string; operatorChecks: string[] };
       permission: { status: string; blockerClass: string; error: string };
     };
 
@@ -2702,12 +2707,16 @@ describe("SplunkReady CLI flow", () => {
       passedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl"],
       blockedTools: ["saia_ask_splunk_question"],
       blockerClass: "SAIA_ACTION_FORBIDDEN",
+      remediation: { status: "ACTION_REQUIRED", blockerClass: "SAIA_ACTION_FORBIDDEN" },
       permission: {
         status: "BLOCKED",
         blockerClass: "SAIA_ACTION_FORBIDDEN",
         error: expect.stringContaining("saia_ask_splunk_question")
       }
     });
+    expect(diagnostic.remediation.operatorChecks).toEqual(
+      expect.arrayContaining(["Grant the Splunk/MCP user permission or entitlement to invoke saia_ask_splunk_question."])
+    );
     expect(proof.toolResults.map((result) => `${result.toolName}:${result.status}`)).toEqual([
       "saia_generate_spl:PASS",
       "saia_explain_spl:PASS",
@@ -2780,6 +2789,7 @@ describe("SplunkReady CLI flow", () => {
       mutation: boolean;
       blockedTools: string[];
       blockerClass: string;
+      remediation: { status: string; blockerClass: string; operatorChecks: string[]; rerunCommand: string };
       permission: { status: string; blockerClass: string; error: string; requiredActions: string[] };
     };
     const proof = JSON.parse(await readFile(join(outDir, "hosted-model-proof.json"), "utf8")) as {
@@ -2798,6 +2808,7 @@ describe("SplunkReady CLI flow", () => {
       mutation: false,
       blockedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       blockerClass: "SAIA_ACTION_FORBIDDEN",
+      remediation: { status: "ACTION_REQUIRED", blockerClass: "SAIA_ACTION_FORBIDDEN" },
       permission: {
         status: "BLOCKED",
         blockerClass: "SAIA_ACTION_FORBIDDEN",
@@ -2812,6 +2823,13 @@ describe("SplunkReady CLI flow", () => {
         "Grant the Splunk/MCP user permission to invoke saia_ask_splunk_question."
       ])
     );
+    expect(diagnostic.remediation.operatorChecks).toEqual(
+      expect.arrayContaining([
+        "Grant the Splunk/MCP user permission or entitlement to invoke saia_generate_spl.",
+        "Grant the Splunk/MCP user permission or entitlement to invoke saia_ask_splunk_question."
+      ])
+    );
+    expect(diagnostic.remediation.rerunCommand).toContain("hosted-model-diagnostic --mode live");
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
   });
 
@@ -2845,6 +2863,7 @@ describe("SplunkReady CLI flow", () => {
       status: string;
       mutation: boolean;
       blockerClass: string;
+      remediation: { status: string; blockerClass: string; operatorChecks: string[]; rerunCommand: string };
       permission: { status: string; blockerClass: string; message: string; error: string; requiredActions: string[] };
     };
 
@@ -2852,6 +2871,7 @@ describe("SplunkReady CLI flow", () => {
       status: "BLOCKED",
       mutation: false,
       blockerClass: "SAIA_ROUTE_NOT_FOUND",
+      remediation: { status: "ACTION_REQUIRED", blockerClass: "SAIA_ROUTE_NOT_FOUND" },
       permission: {
         status: "BLOCKED",
         blockerClass: "SAIA_ROUTE_NOT_FOUND",
@@ -2871,6 +2891,14 @@ describe("SplunkReady CLI flow", () => {
     expect(diagnostic.permission.requiredActions).not.toEqual(
       expect.arrayContaining(["Grant the Splunk/MCP user permission to invoke saia_explain_spl."])
     );
+    expect(diagnostic.remediation.operatorChecks).toEqual(
+      expect.arrayContaining([
+        "Copy the endpoint again from the Splunk MCP Server app sample client configuration; do not guess or hand-edit the path.",
+        "Verify tools/list and tools/call use the same endpoint and MCP client configuration.",
+        "Confirm Splunk AI Assistant and the cloud connection are enabled for the same tenant, user, and token."
+      ])
+    );
+    expect(diagnostic.remediation.rerunCommand).toContain("--env-file <operator-env-file>");
   });
 
   it("writes blocked hosted-model artifacts when live SAIA config is not exported", async () => {
@@ -2914,6 +2942,7 @@ describe("SplunkReady CLI flow", () => {
     const diagnostic = JSON.parse(await readFile(join(outDir, "hosted-model-diagnostic.json"), "utf8")) as {
       status: string;
       contract: { id: string };
+      remediation: { status: string; blockerClass: string; operatorChecks: string[] };
       permission: { status: string; requiredActions: string[] };
       setup: { configured: boolean };
     };
@@ -2935,10 +2964,14 @@ describe("SplunkReady CLI flow", () => {
     expect(diagnostic).toMatchObject({
       status: "BLOCKED",
       contract: { id: "live-hosted-model-unconfigured" },
+      remediation: { status: "ACTION_REQUIRED", blockerClass: "LIVE_CONFIG_MISSING" },
       permission: { status: "BLOCKED" },
       setup: { configured: false }
     });
     expect(diagnostic.permission.requiredActions).toEqual(
+      expect.arrayContaining(["Export SPLUNKREADY_SPLUNK_MCP_TOKEN without committing or printing it."])
+    );
+    expect(diagnostic.remediation.operatorChecks).toEqual(
       expect.arrayContaining(["Export SPLUNKREADY_SPLUNK_MCP_TOKEN without committing or printing it."])
     );
   });

@@ -57,6 +57,24 @@ type HostedModelBlockerClass =
   | "SAIA_ACTION_FORBIDDEN"
   | "SAIA_INVOCATION_BLOCKED";
 
+type HostedModelRemediationPacket = {
+  source: "splunkready-hosted-model-remediation";
+  status: "CLEAR" | "ACTION_REQUIRED";
+  blockerClass: HostedModelBlockerClass;
+  safeForPublicExport: true;
+  mutation: false;
+  summary: string;
+  evidence: {
+    requiredTools: ReadOnlySplunkToolName[];
+    availableTools: ReadOnlySplunkToolName[];
+    missingTools: ReadOnlySplunkToolName[];
+    passedTools: ReadOnlySplunkToolName[];
+    blockedTools: ReadOnlySplunkToolName[];
+  };
+  operatorChecks: string[];
+  rerunCommand: string;
+};
+
 export const hostedModelToolNames: ReadOnlySplunkToolName[] = [
   "saia_generate_spl",
   "saia_explain_spl",
@@ -270,6 +288,105 @@ const hostedModelBlockedRequiredActions = (error: string, contractAvailable: boo
     "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
   ];
 };
+
+const hostedModelRemediationSummary = (blockerClass: HostedModelBlockerClass): string => {
+  if (blockerClass === "NONE") {
+    return "No hosted-model remediation is required.";
+  }
+
+  if (blockerClass === "LIVE_CONFIG_MISSING") {
+    return "Live hosted-model proof is blocked before MCP calls because the operator-owned live configuration is missing.";
+  }
+
+  if (blockerClass === "SAIA_TOOLS_NOT_ADVERTISED") {
+    return "The live contract does not advertise every required Splunk AI Assistant hosted-model tool.";
+  }
+
+  if (blockerClass === "SAIA_ROUTE_NOT_FOUND") {
+    return "The MCP contract advertises hosted-model tools, but the endpoint route does not service SAIA tool calls.";
+  }
+
+  if (blockerClass === "SAIA_ACTION_FORBIDDEN") {
+    return "The endpoint is reachable, but the current Splunk MCP identity is not entitled to invoke one or more SAIA tools.";
+  }
+
+  return "Hosted-model SAIA invocation is blocked; inspect per-tool errors and rerun the strict diagnostic after operator remediation.";
+};
+
+const hostedModelRemediationChecks = (
+  blockerClass: HostedModelBlockerClass,
+  blockedTools: ReadOnlySplunkToolName[]
+): string[] => {
+  if (blockerClass === "NONE") {
+    return ["No hosted-model remediation required."];
+  }
+
+  if (blockerClass === "LIVE_CONFIG_MISSING") {
+    return [
+      "Export SPLUNKREADY_LIVE_ENABLED=true in the shell that runs the proof.",
+      "Export SPLUNKREADY_SPLUNK_MCP_URL without committing or printing it.",
+      "Export SPLUNKREADY_SPLUNK_MCP_TOKEN without committing or printing it."
+    ];
+  }
+
+  if (blockerClass === "SAIA_TOOLS_NOT_ADVERTISED") {
+    return [
+      "Confirm Splunk AI Assistant and the Splunk MCP Server app are enabled for the same tenant, user, and token.",
+      `Confirm tools/list advertises ${hostedModelToolNames.join(", ")} from the operator-owned Splunk MCP endpoint.`,
+      "Rerun the strict diagnostic from the same shell or MCP client configuration."
+    ];
+  }
+
+  if (blockerClass === "SAIA_ROUTE_NOT_FOUND") {
+    return [
+      "Copy the endpoint again from the Splunk MCP Server app sample client configuration; do not guess or hand-edit the path.",
+      "Verify tools/list and tools/call use the same endpoint and MCP client configuration.",
+      "Confirm the MCP Server app/version backing SAIA hosted-model tools is installed and reachable, not only tool discovery.",
+      "Confirm Splunk AI Assistant and the cloud connection are enabled for the same tenant, user, and token."
+    ];
+  }
+
+  if (blockerClass === "SAIA_ACTION_FORBIDDEN") {
+    const targetTools = blockedTools.length > 0 ? blockedTools : hostedModelToolNames;
+
+    return [
+      ...targetTools.map((toolName) => `Grant the Splunk/MCP user permission or entitlement to invoke ${toolName}.`),
+      "Confirm Splunk AI Assistant and the cloud connection are enabled for the same tenant, user, and token."
+    ];
+  }
+
+  return [
+    "Inspect hosted-model-diagnostic.json toolResults for the first blocked SAIA tool.",
+    "Confirm the Splunk MCP endpoint, token identity, and Splunk AI Assistant cloud connection are all from the same deployment.",
+    "Rerun the strict diagnostic after the operator-side change."
+  ];
+};
+
+const hostedModelRemediationPacket = (input: {
+  blockerClass: HostedModelBlockerClass;
+  requiredTools: ReadOnlySplunkToolName[];
+  availableTools: ReadOnlySplunkToolName[];
+  missingTools: ReadOnlySplunkToolName[];
+  passedTools: ReadOnlySplunkToolName[];
+  blockedTools: ReadOnlySplunkToolName[];
+}): HostedModelRemediationPacket => ({
+  source: "splunkready-hosted-model-remediation",
+  status: input.blockerClass === "NONE" ? "CLEAR" : "ACTION_REQUIRED",
+  blockerClass: input.blockerClass,
+  safeForPublicExport: true,
+  mutation: false,
+  summary: hostedModelRemediationSummary(input.blockerClass),
+  evidence: {
+    requiredTools: input.requiredTools,
+    availableTools: input.availableTools,
+    missingTools: input.missingTools,
+    passedTools: input.passedTools,
+    blockedTools: input.blockedTools
+  },
+  operatorChecks: hostedModelRemediationChecks(input.blockerClass, input.blockedTools),
+  rerunCommand:
+    "splunkready hosted-model-diagnostic --mode live --env-file <operator-env-file> --out artifacts/hosted-model-diagnostic --require-pass true --json"
+});
 
 const hostedModelBlockerClass = (
   error: string,
@@ -614,6 +731,14 @@ export const runHostedModelDiagnosticWorkflow = async (
   const blocked = proofStatus !== "PASS";
   const permissionError = stringFromRecord(proof, "error") ?? "Hosted-model proof did not pass.";
   const blockerClass = blocked ? hostedModelBlockerClass(permissionError, Boolean(contract), missingTools) : "NONE";
+  const remediation = hostedModelRemediationPacket({
+    blockerClass,
+    requiredTools: hostedModelToolNames,
+    availableTools,
+    missingTools,
+    passedTools,
+    blockedTools
+  });
 
   await writeJson(diagnosticPath, {
     status: blocked ? "BLOCKED" : "PASS",
@@ -632,6 +757,7 @@ export const runHostedModelDiagnosticWorkflow = async (
     passedTools,
     blockedTools,
     toolResults: Array.isArray(proofRecord.toolResults) ? proofRecord.toolResults : [],
+    remediation,
     permission: blocked
       ? {
           status: "BLOCKED",
