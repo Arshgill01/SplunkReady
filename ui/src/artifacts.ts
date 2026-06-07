@@ -692,6 +692,8 @@ const mcpProofSummarySchema = z
     postureResource: z.record(z.unknown()),
     clientConfigResource: z.record(z.unknown()),
     dualServerClientConfigResource: z.record(z.unknown()),
+    claudeDesktopClientConfigResource: z.record(z.unknown()),
+    cursorClientConfigResource: z.record(z.unknown()),
     certificationLoopResource: z.record(z.unknown()),
     compositionScorecardResource: z.record(z.unknown()),
     hostedModelDiagnosticResource: z.record(z.unknown()),

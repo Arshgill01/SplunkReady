@@ -17,6 +17,7 @@ import {
   runFirewallCheckWorkflow,
   runPolicyBackedRerunWorkflow
 } from "./workflows/policy-actions.js";
+import { startStdioMcpServer } from "./mcp/server.js";
 export {
   runHostedModelDiagnosticFromCli,
   runHostedModelProofFromCli,
@@ -92,6 +93,11 @@ export const runFirewallCheckFromCli = runFirewallCheckWorkflow;
 
 const main = async (): Promise<void> => {
   const { command, options: parsedOptions } = parseArgs(process.argv.slice(2));
+  if (command === "mcp") {
+    startStdioMcpServer();
+    return;
+  }
+
   const options = await resolveCliInputPaths(parsedOptions);
   const output = await runCliCommand(command, options);
 

@@ -346,6 +346,16 @@ const mcpProofSummary = {
       mimeType: "application/json"
     },
     {
+      uri: "splunkready://client-config/claude-desktop",
+      name: "claude-desktop-client-config",
+      mimeType: "application/json"
+    },
+    {
+      uri: "splunkready://client-config/cursor",
+      name: "cursor-client-config",
+      mimeType: "application/json"
+    },
+    {
       uri: "splunkready://workflows/splunk-mcp-certification-loop",
       name: "splunk-mcp-certification-loop",
       mimeType: "text/markdown"
@@ -380,6 +390,8 @@ const mcpProofSummary = {
   postureResource: { contents: [] },
   clientConfigResource: { contents: [] },
   dualServerClientConfigResource: { contents: [] },
+  claudeDesktopClientConfigResource: { contents: [] },
+  cursorClientConfigResource: { contents: [] },
   certificationLoopResource: { contents: [] },
   compositionScorecardResource: { contents: [] },
   hostedModelDiagnosticResource: { contents: [] },
@@ -475,7 +487,12 @@ const mcpProofSummary = {
       {
         id: "discoverable-resources-and-prompts",
         status: "PASS",
-        evidence: "9 resources, 1 resource template, and 6 prompts expose the composed workflow."
+        evidence: "11 resources, 1 resource template, and 6 prompts expose the composed workflow."
+      },
+      {
+        id: "external-mcp-client-configs",
+        status: "PASS",
+        evidence: "Claude Desktop and Cursor MCP client templates are discoverable as credential-free resources."
       },
       {
         id: "existing-splunk-mcp-boundary",
@@ -561,8 +578,8 @@ const mcpProofSummary = {
     artifactPath: "submission-evidence/mcp-proof/mcp-client-session.jsonl",
     markdownPath: "submission-evidence/mcp-proof/mcp-client-session.md",
     protocol: "stdio-jsonrpc",
-    requestCount: 20,
-    responseCount: 20,
+    requestCount: 22,
+    responseCount: 22,
     methods: [
       "initialize",
       "tools/list",
@@ -577,6 +594,8 @@ const mcpProofSummary = {
       "splunkready://certification/posture",
       "splunkready://client-config/stdio",
       "splunkready://client-config/splunk-and-splunkready",
+      "splunkready://client-config/claude-desktop",
+      "splunkready://client-config/cursor",
       "splunkready://workflows/splunk-mcp-certification-loop",
       "splunkready://workflows/mcp-composition-scorecard",
       "splunkready://workflows/hosted-model-diagnostic",
@@ -1561,8 +1580,11 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("MCP composition scorecard");
     expect(html).toContain("MCP client session");
     expect(html).toContain("dual-server-client-config: PASS");
+    expect(html).toContain("external-mcp-client-configs: PASS");
     expect(html).toContain("existing-splunk-mcp-boundary: PASS");
     expect(html).toContain("splunk: Existing Splunk MCP server");
+    expect(html).toContain("splunkready://client-config/claude-desktop");
+    expect(html).toContain("splunkready://client-config/cursor");
     expect(html).toContain("splunkready://workflows/splunk-mcp-certification-loop");
     expect(html).toContain("splunkready://workflows/hosted-model-diagnostic");
     expect(html).toContain("splunkready://receipts/{receiptId}");

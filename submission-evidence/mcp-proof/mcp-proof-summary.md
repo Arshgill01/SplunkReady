@@ -22,6 +22,8 @@ Resources:
 - splunkready://examples/pass-receipt (text/markdown)
 - splunkready://client-config/stdio (application/json)
 - splunkready://client-config/splunk-and-splunkready (application/json)
+- splunkready://client-config/claude-desktop (application/json)
+- splunkready://client-config/cursor (application/json)
 - splunkready://workflows/splunk-mcp-certification-loop (text/markdown)
 - splunkready://workflows/mcp-composition-scorecard (text/markdown)
 - splunkready://workflows/hosted-model-diagnostic (text/markdown)
@@ -68,7 +70,8 @@ Splunk MCP boundary: PASS
 
 MCP composition scorecard: PASS (100/100)
 - dual-server-client-config: PASS - Client config includes separate splunk and splunkready MCP servers.
-- discoverable-resources-and-prompts: PASS - 9 resources, 1 resource template(s), and 6 prompts expose the composed workflow.
+- external-mcp-client-configs: PASS - Claude Desktop and Cursor MCP client templates are discoverable as credential-free resources.
+- discoverable-resources-and-prompts: PASS - 11 resources, 1 resource template(s), and 6 prompts expose the composed workflow.
 - existing-splunk-mcp-boundary: PASS - 2 captured splunk_* tool calls are certified.
 - saved-search-evidence: PASS - 3 evidence refs from saved-search output.
 - readiness-receipt-authority: PASS - Path transcript certification returned PASS; inline transcript certification returned PASS; deterministic rules remain authoritative.
@@ -90,10 +93,10 @@ MCP client session: PASS
 - Artifact: submission-evidence/mcp-proof/mcp-client-session.jsonl
 - Markdown: submission-evidence/mcp-proof/mcp-client-session.md
 - Protocol: stdio-jsonrpc
-- Requests: 20
-- Responses: 20
+- Requests: 22
+- Responses: 22
 - Methods: initialize, tools/list, resources/list, resources/templates/list, resources/read, prompts/list, prompts/get, tools/call
-- Resources read: splunkready://certification/posture, splunkready://client-config/stdio, splunkready://client-config/splunk-and-splunkready, splunkready://workflows/splunk-mcp-certification-loop, splunkready://workflows/mcp-composition-scorecard, splunkready://workflows/hosted-model-diagnostic, splunkready://receipts/pass
+- Resources read: splunkready://certification/posture, splunkready://client-config/stdio, splunkready://client-config/splunk-and-splunkready, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready://workflows/splunk-mcp-certification-loop, splunkready://workflows/mcp-composition-scorecard, splunkready://workflows/hosted-model-diagnostic, splunkready://receipts/pass
 - Prompts fetched: splunkready_certify_mcp_transcript, splunkready_splunk_mcp_certification_loop, splunkready_mcp_composition_review, splunkready_hosted_model_diagnostic
 - Tools called: splunkready_describe_certification, splunkready_certify_mcp_transcript, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access
 

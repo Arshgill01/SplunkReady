@@ -80,6 +80,8 @@ interface McpProofSummary {
   postureResource: Record<string, unknown>;
   clientConfigResource: Record<string, unknown>;
   dualServerClientConfigResource: Record<string, unknown>;
+  claudeDesktopClientConfigResource: Record<string, unknown>;
+  cursorClientConfigResource: Record<string, unknown>;
   certificationLoopResource: Record<string, unknown>;
   compositionScorecardResource: Record<string, unknown>;
   hostedModelDiagnosticResource: Record<string, unknown>;
@@ -601,9 +603,20 @@ const buildMcpCompositionScorecard = (input: {
       evidence: "Client config includes separate splunk and splunkready MCP servers."
     },
     {
+      id: "external-mcp-client-configs",
+      status:
+        resourceUris.includes("splunkready://client-config/claude-desktop") &&
+        resourceUris.includes("splunkready://client-config/cursor")
+          ? "PASS"
+          : "FAIL",
+      evidence: "Claude Desktop and Cursor MCP client templates are discoverable as credential-free resources."
+    },
+    {
       id: "discoverable-resources-and-prompts",
       status:
         resourceUris.includes("splunkready://client-config/splunk-and-splunkready") &&
+        resourceUris.includes("splunkready://client-config/claude-desktop") &&
+        resourceUris.includes("splunkready://client-config/cursor") &&
         resourceUris.includes("splunkready://workflows/mcp-composition-scorecard") &&
         resourceUris.includes("splunkready://workflows/hosted-model-diagnostic") &&
         resourceTemplates.includes("splunkready://receipts/{receiptId}") &&
@@ -810,6 +823,8 @@ const buildMcpClientSession = (
     methods.includes("resources/templates/list") &&
     methods.includes("prompts/list") &&
     resourceUris.includes("splunkready://client-config/splunk-and-splunkready") &&
+    resourceUris.includes("splunkready://client-config/claude-desktop") &&
+    resourceUris.includes("splunkready://client-config/cursor") &&
     resourceUris.includes("splunkready://receipts/pass") &&
     resourceUris.includes("splunkready://workflows/hosted-model-diagnostic") &&
     promptNames.includes("splunkready_splunk_mcp_certification_loop") &&
@@ -870,6 +885,12 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
     const clientConfigResource = await client.request("resources/read", { uri: "splunkready://client-config/stdio" });
     const dualServerClientConfigResource = await client.request("resources/read", {
       uri: "splunkready://client-config/splunk-and-splunkready"
+    });
+    const claudeDesktopClientConfigResource = await client.request("resources/read", {
+      uri: "splunkready://client-config/claude-desktop"
+    });
+    const cursorClientConfigResource = await client.request("resources/read", {
+      uri: "splunkready://client-config/cursor"
     });
     const certificationLoopResource = await client.request("resources/read", {
       uri: "splunkready://workflows/splunk-mcp-certification-loop"
@@ -1078,6 +1099,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       postureResource,
       clientConfigResource,
       dualServerClientConfigResource,
+      claudeDesktopClientConfigResource,
+      cursorClientConfigResource,
       certificationLoopResource,
       compositionScorecardResource,
       hostedModelDiagnosticResource,

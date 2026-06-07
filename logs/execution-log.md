@@ -12358,3 +12358,61 @@ Open blockers:
   file or exported variables in a shell that can reach the Splunk MCP endpoint.
 - MCP award storytelling still benefits from a public external-client capture,
   but the local MCP protocol surface is now stronger than a two-tool certifier.
+
+## 2026-06-07 15:51 - Move 116 External MCP Client Config Resources
+
+Scope:
+- Added `splunkready mcp` as a package CLI entrypoint that starts the
+  SplunkReady stdio MCP server for external clients.
+- Added credential-free MCP resources for external client configuration:
+  `splunkready://client-config/claude-desktop` and
+  `splunkready://client-config/cursor`.
+- The client templates compose an operator-owned existing Splunk MCP server
+  with SplunkReady MCP and leave Splunk URL/token values as placeholders.
+- Extended `mcp-proof` so the recorded stdio client reads both external client
+  resources.
+- Tightened the MCP composition scorecard and client-session PASS criteria so
+  the external client config resources are required.
+- Refreshed tracked MCP proof evidence: `mcp-proof-summary.json` now reports
+  5 tools, 11 resources, 1 resource template, 6 prompts, 22 requests, and
+  22 responses.
+- Refreshed the public demo export and Playwright-verified the MCP proof route
+  at `http://127.0.0.1:4342/?artifacts=artifacts%2Fmcp-proof#mcp-proof`.
+- Extended submission-copy audit coverage so README and claim-ledger copy must
+  retain the external client resource URIs and package `splunkready mcp`
+  entrypoint.
+- Did not read, source, print, or commit real `.splunkready*` / `.env*` secret
+  files.
+- Did not make SAIA or any LLM output authoritative.
+- Did not mutate Splunk.
+- Did not use subagents.
+
+Files changed:
+- `src/cli.ts`
+- `src/cli/options.ts`
+- `src/mcp/server.ts`
+- `src/workflows/mcp-proof.ts`
+- `ui/src/artifacts.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `scripts/audit-submission-copy.mjs`
+- `README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/mcp-proof/*`
+- `submission-evidence/screenshots/workbench-mcp-proof.png`
+- `artifacts/public-demo/*`
+- `moves/README.md`
+- `moves/moves116.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 116.
+- The already-published npm `splunkready@0.1.0` package does not include
+  `splunkready mcp`; registry users need a later publish after this commit.
+- MCP award storytelling still benefits from a public external-client capture,
+  but the proof now exposes client-ready Claude Desktop and Cursor templates.

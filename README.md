@@ -119,8 +119,10 @@ npm run mcp-proof
 `npm run mcp-proof` starts the built SplunkReady stdio MCP server, negotiates
 `initialize`, lists non-destructive certification tools, resources, and prompts,
 discovers a templated Readiness Receipt resource, reads the certification
-posture resource and MCP-client configuration, fetches reusable transcript and
-Splunk MCP certification-loop prompts, reads
+posture resource and MCP-client configuration, reads the Claude Desktop and
+Cursor client templates at `splunkready://client-config/claude-desktop` and
+`splunkready://client-config/cursor`, fetches reusable transcript and Splunk MCP
+certification-loop prompts, reads
 `splunkready://workflows/hosted-model-diagnostic`, fetches
 `splunkready_hosted_model_diagnostic`, then certifies the checked-in passing
 MCP JSON-RPC transcript through
@@ -139,6 +141,17 @@ SplunkReady MCP for certification, then explains the Readiness Receipt without
 overriding it. This is still fixture-only, credential-free, and non-mutating; it
 proves SplunkReady as an MCP certification interface for captured Splunk MCP
 behavior, not as a Splunk search copilot.
+
+For external MCP clients, a package version that includes this entrypoint can
+start the stdio server with:
+
+```bash
+splunkready mcp
+```
+
+The client-config resources use `npx -y splunkready@latest mcp` for
+SplunkReady and leave the existing Splunk MCP server URL/token as
+operator-owned placeholders.
 
 For the single-mission static replay shell, run:
 
@@ -302,8 +315,8 @@ npm run mcp-proof
 
 That command writes an MCP proof summary with explicit Splunk MCP boundary
 evidence, MCP resource-template discovery, hosted-model diagnostic
-resource/prompt discovery, inline transcript certification, hosted-model
-access, the uploaded transcript copy, `trace-imported.json`,
+resource/prompt discovery, Claude Desktop and Cursor MCP client config
+resources, inline transcript certification, hosted-model access, the uploaded transcript copy, `trace-imported.json`,
 `trace-external.json`, `receipt-external-001.json`, `proof-audit.json`, and the
 transcript certification summary under `artifacts/mcp-proof/`.
 

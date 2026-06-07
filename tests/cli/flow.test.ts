@@ -1,7 +1,7 @@
 import { mkdtemp, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { execFile } from "node:child_process";
+import { execFile, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createServer } from "node:http";
 import { promisify } from "node:util";
 
@@ -37,6 +37,34 @@ interface ParsedCliJsonOutput {
 const parseCliJsonOutput = (stdout: string): ParsedCliJsonOutput => JSON.parse(stdout) as ParsedCliJsonOutput;
 
 const proofAuditArtifacts = (outDir: string): string[] => [join(outDir, "proof-audit.json"), join(outDir, "proof-manifest.json")];
+
+const readStdoutLine = (process: ChildProcessWithoutNullStreams, timeoutMs = 5_000): Promise<string> =>
+  new Promise((resolve, reject) => {
+    let stdout = "";
+    let stderr = "";
+    const timeout = setTimeout(() => {
+      reject(new Error(`Timed out waiting for stdout line. stderr=${stderr}`));
+    }, timeoutMs);
+
+    process.stdout.on("data", (chunk: Buffer) => {
+      stdout += chunk.toString("utf8");
+      const lineEnd = stdout.indexOf("\n");
+
+      if (lineEnd >= 0) {
+        clearTimeout(timeout);
+        resolve(stdout.slice(0, lineEnd));
+      }
+    });
+
+    process.stderr.on("data", (chunk: Buffer) => {
+      stderr += chunk.toString("utf8");
+    });
+
+    process.on("error", (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+  });
 
 const defaultSavedSearchRows = [
   { eventRef: "live-evt-102", user: "svc-finance", dest: "win-finance-07" },
@@ -242,6 +270,39 @@ const startMockGeminiServer = async () => {
 };
 
 describe("SplunkReady CLI flow", () => {
+  it("starts the stdio MCP server through the package CLI command", async () => {
+    const child = spawn(process.execPath, [cliPath, "mcp"], {
+      cwd: process.cwd(),
+      env: { ...process.env },
+      stdio: ["pipe", "pipe", "pipe"]
+    });
+
+    try {
+      child.stdin.write(
+        `${JSON.stringify({
+          jsonrpc: "2.0",
+          id: "initialize",
+          method: "initialize",
+          params: {
+            protocolVersion: "2025-06-18",
+            capabilities: {},
+            clientInfo: { name: "cli-flow-test", version: "1.0.0" }
+          }
+        })}\n`
+      );
+
+      const response = JSON.parse(await readStdoutLine(child)) as {
+        result: { protocolVersion: string; serverInfo: { name: string }; instructions: string };
+      };
+
+      expect(response.result.protocolVersion).toBe("2025-06-18");
+      expect(response.result.serverInfo.name).toBe("splunkready");
+      expect(response.result.instructions).toContain("Deterministic rules decide readiness");
+    } finally {
+      child.kill();
+    }
+  });
+
   it("runs fixture compile, evaluate, receipt, and rerun commands with stable artifacts", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-cli-"));
 
@@ -1368,6 +1429,8 @@ describe("SplunkReady CLI flow", () => {
       postureResource: { contents: Array<{ uri: string; text: string }> };
       clientConfigResource: { contents: Array<{ uri: string; text: string }> };
       dualServerClientConfigResource: { contents: Array<{ uri: string; text: string }> };
+      claudeDesktopClientConfigResource: { contents: Array<{ uri: string; text: string }> };
+      cursorClientConfigResource: { contents: Array<{ uri: string; text: string }> };
       certificationLoopResource: { contents: Array<{ uri: string; text: string }> };
       compositionScorecardResource: { contents: Array<{ uri: string; text: string }> };
       hostedModelDiagnosticResource: { contents: Array<{ uri: string; text: string }> };
@@ -1528,6 +1591,7 @@ describe("SplunkReady CLI flow", () => {
         ],
         checks: [
           expect.objectContaining({ id: "dual-server-client-config", status: "PASS" }),
+          expect.objectContaining({ id: "external-mcp-client-configs", status: "PASS" }),
           expect.objectContaining({ id: "discoverable-resources-and-prompts", status: "PASS" }),
           expect.objectContaining({ id: "existing-splunk-mcp-boundary", status: "PASS" }),
           expect.objectContaining({ id: "saved-search-evidence", status: "PASS" }),
@@ -1576,6 +1640,8 @@ describe("SplunkReady CLI flow", () => {
         ]),
         resourceUris: expect.arrayContaining([
           "splunkready://client-config/splunk-and-splunkready",
+          "splunkready://client-config/claude-desktop",
+          "splunkready://client-config/cursor",
           "splunkready://workflows/splunk-mcp-certification-loop",
           "splunkready://workflows/mcp-composition-scorecard",
           "splunkready://workflows/hosted-model-diagnostic",
@@ -1596,7 +1662,7 @@ describe("SplunkReady CLI flow", () => {
         mutation: false
       }
     });
-    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(20);
+    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(22);
     expect(summary.clientSession.responseCount).toBe(summary.clientSession.requestCount);
     expect(summary.splunkMcpBoundary.localMcpServerRole).toContain("certification interface");
     expect(summary.splunkMcpBoundary.splunkMcpServerRole).toContain("Splunk MCP Server boundary");
@@ -1614,6 +1680,8 @@ describe("SplunkReady CLI flow", () => {
       "splunkready://examples/pass-receipt",
       "splunkready://client-config/stdio",
       "splunkready://client-config/splunk-and-splunkready",
+      "splunkready://client-config/claude-desktop",
+      "splunkready://client-config/cursor",
       "splunkready://workflows/splunk-mcp-certification-loop",
       "splunkready://workflows/mcp-composition-scorecard",
       "splunkready://workflows/hosted-model-diagnostic"
@@ -1636,6 +1704,16 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain(
       "\"certificationTool\": \"splunkready_certify_mcp_transcript\""
     );
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"splunkready@latest\"");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"mcp\"");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain(
+      "\"certificationTool\": \"splunkready_certify_mcp_transcript_content\""
+    );
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"mutation\": false");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"splunkready@latest\"");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"preserveTranscript\"");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"certifyWith\": \"splunkready\"");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"mutation\": false");
     expect(summary.certificationLoopResource.contents[0].text).toContain("Splunk MCP Certification Loop");
     expect(summary.certificationLoopResource.contents[0].text).toContain("Configure two MCP servers");
     expect(summary.compositionScorecardResource.contents[0].text).toContain("composition, not replacement");

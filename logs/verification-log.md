@@ -9958,6 +9958,100 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-07 - Move 116 External MCP Client Config Resources
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/mcp/server.test.ts`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "stdio MCP server|MCP server proof"`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "MCP proof"`
+- `npm run build && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json`
+- `node -e "const s=require('./submission-evidence/mcp-proof/mcp-proof-summary.json'); console.log(JSON.stringify({status:s.status, mutation:s.mutation, tools:s.tools.length, resources:s.resources.length, resourceTemplates:s.resourceTemplates.length, prompts:s.prompts.length, requests:s.clientSession.requestCount, responses:s.clientSession.responseCount, checks:s.mcpComposition.checks.map(c=>c.id+':'+c.status), resourceUris:s.clientSession.resourceUris}, null, 2))"`
+- `npm run public-demo:build`
+- `command -v npx >/dev/null 2>&1`
+- `bash "$PWCLI" --session splunkready-move116 open 'http://127.0.0.1:4342/?artifacts=artifacts%2Fmcp-proof#mcp-proof'`
+- `bash "$PWCLI" --session splunkready-move116 snapshot`
+- `bash "$PWCLI" --session splunkready-move116 screenshot`
+- `npm run public-demo:build`
+- `npm run audit:public-demo-export`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for MCP server unit tests:
+  - 1 test file passed;
+  - 12 tests passed.
+- PASS for submission-copy audit tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for focused CLI MCP validation:
+  - 1 test file passed;
+  - 2 tests passed;
+  - 41 tests skipped by focused pattern;
+  - covered both `splunkready mcp` stdio startup and `mcp-proof`.
+- PASS for focused UI MCP proof validation:
+  - 1 test file passed;
+  - 1 test passed;
+  - 26 tests skipped by focused pattern.
+- PASS for regenerated MCP proof:
+  - `status: "PASS"`;
+  - `mutation: false`;
+  - 5 tools;
+  - 11 resources;
+  - 1 resource template;
+  - 6 prompts;
+  - 22 recorded JSON-RPC requests;
+  - 22 recorded JSON-RPC responses;
+  - `external-mcp-client-configs:PASS`.
+- PASS for Playwright browser verification:
+  - opened the public-demo MCP proof route;
+  - snapshot showed `splunkready://client-config/claude-desktop`,
+    `splunkready://client-config/cursor`,
+    `external-mcp-client-configs: PASS`, `11 resources`, and
+    `Requests 22` / `Responses 22`;
+  - captured `submission-evidence/screenshots/workbench-mcp-proof.png`.
+- PASS for public demo export audit:
+  - 207 files;
+  - `mutation=false`;
+  - default route `mcp-proof`.
+- PASS for submission-copy audit:
+  - 57 required claims.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified: 19 rules, 4 fixture missions, 20 evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit checked 164 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and
+    `npx splunkready judge-proof` returned PASS;
+  - 59 test files passed;
+  - 364 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 57 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- The local `splunkready mcp` command is verified in the built CLI. The
+  registry package needs a later publish before npm users can run this exact
+  command from `splunkready@latest`.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- A public external-client capture remains the next MCP storytelling gap.
+
 ## 2026-06-07 - Move 115 MCP Hosted Model Diagnostic Resource
 
 Commands:

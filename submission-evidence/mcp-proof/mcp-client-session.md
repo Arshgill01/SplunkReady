@@ -8,9 +8,9 @@ Mutation: no
 
 Deterministic authority: yes
 
-Requests: 20
+Requests: 22
 
-Responses: 20
+Responses: 22
 
 Methods:
 - initialize
@@ -26,6 +26,8 @@ Resources:
 - splunkready://certification/posture
 - splunkready://client-config/stdio
 - splunkready://client-config/splunk-and-splunkready
+- splunkready://client-config/claude-desktop
+- splunkready://client-config/cursor
 - splunkready://workflows/splunk-mcp-certification-loop
 - splunkready://workflows/mcp-composition-scorecard
 - splunkready://workflows/hosted-model-diagnostic

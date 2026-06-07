@@ -82,6 +82,8 @@ describe("SplunkReady MCP server", () => {
       "splunkready://examples/pass-receipt",
       "splunkready://client-config/stdio",
       "splunkready://client-config/splunk-and-splunkready",
+      "splunkready://client-config/claude-desktop",
+      "splunkready://client-config/cursor",
       "splunkready://workflows/splunk-mcp-certification-loop",
       "splunkready://workflows/mcp-composition-scorecard",
       "splunkready://workflows/hosted-model-diagnostic"
@@ -116,6 +118,36 @@ describe("SplunkReady MCP server", () => {
     expect(String(dualConfigContents[0].text)).toContain("\"splunkready\"");
     expect(String(dualConfigContents[0].text)).toContain("\"certificationTool\": \"splunkready_certify_mcp_transcript\"");
     expect(String(dualConfigContents[0].text)).toContain("\"mutation\": false");
+
+    const claudeConfigResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "claude-config-read",
+      method: "resources/read",
+      params: { uri: "splunkready://client-config/claude-desktop" }
+    });
+    const claudeConfigResult = resultOf(claudeConfigResponse);
+    const claudeConfigContents = claudeConfigResult.contents as Array<Record<string, unknown>>;
+
+    expect(String(claudeConfigContents[0].text)).toContain("\"splunk\"");
+    expect(String(claudeConfigContents[0].text)).toContain("\"splunkready\"");
+    expect(String(claudeConfigContents[0].text)).toContain("\"splunkready@latest\"");
+    expect(String(claudeConfigContents[0].text)).toContain("\"certificationTool\": \"splunkready_certify_mcp_transcript_content\"");
+    expect(String(claudeConfigContents[0].text)).toContain("\"mutation\": false");
+
+    const cursorConfigResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "cursor-config-read",
+      method: "resources/read",
+      params: { uri: "splunkready://client-config/cursor" }
+    });
+    const cursorConfigResult = resultOf(cursorConfigResponse);
+    const cursorConfigContents = cursorConfigResult.contents as Array<Record<string, unknown>>;
+
+    expect(String(cursorConfigContents[0].text)).toContain("\"splunk\"");
+    expect(String(cursorConfigContents[0].text)).toContain("\"splunkready\"");
+    expect(String(cursorConfigContents[0].text)).toContain("\"splunkready@latest\"");
+    expect(String(cursorConfigContents[0].text)).toContain("\"preserveTranscript\"");
+    expect(String(cursorConfigContents[0].text)).toContain("\"mutation\": false");
 
     const workflowResponse = await handleMcpMessage({
       jsonrpc: "2.0",

@@ -344,6 +344,22 @@ export const splunkReadyMcpResources: McpResource[] = [
     mimeType: "application/json"
   },
   {
+    uri: "splunkready://client-config/claude-desktop",
+    name: "claude-desktop-client-config",
+    title: "Claude Desktop MCP Client Configuration",
+    description:
+      "Credential-free Claude Desktop template for composing an operator-provided Splunk MCP server with SplunkReady certification.",
+    mimeType: "application/json"
+  },
+  {
+    uri: "splunkready://client-config/cursor",
+    name: "cursor-client-config",
+    title: "Cursor MCP Client Configuration",
+    description:
+      "Credential-free Cursor template for composing an operator-provided Splunk MCP server with SplunkReady certification.",
+    mimeType: "application/json"
+  },
+  {
     uri: "splunkready://workflows/splunk-mcp-certification-loop",
     name: "splunk-mcp-certification-loop",
     title: "Splunk MCP Certification Loop",
@@ -568,6 +584,73 @@ const dualServerClientConfig = (): Record<string, unknown> => ({
   }
 });
 
+const packageMcpServerConfig = (): Record<string, unknown> => ({
+  command: "npx",
+  args: ["-y", "splunkready@latest", "mcp"],
+  env: {
+    NO_COLOR: "1"
+  }
+});
+
+const claudeDesktopClientConfig = (): Record<string, unknown> => ({
+  mcpServers: {
+    splunk: {
+      description:
+        "Existing Splunk MCP Server. Replace the command/args with the operator-approved Splunk MCP launch command; keep credentials in the operator environment.",
+      command: "<existing-splunk-mcp-server-command>",
+      args: ["<existing-splunk-mcp-server-args>"],
+      env: {
+        SPLUNK_MCP_URL: "${SPLUNKREADY_SPLUNK_MCP_URL}",
+        SPLUNK_MCP_TOKEN: "${SPLUNKREADY_SPLUNK_MCP_TOKEN}"
+      }
+    },
+    splunkready: {
+      description:
+        "SplunkReady Agent Readiness Compiler. Requires a package version that includes the `splunkready mcp` command.",
+      ...packageMcpServerConfig()
+    }
+  },
+  workflow: {
+    useSplunkFor: "Read-only investigation through the existing Splunk MCP server.",
+    useSplunkReadyFor:
+      "Deterministic certification of the captured Splunk MCP transcript into a Readiness Receipt.",
+    certificationPrompt: "splunkready_splunk_mcp_certification_loop",
+    certificationTool: "splunkready_certify_mcp_transcript_content",
+    hostedModelDiagnosticTool: "splunkready_check_hosted_model_access",
+    deterministicAuthority: true,
+    mutation: false
+  }
+});
+
+const cursorClientConfig = (): Record<string, unknown> => ({
+  mcpServers: {
+    splunk: {
+      description:
+        "Existing Splunk MCP Server. Replace this placeholder with the operator-approved Splunk MCP command and keep tokens outside captured transcripts.",
+      command: "<existing-splunk-mcp-server-command>",
+      args: ["<existing-splunk-mcp-server-args>"],
+      env: {
+        SPLUNK_MCP_URL: "${SPLUNKREADY_SPLUNK_MCP_URL}",
+        SPLUNK_MCP_TOKEN: "${SPLUNKREADY_SPLUNK_MCP_TOKEN}"
+      }
+    },
+    splunkready: {
+      description:
+        "SplunkReady certification server for receipts, resources, prompts, and no-mutation readiness checks.",
+      ...packageMcpServerConfig()
+    }
+  },
+  workflow: {
+    investigateWith: "splunk",
+    certifyWith: "splunkready",
+    preserveTranscript: "Store Splunk MCP JSON-RPC request/response lines without env files, bearer tokens, or passwords.",
+    certificationPrompt: "splunkready_splunk_mcp_certification_loop",
+    certificationTool: "splunkready_certify_mcp_transcript_content",
+    deterministicAuthority: true,
+    mutation: false
+  }
+});
+
 const readResource = async (uri: string): Promise<Record<string, unknown>> => {
   if (uri === "splunkready://certification/posture") {
     return {
@@ -648,6 +731,30 @@ const readResource = async (uri: string): Promise<Record<string, unknown>> => {
           uri,
           mimeType: "application/json",
           text: JSON.stringify(dualServerClientConfig(), null, 2)
+        }
+      ]
+    };
+  }
+
+  if (uri === "splunkready://client-config/claude-desktop") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "application/json",
+          text: JSON.stringify(claudeDesktopClientConfig(), null, 2)
+        }
+      ]
+    };
+  }
+
+  if (uri === "splunkready://client-config/cursor") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "application/json",
+          text: JSON.stringify(cursorClientConfig(), null, 2)
         }
       ]
     };

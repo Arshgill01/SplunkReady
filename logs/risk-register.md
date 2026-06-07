@@ -571,3 +571,14 @@ shows 5 tools, 9 resources, 1 resource template, 6 prompts, and 20 recorded
 JSON-RPC requests/responses. Residual risk remains live hosted-model proof and
 external-client storytelling: this is credential-free protocol evidence, not a
 claim that this shell has real SAIA access.
+
+Move 116 reduces MCP-category external-client risk by adding the package
+`splunkready mcp` entrypoint plus Claude Desktop and Cursor client-config
+resources. The server now exposes `splunkready://client-config/claude-desktop`
+and `splunkready://client-config/cursor`; the tracked proof reads both,
+requires them in the MCP composition scorecard, and shows 5 tools, 11
+resources, 1 resource template, 6 prompts, and 22 recorded JSON-RPC
+requests/responses. Residual MCP risk is now mostly storytelling and release
+timing: the existing npm `splunkready@0.1.0` package does not include this
+entrypoint until a later publish, and a public Claude/Cursor/client capture
+would still improve judge perception.
