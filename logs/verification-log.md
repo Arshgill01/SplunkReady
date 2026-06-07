@@ -15394,3 +15394,90 @@ Result:
   0 failing latest verdicts.
 - PASS for submission-copy audit with 148 required claims.
 - PASS for final `git diff --check`.
+
+## 2026-06-07T19:32:42Z - Move 155 live hosted-model status redaction evidence
+
+Focused tests:
+
+- `npx vitest run tests/scripts/live-hosted-model-status.test.ts`
+
+Result:
+
+- PASS: 1 test file passed.
+- PASS: 3 tests passed.
+- PASS: the script exports a safe public status summary.
+- PASS: the script fails when a fake live diagnostic contains the operator token
+  value from the env file.
+- PASS: the script fails when a fake live diagnostic contains the operator
+  endpoint value from the env file.
+
+Live status export:
+
+- `node scripts/audit-live-hosted-model-status.mjs --artifact artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json --env-file ./.splunkready-live.env --out submission-evidence/live-hosted-model-status/live-hosted-model-status.json --require-blocked --expect-blocker SAIA_REST_HANDLERS_NOT_REGISTERED`
+
+Result:
+
+- PASS: exported a public-safe summary to
+  `submission-evidence/live-hosted-model-status/live-hosted-model-status.json`.
+- PASS: current operator-live status remains `BLOCKED`.
+- PASS: blocker is `SAIA_REST_HANDLERS_NOT_REGISTERED`.
+- PASS: all four SAIA tools are advertised and blocked.
+- PASS: redaction audit checked the ignored live diagnostic against env-file
+  secret values and reported zero leaked secret names.
+- PASS: `mutation=false`.
+
+Fresh live diagnostic:
+
+- `npm run build >/tmp/splunkready-hosted-build-move155.log && NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --json >/tmp/splunkready-hosted-model-diagnostic-move155.json`
+
+Result:
+
+- PASS: command completed and wrote ignored raw artifacts.
+- BLOCKED: CLI and diagnostic status remain `BLOCKED`.
+- PASS: blocker remains `SAIA_REST_HANDLERS_NOT_REGISTERED`.
+- PASS: all four SAIA tools are advertised and blocked.
+- PASS: `mutation=false`.
+- Note: `NODE_TLS_REJECT_UNAUTHORIZED=0` was used only for the local
+  self-signed Splunk endpoint verification path.
+
+Evidence hash:
+
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS: all tracked submission evidence hashes verified after adding
+  `submission-evidence/live-hosted-model-status/live-hosted-model-status.json`.
+
+Focused gates:
+
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/live-hosted-model-status.test.ts tests/scripts/submission-copy-audit.test.ts`
+
+Result:
+
+- PASS: submission-copy audit passed with 152 required claims.
+- PASS: 2 test files passed.
+- PASS: 6 tests passed.
+
+Full gate:
+
+- `npm run check`
+
+Result:
+
+- PASS: scaffold verification with 85 waves and 2269 project files.
+- PASS: runtime contracts with 19 rules, 4 fixture missions, and 20 evidence refs.
+- PASS: TypeScript build and production UI build.
+- PASS: public demo export audit with 228 files and `mutation=false`.
+- PASS: package readiness audit with 177 packed files checked.
+- PASS: package installability audit; packed `splunkready-0.1.3.tgz`
+  installed, clean `npx splunkready judge-proof` returned `PASS`, and clean
+  `npx splunkready mcp` initialized.
+- PASS: full Vitest suite with 65 test files and 408 tests passed.
+- PASS: secret env ignore audit.
+- PASS: reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS: submission-copy audit with 152 required claims.
+- PASS: final `git diff --check`.

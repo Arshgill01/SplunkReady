@@ -991,3 +991,12 @@ through `npm view` using the workflow `GITHUB_TOKEN`. The root package remains
 GitHub Packages npm installs require GitHub package-registry authentication, so
 do not position the GitHub package as the primary public install path; use the
 npmjs package for no-auth judging.
+
+Move 155 keeps the operator-live hosted-model claim honest. The live diagnostic
+can reach the Splunk MCP endpoint with the local self-signed TLS workaround and
+shows all four SAIA tools advertised, but all four remain blocked by
+`SAIA_REST_HANDLERS_NOT_REGISTERED`. The new tracked status artifact is
+public-safe and the redaction audit found no env-file secret value leaks.
+Residual risk: hosted-model proof is not real PASS evidence until splunkd serves
+the Splunk AI Assistant REST handlers and
+`hosted-model-diagnostic --require-pass true` passes.

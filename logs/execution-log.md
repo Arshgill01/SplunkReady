@@ -14723,3 +14723,37 @@ Files changed:
 - `logs/risk-register.md`
 - `logs/execution-log.md`
 - `logs/verification-log.md`
+
+## 2026-06-07T19:32:42Z - Move 155 live hosted-model status redaction evidence
+
+Intent:
+
+- Preserve the current operator-live SAIA hosted-model finding as tracked
+  evidence without committing raw live artifacts or secrets.
+
+Actions:
+
+- Added `scripts/audit-live-hosted-model-status.mjs`.
+- Added `npm run audit:live-hosted-model-status`.
+- Added focused script tests that fail if the ignored live diagnostic contains
+  the operator token or endpoint value from `.splunkready-live.env`.
+- Exported `submission-evidence/live-hosted-model-status/live-hosted-model-status.json`
+  from the ignored live diagnostic after a redaction audit.
+- Updated the claim ledger and submission-copy guard to require the live status
+  artifact, `redactionAudit.status: "PASS"`, and `rawArtifactTracked: false`.
+- Added Move 155 documentation.
+
+Files changed:
+
+- `package.json`
+- `scripts/audit-live-hosted-model-status.mjs`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/live-hosted-model-status.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `moves/README.md`
+- `moves/moves155.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/live-hosted-model-status/live-hosted-model-status.json`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`

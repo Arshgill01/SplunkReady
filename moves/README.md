@@ -177,6 +177,7 @@ commands, or filesystem paths.
 | P0 | [152](moves152.md) Published package advanced currentness | 0.5d | Publishes and verifies the package surface for live-mock and policy-registry proof, not only judge-proof and MCP initialize. |
 | P0 | [153](moves153.md) Hosted demo currentness after package release | 0.5d | Keeps the GitHub Pages demo source-current and asset-current after the latest package and UI changes. |
 | P1 | [154](moves154.md) GitHub Packages scoped mirror | 0.5d | Publishes and verifies the repo-linked `@arshgill01/splunkready` package for the GitHub Packages sidebar. |
+| P0 | [155](moves155.md) Live hosted-model status redaction evidence | 0.5d | Tracks the current operator-live SAIA blocker as public-safe evidence while proving raw live artifacts do not leak secrets. |
 
 ## Non-Negotiable Boundaries
 
