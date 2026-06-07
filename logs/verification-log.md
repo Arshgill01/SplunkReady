@@ -15650,3 +15650,85 @@ Result:
 - PASS: redaction audit checked the ignored live diagnostic against env-file
   secret values and reported zero leaked secret names.
 - PASS: `mutation=false`.
+
+## 2026-06-07T20:21:48Z - Move 159 MCP composition recorder evidence
+
+Focused build and recorder/UI tests:
+
+- `npm run build`
+- `npx vitest run tests/mcp/composition-recorder.test.ts tests/ui/app.test.ts tests/scripts/submission-copy-audit.test.ts`
+
+Result:
+
+- PASS: TypeScript build completed.
+- PASS: 3 test files passed.
+- PASS: 34 tests passed.
+
+MCP proof regeneration:
+
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json`
+
+Result:
+
+- PASS: command returned `status: "PASS"`.
+- PASS: generated `submission-evidence/mcp-proof/dual-server-session.jsonl`.
+- PASS: generated
+  `submission-evidence/mcp-proof/mcp-composition-recorder-certification/`.
+- PASS: `mcp-proof-summary.json` reports `compositionRecorder.status: "PASS"`,
+  `frameCount: 56`, server IDs `splunk` and `splunkready`, Splunk tools
+  `splunk_get_knowledge_objects` and `splunk_run_saved_search`, SplunkReady
+  tools `splunkready_certify_mcp_transcript` and
+  `splunkready_certify_mcp_transcript_content`, evidence refs `evt-102`,
+  `evt-118`, `evt-141`, redaction `PASS`, certification `PASS`, deterministic
+  authority, and `mutation: false`.
+
+Evidence hash:
+
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS: all tracked submission evidence hashes verified.
+
+Recorder evidence leak scan:
+
+- `rg -n "Authorization: Bearer|Bearer [A-Za-z0-9._~+/=-]+|/Users/|/private/|/tmp/|\\.splunkready|https?://[^\\\"' ,}]|SPLUNKREADY_.*TOKEN|SPLUNKREADY_.*URL|GEMINI_API_KEY|SAIA_.*URL|real-token" submission-evidence/mcp-proof/dual-server-session.jsonl submission-evidence/mcp-proof/dual-server-session.md submission-evidence/mcp-proof/mcp-composition-recorder-certification || true`
+
+Result:
+
+- PASS: no matches in the tracked recorder session or its certification
+  artifacts after redaction tightening.
+
+Focused public-claim and whitespace gates:
+
+- `npm run audit:submission-copy`
+- `git diff --check`
+
+Result:
+
+- PASS: submission-copy audit passed with 187 required claims.
+- PASS: `git diff --check`.
+
+Full gate:
+
+- `npm run check`
+
+Result:
+
+- PASS: scaffold verification with 85 waves and 2343 project files.
+- PASS: runtime contracts with 19 rules, 4 fixture missions, and 20 evidence
+  refs.
+- PASS: TypeScript build and production UI build.
+- PASS: public demo export audit with 244 files, default route `mcp-proof`, and
+  `mutation=false`.
+- PASS: package readiness audit with 179 packed files checked.
+- PASS: package installability audit; packed `splunkready-0.1.3.tgz`
+  installed, clean `npx splunkready judge-proof` returned `PASS`, and clean
+  `npx splunkready mcp` initialized.
+- PASS: full Vitest suite with 68 test files and 418 tests passed.
+- PASS: secret env ignore audit.
+- PASS: reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS: submission-copy audit with 187 required claims.
+- PASS: final `git diff --check`.

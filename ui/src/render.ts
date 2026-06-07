@@ -231,6 +231,33 @@ const renderOfficialSplunkMcpToolCoverage = (summary: McpProofSummary): string =
   )}`;
 };
 
+const renderMcpCompositionRecorder = (summary: McpProofSummary): string => {
+  const recorder = summary.compositionRecorder;
+
+  return renderFactTable([
+    ["Status", recorder.status],
+    ["Source", recorder.source],
+    ["Frames", recorder.frameCount],
+    ["Servers", recorder.serverIds.join(" / ")],
+    ["Requests", recorder.requestCount],
+    ["Responses", recorder.responseCount],
+    ["Splunk tools", recorder.splunkToolNames.join(" / ") || "none"],
+    ["SplunkReady tools", recorder.splunkReadyToolNames.join(" / ") || "none"],
+    ["Evidence refs", recorder.evidenceRefs.join(" / ") || "none"],
+    ["Transcript", recorder.artifactPath],
+    ["Markdown", recorder.markdownPath],
+    ["Redaction", recorder.redaction.status],
+    ["Endpoint material", recorder.redaction.endpointMaterialPresent ? "present" : "redacted"],
+    ["Token material", recorder.redaction.tokenMaterialPresent ? "present" : "redacted"],
+    ["Local path material", recorder.redaction.localPathMaterialPresent ? "present" : "redacted"],
+    ["Certification", recorder.certification?.status ?? "not recorded"],
+    ["Certification out dir", recorder.certification?.outDir ?? "not recorded"],
+    ["Certification artifacts", recorder.certification?.artifactCount ?? "not recorded"],
+    ["Deterministic authority", recorder.deterministicAuthority ? "yes" : "no"],
+    ["Mutation", recorder.mutation ? "yes" : "no"]
+  ]);
+};
+
 const renderOperatorLiveHostedModelStatus = (summary: McpProofSummary): string => {
   const status = summary.operatorLiveHostedModelStatus;
 
@@ -289,6 +316,10 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
               <section class="panel mcp-proof-panel">
                 <h2>MCP composition scorecard</h2>
                 ${renderMcpComposition(summary)}
+              </section>
+              <section class="panel mcp-proof-panel">
+                <h2>MCP composition recorder</h2>
+                ${renderMcpCompositionRecorder(summary)}
               </section>
               <section class="panel mcp-proof-panel">
                 <h2>Official Splunk MCP tool coverage</h2>

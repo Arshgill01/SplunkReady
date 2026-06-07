@@ -962,6 +962,39 @@ const mcpProofSummarySchema = z
         mutation: z.boolean()
       })
       .strict(),
+    compositionRecorder: z
+      .object({
+        source: z.literal("splunkready-mcp-composition-recorder"),
+        status: z.enum(["PASS", "FAIL"]),
+        artifactPath: z.string().min(1),
+        markdownPath: z.string().min(1),
+        frameCount: z.number().int().nonnegative(),
+        serverIds: z.array(z.string().min(1)),
+        requestCount: z.number().int().nonnegative(),
+        responseCount: z.number().int().nonnegative(),
+        splunkToolNames: z.array(z.string().min(1)),
+        splunkReadyToolNames: z.array(z.string().min(1)),
+        evidenceRefs: z.array(z.string().min(1)),
+        redaction: z
+          .object({
+            status: z.enum(["PASS", "FAIL"]),
+            endpointMaterialPresent: z.boolean(),
+            tokenMaterialPresent: z.boolean(),
+            localPathMaterialPresent: z.boolean()
+          })
+          .strict(),
+        certification: z
+          .object({
+            status: z.enum(["PASS", "FAIL"]),
+            outDir: z.string().min(1),
+            artifactCount: z.number().int().nonnegative()
+          })
+          .strict()
+          .optional(),
+        deterministicAuthority: z.boolean(),
+        mutation: z.boolean()
+      })
+      .strict(),
     clientWalkthrough: z
       .object({
         source: z.literal("splunkready-mcp-client-walkthrough"),

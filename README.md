@@ -195,7 +195,11 @@ without copying endpoints or tokens. It writes
 Readiness Receipt artifacts. The summary includes a `splunkMcpBoundary` block
 that names the certified `splunk_*` tools, records saved-search execution,
 preserves evidence refs, points at the generated receipt, and states that
-deterministic rules remained authoritative. It also includes an
+deterministic rules remained authoritative. It also includes a
+`compositionRecorder` block that writes a redacted dual-server MCP session to
+`dual-server-session.jsonl`, preserves `serverId` for the existing Splunk MCP
+and SplunkReady MCP sides, and certifies that recorder transcript through the
+same deterministic transcript importer with zero skipped records. It also includes an
 `agentDrivenWorkflow` block showing the intended loop: an MCP client
 investigates with Splunk MCP, captures the JSON-RPC transcript, calls
 SplunkReady MCP for certification, then explains the Readiness Receipt without
@@ -478,7 +482,8 @@ That command writes an MCP proof summary with explicit Splunk MCP boundary
 evidence, MCP resource-template discovery, hosted-model diagnostic
 resource/prompt discovery, Claude Desktop and Cursor MCP client config
 resources, inline transcript certification, deterministic MCP composition
-review, fixture hosted-model access,
+review, a redacted dual-server recorder session at
+`dual-server-session.jsonl`, fixture hosted-model access,
 operator-live hosted-model status when a redacted live diagnostic exists, the
 uploaded transcript copy, `trace-imported.json`, `trace-external.json`,
 `receipt-external-001.json`, `proof-audit.json`, and the transcript

@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "source": "mcp-jsonrpc-transcript",
+  "mutation": false,
+  "missionId": "mission-security-lateral-movement-readiness",
+  "recordCount": 56,
+  "importedEvents": 5,
+  "toolCalls": 2,
+  "toolResults": 2,
+  "errors": 0,
+  "finalAnswers": 1,
+  "skippedRecords": 0,
+  "unmatchedToolCalls": 0,
+  "toolNames": [
+    "splunk_get_knowledge_objects",
+    "splunk_run_saved_search"
+  ],
+  "strictImport": true,
+  "transcriptPath": "submission-evidence/mcp-proof/dual-server-session.jsonl",
+  "outputTracePath": "submission-evidence/mcp-proof/mcp-composition-recorder-certification/trace-imported.json",
+  "nextCommand": "npm run splunkready -- grade-trace --trace submission-evidence/mcp-proof/mcp-composition-recorder-certification/trace-imported.json --out submission-evidence/mcp-proof/mcp-composition-recorder-certification --agent-name \"MCP Composition Recorder\" --agent-version \"dual-server-redacted-session\""
+}

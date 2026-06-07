@@ -82,6 +82,13 @@ Readiness Receipt sequence, uploads the PR-gate artifacts, and posts a stable
 SplunkReady comment when pull-request permissions allow it. The tracked sample
 is in `submission-evidence/ci-pr-gate/`.
 
+The MCP proof also includes a client-neutral dual-server recorder artifact at
+`submission-evidence/mcp-proof/dual-server-session.jsonl`. It preserves
+`serverId` for the existing Splunk MCP investigation frames and the SplunkReady
+certification frames, redacts endpoint/token/local-path material, then certifies
+the recorder transcript with strict import and zero skipped records. This is not
+claimed as a third-party desktop-client recording.
+
 The tracked Splunk app package evidence is
 `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`. It embeds the
 public artifact workbench as static Splunk app content and intentionally avoids

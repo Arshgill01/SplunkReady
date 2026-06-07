@@ -2,6 +2,13 @@ import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 
+import {
+  renderMcpCompositionRecorderMarkdown,
+  writeMcpCompositionRecorderSession,
+  type McpCompositionRecorderSummary
+} from "../mcp/composition-recorder.js";
+import { runMcpTranscriptCertificationFromPathWorkflow } from "./external-certification.js";
+
 export interface McpProofWorkflowInput {
   outDir: string;
   serverPath: string;
@@ -235,6 +242,7 @@ interface McpProofSummary {
     deterministicAuthority: true;
     mutation: false;
   };
+  compositionRecorder: McpCompositionRecorderSummary;
   artifacts: string[];
   nextCommands: string[];
 }
@@ -492,6 +500,16 @@ Live mock Splunk MCP: ${summary.liveMockSplunkMcp.status}
 - Tools called: ${summary.liveMockSplunkMcp.toolNames.join(", ") || "none"}
 - Evidence refs: ${summary.liveMockSplunkMcp.evidenceRefs.join(", ") || "none"}
 - Saved-search execution: ${summary.liveMockSplunkMcp.includesSavedSearchExecution ? "yes" : "no"}
+
+MCP composition recorder: ${summary.compositionRecorder.status}
+- Artifact: ${summary.compositionRecorder.artifactPath}
+- Markdown: ${summary.compositionRecorder.markdownPath}
+- Frames: ${summary.compositionRecorder.frameCount}
+- Servers: ${summary.compositionRecorder.serverIds.join(", ")}
+- Splunk tools: ${summary.compositionRecorder.splunkToolNames.join(", ") || "none"}
+- SplunkReady tools: ${summary.compositionRecorder.splunkReadyToolNames.join(", ") || "none"}
+- Redaction: ${summary.compositionRecorder.redaction.status}
+- Certification: ${summary.compositionRecorder.certification?.status ?? "NOT_RUN"}
 
 Receipt: ${stringFromRecord(summary.transcriptCertification, "outDir")}/receipt-external-001.json
 `;
@@ -1275,11 +1293,15 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
   const clientSessionMarkdownPath = join(input.outDir, "mcp-client-session.md");
   const liveMockSplunkMcpSessionPath = join(input.outDir, "mock-splunk-mcp-session.jsonl");
   const liveMockSplunkMcpMarkdownPath = join(input.outDir, "mock-splunk-mcp-session.md");
+  const compositionRecorderSessionPath = join(input.outDir, "dual-server-session.jsonl");
+  const compositionRecorderMarkdownPath = join(input.outDir, "dual-server-session.md");
+  const compositionRecorderCertificationOutDir = join(input.outDir, "mcp-composition-recorder-certification");
 
   await mkdir(input.outDir, { recursive: true });
   await mkdir(transcriptOutDir, { recursive: true });
   await mkdir(inlineTranscriptOutDir, { recursive: true });
   await mkdir(hostedModelAccessOutDir, { recursive: true });
+  await mkdir(compositionRecorderCertificationOutDir, { recursive: true });
 
   const client = new McpStdioClient(input.serverPath);
 
@@ -1522,6 +1544,33 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       markdownPath: liveMockSplunkMcpMarkdownPath
     });
     const clientSession = buildMcpClientSession(client.session(), clientSessionPath, clientSessionMarkdownPath);
+    const compositionRecorderBase = await writeMcpCompositionRecorderSession({
+      splunkTranscriptPath: transcriptPath,
+      splunkReadySession: client.session(),
+      artifactPath: compositionRecorderSessionPath,
+      markdownPath: compositionRecorderMarkdownPath
+    });
+    const compositionRecorderCertification = await runMcpTranscriptCertificationFromPathWorkflow({
+      outDir: compositionRecorderCertificationOutDir,
+      transcriptPath: compositionRecorderSessionPath,
+      strictImport: true,
+      requirePass: true,
+      agentName: "MCP Composition Recorder",
+      agentVersion: "dual-server-redacted-session"
+    });
+    const compositionRecorder: McpCompositionRecorderSummary = {
+      ...compositionRecorderBase,
+      certification: {
+        status: compositionRecorderCertification.status,
+        outDir: compositionRecorderCertification.outDir,
+        artifactCount: compositionRecorderCertification.artifacts.length
+      },
+      status:
+        compositionRecorderBase.status === "PASS" && compositionRecorderCertification.status === "PASS"
+          ? "PASS"
+          : "FAIL"
+    };
+    await writeFile(compositionRecorderMarkdownPath, renderMcpCompositionRecorderMarkdown(compositionRecorder), "utf8");
     const summary: McpProofSummary = {
       source: "splunkready-mcp-proof",
       status:
@@ -1529,6 +1578,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         inlineCertificationStatus === "PASS" &&
         compositionReviewStatus === "PASS" &&
         hostedModelAccessStatus === "PASS" &&
+        compositionRecorder.status === "PASS" &&
         (!input.liveMock || liveMockSplunkMcp.status === "PASS")
           ? "PASS"
           : "FAIL",
@@ -1573,6 +1623,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       clientWalkthrough,
       clientSession,
       liveMockSplunkMcp,
+      compositionRecorder,
       artifacts: [
         summaryPath,
         markdownPath,
@@ -1582,6 +1633,9 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         clientSessionMarkdownPath,
         liveMockSplunkMcpSessionPath,
         liveMockSplunkMcpMarkdownPath,
+        compositionRecorderSessionPath,
+        compositionRecorderMarkdownPath,
+        ...compositionRecorderCertification.artifacts,
         ...toolArtifacts,
         ...inlineToolArtifacts,
         ...hostedModelAccessArtifacts
@@ -1610,7 +1664,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         `Certified transcript ${transcriptPath} through splunkready_certify_mcp_transcript and splunkready_certify_mcp_transcript_content.`,
         "Checked hosted-model SAIA access through splunkready_check_hosted_model_access in fixture mode.",
         `Recorded operator live hosted-model status as ${operatorLiveHostedModelStatus.status}.`,
-        `Recorded live mock Splunk MCP status as ${liveMockSplunkMcp.status}.`
+        `Recorded live mock Splunk MCP status as ${liveMockSplunkMcp.status}.`,
+        `Recorded dual-server MCP composition session as ${compositionRecorder.status}.`
       ]
     };
   } finally {

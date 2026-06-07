@@ -872,6 +872,48 @@
     "deterministicAuthority": true,
     "mutation": false
   },
+  "compositionRecorder": {
+    "source": "splunkready-mcp-composition-recorder",
+    "status": "PASS",
+    "artifactPath": "submission-evidence/mcp-proof/dual-server-session.jsonl",
+    "markdownPath": "submission-evidence/mcp-proof/dual-server-session.md",
+    "frameCount": 56,
+    "serverIds": [
+      "splunk",
+      "splunkready"
+    ],
+    "requestCount": 27,
+    "responseCount": 27,
+    "splunkToolNames": [
+      "splunk_get_knowledge_objects",
+      "splunk_run_saved_search"
+    ],
+    "splunkReadyToolNames": [
+      "splunkready_describe_certification",
+      "splunkready_review_mcp_composition",
+      "splunkready_certify_mcp_transcript",
+      "splunkready_certify_mcp_transcript_content",
+      "splunkready_check_hosted_model_access"
+    ],
+    "evidenceRefs": [
+      "evt-102",
+      "evt-118",
+      "evt-141"
+    ],
+    "redaction": {
+      "status": "PASS",
+      "endpointMaterialPresent": false,
+      "tokenMaterialPresent": false,
+      "localPathMaterialPresent": false
+    },
+    "deterministicAuthority": true,
+    "mutation": false,
+    "certification": {
+      "status": "PASS",
+      "outDir": "submission-evidence/mcp-proof/mcp-composition-recorder-certification",
+      "artifactCount": 14
+    }
+  },
   "artifacts": [
     "submission-evidence/mcp-proof/mcp-proof-summary.json",
     "submission-evidence/mcp-proof/mcp-proof-summary.md",
@@ -881,6 +923,22 @@
     "submission-evidence/mcp-proof/mcp-client-session.md",
     "submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl",
     "submission-evidence/mcp-proof/mock-splunk-mcp-session.md",
+    "submission-evidence/mcp-proof/dual-server-session.jsonl",
+    "submission-evidence/mcp-proof/dual-server-session.md",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/environment-contract.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/missions.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/agent-policy.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/readiness-profile.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/trace-imported.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/mcp-transcript-import.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/trace-external.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/violations-external.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/score-external.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/receipt-external-001.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/receipt-external-001.md",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/mcp-transcript-certification.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/proof-audit.json",
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/proof-manifest.json",
     "submission-evidence/mcp-proof/mcp-transcript-certification/uploaded-mcp-transcript.jsonl",
     "submission-evidence/mcp-proof/mcp-transcript-certification/environment-contract.json",
     "submission-evidence/mcp-proof/mcp-transcript-certification/missions.json",

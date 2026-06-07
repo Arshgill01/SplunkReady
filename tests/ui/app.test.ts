@@ -598,6 +598,38 @@ const mcpProofSummary = {
     deterministicAuthority: true,
     mutation: false
   },
+  compositionRecorder: {
+    source: "splunkready-mcp-composition-recorder",
+    status: "PASS",
+    artifactPath: "submission-evidence/mcp-proof/dual-server-session.jsonl",
+    markdownPath: "submission-evidence/mcp-proof/dual-server-session.md",
+    frameCount: 56,
+    serverIds: ["splunk", "splunkready"],
+    requestCount: 27,
+    responseCount: 27,
+    splunkToolNames: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+    splunkReadyToolNames: [
+      "splunkready_describe_certification",
+      "splunkready_review_mcp_composition",
+      "splunkready_certify_mcp_transcript",
+      "splunkready_certify_mcp_transcript_content",
+      "splunkready_check_hosted_model_access"
+    ],
+    evidenceRefs: ["evt-102", "evt-118", "evt-141"],
+    redaction: {
+      status: "PASS",
+      endpointMaterialPresent: false,
+      tokenMaterialPresent: false,
+      localPathMaterialPresent: false
+    },
+    certification: {
+      status: "PASS",
+      outDir: "submission-evidence/mcp-proof/mcp-composition-recorder-certification",
+      artifactCount: 14
+    },
+    deterministicAuthority: true,
+    mutation: false
+  },
   clientWalkthrough: {
     source: "splunkready-mcp-client-walkthrough",
     status: "PASS",
@@ -1675,6 +1707,7 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("MCP proof");
     expect(html).toContain("Certification loop");
     expect(html).toContain("MCP composition scorecard");
+    expect(html).toContain("MCP composition recorder");
     expect(html).toContain("Official Splunk MCP tool coverage");
     expect(html).toContain("MCP client session");
     expect(html).toContain("dual-server-client-config: PASS");
@@ -1683,6 +1716,12 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("official-splunk-mcp-tool-coverage: PASS");
     expect(html).toContain("mission-scoped-tool-boundary: PASS");
     expect(html).toContain("splunk_get_info");
+    expect(html).toContain("splunkready-mcp-composition-recorder");
+    expect(html).toContain("submission-evidence/mcp-proof/dual-server-session.jsonl");
+    expect(html).toContain("submission-evidence/mcp-proof/mcp-composition-recorder-certification");
+    expect(html).toContain("Endpoint material");
+    expect(html).toContain("Token material");
+    expect(html).toContain("Local path material");
     expect(html).toContain("splunk: Existing Splunk MCP server");
     expect(html).toContain("splunkready://client-config/claude-desktop");
     expect(html).toContain("splunkready://client-config/cursor");

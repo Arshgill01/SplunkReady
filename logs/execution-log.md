@@ -14934,3 +14934,55 @@ Files changed:
 - `tests/examples/repository-ci-workflow.test.ts`
 - `tests/scripts/pr-gate-comment.test.ts`
 - `tests/scripts/submission-copy-audit.test.ts`
+
+## 2026-06-07T20:21:48Z - Move 159 MCP composition recorder evidence
+
+Intent:
+
+- Strengthen the MCP category proof without restarting fragile closed-desktop
+  recording. Preserve dual-server identity, redact sensitive material, and feed
+  the recorded composition back into the deterministic MCP transcript
+  certification path.
+
+Actions:
+
+- Added `src/mcp/composition-recorder.ts` for client-neutral dual-server frame
+  generation, server identity preservation, endpoint/token/local-path
+  redaction, scorecard summary generation, and Markdown rendering.
+- Updated MCP transcript import to ignore non-Splunk recorder frames without
+  counting them as skipped records, so a dual-server recorder artifact remains
+  strict-import compatible while retaining SplunkReady MCP metadata.
+- Updated MCP composition review to unwrap recorder envelopes when reading tool
+  names and evidence refs.
+- Extended `mcp-proof` to write
+  `submission-evidence/mcp-proof/dual-server-session.jsonl`, certify it through
+  `mcp-composition-recorder-certification/`, and expose a
+  `compositionRecorder` summary block.
+- Added focused recorder tests for redaction, server IDs, Splunk/SplunkReady
+  tool coverage, evidence refs, and strict transcript-import compatibility.
+- Updated the workbench MCP proof schema/render path so the recorder evidence is
+  visible in the UI.
+- Updated README, Devpost copy, submission evidence docs, claim ledger, and the
+  submission-copy audit for the new recorder evidence claim.
+
+Files changed:
+
+- `README.md`
+- `docs/devpost-submission.md`
+- `logs/execution-log.md`
+- `logs/risk-register.md`
+- `logs/verification-log.md`
+- `scripts/audit-submission-copy.mjs`
+- `src/mcp/composition-recorder.ts`
+- `src/mcp/composition-review.ts`
+- `src/traces/mcp-transcript.ts`
+- `src/workflows/mcp-proof.ts`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/mcp-proof/*`
+- `tests/mcp/composition-recorder.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `tests/ui/app.test.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`

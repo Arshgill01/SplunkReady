@@ -1,0 +1,42 @@
+{
+  "id": "receipt-external-001",
+  "agent": {
+    "name": "MCP Composition Recorder",
+    "version": "dual-server-redacted-session"
+  },
+  "environment": {
+    "id": "contract-acme-soc-dev",
+    "name": "acme-soc-dev"
+  },
+  "mode": "fixture",
+  "contractVersion": "2026.06.01",
+  "missionSuiteVersion": "external-trace-1",
+  "verdict": "READY",
+  "score": 100,
+  "passedMissions": [
+    "mission-security-lateral-movement-readiness"
+  ],
+  "failedMissions": [],
+  "criticalViolations": [],
+  "violations": [],
+  "traceRefs": [
+    "mission-security-lateral-movement-readiness-imported-trace-001",
+    "mission-security-lateral-movement-readiness-imported-trace-002",
+    "mission-security-lateral-movement-readiness-imported-trace-003",
+    "mission-security-lateral-movement-readiness-imported-trace-004",
+    "mission-security-lateral-movement-readiness-imported-trace-005"
+  ],
+  "evidenceRefs": [
+    "saved-search-lateral-movement",
+    "macro-security-content-ctime",
+    "lookup-asset-lookup",
+    "evt-102",
+    "evt-118",
+    "evt-141"
+  ],
+  "policyPatchSummary": [],
+  "rerunComparison": {},
+  "receiptHash": "e4cebbf0f385651a4f6bc8330fc2c115b7db07d0076b5e767515b01b217e948b",
+  "generatedBy": "Agent Readiness Compiler",
+  "notes": "This receipt grades an externally supplied trace. The deterministic rule engine decides pass/fail; the trace producer is outside SplunkReady."
+}

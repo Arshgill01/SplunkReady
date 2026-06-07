@@ -1035,3 +1035,14 @@ receipts, and arbitrary proof-audit warnings, but it accepts the known generic
 live warning that the proof is not the flagship live-security proof. Residual
 risk: until a real pull request runs the workflow, tracked evidence is a sample
 render plus workflow/test coverage, not an observed GitHub comment on a PR.
+
+Move 159 reduces the "MCP proof is self-driven only" risk by adding a
+client-neutral dual-server composition recorder artifact. The tracked recorder
+preserves `splunk` and `splunkready` server IDs, includes Splunk investigation
+tools plus SplunkReady certification tools, redacts endpoint/token/local path
+material, and is certified through the deterministic MCP transcript importer
+with strict import and zero skipped records. Residual risk: this is not yet a
+live pass-through recorder/proxy mode and it is not claimed as an observed
+Antigravity, Zed, Claude Desktop, or Cursor session. A later MCP move should
+turn the recorder into an actual proxy/gateway before claiming third-party
+client evidence.

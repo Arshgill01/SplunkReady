@@ -43,6 +43,8 @@ npm run pr-gate:sample
 submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
 submission-evidence/splunk-app-package/splunk-app-package-manifest.json
 submission-evidence/ci-pr-gate/
+dual-server-session.jsonl
+compositionRecorder
 splunkready_certify_mcp_transcript_content
 splunkready_check_hosted_model_access
 splunkready_review_mcp_composition
@@ -92,6 +94,7 @@ npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
 submission-evidence/public-package-currentness/
 submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
 submission-evidence/ci-pr-gate/
+submission-evidence/mcp-proof/dual-server-session.jsonl
 ${hostedMcpProofUrl}
 ${hostedJudgeProofUrl}
 `;
@@ -128,6 +131,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | The self-hostable mock Splunk MCP path produces a credential-free live-mode proof without Splunk credentials. | Supported | submission-evidence/live-mock/live-proof-summary.json, proofLoop: "fail-to-pass", derivedMission.strategy: "saved-search-with-evidence" | npm run live-mock-proof |
 | Pull requests can get a credential-free live readiness comment backed by Readiness Receipt artifacts. | Supported | .github/workflows/live-certification-gate.yml, submission-evidence/ci-pr-gate/ci-pr-gate.json, submission-evidence/ci-pr-gate/pr-comment.md, splunkready-live-readiness-pr-gate | npm run pr-gate:sample; tests/scripts/pr-gate-comment.test.ts |
 | The MCP proof can run a credential-free live mock Splunk MCP session as part of the composition evidence. | Supported | liveMockSplunkMcp, submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl | mcp-proof --out submission-evidence/mcp-proof --live-mock --json |
+| The MCP proof records a redacted dual-server composition session without requiring a closed desktop client. | Supported | splunkready-mcp-composition-recorder, submission-evidence/mcp-proof/dual-server-session.jsonl, submission-evidence/mcp-proof/mcp-composition-recorder-certification/mcp-transcript-import.json, redaction.status: "PASS", skippedRecords: 0 | tests/mcp/composition-recorder.test.ts |
 | The MCP proof distinguishes credential-free fixture hosted-model PASS from the current operator-live SAIA blocker. | Supported | operatorLiveHostedModelStatus, SAIA_REST_HANDLERS_PARTIALLY_REGISTERED, restHandlerProbeStatus | npm run mcp-proof |
 | The tracked live hosted-model status is public-safe while raw operator artifacts stay ignored. | Supported | submission-evidence/live-hosted-model-status/live-hosted-model-status.json, redactionAudit.status: "PASS", rawArtifactTracked: false | npm run audit:live-hosted-model-status |
 | The MCP client config resources expose dedicated SAIA cloud routing placeholders without committing credentials. | Supported | SPLUNKREADY_SAIA_ENDPOINT, SPLUNKREADY_SAIA_TOKEN, SAIA_MCP_URL, SPLUNK_AI_ASSISTANT_MCP_URL, SPLUNKREADY_SAIA_REALM, SPLUNKREADY_SAIA_TENANT, hostedModelDiagnosticTool | npm run mcp-proof |

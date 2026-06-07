@@ -50,6 +50,22 @@ const unwrapRecord = (record: unknown): Record<string, unknown> | undefined => {
   return recordAt(record, "message") ?? recordAt(record, "payload") ?? recordAt(record, "request") ?? recordAt(record, "response") ?? record;
 };
 
+const isIgnorableRecorderFrame = (record: unknown): boolean => {
+  if (!isRecord(record)) {
+    return false;
+  }
+
+  const serverId = stringValue(record.serverId);
+
+  if (!serverId || serverId === "splunk" || serverId === "splunk-mcp") {
+    return false;
+  }
+
+  const unwrapped = unwrapRecord(record);
+
+  return Boolean(unwrapped && !isFinalAnswerRecord(unwrapped));
+};
+
 export const parseMcpTranscriptRecords = (text: string): unknown[] => {
   const trimmed = text.trim();
 
@@ -264,6 +280,10 @@ export const importMcpTranscript = (records: unknown[], missionId: string): Impo
   };
 
   for (const rawRecord of records) {
+    if (isIgnorableRecorderFrame(rawRecord)) {
+      continue;
+    }
+
     const record = unwrapRecord(rawRecord);
 
     if (!record) {

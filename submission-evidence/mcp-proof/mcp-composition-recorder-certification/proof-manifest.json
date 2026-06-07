@@ -1,0 +1,73 @@
+{
+  "source": "splunkready-proof-manifest",
+  "generatedAt": "2026-06-01T06:45:00.000Z",
+  "proofDir": "submission-evidence/mcp-proof/mcp-composition-recorder-certification",
+  "aggregateSha256": "f1dc27477b07b71fc7359831a386b7604c2a6ab9ecdbfccb09b2e7ad3cb45ede",
+  "files": [
+    {
+      "path": "agent-policy.json",
+      "sizeBytes": 10244,
+      "sha256": "74a11cf9cffe70e7d1a69364b5830939288f1491d849045b844cfb3081c81942"
+    },
+    {
+      "path": "environment-contract.json",
+      "sizeBytes": 14711,
+      "sha256": "26c2c8fb932cf86dde754787ddd4a6323e321906991c0854a7da9e1d1fefe39a"
+    },
+    {
+      "path": "mcp-transcript-certification.json",
+      "sizeBytes": 1984,
+      "sha256": "4eac7821f06bf48a467db6180fb8e8a66dd35940004c02b782986587df5e37f9"
+    },
+    {
+      "path": "mcp-transcript-import.json",
+      "sizeBytes": 934,
+      "sha256": "690cfaad90484e7710a7c7d28b9148a15c3edd27cfb904333c634a9e8ce794c3"
+    },
+    {
+      "path": "missions.json",
+      "sizeBytes": 2338,
+      "sha256": "d8299285a80192e9433f3108748def64009ac363f6493d3395dbfe97827790fa"
+    },
+    {
+      "path": "proof-audit.json",
+      "sizeBytes": 2248,
+      "sha256": "5acbe30d370dce1d9d6998f1e559fcdf8c39333eb74ca41a0e288097895300df"
+    },
+    {
+      "path": "readiness-profile.json",
+      "sizeBytes": 22884,
+      "sha256": "507e6d097a69e9a7c16a6ab3134fc25c76386505d5117d6f3ffaf4cdec093168"
+    },
+    {
+      "path": "receipt-external-001.json",
+      "sizeBytes": 1391,
+      "sha256": "66cf78b1c65938198d981e04a47cb371c04e25afe0b11759889cbcb76c28e97e"
+    },
+    {
+      "path": "receipt-external-001.md",
+      "sizeBytes": 1490,
+      "sha256": "f89dfd7e8892a67d467eefb5760994f5df7c079ba405c16caccbff78f4450738"
+    },
+    {
+      "path": "score-external.json",
+      "sizeBytes": 647,
+      "sha256": "ad0d3eabc3c3f26892ff87fb76cb6a5c48fe55b123bdd89728fd321f7d3f13c1"
+    },
+    {
+      "path": "trace-external.json",
+      "sizeBytes": 4248,
+      "sha256": "d100b6911286c047379872181ca1b9503a7de69bc4ecfdc8b6cc2e7dc9c2b67c"
+    },
+    {
+      "path": "trace-imported.json",
+      "sizeBytes": 4248,
+      "sha256": "d100b6911286c047379872181ca1b9503a7de69bc4ecfdc8b6cc2e7dc9c2b67c"
+    },
+    {
+      "path": "violations-external.json",
+      "sizeBytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    }
+  ]
+}

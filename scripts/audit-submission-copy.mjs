@@ -176,6 +176,24 @@ const checks = [
   ["Claim ledger MCP live mock session", files.claimLedger, "submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl"],
   ["Claim ledger MCP live mock status", files.claimLedger, "liveMockSplunkMcp"],
   ["Claim ledger MCP live mock command", files.claimLedger, "mcp-proof --out submission-evidence/mcp-proof --live-mock --json"],
+  [
+    "Claim ledger MCP composition recorder",
+    files.claimLedger,
+    "The MCP proof records a redacted dual-server composition session without requiring a closed desktop client."
+  ],
+  ["Claim ledger MCP composition recorder source", files.claimLedger, "splunkready-mcp-composition-recorder"],
+  ["Claim ledger MCP composition recorder artifact", files.claimLedger, "submission-evidence/mcp-proof/dual-server-session.jsonl"],
+  [
+    "Claim ledger MCP composition recorder certification",
+    files.claimLedger,
+    "submission-evidence/mcp-proof/mcp-composition-recorder-certification/mcp-transcript-import.json"
+  ],
+  ["Claim ledger MCP composition recorder redaction", files.claimLedger, "redaction.status: \"PASS\""],
+  ["Claim ledger MCP composition recorder skipped records", files.claimLedger, "skippedRecords: 0"],
+  ["Claim ledger MCP composition recorder test", files.claimLedger, "tests/mcp/composition-recorder.test.ts"],
+  ["README MCP composition recorder", files.readme, "compositionRecorder"],
+  ["README MCP composition recorder artifact", files.readme, "dual-server-session.jsonl"],
+  ["Devpost MCP composition recorder artifact", files.devpost, "submission-evidence/mcp-proof/dual-server-session.jsonl"],
   ["Claim ledger operator live hosted-model status", files.claimLedger, "operatorLiveHostedModelStatus"],
   ["Claim ledger operator live SAIA route blocker", files.claimLedger, "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED"],
   ["Claim ledger operator live route probe status", files.claimLedger, "restHandlerProbeStatus"],

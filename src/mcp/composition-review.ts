@@ -45,12 +45,31 @@ const parseTranscriptLines = (transcript: string): Record<string, unknown>[] =>
     .filter((line) => line.length > 0)
     .map((line) => recordFromUnknown(JSON.parse(line) as unknown));
 
+const unwrapTranscriptRecord = (record: Record<string, unknown>): Record<string, unknown> => {
+  const message = recordFromUnknown(record.message);
+  const payload = recordFromUnknown(record.payload);
+  const request = recordFromUnknown(record.request);
+  const response = recordFromUnknown(record.response);
+
+  return Object.keys(message).length > 0
+    ? message
+    : Object.keys(payload).length > 0
+      ? payload
+      : Object.keys(request).length > 0
+        ? request
+        : Object.keys(response).length > 0
+          ? response
+          : record;
+};
+
 const readToolName = (record: Record<string, unknown>): string => {
-  if (record.method !== "tools/call") {
+  const message = unwrapTranscriptRecord(record);
+
+  if (message.method !== "tools/call") {
     return "";
   }
 
-  const params = recordFromUnknown(record.params);
+  const params = recordFromUnknown(message.params);
   const name = params.name;
 
   return typeof name === "string" ? name : "";
@@ -70,10 +89,11 @@ export const reviewMcpComposition = (input: McpCompositionReviewInput): McpCompo
   const evidenceRefs = [
     ...new Set(
       records.flatMap((record) => {
-        const result = recordFromUnknown(record.result);
+        const message = unwrapTranscriptRecord(record);
+        const result = recordFromUnknown(message.result);
         const structuredContent = recordFromUnknown(result.structuredContent);
 
-        return [...collectEvidenceRefs(record), ...collectEvidenceRefs(structuredContent)];
+        return [...collectEvidenceRefs(message), ...collectEvidenceRefs(structuredContent)];
       })
     )
   ];

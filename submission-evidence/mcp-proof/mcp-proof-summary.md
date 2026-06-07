@@ -142,4 +142,14 @@ Live mock Splunk MCP: PASS
 - Evidence refs: evt-102, evt-118, evt-141
 - Saved-search execution: yes
 
+MCP composition recorder: PASS
+- Artifact: submission-evidence/mcp-proof/dual-server-session.jsonl
+- Markdown: submission-evidence/mcp-proof/dual-server-session.md
+- Frames: 56
+- Servers: splunk, splunkready
+- Splunk tools: splunk_get_knowledge_objects, splunk_run_saved_search
+- SplunkReady tools: splunkready_describe_certification, splunkready_review_mcp_composition, splunkready_certify_mcp_transcript, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access
+- Redaction: PASS
+- Certification: PASS
+
 Receipt: submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json
