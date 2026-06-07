@@ -82,7 +82,9 @@ describe("public demo export", () => {
       root,
       outDir: "out/public-demo",
       generatedAt: "2026-06-06T00:00:00.000Z",
-      generateJudgeProof: generateJudgeProofFixture
+      generateJudgeProof: generateJudgeProofFixture,
+      sourceCommit: "public-demo-input-commit",
+      deploymentCommit: "workflow-dispatch-commit"
     });
 
     await expect(readFile(join(root, "out/public-demo/index.html"), "utf8")).resolves.toContain("app");
@@ -120,6 +122,8 @@ describe("public demo export", () => {
       "artifacts/interactive-demo"
     ]);
     expect(result.manifest.mutation).toBe(false);
+    expect(result.manifest.sourceCommit).toBe("public-demo-input-commit");
+    expect(result.manifest.deploymentCommit).toBe("workflow-dispatch-commit");
   });
 
   it("refuses to copy symbolic links into the public demo export", async () => {

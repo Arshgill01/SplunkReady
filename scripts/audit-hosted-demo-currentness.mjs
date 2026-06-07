@@ -5,21 +5,11 @@ import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { basename, dirname, resolve } from "node:path";
 import { promisify } from "node:util";
 
+import { publicDemoInputPaths } from "./export-public-demo.js";
+
 const execFileAsync = promisify(execFile);
 
 const defaultHostedUrl = "https://arshgill01.github.io/SplunkReady/";
-const publicDemoInputPaths = [
-  "fixtures",
-  "scripts/export-public-demo.js",
-  "scripts/audit-public-demo-export.mjs",
-  "src",
-  "submission-evidence/mcp-proof",
-  "submission-evidence/public-proof-export",
-  "submission-evidence/screenshots",
-  "submission-evidence/suite-proof",
-  "ui",
-  "vite.config.ts"
-];
 
 const parseArgs = (argv) => {
   const parsed = {

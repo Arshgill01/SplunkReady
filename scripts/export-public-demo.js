@@ -9,6 +9,18 @@ const generatedArtifactDirs = ["judge-proof"];
 const interactiveSourceDir = "judge-proof/suite-proof/mission-security-lateral-movement-readiness";
 const interactiveArtifactDir = "interactive-demo";
 const execFileAsync = promisify(execFile);
+export const publicDemoInputPaths = [
+  "fixtures",
+  "scripts/export-public-demo.js",
+  "scripts/audit-public-demo-export.mjs",
+  "src",
+  "submission-evidence/mcp-proof",
+  "submission-evidence/public-proof-export",
+  "submission-evidence/screenshots",
+  "submission-evidence/suite-proof",
+  "ui",
+  "vite.config.ts"
+];
 
 const isContained = (root, target) => {
   const relativePath = relative(root, target);
@@ -104,11 +116,7 @@ const runCredentialFreeJudgeProof = async ({ repoRoot, targetArtifactDir }) => {
   });
 };
 
-const resolveSourceCommit = async (repoRoot) => {
-  if (process.env.GITHUB_SHA) {
-    return process.env.GITHUB_SHA;
-  }
-
+const gitCommit = async (repoRoot) => {
   try {
     const { stdout } = await execFileAsync("git", ["rev-parse", "HEAD"], {
       cwd: repoRoot,
@@ -120,6 +128,25 @@ const resolveSourceCommit = async (repoRoot) => {
     return "UNKNOWN";
   }
 };
+
+const resolvePublicDemoInputCommit = async (repoRoot) => {
+  try {
+    const { stdout } = await execFileAsync(
+      "git",
+      ["log", "-1", "--format=%H", "--", ...publicDemoInputPaths],
+      {
+        cwd: repoRoot,
+        maxBuffer: 1024 * 1024
+      }
+    );
+
+    return stdout.trim() || "UNKNOWN";
+  } catch {
+    return "UNKNOWN";
+  }
+};
+
+const resolveDeploymentCommit = async (repoRoot) => process.env.GITHUB_SHA ?? await gitCommit(repoRoot);
 
 const writeArtifactManifest = async (targetArtifactDir, generatedAt) => {
   await writeFile(
@@ -142,7 +169,8 @@ export const exportPublicDemo = async ({
   outDir = "artifacts/public-demo",
   generatedAt = new Date().toISOString(),
   generateJudgeProof = runCredentialFreeJudgeProof,
-  sourceCommit
+  sourceCommit,
+  deploymentCommit
 } = {}) => {
   const repoRoot = resolve(root);
   const targetRoot = resolve(repoRoot, outDir);
@@ -175,12 +203,16 @@ export const exportPublicDemo = async ({
   const artifactBases = [...requiredArtifactDirs, ...generatedArtifactDirs, interactiveArtifactDir].map(
     (artifactDir) => `artifacts/${artifactDir}`
   );
-  const resolvedSourceCommit = sourceCommit ?? await resolveSourceCommit(repoRoot);
+  const resolvedSourceCommit = sourceCommit ?? await resolvePublicDemoInputCommit(repoRoot);
+  const resolvedDeploymentCommit = deploymentCommit ?? await resolveDeploymentCommit(repoRoot);
   const manifest = {
     source: "splunkready-public-demo-export",
     generatedAt,
     sourceCommit: resolvedSourceCommit,
     sourceCommitShort: resolvedSourceCommit === "UNKNOWN" ? "UNKNOWN" : resolvedSourceCommit.slice(0, 7),
+    deploymentCommit: resolvedDeploymentCommit,
+    deploymentCommitShort:
+      resolvedDeploymentCommit === "UNKNOWN" ? "UNKNOWN" : resolvedDeploymentCommit.slice(0, 7),
     mutation: false,
     defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
     interactiveUrl: "?demo=interactive",
