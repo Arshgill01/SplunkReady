@@ -943,3 +943,9 @@ container stdio JSON-RPC smoke against `initialize`, `tools/list`, and
 and SAIA tool exposure, and the fixture-backed saved-search payload. Residual
 risk: this needs the next pushed CI run to pass before it can be called
 remote-validated.
+
+Move 150 Docker CI hardening is now remote-validated. GitHub Actions run
+`27101503193` passed the canonical gate, credential-free live mock proof, mock
+Splunk MCP Docker image build, and container stdio smoke. Residual risk is
+future drift only: Docker validation must stay in CI as the mock MCP server or
+Dockerfile changes.

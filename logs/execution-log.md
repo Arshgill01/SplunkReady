@@ -14581,3 +14581,9 @@ Files changed:
 - `logs/risk-register.md`
 - `logs/execution-log.md`
 - `logs/verification-log.md`
+
+Remote follow-up:
+
+- GitHub Actions run `27101503193` passed for commit `72e0469`.
+- The remote job included the canonical gate, credential-free live mock proof,
+  mock Splunk MCP Docker image build, and container stdio smoke.

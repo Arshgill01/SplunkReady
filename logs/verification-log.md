@@ -15082,8 +15082,7 @@ Results:
 
 Pending:
 
-- Next pushed GitHub Actions run must pass before the Docker build/smoke is
-  remote-validated.
+- Closed by GitHub Actions run `27101503193`.
 
 Final local gate:
 
@@ -15104,3 +15103,15 @@ Result:
   0 failing latest verdicts.
 - PASS for submission-copy audit with 146 required claims.
 - PASS for final `git diff --check`.
+
+Remote gate:
+
+- `gh run watch 27101503193 --exit-status`
+
+Result:
+
+- PASS for GitHub Actions `CI / npm run check` on commit `72e0469`.
+- PASS for remote canonical gate.
+- PASS for remote credential-free live mock proof.
+- PASS for remote mock Splunk MCP Docker image build.
+- PASS for remote mock Splunk MCP container stdio smoke.
