@@ -791,6 +791,26 @@ const hostedModelProof = {
     hostedModelTools: ["saia_explain_spl", "saia_optimize_spl"],
     availableTools: ["saia_explain_spl", "saia_optimize_spl"]
   },
+  setup: {
+    source: "splunkready-live-hosted-model-preflight",
+    configured: true,
+    requiredEnvironment: [
+      { name: "SPLUNKREADY_LIVE_ENABLED", status: "set", requiredValue: "true", purpose: "Enables live mode." },
+      { name: "SPLUNKREADY_SPLUNK_MCP_URL", status: "set", requiredValue: "set", purpose: "Sets the MCP endpoint." },
+      { name: "SPLUNKREADY_SPLUNK_MCP_TOKEN", status: "set", requiredValue: "set", purpose: "Sets the MCP token." }
+    ],
+    optionalEnvironment: [
+      {
+        name: "SPLUNKREADY_SAIA_ENABLED",
+        status: "set",
+        requiredValue: "true",
+        purpose: "Shows SAIA availability in the workbench."
+      }
+    ],
+    operatorCommand:
+      "splunkready hosted-model-diagnostic --mode live --out artifacts/hosted-model-diagnostic --require-pass true --json",
+    secretHandling: "Only variable names and set/missing/invalid status are written. Secret values are never written."
+  },
   query: "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now",
   deterministicContext: {
     ruleIds: ["SPL-001", "SPL-003"],
@@ -819,6 +839,7 @@ const hostedModelDiagnostic = {
     id: "contract-192-168-1-4",
     mode: "live"
   },
+  setup: hostedModelProof.setup,
   requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
   availableTools: ["saia_explain_spl", "saia_optimize_spl"],
   missingTools: [],
@@ -1800,6 +1821,10 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("OK");
     expect(liveConnect).toContain("deterministic-rule-engine");
     expect(liveConnect).toContain("Hosted model proof");
+    expect(liveConnect).toContain("Live setup");
+    expect(liveConnect).toContain("configured");
+    expect(liveConnect).toContain("SPLUNKREADY_SPLUNK_MCP_TOKEN:set");
+    expect(liveConnect).toContain("Secret values are never written.");
     expect(liveConnect).toContain("Proof audit");
     expect(liveConnect).toContain("live-security");
     expect(liveConnect).toContain("fail-to-pass / PASS");

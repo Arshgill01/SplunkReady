@@ -2375,6 +2375,76 @@ describe("SplunkReady CLI flow", () => {
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
   });
 
+  it("writes blocked hosted-model artifacts when live SAIA config is not exported", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-hosted-model-diagnostic-missing-config-"));
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "",
+      SPLUNKREADY_SPLUNK_MCP_URL: "",
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "",
+      SPLUNKREADY_SAIA_ENABLED: ""
+    };
+
+    const output = parseCliJsonOutput(
+      (await runCli(["hosted-model-diagnostic", "--mode", "live", "--out", outDir, "--json"], process.cwd(), env)).stdout
+    );
+
+    expect(output).toMatchObject({
+      command: "hosted-model-diagnostic",
+      status: "PASS",
+      artifacts: expect.arrayContaining([
+        join(outDir, "hosted-model-proof.json"),
+        join(outDir, "hosted-model-diagnostic.json")
+      ])
+    });
+
+    await expect(
+      runCli(
+        ["hosted-model-diagnostic", "--mode", "live", "--out", outDir, "--require-pass", "true"],
+        process.cwd(),
+        env
+      )
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("hosted-model-diagnostic requires SAIA access")
+    });
+
+    const proof = JSON.parse(await readFile(join(outDir, "hosted-model-proof.json"), "utf8")) as {
+      status: string;
+      mutation: boolean;
+      setup: { configured: boolean; requiredEnvironment: Array<{ name: string; status: string }> };
+      error: string;
+    };
+    const diagnostic = JSON.parse(await readFile(join(outDir, "hosted-model-diagnostic.json"), "utf8")) as {
+      status: string;
+      contract: { id: string };
+      permission: { status: string; requiredActions: string[] };
+      setup: { configured: boolean };
+    };
+
+    expect(proof).toMatchObject({
+      status: "BLOCKED",
+      mutation: false,
+      setup: {
+        configured: false,
+        requiredEnvironment: [
+          { name: "SPLUNKREADY_LIVE_ENABLED", status: "missing" },
+          { name: "SPLUNKREADY_SPLUNK_MCP_URL", status: "missing" },
+          { name: "SPLUNKREADY_SPLUNK_MCP_TOKEN", status: "missing" }
+        ]
+      }
+    });
+    expect(proof.error).toContain("SPLUNKREADY_LIVE_ENABLED:missing");
+    expect(JSON.stringify(proof)).not.toContain("test-token");
+    expect(diagnostic).toMatchObject({
+      status: "BLOCKED",
+      contract: { id: "live-hosted-model-unconfigured" },
+      permission: { status: "BLOCKED" },
+      setup: { configured: false }
+    });
+    expect(diagnostic.permission.requiredActions).toEqual(
+      expect.arrayContaining(["Export SPLUNKREADY_SPLUNK_MCP_TOKEN without committing or printing it."])
+    );
+  });
+
   it("uses the live adapter for Gemini compile, evaluate, receipt assistance, and rerun in live mode", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-live-llm-cli-"));
     const gemini = await startMockGeminiServer();

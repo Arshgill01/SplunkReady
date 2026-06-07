@@ -242,6 +242,12 @@ Pass criteria:
 - `mutation` is `false`.
 - The diagnostic did not run the SPL query; it only called hosted-model helper tools.
 
+If the live variables are not exported in the current shell, the command writes
+`hosted-model-proof.json` and `hosted-model-diagnostic.json` with
+`status: "BLOCKED"` before making any MCP call. The `setup` block records only
+variable names and `set` / `missing` / `invalid` status; it does not write token
+values.
+
 If this command fails with a hosted-model access error:
 
 - Keep the same read-only Splunk/MCP user if possible.

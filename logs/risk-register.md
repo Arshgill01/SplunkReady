@@ -510,3 +510,14 @@ submission-copy guards, and a Playwright-verified MCP workbench screenshot.
 Residual MCP risk is no longer "only two tools"; it is the absence of a public
 video/live recording of an external MCP client using the two-server Splunk MCP
 + SplunkReady setup.
+
+Move 110 reduces SAIA/hosted-model proof risk by making live hosted-model
+diagnostics artifact-first even when the operator has not exported live
+configuration into the current shell. The workflow now writes `BLOCKED`
+`hosted-model-proof.json` and `hosted-model-diagnostic.json` with setup status
+by environment-variable name only, surfaces that status in the workbench, and
+proves public export redacts hosted-model proof and diagnostic content.
+Residual SAIA risk remains explicit: this shell did not have the live token or
+endpoint exported, so Move 110 does not claim live SAIA PASS. The next proof
+step is the same `hosted-model-diagnostic --mode live --require-pass true`
+command from a token-bearing shell.

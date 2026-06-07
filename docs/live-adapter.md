@@ -74,7 +74,7 @@ The workbench allowlists these server-owned live jobs:
 - `live-security-readiness`: check the exact flagship saved-search readiness path.
 - `live-security-proof`: run the strict flagship proof only from server env and existing mission contracts.
 - `hosted-model-diagnostic`: check whether the live MCP credentials can invoke `saia_explain_spl` and
-  `saia_optimize_spl`; it may produce a `BLOCKED` diagnostic when entitlement is absent.
+  `saia_optimize_spl`; it may produce a `BLOCKED` diagnostic when entitlement or live environment setup is absent.
 - `hosted-model-proof`: collect hosted-model explain/optimize output for a deterministic SPL-rule context without
   executing that SPL query.
 

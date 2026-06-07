@@ -12069,3 +12069,50 @@ Open blockers:
 - Hosted CI needs to run after push for Move 109.
 - The next high-value slice is real SAIA/hosted-model proof now that the
   operator reports cloud connection and token setup are available.
+
+## 2026-06-07 14:47 - Move 110 SAIA Live Proof Readiness
+
+Scope:
+- Added live hosted-model setup preflight metadata to
+  `hosted-model-proof.json` and `hosted-model-diagnostic.json`.
+- Made `hosted-model-diagnostic --mode live` write reviewable `BLOCKED`
+  artifacts before any MCP call when required live environment variables are
+  missing from the current shell.
+- Recorded only variable names and `set` / `missing` / `invalid` status; token
+  values are never written.
+- Surfaced hosted-model setup rows in the existing workbench hosted-model
+  diagnostic and proof panels.
+- Added public proof export coverage for redacting hosted-model proof and
+  diagnostic artifacts.
+- Documented the blocked-artifact behavior in live setup docs.
+- Ran a presence-only env check in this shell:
+  `SPLUNKREADY_LIVE_ENABLED`, `SPLUNKREADY_SPLUNK_MCP_URL`,
+  `SPLUNKREADY_SPLUNK_MCP_TOKEN`, and `SPLUNKREADY_SAIA_ENABLED` were all
+  unset, so no live SAIA PASS claim was made.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+- Did not make SAIA or any LLM output authoritative.
+- Did not execute the unsafe SPL query.
+- Did not add Splunk write actions.
+- Did not run `npm publish`.
+- Did not use subagents.
+
+Files changed:
+- `src/workflows/hosted-model-actions.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/workflows/hosted-model-actions.test.ts`
+- `tests/workflows/public-proof-export.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `docs/live-setup-checklist.md`
+- `docs/live-adapter.md`
+- `moves/README.md`
+- `moves/moves110.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- The token-bearing live SAIA diagnostic still needs to be run from a shell
+  where the operator exports the required live variables.
+- Hosted CI needs to run after push for Move 110.

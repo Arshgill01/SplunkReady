@@ -132,6 +132,7 @@ commands, or filesystem paths.
 | P0 | [107](moves107.md) Current handoff refresh | 0.5d | Updates current-state docs after package, hosted demo, cleanroom, and redaction work. |
 | P0 | [108](moves108.md) Current goal audit refresh | 0.5d | Refreshes the prompt-to-artifact completion audit without marking the goal complete. |
 | P0 | [109](moves109.md) MCP client session evidence | 0.5d | Tracks the actual MCP JSON-RPC client session behind the MCP proof and surfaces it in the public workbench. |
+| P0 | [110](moves110.md) SAIA live proof readiness | 0.5d | Makes hosted-model diagnostics produce redacted, reviewable artifacts when live SAIA setup is missing and public-export-safe when present. |
 
 ## Non-Negotiable Boundaries
 

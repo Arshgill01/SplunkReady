@@ -60,6 +60,26 @@ const hostedModelSummarySchema = z
 
 export type HostedModelSummary = z.infer<typeof hostedModelSummarySchema>;
 
+const hostedModelSetupVariableSchema = z
+  .object({
+    name: z.string().min(1),
+    status: z.enum(["set", "missing", "invalid"]),
+    requiredValue: z.string().min(1),
+    purpose: z.string().min(1)
+  })
+  .strict();
+
+const hostedModelSetupSchema = z
+  .object({
+    source: z.literal("splunkready-live-hosted-model-preflight"),
+    configured: z.boolean(),
+    requiredEnvironment: z.array(hostedModelSetupVariableSchema),
+    optionalEnvironment: z.array(hostedModelSetupVariableSchema),
+    operatorCommand: z.string().min(1),
+    secretHandling: z.string().min(1)
+  })
+  .strict();
+
 const hostedModelProofSchema = z
   .object({
     status: z.string().min(1),
@@ -73,6 +93,7 @@ const hostedModelProofSchema = z
         availableTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"]))
       })
       .strict(),
+    setup: hostedModelSetupSchema.optional(),
     query: z.string().min(1),
     deterministicContext: z
       .object({
@@ -138,6 +159,7 @@ const hostedModelDiagnosticSchema = z
         mode: z.enum(["fixture", "live"])
       })
       .strict(),
+    setup: hostedModelSetupSchema.optional(),
     requiredTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
     availableTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
     missingTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),

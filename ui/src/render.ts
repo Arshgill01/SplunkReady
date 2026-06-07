@@ -536,6 +536,30 @@ const renderHostedModelSummary = (summary: HostedModelSummary | undefined): stri
   </section>`;
 };
 
+const renderHostedModelSetupRows = (
+  setup:
+    | {
+        configured: boolean;
+        requiredEnvironment: Array<{ name: string; status: string }>;
+        optionalEnvironment: Array<{ name: string; status: string }>;
+        operatorCommand: string;
+        secretHandling: string;
+      }
+    | undefined
+): Array<[string, unknown]> => {
+  if (!setup) {
+    return [];
+  }
+
+  return [
+    ["Live setup", setup.configured ? "configured" : "blocked"],
+    ["Required env", setup.requiredEnvironment.map((item) => `${item.name}:${item.status}`).join(" / ")],
+    ["Optional env", setup.optionalEnvironment.map((item) => `${item.name}:${item.status}`).join(" / ")],
+    ["Operator command", setup.operatorCommand],
+    ["Secret handling", setup.secretHandling]
+  ];
+};
+
 const renderHostedModelProof = (proof: HostedModelProof | undefined): string => {
   if (!proof) {
     return "";
@@ -550,6 +574,7 @@ const renderHostedModelProof = (proof: HostedModelProof | undefined): string => 
       ["Tool calls", proof.toolCalls.join(" / ")],
       ["Rule context", proof.deterministicContext.ruleIds.join(" / ")],
       ["Pass/fail authority", proof.deterministicContext.passFailAuthority],
+      ...renderHostedModelSetupRows(proof.setup),
       ["Mutation", proof.mutation ? "yes" : "no"],
       ["Error", proof.error ?? "none"],
       ["Notes", proof.notes]
@@ -590,6 +615,7 @@ const renderHostedModelDiagnostic = (diagnostic: HostedModelDiagnostic | undefin
       ["Permission", diagnostic.permission.status],
       ["Error", diagnostic.permission.error ?? "none"],
       ["Required actions", diagnostic.permission.requiredActions?.join(" / ") ?? "none"],
+      ...renderHostedModelSetupRows(diagnostic.setup),
       ["Mutation", diagnostic.mutation ? "yes" : "no"],
       ["Authority", diagnostic.deterministicAuthority],
       ["Notes", diagnostic.notes]

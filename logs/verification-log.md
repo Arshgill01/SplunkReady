@@ -11584,6 +11584,103 @@ Open blockers:
 - Actual hosted demo deployment, public package publication, and live proof
   export remain open probability caps.
 
+## 2026-06-07 - Move 110 SAIA Live Proof Readiness
+
+Commands:
+
+- `node -e 'for (const k of ["SPLUNKREADY_LIVE_ENABLED","SPLUNKREADY_SPLUNK_MCP_URL","SPLUNKREADY_SPLUNK_MCP_TOKEN","SPLUNKREADY_SAIA_ENABLED"]) console.log(`${k}:${process.env[k] ? "set" : "unset"}`)'`
+- `npx tsc --noEmit`
+- `npx vitest run tests/workflows/hosted-model-actions.test.ts`
+- `npx vitest run tests/workflows/public-proof-export.test.ts`
+- `npx vitest run tests/ui/app.test.ts`
+- `npx vitest run tests/workflows/hosted-model-actions.test.ts tests/cli/flow.test.ts --testNamePattern "hosted-model"`
+- `npm run build`
+- `rm -rf artifacts/hosted-model-diagnostic && node dist/src/cli.js hosted-model-diagnostic --mode live --out artifacts/hosted-model-diagnostic --json`
+- Playwright static browser verification:
+  `http://127.0.0.1:4339/?artifacts=artifacts%2Fhosted-model-diagnostic#live-connect`
+- `npm run check`
+- `npm run verify:scaffold`
+- `git diff --check`
+
+Result:
+
+- PASS for presence-only env check:
+  - `SPLUNKREADY_LIVE_ENABLED`: unset
+  - `SPLUNKREADY_SPLUNK_MCP_URL`: unset
+  - `SPLUNKREADY_SPLUNK_MCP_TOKEN`: unset
+  - `SPLUNKREADY_SAIA_ENABLED`: unset
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for hosted-model workflow tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for public proof export tests after fixing the synthetic trace fixture:
+  - 1 test file passed;
+  - 2 tests passed.
+- PASS for full UI unit tests:
+  - 1 test file passed;
+  - 27 tests passed.
+- PASS for focused hosted-model workflow/CLI tests:
+  - 2 test files passed;
+  - 7 tests passed;
+  - 37 tests skipped by focused pattern.
+- PASS for build:
+  - TypeScript runtime compiled to `dist`.
+- PASS for live hosted-model diagnostic in this unset-env shell:
+  - CLI returned command-level PASS because artifacts were written;
+  - `hosted-model-proof.json` has `status: "BLOCKED"`;
+  - `hosted-model-diagnostic.json` has `status: "BLOCKED"`;
+  - both artifacts report `mutation: false`;
+  - both artifacts report required live variables as missing by name only.
+- PASS for Playwright static browser verification:
+  - rendered `Live connect`;
+  - rendered hosted-model diagnostic and proof panels;
+  - rendered `BLOCKED`, `saia_explain_spl / saia_optimize_spl`,
+    `SPLUNKREADY_SPLUNK_MCP_TOKEN:missing`, `Secret values are never written.`,
+    `Mutation no`, and `deterministic-rule-engine`;
+  - console reported 0 errors and 0 warnings;
+  - dynamic artifact requests returned 200 for `public-demo-manifest.json`,
+    `artifact-manifest.json`, `hosted-model-proof.json`, and
+    `hosted-model-diagnostic.json`;
+  - screenshot captured at `output/playwright/move110-hosted-model-diagnostic.png`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit checked 185 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and ran
+    clean `npx splunkready judge-proof`;
+  - 59 test files passed;
+  - 358 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 41 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for final scaffold/diff cleanup:
+  - `.playwright-cli` was removed;
+  - local servers on ports 4338 and 4339 were stopped;
+  - `npm run verify:scaffold` passed with 85 waves and 2017 project files;
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- The first local packaged workbench browser attempt hit the expected
+  non-public `public-demo-manifest.json` probe and landed on the default replay
+  route, so final Playwright verification used a temporary static export with
+  explicit manifests.
+- No `.splunkready*` or `.env*` files were read, sourced, printed, or committed.
+- No live SAIA PASS claim was made because the required live variables were not
+  exported in this shell.
+
+Open blockers:
+
+- Token-bearing live SAIA proof still needs to be run from an environment where
+  the operator exports the required variables.
+- Commit, push, and hosted CI remain.
+
 ## 2026-06-06 - Move 83 Netlify Static Demo Config
 
 Commands:
