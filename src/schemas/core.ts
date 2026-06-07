@@ -33,8 +33,10 @@ export const readOnlySplunkToolNameSchema = z.enum([
   "splunk_get_knowledge_objects",
   "splunk_run_query",
   "splunk_run_saved_search",
+  "saia_generate_spl",
   "saia_explain_spl",
-  "saia_optimize_spl"
+  "saia_optimize_spl",
+  "saia_ask_splunk_question"
 ]);
 
 const idSchema = z.string().min(1);

@@ -112,7 +112,7 @@ Live mode is optional and disabled by default. The tracked evidence pack does no
 
 ## Hosted-Model Integration
 
-SplunkReady supports hosted-model style assistance through `saia_explain_spl` and `saia_optimize_spl` when those tools are available. The assistance is advisory: it can explain unsafe SPL and suggest a corrected query shape, but deterministic rules remain the pass/fail authority.
+SplunkReady supports hosted-model style assistance through `saia_generate_spl`, `saia_explain_spl`, `saia_optimize_spl`, and `saia_ask_splunk_question` when those tools are available. The assistance is advisory: it can generate candidate SPL, explain unsafe SPL, suggest a corrected query shape, and answer Splunk/SPL guidance questions, but deterministic rules remain the pass/fail authority.
 
 The tracked evidence pack does not claim live hosted-model entitlement. The workbench reports SAIA status at startup, and hosted-model diagnostic workflows can prove availability when operator credentials permit it.
 

@@ -267,7 +267,7 @@ export const splunkReadyMcpTools: McpTool[] = [
     name: "splunkready_check_hosted_model_access",
     title: "Check Hosted Model Access",
     description:
-      "Run SplunkReady's hosted-model diagnostic to prove SAIA explain/optimize access is available or honestly BLOCKED.",
+      "Run SplunkReady's hosted-model diagnostic to prove SAIA generate/explain/optimize/ask access is available or honestly BLOCKED.",
     inputSchema: objectSchema(
       {
         outDir: stringProperty("Local output directory for hosted-model diagnostic artifacts."),
@@ -380,7 +380,7 @@ export const splunkReadyMcpResources: McpResource[] = [
     name: "hosted-model-diagnostic",
     title: "Hosted Model Diagnostic",
     description:
-      "Agent workflow for proving SAIA explain/optimize access as advisory evidence without making hosted-model output authoritative.",
+      "Agent workflow for proving SAIA generate/explain/optimize/ask access as advisory evidence without making hosted-model output authoritative.",
     mimeType: "text/markdown"
   }
 ];
@@ -819,8 +819,8 @@ const readResource = async (uri: string): Promise<Record<string, unknown>> => {
             "Use this workflow when an MCP client needs evidence that Splunk AI Assistant helper tools are available.",
             "1. Keep SAIA credentials in the operator-owned environment or MCP client configuration; do not include tokens in transcripts.",
             "2. Call `splunkready_check_hosted_model_access` with `mode=fixture` for public proof or `mode=live` only from an operator-owned shell.",
-            "3. Require `saia_explain_spl` and `saia_optimize_spl` to be available for a PASS diagnostic.",
-            "4. Treat SAIA explain/optimize output as advisory only; SAIA is not the judge.",
+            "3. Require `saia_generate_spl`, `saia_explain_spl`, `saia_optimize_spl`, and `saia_ask_splunk_question` to be available for a PASS diagnostic.",
+            "4. Treat SAIA generate/explain/optimize/ask output as advisory only; SAIA is not the judge.",
             "5. Deterministic SplunkReady rules remain the pass/fail authority, and SplunkReady reports `mutation=false`.",
             "",
             "The diagnostic calls hosted-model helper tools only. It does not execute the unsafe SPL query and does not mutate Splunk."
@@ -907,8 +907,8 @@ const promptText = (name: string, args: Record<string, unknown>): string => {
       "",
       "Call splunkready_check_hosted_model_access with requirePass=true when you need a strict PASS gate.",
       "For public evidence, use fixture mode. For live evidence, run only from an operator-owned shell or explicit env file with Splunk MCP credentials already configured.",
-      "Confirm required tools include saia_explain_spl and saia_optimize_spl, permissionStatus is OK, and mutation=false.",
-      "SAIA output may explain or optimize SPL, but deterministic SplunkReady rules remain the pass/fail authority."
+      "Confirm required tools include saia_generate_spl, saia_explain_spl, saia_optimize_spl, and saia_ask_splunk_question; permissionStatus is OK; mutation=false.",
+      "SAIA output may generate, explain, optimize, or answer SPL questions, but deterministic SplunkReady rules remain the pass/fail authority."
     ].join("\n");
   }
 

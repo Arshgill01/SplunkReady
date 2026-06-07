@@ -254,9 +254,9 @@ Pass criteria:
 
 - `hosted-model-diagnostic.json` has `status: "PASS"`.
 - `permission.status` is `OK`.
-- `requiredTools` includes `saia_explain_spl` and `saia_optimize_spl`.
+- `requiredTools` includes `saia_generate_spl`, `saia_explain_spl`, `saia_optimize_spl`, and `saia_ask_splunk_question`.
 - `mutation` is `false`.
-- The diagnostic did not run the SPL query; it only called hosted-model helper tools.
+- The diagnostic did not run generated, unsafe, or optimized SPL; it only called hosted-model helper tools.
 
 If the live variables are not exported in the current shell, the command writes
 `hosted-model-proof.json` and `hosted-model-diagnostic.json` with
@@ -267,20 +267,23 @@ values.
 If this command fails with a hosted-model access error:
 
 - Keep the same read-only Splunk/MCP user if possible.
+- Grant that user permission or entitlement to invoke `saia_generate_spl`.
 - Grant that user permission or entitlement to invoke `saia_explain_spl`.
 - Grant that user permission or entitlement to invoke `saia_optimize_spl`.
+- Grant that user permission or entitlement to invoke `saia_ask_splunk_question`.
 - Rerun the command with `--require-pass true`.
 
 If the diagnostic says the MCP endpoint returned not found while invoking SAIA
 tools:
 
-- Confirm the endpoint can invoke `saia_explain_spl` and `saia_optimize_spl`,
-  not only advertise them in tool discovery.
+- Confirm the endpoint can invoke `saia_generate_spl`, `saia_explain_spl`,
+  `saia_optimize_spl`, and `saia_ask_splunk_question`, not only advertise them
+  in tool discovery.
 - Confirm the MCP server route or app version backing hosted-model tools is
   installed and reachable.
 - Rerun the command with `--require-pass true`.
 
-This diagnostic is separate from grading. SAIA output may explain or optimize SPL, but deterministic SplunkReady rules still decide pass/fail.
+This diagnostic is separate from grading. SAIA output may generate, explain, optimize, or answer questions about SPL, but deterministic SplunkReady rules still decide pass/fail.
 
 ## 10. Screenshot Requirements
 

@@ -48,13 +48,22 @@ export interface HostedModelSetup {
   secretHandling: string;
 }
 
-export const hostedModelToolNames: ReadOnlySplunkToolName[] = ["saia_explain_spl", "saia_optimize_spl"];
+export const hostedModelToolNames: ReadOnlySplunkToolName[] = [
+  "saia_generate_spl",
+  "saia_explain_spl",
+  "saia_optimize_spl",
+  "saia_ask_splunk_question"
+];
 
 const defaultFixturePath = "fixtures/acme-soc-dev/adapter-fixture.json";
 const defaultMissionPath = "fixtures/acme-soc-dev/missions/security-investigation-readiness.json";
 const generatedAt = "2026-06-01T06:30:00.000Z";
 const compiledAt = "2026-06-01T06:45:00.000Z";
 const hostedModelProofQuery = "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now";
+const hostedModelGenerationPrompt =
+  "Generate read-only SPL for investigating lateral movement involving host win-finance-07 in the authorized Windows security index.";
+const hostedModelQuestion =
+  "Why should a Splunk-connected agent prefer authorized indexes and saved-search provenance when investigating lateral movement?";
 const hostedModelDiagnosticCommand =
   "splunkready hosted-model-diagnostic --mode live --out artifacts/hosted-model-diagnostic --require-pass true --json";
 
@@ -211,7 +220,7 @@ const formatHostedModelProofError = (error: unknown): string => {
   })();
 
   if (formatted.includes("Action forbidden")) {
-    return "Hosted-model SAIA action forbidden. The current MCP token or Splunk user can access live read-only Splunk tools, but not saia_explain_spl/saia_optimize_spl.";
+    return `Hosted-model SAIA action forbidden. The current MCP token or Splunk user can access live read-only Splunk tools, but not ${hostedModelToolNames.join("/")}.`;
   }
 
   return formatted.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -241,15 +250,14 @@ const hostedModelBlockedRequiredActions = (error: string, contractAvailable: boo
 
   if (/404|not found/i.test(error)) {
     return [
-      "Confirm the Splunk MCP endpoint supports invoking saia_explain_spl and saia_optimize_spl, not only advertising them in tool discovery.",
+      `Confirm the Splunk MCP endpoint supports invoking ${hostedModelToolNames.join(", ")}, not only advertising them in tool discovery.`,
       "Confirm the MCP server route or app version that backs hosted-model tools is installed and reachable.",
       "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
     ];
   }
 
   return [
-    "Grant the Splunk/MCP user permission to invoke saia_explain_spl.",
-    "Grant the Splunk/MCP user permission to invoke saia_optimize_spl.",
+    ...hostedModelToolNames.map((toolName) => `Grant the Splunk/MCP user permission to invoke ${toolName}.`),
     "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
   ];
 };
@@ -259,8 +267,8 @@ export const writeHostedModelProofArtifact = async (
   adapter: SplunkAccessAdapter,
   contract: EnvironmentContract
 ): Promise<string> => {
-  if (!adapter.explainSpl || !adapter.optimizeSpl) {
-    throw new Error("hosted-model-proof requires adapters that expose saia_explain_spl and saia_optimize_spl.");
+  if (!adapter.generateSpl || !adapter.explainSpl || !adapter.optimizeSpl || !adapter.askSplunkQuestion) {
+    throw new Error(`hosted-model-proof requires adapters that expose ${hostedModelToolNames.join(", ")}.`);
   }
 
   const callOptions = { requestId: "req-hosted-model-proof-1", missionId: "hosted-model-proof" };
@@ -276,33 +284,39 @@ export const writeHostedModelProofArtifact = async (
     },
     ...(input.setup ? { setup: input.setup } : {}),
     query: hostedModelProofQuery,
+    generationPrompt: hostedModelGenerationPrompt,
+    question: hostedModelQuestion,
     deterministicContext: {
       ruleIds: ["SPL-001", "SPL-003"],
       passFailAuthority: "deterministic-rule-engine",
-      purpose:
-        "Demonstrate hosted-model explain/optimize as advisory remediation for a deterministic SPL violation. The query is not executed."
+      purpose: "Demonstrate hosted-model SAIA assistance as advisory remediation for deterministic SPL violations. No generated or optimized SPL is executed."
     },
     toolCalls: hostedModelToolNames
   };
 
   try {
-    const [explanation, optimization] = await Promise.all([
+    const [generation, explanation, optimization, question] = await Promise.all([
+      adapter.generateSpl({ prompt: hostedModelGenerationPrompt }, callOptions),
       adapter.explainSpl({ query: hostedModelProofQuery }, callOptions),
-      adapter.optimizeSpl({ query: hostedModelProofQuery }, callOptions)
+      adapter.optimizeSpl({ query: hostedModelProofQuery }, callOptions),
+      adapter.askSplunkQuestion({ question: hostedModelQuestion }, callOptions)
     ]);
 
     await writeJson(proofPath, {
       status: "PASS",
       ...baseProof,
       assistance: {
+        generatedQuery: generation.query,
+        generationRationale: generation.rationale,
         explanation: explanation.explanation,
         optimizedQuery: optimization.optimizedQuery,
         rationale: optimization.rationale,
-        warnings: [...explanation.warnings, ...optimization.warnings]
+        answer: question.answer,
+        warnings: [...generation.warnings, ...explanation.warnings, ...optimization.warnings, ...question.warnings]
       },
       error: null,
       notes:
-        "This proof calls hosted-model tools only. It does not run the SPL query, does not grade with an LLM, and does not mutate Splunk."
+        "This proof calls hosted-model tools only. It does not run generated, unsafe, or optimized SPL, does not grade with an LLM, and does not mutate Splunk."
     });
   } catch (error) {
     await writeJson(proofPath, {
@@ -338,8 +352,7 @@ const writeBlockedHostedModelProofArtifact = async (
     deterministicContext: {
       ruleIds: ["SPL-001", "SPL-003"],
       passFailAuthority: "deterministic-rule-engine",
-      purpose:
-        "Demonstrate hosted-model explain/optimize as advisory remediation for a deterministic SPL violation. The query is not executed."
+      purpose: "Demonstrate hosted-model SAIA assistance as advisory remediation for deterministic SPL violations. No generated or optimized SPL is executed."
     },
     toolCalls: hostedModelToolNames,
     assistance: null,
@@ -441,8 +454,7 @@ export const runHostedModelDiagnosticWorkflow = async (
         }
       : {
           status: "OK",
-          message:
-            "The current MCP credentials can invoke saia_explain_spl and saia_optimize_spl for advisory SPL remediation."
+          message: `The current MCP credentials can invoke ${hostedModelToolNames.join(", ")} for advisory SPL remediation.`
         },
     deterministicAuthority: "deterministic-rule-engine",
     notes:

@@ -73,17 +73,19 @@ The workbench allowlists these server-owned live jobs:
 - `live-candidates`: compile a live contract, then run bounded saved-search candidates from that contract.
 - `live-security-readiness`: check the exact flagship saved-search readiness path.
 - `live-security-proof`: run the strict flagship proof only from server env and existing mission contracts.
-- `hosted-model-diagnostic`: check whether the live MCP credentials can invoke `saia_explain_spl` and
-  `saia_optimize_spl`; it may produce a `BLOCKED` diagnostic when entitlement or live environment setup is absent.
-- `hosted-model-proof`: collect hosted-model explain/optimize output for a deterministic SPL-rule context without
-  executing that SPL query.
+- `hosted-model-diagnostic`: check whether the live MCP credentials can invoke `saia_generate_spl`,
+  `saia_explain_spl`, `saia_optimize_spl`, and `saia_ask_splunk_question`; it may produce a `BLOCKED`
+  diagnostic when entitlement or live environment setup is absent.
+- `hosted-model-proof`: collect hosted-model generate/explain/optimize/ask output for a deterministic
+  SPL-rule context without executing generated, unsafe, or optimized SPL.
 
 All live workbench jobs write artifacts under the managed workbench artifact root and report `mutation: false`. The
 browser can start only these named jobs; it cannot submit arbitrary CLI commands, SPL, credentials, or Splunk write
 operations.
 
-Hosted-model workbench output is advisory evidence only. SAIA can explain or optimize SPL, and the UI can show that
-assistance beside deterministic rule context, but SAIA never changes the Readiness Receipt verdict or score.
+Hosted-model workbench output is advisory evidence only. SAIA can generate, explain, optimize, or answer questions
+about SPL, and the UI can show that assistance beside deterministic rule context, but SAIA never changes the Readiness
+Receipt verdict or score.
 
 ## Operator Checklist
 

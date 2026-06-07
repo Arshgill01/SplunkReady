@@ -234,7 +234,7 @@
       {
         "uri": "splunkready://workflows/hosted-model-diagnostic",
         "mimeType": "text/markdown",
-        "text": "# Hosted Model Diagnostic\n\nUse this workflow when an MCP client needs evidence that Splunk AI Assistant helper tools are available.\n1. Keep SAIA credentials in the operator-owned environment or MCP client configuration; do not include tokens in transcripts.\n2. Call `splunkready_check_hosted_model_access` with `mode=fixture` for public proof or `mode=live` only from an operator-owned shell.\n3. Require `saia_explain_spl` and `saia_optimize_spl` to be available for a PASS diagnostic.\n4. Treat SAIA explain/optimize output as advisory only; SAIA is not the judge.\n5. Deterministic SplunkReady rules remain the pass/fail authority, and SplunkReady reports `mutation=false`.\n\nThe diagnostic calls hosted-model helper tools only. It does not execute the unsafe SPL query and does not mutate Splunk."
+        "text": "# Hosted Model Diagnostic\n\nUse this workflow when an MCP client needs evidence that Splunk AI Assistant helper tools are available.\n1. Keep SAIA credentials in the operator-owned environment or MCP client configuration; do not include tokens in transcripts.\n2. Call `splunkready_check_hosted_model_access` with `mode=fixture` for public proof or `mode=live` only from an operator-owned shell.\n3. Require `saia_generate_spl`, `saia_explain_spl`, `saia_optimize_spl`, and `saia_ask_splunk_question` to be available for a PASS diagnostic.\n4. Treat SAIA generate/explain/optimize/ask output as advisory only; SAIA is not the judge.\n5. Deterministic SplunkReady rules remain the pass/fail authority, and SplunkReady reports `mutation=false`.\n\nThe diagnostic calls hosted-model helper tools only. It does not execute the unsafe SPL query and does not mutate Splunk."
       }
     ]
   },
@@ -290,7 +290,7 @@
         "role": "user",
         "content": {
           "type": "text",
-          "text": "Check Splunk AI Assistant hosted-model access through SplunkReady.\n\nMode: fixture\nOutput directory: submission-evidence/mcp-proof/mcp-hosted-model-access\n\nCall splunkready_check_hosted_model_access with requirePass=true when you need a strict PASS gate.\nFor public evidence, use fixture mode. For live evidence, run only from an operator-owned shell or explicit env file with Splunk MCP credentials already configured.\nConfirm required tools include saia_explain_spl and saia_optimize_spl, permissionStatus is OK, and mutation=false.\nSAIA output may explain or optimize SPL, but deterministic SplunkReady rules remain the pass/fail authority."
+          "text": "Check Splunk AI Assistant hosted-model access through SplunkReady.\n\nMode: fixture\nOutput directory: submission-evidence/mcp-proof/mcp-hosted-model-access\n\nCall splunkready_check_hosted_model_access with requirePass=true when you need a strict PASS gate.\nFor public evidence, use fixture mode. For live evidence, run only from an operator-owned shell or explicit env file with Splunk MCP credentials already configured.\nConfirm required tools include saia_generate_spl, saia_explain_spl, saia_optimize_spl, and saia_ask_splunk_question; permissionStatus is OK; mutation=false.\nSAIA output may generate, explain, optimize, or answer SPL questions, but deterministic SplunkReady rules remain the pass/fail authority."
         }
       }
     ]
@@ -345,12 +345,16 @@
     "outDir": "submission-evidence/mcp-proof/mcp-hosted-model-access",
     "mutation": false,
     "requiredTools": [
+      "saia_generate_spl",
       "saia_explain_spl",
-      "saia_optimize_spl"
+      "saia_optimize_spl",
+      "saia_ask_splunk_question"
     ],
     "availableTools": [
+      "saia_generate_spl",
       "saia_explain_spl",
-      "saia_optimize_spl"
+      "saia_optimize_spl",
+      "saia_ask_splunk_question"
     ],
     "missingTools": [],
     "artifacts": [

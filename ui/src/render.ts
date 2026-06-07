@@ -458,7 +458,7 @@ const renderPatchViolationMap = (policyPatch: PolicyPatch | undefined, violation
             ["Trace event", violation?.traceEventId ?? "n/a"],
             ["Deterministic reason", violation?.reason ?? "violation artifact not loaded"],
             ["Suggested policy", violation?.suggestedPolicyPatch ?? "n/a"],
-            ["SAIA role", item ? "advisory explain/optimize" : "not invoked"],
+            ["SAIA role", item ? "advisory generate/explain/optimize/ask" : "not invoked"],
             ["SAIA optimized SPL", item?.optimizedQuery ?? "n/a"]
           ])}
         </article>`;
@@ -1107,7 +1107,7 @@ const liveKitActionRows = [
 
 const hostedModelActionRows = [
   ["hosted-model-diagnostic", "Check SAIA entitlement", "Call hosted-model helper tools only; report PASS or BLOCKED."],
-  ["hosted-model-proof", "Run hosted-model proof", "Collect advisory explain/optimize output without executing SPL."]
+  ["hosted-model-proof", "Run hosted-model proof", "Collect advisory generate/explain/optimize/ask output without executing SPL."]
 ] as const;
 
 const renderLiveActionPanel = (workbench: WorkbenchRenderState | undefined): string => {

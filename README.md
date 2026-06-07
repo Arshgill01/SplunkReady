@@ -129,7 +129,7 @@ MCP JSON-RPC transcript through
 `splunkready_certify_mcp_transcript` and also proves the direct-content MCP
 tool `splunkready_certify_mcp_transcript_content`. It also calls
 `splunkready_check_hosted_model_access` so the MCP proof includes SAIA
-hosted-model access as advisory evidence. It writes
+hosted-model generate/explain/optimize/ask access as advisory evidence. It writes
 `artifacts/mcp-proof/mcp-proof-summary.json` / `.md` plus the generated
 Readiness Receipt artifacts. The summary includes a `splunkMcpBoundary` block
 that names the certified `splunk_*` tools, records saved-search execution,

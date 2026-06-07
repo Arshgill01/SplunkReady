@@ -2,8 +2,12 @@ import {
   createSplunkAdapterError,
   type AdapterCallOptions,
   type AdapterRequestContext,
+  type AskSplunkQuestionRequest,
+  type AskSplunkQuestionResult,
   type ExplainSplRequest,
   type ExplainSplResult,
+  type GenerateSplRequest,
+  type GenerateSplResult,
   type IndexSummary,
   type KnowledgeObjectRequest,
   type KnowledgeObjectResult,
@@ -195,8 +199,10 @@ const contextFor = (
 export class SplunkFirewallGateway implements SplunkAccessAdapter {
   readonly mode: SplunkAccessAdapter["mode"];
   readonly traceHooks: SplunkAccessAdapter["traceHooks"];
+  readonly generateSpl: SplunkAccessAdapter["generateSpl"];
   readonly explainSpl: SplunkAccessAdapter["explainSpl"];
   readonly optimizeSpl: SplunkAccessAdapter["optimizeSpl"];
+  readonly askSplunkQuestion: SplunkAccessAdapter["askSplunkQuestion"];
 
   constructor(
     private readonly underlying: SplunkAccessAdapter,
@@ -205,11 +211,17 @@ export class SplunkFirewallGateway implements SplunkAccessAdapter {
   ) {
     this.mode = underlying.mode;
     this.traceHooks = underlying.traceHooks;
+    this.generateSpl = underlying.generateSpl?.bind(underlying) as
+      | ((input: GenerateSplRequest, options: AdapterCallOptions) => Promise<GenerateSplResult>)
+      | undefined;
     this.explainSpl = underlying.explainSpl?.bind(underlying) as
       | ((input: ExplainSplRequest, options: AdapterCallOptions) => Promise<ExplainSplResult>)
       | undefined;
     this.optimizeSpl = underlying.optimizeSpl?.bind(underlying) as
       | ((input: OptimizeSplRequest, options: AdapterCallOptions) => Promise<OptimizeSplResult>)
+      | undefined;
+    this.askSplunkQuestion = underlying.askSplunkQuestion?.bind(underlying) as
+      | ((input: AskSplunkQuestionRequest, options: AdapterCallOptions) => Promise<AskSplunkQuestionResult>)
       | undefined;
   }
 

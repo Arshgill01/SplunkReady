@@ -4,8 +4,12 @@ import {
   type AdapterCallOptions,
   type AdapterRequestContext,
   type AdapterTraceHooks,
+  type AskSplunkQuestionRequest,
+  type AskSplunkQuestionResult,
   type ExplainSplRequest,
   type ExplainSplResult,
+  type GenerateSplRequest,
+  type GenerateSplResult,
   type IndexSummary,
   type KnowledgeObjectSummary,
   type KnowledgeObjectType,
@@ -260,6 +264,27 @@ const liveSplAssistanceInput = (input: ExplainSplRequest | OptimizeSplRequest): 
   spl: input.query
 });
 
+const liveSplGenerationInput = (input: GenerateSplRequest): Record<string, unknown> => ({
+  prompt: input.prompt
+});
+
+const liveSplunkQuestionInput = (input: AskSplunkQuestionRequest): Record<string, unknown> => ({
+  question: input.question
+});
+
+const normalizeGenerateSplResult = (value: unknown): GenerateSplResult => {
+  const row = firstRowFrom(value);
+  const query =
+    stringValue(row.query) ??
+    stringValue(row.spl) ??
+    stringValue(row.generated_spl) ??
+    stringValue(row.generatedSpl) ??
+    (typeof value === "string" ? value : "");
+  const rationale = stringValue(row.rationale) ?? stringValue(row.explanation);
+
+  return { query, rationale, warnings: query ? [] : ["Live SAIA generation returned no SPL text."] };
+};
+
 const normalizeExplainSplResult = (value: unknown): ExplainSplResult => {
   const row = firstRowFrom(value);
   const explanation =
@@ -282,6 +307,17 @@ const normalizeOptimizeSplResult = (value: unknown): OptimizeSplResult => {
   const rationale = stringValue(row.rationale) ?? stringValue(row.explanation) ?? "Live SAIA optimization returned.";
 
   return { optimizedQuery, rationale, warnings: optimizedQuery ? [] : ["Live SAIA optimization returned no query text."] };
+};
+
+const normalizeAskSplunkQuestionResult = (value: unknown): AskSplunkQuestionResult => {
+  const row = firstRowFrom(value);
+  const answer =
+    stringValue(row.answer) ??
+    stringValue(row.explanation) ??
+    stringValue(row.content) ??
+    (typeof value === "string" ? value : "Live SAIA question returned no answer text.");
+
+  return { answer, warnings: [] };
 };
 
 const parseTextContent = (value: string): unknown => {
@@ -606,6 +642,13 @@ export const createLiveSplunkAccessAdapter = (
         options,
         "Live Splunk saved search executed."
       ).then((output) => normalizeLiveSavedSearchResult(input, output)),
+    generateSpl: (input: GenerateSplRequest, options) =>
+      callLiveTool<Record<string, unknown>, unknown>(
+        "saia_generate_spl",
+        liveSplGenerationInput(input),
+        options,
+        "Live SPL generation loaded."
+      ).then(normalizeGenerateSplResult),
     explainSpl: (input: ExplainSplRequest, options) =>
       callLiveTool<Record<string, unknown>, unknown>(
         "saia_explain_spl",
@@ -619,6 +662,13 @@ export const createLiveSplunkAccessAdapter = (
         liveSplAssistanceInput(input),
         options,
         "Live SPL optimization loaded."
-      ).then(normalizeOptimizeSplResult)
+      ).then(normalizeOptimizeSplResult),
+    askSplunkQuestion: (input: AskSplunkQuestionRequest, options) =>
+      callLiveTool<Record<string, unknown>, unknown>(
+        "saia_ask_splunk_question",
+        liveSplunkQuestionInput(input),
+        options,
+        "Live Splunk question answer loaded."
+      ).then(normalizeAskSplunkQuestionResult)
   };
 };

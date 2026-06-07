@@ -27,7 +27,7 @@ describe("hosted model workflows", () => {
       status: "PASS",
       mutation: false,
       deterministicContext: { passFailAuthority: "deterministic-rule-engine" },
-      toolCalls: ["saia_explain_spl", "saia_optimize_spl"]
+      toolCalls: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"]
     });
   });
 
@@ -112,7 +112,7 @@ describe("hosted model workflows", () => {
       status: "BLOCKED",
       mutation: false,
       contract: { id: "live-hosted-model-unconfigured", mode: "live" },
-      missingTools: ["saia_explain_spl", "saia_optimize_spl"],
+      missingTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       permission: {
         status: "BLOCKED",
         message:

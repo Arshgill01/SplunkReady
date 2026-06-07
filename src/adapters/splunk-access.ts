@@ -173,6 +173,17 @@ export interface ExplainSplRequest {
   app?: string;
 }
 
+export interface GenerateSplRequest {
+  prompt: string;
+  app?: string;
+}
+
+export interface GenerateSplResult {
+  query: string;
+  rationale?: string;
+  warnings: string[];
+}
+
 export interface ExplainSplResult {
   explanation: string;
   warnings: string[];
@@ -189,6 +200,16 @@ export interface OptimizeSplResult {
   warnings: string[];
 }
 
+export interface AskSplunkQuestionRequest {
+  question: string;
+  app?: string;
+}
+
+export interface AskSplunkQuestionResult {
+  answer: string;
+  warnings: string[];
+}
+
 export interface SplunkAccessAdapter {
   mode: AdapterMode;
   traceHooks?: AdapterTraceHooks;
@@ -202,6 +223,8 @@ export interface SplunkAccessAdapter {
   ): Promise<KnowledgeObjectResult>;
   runQuery(input: RunQueryRequest, options: AdapterCallOptions): Promise<QueryResult>;
   runSavedSearch(input: RunSavedSearchRequest, options: AdapterCallOptions): Promise<SavedSearchResult>;
+  generateSpl?(input: GenerateSplRequest, options: AdapterCallOptions): Promise<GenerateSplResult>;
   explainSpl?(input: ExplainSplRequest, options: AdapterCallOptions): Promise<ExplainSplResult>;
   optimizeSpl?(input: OptimizeSplRequest, options: AdapterCallOptions): Promise<OptimizeSplResult>;
+  askSplunkQuestion?(input: AskSplunkQuestionRequest, options: AdapterCallOptions): Promise<AskSplunkQuestionResult>;
 }

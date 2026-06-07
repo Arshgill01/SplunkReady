@@ -29,7 +29,12 @@ const knowledgeObjectTypes: KnowledgeObjectType[] = [
   "data_models"
 ];
 
-const optionalHelperTools: ReadOnlySplunkToolName[] = ["saia_explain_spl", "saia_optimize_spl"];
+const optionalHelperTools: ReadOnlySplunkToolName[] = [
+  "saia_generate_spl",
+  "saia_explain_spl",
+  "saia_optimize_spl",
+  "saia_ask_splunk_question"
+];
 
 const defaultQueryBudgets: EnvironmentContract["queryBudgets"] = {
   maxToolCalls: 6,

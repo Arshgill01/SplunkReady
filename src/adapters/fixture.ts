@@ -8,8 +8,12 @@ import {
   type AdapterCallOptions,
   type AdapterRequestContext,
   type AdapterTraceHooks,
+  type AskSplunkQuestionRequest,
+  type AskSplunkQuestionResult,
   type ExplainSplRequest,
   type ExplainSplResult,
+  type GenerateSplRequest,
+  type GenerateSplResult,
   type IndexSummary,
   type KnowledgeObjectRequest,
   type KnowledgeObjectResult,
@@ -237,6 +241,17 @@ export const createFixtureSplunkAccessAdapter = (
     await emitEnd(traceHooks, context, "Fixture saved search result loaded.", result.resultCount, result.evidenceRefs);
     return result;
   },
+  async generateSpl(input: GenerateSplRequest, options): Promise<GenerateSplResult> {
+    const context = createContext("saia_generate_spl", options);
+    await emitStart(traceHooks, context, input);
+    const result = {
+      query: "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now",
+      rationale: `Fixture SAIA generated SPL from prompt: ${input.prompt}`,
+      warnings: []
+    };
+    await emitEnd(traceHooks, context, "Fixture SPL generation loaded.");
+    return result;
+  },
   async explainSpl(input: ExplainSplRequest, options): Promise<ExplainSplResult> {
     const context = createContext("saia_explain_spl", options);
     await emitStart(traceHooks, context, input);
@@ -254,6 +269,16 @@ export const createFixtureSplunkAccessAdapter = (
         warnings: []
       };
     await emitEnd(traceHooks, context, "Fixture SPL optimization loaded.");
+    return result;
+  },
+  async askSplunkQuestion(input: AskSplunkQuestionRequest, options): Promise<AskSplunkQuestionResult> {
+    const context = createContext("saia_ask_splunk_question", options);
+    await emitStart(traceHooks, context, input);
+    const result = {
+      answer: `Fixture SAIA guidance for question: ${input.question}`,
+      warnings: []
+    };
+    await emitEnd(traceHooks, context, "Fixture Splunk question answer loaded.");
     return result;
   }
 });

@@ -8,17 +8,21 @@
     "mode": "fixture"
   },
   "requiredTools": [
+    "saia_generate_spl",
     "saia_explain_spl",
-    "saia_optimize_spl"
+    "saia_optimize_spl",
+    "saia_ask_splunk_question"
   ],
   "availableTools": [
+    "saia_generate_spl",
     "saia_explain_spl",
-    "saia_optimize_spl"
+    "saia_optimize_spl",
+    "saia_ask_splunk_question"
   ],
   "missingTools": [],
   "permission": {
     "status": "OK",
-    "message": "The current MCP credentials can invoke saia_explain_spl and saia_optimize_spl for advisory SPL remediation."
+    "message": "The current MCP credentials can invoke saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question for advisory SPL remediation."
   },
   "deterministicAuthority": "deterministic-rule-engine",
   "notes": "This diagnostic calls hosted-model helper tools only. It does not execute the SPL query, does not grade with an LLM, and does not mutate Splunk."

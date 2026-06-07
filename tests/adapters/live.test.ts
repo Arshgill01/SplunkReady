@@ -98,11 +98,18 @@ describe("live Splunk adapter skeleton", () => {
     });
   });
 
-  it("maps internal SPL assistance query input to the live MCP spl argument", async () => {
+  it("maps internal SPL assistance inputs to live MCP arguments", async () => {
     const calls: Array<{ toolName: string; input: unknown }> = [];
     const transport: LiveSplunkTransport = {
       async call<TInput, TOutput>(request: LiveSplunkTransportRequest<TInput>): Promise<TOutput> {
         calls.push({ toolName: request.toolName, input: request.input });
+
+        if (request.toolName === "saia_generate_spl") {
+          return {
+            query: "search index=wineventlog host=win-finance-07 src=*",
+            rationale: "Use the authorized Windows security index."
+          } as TOutput;
+        }
 
         if (request.toolName === "saia_explain_spl") {
           return { explanation: "The SPL uses a broad index wildcard." } as TOutput;
@@ -112,6 +119,10 @@ describe("live Splunk adapter skeleton", () => {
           return { optimizedQuery: "search index=wineventlog", rationale: "Narrow to the authorized index." } as TOutput;
         }
 
+        if (request.toolName === "saia_ask_splunk_question") {
+          return { answer: "Prefer authorized indexes and saved searches for evidence provenance." } as TOutput;
+        }
+
         throw new Error(`unexpected tool ${request.toolName}`);
       }
     };
@@ -119,20 +130,30 @@ describe("live Splunk adapter skeleton", () => {
       enabled: true,
       endpointUrl: "https://splunk.example.invalid/mcp",
       authToken: "test-token",
-      capabilities: ["saia_explain_spl", "saia_optimize_spl"],
+      capabilities: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       transport
     });
     const query = "search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now";
+    const prompt = "Generate read-only SPL for lateral movement on win-finance-07.";
+    const question = "Why should agents prefer saved search provenance?";
 
+    await expect(adapter.generateSpl?.({ prompt }, requestOptions)).resolves.toMatchObject({
+      query: "search index=wineventlog host=win-finance-07 src=*"
+    });
     await expect(adapter.explainSpl?.({ query }, requestOptions)).resolves.toMatchObject({
       explanation: "The SPL uses a broad index wildcard."
     });
     await expect(adapter.optimizeSpl?.({ query }, requestOptions)).resolves.toMatchObject({
       optimizedQuery: "search index=wineventlog"
     });
+    await expect(adapter.askSplunkQuestion?.({ question }, requestOptions)).resolves.toMatchObject({
+      answer: "Prefer authorized indexes and saved searches for evidence provenance."
+    });
     expect(calls).toEqual([
+      { toolName: "saia_generate_spl", input: { prompt } },
       { toolName: "saia_explain_spl", input: { spl: query } },
-      { toolName: "saia_optimize_spl", input: { spl: query } }
+      { toolName: "saia_optimize_spl", input: { spl: query } },
+      { toolName: "saia_ask_splunk_question", input: { question } }
     ]);
   });
 

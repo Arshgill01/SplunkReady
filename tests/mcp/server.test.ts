@@ -414,8 +414,8 @@ describe("SplunkReady MCP server", () => {
       permissionStatus: "OK",
       outDir,
       mutation: false,
-      requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
-      availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+      requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+      availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       missingTools: []
     });
     expect(structured.artifacts).toEqual(
@@ -449,9 +449,9 @@ describe("SplunkReady MCP server", () => {
       permissionStatus: "BLOCKED",
       outDir,
       mutation: false,
-      requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
+      requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       availableTools: [],
-      missingTools: ["saia_explain_spl", "saia_optimize_spl"]
+      missingTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"]
     });
     expect(JSON.stringify(structured)).not.toContain("Bearer");
   });

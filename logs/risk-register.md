@@ -602,3 +602,14 @@ identify as SplunkReady with the expected protocol version and deterministic
 readiness instructions. Residual risk remains registry timing: the current
 published npm version must be republished after Move 116+ before public
 `@latest` installs are guaranteed to expose the MCP entrypoint.
+
+Move 119 reduces hosted-model and MCP-category thinness risk by expanding
+SplunkReady's SAIA proof from the old two-tool explain/optimize assumption to
+the four-tool Splunk MCP AI Assistant surface: generate, explain, optimize, and
+ask. The public MCP proof now shows hosted-model access PASS, permission OK,
+mutation=false, and all four SAIA tools required/available while still treating
+SAIA output as advisory and never executing generated or optimized SPL.
+Playwright caught the stale UI enum that would have broken the public MCP proof
+route, and the fixed route now loads with zero console errors. Residual risk
+remains live endpoint readiness: this is fixture/public proof until the
+operator-owned Splunk MCP endpoint can invoke all advertised SAIA tools.

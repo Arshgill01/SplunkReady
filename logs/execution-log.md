@@ -12503,3 +12503,70 @@ Open blockers:
   MCP entrypoint and the Move 118 package audit.
 - Live SAIA remains blocked until the operator-owned MCP endpoint can invoke
   advertised hosted-model tools successfully.
+
+## 2026-06-07 16:20 - Move 119 Four-Tool SAIA Hosted-Model Proof
+
+Scope:
+- Verified current Splunk MCP documentation for the `saia_` namespace and the
+  Splunk AI Assistant tool surface:
+  `saia_generate_spl`, `saia_explain_spl`, `saia_optimize_spl`, and
+  `saia_ask_splunk_question`.
+- Added `saia_generate_spl` and `saia_ask_splunk_question` to shared read-only
+  Splunk tool schemas while keeping all SAIA tools read-only/advisory.
+- Extended fixture and live adapters with `generateSpl` and
+  `askSplunkQuestion`, plus live response normalization for generated SPL and
+  Splunk/SPL answers.
+- Expanded hosted-model proof from explain/optimize to generate, explain,
+  optimize, and ask.
+- Preserved deterministic rule authority: hosted-model proof records
+  `passFailAuthority: "deterministic-rule-engine"` and does not execute
+  generated, unsafe, or optimized SPL.
+- Regenerated `submission-evidence/mcp-proof` so the MCP proof reports
+  hosted-model access `PASS`, `permissionStatus: "OK"`, `mutation: false`, and
+  all four SAIA tools required/available.
+- Updated the UI artifact schema and renderer so the public MCP proof route can
+  load the expanded hosted-model proof instead of rejecting the new tool names.
+- Rebuilt the public demo and Playwright-verified the MCP proof route in a
+  real browser after first catching and fixing the stale UI enum failure.
+- Did not call live Splunk.
+- Did not read, source, print, or commit real `.splunkready*` / `.env*` secret
+  values.
+- Did not make SAIA or any LLM output authoritative.
+- Did not mutate Splunk.
+- Did not use subagents.
+
+Files changed:
+- `src/schemas/core.ts`
+- `src/adapters/splunk-access.ts`
+- `src/adapters/fixture.ts`
+- `src/adapters/live.ts`
+- `src/compiler/environment.ts`
+- `src/gateway/firewall.ts`
+- `src/mcp/server.ts`
+- `src/workflows/hosted-model-actions.ts`
+- `fixtures/acme-soc-dev/adapter-fixture.json`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/adapters/live.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/mcp/server.test.ts`
+- `tests/ui/app.test.ts`
+- `tests/workflows/hosted-model-actions.test.ts`
+- `README.md`
+- `docs/devpost-submission.md`
+- `docs/live-adapter.md`
+- `docs/live-setup-checklist.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/*`
+- `moves/README.md`
+- `moves/moves119.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- This move uses fixture/public evidence and does not claim live SAIA PASS.
+- The operator-owned live endpoint still needs to invoke the advertised SAIA
+  tools successfully before SplunkReady can claim live hosted-model proof.
+- Registry `@latest` needs a later publish before public installs contain
+  Moves 116-119.

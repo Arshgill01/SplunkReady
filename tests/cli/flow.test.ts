@@ -135,8 +135,10 @@ const startMockMcpServer = async (
             "splunk_get_knowledge_objects",
             "splunk_run_query",
             "splunk_run_saved_search",
+            "saia_generate_spl",
             "saia_explain_spl",
-            "saia_optimize_spl"
+            "saia_optimize_spl",
+            "saia_ask_splunk_question"
           ]
         },
         splunk_get_user_info: {
@@ -162,12 +164,19 @@ const startMockMcpServer = async (
           results: savedSearchRows,
           total_rows: savedSearchRows.length
         },
+        saia_generate_spl: {
+          query: "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now",
+          rationale: "Generate a read-only search against the authorized Windows security index."
+        },
         saia_explain_spl: {
           explanation: "The SPL uses a broad index wildcard and a non-contract field."
         },
         saia_optimize_spl: {
           optimizedQuery: "| savedsearch \"ES - Lateral Movement Auth Chain\"",
           rationale: "Prefer the validated saved search from the live contract."
+        },
+        saia_ask_splunk_question: {
+          answer: "Use authorized indexes and saved searches to preserve deployment-specific guardrails."
         }
       };
 
@@ -1728,7 +1737,9 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain(
       "splunkready_check_hosted_model_access"
     );
+    expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("saia_generate_spl");
     expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("saia_explain_spl");
+    expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("saia_ask_splunk_question");
     expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("advisory only");
     expect(summary.receiptTemplateResource.contents[0].text).toContain("Verdict: READY");
     expect(summary.inlineTranscriptCertification).toMatchObject({
@@ -1747,8 +1758,18 @@ describe("SplunkReady CLI flow", () => {
       permissionStatus: "OK",
       mutation: false,
       outDir: hostedModelAccessDir,
-      requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
-      availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+      requiredTools: [
+        "saia_generate_spl",
+        "saia_explain_spl",
+        "saia_optimize_spl",
+        "saia_ask_splunk_question"
+      ],
+      availableTools: [
+        "saia_generate_spl",
+        "saia_explain_spl",
+        "saia_optimize_spl",
+        "saia_ask_splunk_question"
+      ],
       missingTools: []
     });
     expect(summary.hostedModelAccess.artifacts).toEqual(
@@ -2369,7 +2390,7 @@ describe("SplunkReady CLI flow", () => {
       mutation: boolean;
       query: string;
       deterministicContext: { ruleIds: string[]; passFailAuthority: string };
-      assistance: { explanation: string; optimizedQuery: string; rationale: string };
+      assistance: { generatedQuery: string; explanation: string; optimizedQuery: string; rationale: string; answer: string };
       toolCalls: string[];
     };
 
@@ -2383,14 +2404,16 @@ describe("SplunkReady CLI flow", () => {
         passFailAuthority: "deterministic-rule-engine"
       },
       assistance: {
+        generatedQuery: "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now",
         explanation: "The SPL uses a broad index wildcard and a non-contract field.",
         optimizedQuery: "| savedsearch \"ES - Lateral Movement Auth Chain\"",
-        rationale: "Prefer the validated saved search from the live contract."
+        rationale: "Prefer the validated saved search from the live contract.",
+        answer: "Use authorized indexes and saved searches to preserve deployment-specific guardrails."
       },
-      toolCalls: ["saia_explain_spl", "saia_optimize_spl"]
+      toolCalls: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"]
     });
     expect(mcp.calls.map((call) => call.params.name)).toEqual(
-      expect.arrayContaining(["saia_explain_spl", "saia_optimize_spl"])
+      expect.arrayContaining(["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"])
     );
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
   });
@@ -2439,13 +2462,13 @@ describe("SplunkReady CLI flow", () => {
       permission: {
         status: "OK",
         message:
-          "The current MCP credentials can invoke saia_explain_spl and saia_optimize_spl for advisory SPL remediation."
+          "The current MCP credentials can invoke saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question for advisory SPL remediation."
       },
-      requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
-      availableTools: ["saia_explain_spl", "saia_optimize_spl"]
+      requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+      availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"]
     });
     expect(mcp.calls.map((call) => call.params.name)).toEqual(
-      expect.arrayContaining(["saia_explain_spl", "saia_optimize_spl"])
+      expect.arrayContaining(["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"])
     );
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
   });
@@ -2605,13 +2628,15 @@ describe("SplunkReady CLI flow", () => {
       permission: {
         status: "BLOCKED",
         error:
-          "Hosted-model SAIA action forbidden. The current MCP token or Splunk user can access live read-only Splunk tools, but not saia_explain_spl/saia_optimize_spl."
+          "Hosted-model SAIA action forbidden. The current MCP token or Splunk user can access live read-only Splunk tools, but not saia_generate_spl/saia_explain_spl/saia_optimize_spl/saia_ask_splunk_question."
       }
     });
     expect(diagnostic.permission.requiredActions).toEqual(
       expect.arrayContaining([
+        "Grant the Splunk/MCP user permission to invoke saia_generate_spl.",
         "Grant the Splunk/MCP user permission to invoke saia_explain_spl.",
-        "Grant the Splunk/MCP user permission to invoke saia_optimize_spl."
+        "Grant the Splunk/MCP user permission to invoke saia_optimize_spl.",
+        "Grant the Splunk/MCP user permission to invoke saia_ask_splunk_question."
       ])
     );
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
@@ -2661,7 +2686,7 @@ describe("SplunkReady CLI flow", () => {
     });
     expect(diagnostic.permission.requiredActions).toEqual(
       expect.arrayContaining([
-        "Confirm the Splunk MCP endpoint supports invoking saia_explain_spl and saia_optimize_spl, not only advertising them in tool discovery.",
+        "Confirm the Splunk MCP endpoint supports invoking saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question, not only advertising them in tool discovery.",
         "Confirm the MCP server route or app version that backs hosted-model tools is installed and reachable."
       ])
     );
@@ -3760,7 +3785,12 @@ describe("SplunkReady CLI flow", () => {
       hostedModels: {
         status: "invoked",
         assistanceItems: 3,
-        availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+        availableTools: [
+          "saia_generate_spl",
+          "saia_explain_spl",
+          "saia_optimize_spl",
+          "saia_ask_splunk_question"
+        ],
         missingTools: []
       }
     });
@@ -3776,7 +3806,12 @@ describe("SplunkReady CLI flow", () => {
       hostedModels: {
         status: "invoked",
         assistanceItems: 3,
-        availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+        availableTools: [
+          "saia_generate_spl",
+          "saia_explain_spl",
+          "saia_optimize_spl",
+          "saia_ask_splunk_question"
+        ],
         missingTools: []
       }
     });

@@ -40,6 +40,13 @@ const uiArtifactManifestSchema = z
 
 export type UiArtifactManifest = z.infer<typeof uiArtifactManifestSchema>;
 
+const hostedModelToolNameSchema = z.enum([
+  "saia_generate_spl",
+  "saia_explain_spl",
+  "saia_optimize_spl",
+  "saia_ask_splunk_question"
+]);
+
 const artifactFileManifestSchema = z
   .object({
     source: z.literal("splunkready-artifact-file-manifest"),
@@ -51,8 +58,8 @@ const artifactFileManifestSchema = z
 const hostedModelSummarySchema = z
   .object({
     status: z.enum(["invoked", "available_not_applicable", "unavailable"]),
-    availableTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
-    missingTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+    availableTools: z.array(hostedModelToolNameSchema),
+    missingTools: z.array(hostedModelToolNameSchema),
     assistanceItems: z.number().int().nonnegative(),
     notes: z.string().min(1)
   })
@@ -89,8 +96,8 @@ const hostedModelProofSchema = z
       .object({
         id: z.string().min(1),
         mode: z.enum(["fixture", "live"]),
-        hostedModelTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
-        availableTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"]))
+        hostedModelTools: z.array(hostedModelToolNameSchema),
+        availableTools: z.array(hostedModelToolNameSchema)
       })
       .strict(),
     setup: hostedModelSetupSchema.optional(),
@@ -104,14 +111,17 @@ const hostedModelProofSchema = z
       .strict(),
     assistance: z
       .object({
+        generatedQuery: z.string().min(1).optional(),
+        generationRationale: z.string().min(1).optional(),
         explanation: z.string().min(1),
         optimizedQuery: z.string(),
         rationale: z.string(),
+        answer: z.string().min(1).optional(),
         warnings: z.array(z.string())
       })
       .strict()
       .nullable(),
-    toolCalls: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+    toolCalls: z.array(hostedModelToolNameSchema),
     error: z.string().min(1).nullable(),
     notes: z.string().min(1)
   })
@@ -160,9 +170,9 @@ const hostedModelDiagnosticSchema = z
       })
       .strict(),
     setup: hostedModelSetupSchema.optional(),
-    requiredTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
-    availableTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
-    missingTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+    requiredTools: z.array(hostedModelToolNameSchema),
+    availableTools: z.array(hostedModelToolNameSchema),
+    missingTools: z.array(hostedModelToolNameSchema),
     permission: z
       .object({
         status: z.enum(["OK", "BLOCKED"]),
@@ -724,9 +734,9 @@ const mcpProofSummarySchema = z
         permissionStatus: z.enum(["OK", "BLOCKED"]),
         outDir: z.string().min(1),
         mutation: z.boolean(),
-        requiredTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
-        availableTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
-        missingTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+        requiredTools: z.array(hostedModelToolNameSchema),
+        availableTools: z.array(hostedModelToolNameSchema),
+        missingTools: z.array(hostedModelToolNameSchema),
         artifacts: z.array(z.string().min(1))
       })
       .strict(),

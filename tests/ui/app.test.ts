@@ -47,8 +47,10 @@ const contract: EnvironmentContract = {
     "splunk_get_knowledge_objects",
     "splunk_run_query",
     "splunk_run_saved_search",
+    "saia_generate_spl",
     "saia_explain_spl",
-    "saia_optimize_spl"
+    "saia_optimize_spl",
+    "saia_ask_splunk_question"
   ],
   queryBudgets: { maxToolCalls: 6, maxResultRows: 50, timeoutSeconds: 30 },
   evidenceRules: [{ id: "security-evidence", requiresEvidenceRefs: true }],
@@ -423,8 +425,8 @@ const mcpProofSummary = {
     permissionStatus: "OK",
     outDir: "submission-evidence/mcp-proof/mcp-hosted-model-access",
     mutation: false,
-    requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
-    availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+    requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+    availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
     missingTools: [],
     artifacts: [
       "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
@@ -685,10 +687,10 @@ const liveProofSummary = {
   proofLoop: "ready-without-patch",
   hostedModels: {
     status: "available_not_applicable",
-    availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+    availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
     missingTools: [],
     assistanceItems: 0,
-    notes: "SAIA explain/optimize tools were available, but this proof did not produce SPL-rule violations with query evidence."
+    notes: "SAIA generate/explain/optimize/ask tools were available, but this proof did not produce SPL-rule violations with query evidence."
   },
   notes:
     "The live-derived mission was already ready before policy injection; this proves live certification but not the fail-to-pass patch loop."
@@ -717,11 +719,11 @@ const liveSecurityProofSummary = {
   proofLoop: "fail-to-pass",
   hostedModels: {
     status: "invoked",
-    availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+    availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
     missingTools: [],
     assistanceItems: 1,
     notes:
-      "SAIA explain/optimize returned advisory output for SPL-rule violations. Deterministic rules remained authoritative for pass/fail."
+      "SAIA generate/explain/optimize/ask returned advisory output for SPL-rule violations. Deterministic rules remained authoritative for pass/fail."
   },
   notes:
     "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
@@ -881,8 +883,8 @@ const hostedModelProof = {
   contract: {
     id: "contract-192-168-1-4",
     mode: "live",
-    hostedModelTools: ["saia_explain_spl", "saia_optimize_spl"],
-    availableTools: ["saia_explain_spl", "saia_optimize_spl"]
+    hostedModelTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+    availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"]
   },
   setup: {
     source: "splunkready-live-hosted-model-preflight",
@@ -909,18 +911,21 @@ const hostedModelProof = {
     ruleIds: ["SPL-001", "SPL-003"],
     passFailAuthority: "deterministic-rule-engine",
     purpose:
-      "Demonstrate hosted-model explain/optimize as advisory remediation for a deterministic SPL violation. The query is not executed."
+      "Demonstrate hosted-model SAIA assistance as advisory remediation for deterministic SPL violations. No generated or optimized SPL is executed."
   },
   assistance: {
+    generatedQuery: "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now",
+    generationRationale: "Generate a read-only search against the authorized Windows security index.",
     explanation: "The SPL uses a broad index wildcard and a non-contract field.",
     optimizedQuery: "| savedsearch \"ES - Lateral Movement Auth Chain\"",
     rationale: "Prefer the validated saved search from the live contract.",
+    answer: "Use authorized indexes and saved searches to preserve deployment-specific guardrails.",
     warnings: []
   },
-  toolCalls: ["saia_explain_spl", "saia_optimize_spl"],
+  toolCalls: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
   error: null,
   notes:
-    "This proof calls hosted-model tools only. It does not run the SPL query, does not grade with an LLM, and does not mutate Splunk."
+    "This proof calls hosted-model tools only. It does not run generated, unsafe, or optimized SPL, does not grade with an LLM, and does not mutate Splunk."
 } as const;
 
 const hostedModelDiagnostic = {
@@ -933,12 +938,13 @@ const hostedModelDiagnostic = {
     mode: "live"
   },
   setup: hostedModelProof.setup,
-  requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
-  availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+  requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+  availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
   missingTools: [],
   permission: {
     status: "OK",
-    message: "The current MCP credentials can invoke saia_explain_spl and saia_optimize_spl for advisory SPL remediation."
+    message:
+      "The current MCP credentials can invoke saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question for advisory SPL remediation."
   },
   deterministicAuthority: "deterministic-rule-engine",
   notes:
@@ -1920,7 +1926,7 @@ describe("Vite UI artifact app", () => {
     expect(liveConnect).toContain("Operator action");
     expect(liveConnect).toContain("required");
     expect(liveConnect).toContain("Hosted model assistance");
-    expect(liveConnect).toContain("saia_explain_spl / saia_optimize_spl");
+    expect(liveConnect).toContain("saia_generate_spl / saia_explain_spl / saia_optimize_spl / saia_ask_splunk_question");
     expect(liveConnect).toContain("advisory only; deterministic grader decides pass/fail");
     expect(liveConnect).toContain("Hosted model diagnostic");
     expect(liveConnect).toContain("hosted-model-status / PASS");
