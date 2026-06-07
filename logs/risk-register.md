@@ -804,3 +804,13 @@ and `mutation=false`. Residual risk remains public-package currentness: npm
 latest still reports `splunkready@0.1.0`, so judges do not get current
 source-side MCP/SAIA work from `splunkready@latest` until an
 npm-authenticated publish of `0.1.1` completes.
+
+Move 140 reduces external MCP-client positioning risk by adding Antigravity and
+Zed client-config resources alongside the older Claude Desktop/Cursor templates.
+The proof now exercises both resources through the raw MCP stdio client session
+and requires them for MCP composition PASS. Residual risk remains practical:
+these are credential-free templates, not a recorded live Antigravity or Zed
+agent session, and the public package still needs the current `mcp` entrypoint
+published before judges can use `splunkready@latest mcp`. Because this move
+changes public-demo input paths, the hosted-demo currentness evidence must be
+refreshed after the Pages workflow redeploys this commit.

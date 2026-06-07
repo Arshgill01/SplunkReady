@@ -13758,3 +13758,73 @@ Notes:
 
 - No secret env file values were read, sourced, printed, or committed.
 - This move does not claim that npm `splunkready@latest` is current.
+
+## 2026-06-07 - Move 140 Antigravity and Zed MCP client configs
+
+Commands:
+
+- `npx vitest run tests/mcp/server.test.ts`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run build`
+- `npm run mcp-proof`
+- `node -e 'const s=require("./submission-evidence/mcp-proof/mcp-proof-summary.json"); console.log(JSON.stringify({status:s.status, resources:s.resources.map(r=>r.uri), clientSessionResources:s.clientSession.resourceUris, composition:s.mcpComposition.checks.find(c=>c.id==="external-mcp-client-configs"), requestCount:s.clientSession.requestCount, mutation:s.mutation}, null, 2))'`
+- `npm run audit:submission-copy`
+- `npm run audit:public-demo-export`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "one-command MCP server proof"`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "static-host SPA fallback|public artifact manifests|MCP proof summary"`
+- `npm run check`
+
+Result:
+
+- PASS for MCP server tests:
+  - 1 test file passed;
+  - 14 tests passed.
+- PASS for submission-copy fixture tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for TypeScript build.
+- PASS for `npm run mcp-proof`:
+  - proof status `PASS`;
+  - 13 resources;
+  - raw client session includes
+    `splunkready://client-config/antigravity` and
+    `splunkready://client-config/zed`;
+  - client session request/response count is 24;
+  - `external-mcp-client-configs` is `PASS`;
+  - `mutation=false`.
+- PASS for submission-copy audit:
+  - 95 required claims audited.
+- PASS for public demo export audit:
+  - 206 files;
+  - `mutation=false`;
+  - default route is MCP proof.
+- PASS for focused CLI `mcp-proof` flow:
+  - 1 test passed;
+  - 45 tests skipped by pattern.
+- FAIL then PASS for focused UI artifact compatibility:
+  - first full gate failed because the UI schema required the new
+    Antigravity/Zed fields for older MCP summary fixtures;
+  - fixed by making those two resource fields optional with `{}` defaults;
+  - focused UI rerun passed 3 tests.
+- PASS for full `npm run check` after the compatibility fix:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 61 test files passed;
+  - 376 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 95 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- No secret env file values were read, sourced, printed, or committed.
+- The new client resources are templates and proof-session resources, not a
+  recorded live Antigravity or Zed agent session.

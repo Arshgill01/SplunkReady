@@ -82,6 +82,8 @@ interface McpProofSummary {
   dualServerClientConfigResource: Record<string, unknown>;
   claudeDesktopClientConfigResource: Record<string, unknown>;
   cursorClientConfigResource: Record<string, unknown>;
+  antigravityClientConfigResource: Record<string, unknown>;
+  zedClientConfigResource: Record<string, unknown>;
   certificationLoopResource: Record<string, unknown>;
   compositionScorecardResource: Record<string, unknown>;
   hostedModelDiagnosticResource: Record<string, unknown>;
@@ -676,10 +678,12 @@ const buildMcpCompositionScorecard = (input: {
       id: "external-mcp-client-configs",
       status:
         resourceUris.includes("splunkready://client-config/claude-desktop") &&
-        resourceUris.includes("splunkready://client-config/cursor")
+        resourceUris.includes("splunkready://client-config/cursor") &&
+        resourceUris.includes("splunkready://client-config/antigravity") &&
+        resourceUris.includes("splunkready://client-config/zed")
           ? "PASS"
           : "FAIL",
-      evidence: "Claude Desktop and Cursor MCP client templates are discoverable as credential-free resources."
+      evidence: "Claude Desktop, Cursor, Antigravity, and Zed MCP client templates are discoverable as credential-free resources."
     },
     {
       id: "discoverable-resources-and-prompts",
@@ -687,6 +691,8 @@ const buildMcpCompositionScorecard = (input: {
         resourceUris.includes("splunkready://client-config/splunk-and-splunkready") &&
         resourceUris.includes("splunkready://client-config/claude-desktop") &&
         resourceUris.includes("splunkready://client-config/cursor") &&
+        resourceUris.includes("splunkready://client-config/antigravity") &&
+        resourceUris.includes("splunkready://client-config/zed") &&
         resourceUris.includes("splunkready://workflows/mcp-composition-scorecard") &&
         resourceUris.includes("splunkready://workflows/hosted-model-diagnostic") &&
         resourceTemplates.includes("splunkready://receipts/{receiptId}") &&
@@ -972,6 +978,8 @@ const buildMcpClientSession = (
     resourceUris.includes("splunkready://client-config/splunk-and-splunkready") &&
     resourceUris.includes("splunkready://client-config/claude-desktop") &&
     resourceUris.includes("splunkready://client-config/cursor") &&
+    resourceUris.includes("splunkready://client-config/antigravity") &&
+    resourceUris.includes("splunkready://client-config/zed") &&
     resourceUris.includes("splunkready://receipts/pass") &&
     resourceUris.includes("splunkready://workflows/hosted-model-diagnostic") &&
     promptNames.includes("splunkready_splunk_mcp_certification_loop") &&
@@ -1100,6 +1108,12 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
     });
     const cursorClientConfigResource = await client.request("resources/read", {
       uri: "splunkready://client-config/cursor"
+    });
+    const antigravityClientConfigResource = await client.request("resources/read", {
+      uri: "splunkready://client-config/antigravity"
+    });
+    const zedClientConfigResource = await client.request("resources/read", {
+      uri: "splunkready://client-config/zed"
     });
     const certificationLoopResource = await client.request("resources/read", {
       uri: "splunkready://workflows/splunk-mcp-certification-loop"
@@ -1316,6 +1330,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       dualServerClientConfigResource,
       claudeDesktopClientConfigResource,
       cursorClientConfigResource,
+      antigravityClientConfigResource,
+      zedClientConfigResource,
       certificationLoopResource,
       compositionScorecardResource,
       hostedModelDiagnosticResource,

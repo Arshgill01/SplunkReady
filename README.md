@@ -124,9 +124,12 @@ npm run mcp-proof
 `npm run mcp-proof` starts the built SplunkReady stdio MCP server, negotiates
 `initialize`, lists non-destructive certification tools, resources, and prompts,
 discovers a templated Readiness Receipt resource, reads the certification
-posture resource and MCP-client configuration, reads the Claude Desktop and
-Cursor client templates at `splunkready://client-config/claude-desktop` and
-`splunkready://client-config/cursor`, fetches reusable transcript and Splunk MCP
+posture resource and MCP-client configuration, reads external-client templates
+for Claude Desktop, Cursor, Antigravity, and Zed at
+`splunkready://client-config/claude-desktop`,
+`splunkready://client-config/cursor`,
+`splunkready://client-config/antigravity`, and
+`splunkready://client-config/zed`, fetches reusable transcript and Splunk MCP
 certification-loop prompts, reads
 `splunkready://workflows/hosted-model-diagnostic`, fetches
 `splunkready_hosted_model_diagnostic`, then certifies the checked-in passing
@@ -159,13 +162,15 @@ npm run mcp
 ```
 
 The client-config resources use `npm run mcp` with a `/path/to/SplunkReady`
-placeholder for SplunkReady. The existing Splunk MCP side uses an `npx -y
-mcp-remote` template with `${SPLUNKREADY_SPLUNK_MCP_URL}` and
-`${SPLUNKREADY_SPLUNK_MCP_TOKEN}` placeholders copied from the Splunk MCP Server
-app sample client configuration. The published `splunkready@0.1.0` package
-supports the no-clone `judge-proof` command but does not yet include the
-`splunkready mcp` entrypoint; the local package-installability gate verifies
-that the current source tarball does.
+placeholder for SplunkReady. Antigravity uses
+`~/.gemini/antigravity/mcp_config.json` with `mcpServers`; Zed uses
+`~/.config/zed/settings.json` with `context_servers`. The existing Splunk MCP
+side uses an `npx -y mcp-remote` template with
+`${SPLUNKREADY_SPLUNK_MCP_URL}` and `${SPLUNKREADY_SPLUNK_MCP_TOKEN}`
+placeholders copied from the Splunk MCP Server app sample client configuration.
+The published `splunkready@0.1.0` package supports the no-clone `judge-proof`
+command but does not yet include the `splunkready mcp` entrypoint; the local
+package-installability gate verifies that the current source tarball does.
 
 The release gate also packs the current source into a clean temp project and
 requires the installed package to complete both `npx splunkready judge-proof`

@@ -24,6 +24,8 @@ Resources:
 - splunkready://client-config/splunk-and-splunkready (application/json)
 - splunkready://client-config/claude-desktop (application/json)
 - splunkready://client-config/cursor (application/json)
+- splunkready://client-config/antigravity (application/json)
+- splunkready://client-config/zed (application/json)
 - splunkready://workflows/splunk-mcp-certification-loop (text/markdown)
 - splunkready://workflows/mcp-composition-scorecard (text/markdown)
 - splunkready://workflows/hosted-model-diagnostic (text/markdown)
@@ -68,13 +70,13 @@ Hosted-model access check: PASS
 
 Operator live hosted-model status: BLOCKED
 - Artifact: artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json
-- Blocker: SAIA_CLOUD_ROUTE_NOT_FOUND
+- Blocker: SAIA_REST_HANDLERS_NOT_REGISTERED
 - Permission: BLOCKED
-- Permission blocker: SAIA_CLOUD_ROUTE_NOT_FOUND
-- Route probe: PASS
+- Permission blocker: SAIA_REST_HANDLERS_NOT_REGISTERED
+- Route probe: NOT_REGISTERED
 - Passed tools: none
 - Blocked tools: saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question
-- Summary: The MCP contract advertises hosted-model tools and the local SAIA routes are registered, but the downstream Splunk AI Assistant cloud hosted-model route returned not found.
+- Summary: The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are not registered for the SAIA routes.
 
 Splunk MCP boundary: PASS
 - Certified tool calls: splunk_get_knowledge_objects, splunk_run_saved_search
@@ -84,8 +86,8 @@ Splunk MCP boundary: PASS
 
 MCP composition scorecard: PASS (100/100)
 - dual-server-client-config: PASS - Client config includes separate splunk and splunkready MCP servers.
-- external-mcp-client-configs: PASS - Claude Desktop and Cursor MCP client templates are discoverable as credential-free resources.
-- discoverable-resources-and-prompts: PASS - 11 resources, 1 resource template(s), and 6 prompts expose the composed workflow.
+- external-mcp-client-configs: PASS - Claude Desktop, Cursor, Antigravity, and Zed MCP client templates are discoverable as credential-free resources.
+- discoverable-resources-and-prompts: PASS - 13 resources, 1 resource template(s), and 6 prompts expose the composed workflow.
 - existing-splunk-mcp-boundary: PASS - 2 captured splunk_* tool calls are certified.
 - official-splunk-mcp-tool-coverage: PASS - 1 mission-scoped Splunk MCP core tool(s), 2 investigation tool(s), and 4 SAIA hosted-model tool(s) are covered.
 - saved-search-evidence: PASS - 3 evidence refs from saved-search output.
@@ -118,10 +120,10 @@ MCP client session: PASS
 - Artifact: artifacts/mcp-proof/mcp-client-session.jsonl
 - Markdown: artifacts/mcp-proof/mcp-client-session.md
 - Protocol: stdio-jsonrpc
-- Requests: 22
-- Responses: 22
+- Requests: 24
+- Responses: 24
 - Methods: initialize, tools/list, resources/list, resources/templates/list, resources/read, prompts/list, prompts/get, tools/call
-- Resources read: splunkready://certification/posture, splunkready://client-config/stdio, splunkready://client-config/splunk-and-splunkready, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready://workflows/splunk-mcp-certification-loop, splunkready://workflows/mcp-composition-scorecard, splunkready://workflows/hosted-model-diagnostic, splunkready://receipts/pass
+- Resources read: splunkready://certification/posture, splunkready://client-config/stdio, splunkready://client-config/splunk-and-splunkready, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready://client-config/antigravity, splunkready://client-config/zed, splunkready://workflows/splunk-mcp-certification-loop, splunkready://workflows/mcp-composition-scorecard, splunkready://workflows/hosted-model-diagnostic, splunkready://receipts/pass
 - Prompts fetched: splunkready_certify_mcp_transcript, splunkready_splunk_mcp_certification_loop, splunkready_mcp_composition_review, splunkready_hosted_model_diagnostic
 - Tools called: splunkready_describe_certification, splunkready_certify_mcp_transcript, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access
 

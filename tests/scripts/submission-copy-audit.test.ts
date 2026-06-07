@@ -44,6 +44,11 @@ splunkready://workflows/hosted-model-diagnostic
 splunkready_hosted_model_diagnostic
 splunkready://client-config/claude-desktop
 splunkready://client-config/cursor
+splunkready://client-config/antigravity
+splunkready://client-config/zed
+~/.gemini/antigravity/mcp_config.json
+~/.config/zed/settings.json
+context_servers
 mcp-remote
 SPLUNKREADY_SPLUNK_MCP_URL
 SPLUNKREADY_SPLUNK_MCP_TOKEN
@@ -96,8 +101,8 @@ const baseClaimLedger = `# Submission Claim Ledger
 | The public registry currentness proof separates the published judge-proof path from current-source MCP/SAIA work. | Supported | submission-evidence/public-package-currentness/public-package-currentness.json | npm run audit:public-package-currentness |
 | The hosted public demo is source-current against the latest public-demo input commit. | Supported | submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json | npm run audit:hosted-demo-currentness |
 | The hosted public demo exposes the credential-free judge proof and LLM evidence boundary. | Supported | submission-evidence/screenshots/public-judge-proof-proof-browser.png | ${hostedJudgeProofUrl} |
-| The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof. | Supported | submission-evidence/mcp-proof/mcp-client-session.jsonl, resources/templates/list, splunkready://receipts/{receiptId}, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access, splunkready://workflows/hosted-model-diagnostic, splunkready_hosted_model_diagnostic, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready mcp | npm run mcp-proof |
-| The MCP proof distinguishes credential-free fixture hosted-model PASS from the current operator-live SAIA blocker. | Supported | operatorLiveHostedModelStatus, SAIA_CLOUD_ROUTE_NOT_FOUND, restHandlerProbeStatus | npm run mcp-proof |
+| The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof. | Supported | submission-evidence/mcp-proof/mcp-client-session.jsonl, resources/templates/list, splunkready://receipts/{receiptId}, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access, splunkready://workflows/hosted-model-diagnostic, splunkready_hosted_model_diagnostic, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready://client-config/antigravity, splunkready://client-config/zed, ~/.gemini/antigravity/mcp_config.json, context_servers, splunkready mcp | npm run mcp-proof |
+| The MCP proof distinguishes credential-free fixture hosted-model PASS from the current operator-live SAIA blocker. | Supported | operatorLiveHostedModelStatus, SAIA_REST_HANDLERS_NOT_REGISTERED, restHandlerProbeStatus | npm run mcp-proof |
 | The MCP client config resources expose dedicated SAIA cloud routing placeholders without committing credentials. | Supported | SPLUNKREADY_SAIA_ENDPOINT, SPLUNKREADY_SAIA_TOKEN, SAIA_MCP_URL, SPLUNK_AI_ASSISTANT_MCP_URL, SPLUNKREADY_SAIA_REALM, SPLUNKREADY_SAIA_TENANT, hostedModelDiagnosticTool | npm run mcp-proof |
 | The MCP client config resources use Splunk's \`mcp-remote\` client shape for the existing Splunk MCP Server side. | Supported | mcp-remote, SPLUNKREADY_SPLUNK_MCP_URL, Authorization: Bearer \${SPLUNKREADY_SPLUNK_MCP_TOKEN} | npm run mcp-proof |
 `;

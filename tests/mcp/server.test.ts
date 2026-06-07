@@ -84,6 +84,8 @@ describe("SplunkReady MCP server", () => {
       "splunkready://client-config/splunk-and-splunkready",
       "splunkready://client-config/claude-desktop",
       "splunkready://client-config/cursor",
+      "splunkready://client-config/antigravity",
+      "splunkready://client-config/zed",
       "splunkready://workflows/splunk-mcp-certification-loop",
       "splunkready://workflows/mcp-composition-scorecard",
       "splunkready://workflows/hosted-model-diagnostic"
@@ -190,6 +192,46 @@ describe("SplunkReady MCP server", () => {
     expect(String(cursorConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_TENANT");
     expect(String(cursorConfigContents[0].text)).toContain("\"hostedModelDiagnosticTool\": \"splunkready_check_hosted_model_access\"");
     expect(String(cursorConfigContents[0].text)).toContain("\"mutation\": false");
+
+    const antigravityConfigResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "antigravity-config-read",
+      method: "resources/read",
+      params: { uri: "splunkready://client-config/antigravity" }
+    });
+    const antigravityConfigResult = resultOf(antigravityConfigResponse);
+    const antigravityConfigContents = antigravityConfigResult.contents as Array<Record<string, unknown>>;
+
+    expect(String(antigravityConfigContents[0].text)).toContain("~/.gemini/antigravity/mcp_config.json");
+    expect(String(antigravityConfigContents[0].text)).toContain("\"mcpServers\"");
+    expect(String(antigravityConfigContents[0].text)).toContain("\"splunk\"");
+    expect(String(antigravityConfigContents[0].text)).toContain("\"splunkready\"");
+    expect(String(antigravityConfigContents[0].text)).toContain("\"mcp-remote\"");
+    expect(String(antigravityConfigContents[0].text)).toContain("\"command\": \"npm\"");
+    expect(String(antigravityConfigContents[0].text)).toContain("\"cwd\": \"/path/to/SplunkReady\"");
+    expect(String(antigravityConfigContents[0].text)).toContain("\"configShape\": \"mcpServers\"");
+    expect(String(antigravityConfigContents[0].text)).toContain("\"certificationTool\": \"splunkready_certify_mcp_transcript_content\"");
+    expect(String(antigravityConfigContents[0].text)).toContain("\"mutation\": false");
+
+    const zedConfigResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "zed-config-read",
+      method: "resources/read",
+      params: { uri: "splunkready://client-config/zed" }
+    });
+    const zedConfigResult = resultOf(zedConfigResponse);
+    const zedConfigContents = zedConfigResult.contents as Array<Record<string, unknown>>;
+
+    expect(String(zedConfigContents[0].text)).toContain("~/.config/zed/settings.json");
+    expect(String(zedConfigContents[0].text)).toContain("\"context_servers\"");
+    expect(String(zedConfigContents[0].text)).toContain("\"splunk\"");
+    expect(String(zedConfigContents[0].text)).toContain("\"splunkready\"");
+    expect(String(zedConfigContents[0].text)).toContain("\"mcp-remote\"");
+    expect(String(zedConfigContents[0].text)).toContain("\"command\": \"npm\"");
+    expect(String(zedConfigContents[0].text)).toContain("\"cwd\": \"/path/to/SplunkReady\"");
+    expect(String(zedConfigContents[0].text)).toContain("\"configShape\": \"context_servers\"");
+    expect(String(zedConfigContents[0].text)).toContain("\"certificationTool\": \"splunkready_certify_mcp_transcript_content\"");
+    expect(String(zedConfigContents[0].text)).toContain("\"mutation\": false");
 
     const workflowResponse = await handleMcpMessage({
       jsonrpc: "2.0",

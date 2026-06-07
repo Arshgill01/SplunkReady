@@ -366,6 +366,22 @@ export const splunkReadyMcpResources: McpResource[] = [
     mimeType: "application/json"
   },
   {
+    uri: "splunkready://client-config/antigravity",
+    name: "antigravity-client-config",
+    title: "Antigravity MCP Client Configuration",
+    description:
+      "Credential-free Antigravity mcp_config.json template for composing an operator-provided Splunk MCP server with SplunkReady certification.",
+    mimeType: "application/json"
+  },
+  {
+    uri: "splunkready://client-config/zed",
+    name: "zed-client-config",
+    title: "Zed Context Server Configuration",
+    description:
+      "Credential-free Zed settings.json context_servers template for composing an operator-provided Splunk MCP server with SplunkReady certification.",
+    mimeType: "application/json"
+  },
+  {
     uri: "splunkready://workflows/splunk-mcp-certification-loop",
     name: "splunk-mcp-certification-loop",
     title: "Splunk MCP Certification Loop",
@@ -676,6 +692,54 @@ const cursorClientConfig = (): Record<string, unknown> => ({
   }
 });
 
+const antigravityClientConfig = (): Record<string, unknown> => ({
+  configPath: "~/.gemini/antigravity/mcp_config.json",
+  mcpServers: {
+    splunk: splunkMcpRemoteServerConfig(
+      "Existing Splunk MCP Server via Antigravity's mcp_config.json. Replace placeholders with operator-owned endpoint and token values."
+    ),
+    splunkready: {
+      description:
+        "SplunkReady certification server for deterministic receipts, prompts, resources, and hosted-model diagnostics.",
+      ...sourceCloneMcpServerConfig()
+    }
+  },
+  workflow: {
+    investigateWith: "splunk",
+    certifyWith: "splunkready",
+    certificationPrompt: "splunkready_splunk_mcp_certification_loop",
+    certificationTool: "splunkready_certify_mcp_transcript_content",
+    hostedModelDiagnosticTool: "splunkready_check_hosted_model_access",
+    configShape: "mcpServers",
+    deterministicAuthority: true,
+    mutation: false
+  }
+});
+
+const zedClientConfig = (): Record<string, unknown> => ({
+  settingsPath: "~/.config/zed/settings.json",
+  context_servers: {
+    splunk: splunkMcpRemoteServerConfig(
+      "Existing Splunk MCP Server through Zed context_servers. Replace placeholders with operator-owned endpoint and token values."
+    ),
+    splunkready: {
+      description:
+        "SplunkReady certification context server for deterministic receipts, prompts, resources, and hosted-model diagnostics.",
+      ...sourceCloneMcpServerConfig()
+    }
+  },
+  workflow: {
+    investigateWith: "splunk",
+    certifyWith: "splunkready",
+    certificationPrompt: "splunkready_splunk_mcp_certification_loop",
+    certificationTool: "splunkready_certify_mcp_transcript_content",
+    hostedModelDiagnosticTool: "splunkready_check_hosted_model_access",
+    configShape: "context_servers",
+    deterministicAuthority: true,
+    mutation: false
+  }
+});
+
 const readResource = async (uri: string): Promise<Record<string, unknown>> => {
   if (uri === "splunkready://certification/posture") {
     return {
@@ -780,6 +844,30 @@ const readResource = async (uri: string): Promise<Record<string, unknown>> => {
           uri,
           mimeType: "application/json",
           text: JSON.stringify(cursorClientConfig(), null, 2)
+        }
+      ]
+    };
+  }
+
+  if (uri === "splunkready://client-config/antigravity") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "application/json",
+          text: JSON.stringify(antigravityClientConfig(), null, 2)
+        }
+      ]
+    };
+  }
+
+  if (uri === "splunkready://client-config/zed") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "application/json",
+          text: JSON.stringify(zedClientConfig(), null, 2)
         }
       ]
     };

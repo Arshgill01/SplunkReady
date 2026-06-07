@@ -13195,6 +13195,65 @@ Notes:
 - Npm registry latest still reports `splunkready@0.1.0`; current source remains
   `0.1.1`, so package currentness is still operator-side.
 
+## 2026-06-07T15:58:00Z - Move 140 Antigravity and Zed MCP client configs
+
+Intent:
+
+- Continue with higher-value MCP category work after dropping the external
+  client screencast task.
+- Make the two-server Splunk MCP plus SplunkReady certification workflow
+  discoverable for Antigravity and Zed, not only Claude Desktop/Cursor.
+
+Actions:
+
+- Checked current Antigravity and Zed MCP config shapes from current public
+  docs before editing.
+- Added `splunkready://client-config/antigravity` and
+  `splunkready://client-config/zed` resources.
+- Used Antigravity's `~/.gemini/antigravity/mcp_config.json` and `mcpServers`
+  shape.
+- Used Zed's `~/.config/zed/settings.json` and `context_servers` shape.
+- Pulled both resources into `mcp-proof` so the raw MCP client session reads
+  them through stdio JSON-RPC.
+- Required the new resources for MCP composition scorecard PASS.
+- Updated UI artifact schema, focused tests, README, claim ledger, and
+  submission-copy guards.
+- Regenerated the tracked credential-free MCP proof evidence pack.
+
+Files changed:
+
+- `src/mcp/server.ts`
+- `src/workflows/mcp-proof.ts`
+- `ui/src/artifacts.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/**`
+- `moves/README.md`
+- `moves/moves140.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Observed result:
+
+- `mcp-proof` returns `PASS`.
+- MCP proof resources increased from 11 to 13.
+- Raw MCP client session increased to 24 requests/responses.
+- `external-mcp-client-configs` composition check remains `PASS` and now cites
+  Claude Desktop, Cursor, Antigravity, and Zed.
+- `mutation` remains `false`.
+
+Notes:
+
+- Did not use subagents.
+- Did not copy, print, or commit credential values.
+- This move adds credential-free templates only; it does not claim a recorded
+  live Antigravity or Zed agent session.
+
 ## 2026-06-07T15:20:00Z - Move 137 SAIA ask route diagnostic alignment
 
 Intent:

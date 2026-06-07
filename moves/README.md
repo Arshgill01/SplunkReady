@@ -162,6 +162,7 @@ commands, or filesystem paths.
 | P0 | [137](moves137.md) SAIA ask route diagnostic alignment | 0.5d | Aligns the hosted-model live route probe with the current `/ask` SAIA handler and keeps the resulting blocker honest. |
 | P0 | [138](moves138.md) Hosted demo currentness audit | 0.5d | Adds source-commit tracking and a network audit so GitHub Pages demo staleness is explicit. |
 | P0 | [139](moves139.md) Hosted demo currentness evidence | 0.5d | Tracks the current GitHub Pages audit result in the evidence pack and guards the claim ledger against drift. |
+| P0 | [140](moves140.md) Antigravity and Zed MCP client configs | 0.5d | Adds non-Claude external-client MCP config resources for Antigravity and Zed and proves them through `mcp-proof`. |
 
 ## Non-Negotiable Boundaries
 

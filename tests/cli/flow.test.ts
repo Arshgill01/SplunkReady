@@ -1488,6 +1488,8 @@ describe("SplunkReady CLI flow", () => {
       dualServerClientConfigResource: { contents: Array<{ uri: string; text: string }> };
       claudeDesktopClientConfigResource: { contents: Array<{ uri: string; text: string }> };
       cursorClientConfigResource: { contents: Array<{ uri: string; text: string }> };
+      antigravityClientConfigResource: { contents: Array<{ uri: string; text: string }> };
+      zedClientConfigResource: { contents: Array<{ uri: string; text: string }> };
       certificationLoopResource: { contents: Array<{ uri: string; text: string }> };
       compositionScorecardResource: { contents: Array<{ uri: string; text: string }> };
       hostedModelDiagnosticResource: { contents: Array<{ uri: string; text: string }> };
@@ -1758,6 +1760,8 @@ describe("SplunkReady CLI flow", () => {
           "splunkready://client-config/splunk-and-splunkready",
           "splunkready://client-config/claude-desktop",
           "splunkready://client-config/cursor",
+          "splunkready://client-config/antigravity",
+          "splunkready://client-config/zed",
           "splunkready://workflows/splunk-mcp-certification-loop",
           "splunkready://workflows/mcp-composition-scorecard",
           "splunkready://workflows/hosted-model-diagnostic",
@@ -1778,7 +1782,7 @@ describe("SplunkReady CLI flow", () => {
         mutation: false
       }
     });
-    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(22);
+    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(24);
     expect(summary.clientSession.responseCount).toBe(summary.clientSession.requestCount);
     expect(summary.splunkMcpBoundary.localMcpServerRole).toContain("certification interface");
     expect(summary.splunkMcpBoundary.splunkMcpServerRole).toContain("Splunk MCP Server boundary");
@@ -1798,6 +1802,8 @@ describe("SplunkReady CLI flow", () => {
       "splunkready://client-config/splunk-and-splunkready",
       "splunkready://client-config/claude-desktop",
       "splunkready://client-config/cursor",
+      "splunkready://client-config/antigravity",
+      "splunkready://client-config/zed",
       "splunkready://workflows/splunk-mcp-certification-loop",
       "splunkready://workflows/mcp-composition-scorecard",
       "splunkready://workflows/hosted-model-diagnostic"
@@ -1880,6 +1886,26 @@ describe("SplunkReady CLI flow", () => {
     );
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"certifyWith\": \"splunkready\"");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"mutation\": false");
+    expect(summary.antigravityClientConfigResource.contents[0].text).toContain(
+      "~/.gemini/antigravity/mcp_config.json"
+    );
+    expect(summary.antigravityClientConfigResource.contents[0].text).toContain("\"mcpServers\"");
+    expect(summary.antigravityClientConfigResource.contents[0].text).toContain("\"mcp-remote\"");
+    expect(summary.antigravityClientConfigResource.contents[0].text).toContain("\"command\": \"npm\"");
+    expect(summary.antigravityClientConfigResource.contents[0].text).toContain("\"configShape\": \"mcpServers\"");
+    expect(summary.antigravityClientConfigResource.contents[0].text).toContain(
+      "\"certificationTool\": \"splunkready_certify_mcp_transcript_content\""
+    );
+    expect(summary.antigravityClientConfigResource.contents[0].text).toContain("\"mutation\": false");
+    expect(summary.zedClientConfigResource.contents[0].text).toContain("~/.config/zed/settings.json");
+    expect(summary.zedClientConfigResource.contents[0].text).toContain("\"context_servers\"");
+    expect(summary.zedClientConfigResource.contents[0].text).toContain("\"mcp-remote\"");
+    expect(summary.zedClientConfigResource.contents[0].text).toContain("\"command\": \"npm\"");
+    expect(summary.zedClientConfigResource.contents[0].text).toContain("\"configShape\": \"context_servers\"");
+    expect(summary.zedClientConfigResource.contents[0].text).toContain(
+      "\"certificationTool\": \"splunkready_certify_mcp_transcript_content\""
+    );
+    expect(summary.zedClientConfigResource.contents[0].text).toContain("\"mutation\": false");
     expect(summary.certificationLoopResource.contents[0].text).toContain("Splunk MCP Certification Loop");
     expect(summary.certificationLoopResource.contents[0].text).toContain("Configure two MCP servers");
     expect(summary.compositionScorecardResource.contents[0].text).toContain("composition, not replacement");
