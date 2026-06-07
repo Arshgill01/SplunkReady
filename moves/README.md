@@ -127,6 +127,7 @@ commands, or filesystem paths.
 | P0 | [102](moves102.md) Published package submission claim guard | 0.5d | Extends the submission-copy audit so README, Devpost, and claim-ledger npm package claims are machine-checked. |
 | P0 | [103](moves103.md) Public judge proof evidence pack | 0.5d | Tracks the Playwright-verified hosted judge-proof view in the judge-facing evidence pack. |
 | P0 | [104](moves104.md) Hosted demo public copy guard | 0.5d | Requires the hosted MCP proof and judge-proof routes in public submission copy. |
+| P0 | [105](moves105.md) Remote cleanroom after hosted copy | 0.5d | Verifies the pushed branch, hosted routes, evidence pack, and published package from fresh clean-room paths. |
 
 ## Non-Negotiable Boundaries
 

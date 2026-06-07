@@ -478,3 +478,11 @@ MCP proof route and hosted judge-proof route in README and Devpost copy through
 `audit:submission-copy`. The audit now checks 39 required claims. This does not
 create new hosted-demo evidence; it prevents the already verified GitHub Pages
 routes from disappearing from the judge-facing path.
+
+Move 105 reduces the stale-cleanroom risk by verifying pushed commit
+`2835916b11ba7c99df062f7a7e2d553985d5c9e2` from a fresh remote clone. The
+cleanroom passed `npm ci --ignore-scripts`, `npm run check`, evidence-pack SHA
+verification, hosted MCP/judge-proof fetches, and the published-package `npx`
+judge proof smoke from a separate clean temp folder. Remaining risk is no
+longer clean-room reproducibility; it is live proof redaction and any final
+submission materials the user owns.

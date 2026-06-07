@@ -11889,3 +11889,35 @@ Files changed:
 
 Open blockers:
 - Hosted CI needs to run after push for Move 104.
+
+## 2026-06-07 14:18 - Move 105 Remote Cleanroom After Hosted Copy
+
+Scope:
+- Ran a fresh remote cleanroom against pushed commit
+  `2835916b11ba7c99df062f7a7e2d553985d5c9e2`.
+- Verified the cleanroom clone resolved to the expected pushed commit.
+- Ran `npm ci --ignore-scripts`, `npm run audit:submission-copy`,
+  `npm run check`, and the tracked evidence-pack SHA verification from the
+  clean clone.
+- Ran the published-package `npx -y splunkready@0.1.0 judge-proof --out
+  ./judge-proof --json` smoke from a separate clean temp folder, matching the
+  README/Devpost judge path.
+- Fetched the hosted MCP proof and hosted judge-proof routes.
+- Recorded the initial command-placement issue where running the published
+  `npx` smoke from inside the cloned package printed `sh: splunkready: command
+  not found`; the corrected clean-folder smoke passed.
+- Did not change product behavior.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `docs/remote-cleanroom-after-hosted-copy-report.md`
+- `moves/README.md`
+- `moves/moves105.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 105.

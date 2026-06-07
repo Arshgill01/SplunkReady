@@ -9605,6 +9605,78 @@ Open blockers:
 
 - Hosted CI still needs to run after push.
 
+## 2026-06-07 - Move 105 Remote Cleanroom After Hosted Copy
+
+Commands:
+
+- `git clone --depth 1 --branch splunkready-build --single-branch "$remote" "$tmp/repo"`
+- `npm ci --ignore-scripts`
+- `npm run audit:submission-copy`
+- `npm run check`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json`
+- `curl -fsSL "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof"`
+- `curl -fsSL "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser"`
+
+Result:
+
+- PASS for remote branch identity:
+  - expected commit: `2835916b11ba7c99df062f7a7e2d553985d5c9e2`;
+  - cleanroom actual commit:
+    `2835916b11ba7c99df062f7a7e2d553985d5c9e2`.
+- PASS for cleanroom install:
+  - 52 packages installed;
+  - 0 vulnerabilities.
+- PASS for cleanroom submission-copy audit:
+  - 39 required claims passed.
+- PASS for cleanroom `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 183 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and `npx
+    splunkready judge-proof` returned `PASS`;
+  - 58 test files passed;
+  - 354 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 39 required claims.
+- PASS for cleanroom evidence checksum verification:
+  - every tracked `submission-evidence/` file verified.
+- PASS for corrected published-package smoke from a separate clean temp folder:
+  - `status: PASS`;
+  - `mutation: false`;
+  - `llmEvidence: NOT_REQUESTED`;
+  - `authority: deterministic-rule-engine`.
+- PASS for hosted route fetches:
+  - hosted MCP proof fetched;
+  - hosted judge proof fetched.
+- PASS for tracked sidecar artifact scan:
+  - `sidecar_artifacts=absent`.
+
+Notes:
+
+- Initial published-package smoke from inside the cloned package printed
+  `sh: splunkready: command not found`; the corrected smoke was run from a
+  clean temp folder to match README and Devpost.
+- Cleanroom path: `/tmp/splunkready-move105-cleanroom-tXnn8A/repo`.
+- Cleanroom log: `/tmp/splunkready-move105-cleanroom-tXnn8A/cleanroom.log`.
+- Corrected tail log:
+  `/tmp/splunkready-move105-cleanroom-tXnn8A/cleanroom-corrected-tail.log`.
+- Did not use live Splunk credentials.
+- Did not use Gemini credentials.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+
 ## 2026-06-07 - Move 104 Hosted Demo Public Copy Guard
 
 Commands:
