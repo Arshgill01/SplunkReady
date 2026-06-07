@@ -14986,3 +14986,30 @@ Files changed:
 - `tests/ui/app.test.ts`
 - `ui/src/artifacts.ts`
 - `ui/src/render.ts`
+
+## 2026-06-07T20:28:19Z - Post-Move 159 ambitious sequencing update
+
+Intent:
+
+- Keep the next work aligned with the user's MCP priority and the actual Move
+  159 evidence, instead of blindly continuing into lower-leverage cleanup or
+  distribution work.
+
+Actions:
+
+- Updated `docs/ambitious-award-move-plan.md` to record that Move 159 produced
+  client-neutral recorder evidence but not a live pass-through proxy.
+- Added Move 163 for the real MCP recorder pass-through gateway.
+- Added Move 164 for Splunk AppInspect MCP composition, using the official
+  AppInspect MCP server path when available and a public-safe blocked artifact
+  when unavailable.
+- Updated `moves/README.md` so the next MCP moves are visible in the move index.
+
+Files changed:
+
+- `docs/ambitious-award-move-plan.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `moves/README.md`
+- `moves/moves163.md`
+- `moves/moves164.md`

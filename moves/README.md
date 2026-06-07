@@ -185,6 +185,8 @@ commands, or filesystem paths.
 | P1 | [160](moves160.md) Standalone release artifacts | 5-7d | Removes Node/npm as the install-friction cap through real release binaries or equivalent standalone assets. |
 | P1 | [161](moves161.md) AppInspect grade Splunk app | 7-10d | Evolves the static `.spl` proof into install/vetting-grade Splunk app evidence. |
 | P1 | [162](moves162.md) Typed policy SDK | 6-8d | Makes policy authoring typed, testable, signed, and reusable through a package SDK. |
+| P0 | [163](moves163.md) MCP recorder pass-through gateway | 3-5d | Converts the current client-neutral recorder artifact into a real MCP gateway/proxy that clients can use. |
+| P0 | [164](moves164.md) Splunk AppInspect MCP composition | 3-5d | Composes Splunk investigation, Splunk app validation, and SplunkReady certification through MCP evidence. |
 
 ## Non-Negotiable Boundaries
 

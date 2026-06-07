@@ -128,3 +128,34 @@ Research anchors:
 | 3 | [Move 160](../moves/moves160.md) Standalone release artifacts | Planned | Removes Node/npm as the judge friction cap, but only if it produces real no-Node executables rather than a JS bundle. | Tag-triggered release workflow builds signed/checksummed OS assets, and a clean temp smoke runs `splunkready judge-proof` without preinstalled project dependencies. |
 | 4 | [Move 161](../moves/moves161.md) AppInspect-grade Splunk app | Planned | Move 157 proves packaging; the next value jump is install/vetting evidence and optional operator-owned receipt storage. | The app package passes local AppInspect-compatible checks, includes dashboard/KV-store config as operator-owned surfaces, and has tracked install evidence or an explicit blocked reason. |
 | 5 | [Move 162](../moves/moves162.md) Typed policy SDK | Planned | Turns the signed JSON policy registry into a developer platform with IDE types, tests, and package subpath exports. | `import { definePolicy } from "splunkready/policy"` works in a clean TS project; example TS policies compile, sign, and grade fixture traces in CI. |
+
+## Sequencing Update After Move 159
+
+Captured: 2026-06-07
+
+Move 159 produced credential-free dual-server recorder evidence and certified
+that recorded session through the deterministic transcript importer. It did not
+yet implement a live pass-through proxy/gateway. That limitation is honest and
+tracked in `logs/risk-register.md`, but it changes the next best move: for the
+MCP award, a real recorder gateway and official Splunk AppInspect MCP
+composition now move ahead of standalone binaries.
+
+The next execution priority is:
+
+| Order | Move | Status | Why Now | Done When |
+| --- | --- | --- | --- | --- |
+| 1 | [Move 163](../moves/moves163.md) MCP recorder pass-through gateway | Planned | Converts Move 159 from generated composition evidence into a real client-facing recorder that any MCP client can use. | `splunkready mcp-recorder --server splunk=... --server splunkready=...` proxies JSON-RPC frames, emits a redacted dual-server JSONL session, certifies the Splunk transcript, and updates `mcp-proof` evidence. |
+| 2 | [Move 164](../moves/moves164.md) Splunk AppInspect MCP composition | Planned | Uses an official Splunk MCP-adjacent validation server to show multi-server MCP composition: Splunk investigation, AppInspect validation, and SplunkReady certification. | A credential-free proof composes mock Splunk MCP, Splunk AppInspect MCP when available or a blocked artifact when unavailable, and SplunkReady MCP; tracked evidence records all server roles and deterministic receipt authority. |
+| 3 | [Move 160](../moves/moves160.md) Standalone release artifacts | Planned | Still high-value for distribution, but lower MCP-award leverage than proving the recorder gateway and official Splunk MCP composition. | Tag-triggered release workflow builds signed/checksummed OS assets, and a clean temp smoke runs `splunkready judge-proof` without preinstalled project dependencies. |
+| 4 | [Move 161](../moves/moves161.md) AppInspect-grade Splunk app | Planned | Builds on Move 164's AppInspect work and Move 157's `.spl` package. | The app package passes local AppInspect-compatible checks, includes dashboard/KV-store config as operator-owned surfaces, and has tracked install evidence or an explicit blocked reason. |
+| 5 | [Move 162](../moves/moves162.md) Typed policy SDK | Planned | Platform/devtools move after MCP composition is stronger. | `import { definePolicy } from "splunkready/policy"` works in a clean TS project; example TS policies compile, sign, and grade fixture traces in CI. |
+
+Stop conditions:
+
+- Do not claim observed Antigravity, Zed, Claude Desktop, or Cursor session
+  evidence until a real client has consumed the recorder.
+- Do not require Splunk credentials for the default proof path.
+- Do not make AppInspect, LLM, or SAIA output authoritative for Readiness
+  Receipt verdicts.
+- Do not add standalone release artifacts until the no-Node path is proven with
+  an actual executable smoke, not only a bundled JavaScript file.
