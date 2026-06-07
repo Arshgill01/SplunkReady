@@ -212,7 +212,7 @@ same deterministic transcript importer with zero skipped records. It also includ
 calls `inspect_app` against the tracked `.spl` package, and records AppInspect
 as advisory static validation while SplunkReady remains the deterministic
 Readiness Receipt authority. Current evidence reports AppInspect validation
-`SUCCESS` with 0 package failures, 0 errors, and 5 warnings; it is not claimed
+`SUCCESS` with 0 package failures, 0 errors, and 1 warning; it is not claimed
 as Splunkbase approval.
 It also includes an
 `agentDrivenWorkflow` block showing the intended loop: an MCP client
@@ -346,6 +346,15 @@ uses an explicit `--confirm-write true` operator gate to write six public-safe
 receipt summaries into the installed app's KV Store and read them back through
 `splunkready_receipts_lookup`. It does not upload raw traces, raw Splunk events,
 endpoints, usernames, passwords, or tokens.
+
+The Splunkbase readiness report is
+`submission-evidence/splunkbase-readiness/splunkbase-readiness.json`. It records
+the current `.spl` package SHA, AppInspect precertification result, live install
+proof, receipt-store proof, official Splunk submission references, and remaining
+external blockers. Current local evidence is AppInspect-clean with 0 errors, 0
+failures, and one expected KV Store warning, but SplunkReady does not claim an
+"Available on Splunkbase" badge until the package is submitted through a
+publisher account and publicly listed.
 
 ## Grade a Captured Agent Trace
 

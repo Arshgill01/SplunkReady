@@ -16242,3 +16242,42 @@ Result:
 - PASS: evidence pack SHA-256 verification passed, including
   `submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json`
   and `.md`.
+
+## 2026-06-07 - Move 167 Splunkbase submission readiness
+
+Commands:
+
+- `uvx splunk-appinspect inspect submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl --mode precert --data-format json --output-file submission-evidence/splunkbase-readiness/appinspect-precert.json`
+- `npm run splunk-app:package`
+- `npx vitest run tests/scripts/splunk-app-package.test.ts`
+- `uvx splunk-appinspect inspect submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl --mode precert --data-format json --output-file submission-evidence/splunkbase-readiness/appinspect-precert.json`
+- `node scripts/audit-splunkbase-readiness.mjs --json`
+- `npx vitest run tests/scripts/splunkbase-readiness.test.ts`
+- `npm run audit:splunkbase-readiness`
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/splunkbase-readiness.test.ts tests/scripts/splunk-app-package.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `jq '.appInspectComposition.validation.warningCount, .status' submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `rg -n '10\\.44\\.12\\.18|Bearer|Basic|password=|token=|SPLUNK_PASSWORD|SPLUNK_TOKEN|SAIA_TOKEN|https?://(10\\.|127\\.|192\\.168|172\\.)' submission-evidence/splunkbase-readiness submission-evidence/splunk-app-package || true`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run check` (first run failed on a missing TypeScript declaration for the
+  imported `.mjs` audit script; the test import boundary was annotated)
+- `npm run check`
+
+Result:
+
+- PASS: package builder focused tests passed with 2 tests.
+- PASS: Splunkbase readiness focused test passed.
+- PASS: AppInspect precertification now reports 0 errors, 0 failures, 0 future
+  failures, 1 expected warning, and 102 successes.
+- PASS: Splunkbase readiness report generated `status: "ACTION_REQUIRED"` with
+  package, AppInspect, live install, and receipt-store checks passing and
+  external listing blockers explicit.
+- PASS: refreshed MCP proof returned `PASS` and AppInspect MCP composition now
+  reports `warningCount: 1`.
+- PASS: submission-copy audit passed with 261 required claims.
+- PASS: redaction scan returned no private IP, auth, password, token, or live
+  endpoint matches in Splunkbase readiness and app package evidence.
+- PASS: evidence pack SHA-256 verification passed, including the new
+  `splunkbase-readiness/` artifacts.
+- PASS: final `npm run check` passed with 72 test files and 426 tests.

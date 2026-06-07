@@ -96,7 +96,7 @@ The same MCP proof records an AppInspect MCP composition artifact at
 `uvx splunk-appinspect[mcp] mcp-server`, calls `inspect_app` against the tracked
 `.spl` package, and keeps AppInspect as advisory static validation only.
 SplunkReady remains the deterministic receipt authority. Current evidence
-reports validation `SUCCESS` with 0 package failures, 0 errors, and 5 warnings;
+reports validation `SUCCESS` with 0 package failures, 0 errors, and 1 warning;
 it does not claim Splunkbase approval.
 
 The tracked Splunk app package evidence is
@@ -115,6 +115,12 @@ then uses an explicit operator-approved write to populate six public-safe
 receipt summary rows and verify readback through `splunkready_receipts_lookup`.
 It does not upload raw traces, raw Splunk events, endpoints, usernames,
 passwords, or tokens. This is not a Splunkbase approval claim.
+`submission-evidence/splunkbase-readiness/splunkbase-readiness.json` is the
+current Splunkbase readiness checklist: it ties the package, AppInspect
+precertification, live install proof, receipt-store proof, official Splunk
+submission references, and remaining publisher-account/listing blockers into one
+artifact. The package is not claimed as publicly listed on Splunkbase until the
+external Splunkbase review has actually completed.
 
 For a strict CLI evidence gate:
 

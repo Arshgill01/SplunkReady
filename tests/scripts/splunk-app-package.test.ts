@@ -23,6 +23,7 @@ const createSourceTree = async (): Promise<string> => {
   await writeFixture(join(root, "package.json"), JSON.stringify({ name: "splunkready", version: "0.1.3" }, null, 2));
   await writeFixture(join(root, "artifacts", "public-demo", "index.html"), "<!doctype html><div id=\"app\"></div>");
   await writeFixture(join(root, "artifacts", "public-demo", "assets", "index.js"), "window.__splunkready = true;");
+  await writeFixture(join(root, "artifacts", "public-demo", "artifacts", "suite-proof", "missions.json"), JSON.stringify({ prompt: "Investigate 10.44.12.18" }));
   await writeFixture(
     join(root, "artifacts", "public-demo", "public-demo-manifest.json"),
     JSON.stringify({ source: "splunkready-public-demo-export", mutation: false }, null, 2)
@@ -94,8 +95,17 @@ describe("Splunk app package builder", () => {
       "id = SplunkReady"
     );
     await expect(readFile(join(root, "extracted", "SplunkReady", "default", "app.conf"), "utf8")).resolves.toContain(
+      "[id]\nname = SplunkReady\nversion = 0.1.3"
+    );
+    await expect(readFile(join(root, "extracted", "SplunkReady", "default", "app.conf"), "utf8")).resolves.toContain(
       "is_configured = false"
     );
+    await expect(readFile(join(root, "extracted", "SplunkReady", "metadata", "default.meta"), "utf8")).resolves.toContain(
+      "write : [ admin, sc_admin ]"
+    );
+    await expect(
+      readFile(join(root, "extracted", "SplunkReady", "appserver", "static", "splunkready", "artifacts", "suite-proof", "missions.json"), "utf8")
+    ).resolves.toContain("[REDACTED-IP]");
     await expect(
       readFile(join(root, "extracted", "SplunkReady", "default", "collections.conf"), "utf8")
     ).resolves.toContain("[splunkready_receipts]");

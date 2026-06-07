@@ -24,13 +24,13 @@
       "failure": 0,
       "future_failure": 0,
       "not_applicable": 145,
-      "skipped": 0,
-      "success": 99,
-      "warning": 5
+      "skipped": 1,
+      "success": 102,
+      "warning": 1
     },
     "failureCount": 0,
     "errorCount": 0,
-    "warningCount": 5,
+    "warningCount": 1,
     "validationGroupCount": 1,
     "nextSteps": [
       "All validation checks passed. No fixes from AppInspect required."

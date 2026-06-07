@@ -12,6 +12,7 @@ const execFileAsync = promisify(execFile);
 
 const appId = "SplunkReady";
 const staticAppPath = "splunkready";
+const privateIpPattern = /\b(?:10(?:\.\d{1,3}){3}|127(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})\b/g;
 
 const isContained = (root, target) => {
   const relativePath = relative(resolve(root), resolve(target));
@@ -53,6 +54,13 @@ const copyTree = async (source, target, root = source) => {
   }
 
   await mkdir(dirname(targetPath), { recursive: true });
+
+  if (/\.(?:html|json|md|txt|xml)$/i.test(sourcePath)) {
+    const content = await readFile(sourcePath, "utf8");
+    await writeFile(targetPath, content.replace(privateIpPattern, "[REDACTED-IP]"), "utf8");
+    return;
+  }
+
   await copyFile(sourcePath, targetPath);
 };
 
@@ -121,6 +129,10 @@ const parseArgs = (argv) => {
 const appConf = ({ version }) => `[install]
 is_configured = false
 
+[id]
+name = ${appId}
+version = ${version}
+
 [ui]
 is_visible = 1
 label = SplunkReady
@@ -136,7 +148,7 @@ check_for_updates = 0
 `;
 
 const defaultMeta = `[]
-access = read : [ * ], write : [ admin ]
+access = read : [ * ], write : [ admin, sc_admin ]
 export = system
 `;
 

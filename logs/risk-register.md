@@ -1093,3 +1093,16 @@ six public-safe signed Readiness Receipt summaries into the installed
 Residual risk: this is explicit operator-approved receipt storage, not a
 default proof path or Splunkbase approval. The proof intentionally excludes raw
 traces, raw Splunk events, endpoint values, usernames, passwords, and tokens.
+
+Move 167 reduces the Splunkbase/Splunk Cloud submission-readiness gap by
+generating a reproducible readiness packet from the current package, AppInspect
+precertification output, operator-owned live install proof, and operator-owned
+receipt-store proof. The package now includes `[id] version`, `sc_admin`
+metadata, and private-IP sanitization for copied static text artifacts.
+AppInspect precertification reports 0 errors, 0 failures, 0 future failures,
+and 1 expected `collections.conf` warning. Residual risk: this is not a public
+Splunkbase listing. The readiness report intentionally remains
+`ACTION_REQUIRED` until an app icon/logo is packaged, publisher-account/support
+metadata is entered in Splunkbase, the `.spl` is uploaded, and Splunkbase/Splunk
+Cloud review completes. Do not claim "Available on Splunkbase" before that
+external listing exists.

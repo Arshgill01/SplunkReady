@@ -15362,3 +15362,44 @@ Result:
   password assignment, or token assignment values in the tracked receipt-store
   proof.
 - PASS: `npm run check` passed with 71 test files and 425 tests.
+
+## 2026-06-07T21:59:11Z - Move 167 Splunkbase submission readiness
+
+Intent:
+
+- Convert the AppInspect-clean, live-installed Splunk app package into an
+  evidence-backed Splunkbase/Splunk Cloud submission-readiness packet without
+  falsely claiming public Splunkbase availability.
+
+Actions:
+
+- Re-ran Splunk AppInspect precertification against
+  `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`.
+- Fixed the package builder to include `[id] version = 0.1.3`, grant
+  `sc_admin` write access in `metadata/default.meta`, and sanitize private IPs
+  from static text artifacts copied into the packaged app.
+- Added `scripts/audit-splunkbase-readiness.mjs` to generate
+  `submission-evidence/splunkbase-readiness/splunkbase-readiness.json` and
+  `.md` from package, AppInspect, live-install, receipt-store, screenshot,
+  license, and package metadata evidence.
+- Added focused tests for the readiness generator and strengthened package
+  builder tests for `[id]` metadata, `sc_admin`, and private-IP sanitization.
+- Added `npm run audit:splunkbase-readiness`.
+- Refreshed MCP proof evidence after the package fix; AppInspect MCP
+  composition warning count dropped from 5 to 1.
+- Updated README, Devpost copy, evidence README, claim ledger, and
+  submission-copy guards to state the exact readiness status and remaining
+  external blockers.
+
+Result:
+
+- PASS: AppInspect precertification reports 0 errors, 0 failures, 0 future
+  failures, 1 expected `collections.conf` warning, and 102 successes.
+- PASS: Splunkbase readiness report records package, AppInspect, live install,
+  and receipt-store local evidence as passing.
+- PASS: Splunkbase readiness report remains `ACTION_REQUIRED` because app icon,
+  publisher-account metadata, Splunkbase upload/review, and Splunk Cloud review
+  are not locally complete.
+- PASS: redaction scan found no private IP, bearer/basic auth, password, token,
+  or live endpoint values in `submission-evidence/splunkbase-readiness` or the
+  packaged app evidence.

@@ -1,0 +1,230 @@
+{
+  "source": "splunkready-splunkbase-readiness",
+  "generatedAt": "2026-06-07T21:58:07.337Z",
+  "status": "ACTION_REQUIRED",
+  "officialReferences": [
+    {
+      "id": "splunkbase-submission",
+      "title": "Submit Splunkbase apps",
+      "url": "https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/submit-splunkbase-apps"
+    },
+    {
+      "id": "splunk-app-packaging",
+      "title": "Package apps",
+      "url": "https://dev.splunk.com/enterprise/docs/releaseapps/packageapps"
+    },
+    {
+      "id": "appinspect-cli",
+      "title": "Splunk AppInspect CLI reference",
+      "url": "https://dev.splunk.com/enterprise/reference/appinspect/appinspectcliref"
+    },
+    {
+      "id": "app-conf",
+      "title": "app.conf configuration reference",
+      "url": "https://help.splunk.com/en/data-management/splunk-enterprise-admin-manual/10.0/configuration-file-reference/10.0.0-configuration-file-reference/app.conf"
+    }
+  ],
+  "package": {
+    "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+    "sha256": "fbb367cdd2166416d290da83e7ba069508bcbf5d675374f1bc9c8a8b9b4d3fbf",
+    "version": "0.1.3",
+    "appId": "SplunkReady",
+    "fileCount": 316,
+    "iconFiles": []
+  },
+  "appinspect": {
+    "path": "submission-evidence/splunkbase-readiness/appinspect-precert.json",
+    "summary": {
+      "error": 0,
+      "failure": 0,
+      "future_failure": 0,
+      "skipped": 1,
+      "not_applicable": 145,
+      "warning": 1,
+      "success": 102
+    },
+    "warnings": [
+      {
+        "group": "check_configuration_files",
+        "name": "check_collections_conf",
+        "messages": [
+          "App contains collections.conf. No action required. File: default/collections.conf"
+        ]
+      }
+    ]
+  },
+  "liveEvidence": {
+    "installProof": "submission-evidence/splunk-app-install/splunk-app-install-proof.json",
+    "installStatus": "PASS",
+    "installMutation": "operator-approved-app-install",
+    "installProbeCount": 6,
+    "receiptStoreProof": "submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json",
+    "receiptStoreStatus": "PASS",
+    "receiptStoreMutation": "operator-approved-receipt-store-write",
+    "receiptRowsVerified": 6
+  },
+  "screenshots": [
+    {
+      "path": "submission-evidence/screenshots/interactive-demo.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "submission-evidence/screenshots/public-judge-proof-proof-browser.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "submission-evidence/screenshots/public-proof-export-proof-browser.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "submission-evidence/screenshots/workbench-dev-fixture.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "submission-evidence/screenshots/workbench-mcp-proof.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "submission-evidence/screenshots/workbench-packaged-fixture.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "submission-evidence/screenshots/workbench-trace-timeline.png",
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "checks": [
+    {
+      "id": "package-archive",
+      "label": "Splunk app package exists and checksum matches manifest",
+      "status": "PASS",
+      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+      "detail": "sha256=fbb367cdd2166416d290da83e7ba069508bcbf5d675374f1bc9c8a8b9b4d3fbf"
+    },
+    {
+      "id": "package-single-app-root",
+      "label": "Package extracts to one app root",
+      "status": "PASS",
+      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+      "detail": "316 packaged files"
+    },
+    {
+      "id": "app-conf-identity",
+      "label": "default/app.conf carries id, version, label, and package metadata",
+      "status": "PASS",
+      "evidence": "SplunkReady/default/app.conf",
+      "detail": "version=0.1.3"
+    },
+    {
+      "id": "cloud-metadata-role",
+      "label": "metadata/default.meta grants write access to admin and sc_admin",
+      "status": "PASS",
+      "evidence": "SplunkReady/metadata/default.meta",
+      "detail": ""
+    },
+    {
+      "id": "appinspect-precert",
+      "label": "AppInspect precertification has zero errors, failures, and future failures",
+      "status": "PASS",
+      "evidence": "submission-evidence/splunkbase-readiness/appinspect-precert.json",
+      "detail": "success=102; warnings=1"
+    },
+    {
+      "id": "expected-kv-warning",
+      "label": "Remaining AppInspect warning is limited to the intentional KV Store collection",
+      "status": "PASS",
+      "evidence": "submission-evidence/splunkbase-readiness/appinspect-precert.json",
+      "detail": "check_collections_conf"
+    },
+    {
+      "id": "credential-free-package",
+      "label": "Package manifest declares no credential files, Python REST handlers, or scripted inputs",
+      "status": "PASS",
+      "evidence": "submission-evidence/splunk-app-package/splunk-app-package-manifest.json",
+      "detail": ""
+    },
+    {
+      "id": "live-install-proof",
+      "label": "Operator-owned live Splunk install proof passes",
+      "status": "PASS",
+      "evidence": "submission-evidence/splunk-app-install/splunk-app-install-proof.json",
+      "detail": "6 probes; 0 failed"
+    },
+    {
+      "id": "receipt-kv-proof",
+      "label": "Operator-owned receipt KV Store proof passes",
+      "status": "PASS",
+      "evidence": "submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json",
+      "detail": "6 rows verified"
+    },
+    {
+      "id": "license",
+      "label": "Repository ships an explicit license",
+      "status": "PASS",
+      "evidence": "LICENSE",
+      "detail": ""
+    },
+    {
+      "id": "support-metadata",
+      "label": "Package metadata includes repository and issue tracker URLs",
+      "status": "PASS",
+      "evidence": "package.json",
+      "detail": "https://github.com/Arshgill01/SplunkReady/issues"
+    },
+    {
+      "id": "splunkbase-doc-copy",
+      "label": "README mentions the Splunk app package and operator-owned install proof",
+      "status": "PASS",
+      "evidence": "README.md",
+      "detail": ""
+    },
+    {
+      "id": "listing-screenshots",
+      "label": "Submission evidence includes public-safe product screenshots",
+      "status": "PASS",
+      "evidence": "submission-evidence/screenshots",
+      "detail": "7 PNG screenshots"
+    },
+    {
+      "id": "app-icon",
+      "label": "Splunkbase-ready app icon/logo asset is packaged",
+      "status": "BLOCKED_REPO",
+      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+      "detail": "No appIcon/logo asset found in package"
+    },
+    {
+      "id": "publisher-account",
+      "label": "Splunkbase publisher account, support contact, and listing metadata are available",
+      "status": "BLOCKED_EXTERNAL",
+      "evidence": "Splunkbase publisher portal",
+      "detail": "Requires operator account access; no credentials are stored in this repository."
+    },
+    {
+      "id": "splunkbase-upload",
+      "label": "Splunkbase upload/review has been submitted",
+      "status": "BLOCKED_EXTERNAL",
+      "evidence": "Splunkbase publisher portal",
+      "detail": "Do not claim Available on Splunkbase until Splunkbase returns a public listing."
+    },
+    {
+      "id": "splunk-cloud-review",
+      "label": "Splunk Cloud review/listing status is confirmed",
+      "status": "BLOCKED_EXTERNAL",
+      "evidence": "Splunkbase/Splunk Cloud review",
+      "detail": "External review status is not available from local evidence."
+    }
+  ],
+  "nextActions": [
+    "Add a packaged app icon/logo asset before Splunkbase upload.",
+    "Prepare Splunkbase listing metadata, support contact, release notes, and public-safe screenshots in the publisher portal.",
+    "Upload submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl through an operator-owned Splunkbase publisher account.",
+    "Claim the Splunkbase badge only after the public Splunkbase listing is visible."
+  ]
+}
