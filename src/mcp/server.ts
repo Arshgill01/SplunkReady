@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 
 import { z } from "zod";
 
+import { reviewMcpComposition } from "./composition-review.js";
 import { readinessReceiptSchema } from "../schemas/core.js";
 import { redactUnknownError } from "../workbench/redaction.js";
 import {
@@ -124,10 +125,21 @@ const hostedModelDiagnosticSchema = z
   })
   .strict();
 
+const reviewMcpCompositionSchema = z
+  .object({
+    transcript: z.string().trim().min(1),
+    clientConfig: z.string().trim().min(1),
+    requirePass: z.boolean().optional().default(false)
+  })
+  .strict();
+
 const emptyObjectSchema = z.object({}).strict();
 
 const secretPathPattern = /(^|[/\\])(?:\.env(?:\.|$)|\.splunkready(?:\.|$))/i;
 const inlineSecretPattern = /\b(?:authorization|bearer|api[_-]?key|access[_-]?token|refresh[_-]?token|password|splunk_mcp_token)\b/i;
+const concreteBearerPattern = /\bbearer\s+(?!\$\{)[^\s"',}]+/i;
+const concreteSecretAssignmentPattern =
+  /\b(?:api[_-]?key|access[_-]?token|refresh[_-]?token|password|splunk_mcp_token)\b["']?\s*[:=]\s*["'](?!\$\{)[^"']+/i;
 
 const assertNonSecretPath = (path: string): void => {
   if (secretPathPattern.test(path)) {
@@ -138,6 +150,12 @@ const assertNonSecretPath = (path: string): void => {
 const assertNoInlineSecrets = (input: string): void => {
   if (inlineSecretPattern.test(input)) {
     throw new Error("Refusing to certify inline MCP transcript content that appears to contain secrets.");
+  }
+};
+
+const assertNoConcreteClientConfigSecrets = (input: string): void => {
+  if (concreteBearerPattern.test(input) || concreteSecretAssignmentPattern.test(input)) {
+    throw new Error("Refusing to review MCP client config content that appears to contain concrete secrets.");
   }
 };
 
@@ -261,6 +279,36 @@ export const splunkReadyMcpTools: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: false
+    }
+  },
+  {
+    name: "splunkready_review_mcp_composition",
+    title: "Review MCP Composition",
+    description:
+      "Deterministically score whether a captured transcript and MCP client config prove existing Splunk MCP plus SplunkReady certification composition.",
+    inputSchema: objectSchema(
+      {
+        transcript: stringProperty("Captured Splunk MCP JSONL transcript content. Do not include tokens or environment files."),
+        clientConfig: stringProperty("Credential-free MCP client config content showing separate splunk and splunkready servers."),
+        requirePass: booleanProperty("Return a tool error if composition evidence is incomplete.", false)
+      },
+      ["transcript", "clientConfig"]
+    ),
+    outputSchema: objectSchema({
+      source: stringProperty("Stable output source identifier."),
+      status: stringProperty("PASS when all composition checks pass, otherwise FAIL."),
+      score: { type: "number", description: "Deterministic composition score from 0 to 100." },
+      checks: { type: "array", items: { type: "object" }, description: "Per-check deterministic composition verdicts." },
+      splunkToolNames: { type: "array", items: { type: "string" }, description: "Unique splunk_* tool names found in the transcript." },
+      splunkToolCallCount: { type: "number", description: "Number of captured splunk_* tool calls." },
+      evidenceRefs: { type: "array", items: { type: "string" }, description: "Evidence refs found in structured transcript output." },
+      deterministicAuthority: { type: "boolean", description: "Whether deterministic checks decide this review." },
+      mutation: { type: "boolean", description: "Whether SplunkReady mutated Splunk." }
+    }),
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true
     }
   },
   {
@@ -1151,6 +1199,24 @@ const callTool = async (name: string, args: unknown, env: NodeJS.ProcessEnv): Pr
       const status = receipt.verdict === "READY" ? "PASS" : "FAIL";
 
       return toolResult({ ...result, status, outDir: parsed.data.outDir, mutation: false });
+    } catch (caught) {
+      return toolResult({ status: "ERROR", message: redactUnknownError(caught, env) }, true);
+    }
+  }
+
+  if (name === "splunkready_review_mcp_composition") {
+    const parsed = reviewMcpCompositionSchema.safeParse(args ?? {});
+
+    if (!parsed.success) {
+      return toolResult({ status: "ERROR", message: zodMessage(parsed) }, true);
+    }
+
+    try {
+      assertNoInlineSecrets(parsed.data.transcript);
+      assertNoConcreteClientConfigSecrets(parsed.data.clientConfig);
+      const review = reviewMcpComposition(parsed.data);
+
+      return toolResult({ ...review }, parsed.data.requirePass && review.status !== "PASS");
     } catch (caught) {
       return toolResult({ status: "ERROR", message: redactUnknownError(caught, env) }, true);
     }

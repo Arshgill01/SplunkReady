@@ -1500,6 +1500,17 @@ describe("SplunkReady CLI flow", () => {
       hostedModelDiagnosticPrompt: { messages: Array<{ content: { text: string } }> };
       transcriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
       inlineTranscriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
+      mcpCompositionReview: {
+        source: string;
+        status: string;
+        score: number;
+        checks: Array<{ id: string; status: string; evidence: string }>;
+        splunkToolNames: string[];
+        splunkToolCallCount: number;
+        evidenceRefs: string[];
+        deterministicAuthority: boolean;
+        mutation: boolean;
+      };
       hostedModelAccess: {
         status: string;
         permissionStatus: string;
@@ -1689,9 +1700,20 @@ describe("SplunkReady CLI flow", () => {
           expect.objectContaining({ id: "official-splunk-mcp-tool-coverage", status: "PASS" }),
           expect.objectContaining({ id: "saved-search-evidence", status: "PASS" }),
           expect.objectContaining({ id: "readiness-receipt-authority", status: "PASS" }),
+          expect.objectContaining({ id: "composition-review-tool", status: "PASS" }),
           expect.objectContaining({ id: "no-splunkready-mutation", status: "PASS" }),
           expect.objectContaining({ id: "hosted-model-advisory-access", status: "PASS" })
         ],
+        deterministicAuthority: true,
+        mutation: false
+      },
+      mcpCompositionReview: {
+        source: "splunkready-mcp-composition-review",
+        status: "PASS",
+        score: 100,
+        splunkToolNames: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+        splunkToolCallCount: 2,
+        evidenceRefs: ["evt-102", "evt-118", "evt-141"],
         deterministicAuthority: true,
         mutation: false
       },
@@ -1776,6 +1798,7 @@ describe("SplunkReady CLI flow", () => {
           "splunkready_describe_certification",
           "splunkready_certify_mcp_transcript",
           "splunkready_certify_mcp_transcript_content",
+          "splunkready_review_mcp_composition",
           "splunkready_check_hosted_model_access"
         ]),
         deterministicAuthority: true,
@@ -1791,6 +1814,7 @@ describe("SplunkReady CLI flow", () => {
       "splunkready_certify_external_trace",
       "splunkready_certify_mcp_transcript",
       "splunkready_certify_mcp_transcript_content",
+      "splunkready_review_mcp_composition",
       "splunkready_check_hosted_model_access"
     ]);
     expect(summary.resources.map((resource) => resource.uri)).toEqual([

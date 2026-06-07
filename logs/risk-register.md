@@ -831,3 +831,13 @@ version. npm latest now reports `splunkready@0.1.1`; a clean temp-folder
 `mutation=false`. Residual risk remains practical rather than registry-related:
 new source changes after Move 142 must either be published or described as
 source-only until the next npm currentness audit passes.
+
+Move 143 reduces MCP-category thinness risk by making composition review a
+first-class read-only MCP tool instead of only a generated scorecard. The
+credential-free MCP proof now calls `splunkready_review_mcp_composition`,
+requires it for PASS, and records `mcpCompositionReview.score: 100` with
+captured Splunk MCP tool names, saved-search evidence refs, deterministic
+authority, and `mutation=false`. Residual risk remains experiential: this proves
+the JSON-RPC and evidence path, but it is still not a recorded live external
+client session; that screencast remains intentionally parked unless the user
+chooses to produce it later.

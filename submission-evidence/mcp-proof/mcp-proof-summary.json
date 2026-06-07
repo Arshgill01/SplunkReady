@@ -32,6 +32,11 @@
       "readOnlyHint": true
     },
     {
+      "name": "splunkready_review_mcp_composition",
+      "destructiveHint": false,
+      "readOnlyHint": true
+    },
+    {
       "name": "splunkready_check_hosted_model_access",
       "destructiveHint": false,
       "readOnlyHint": true
@@ -149,6 +154,7 @@
       "splunkready_certify_external_trace",
       "splunkready_certify_mcp_transcript",
       "splunkready_certify_mcp_transcript_content",
+      "splunkready_review_mcp_composition",
       "splunkready_check_hosted_model_access"
     ],
     "resources": [
@@ -183,7 +189,7 @@
       {
         "uri": "splunkready://certification/posture",
         "mimeType": "application/json",
-        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_certify_mcp_transcript_content\",\n    \"splunkready_check_hosted_model_access\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://client-config/splunk-and-splunkready\",\n    \"splunkready://client-config/claude-desktop\",\n    \"splunkready://client-config/cursor\",\n    \"splunkready://client-config/antigravity\",\n    \"splunkready://client-config/zed\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\",\n    \"splunkready://workflows/mcp-composition-scorecard\",\n    \"splunkready://workflows/hosted-model-diagnostic\"\n  ],\n  \"resourceTemplates\": [\n    \"splunkready://receipts/{receiptId}\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\",\n    \"splunkready_mcp_composition_review\",\n    \"splunkready_hosted_model_diagnostic\"\n  ]\n}"
+        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_certify_mcp_transcript_content\",\n    \"splunkready_review_mcp_composition\",\n    \"splunkready_check_hosted_model_access\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://client-config/splunk-and-splunkready\",\n    \"splunkready://client-config/claude-desktop\",\n    \"splunkready://client-config/cursor\",\n    \"splunkready://client-config/antigravity\",\n    \"splunkready://client-config/zed\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\",\n    \"splunkready://workflows/mcp-composition-scorecard\",\n    \"splunkready://workflows/hosted-model-diagnostic\"\n  ],\n  \"resourceTemplates\": [\n    \"splunkready://receipts/{receiptId}\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\",\n    \"splunkready_mcp_composition_review\",\n    \"splunkready_hosted_model_diagnostic\"\n  ]\n}"
       }
     ]
   },
@@ -367,6 +373,65 @@
     ],
     "status": "PASS",
     "outDir": "artifacts/mcp-proof/mcp-inline-transcript-certification",
+    "mutation": false
+  },
+  "mcpCompositionReview": {
+    "source": "splunkready-mcp-composition-review",
+    "status": "PASS",
+    "score": 100,
+    "checks": [
+      {
+        "id": "client-config-two-servers",
+        "status": "PASS",
+        "evidence": "Client config names separate splunk and splunkready MCP servers."
+      },
+      {
+        "id": "client-config-existing-splunk-mcp",
+        "status": "PASS",
+        "evidence": "Client config routes Splunk calls through an existing Splunk MCP endpoint."
+      },
+      {
+        "id": "client-config-splunkready-certifier",
+        "status": "PASS",
+        "evidence": "Client config starts SplunkReady as a local certification MCP server."
+      },
+      {
+        "id": "transcript-existing-splunk-tools",
+        "status": "PASS",
+        "evidence": "2 unique splunk_* tool(s) found in the transcript."
+      },
+      {
+        "id": "transcript-investigation-depth",
+        "status": "PASS",
+        "evidence": "Transcript includes Splunk knowledge-object, saved-search, or SPL execution."
+      },
+      {
+        "id": "saved-search-evidence-refs",
+        "status": "PASS",
+        "evidence": "3 evidence ref(s) found from saved-search or structured output."
+      },
+      {
+        "id": "deterministic-authority",
+        "status": "PASS",
+        "evidence": "This review is deterministic and does not use LLM, SAIA, or assistant text as pass/fail authority."
+      },
+      {
+        "id": "no-splunkready-mutation",
+        "status": "PASS",
+        "evidence": "SplunkReady MCP review is read-only and reports mutation=false."
+      }
+    ],
+    "splunkToolNames": [
+      "splunk_get_knowledge_objects",
+      "splunk_run_saved_search"
+    ],
+    "splunkToolCallCount": 2,
+    "evidenceRefs": [
+      "evt-102",
+      "evt-118",
+      "evt-141"
+    ],
+    "deterministicAuthority": true,
     "mutation": false
   },
   "hostedModelAccess": {
@@ -601,6 +666,11 @@
         "evidence": "Path transcript certification returned PASS; inline transcript certification returned PASS; deterministic rules remain authoritative."
       },
       {
+        "id": "composition-review-tool",
+        "status": "PASS",
+        "evidence": "splunkready_review_mcp_composition returned PASS with score 100."
+      },
+      {
         "id": "no-splunkready-mutation",
         "status": "PASS",
         "evidence": "SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, hosted-model access, and receipt artifacts."
@@ -739,8 +809,8 @@
     "artifactPath": "artifacts/mcp-proof/mcp-client-session.jsonl",
     "markdownPath": "artifacts/mcp-proof/mcp-client-session.md",
     "protocol": "stdio-jsonrpc",
-    "requestCount": 24,
-    "responseCount": 24,
+    "requestCount": 25,
+    "responseCount": 25,
     "methods": [
       "initialize",
       "tools/list",
@@ -772,6 +842,7 @@
     ],
     "toolNames": [
       "splunkready_describe_certification",
+      "splunkready_review_mcp_composition",
       "splunkready_certify_mcp_transcript",
       "splunkready_certify_mcp_transcript_content",
       "splunkready_check_hosted_model_access"

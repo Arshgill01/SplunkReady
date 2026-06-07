@@ -13757,6 +13757,77 @@ Result:
 Notes:
 
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 - Move 143 MCP composition review tool
+
+Commands:
+
+- `npm view splunkready version dist-tags --json`
+- `tmp=$(mktemp -d /tmp/splunkready-publish-smoke-XXXXXX) && cd "$tmp" && npx -y splunkready@latest judge-proof --out ./judge-proof --json`
+- `npx vitest run tests/mcp/server.test.ts`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "one-command MCP server proof"`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run mcp-proof`
+- `rsync -a --delete artifacts/mcp-proof/ submission-evidence/mcp-proof/`
+- `jq '{status, toolCount:(.tools|length), mcpCompositionReview, reviewToolListed:(.tools|map(.name)|contains(["splunkready_review_mcp_composition"])), reviewCheck:(.mcpComposition.checks[] | select(.id=="composition-review-tool"))}' artifacts/mcp-proof/mcp-proof-summary.json`
+- `npm run audit:submission-copy`
+- `npm run audit:public-demo-export`
+- `npm run check`
+
+Results:
+
+- PASS for npm registry metadata:
+  - version `0.1.1`;
+  - latest dist-tag `0.1.1`.
+- PASS for the clean temp-folder public package smoke:
+  - `npx -y splunkready@latest judge-proof --out ./judge-proof --json`
+    returned `status: "PASS"`.
+- PASS for MCP server tests:
+  - 1 test file passed;
+  - 16 tests passed.
+- PASS for the focused MCP proof CLI flow test:
+  - 1 test passed;
+  - 45 skipped by test-name filter.
+- PASS for submission-copy audit tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for MCP proof:
+  - command returned `status: "PASS"`;
+  - 6 MCP tools listed;
+  - `splunkready_review_mcp_composition` listed and called;
+  - `mcpCompositionReview.status: "PASS"`;
+  - `mcpCompositionReview.score: 100`;
+  - certified Splunk tools include `splunk_get_knowledge_objects` and
+    `splunk_run_saved_search`;
+  - evidence refs include `evt-102`, `evt-118`, and `evt-141`;
+  - `deterministicAuthority=true`;
+  - `mutation=false`.
+- PASS for submission-copy audit:
+  - 101 required claims audited.
+- PASS for public demo export audit:
+  - 206 files;
+  - default route `mcp-proof`;
+  - `mutation=false`.
+- PASS for the full canonical gate:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball `judge-proof`
+    and `mcp` initialization;
+  - 61 test files passed;
+  - 378 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission copy audit passed with 101 required claims;
+  - final `git diff --check` completed with no output.
+
+Notes:
+
+- No secret env file values were read, sourced, printed, or committed.
 - This move does not claim that npm `splunkready@latest` is current.
 
 ## 2026-06-07 - Move 140 Antigravity and Zed MCP client configs

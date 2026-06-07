@@ -13,6 +13,7 @@ Tools:
 - splunkready_certify_external_trace destructive=false readOnly=true
 - splunkready_certify_mcp_transcript destructive=false readOnly=true
 - splunkready_certify_mcp_transcript_content destructive=false readOnly=true
+- splunkready_review_mcp_composition destructive=false readOnly=true
 - splunkready_check_hosted_model_access destructive=false readOnly=true
 
 Resources:
@@ -60,6 +61,11 @@ Transcript certification: PASS
 Inline transcript certification: PASS
 - Output: artifacts/mcp-proof/mcp-inline-transcript-certification
 
+MCP composition review: PASS
+- Score: 100
+- Splunk tools: splunk_get_knowledge_objects, splunk_run_saved_search
+- Evidence refs: evt-102, evt-118, evt-141
+
 Hosted-model access check: PASS
 - Blocker: NONE
 - Permission: OK
@@ -92,6 +98,7 @@ MCP composition scorecard: PASS (100/100)
 - official-splunk-mcp-tool-coverage: PASS - 1 mission-scoped Splunk MCP core tool(s), 2 investigation tool(s), and 4 SAIA hosted-model tool(s) are covered.
 - saved-search-evidence: PASS - 3 evidence refs from saved-search output.
 - readiness-receipt-authority: PASS - Path transcript certification returned PASS; inline transcript certification returned PASS; deterministic rules remain authoritative.
+- composition-review-tool: PASS - splunkready_review_mcp_composition returned PASS with score 100.
 - no-splunkready-mutation: PASS - SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, hosted-model access, and receipt artifacts.
 - hosted-model-advisory-access: PASS - Hosted-model access check returned PASS; SAIA remains advisory and deterministic rules remain authoritative.
 
@@ -120,11 +127,11 @@ MCP client session: PASS
 - Artifact: artifacts/mcp-proof/mcp-client-session.jsonl
 - Markdown: artifacts/mcp-proof/mcp-client-session.md
 - Protocol: stdio-jsonrpc
-- Requests: 24
-- Responses: 24
+- Requests: 25
+- Responses: 25
 - Methods: initialize, tools/list, resources/list, resources/templates/list, resources/read, prompts/list, prompts/get, tools/call
 - Resources read: splunkready://certification/posture, splunkready://client-config/stdio, splunkready://client-config/splunk-and-splunkready, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready://client-config/antigravity, splunkready://client-config/zed, splunkready://workflows/splunk-mcp-certification-loop, splunkready://workflows/mcp-composition-scorecard, splunkready://workflows/hosted-model-diagnostic, splunkready://receipts/pass
 - Prompts fetched: splunkready_certify_mcp_transcript, splunkready_splunk_mcp_certification_loop, splunkready_mcp_composition_review, splunkready_hosted_model_diagnostic
-- Tools called: splunkready_describe_certification, splunkready_certify_mcp_transcript, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access
+- Tools called: splunkready_describe_certification, splunkready_review_mcp_composition, splunkready_certify_mcp_transcript, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access
 
 Receipt: artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json

@@ -65,6 +65,7 @@ describe("SplunkReady MCP server", () => {
       "splunkready_certify_external_trace",
       "splunkready_certify_mcp_transcript",
       "splunkready_certify_mcp_transcript_content",
+      "splunkready_review_mcp_composition",
       "splunkready_check_hosted_model_access"
     ]);
     expect(splunkReadyMcpTools.every((tool) => tool.annotations.destructiveHint === false)).toBe(true);
@@ -451,6 +452,79 @@ describe("SplunkReady MCP server", () => {
     expect(structured.artifacts).toEqual(
       expect.arrayContaining([join(outDir, "receipt-external-001.json"), join(outDir, "uploaded-mcp-transcript.jsonl")])
     );
+  });
+
+  it("reviews MCP composition evidence from transcript and client config content", async () => {
+    const transcript = await readFile(sampleMcpTranscriptPath, "utf8");
+    const clientConfigResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "dual-config-for-review",
+      method: "resources/read",
+      params: { uri: "splunkready://client-config/splunk-and-splunkready" }
+    });
+    const clientConfigResult = resultOf(clientConfigResponse);
+    const clientConfigContents = clientConfigResult.contents as Array<Record<string, unknown>>;
+    const response = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "review-composition",
+      method: "tools/call",
+      params: {
+        name: "splunkready_review_mcp_composition",
+        arguments: {
+          transcript,
+          clientConfig: String(clientConfigContents[0].text),
+          requirePass: true
+        }
+      }
+    });
+    const result = resultOf(response);
+    const structured = result.structuredContent as Record<string, unknown>;
+
+    expect(result.isError).toBe(false);
+    expect(structured).toMatchObject({
+      source: "splunkready-mcp-composition-review",
+      status: "PASS",
+      score: 100,
+      deterministicAuthority: true,
+      mutation: false
+    });
+    expect(structured.splunkToolNames).toEqual(["splunk_get_knowledge_objects", "splunk_run_saved_search"]);
+    expect(structured.splunkToolCallCount).toBe(2);
+    expect(structured.evidenceRefs).toEqual(["evt-102", "evt-118", "evt-141"]);
+    expect((structured.checks as Array<Record<string, unknown>>).map((check) => check.id)).toEqual([
+      "client-config-two-servers",
+      "client-config-existing-splunk-mcp",
+      "client-config-splunkready-certifier",
+      "transcript-existing-splunk-tools",
+      "transcript-investigation-depth",
+      "saved-search-evidence-refs",
+      "deterministic-authority",
+      "no-splunkready-mutation"
+    ]);
+  });
+
+  it("rejects concrete secrets in MCP composition client config content", async () => {
+    const transcript = await readFile(sampleMcpTranscriptPath, "utf8");
+    const response = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "review-composition-secret",
+      method: "tools/call",
+      params: {
+        name: "splunkready_review_mcp_composition",
+        arguments: {
+          transcript,
+          clientConfig:
+            '{"mcpServers":{"splunk":{"command":"npx","args":["mcp-remote","https://example.invalid","--header","Authorization: Bearer concrete-token"]},"splunkready":{"command":"npm","args":["run","mcp"]}}}'
+        }
+      }
+    });
+    const result = resultOf(response);
+    const structured = result.structuredContent as Record<string, unknown>;
+
+    expect(result.isError).toBe(true);
+    expect(structured.status).toBe("ERROR");
+    expect(String(structured.message)).toContain("concrete secrets");
+    expect(String(structured.message)).not.toContain("concrete-token");
   });
 
   it("certifies MCP transcripts that use Splunk MCP saved_search_name and total_rows fields", async () => {

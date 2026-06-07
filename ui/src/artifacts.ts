@@ -818,6 +818,39 @@ const mcpProofSummarySchema = z
         artifacts: z.array(z.string().min(1))
       })
       .strict(),
+    mcpCompositionReview: z
+      .object({
+        source: z.literal("splunkready-mcp-composition-review"),
+        status: z.enum(["PASS", "FAIL"]),
+        score: z.number().int().nonnegative(),
+        checks: z.array(
+          z
+            .object({
+              id: z.string().min(1),
+              status: z.enum(["PASS", "FAIL"]),
+              evidence: z.string().min(1)
+            })
+            .strict()
+        ),
+        splunkToolNames: z.array(z.string().min(1)),
+        splunkToolCallCount: z.number().int().nonnegative(),
+        evidenceRefs: z.array(z.string().min(1)),
+        deterministicAuthority: z.boolean(),
+        mutation: z.boolean()
+      })
+      .strict()
+      .optional()
+      .default({
+        source: "splunkready-mcp-composition-review",
+        status: "FAIL",
+        score: 0,
+        checks: [],
+        splunkToolNames: [],
+        splunkToolCallCount: 0,
+        evidenceRefs: [],
+        deterministicAuthority: true,
+        mutation: false
+      }),
     hostedModelAccess: z
       .object({
         status: z.enum(["PASS", "BLOCKED"]),

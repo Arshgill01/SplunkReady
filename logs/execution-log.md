@@ -13670,3 +13670,53 @@ Notes:
   contents.
 - The earlier publish attempt from this shell failed with npm auth `E401`; the
   user fixed auth and published the package before this verification move.
+
+## 2026-06-07T16:01:43Z - Move 143 MCP composition review tool
+
+Intent:
+
+- Strengthen the MCP category surface by making the two-server Splunk MCP plus
+  SplunkReady MCP composition review a first-class read-only MCP tool and
+  tracked evidence claim.
+
+Actions:
+
+- Added deterministic MCP composition review logic for captured Splunk MCP JSONL
+  transcripts and credential-free external MCP client config content.
+- Exposed `splunkready_review_mcp_composition` from the SplunkReady stdio MCP
+  server with read-only/idempotent annotations.
+- Added concrete client-config secret rejection for bearer tokens and secret
+  assignments while still allowing placeholder env references.
+- Updated `npm run mcp-proof` to call the new tool and require its PASS result
+  in the MCP proof scorecard.
+- Refreshed tracked MCP proof artifacts and surfaced `mcpCompositionReview` in
+  the workbench artifact schema.
+- Updated README, Devpost copy, claim ledger, and submission-copy audit guards
+  so the MCP composition-review claim is visible and machine-checked.
+
+Files changed:
+
+- `src/mcp/composition-review.ts`
+- `src/mcp/server.ts`
+- `src/workflows/mcp-proof.ts`
+- `ui/src/artifacts.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `README.md`
+- `docs/devpost-submission.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/*`
+- `moves/README.md`
+- `moves/moves143.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Notes:
+
+- This move composes with the existing Splunk MCP Server story; it does not
+  claim SplunkReady replaces Splunk MCP.
+- The review remains deterministic and does not make LLM or SAIA output
+  authoritative.
+- No secret env file values were read, sourced, printed, or committed.

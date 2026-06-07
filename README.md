@@ -139,7 +139,9 @@ MCP JSON-RPC transcript through
 tool `splunkready_certify_mcp_transcript_content`. It also calls
 `splunkready_check_hosted_model_access` so the MCP proof includes SAIA
 hosted-model generate/explain/optimize/ask access as fixture-mode advisory
-evidence. If a redacted operator-owned live hosted-model diagnostic artifact is
+evidence, then calls `splunkready_review_mcp_composition` to deterministically
+score the two-server Splunk MCP plus SplunkReady MCP composition. If a redacted
+operator-owned live hosted-model diagnostic artifact is
 present, the proof also records `operatorLiveHostedModelStatus` so public MCP
 evidence distinguishes fixture PASS from the current live SAIA blocker class
 without copying endpoints or tokens. It writes
@@ -343,7 +345,8 @@ npm run mcp-proof
 That command writes an MCP proof summary with explicit Splunk MCP boundary
 evidence, MCP resource-template discovery, hosted-model diagnostic
 resource/prompt discovery, Claude Desktop and Cursor MCP client config
-resources, inline transcript certification, fixture hosted-model access,
+resources, inline transcript certification, deterministic MCP composition
+review, fixture hosted-model access,
 operator-live hosted-model status when a redacted live diagnostic exists, the
 uploaded transcript copy, `trace-imported.json`, `trace-external.json`,
 `receipt-external-001.json`, `proof-audit.json`, and the transcript

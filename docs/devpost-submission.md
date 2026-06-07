@@ -112,7 +112,7 @@ Teams adopting Splunk-connected agents need a gate between "the model can call a
 
 The Splunk MCP interface is the certification boundary for live mode. Fixture and live paths converge after the adapter, so the same compiler, mission runner, trace recorder, grader, policy patch, and receipt logic run regardless of whether the source is a local fixture or a live MCP endpoint.
 
-SplunkReady's MCP value is not that it replaces Splunk MCP. It uses Splunk MCP as the source of real agent/tool behavior, then exposes a local certification MCP server so other MCP clients can discover posture resources, reuse certification prompts, and request deterministic Readiness Receipts for captured traces and transcripts.
+SplunkReady's MCP value is not that it replaces Splunk MCP. It uses Splunk MCP as the source of real agent/tool behavior, then exposes a local certification MCP server so other MCP clients can discover posture resources, reuse certification prompts, request deterministic Readiness Receipts for captured traces and transcripts, and call `splunkready_review_mcp_composition` to score the two-server Splunk MCP plus SplunkReady MCP workflow.
 
 Live mode is optional and disabled by default. The tracked evidence pack does not include raw live artifacts or credentials. Live claims should be treated as conditional unless the operator generates and sanitizes a separate live evidence export.
 

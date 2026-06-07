@@ -94,6 +94,7 @@ interface McpProofSummary {
   hostedModelDiagnosticPrompt: Record<string, unknown>;
   transcriptCertification: Record<string, unknown>;
   inlineTranscriptCertification: Record<string, unknown>;
+  mcpCompositionReview: Record<string, unknown>;
   hostedModelAccess: Record<string, unknown>;
   operatorLiveHostedModelStatus: {
     source: "splunkready-operator-live-hosted-model-status";
@@ -409,6 +410,11 @@ Transcript certification: ${stringFromRecord(summary.transcriptCertification, "s
 Inline transcript certification: ${stringFromRecord(summary.inlineTranscriptCertification, "status")}
 - Output: ${stringFromRecord(summary.inlineTranscriptCertification, "outDir")}
 
+MCP composition review: ${stringFromRecord(summary.mcpCompositionReview, "status")}
+- Score: ${String(summary.mcpCompositionReview.score ?? "")}
+- Splunk tools: ${stringArrayFromRecord(summary.mcpCompositionReview, "splunkToolNames").join(", ") || "none"}
+- Evidence refs: ${stringArrayFromRecord(summary.mcpCompositionReview, "evidenceRefs").join(", ") || "none"}
+
 Hosted-model access check: ${stringFromRecord(summary.hostedModelAccess, "status")}
 - Blocker: ${stringFromRecord(summary.hostedModelAccess, "blockerClass") ?? "NONE"}
 - Permission: ${stringFromRecord(summary.hostedModelAccess, "permissionStatus")}
@@ -647,6 +653,7 @@ const buildMcpCompositionScorecard = (input: {
   prompts: McpProofSummary["prompts"];
   transcriptCertification: Record<string, unknown>;
   inlineTranscriptCertification: Record<string, unknown>;
+  mcpCompositionReview: Record<string, unknown>;
   hostedModelAccess: Record<string, unknown>;
   agentDrivenWorkflow: McpProofSummary["agentDrivenWorkflow"];
   splunkMcpBoundary: McpProofSummary["splunkMcpBoundary"];
@@ -660,6 +667,8 @@ const buildMcpCompositionScorecard = (input: {
     stringFromRecord(input.transcriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
   const inlineCertificationStatus =
     stringFromRecord(input.inlineTranscriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
+  const compositionReviewStatus =
+    stringFromRecord(input.mcpCompositionReview, "status") === "PASS" ? "PASS" : "FAIL";
   const hostedModelAccessStatus =
     stringFromRecord(input.hostedModelAccess, "status") === "PASS" ? "PASS" : "FAIL";
 
@@ -734,12 +743,18 @@ const buildMcpCompositionScorecard = (input: {
       evidence: `Path transcript certification returned ${certificationStatus}; inline transcript certification returned ${inlineCertificationStatus}; deterministic rules remain authoritative.`
     },
     {
+      id: "composition-review-tool",
+      status: compositionReviewStatus,
+      evidence: `splunkready_review_mcp_composition returned ${compositionReviewStatus} with score ${String(input.mcpCompositionReview.score ?? "unknown")}.`
+    },
+    {
       id: "no-splunkready-mutation",
       status:
         input.agentDrivenWorkflow.mutation === false &&
         input.splunkMcpBoundary.mutation === false &&
         input.transcriptCertification.mutation === false &&
         input.inlineTranscriptCertification.mutation === false &&
+        input.mcpCompositionReview.mutation === false &&
         input.hostedModelAccess.mutation === false
           ? "PASS"
           : "FAIL",
@@ -986,6 +1001,7 @@ const buildMcpClientSession = (
     promptNames.includes("splunkready_hosted_model_diagnostic") &&
     toolNames.includes("splunkready_certify_mcp_transcript") &&
     toolNames.includes("splunkready_certify_mcp_transcript_content") &&
+    toolNames.includes("splunkready_review_mcp_composition") &&
     toolNames.includes("splunkready_check_hosted_model_access")
       ? "PASS"
       : "FAIL";
@@ -1160,6 +1176,14 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       arguments: {}
     });
     const transcriptContent = await readFile(transcriptPath, "utf8");
+    const compositionReviewResult = await client.request("tools/call", {
+      name: "splunkready_review_mcp_composition",
+      arguments: {
+        transcript: transcriptContent,
+        clientConfig: textFromMcpResource(dualServerClientConfigResource),
+        requirePass: true
+      }
+    });
     const transcriptResult = await client.request("tools/call", {
       name: "splunkready_certify_mcp_transcript",
       arguments: {
@@ -1241,6 +1265,10 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       inlineTranscriptResult,
       "splunkready_certify_mcp_transcript_content"
     );
+    const mcpCompositionReview = extractStructuredContent(
+      compositionReviewResult,
+      "splunkready_review_mcp_composition"
+    );
     const hostedModelAccess = extractStructuredContent(
       hostedModelAccessResult,
       "splunkready_check_hosted_model_access"
@@ -1249,6 +1277,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
     const certificationStatus = stringFromRecord(transcriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
     const inlineCertificationStatus =
       stringFromRecord(inlineTranscriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
+    const compositionReviewStatus = stringFromRecord(mcpCompositionReview, "status") === "PASS" ? "PASS" : "FAIL";
     const hostedModelAccessStatus = stringFromRecord(hostedModelAccess, "status") === "PASS" ? "PASS" : "FAIL";
     const toolArtifacts = Array.isArray(transcriptCertification.artifacts)
       ? transcriptCertification.artifacts.filter((artifact): artifact is string => typeof artifact === "string")
@@ -1292,6 +1321,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       prompts,
       transcriptCertification,
       inlineTranscriptCertification,
+      mcpCompositionReview,
       hostedModelAccess,
       agentDrivenWorkflow,
       splunkMcpBoundary,
@@ -1308,7 +1338,10 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
     const summary: McpProofSummary = {
       source: "splunkready-mcp-proof",
       status:
-        certificationStatus === "PASS" && inlineCertificationStatus === "PASS" && hostedModelAccessStatus === "PASS"
+        certificationStatus === "PASS" &&
+        inlineCertificationStatus === "PASS" &&
+        compositionReviewStatus === "PASS" &&
+        hostedModelAccessStatus === "PASS"
           ? "PASS"
           : "FAIL",
       mutation: false,
@@ -1342,6 +1375,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       hostedModelDiagnosticPrompt,
       transcriptCertification,
       inlineTranscriptCertification,
+      mcpCompositionReview,
       hostedModelAccess,
       operatorLiveHostedModelStatus,
       agentDrivenWorkflow,
