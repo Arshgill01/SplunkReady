@@ -635,3 +635,13 @@ SplunkReady still does not claim live SAIA PASS. Residual risk is outside the
 adapter: the Splunk MCP endpoint/app route backing Splunk AI Assistant tools
 must invoke the advertised tools successfully before hosted-model proof can be
 claimed.
+
+Move 122 reduces public package release skew after the user-published
+`splunkready@0.1.0` baseline by preparing the source, docs, claim ledger, and
+submission-copy guard for `splunkready@0.1.1`. The packed 0.1.1 tarball installs
+from a clean temp project, returns `PASS` for `npx splunkready judge-proof`, and
+initializes `npx splunkready mcp`. Residual release risk remains: this shell is
+not npm-authenticated, so `npm run audit:npm-release-preflight -- --require-ready`
+is `BLOCKED` by npm auth even though the registry reports 0.1.1 is available.
+Residual prize risk remains concentrated in live SAIA endpoint readiness and
+external MCP-client storytelling rather than package mechanics.

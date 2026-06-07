@@ -144,6 +144,7 @@ commands, or filesystem paths.
 | P0 | [119](moves119.md) Four-tool SAIA hosted-model proof | 0.5d | Expands hosted-model proof from explain/optimize to SAIA generate, explain, optimize, and ask, then regenerates MCP evidence and Playwright-verifies the public route. |
 | P0 | [120](moves120.md) Per-tool SAIA hosted-model receipt | 0.5d | Records passed/blocked status for each SAIA hosted-model tool and surfaces it through MCP proof evidence and the public route. |
 | P0 | [121](moves121.md) Live SAIA prompt compatibility and redaction | 0.5d | Uses the operator-owned live diagnostic to fix the SAIA ask prompt shape and redact live endpoint URLs from hosted-model diagnostics. |
+| P0 | [122](moves122.md) Next package release alignment | 0.5d | Prepares the source, docs, and submission-copy guard for the next public npm version so judges can smoke-test the current MCP/SAIA work after publish. |
 
 ## Non-Negotiable Boundaries
 

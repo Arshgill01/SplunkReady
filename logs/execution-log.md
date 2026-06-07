@@ -12668,3 +12668,50 @@ Open blockers:
   SAIA tools but returns route-not-found for invocation.
 - The endpoint/app route backing Splunk AI Assistant tools likely needs to be
   fixed outside SplunkReady before a live hosted-model PASS can be claimed.
+
+## 2026-06-07 16:49 - Move 122 Next Package Release Alignment
+
+Scope:
+- Prepared the source tree for the next public npm package version after the
+  user-published `splunkready@0.1.0` baseline.
+- Bumped `package.json` and `package-lock.json` to `0.1.1` so the current
+  MCP/SAIA work can be published without colliding with the existing registry
+  version.
+- Updated README and Devpost clean-folder judge commands to reference
+  `npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json` as the
+  next-publish package smoke, with wording that does not claim `0.1.1` is
+  already published.
+- Updated the claim ledger and submission-copy audit guard so stale npm proof
+  commands fail the canonical check.
+- Updated the submission-copy audit regression fixture for the new guarded
+  package command.
+- Ran npm release preflight; registry lookup reports `0.1.1` is available, but
+  this shell is not authenticated to npm, so the preflight status is `BLOCKED`
+  rather than `READY`.
+- Did not run `npm publish`.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not mutate Splunk.
+- Did not use subagents.
+
+Files changed:
+- `package.json`
+- `package-lock.json`
+- `README.md`
+- `docs/devpost-submission.md`
+- `submission-evidence/claim-ledger.md`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `moves/README.md`
+- `moves/moves122.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- `splunkready@0.1.1` is not published yet.
+- `npm run audit:npm-release-preflight -- --require-ready` fails in this shell
+  only because npm auth is not configured; registry availability and dry-run
+  pack checks are clean.
+- After package release alignment, the next high-value probability work remains
+  live SAIA route remediation and stronger external MCP-client evidence.

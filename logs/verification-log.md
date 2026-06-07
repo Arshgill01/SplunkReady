@@ -9958,6 +9958,65 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-07 - Move 122 Next Package Release Alignment
+
+Commands:
+
+- `npm run audit:npm-release-preflight -- --require-ready`
+- `npm run audit:submission-copy`
+- `npm run audit:package-installability`
+- `npm run audit:npm-release-preflight`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run check`
+
+Result:
+
+- PARTIAL for strict npm release preflight:
+  - source package `splunkready@0.1.1`;
+  - registry versions: only `0.1.0`;
+  - `currentVersionAvailable: true`;
+  - dry-run pack OK with `164` files and `splunkready-0.1.1.tgz`;
+  - failed only because this shell is not authenticated to npm
+    (`npm whoami` returned `E401`).
+- PASS for submission copy audit:
+  - 57 required claims checked.
+- PASS for package installability:
+  - `splunkready-0.1.1.tgz` installed in a clean temp project;
+  - `npx splunkready judge-proof` returned `PASS`;
+  - `npx splunkready mcp` initialized over stdio.
+- PASS for focused submission-copy regression:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit checked 164 packed files;
+  - package installability audit passed for `splunkready-0.1.1.tgz`;
+  - 59 test files passed;
+  - 366 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 57 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or
+  behavior.
+- `npm publish` was not run.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- The user or an authenticated shell must publish `splunkready@0.1.1` before the
+  new clean-folder `npx` command can be considered live.
+
 ## 2026-06-07 - Move 118 Package MCP Installability Audit
 
 Commands:
