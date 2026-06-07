@@ -411,6 +411,65 @@ describe("SplunkReady MCP server", () => {
     );
   });
 
+  it("certifies MCP transcripts that use Splunk MCP saved_search_name and total_rows fields", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-saved-search-name-"));
+    const transcript = (await readFile(sampleMcpTranscriptPath, "utf8"))
+      .replace('"name":"ES - Lateral Movement Auth Chain"', '"saved_search_name":"ES - Lateral Movement Auth Chain"')
+      .replaceAll('"resultCount":3', '"total_rows":3');
+    const response = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "saved-search-name",
+      method: "tools/call",
+      params: {
+        name: "splunkready_certify_mcp_transcript_content",
+        arguments: {
+          transcript,
+          finalAnswer: sampleFinalAnswer,
+          outDir,
+          strictImport: true,
+          requirePass: true,
+          agentName: "Splunk MCP Client Agent",
+          agentVersion: "saved-search-name-pass"
+        }
+      }
+    });
+    const result = resultOf(response);
+    const structured = result.structuredContent as Record<string, unknown>;
+
+    expect(result.isError).toBe(false);
+    expect(structured).toMatchObject({ status: "PASS", outDir, mutation: false });
+  });
+
+  it("creates the output directory for path-based MCP transcript certification", async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-path-"));
+    const outDir = join(rootDir, "nested", "mcp-certification");
+    const response = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "path-mcp",
+      method: "tools/call",
+      params: {
+        name: "splunkready_certify_mcp_transcript",
+        arguments: {
+          transcriptPath: sampleMcpTranscriptPath.pathname,
+          finalAnswer: sampleFinalAnswer,
+          outDir,
+          strictImport: true,
+          requirePass: true,
+          agentName: "Path MCP Client Agent",
+          agentVersion: "path-pass"
+        }
+      }
+    });
+    const result = resultOf(response);
+    const structured = result.structuredContent as Record<string, unknown>;
+
+    expect(result.isError).toBe(false);
+    expect(structured).toMatchObject({ status: "PASS", outDir, mutation: false });
+    expect(structured.artifacts).toEqual(
+      expect.arrayContaining([join(outDir, "receipt-external-001.json"), join(outDir, "uploaded-mcp-transcript.jsonl")])
+    );
+  });
+
   it("rejects inline MCP transcript content that appears to include secrets", async () => {
     const response = await handleMcpMessage({
       jsonrpc: "2.0",

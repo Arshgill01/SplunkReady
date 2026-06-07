@@ -13471,3 +13471,37 @@ Result:
     and 0 failing latest verdicts;
   - submission copy audit passed with 83 required claims;
   - included `git diff --check` completed with no output.
+
+## 2026-06-07 - Move 135 Splunk MCP transcript compatibility
+
+Commands:
+
+- `npx vitest run tests/mcp/server.test.ts --testNamePattern "path-based MCP transcript certification|saved_search_name|inline MCP transcript"`
+- `npm run check`
+- `gh run list --branch splunkready-build --limit 10 --json databaseId,displayTitle,workflowName,event,status,conclusion,headSha,createdAt,url`
+
+Result:
+
+- PASS for focused MCP server tests:
+  - 1 test file passed;
+  - 4 tests passed;
+  - 10 tests skipped by focused pattern.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 60 test files passed;
+  - 374 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 83 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for remote CI status inspection:
+  - latest 10 `splunkready-build` push workflow runs were all `success`;
+  - latest checked remote HEAD was `fa8b64d`.

@@ -16,7 +16,7 @@ const eventRefFromInput = (input: Record<string, unknown> | null): string | unde
   }
 
   const app = input["app"];
-  const name = input["name"];
+  const name = input["name"] ?? input["saved_search_name"];
 
   return typeof app === "string" && typeof name === "string" ? `${app}::${name}` : undefined;
 };

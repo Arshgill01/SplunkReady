@@ -335,7 +335,11 @@ const collectTranscriptEvidence = (input: unknown, evidence: TranscriptEvidence)
       evidence.refs.add(value);
     }
 
-    if ((key === "resultCount" || key === "count") && typeof value === "number" && Number.isFinite(value)) {
+    if (
+      (key === "resultCount" || key === "total_rows" || key === "totalRows" || key === "count") &&
+      typeof value === "number" &&
+      Number.isFinite(value)
+    ) {
       evidence.counts.push(value);
     }
 
@@ -722,6 +726,7 @@ export const runExternalTraceCertificationWorkflow = async (
 ): Promise<{ artifacts: string[] }> => {
   const tracePath = join(input.outDir, "uploaded-external-trace.json");
 
+  await mkdir(input.outDir, { recursive: true });
   await writeFile(tracePath, `${JSON.stringify(input.payload.trace, null, 2)}\n`, "utf8");
 
   const result = await runExternalTraceCertificationFromPathWorkflow({
@@ -745,6 +750,7 @@ export const runMcpTranscriptCertificationWorkflow = async (
     input.payload.transcript
   )}\n`;
 
+  await mkdir(input.outDir, { recursive: true });
   await writeFile(transcriptPath, transcript, "utf8");
 
   const result = await runMcpTranscriptCertificationFromPathWorkflow({

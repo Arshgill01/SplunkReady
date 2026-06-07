@@ -13146,6 +13146,49 @@ Notes:
 - Did not read, source, print, or commit `.splunkready*` or `.env*` secret
   contents.
 
+## 2026-06-07T14:46:13Z - Move 135 Splunk MCP transcript compatibility
+
+Intent:
+
+- Keep the external MCP transcript certification path compatible with field
+  shapes observed in real Splunk MCP responses while preserving deterministic
+  readiness grading.
+- Clear the abandoned screencast/evidence attempt and avoid claiming external
+  client video evidence in this move.
+
+Actions:
+
+- Removed generated screencast/evidence artifacts and stopped background
+  recorder/MCP proxy processes from the abandoned external-client recording
+  attempt.
+- Updated saved-search provenance extraction to accept
+  `saved_search_name` alongside `name`.
+- Updated transcript evidence collection to count `total_rows` and `totalRows`
+  alongside `resultCount` and `count`.
+- Made inline external trace and MCP transcript certification create `outDir`
+  before writing uploaded transcript artifacts.
+- Added focused MCP server coverage for Splunk MCP `saved_search_name` /
+  `total_rows` transcripts and nested path-based output directories.
+
+Files changed:
+
+- `src/grader/saved-search.ts`
+- `src/workflows/external-certification.ts`
+- `tests/mcp/server.test.ts`
+- `moves/README.md`
+- `moves/moves135.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  contents.
+- Remote GitHub Actions CI on `splunkready-build` was checked after the user
+  reported a failing check; the latest 10 push runs were green, including HEAD
+  `fa8b64d`.
+
 ## 2026-06-07T13:35:00Z - Move 134 MCP operator live hosted-model status
 
 Intent:
