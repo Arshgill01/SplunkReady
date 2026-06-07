@@ -23,6 +23,12 @@ Resources:
 - splunkready://workflows/splunk-mcp-certification-loop (text/markdown)
 - splunkready://workflows/mcp-composition-scorecard (text/markdown)
 
+Resource templates:
+- splunkready://receipts/{receiptId} (text/markdown)
+
+Templated receipt:
+- splunkready://receipts/pass
+
 Dual-server MCP client kit:
 - Resource: splunkready://client-config/splunk-and-splunkready
 - Existing Splunk MCP role: investigate with read-only Splunk tools
@@ -51,7 +57,7 @@ Splunk MCP boundary: PASS
 
 MCP composition scorecard: PASS (100/100)
 - dual-server-client-config: PASS - Client config includes separate splunk and splunkready MCP servers.
-- discoverable-resources-and-prompts: PASS - 8 resources and 5 prompts expose the composed workflow.
+- discoverable-resources-and-prompts: PASS - 8 resources, 1 resource template(s), and 5 prompts expose the composed workflow.
 - existing-splunk-mcp-boundary: PASS - 2 captured splunk_* tool calls are certified.
 - saved-search-evidence: PASS - 3 evidence refs from saved-search output.
 - readiness-receipt-authority: PASS - Transcript certification returned PASS; deterministic rules remain authoritative.
@@ -72,10 +78,10 @@ MCP client session: PASS
 - Artifact: submission-evidence/mcp-proof/mcp-client-session.jsonl
 - Markdown: submission-evidence/mcp-proof/mcp-client-session.md
 - Protocol: stdio-jsonrpc
-- Requests: 14
-- Responses: 14
-- Methods: initialize, tools/list, resources/list, resources/read, prompts/list, prompts/get, tools/call
-- Resources read: splunkready://certification/posture, splunkready://client-config/stdio, splunkready://client-config/splunk-and-splunkready, splunkready://workflows/splunk-mcp-certification-loop, splunkready://workflows/mcp-composition-scorecard
+- Requests: 16
+- Responses: 16
+- Methods: initialize, tools/list, resources/list, resources/templates/list, resources/read, prompts/list, prompts/get, tools/call
+- Resources read: splunkready://certification/posture, splunkready://client-config/stdio, splunkready://client-config/splunk-and-splunkready, splunkready://workflows/splunk-mcp-certification-loop, splunkready://workflows/mcp-composition-scorecard, splunkready://receipts/pass
 - Prompts fetched: splunkready_certify_mcp_transcript, splunkready_splunk_mcp_certification_loop, splunkready_mcp_composition_review
 - Tools called: splunkready_describe_certification, splunkready_certify_mcp_transcript
 

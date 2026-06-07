@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import {
   handleMcpMessage,
   splunkReadyMcpPrompts,
+  splunkReadyMcpResourceTemplates,
   splunkReadyMcpResources,
   splunkReadyMcpTools
 } from "../../src/mcp/server.js";
@@ -135,6 +136,34 @@ describe("SplunkReady MCP server", () => {
     expect(String(scorecardContents[0].text)).toContain("composition, not replacement");
     expect(String(scorecardContents[0].text)).toContain("existing Splunk MCP server");
     expect(String(scorecardContents[0].text)).toContain("mutation");
+
+    const templatesResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "resource-templates",
+      method: "resources/templates/list"
+    });
+    const templatesResult = resultOf(templatesResponse);
+
+    expect(templatesResult.resourceTemplates).toEqual(splunkReadyMcpResourceTemplates);
+    expect(splunkReadyMcpResourceTemplates.map((template) => template.uriTemplate)).toEqual([
+      "splunkready://receipts/{receiptId}"
+    ]);
+
+    const templatedReceiptResponse = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "templated-receipt-read",
+      method: "resources/read",
+      params: { uri: "splunkready://receipts/pass" }
+    });
+    const templatedReceiptResult = resultOf(templatedReceiptResponse);
+    const templatedReceiptContents = templatedReceiptResult.contents as Array<Record<string, unknown>>;
+
+    expect(templatedReceiptContents[0]).toMatchObject({
+      uri: "splunkready://receipts/pass",
+      mimeType: "text/markdown"
+    });
+    expect(String(templatedReceiptContents[0].text)).toContain("Readiness Receipt");
+    expect(String(templatedReceiptContents[0].text)).toContain("READY");
   });
 
   it("lists and returns reusable MCP certification prompts", async () => {

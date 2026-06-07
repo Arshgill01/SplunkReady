@@ -236,6 +236,7 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
                 ${renderFactTable([
                   ["Tools", summary.tools.map((tool) => `${tool.name} / read-only ${tool.readOnlyHint ? "yes" : "no"}`).join(" / ")],
                   ["Resources", summary.resources.map((resource) => resource.uri).join(" / ")],
+                  ["Resource templates", summary.resourceTemplates.map((template) => template.uriTemplate).join(" / ")],
                   ["Prompts", summary.prompts.map((prompt) => `${prompt.name} (${prompt.argumentCount})`).join(" / ")]
                 ])}
               </section>
@@ -248,6 +249,7 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
                   ["Responses", String(summary.clientSession.responseCount)],
                   ["Methods", summary.clientSession.methods.join(" / ")],
                   ["Resources read", summary.clientSession.resourceUris.join(" / ")],
+                  ["Resource templates", summary.resourceTemplates.map((template) => template.uriTemplate).join(" / ")],
                   ["Prompts fetched", summary.clientSession.promptNames.join(" / ")],
                   ["Tools called", summary.clientSession.toolNames.join(" / ")],
                   ["Transcript", summary.clientSession.artifactPath],

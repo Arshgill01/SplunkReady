@@ -346,6 +346,13 @@ const mcpProofSummary = {
       mimeType: "text/markdown"
     }
   ],
+  resourceTemplates: [
+    {
+      uriTemplate: "splunkready://receipts/{receiptId}",
+      name: "readiness-receipt-by-id",
+      mimeType: "text/markdown"
+    }
+  ],
   prompts: [
     { name: "splunkready_certify_mcp_transcript", argumentCount: 3 },
     { name: "splunkready_splunk_mcp_certification_loop", argumentCount: 3 }
@@ -356,6 +363,7 @@ const mcpProofSummary = {
   dualServerClientConfigResource: { contents: [] },
   certificationLoopResource: { contents: [] },
   compositionScorecardResource: { contents: [] },
+  receiptTemplateResource: { contents: [] },
   transcriptPrompt: { messages: [] },
   certificationLoopPrompt: { messages: [] },
   compositionReviewPrompt: { messages: [] },
@@ -424,7 +432,7 @@ const mcpProofSummary = {
       {
         id: "discoverable-resources-and-prompts",
         status: "PASS",
-        evidence: "8 resources and 5 prompts expose the composed workflow."
+        evidence: "8 resources, 1 resource template, and 5 prompts expose the composed workflow."
       },
       {
         id: "existing-splunk-mcp-boundary",
@@ -508,6 +516,7 @@ const mcpProofSummary = {
       "initialize",
       "tools/list",
       "resources/list",
+      "resources/templates/list",
       "resources/read",
       "prompts/list",
       "prompts/get",
@@ -516,7 +525,8 @@ const mcpProofSummary = {
     resourceUris: [
       "splunkready://certification/posture",
       "splunkready://client-config/splunk-and-splunkready",
-      "splunkready://workflows/splunk-mcp-certification-loop"
+      "splunkready://workflows/splunk-mcp-certification-loop",
+      "splunkready://receipts/pass"
     ],
     promptNames: ["splunkready_splunk_mcp_certification_loop", "splunkready_mcp_composition_review"],
     toolNames: ["splunkready_describe_certification", "splunkready_certify_mcp_transcript"],
@@ -1490,9 +1500,12 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("existing-splunk-mcp-boundary: PASS");
     expect(html).toContain("splunk: Existing Splunk MCP server");
     expect(html).toContain("splunkready://workflows/splunk-mcp-certification-loop");
+    expect(html).toContain("splunkready://receipts/{receiptId}");
+    expect(html).toContain("splunkready://receipts/pass");
     expect(html).toContain("splunkready_splunk_mcp_certification_loop");
     expect(html).toContain("splunkready_certify_mcp_transcript");
     expect(html).toContain("resources/read");
+    expect(html).toContain("resources/templates/list");
     expect(html).toContain("prompts/get");
     expect(html).toContain("tools/call");
     expect(html).toContain("submission-evidence/mcp-proof/mcp-client-session.jsonl");

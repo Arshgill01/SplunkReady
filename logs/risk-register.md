@@ -521,3 +521,13 @@ Residual SAIA risk remains explicit: this shell did not have the live token or
 endpoint exported, so Move 110 does not claim live SAIA PASS. The next proof
 step is the same `hosted-model-diagnostic --mode live --require-pass true`
 command from a token-bearing shell.
+
+Move 111 reduces MCP-category thin-surface risk by adding MCP resource-template
+discovery and proving it through the recorded stdio client session. The server
+now answers `resources/templates/list`, advertises
+`splunkready://receipts/{receiptId}`, and reads the known
+`splunkready://receipts/pass` receipt resource without exposing arbitrary local
+file reads. The tracked MCP proof, workbench route, screenshot, claim ledger,
+and evidence hashes were refreshed. Residual MCP risk remains external-client
+storytelling: the proof is stronger MCP protocol evidence, but a public
+Claude/Cursor/client walkthrough recording would still improve the award track.

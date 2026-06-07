@@ -1362,6 +1362,7 @@ describe("SplunkReady CLI flow", () => {
       handshake: { protocolVersion: string; serverName: string; instructions: string };
       tools: Array<{ name: string; destructiveHint: boolean; readOnlyHint: boolean }>;
       resources: Array<{ uri: string; name: string; mimeType: string }>;
+      resourceTemplates: Array<{ uriTemplate: string; name: string; mimeType: string }>;
       prompts: Array<{ name: string; argumentCount: number }>;
       describe: { product: string; engine: string; mutation: boolean; deterministicAuthority: boolean };
       postureResource: { contents: Array<{ uri: string; text: string }> };
@@ -1369,6 +1370,7 @@ describe("SplunkReady CLI flow", () => {
       dualServerClientConfigResource: { contents: Array<{ uri: string; text: string }> };
       certificationLoopResource: { contents: Array<{ uri: string; text: string }> };
       compositionScorecardResource: { contents: Array<{ uri: string; text: string }> };
+      receiptTemplateResource: { contents: Array<{ uri: string; text: string }> };
       transcriptPrompt: { messages: Array<{ content: { text: string } }> };
       certificationLoopPrompt: { messages: Array<{ content: { text: string } }> };
       compositionReviewPrompt: { messages: Array<{ content: { text: string } }> };
@@ -1551,6 +1553,7 @@ describe("SplunkReady CLI flow", () => {
           "initialize",
           "tools/list",
           "resources/list",
+          "resources/templates/list",
           "resources/read",
           "prompts/list",
           "prompts/get",
@@ -1559,7 +1562,8 @@ describe("SplunkReady CLI flow", () => {
         resourceUris: expect.arrayContaining([
           "splunkready://client-config/splunk-and-splunkready",
           "splunkready://workflows/splunk-mcp-certification-loop",
-          "splunkready://workflows/mcp-composition-scorecard"
+          "splunkready://workflows/mcp-composition-scorecard",
+          "splunkready://receipts/pass"
         ]),
         promptNames: expect.arrayContaining([
           "splunkready_splunk_mcp_certification_loop",
@@ -1573,7 +1577,7 @@ describe("SplunkReady CLI flow", () => {
         mutation: false
       }
     });
-    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(14);
+    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(16);
     expect(summary.clientSession.responseCount).toBe(summary.clientSession.requestCount);
     expect(summary.splunkMcpBoundary.localMcpServerRole).toContain("certification interface");
     expect(summary.splunkMcpBoundary.splunkMcpServerRole).toContain("Splunk MCP Server boundary");
@@ -1592,6 +1596,9 @@ describe("SplunkReady CLI flow", () => {
       "splunkready://workflows/splunk-mcp-certification-loop",
       "splunkready://workflows/mcp-composition-scorecard"
     ]);
+    expect(summary.resourceTemplates.map((template) => template.uriTemplate)).toEqual([
+      "splunkready://receipts/{receiptId}"
+    ]);
     expect(summary.prompts.map((prompt) => prompt.name)).toEqual([
       "splunkready_certify_mcp_transcript",
       "splunkready_capture_trace",
@@ -1609,6 +1616,10 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.certificationLoopResource.contents[0].text).toContain("Splunk MCP Certification Loop");
     expect(summary.certificationLoopResource.contents[0].text).toContain("Configure two MCP servers");
     expect(summary.compositionScorecardResource.contents[0].text).toContain("composition, not replacement");
+    expect(summary.receiptTemplateResource.contents[0].text).toContain("Verdict: READY");
+    expect(summary.describe).toMatchObject({
+      resourceTemplates: ["splunkready://receipts/{receiptId}"]
+    });
     expect(summary.transcriptPrompt.messages[0].content.text).toContain("strictImport=true");
     expect(summary.certificationLoopPrompt.messages[0].content.text).toContain("Splunk MCP server: splunk");
     expect(summary.certificationLoopPrompt.messages[0].content.text).toContain("two-server MCP client configuration");

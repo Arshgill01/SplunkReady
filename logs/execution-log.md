@@ -12116,3 +12116,53 @@ Open blockers:
 - The token-bearing live SAIA diagnostic still needs to be run from a shell
   where the operator exports the required live variables.
 - Hosted CI needs to run after push for Move 110.
+
+## 2026-06-07 15:01 - Move 111 MCP Resource Template Proof
+
+Scope:
+- Added `resources/templates/list` support to the SplunkReady MCP server.
+- Exposed `splunkready://receipts/{receiptId}` as a bounded MCP resource
+  template and implemented `splunkready://receipts/pass` as a known receipt
+  read backed by the checked-in sample receipt.
+- Extended `mcp-proof` so the recorded stdio MCP client session calls
+  `resources/templates/list` and reads `splunkready://receipts/pass`.
+- Added the resource-template evidence to the MCP proof summary, markdown,
+  composition scorecard, client session, Vite MCP proof route, and UI schema.
+- Refreshed `submission-evidence/mcp-proof`, `claim-ledger.md`,
+  `submission-evidence/README.md`, `screenshots/workbench-mcp-proof.png`, and
+  `evidence-pack-sha256.txt`.
+- Smoke-tested the published package from a clean temp folder with:
+  `npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json`; it
+  returned `PASS`, and `judge-proof-summary.json` recorded `mutation=false`.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret
+  files.
+- Did not make LLM or SAIA output authoritative.
+- Did not add dependencies.
+- Did not use subagents.
+
+Files changed:
+- `src/mcp/server.ts`
+- `src/workflows/mcp-proof.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `scripts/audit-submission-copy.mjs`
+- `README.md`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/mcp-proof/*`
+- `submission-evidence/screenshots/workbench-mcp-proof.png`
+- `moves/README.md`
+- `moves/moves111.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 111.
+- Live SAIA PASS still requires a token-bearing shell with the required live
+  variables exported.

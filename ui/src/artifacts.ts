@@ -671,6 +671,15 @@ const mcpProofSummarySchema = z
         })
         .strict()
     ),
+    resourceTemplates: z.array(
+      z
+        .object({
+          uriTemplate: z.string().min(1),
+          name: z.string().min(1),
+          mimeType: z.string().min(1)
+        })
+        .strict()
+    ),
     prompts: z.array(
       z
         .object({
@@ -685,6 +694,7 @@ const mcpProofSummarySchema = z
     dualServerClientConfigResource: z.record(z.unknown()),
     certificationLoopResource: z.record(z.unknown()),
     compositionScorecardResource: z.record(z.unknown()),
+    receiptTemplateResource: z.record(z.unknown()),
     transcriptPrompt: z.record(z.unknown()),
     certificationLoopPrompt: z.record(z.unknown()),
     compositionReviewPrompt: z.record(z.unknown()),

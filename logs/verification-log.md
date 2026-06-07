@@ -9679,6 +9679,8 @@ Commands:
 - `npm run audit:public-demo-export`
 - `npx --yes --package playwright node --input-type=module <move-109-static-mcp-proof-check>`
 - `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `git diff --check`
+- `npm run check`
 - `npx vitest run tests/scripts/submission-copy-audit.test.ts`
 - `npm run audit:submission-copy`
 - `git diff --check`
@@ -9953,6 +9955,108 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
+
+## 2026-06-07 - Move 111 MCP Resource Template Proof
+
+Commands:
+
+- `tmp=$(mktemp -d /tmp/splunkready-publish-smoke-XXXXXX); cd "$tmp"; npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json`
+- `jq -r '"status=" + .status + ":mutation=" + (.mutation|tostring)' /tmp/splunkready-publish-smoke-vzcAdh/judge-proof/judge-proof-summary.json`
+- `npx tsc --noEmit`
+- `npx vitest run tests/mcp/server.test.ts`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "MCP proof"`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "MCP server proof"`
+- `npm run build`
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json`
+- `node dist/src/cli.js verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json`
+- `jq -r '"status=" + .status + ":resources=" + (.resources|length|tostring) + ":templates=" + (.resourceTemplates|length|tostring) + ":prompts=" + (.prompts|length|tostring) + ":requests=" + (.clientSession.requestCount|tostring) + ":session=" + .clientSession.status + ":mutation=" + (.mutation|tostring)' submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `npm run public-demo:build`
+- `bash "$PWCLI" open 'http://127.0.0.1:4341/?artifacts=artifacts%2Fmcp-proof#mcp-proof'`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename submission-evidence/screenshots/workbench-mcp-proof.png --full-page`
+- `npm run audit:public-demo-export`
+- `npm run audit:submission-copy`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS for published-package clean temp smoke:
+  - `npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json`
+    returned `PASS`.
+  - `judge-proof-summary.json` recorded `mutation=false`.
+- PASS for TypeScript.
+- PASS for focused MCP server tests:
+  - 1 file passed;
+  - 8 tests passed.
+- PASS for focused MCP UI render test:
+  - 1 test passed;
+  - 26 skipped by focused pattern.
+- PASS for focused CLI MCP proof test:
+  - 1 test passed;
+  - 40 skipped by focused pattern.
+- PASS for runtime build.
+- PASS for regenerated tracked MCP proof:
+  - `status=PASS`;
+  - `resources=8`;
+  - `templates=1`;
+  - `prompts=5`;
+  - `clientSession.requestCount=16`;
+  - `clientSession.status=PASS`;
+  - `mutation=false`.
+- PASS for nested MCP transcript manifest verification.
+- PASS for public demo build.
+- PASS for Playwright MCP proof route:
+  - rendered `resources/templates/list`;
+  - rendered `splunkready://receipts/{receiptId}`;
+  - rendered `splunkready://receipts/pass`;
+  - rendered `PASS`, 16 requests/responses, deterministic authority, and
+    `Mutation no`;
+  - refreshed `submission-evidence/screenshots/workbench-mcp-proof.png`.
+- PASS for public demo export audit:
+  - 185 files;
+  - mutation=false;
+  - default route `mcp-proof`.
+- PASS for submission copy audit:
+  - 43 required claims.
+- PASS for evidence-pack SHA verification.
+- PASS for `git diff --check`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 185 files and mutation=false;
+  - package readiness audit passed with 162 packed files checked;
+  - package installability audit installed `splunkready-0.1.0.tgz` and `npx
+    splunkready judge-proof` returned `PASS`;
+  - 59 test files passed;
+  - 358 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 43 required claims;
+  - included `git diff --check`.
+
+Notes:
+
+- The first Playwright screenshot attempt used the wrong argument shape and
+  failed before writing a file; the corrected `--filename` command passed.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not use subagents.
+
+Cleanup:
+
+- Stopped the local static server on port 4341.
+- Removed `.playwright-cli`.
+
+Open blockers:
+
+- Push and hosted CI remain to run.
+- Live SAIA PASS still requires the operator-owned token-bearing environment
+  variables to be exported into the shell running the live diagnostic.
 
 ## 2026-06-06 - Move 103 Public Judge Proof Evidence Pack
 

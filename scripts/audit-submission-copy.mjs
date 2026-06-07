@@ -53,6 +53,8 @@ const checks = [
     "The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof."
   ],
   ["Claim ledger MCP client session JSONL", files.claimLedger, "submission-evidence/mcp-proof/mcp-client-session.jsonl"],
+  ["Claim ledger MCP resource template", files.claimLedger, "splunkready://receipts/{receiptId}"],
+  ["Claim ledger MCP template session", files.claimLedger, "resources/templates/list"],
   ["Demo no LLM vibes", files.demo, "not another LLM judging vibes"],
   ["Demo no mutation", files.demo, "does not mutate Splunk"],
   ["Demo route", files.demo, "splunkready-shell.html#rerun-receipts"],

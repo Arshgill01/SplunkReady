@@ -58,6 +58,14 @@ interface McpResource {
   mimeType: string;
 }
 
+interface McpResourceTemplate {
+  uriTemplate: string;
+  name: string;
+  title: string;
+  description: string;
+  mimeType: string;
+}
+
 interface McpPrompt {
   name: string;
   title: string;
@@ -260,6 +268,17 @@ export const splunkReadyMcpResources: McpResource[] = [
   }
 ];
 
+export const splunkReadyMcpResourceTemplates: McpResourceTemplate[] = [
+  {
+    uriTemplate: "splunkready://receipts/{receiptId}",
+    name: "readiness-receipt-by-id",
+    title: "Readiness Receipt By ID",
+    description:
+      "Templated Readiness Receipt resource for MCP clients that need to fetch a named receipt artifact without using local file paths.",
+    mimeType: "text/markdown"
+  }
+];
+
 export const splunkReadyMcpPrompts: McpPrompt[] = [
   {
     name: "splunkready_certify_mcp_transcript",
@@ -385,8 +404,9 @@ const describeCertification = (): Record<string, unknown> => ({
   advisoryLlmOnly: true,
   mutation: false,
   tools: splunkReadyMcpTools.map((tool) => tool.name),
-    resources: splunkReadyMcpResources.map((resource) => resource.uri),
-    prompts: splunkReadyMcpPrompts.map((prompt) => prompt.name)
+  resources: splunkReadyMcpResources.map((resource) => resource.uri),
+  resourceTemplates: splunkReadyMcpResourceTemplates.map((template) => template.uriTemplate),
+  prompts: splunkReadyMcpPrompts.map((prompt) => prompt.name)
 });
 
 const splunkReadyClientConfig = (): Record<string, unknown> => ({
@@ -467,6 +487,18 @@ const readResource = async (uri: string): Promise<Record<string, unknown>> => {
   }
 
   if (uri === "splunkready://examples/pass-receipt") {
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: "text/markdown",
+          text: await readFile("examples/sample-pass-receipt.md", "utf8")
+        }
+      ]
+    };
+  }
+
+  if (uri === "splunkready://receipts/pass") {
     return {
       contents: [
         {
@@ -777,6 +809,10 @@ export const handleMcpMessage = async (
 
   if (request.method === "resources/list") {
     return success(request.id, { resources: splunkReadyMcpResources });
+  }
+
+  if (request.method === "resources/templates/list") {
+    return success(request.id, { resourceTemplates: splunkReadyMcpResourceTemplates });
   }
 
   if (request.method === "resources/read") {

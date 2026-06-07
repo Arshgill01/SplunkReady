@@ -78,7 +78,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | --- | --- | --- | --- |
 | The package is published on npm and judge-runnable from a clean folder. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json |
 | The hosted public demo exposes the credential-free judge proof and LLM evidence boundary. | Supported | submission-evidence/screenshots/public-judge-proof-proof-browser.png | ${hostedJudgeProofUrl} |
-| The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof. | Supported | submission-evidence/mcp-proof/mcp-client-session.jsonl | npm run mcp-proof |
+| The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof. | Supported | submission-evidence/mcp-proof/mcp-client-session.jsonl, resources/templates/list, splunkready://receipts/{receiptId} | npm run mcp-proof |
 `;
 
 const writeSubmissionTree = async (root: string, claimLedger = baseClaimLedger): Promise<void> => {
