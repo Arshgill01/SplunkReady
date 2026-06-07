@@ -872,3 +872,12 @@ workflow behavior. The mock server currently supports only `splunk_get_info` and
 pass. Residual risk remains in the larger Move 147 scope: saved-search/query
 behavior, hosted-model route states, Docker packaging, CI proof, and
 `submission-evidence/live-mock/` are still pending.
+
+Move 147 second slice reduces live-mock usefulness risk by adding
+fixture-backed `splunk_run_query` and `splunk_run_saved_search` to the mock MCP
+stdio server. The built CLI smoke now proves evidence-bearing search behavior
+over JSON-RPC without credentials. Residual risk remains in the workflow
+boundary: `live-proof --live-mock`, `live-security-proof --live-mock`, and
+`mcp-proof --live-mock` are not wired yet, and SAIA route-state simulation,
+Docker packaging, CI live-mock proof, and `submission-evidence/live-mock/`
+remain pending.

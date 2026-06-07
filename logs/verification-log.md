@@ -14193,3 +14193,66 @@ Results:
 Notes:
 
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 - Move 147 mock Splunk MCP query and saved-search slice
+
+Commands:
+
+- `npx vitest run tests/mcp/mock-splunk-server.test.ts`
+- `npm run build`
+- `npx vitest run tests/mcp/mock-splunk-server.test.ts`
+- `node <<'NODE' ... built mock-splunk-mcp stdio smoke ... NODE`
+- `npm run audit:package-readiness`
+- `git diff --check`
+- `npm run check`
+
+Results:
+
+- FAIL for the first focused mock-server test run:
+  - 1 test file ran;
+  - 6 tests passed;
+  - 2 tests failed because the assertions expected stale fixture IDs
+    `query:wineventlog:lateral-movement-src` and
+    `savedsearch:es:lateral-movement-auth-chain`;
+  - the implementation returned the actual fixture contract IDs
+    `query-canonical-lateral-movement` and `saved-search-lateral-movement`.
+- PASS for TypeScript build:
+  - `tsc --outDir dist` completed with no output.
+- PASS for the corrected focused mock-server test run:
+  - 1 test file passed;
+  - 8 tests passed.
+- PASS for the built CLI stdio smoke:
+  - `mock-splunk-mcp` initialized;
+  - `tools/list` returned `splunk_get_info`,
+    `splunk_get_knowledge_objects`, `splunk_run_query`, and
+    `splunk_run_saved_search`;
+  - `splunk_run_query` returned `query-canonical-lateral-movement`;
+  - `splunk_run_saved_search` returned `saved-search-lateral-movement`;
+  - both search paths returned evidence refs `evt-102`, `evt-118`, and
+    `evt-141`;
+  - `mutation=false`;
+  - stderr was empty.
+- PASS for package readiness:
+  - 168 packed files checked.
+- PASS for `git diff --check`:
+  - no whitespace errors.
+- PASS for the full canonical gate:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 62 test files passed;
+  - 386 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 101 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- No secret env file values were read, sourced, printed, or committed.

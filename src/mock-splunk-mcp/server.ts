@@ -55,6 +55,10 @@ const recordFromUnknown = (value: unknown): Record<string, unknown> =>
 const stringArrayFromUnknown = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.length > 0) : [];
 
+const stringFromUnknown = (value: unknown): string | undefined => (typeof value === "string" && value.length > 0 ? value : undefined);
+
+const numberFromUnknown = (value: unknown): number | undefined => (typeof value === "number" && Number.isFinite(value) ? value : undefined);
+
 const success = (id: JsonRpcId, result: unknown): JsonRpcSuccess => ({ jsonrpc: "2.0", id, result });
 
 const error = (id: JsonRpcId, code: number, message: string, data?: unknown): JsonRpcError => ({
@@ -71,6 +75,8 @@ const objectSchema = (properties: Record<string, unknown>, required: string[] = 
 });
 
 const stringProperty = (description: string): Record<string, unknown> => ({ type: "string", description });
+
+const numberProperty = (description: string): Record<string, unknown> => ({ type: "number", description });
 
 export const mockSplunkMcpTools: MockSplunkMcpTool[] = [
   {
@@ -101,6 +107,53 @@ export const mockSplunkMcpTools: MockSplunkMcpTool[] = [
       warnings: { type: "array", items: { type: "string" }, description: "Non-fatal mock warnings." }
     }),
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
+  },
+  {
+    name: "splunk_run_query",
+    title: "Run SPL Query",
+    description: "Return a canned read-only SPL query result from the SplunkReady fixture dataset.",
+    inputSchema: objectSchema(
+      {
+        query: stringProperty("Exact SPL query to resolve from the fixture dataset."),
+        app: stringProperty("Optional Splunk app context."),
+        maxRows: numberProperty("Optional maximum number of rows requested."),
+        timeWindow: objectSchema({
+          earliest: stringProperty("Earliest time bound."),
+          latest: stringProperty("Latest time bound.")
+        })
+      },
+      ["query"]
+    ),
+    outputSchema: objectSchema({
+      queryRef: stringProperty("Fixture query reference."),
+      rows: { type: "array", items: { type: "object" }, description: "Mock search rows." },
+      resultCount: numberProperty("Number of mock rows returned."),
+      evidenceRefs: { type: "array", items: { type: "string" }, description: "Fixture evidence references." },
+      warnings: { type: "array", items: { type: "string" }, description: "Non-fatal mock warnings." }
+    }),
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
+  },
+  {
+    name: "splunk_run_saved_search",
+    title: "Run Saved Search",
+    description: "Return a canned read-only saved-search result from the SplunkReady fixture dataset.",
+    inputSchema: objectSchema(
+      {
+        name: stringProperty("Saved-search name."),
+        app: stringProperty("Splunk app that owns the saved search."),
+        tokens: { type: "object", additionalProperties: { type: "string" }, description: "Optional saved-search token values." },
+        maxRows: numberProperty("Optional maximum number of rows requested.")
+      },
+      ["name", "app"]
+    ),
+    outputSchema: objectSchema({
+      savedSearchRef: stringProperty("Fixture saved-search reference."),
+      rows: { type: "array", items: { type: "object" }, description: "Mock saved-search rows." },
+      resultCount: numberProperty("Number of mock rows returned."),
+      evidenceRefs: { type: "array", items: { type: "string" }, description: "Fixture evidence references." },
+      warnings: { type: "array", items: { type: "string" }, description: "Non-fatal mock warnings." }
+    }),
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true }
   }
 ];
 
@@ -127,6 +180,21 @@ const readKnowledgeObjectTypes = (args: Record<string, unknown>): KnowledgeObjec
   const parsed = types.filter((type): type is KnowledgeObjectType => allowed.has(type as KnowledgeObjectType));
 
   return parsed.length > 0 ? parsed : fallbackTypes;
+};
+
+const readTimeWindow = (args: Record<string, unknown>) => {
+  const timeWindow = recordFromUnknown(args.timeWindow);
+  const earliest = stringFromUnknown(timeWindow.earliest);
+  const latest = stringFromUnknown(timeWindow.latest);
+
+  return earliest && latest ? { earliest, latest } : undefined;
+};
+
+const readStringRecord = (value: unknown): Record<string, string> | undefined => {
+  const record = recordFromUnknown(value);
+  const entries = Object.entries(record).filter((entry): entry is [string, string] => typeof entry[1] === "string");
+
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 };
 
 export const handleMockSplunkMcpMessage = async (
@@ -181,6 +249,54 @@ export const handleMockSplunkMcpMessage = async (
           callOptions
         )
       });
+    }
+
+    if (name === "splunk_run_query") {
+      const query = stringFromUnknown(args.query);
+
+      if (!query) {
+        return error(id, -32602, "splunk_run_query requires a non-empty query argument.");
+      }
+
+      return success(id, {
+        content: [{ type: "text", text: "Mock Splunk query result loaded." }],
+        structuredContent: await adapter.runQuery(
+          {
+            query,
+            app: stringFromUnknown(args.app),
+            maxRows: numberFromUnknown(args.maxRows),
+            timeWindow: readTimeWindow(args)
+          },
+          callOptions
+        )
+      });
+    }
+
+    if (name === "splunk_run_saved_search") {
+      const savedSearchName = stringFromUnknown(args.name);
+      const app = stringFromUnknown(args.app);
+
+      if (!savedSearchName || !app) {
+        return error(id, -32602, "splunk_run_saved_search requires non-empty name and app arguments.");
+      }
+
+      try {
+        return success(id, {
+          content: [{ type: "text", text: "Mock Splunk saved-search result loaded." }],
+          structuredContent: await adapter.runSavedSearch(
+            {
+              name: savedSearchName,
+              app,
+              maxRows: numberFromUnknown(args.maxRows),
+              tokens: readStringRecord(args.tokens)
+            },
+            callOptions
+          )
+        });
+      } catch (caught) {
+        const message = caught instanceof Error ? caught.message : `No mock saved-search result for ${app}::${savedSearchName}.`;
+        return error(id, -32000, message);
+      }
     }
 
     return error(id, -32602, `Unknown mock Splunk tool ${name}.`);

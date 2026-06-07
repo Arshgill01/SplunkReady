@@ -13,12 +13,14 @@ transport boundary.
 - Implement an MCP-compatible JSON-RPC stdio server backed by fixture data.
 - Start with `splunk_get_info` and `splunk_get_knowledge_objects`.
 - Add tests for initialize, tools/list, and tools/call.
+- Extend the proven mock transport with read-only `splunk_run_query` and
+  `splunk_run_saved_search` fixture-backed calls.
 
 ## Deferred Scope
 
 - `--live-mock` wiring for `live-proof`, `live-security-proof`, and `mcp-proof`.
 - Dockerfile and docker-compose packaging.
-- SAIA route states and full saved-search/query behavior.
+- SAIA route states plus realistic latency, pagination, and degraded-state behavior.
 - CI live-mock proof and `submission-evidence/live-mock/`.
 
 ## Verification
@@ -31,7 +33,13 @@ transport boundary.
 
 ## Result
 
-First slice implemented. `mock-splunk-mcp` initializes over stdio, lists two
+First slice implemented. `mock-splunk-mcp` initializes over stdio, lists
 read-only Splunk tools, returns fixture deployment info, returns fixture
-knowledge objects, and reports no mutation. Full `--live-mock` workflow wiring
-remains deferred to the next Move 147 slice.
+knowledge objects, and reports no mutation.
+
+Second slice implemented. The mock server now also lists and serves
+`splunk_run_query` and `splunk_run_saved_search` through the same fixture
+adapter. Focused tests and a built CLI stdio smoke verify evidence-bearing
+query and saved-search outputs. Full `--live-mock` workflow wiring, SAIA route
+states, Docker packaging, CI live-mock proof, and `submission-evidence/live-mock/`
+remain deferred.

@@ -13882,3 +13882,49 @@ Notes:
 
 - This slice does not claim real Splunk deployment evidence.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07T16:27:38Z - Move 147 mock Splunk MCP server query and saved-search slice
+
+Intent:
+
+- Extend the credential-free mock Splunk MCP server from metadata discovery into
+  evidence-bearing read-only search behavior.
+
+Actions:
+
+- Re-read AGENTS, MANIFEST, PLAN, DECISIONS, ARCHITECTURE, QUALITY-BAR,
+  `moves/moves147.md`, reviewer inbox context, execution/verification logs, and
+  the current risk register.
+- Added mock MCP tool definitions for:
+  - `splunk_run_query`;
+  - `splunk_run_saved_search`.
+- Routed both new tools through the existing fixture `SplunkAccessAdapter`
+  methods instead of inventing a separate mock data path.
+- Added validation for required query and saved-search arguments.
+- Added focused tests for tool discovery, exact fixture SPL query results,
+  saved-search results, evidence refs, read-only annotations, and missing
+  saved-search arguments.
+- Ran a built CLI stdio smoke that initialized `mock-splunk-mcp`, listed all
+  four tools, called `splunk_run_query`, called `splunk_run_saved_search`, and
+  returned fixture evidence refs with no stderr.
+
+Files changed:
+
+- `src/mock-splunk-mcp/server.ts`
+- `tests/mcp/mock-splunk-server.test.ts`
+- `moves/moves147.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Deferred:
+
+- `--live-mock` wiring for `live-proof`, `live-security-proof`, and `mcp-proof`.
+- SAIA route-state simulation.
+- Docker packaging, CI live-mock proof, and `submission-evidence/live-mock/`.
+
+Notes:
+
+- This remains a credential-free mock path and does not claim live Splunk
+  deployment evidence.
+- No secret env file values were read, sourced, printed, or committed.

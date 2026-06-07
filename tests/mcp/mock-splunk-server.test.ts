@@ -53,7 +53,12 @@ describe("mock Splunk MCP server", () => {
     const result = resultOf(response);
 
     expect(result.tools).toEqual(mockSplunkMcpTools);
-    expect(mockSplunkMcpTools.map((tool) => tool.name)).toEqual(["splunk_get_info", "splunk_get_knowledge_objects"]);
+    expect(mockSplunkMcpTools.map((tool) => tool.name)).toEqual([
+      "splunk_get_info",
+      "splunk_get_knowledge_objects",
+      "splunk_run_query",
+      "splunk_run_saved_search"
+    ]);
     expect(mockSplunkMcpTools.every((tool) => tool.annotations.destructiveHint === false)).toBe(true);
   });
 
@@ -98,6 +103,89 @@ describe("mock Splunk MCP server", () => {
 
     expect(structuredContent.resultCount).toBeGreaterThan(0);
     expect(structuredContent.objects.some((object) => String(object.name).includes("Lateral Movement"))).toBe(true);
+  });
+
+  it("calls splunk_run_query from exact fixture SPL", async () => {
+    const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
+    const response = await handleMockSplunkMcpMessage(
+      {
+        jsonrpc: "2.0",
+        id: "query",
+        method: "tools/call",
+        params: {
+          name: "splunk_run_query",
+          arguments: {
+            query: "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now",
+            app: "search",
+            maxRows: 25
+          }
+        }
+      },
+      { fixture }
+    );
+    const result = resultOf(response);
+    const structuredContent = result.structuredContent as {
+      queryRef: string;
+      resultCount: number;
+      evidenceRefs: string[];
+    };
+
+    expect(structuredContent.queryRef).toBe("query-canonical-lateral-movement");
+    expect(structuredContent.resultCount).toBeGreaterThan(0);
+    expect(structuredContent.evidenceRefs).toEqual(expect.arrayContaining(["evt-102", "evt-118"]));
+  });
+
+  it("calls splunk_run_saved_search from fixture saved-search data", async () => {
+    const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
+    const response = await handleMockSplunkMcpMessage(
+      {
+        jsonrpc: "2.0",
+        id: "saved-search",
+        method: "tools/call",
+        params: {
+          name: "splunk_run_saved_search",
+          arguments: {
+            app: "SplunkEnterpriseSecuritySuite",
+            name: "ES - Lateral Movement Auth Chain",
+            tokens: { host: "win-finance-07" },
+            maxRows: 25
+          }
+        }
+      },
+      { fixture }
+    );
+    const result = resultOf(response);
+    const structuredContent = result.structuredContent as {
+      savedSearchRef: string;
+      resultCount: number;
+      evidenceRefs: string[];
+    };
+
+    expect(structuredContent.savedSearchRef).toBe("saved-search-lateral-movement");
+    expect(structuredContent.resultCount).toBeGreaterThan(0);
+    expect(structuredContent.evidenceRefs).toEqual(expect.arrayContaining(["evt-102", "evt-118", "evt-141"]));
+  });
+
+  it("rejects saved-search calls without required name and app", async () => {
+    const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
+    const response = await handleMockSplunkMcpMessage(
+      {
+        jsonrpc: "2.0",
+        id: "missing-saved-search",
+        method: "tools/call",
+        params: { name: "splunk_run_saved_search", arguments: { app: "SplunkEnterpriseSecuritySuite" } }
+      },
+      { fixture }
+    );
+
+    expect(response).toMatchObject({
+      jsonrpc: "2.0",
+      id: "missing-saved-search",
+      error: {
+        code: -32602,
+        message: "splunk_run_saved_search requires non-empty name and app arguments."
+      }
+    });
   });
 
   it("keeps fixture files free of concrete token placeholders for mock server startup", async () => {
