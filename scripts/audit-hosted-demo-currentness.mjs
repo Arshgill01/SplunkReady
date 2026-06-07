@@ -79,19 +79,6 @@ const latestPublicDemoInputCommit = async () => {
   return stdout.trim();
 };
 
-const currentHead = async () => {
-  try {
-    const { stdout } = await execFileAsync("git", ["rev-parse", "HEAD"], {
-      cwd: process.cwd(),
-      maxBuffer: 1024 * 1024
-    });
-
-    return stdout.trim();
-  } catch {
-    return "UNKNOWN";
-  }
-};
-
 const writeJson = async (path, value) => {
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, `${JSON.stringify(value, null, 2)}\n`, "utf8");
@@ -106,7 +93,6 @@ const main = async () => {
   const hostedAssets = assetNamesFromHtml(hostedIndexHtml);
   const localAssets = await localAssetNames();
   const expectedCommit = args.expectedCommit || await latestPublicDemoInputCommit();
-  const headCommit = await currentHead();
   const failures = [];
 
   if (manifest.source !== "splunkready-public-demo-export") {
@@ -137,7 +123,6 @@ const main = async () => {
     hostedUrl: baseUrl.toString(),
     manifestUrl: manifestUrl.toString(),
     expectedPublicDemoInputCommit: expectedCommit,
-    localHead: headCommit,
     hostedSourceCommit: typeof manifest.sourceCommit === "string" ? manifest.sourceCommit : null,
     hostedSourceCommitShort: typeof manifest.sourceCommitShort === "string" ? manifest.sourceCommitShort : null,
     assets: {

@@ -15232,6 +15232,10 @@ Result:
   - `index-DpJj3Mh4.js`.
 - PASS: hosted manifest keeps `mutation=false` and includes
   `artifacts/interactive-demo`.
+- PASS: focused rerun after removing the noisy `localHead` evidence field:
+  - `npm test -- tests/scripts/hosted-demo-currentness.test.ts`;
+  - `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`.
+- PASS: refreshed and verified `submission-evidence/evidence-pack-sha256.txt`.
 
 Canonical local gate:
 
@@ -15239,7 +15243,7 @@ Canonical local gate:
 
 Result:
 
-- PASS for scaffold verification with 85 waves and 2263 project files.
+- PASS for scaffold verification with 85 waves and 2262 project files.
 - PASS for runtime contracts with 19 rules, 4 fixture missions, and 20 evidence refs.
 - PASS for TypeScript build and production UI build.
 - PASS for public demo export audit with 228 files and `mutation=false`.

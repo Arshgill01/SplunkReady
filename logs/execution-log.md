@@ -14666,6 +14666,8 @@ Actions:
   new manifest fields.
 - Triggered GitHub Pages workflow run `27102069779`; it deployed successfully.
 - Refreshed `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`.
+- Removed the informational `localHead` field from hosted currentness output so
+  evidence-only commits do not churn the proof artifact.
 - Updated the claim ledger and move index for Move 153.
 
 Files changed:
