@@ -13146,6 +13146,39 @@ Notes:
 - Did not read, source, print, or commit `.splunkready*` or `.env*` secret
   contents.
 
+## 2026-06-07T15:41:10Z - Move 141 hosted demo currentness refresh
+
+Intent:
+
+- Clear the hosted-demo currentness gap created by Move 140's MCP proof and
+  public-demo input changes.
+- Keep the move evidence-only after the user parked the external-client
+  screencast task as low value.
+
+Actions:
+
+- Ran the Public Demo Pages workflow from `splunkready-build`.
+- Watched the workflow through build, audit, artifact upload, and Pages deploy.
+- Reran the hosted-demo currentness audit against the live GitHub Pages URL.
+- Refreshed the tracked hosted-demo currentness JSON evidence.
+- Updated the claim ledger hosted source commit from `22777f3` to `5b44c3b`.
+- Added this move file and moves index entry.
+
+Files changed:
+
+- `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `submission-evidence/claim-ledger.md`
+- `moves/README.md`
+- `moves/moves141.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Notes:
+
+- No product code changed.
+- No secret env file values were read, sourced, printed, or committed.
+
 ## 2026-06-07T15:45:00Z - Move 139 hosted demo currentness evidence
 
 Intent:

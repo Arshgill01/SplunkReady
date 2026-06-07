@@ -814,3 +814,11 @@ agent session, and the public package still needs the current `mcp` entrypoint
 published before judges can use `splunkready@latest mcp`. Because this move
 changes public-demo input paths, the hosted-demo currentness evidence must be
 refreshed after the Pages workflow redeploys this commit.
+
+Move 141 closes the hosted-demo currentness gap introduced by Move 140. The
+Public Demo Pages workflow redeployed commit `5b44c3b`, and the tracked
+currentness audit reports `CURRENT`, matching hosted/local asset names and
+`mutation=false`. Residual risk remains public-package currentness:
+`splunkready@latest` still needs to publish the current source version before
+the no-clone package path exposes the current MCP entrypoint and client-config
+resources.

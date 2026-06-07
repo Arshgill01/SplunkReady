@@ -13828,3 +13828,54 @@ Notes:
 - No secret env file values were read, sourced, printed, or committed.
 - The new client resources are templates and proof-session resources, not a
   recorded live Antigravity or Zed agent session.
+
+## 2026-06-07 - Move 141 hosted demo currentness refresh
+
+Commands:
+
+- `gh workflow run public-demo-pages.yml --ref splunkready-build`
+- `gh run watch 27097064534 --exit-status`
+- `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `npm run audit:submission-copy`
+- `npm run audit:hosted-demo-currentness -- --require-current --out /tmp/splunkready-hosted-currentness-move141.json`
+- `npm run check`
+
+Results:
+
+- PASS for the Public Demo Pages workflow:
+  - build completed;
+  - public demo export audit completed;
+  - artifact upload completed;
+  - GitHub Pages deployment completed.
+- PASS for hosted-demo currentness audit:
+  - status `CURRENT`;
+  - expected public-demo input commit
+    `5b44c3b4468bf1302e3b8babc19479c8fe1bdb89`;
+  - local head `5b44c3b4468bf1302e3b8babc19479c8fe1bdb89`;
+  - hosted source commit `5b44c3b4468bf1302e3b8babc19479c8fe1bdb89`;
+  - hosted/local assets match:
+    `index-B-4Yo92o.js`, `index-BMPTXFQp.css`;
+  - `mutation=false`;
+  - failures empty.
+- PASS for submission-copy audit:
+  - 95 required claims audited.
+- PASS for the full canonical gate:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 61 test files passed;
+  - 376 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 95 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- No secret env file values were read, sourced, printed, or committed.
