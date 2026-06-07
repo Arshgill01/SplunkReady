@@ -24,6 +24,7 @@ import {
   llmProofCommand,
   mcpProofCommand,
   proofAuditCommand,
+  receiptReplayCommand,
   receiptChainCommand,
   signReceiptCommand,
   suiteProofCommand,
@@ -77,6 +78,8 @@ export const runCliCommand = async (command: string, options: CliOptions): Promi
     artifacts = await verifyManifestCommand(options);
   } else if (command === "verify-receipt-chain") {
     artifacts = await receiptChainCommand(options);
+  } else if (command === "receipt-replay") {
+    artifacts = await receiptReplayCommand(options);
   } else if (command === "sign-receipt") {
     artifacts = await signReceiptCommand(options);
   } else if (command === "keys-init") {

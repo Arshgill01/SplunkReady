@@ -28,7 +28,9 @@
     "appContextCount": 2,
     "dataModelCount": 1,
     "allowedTools": [
+      "saia_ask_splunk_question",
       "saia_explain_spl",
+      "saia_generate_spl",
       "saia_optimize_spl",
       "splunk_get_indexes",
       "splunk_get_info",
@@ -457,8 +459,10 @@
             "splunk_get_knowledge_objects",
             "splunk_run_query",
             "splunk_run_saved_search",
+            "saia_generate_spl",
             "saia_explain_spl",
-            "saia_optimize_spl"
+            "saia_optimize_spl",
+            "saia_ask_splunk_question"
           ]
         }
       ],

@@ -14803,3 +14803,65 @@ Result:
 - PASS for GitHub Actions run `27099788400`.
 - PASS for job `npm run check` in 1m14s.
 - PASS for the credential-free live mock proof step.
+
+## 2026-06-07T17:52:00Z - Move 148 receipt replay slice
+
+Commands:
+
+- `npm run build && npx vitest run tests/workflows/receipt-chain.test.ts tests/receipts/generator.test.ts tests/cli/flow.test.ts --testNamePattern "receipt|suite-proof|multi-mission|machine-readable"`
+- `node dist/src/cli.js suite-proof --out submission-evidence/suite-proof --require-fail-to-pass true --json`
+- `node dist/src/cli.js receipt-replay --dir submission-evidence/suite-proof --json`
+- `tmp=$(mktemp -d /tmp/splunkready-receipt-signing-XXXXXX) && node dist/src/cli.js keys init --out "$tmp" --json && cp "$tmp/receipt-public-key.pem" submission-evidence/receipt-public-key.pem && node dist/src/cli.js sign-receipt --dir submission-evidence/suite-proof --private-key "$tmp/receipt-private-key.local.pem" --public-key submission-evidence/receipt-public-key.pem --json && node dist/src/cli.js verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json && rm -rf "$tmp"`
+- `find . -name 'receipt-private-key.local.pem' -print`
+- `node dist/src/cli.js proof-audit --out submission-evidence/suite-proof --require-pass true --json`
+- `node dist/src/cli.js verify-manifest --out submission-evidence/suite-proof --json`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Results:
+
+- PASS for TypeScript build.
+- PASS for focused receipt-chain, receipt-generator, and CLI tests:
+  - 3 test files passed;
+  - 14 tests passed;
+  - 44 tests skipped by test-name filter.
+- PASS for tracked suite proof refresh with strict fail-to-pass enabled.
+- PASS for tracked `receipt-replay.json` generation.
+- PASS for temp-key initialization, signing, and public-key verification.
+- PASS for private-key absence check:
+  - `find . -name 'receipt-private-key.local.pem' -print` returned no output.
+- PASS for suite proof audit with `--require-pass true`.
+- PASS for suite proof manifest verification.
+- PASS for full `submission-evidence/evidence-pack-sha256.txt` verification,
+  including `submission-evidence/suite-proof/receipt-replay.json`.
+- PASS for focused post-doc verification:
+  - TypeScript build completed;
+  - focused receipt-chain, receipt-generator, submission-copy-audit, and CLI
+    tests passed with 14 tests passed and 47 skipped by test-name filter;
+  - `npm run audit:submission-copy` passed with 127 required claims;
+  - tracked `receipt-replay` returned `PASS`;
+  - tracked signed `verify-receipt-chain` returned `PASS`;
+  - private-key absence check returned no output.
+- PASS for full canonical gate:
+  - scaffold verified with 85 waves;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 210 files and `mutation=false`;
+  - package readiness audit passed with 172 packed files checked;
+  - package installability audit passed for `splunkready-0.1.2.tgz`,
+    clean `judge-proof`, and MCP initialization;
+  - 63 test files passed;
+  - 399 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission-copy audit passed with 127 required claims;
+  - final `git diff --check` completed with no output.
+
+Notes:
+
+- An initial focused test run failed before this pass because canonical hashing
+  included `undefined` optional keys and replay used strict mission schema
+  parsing instead of mission DSL parsing. Both defects were fixed before the
+  passing verification above.

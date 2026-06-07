@@ -39,5 +39,7 @@
     }
   ],
   "rerunComparison": {},
+  "receiptHash": "80e0160c2fa45dbef7939b4bdaf61b194b35f282fd3fc85072dd270719cc9fc8",
+  "previousReceiptHash": null,
   "generatedBy": "Agent Readiness Compiler"
 }

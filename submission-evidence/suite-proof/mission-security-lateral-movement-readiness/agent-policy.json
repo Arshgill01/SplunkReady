@@ -9,7 +9,9 @@
     "mode": "fixture"
   },
   "allowedTools": [
+    "saia_ask_splunk_question",
     "saia_explain_spl",
+    "saia_generate_spl",
     "saia_optimize_spl",
     "splunk_get_indexes",
     "splunk_get_info",
@@ -313,7 +315,9 @@
       "contractRef": "contract-acme-soc-dev.mcpTools",
       "value": {
         "allowedTools": [
+          "saia_ask_splunk_question",
           "saia_explain_spl",
+          "saia_generate_spl",
           "saia_optimize_spl",
           "splunk_get_indexes",
           "splunk_get_info",

@@ -15,6 +15,7 @@ hashes, chain pointers, and receipt-chain verification.
 ## Verification
 
 - `npx splunkready verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json`
+- `npx splunkready receipt-replay --dir submission-evidence/suite-proof --json`
 - Focused receipt-chain tests.
 - `npm run check`.
 
@@ -44,4 +45,14 @@ chain-signature verification, and tracked public-key evidence at
 The private signing key was generated under `/tmp`, used to sign the tracked
 chain, then removed; no private key is tracked.
 
-Deferred: embedded receipt hash fields and deterministic replay re-derivation.
+Third slice implemented. Added optional embedded `receiptHash` and
+`previousReceiptHash` fields to Readiness Receipts, canonical receipt hashing
+that excludes chain metadata and `undefined` optional fields, suite-proof
+receipt-chain annotation, and a deterministic `receipt-replay --dir <dir>`
+workflow. Replay re-derives receipts from each proof bundle's compiled
+Environment Contract, mission definition, trace, violations, and source receipt
+metadata, then compares canonical receipt hashes. The tracked
+`submission-evidence/suite-proof/receipt-replay.json` reports `PASS` across six
+receipts, and the tracked receipt JSON files now embed their chain metadata.
+
+Deferred: none for Move 148 scope.

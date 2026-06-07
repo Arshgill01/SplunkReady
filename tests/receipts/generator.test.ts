@@ -130,7 +130,8 @@ describe("readiness receipt generator", () => {
       violations: ["violation-evd-001", "violation-saf-002"],
       traceRefs: ["trace-query-result", "trace-final-answer"],
       evidenceRefs: ["evt-102"],
-      policyPatchSummary: [{ id: "patch-security-readiness", status: "exported" }]
+      policyPatchSummary: [{ id: "patch-security-readiness", status: "exported" }],
+      receiptHash: expect.stringMatching(/^[a-f0-9]{64}$/)
     });
     expect(JSON.parse(generated.json)).toEqual(generated.receipt);
   });

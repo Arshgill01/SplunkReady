@@ -1,12 +1,12 @@
 # SplunkReady Submission Evidence
 
-Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, and Move 148 signed receipt-chain evidence.
+Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, and Move 148 signed receipt-chain plus deterministic replay evidence.
 
 This directory is the judge-facing evidence pack. It is tracked in git so it can be inspected from a clean clone without access to ignored local `artifacts/`, `.splunkready*` env files, live credentials, or private deployment details.
 
 ## Contents
 
-- `suite-proof/`: credential-free multi-mission fixture proof. It includes the full proof bundle, compiler diagnostics, strict `proof-audit.json`, `proof-manifest.json`, `proof-manifest-verification.json`, and signed `receipt-chain.json`.
+- `suite-proof/`: credential-free multi-mission fixture proof. It includes the full proof bundle, compiler diagnostics, strict `proof-audit.json`, `proof-manifest.json`, `proof-manifest-verification.json`, signed `receipt-chain.json`, and deterministic `receipt-replay.json`.
 - `receipt-public-key.pem`: public Ed25519 key for verifying the tracked suite proof receipt-chain signature. The private key is not tracked.
 - `live-mock/`: credential-free live-mode proof generated through `live-proof --live-mock`. It exercises the live adapter normalization boundary against the fixture-backed mock Splunk MCP transport and produces a saved-search fail-to-pass proof with `mode: live` and `mutation: false`.
 - `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, records the raw JSON-RPC client session, discovers tools/resources/resource templates/prompts, reads a templated Readiness Receipt resource, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript through both path-based and inline-content MCP tools, checks hosted-model SAIA access through the MCP server in fixture mode, writes a client walkthrough showing existing Splunk MCP investigation followed by SplunkReady certification, and verifies the nested transcript proof manifests.
@@ -23,6 +23,7 @@ Run these from the repository root:
 npm run splunkready -- proof-audit --out submission-evidence/suite-proof --require-pass true --json
 npm run splunkready -- verify-manifest --out submission-evidence/suite-proof --json
 npm run splunkready -- verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json
+npm run splunkready -- receipt-replay --dir submission-evidence/suite-proof --json
 npm run live-mock-proof
 npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json
 npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-inline-transcript-certification --json
@@ -45,6 +46,7 @@ Expected proof status:
 - manifest verification: `PASS`
 - receipt-chain verification: `PASS`
 - receipt-chain signature: `VERIFIED`, `ed25519`
+- receipt replay: `PASS`, replayed receipts `6`
 - compiler diagnostics: present
 - live-mock status: `PASS`
 - live-mock mode: `live`

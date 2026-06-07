@@ -1,8 +1,17 @@
-import { createHash, generateKeyPairSync, sign as signData, verify as verifyData } from "node:crypto";
+import { generateKeyPairSync, sign as signData, verify as verifyData } from "node:crypto";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, join, relative, sep } from "node:path";
 
-import { readinessReceiptSchema, type ReadinessReceipt } from "../schemas/core.js";
+import { parseMissionDefinition } from "../missions/dsl.js";
+import { generateReadinessReceipt } from "../receipts/generator.js";
+import { canonicalJson, hashBuffer, receiptHash } from "../receipts/hash.js";
+import {
+  environmentContractSchema,
+  readinessReceiptSchema,
+  traceEventSchema,
+  violationSchema,
+  type ReadinessReceipt
+} from "../schemas/core.js";
 
 export interface ReceiptChainEntry {
   sequence: number;
@@ -60,40 +69,51 @@ export interface ReceiptChainWorkflowResult {
   report: ReceiptChainReport;
 }
 
-const defaultGeneratedAt = "2026-06-01T06:45:00.000Z";
+export interface ReceiptReplayEntry {
+  path: string;
+  phase: "before" | "after";
+  receiptId: string;
+  previousReceiptHash: string | null;
+  sourceReceiptHash: string;
+  replayedReceiptHash: string;
+  replayMatches: boolean;
+}
 
-const sha256Hex = (value: string | Buffer): string => createHash("sha256").update(value).digest("hex");
+export interface ReceiptReplayReport {
+  source: "splunkready-receipt-replay";
+  generatedAt: string;
+  status: "PASS" | "FAIL";
+  directory: string;
+  mutation: false;
+  deterministicAuthority: true;
+  replayedReceiptCount: number;
+  entries: ReceiptReplayEntry[];
+  failures: string[];
+}
+
+export interface ReceiptReplayWorkflowResult {
+  status: ReceiptReplayReport["status"];
+  artifacts: string[];
+  report: ReceiptReplayReport;
+}
+
+const defaultGeneratedAt = "2026-06-01T06:45:00.000Z";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-const canonicalJson = (value: unknown): string => {
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => canonicalJson(item)).join(",")}]`;
-  }
-
-  if (isRecord(value)) {
-    return `{${Object.keys(value)
-      .sort()
-      .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`)
-      .join(",")}}`;
-  }
-
-  return JSON.stringify(value);
-};
-
-export const receiptHash = (receipt: ReadinessReceipt): string => sha256Hex(canonicalJson(receipt));
-
 const chainDigest = (entries: ReceiptChainEntry[]): string =>
-  sha256Hex(
-    canonicalJson(
-      entries.map((entry) => ({
-        sequence: entry.sequence,
-        path: entry.path,
-        receiptId: entry.receiptId,
-        previousReceiptHash: entry.previousReceiptHash,
-        receiptHash: entry.receiptHash
-      }))
+  hashBuffer(
+    Buffer.from(
+      canonicalJson(
+        entries.map((entry) => ({
+          sequence: entry.sequence,
+          path: entry.path,
+          receiptId: entry.receiptId,
+          previousReceiptHash: entry.previousReceiptHash,
+          receiptHash: entry.receiptHash
+        }))
+      )
     )
   );
 
@@ -112,6 +132,7 @@ const collectReceiptFiles = async (rootDir: string, currentDir = rootDir): Promi
       if (
         !entry.isFile() ||
         entry.name === "receipt-chain.json" ||
+        entry.name === "receipt-replay.json" ||
         !entry.name.startsWith("receipt-") ||
         !entry.name.endsWith(".json")
       ) {
@@ -154,6 +175,9 @@ const sortReceiptPaths = (paths: string[]): string[] =>
 const readReceipt = async (path: string): Promise<ReadinessReceipt> =>
   readinessReceiptSchema.parse(JSON.parse(await readFile(path, "utf8")));
 
+const orderedReceiptPaths = async (dir: string): Promise<string[]> =>
+  sortReceiptPaths((await collectReceiptFiles(dir)).map((path) => chainPath(dir, path)));
+
 const readExistingSignature = async (dir: string): Promise<ReceiptChainSignature | undefined> => {
   const content = await readFile(join(dir, "receipt-chain.json"), "utf8").catch(() => undefined);
 
@@ -195,13 +219,15 @@ const publicKeyStatus = async (publicKeyPath?: string): Promise<ReceiptChainPubl
     return { path: publicKeyPath, status: "MISSING" };
   }
 
-  return { path: publicKeyPath, status: "PRESENT", sha256: sha256Hex(content) };
+  return { path: publicKeyPath, status: "PRESENT", sha256: hashBuffer(content) };
 };
 
 const writeJson = async (filePath: string, value: unknown): Promise<void> => {
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 };
+
+const readJson = async (filePath: string): Promise<unknown> => JSON.parse(await readFile(filePath, "utf8"));
 
 const verifySignature = (digest: string, publicKey: Buffer, signatureBase64: string): boolean =>
   verifyData(null, Buffer.from(digest, "utf8"), publicKey, Buffer.from(signatureBase64, "base64"));
@@ -266,7 +292,7 @@ const signatureFor = async (
 };
 
 export const buildReceiptChainReport = async (input: ReceiptChainWorkflowInput): Promise<ReceiptChainReport> => {
-  const receiptPaths = sortReceiptPaths((await collectReceiptFiles(input.dir)).map((path) => chainPath(input.dir, path)));
+  const receiptPaths = await orderedReceiptPaths(input.dir);
   const failures: string[] = [];
   let previousReceiptHash: string | null = null;
   const entries: ReceiptChainEntry[] = [];
@@ -277,6 +303,14 @@ export const buildReceiptChainReport = async (input: ReceiptChainWorkflowInput):
     try {
       const receipt = await readReceipt(filePath);
       const hash = receiptHash(receipt);
+
+      if (receipt.receiptHash !== undefined && receipt.receiptHash !== hash) {
+        failures.push(`${relativePath}: embedded receiptHash does not match canonical content hash.`);
+      }
+
+      if (receipt.previousReceiptHash !== undefined && receipt.previousReceiptHash !== previousReceiptHash) {
+        failures.push(`${relativePath}: embedded previousReceiptHash does not match the preceding receipt hash.`);
+      }
 
       entries.push({
         sequence: index + 1,
@@ -329,6 +363,126 @@ export const buildReceiptChainReport = async (input: ReceiptChainWorkflowInput):
 export const runReceiptChainWorkflow = async (input: ReceiptChainWorkflowInput): Promise<ReceiptChainWorkflowResult> => {
   const report = await buildReceiptChainReport(input);
   const reportPath = join(input.dir, "receipt-chain.json");
+
+  await writeJson(reportPath, report);
+
+  return { status: report.status, artifacts: [reportPath], report };
+};
+
+export const annotateReceiptChainMetadata = async (dir: string): Promise<string[]> => {
+  const receiptPaths = await orderedReceiptPaths(dir);
+  const artifacts: string[] = [];
+  let previousReceiptHash: string | null = null;
+
+  for (const relativePath of receiptPaths) {
+    const filePath = join(dir, relativePath);
+    const receipt = await readReceipt(filePath);
+    const hash = receiptHash(receipt);
+    const annotated = readinessReceiptSchema.parse({
+      ...receipt,
+      receiptHash: hash,
+      previousReceiptHash
+    });
+
+    await writeJson(filePath, annotated);
+    artifacts.push(filePath);
+    previousReceiptHash = hash;
+  }
+
+  return artifacts;
+};
+
+const receiptPhase = (path: string): "before" | "after" | undefined => {
+  if (path.endsWith("receipt-before-001.json")) {
+    return "before";
+  }
+
+  if (path.endsWith("receipt-after-001.json")) {
+    return "after";
+  }
+
+  return undefined;
+};
+
+const replayReceipt = async (dir: string, relativePath: string): Promise<ReceiptReplayEntry> => {
+  const phase = receiptPhase(relativePath);
+
+  if (!phase) {
+    throw new Error(`${relativePath}: unsupported receipt phase.`);
+  }
+
+  const receiptPath = join(dir, relativePath);
+  const receiptDir = dirname(receiptPath);
+  const sourceReceipt = await readReceipt(receiptPath);
+  const environment = environmentContractSchema.parse(await readJson(join(receiptDir, "environment-contract.json")));
+  const missions = (await readJson(join(receiptDir, "missions.json")) as unknown[]).map(parseMissionDefinition);
+  const traceEvents = traceEventSchema.array().parse(await readJson(join(receiptDir, `trace-${phase}.json`)));
+  const violations = violationSchema.array().parse(await readJson(join(receiptDir, `violations-${phase}.json`)));
+  const replayed = generateReadinessReceipt({
+    id: sourceReceipt.id,
+    agent: sourceReceipt.agent,
+    environment,
+    missionSuiteVersion: sourceReceipt.missionSuiteVersion,
+    missions,
+    traceEvents,
+    violations,
+    policyPatchSummary: sourceReceipt.policyPatchSummary,
+    rerunComparison: sourceReceipt.rerunComparison,
+    previousReceiptHash: sourceReceipt.previousReceiptHash,
+    generatedBy: sourceReceipt.generatedBy,
+    notes: sourceReceipt.notes
+  }).receipt;
+  const sourceReceiptHash = receiptHash(sourceReceipt);
+  const replayedReceiptHash = receiptHash(replayed);
+
+  return {
+    path: relativePath,
+    phase,
+    receiptId: sourceReceipt.id,
+    previousReceiptHash: sourceReceipt.previousReceiptHash ?? null,
+    sourceReceiptHash,
+    replayedReceiptHash,
+    replayMatches: sourceReceiptHash === replayedReceiptHash
+  };
+};
+
+export const runReceiptReplayWorkflow = async (input: {
+  dir: string;
+  generatedAt?: string;
+}): Promise<ReceiptReplayWorkflowResult> => {
+  const receiptPaths = await orderedReceiptPaths(input.dir);
+  const failures: string[] = [];
+  const entries: ReceiptReplayEntry[] = [];
+
+  for (const relativePath of receiptPaths) {
+    try {
+      const entry = await replayReceipt(input.dir, relativePath);
+
+      entries.push(entry);
+      if (!entry.replayMatches) {
+        failures.push(`${relativePath}: replayed receipt hash does not match source receipt hash.`);
+      }
+    } catch (error) {
+      failures.push(`${relativePath}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  if (entries.length === 0) {
+    failures.push("No replayable receipt-*.json files found.");
+  }
+
+  const report: ReceiptReplayReport = {
+    source: "splunkready-receipt-replay",
+    generatedAt: input.generatedAt ?? defaultGeneratedAt,
+    status: failures.length === 0 ? "PASS" : "FAIL",
+    directory: input.dir,
+    mutation: false,
+    deterministicAuthority: true,
+    replayedReceiptCount: entries.length,
+    entries,
+    failures
+  };
+  const reportPath = join(input.dir, "receipt-replay.json");
 
   await writeJson(reportPath, report);
 

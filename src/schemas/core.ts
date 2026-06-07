@@ -42,6 +42,7 @@ export const readOnlySplunkToolNameSchema = z.enum([
 const idSchema = z.string().min(1);
 const isoTimestampSchema = z.string().datetime();
 const stringListSchema = z.array(z.string().min(1));
+const sha256HexSchema = z.string().regex(/^[a-f0-9]{64}$/, "must be a lowercase SHA-256 hex digest");
 const readOnlyToolListSchema = z.array(readOnlySplunkToolNameSchema).min(1);
 const looseObjectSchema = z.record(z.unknown());
 
@@ -220,6 +221,8 @@ export const readinessReceiptSchema = z
     evidenceRefs: z.array(z.string().min(1)),
     policyPatchSummary: z.array(z.object({ id: idSchema, status: z.string().min(1) }).strict()),
     rerunComparison: looseObjectSchema,
+    receiptHash: sha256HexSchema.optional(),
+    previousReceiptHash: sha256HexSchema.nullable().optional(),
     operatorWaivers: z.array(looseObjectSchema).optional(),
     generatedBy: z.string().optional(),
     notes: z.string().optional()

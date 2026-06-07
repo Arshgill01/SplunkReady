@@ -319,12 +319,18 @@ To add replay lineage over all receipt artifacts in a bundle:
 npm run splunkready -- verify-receipt-chain \
   --dir submission-evidence/suite-proof \
   --json
+npm run splunkready -- receipt-replay \
+  --dir submission-evidence/suite-proof \
+  --json
 ```
 
 This writes `receipt-chain.json`, a deterministic SHA-256 chain over every
 schema-valid `receipt-*.json` artifact in the directory tree. The chain report
 records `mutation: false` and keeps deterministic grading as the authority; it
-does not make any model or Splunk calls.
+does not make any model or Splunk calls. `receipt-replay` writes
+`receipt-replay.json` by re-deriving receipts from the proof bundle's compiled
+contract, mission, trace, and violation artifacts, then comparing canonical
+receipt hashes.
 
 For a signed local chain, initialize a key pair outside tracked evidence and
 sign the bundle:

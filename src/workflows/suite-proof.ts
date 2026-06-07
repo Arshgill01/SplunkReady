@@ -9,6 +9,7 @@ import {
   type SuiteProofSummary
 } from "./compiler-diagnostics.js";
 import { classifyProofLoop } from "./proof-audit.js";
+import { annotateReceiptChainMetadata } from "./receipt-chain.js";
 
 interface SuiteDefinition {
   id: string;
@@ -185,6 +186,8 @@ export const runSuiteProofWorkflow = async (
     });
     artifacts.push(...compileArtifacts, ...evaluateArtifacts, ...receiptArtifacts, ...rerunArtifacts, ...afterReceiptArtifacts);
   }
+
+  await annotateReceiptChainMetadata(input.outDir);
 
   const domains = [...new Set(missionSummaries.map((mission) => mission.domain))].sort();
   const summary: SuiteProofSummary = {

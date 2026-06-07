@@ -816,6 +816,42 @@ describe("SplunkReady CLI flow", () => {
     expect(diagnosticsMarkdown).toContain("Pass/fail authority: deterministic-rule-engine");
     expect(diagnosticsMarkdown).toContain("SPL-001");
 
+    const receiptChainOutput = parseCliJsonOutput((await runCli(["verify-receipt-chain", "--dir", outDir, "--json"])).stdout);
+    const replayOutput = parseCliJsonOutput((await runCli(["receipt-replay", "--dir", outDir, "--json"])).stdout);
+    const receiptChain = JSON.parse(await readFile(join(outDir, "receipt-chain.json"), "utf8")) as {
+      status: string;
+      receiptCount: number;
+      entries: Array<{ path: string; previousReceiptHash: string | null; receiptHash: string }>;
+    };
+    const receiptReplay = JSON.parse(await readFile(join(outDir, "receipt-replay.json"), "utf8")) as {
+      status: string;
+      replayedReceiptCount: number;
+      entries: Array<{ replayMatches: boolean }>;
+    };
+    const firstReceipt = JSON.parse(
+      await readFile(join(outDir, receiptChain.entries[0].path), "utf8")
+    ) as { receiptHash: string; previousReceiptHash: string | null };
+    const secondReceipt = JSON.parse(
+      await readFile(join(outDir, receiptChain.entries[1].path), "utf8")
+    ) as { receiptHash: string; previousReceiptHash: string | null };
+
+    expect(receiptChainOutput).toMatchObject({
+      command: "verify-receipt-chain",
+      status: "PASS",
+      artifacts: [join(outDir, "receipt-chain.json")]
+    });
+    expect(receiptChain).toMatchObject({ status: "PASS", receiptCount: 6 });
+    expect(firstReceipt.receiptHash).toBe(receiptChain.entries[0].receiptHash);
+    expect(firstReceipt.previousReceiptHash).toBeNull();
+    expect(secondReceipt.previousReceiptHash).toBe(receiptChain.entries[0].receiptHash);
+    expect(replayOutput).toMatchObject({
+      command: "receipt-replay",
+      status: "PASS",
+      artifacts: [join(outDir, "receipt-replay.json")]
+    });
+    expect(receiptReplay).toMatchObject({ status: "PASS", replayedReceiptCount: 6 });
+    expect(receiptReplay.entries.every((entry) => entry.replayMatches)).toBe(true);
+
     const auditOutput = parseCliJsonOutput(
       (await runCli(["proof-audit", "--out", outDir, "--require-pass", "true", "--json"])).stdout
     );

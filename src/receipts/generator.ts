@@ -7,6 +7,7 @@ import {
   type TraceEvent,
   type Violation
 } from "../schemas/core.js";
+import { receiptHash } from "./hash.js";
 
 export interface ReceiptAgent {
   name: string;
@@ -28,6 +29,7 @@ export interface GenerateReceiptInput {
   violations: Violation[];
   policyPatchSummary?: PolicyPatchSummary[];
   rerunComparison?: Record<string, unknown>;
+  previousReceiptHash?: string | null;
   generatedBy?: string;
   notes?: string;
 }
@@ -167,7 +169,7 @@ export const renderReceiptMarkdown = (
 
 export const generateReadinessReceipt = (input: GenerateReceiptInput): GeneratedReceipt => {
   const suiteScore = scoreMissionSuite(input.missions, input.violations);
-  const receipt = readinessReceiptSchema.parse({
+  const baseReceipt = readinessReceiptSchema.parse({
     id: input.id,
     agent: input.agent,
     environment: { id: input.environment.id, name: input.environment.name },
@@ -186,6 +188,11 @@ export const generateReadinessReceipt = (input: GenerateReceiptInput): Generated
     rerunComparison: input.rerunComparison ?? {},
     generatedBy: input.generatedBy ?? "Agent Readiness Compiler",
     notes: input.notes
+  });
+  const receipt = readinessReceiptSchema.parse({
+    ...baseReceipt,
+    receiptHash: receiptHash(baseReceipt),
+    ...(input.previousReceiptHash !== undefined ? { previousReceiptHash: input.previousReceiptHash } : {})
   });
   const markdown = renderReceiptMarkdown(receipt, suiteScore, input.violations);
 

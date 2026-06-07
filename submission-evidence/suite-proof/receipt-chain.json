@@ -12,14 +12,14 @@
   "publicKey": {
     "path": "submission-evidence/receipt-public-key.pem",
     "status": "PRESENT",
-    "sha256": "58c159aaed1695c272472424bf01df13b4ccd4003e7fe8e0d7a48a18e08129a3"
+    "sha256": "28496226f62d7af79039dd4e506e5c8943f0cdd5e28e502141e95f7c8b198d24"
   },
   "signature": {
     "algorithm": "ed25519",
     "signedPayload": "chainDigest",
     "status": "VERIFIED",
-    "signatureBase64": "G+Wn4GyLAB7L4lL8gOTw8FfHd9m7pDUWO/EUD/LHjCq9c6D++92AbQcOZtP9H/+veg231pynUFa2WB+FJN4gBQ==",
-    "publicKeySha256": "58c159aaed1695c272472424bf01df13b4ccd4003e7fe8e0d7a48a18e08129a3"
+    "signatureBase64": "O+EFJxQ8VKBvc/AGQRIVg5JdmjC0Kju4g4Bw+ODiGgEXbUFkEPvyKCRDck2B9wjuyDkM4Rl+0qpH7jWpiTtxAQ==",
+    "publicKeySha256": "28496226f62d7af79039dd4e506e5c8943f0cdd5e28e502141e95f7c8b198d24"
   },
   "entries": [
     {

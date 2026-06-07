@@ -60,6 +60,7 @@ Commands:
   proof-audit --out <dir> [--require-pass true|false] [--json]
   verify-manifest --out <dir> [--json]
   verify-receipt-chain --dir <dir> [--public-key <path>] [--json]
+  receipt-replay --dir <dir> [--json]
   sign-receipt --dir <dir> --private-key <path> --public-key <path> [--json]
   keys init --out <dir> [--json]
   certification-index --proof-dirs <dir[,dir]> --out <dir> [--require-pass true|false] [--json]

@@ -36,5 +36,7 @@
   ],
   "policyPatchSummary": [],
   "rerunComparison": {},
+  "receiptHash": "b7e9e0ceeb231e2ce92587a65365c44f3f11e53aff477388cc9d29e1d06f9356",
+  "previousReceiptHash": "6fdd221b133567945af21d86e6a28279b907cc72f12777d61f1d2cd187b58e0f",
   "generatedBy": "Agent Readiness Compiler"
 }

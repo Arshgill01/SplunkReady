@@ -14345,3 +14345,60 @@ Result:
 
 - GitHub Actions `CI / npm run check` passed in 1m14s.
 - The remote gate also ran and passed the credential-free live mock proof.
+
+## 2026-06-07T17:52:00Z - Move 148 receipt replay slice
+
+Intent:
+
+- Finish Move 148 by embedding receipt hash metadata and adding deterministic
+  receipt replay.
+
+Actions:
+
+- Added optional `receiptHash` and `previousReceiptHash` support to
+  `ReadinessReceipt`.
+- Added shared canonical receipt hashing that excludes chain metadata and
+  ignores `undefined` optional fields.
+- Updated receipt generation to include stable `receiptHash`.
+- Added suite-proof receipt annotation so generated proof receipts embed
+  chain metadata.
+- Updated receipt-chain verification to validate embedded hash metadata when
+  present.
+- Added `receipt-replay --dir <dir>` to re-derive receipts from
+  `environment-contract.json`, `missions.json`, `trace-*.json`,
+  `violations-*.json`, and source receipt metadata.
+- Refreshed tracked suite proof evidence, added `receipt-replay.json`, and
+  regenerated the signed public-key evidence with a temp private key.
+- Updated README, submission evidence README, claim ledger, submission-copy
+  audit guards, focused tests, and Move 148.
+
+Files changed:
+
+- `README.md`
+- `moves/moves148.md`
+- `scripts/audit-submission-copy.mjs`
+- `src/cli/dispatch.ts`
+- `src/cli/options.ts`
+- `src/cli/proof-commands.ts`
+- `src/receipts/generator.ts`
+- `src/receipts/hash.ts`
+- `src/schemas/core.ts`
+- `src/workflows/receipt-chain.ts`
+- `src/workflows/suite-proof.ts`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/receipt-public-key.pem`
+- `submission-evidence/suite-proof/`
+- `tests/cli/flow.test.ts`
+- `tests/receipts/generator.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `tests/workflows/receipt-chain.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+
+- The private signing key was generated in `/tmp`, used only for the tracked
+  evidence signature, then removed.
+- No secret env file values were read, sourced, printed, or committed.
