@@ -651,16 +651,18 @@ const mcpProofSummary = {
       toolStatus: "success",
       summary: {
         error: 0,
-        failure: 2,
-        success: 8,
-        warning: 0
+        failure: 0,
+        not_applicable: 150,
+        skipped: 0,
+        success: 95,
+        warning: 4
       },
-      failureCount: 2,
+      failureCount: 0,
       errorCount: 0,
-      warningCount: 0,
+      warningCount: 4,
       validationGroupCount: 1,
-      nextSteps: ["Review AppInspect findings before claiming Splunkbase readiness."],
-      logsPreview: "Validated package.",
+      nextSteps: ["All validation checks passed. No fixes from AppInspect required."],
+      logsPreview: "Validation completed with 0 failures and 0 errors.",
       publicSafe: true
     },
     composition: {

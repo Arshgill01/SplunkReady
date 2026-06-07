@@ -15122,6 +15122,66 @@ Result:
   server name `AppInspect MCP Server`, version `2.14.7`, tool `inspect_app`,
   validation `SUCCESS`, deterministic receipt authority `splunkready`,
   AppInspect authority `advisory-static-validation`, and `mutation: false`.
-- HONEST FINDING: the current `.spl` package has 2 AppInspect validation
-  failures, 0 errors, and 0 warnings. This is recorded as advisory evidence and
-  is not claimed as Splunkbase approval.
+- HONEST FINDING AT MOVE 164 TIME: the then-current `.spl` package had 2
+  AppInspect validation failures, 0 errors, and 0 warnings. This was recorded as
+  advisory evidence and was not claimed as Splunkbase approval. Move 161's
+  AppInspect-clean package slice later reduced this to 0 failures.
+
+## 2026-06-07T21:05:00Z - Move 161 AppInspect-clean package slice
+
+Intent:
+
+- Convert the AppInspect evidence exposed in Move 164 from "validation succeeds
+  but the package has failures" into an AppInspect-clean package proof without
+  claiming live installation, Splunkbase vetting, or Splunk Cloud approval.
+
+Actions:
+
+- Re-ran local AppInspect against the tracked `.spl` package and confirmed the
+  remaining failures were packaging/anatomy issues rather than SplunkReady
+  runtime behavior.
+- Updated the Splunk app package builder to normalize package permissions before
+  archiving and to create the archive with `COPYFILE_DISABLE=1`, preventing
+  macOS AppleDouble metadata from entering the `.spl`.
+- Changed generated `default/app.conf` to ship with
+  `[install] is_configured = false`, matching AppInspect's distributable app
+  expectation.
+- Extended the package-builder test to verify no `._`/`__MACOSX` entries,
+  directory/file permissions, and the distributable install-state flag.
+- Rebuilt `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`.
+- Re-ran AppInspect and refreshed `submission-evidence/mcp-proof/` so
+  `appInspectComposition` now reports 0 failures.
+- Updated README, Devpost copy, submission evidence README, claim ledger,
+  submission-copy guards, UI fixture data, ambitious move plan, and risk log to
+  reflect the current AppInspect result.
+
+Files changed:
+
+- `README.md`
+- `docs/ambitious-award-move-plan.md`
+- `docs/devpost-submission.md`
+- `logs/execution-log.md`
+- `logs/risk-register.md`
+- `logs/verification-log.md`
+- `scripts/audit-submission-copy.mjs`
+- `scripts/build-splunk-app-package.mjs`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/appinspect-mcp-composition.json`
+- `submission-evidence/mcp-proof/appinspect-mcp-composition.md`
+- `submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `submission-evidence/mcp-proof/mcp-proof-summary.md`
+- `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`
+- `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`
+- `tests/scripts/splunk-app-package.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `tests/ui/app.test.ts`
+
+Result:
+
+- PASS: local AppInspect now reports 0 errors, 0 failures, 4 warnings, and 95
+  successful checks for `SplunkReady-0.1.3.spl`.
+- PASS: MCP proof still returns `status: "PASS"` and records AppInspect as
+  advisory static validation only.
+- PARTIAL: this completes the AppInspect-clean package slice of Move 161; the
+  broader dashboard/KV-store/live-install evidence scope remains open.

@@ -14,21 +14,20 @@ Validation status: SUCCESS
 
 Validation summary:
 - error: 0
-- failure: 2
+- failure: 0
 - future_failure: 0
-- not_applicable: 2
-- skipped: 237
-- success: 8
-- warning: 0
+- not_applicable: 150
+- skipped: 0
+- success: 95
+- warning: 4
 
 Static validation counts:
-- failures: 2
+- failures: 0
 - errors: 0
-- warnings: 0
+- warnings: 4
 
 Next steps:
-- Fix all errors in the `validation_results` with result `failure` one by one
-- Rerun `inspect_app` tool
+- All validation checks passed. No fixes from AppInspect required.
 
 Composition:
 - splunk: Read-only investigation MCP server for deployment data, saved searches, and evidence rows. (operational-evidence-source)

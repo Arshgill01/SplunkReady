@@ -149,9 +149,9 @@ AppInspect MCP composition: PASS
 - Tools: inspect_app
 - App package: submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
 - Validation: SUCCESS
-- AppInspect failures: 2
+- AppInspect failures: 0
 - AppInspect errors: 0
-- AppInspect warnings: 0
+- AppInspect warnings: 4
 - Receipt authority: splunkready
 - AppInspect authority: advisory-static-validation
 

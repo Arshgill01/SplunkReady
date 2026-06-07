@@ -31,3 +31,11 @@ boundary.
 - AppInspect smoke or explicit blocked artifact.
 - `npm run splunk-app:package`
 - `npm run check`
+
+## Progress
+
+- 2026-06-07: AppInspect-clean package slice implemented. The builder now
+  normalizes permissions, avoids macOS AppleDouble archive metadata, ships
+  `[install] is_configured = false`, and the tracked `.spl` package reports
+  AppInspect `SUCCESS` with 0 failures and 0 errors. KV-store, dashboard, and
+  live-install evidence remain open.

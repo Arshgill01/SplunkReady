@@ -77,7 +77,7 @@ Expected proof status:
 - MCP composition recorder: `PASS`, `9` pass-through gateway frames, servers `splunk`, `splunkready`
 - MCP composition recorder redaction: `PASS`
 - MCP composition recorder certification: `PASS`, strict import skipped records `0`
-- AppInspect MCP composition: `PASS`, server `AppInspect MCP Server 2.14.7`, tool `inspect_app`, validation `SUCCESS`, failures `2`, errors `0`, warnings `0`
+- AppInspect MCP composition: `PASS`, server `AppInspect MCP Server 2.14.7`, tool `inspect_app`, validation `SUCCESS`, failures `0`, errors `0`, warnings `4`
 - MCP live-mock session: `PASS`
 - MCP template receipt read: `splunkready://receipts/pass`
 - MCP inline transcript certification: `PASS`

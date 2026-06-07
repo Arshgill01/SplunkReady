@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, symlink, writeFile } from "node:fs/promises";
+import { lstat, mkdir, mkdtemp, readFile, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
@@ -72,11 +72,19 @@ describe("Splunk app package builder", () => {
     expect(stdout).toContain("SplunkReady/appserver/static/splunkready/index.html");
     expect(stdout).not.toContain("SplunkReady/local/");
     expect(stdout).not.toContain(".splunkready");
+    expect(stdout).not.toContain("._");
+    expect(stdout).not.toContain("__MACOSX");
 
     await mkdir(join(root, "extracted"), { recursive: true });
     await execFileAsync("tar", ["-xzf", join(root, manifest.packagePath), "-C", join(root, "extracted")]);
+    await expect(lstat(join(root, "extracted", "SplunkReady"))).resolves.toMatchObject({ mode: expect.any(Number) });
+    expect((await lstat(join(root, "extracted", "SplunkReady"))).mode & 0o777).toBe(0o755);
+    expect((await lstat(join(root, "extracted", "SplunkReady", "default", "app.conf"))).mode & 0o777).toBe(0o644);
     await expect(readFile(join(root, "extracted", "SplunkReady", "default", "app.conf"), "utf8")).resolves.toContain(
       "id = SplunkReady"
+    );
+    await expect(readFile(join(root, "extracted", "SplunkReady", "default", "app.conf"), "utf8")).resolves.toContain(
+      "is_configured = false"
     );
     await expect(
       readFile(join(root, "extracted", "SplunkReady", "default", "data", "ui", "views", "splunkready.xml"), "utf8")

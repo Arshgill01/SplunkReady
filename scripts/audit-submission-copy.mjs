@@ -203,7 +203,7 @@ const checks = [
   ["Claim ledger AppInspect MCP tool", files.claimLedger, "inspect_app"],
   ["Claim ledger AppInspect advisory authority", files.claimLedger, "appInspectAuthority: \"advisory-static-validation\""],
   ["Claim ledger AppInspect deterministic authority", files.claimLedger, "deterministicReceiptAuthority: \"splunkready\""],
-  ["Claim ledger AppInspect failure count", files.claimLedger, "failureCount: 2"],
+  ["Claim ledger AppInspect failure count", files.claimLedger, "failureCount: 0"],
   ["README AppInspect MCP composition", files.readme, "AppInspect MCP composition"],
   ["README AppInspect MCP tool", files.readme, "inspect_app"],
   ["Devpost AppInspect MCP artifact", files.devpost, "submission-evidence/mcp-proof/appinspect-mcp-composition.json"],

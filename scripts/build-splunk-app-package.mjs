@@ -3,7 +3,7 @@
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { copyFile, lstat, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { chmod, copyFile, lstat, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
@@ -77,6 +77,28 @@ const listRelativeFiles = async (dir, root = dir) => {
   return files.sort();
 };
 
+const normalizePackagePermissions = async (path) => {
+  const info = await lstat(path);
+
+  if (info.isSymbolicLink()) {
+    throw new Error(`Refusing to set permissions on symbolic link in Splunk app package: ${path}`);
+  }
+
+  if (info.isDirectory()) {
+    await chmod(path, 0o755);
+
+    for (const entry of await readdir(path)) {
+      await normalizePackagePermissions(resolve(path, entry));
+    }
+
+    return;
+  }
+
+  if (info.isFile()) {
+    await chmod(path, 0o644);
+  }
+};
+
 const sha256File = async (path) =>
   new Promise((resolveHash, reject) => {
     const hash = createHash("sha256");
@@ -97,7 +119,7 @@ const parseArgs = (argv) => {
 };
 
 const appConf = ({ version }) => `[install]
-is_configured = 1
+is_configured = false
 
 [ui]
 is_visible = 1
@@ -199,7 +221,12 @@ export const buildSplunkAppPackage = async ({
   }
 
   await mkdir(outputRoot, { recursive: true });
-  await execFileAsync("tar", ["-czf", packagePath, appId], { cwd: stagingRoot, maxBuffer: 10 * 1024 * 1024 });
+  await normalizePackagePermissions(appRoot);
+  await execFileAsync("tar", ["-czf", packagePath, appId], {
+    cwd: stagingRoot,
+    env: { ...process.env, COPYFILE_DISABLE: "1" },
+    maxBuffer: 10 * 1024 * 1024
+  });
   const packageSha256 = await sha256File(packagePath);
 
   const manifest = {

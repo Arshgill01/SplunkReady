@@ -15939,3 +15939,97 @@ Result:
   failing latest verdicts.
 - PASS: submission-copy audit with 200 required claims.
 - PASS: final `git diff --check`.
+
+## 2026-06-07T21:05:00Z - Move 161 AppInspect-clean package slice verification
+
+Remote baseline:
+
+- `gh run view 27104707805 --json status,conclusion,url,headSha,jobs`
+
+Result:
+
+- PASS: pushed Move 164 CI completed successfully for
+  `5ee6a29b5a08219d5d524793ac110f363d0c8849`.
+- PASS: CI ran `npm run check`, credential-free live mock proof, mock Splunk MCP
+  Docker image build, and mock Splunk MCP Docker smoke test.
+
+Initial AppInspect reproduction:
+
+- `APP=$(pwd)/submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl; uvx splunk-appinspect inspect "$APP" 2>&1 | tee /tmp/splunkready-appinspect-move161.txt`
+
+Result:
+
+- FAIL: before the package fix, AppInspect reported 0 errors, 1 failure,
+  4 warnings, and 94 successes. The failure was
+  `[install] is_configured = true` in `default/app.conf`.
+
+Package rebuild and focused package test:
+
+- `npm run splunk-app:package`
+- `npx vitest run tests/scripts/splunk-app-package.test.ts`
+
+Result:
+
+- PASS: rebuilt `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`.
+- PASS: package-builder tests passed with 2 tests.
+
+Final AppInspect:
+
+- `APP=$(pwd)/submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl; uvx splunk-appinspect inspect "$APP" 2>&1 | tee /tmp/splunkready-appinspect-move161.txt`
+
+Result:
+
+- PASS: AppInspect reported 0 errors, 0 failures, 4 warnings, 95 successes,
+  and 150 not-applicable checks.
+
+Tracked MCP proof regeneration:
+
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json`
+- `jq '.status, .validation' submission-evidence/mcp-proof/appinspect-mcp-composition.json`
+
+Result:
+
+- PASS: `mcp-proof` returned `status: "PASS"`.
+- PASS: `appInspectComposition.validation` reports `status: "SUCCESS"`,
+  `failureCount: 0`, `errorCount: 0`, `warningCount: 4`, and
+  `logsPreview: "Validation completed with 0 failures and 0 errors."`.
+
+Evidence and focused gates:
+
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `npx vitest run tests/scripts/splunk-app-package.test.ts tests/workflows/appinspect-composition.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npx vitest run tests/ui/app.test.ts -t "MCP proof summary"`
+
+Result:
+
+- PASS: tracked evidence SHA file regenerated and verified.
+- PASS: submission-copy audit passed with 200 required claims.
+- PASS: `git diff --check` returned clean.
+- PASS: package/AppInspect/submission-copy focused tests passed with 3 files and
+  7 tests.
+- PASS: filtered UI MCP proof summary test passed.
+
+Full gate:
+
+- `npm run check`
+
+Result:
+
+- PASS: scaffold verified with 85 waves and 2502 project files.
+- PASS: runtime contracts verified with 19 rules, 4 fixture missions, and 20
+  evidence refs.
+- PASS: TypeScript build and production UI build.
+- PASS: public demo export audit with 276 files, default route `mcp-proof`, and
+  `mutation=false`.
+- PASS: package readiness audit with 183 packed files checked.
+- PASS: package installability audit; packed `splunkready-0.1.3.tgz` installed,
+  clean `npx splunkready judge-proof` returned `PASS`, and clean
+  `npx splunkready mcp` initialized.
+- PASS: Vitest suite with 69 test files and 421 tests passed.
+- PASS: secret env ignore audit.
+- PASS: reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and 0
+  failing latest verdicts.
+- PASS: submission-copy audit with 200 required claims.
+- PASS: final `git diff --check`.
