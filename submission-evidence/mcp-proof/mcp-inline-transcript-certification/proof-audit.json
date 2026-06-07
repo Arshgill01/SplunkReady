@@ -1,7 +1,7 @@
 {
   "status": "PASS",
   "proofType": "external-trace",
-  "proofDir": "submission-evidence/mcp-proof/mcp-inline-transcript-certification",
+  "proofDir": "artifacts/mcp-proof/mcp-inline-transcript-certification",
   "mode": "fixture",
   "mutation": false,
   "checks": [

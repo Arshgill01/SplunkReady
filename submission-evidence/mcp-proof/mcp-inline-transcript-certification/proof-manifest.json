@@ -1,8 +1,8 @@
 {
   "source": "splunkready-proof-manifest",
   "generatedAt": "2026-06-01T06:45:00.000Z",
-  "proofDir": "submission-evidence/mcp-proof/mcp-inline-transcript-certification",
-  "aggregateSha256": "4f83cb0751d33feca74c003a9a8a0b932a1f6df06a2685fa274916e47c1faaae",
+  "proofDir": "artifacts/mcp-proof/mcp-inline-transcript-certification",
+  "aggregateSha256": "71e88888e65232d5a60cd9e47a1bfa088983f263dd5042201b391eaa1debc874",
   "files": [
     {
       "path": "agent-policy.json",
@@ -16,13 +16,13 @@
     },
     {
       "path": "mcp-transcript-certification.json",
-      "sizeBytes": 1999,
-      "sha256": "666148c31f671a3f8fa457d32a6fdf868d8af431260d8da5166c33ec3eeca111"
+      "sizeBytes": 1929,
+      "sha256": "5abe2e176e56981a070efb512d9fcc11c6d2f1198cc00fbbba4d3c3f4f5240eb"
     },
     {
       "path": "mcp-transcript-import.json",
-      "sizeBytes": 957,
-      "sha256": "4771568752248712c966a413dc315f774800fe5a27d9de19db9f8a3166c0e68f"
+      "sizeBytes": 917,
+      "sha256": "a529241387b4e7e54fa5a277c3ed7e0893ee54c5a8e1c919c23e1093b8c0d0d7"
     },
     {
       "path": "missions.json",
@@ -31,8 +31,8 @@
     },
     {
       "path": "proof-audit.json",
-      "sizeBytes": 2245,
-      "sha256": "2dfd19b4dd7623a04fab2d23e3c982b5422a54fd8616a144113058f18257e471"
+      "sizeBytes": 2235,
+      "sha256": "6ad008c2f41490e6438dfed8436a7ee4e4174d3f8dd5185fbe9c208ceba3f070"
     },
     {
       "path": "readiness-profile.json",

@@ -1,8 +1,8 @@
 {
   "source": "splunkready-mcp-client-walkthrough",
   "status": "PASS",
-  "artifactPath": "submission-evidence/mcp-proof/mcp-client-walkthrough.json",
-  "markdownPath": "submission-evidence/mcp-proof/mcp-client-walkthrough.md",
+  "artifactPath": "artifacts/mcp-proof/mcp-client-walkthrough.json",
+  "markdownPath": "artifacts/mcp-proof/mcp-client-walkthrough.md",
   "deterministicAuthority": true,
   "mutation": false,
   "servers": [
@@ -40,7 +40,7 @@
       "id": "splunkready-certifies",
       "title": "SplunkReady certifies the captured transcript",
       "server": "splunkready",
-      "evidence": "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json"
+      "evidence": "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json"
     },
     {
       "id": "receipt-is-authoritative",
@@ -64,7 +64,7 @@
     ]
   },
   "receipt": {
-    "path": "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+    "path": "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
     "status": "PASS",
     "authoritative": true
   }

@@ -755,3 +755,14 @@ Residual risk remains external to SplunkReady: the configured SAIA cloud tenant
 or cloud-connect activation must expose the SAIA v2 SPL hosted-model endpoints
 before the four `saia_*` tools can return advisory output. This move does not
 mutate Splunk and does not make SAIA authoritative for readiness.
+
+Move 134 reduces MCP proof overclaiming risk by embedding the redacted
+operator-live hosted-model status into the credential-free MCP proof. The MCP
+proof now clearly separates fixture hosted-model `PASS` evidence from the
+current operator-live `SAIA_CLOUD_ROUTE_NOT_FOUND` blocker, including local route
+probe `PASS`, all four advertised `saia_*` tools, all four blocked live tools,
+`mutation=false`, and `safeForPublicExport=true`. Residual risk remains
+external to SplunkReady: the live SAIA/cloud hosted-model route must be fixed
+before the operator-live status can become `PASS`, and npm latest must still be
+updated before judges can run all current MCP/SAIA source work from
+`splunkready@latest`.

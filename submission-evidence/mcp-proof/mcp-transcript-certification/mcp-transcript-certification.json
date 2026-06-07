@@ -2,7 +2,7 @@
   "status": "PASS",
   "source": "mcp-jsonrpc-transcript-certification",
   "mutation": false,
-  "transcriptPath": "submission-evidence/mcp-proof/mcp-transcript-certification/uploaded-mcp-transcript.jsonl",
+  "transcriptPath": "artifacts/mcp-proof/mcp-transcript-certification/uploaded-mcp-transcript.jsonl",
   "missionPath": "fixtures/acme-soc-dev/missions/security-investigation-readiness.json",
   "agent": {
     "name": "External MCP Agent",
@@ -55,11 +55,11 @@
     ]
   },
   "artifacts": {
-    "contract": "submission-evidence/mcp-proof/mcp-transcript-certification/environment-contract.json",
-    "importedTrace": "submission-evidence/mcp-proof/mcp-transcript-certification/trace-imported.json",
-    "externalTrace": "submission-evidence/mcp-proof/mcp-transcript-certification/trace-external.json",
-    "violations": "submission-evidence/mcp-proof/mcp-transcript-certification/violations-external.json",
-    "receipt": "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
-    "audit": "submission-evidence/mcp-proof/mcp-transcript-certification/proof-audit.json"
+    "contract": "artifacts/mcp-proof/mcp-transcript-certification/environment-contract.json",
+    "importedTrace": "artifacts/mcp-proof/mcp-transcript-certification/trace-imported.json",
+    "externalTrace": "artifacts/mcp-proof/mcp-transcript-certification/trace-external.json",
+    "violations": "artifacts/mcp-proof/mcp-transcript-certification/violations-external.json",
+    "receipt": "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+    "audit": "artifacts/mcp-proof/mcp-transcript-certification/proof-audit.json"
   }
 }

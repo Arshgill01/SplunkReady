@@ -51,10 +51,32 @@ const hostedModelBlockerClassSchema = z.enum([
   "NONE",
   "LIVE_CONFIG_MISSING",
   "SAIA_TOOLS_NOT_ADVERTISED",
+  "SAIA_REST_HANDLERS_NOT_REGISTERED",
+  "SAIA_CLOUD_ROUTE_NOT_FOUND",
   "SAIA_ROUTE_NOT_FOUND",
   "SAIA_ACTION_FORBIDDEN",
   "SAIA_INVOCATION_BLOCKED"
 ]);
+
+const operatorLiveHostedModelStatusSchema = z
+  .object({
+    source: z.literal("splunkready-operator-live-hosted-model-status"),
+    status: z.enum(["NOT_PROVIDED", "PASS", "BLOCKED"]),
+    artifactPath: z.string().min(1),
+    blockerClass: z.string().min(1),
+    permissionStatus: z.string().min(1),
+    permissionBlockerClass: z.string().min(1),
+    requiredTools: z.array(z.string().min(1)),
+    availableTools: z.array(z.string().min(1)),
+    passedTools: z.array(z.string().min(1)),
+    blockedTools: z.array(z.string().min(1)),
+    restHandlerProbeStatus: z.string().min(1),
+    summary: z.string().min(1),
+    safeForPublicExport: z.literal(true),
+    deterministicAuthority: z.literal(true),
+    mutation: z.literal(false)
+  })
+  .strict();
 
 const hostedModelRemediationSchema = z
   .object({
@@ -824,6 +846,7 @@ const mcpProofSummarySchema = z
         artifacts: z.array(z.string().min(1))
       })
       .strict(),
+    operatorLiveHostedModelStatus: operatorLiveHostedModelStatusSchema.optional(),
     agentDrivenWorkflow: z
       .object({
         status: z.enum(["PASS", "FAIL"]),

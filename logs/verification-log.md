@@ -13409,3 +13409,65 @@ Result:
 
 - PASS for explicit final `git diff --check`:
   - completed with no output after log updates.
+
+## 2026-06-07 - Move 134 MCP operator live hosted-model status
+
+Commands:
+
+- `npm run mcp-proof`
+- `jq -e '.operatorLiveHostedModelStatus | tostring | (contains("Bearer") or contains("https://") or contains("SPLUNKREADY_SPLUNK_MCP_TOKEN") or contains("SPLUNKREADY_SAIA_TOKEN") | not)' artifacts/mcp-proof/mcp-proof-summary.json`
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts tests/mcp/server.test.ts tests/ui/app.test.ts --testNamePattern "MCP|mcp-proof|mcp proof|hosted-model|hosted model"`
+- `npx vitest run tests/cli/flow.test.ts tests/mcp/server.test.ts tests/ui/app.test.ts tests/scripts/submission-copy-audit.test.ts --testNamePattern "MCP|mcp-proof|mcp proof|hosted-model|hosted model|submission copy"`
+- `npm run ui:build`
+- `npm run public-demo:build`
+- `npm run audit:public-demo-export`
+- `python3 -m http.server 4174 --directory artifacts/public-demo`
+- `bash "$PWCLI" open "http://127.0.0.1:4174/?artifacts=artifacts%2Fmcp-proof#mcp-proof"`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot`
+- `npm run check`
+
+Result:
+
+- PASS for MCP proof generation:
+  - fixture hosted-model access remained `PASS`;
+  - operator-live hosted-model status recorded `BLOCKED`;
+  - operator-live blocker recorded `SAIA_CLOUD_ROUTE_NOT_FOUND`;
+  - local route probe recorded `PASS`;
+  - `mutation` recorded `false`.
+- PASS for operator-live status redaction check:
+  - no bearer token, endpoint URL, or secret env token name appeared in the
+    `operatorLiveHostedModelStatus` block.
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused MCP/UI/submission-copy tests:
+  - 4 test files passed;
+  - 30 tests passed;
+  - 58 tests skipped by focused pattern.
+- PASS for UI build and public demo export:
+  - Vite production build completed;
+  - public demo export audit passed with 206 files and default route
+    `mcp-proof`.
+- PASS for Playwright browser verification:
+  - opened the exported public demo MCP route from a local HTTP server;
+  - snapshot showed the `Operator live hosted-model status` block;
+  - snapshot showed `SAIA_CLOUD_ROUTE_NOT_FOUND`, `Local route probe PASS`, and
+    `Mutation no`;
+  - refreshed `submission-evidence/screenshots/workbench-mcp-proof.png`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball `judge-proof`
+    and `mcp` initialization;
+  - 60 test files passed;
+  - 372 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 83 required claims;
+  - included `git diff --check` completed with no output.

@@ -221,6 +221,35 @@ const renderOfficialSplunkMcpToolCoverage = (summary: McpProofSummary): string =
   )}`;
 };
 
+const renderOperatorLiveHostedModelStatus = (summary: McpProofSummary): string => {
+  const status = summary.operatorLiveHostedModelStatus;
+
+  if (!status) {
+    return renderFactTable([
+      ["Status", "not recorded"],
+      ["Summary", "Generate the current MCP proof to record operator-live hosted-model status."],
+      ["Mutation", "false"]
+    ]);
+  }
+
+  return renderFactTable([
+    ["Status", status.status],
+    ["Artifact", status.artifactPath],
+    ["Blocker", status.blockerClass],
+    ["Permission", status.permissionStatus],
+    ["Permission blocker", status.permissionBlockerClass],
+    ["Local route probe", status.restHandlerProbeStatus],
+    ["Required tools", status.requiredTools.join(" / ") || "none"],
+    ["Available tools", status.availableTools.join(" / ") || "none"],
+    ["Passed tools", status.passedTools.join(" / ") || "none"],
+    ["Blocked tools", status.blockedTools.join(" / ") || "none"],
+    ["Safe for public export", status.safeForPublicExport ? "yes" : "no"],
+    ["Deterministic authority", status.deterministicAuthority ? "yes" : "no"],
+    ["Mutation", status.mutation ? "yes" : "no"],
+    ["Summary", status.summary]
+  ]);
+};
+
 const renderMcpProof = (bundle: UiArtifactBundle): string => {
   const summary = bundle.mcpProofSummary;
 
@@ -254,6 +283,10 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
               <section class="panel mcp-proof-panel">
                 <h2>Official Splunk MCP tool coverage</h2>
                 ${renderOfficialSplunkMcpToolCoverage(summary)}
+              </section>
+              <section class="panel mcp-proof-panel">
+                <h2>Operator live hosted-model status</h2>
+                ${renderOperatorLiveHostedModelStatus(summary)}
               </section>
               <section class="panel mcp-proof-panel">
                 <h2>MCP surface</h2>

@@ -93,6 +93,23 @@ interface McpProofSummary {
   transcriptCertification: Record<string, unknown>;
   inlineTranscriptCertification: Record<string, unknown>;
   hostedModelAccess: Record<string, unknown>;
+  operatorLiveHostedModelStatus: {
+    source: "splunkready-operator-live-hosted-model-status";
+    status: "NOT_PROVIDED" | "PASS" | "BLOCKED";
+    artifactPath: string;
+    blockerClass: string;
+    permissionStatus: string;
+    permissionBlockerClass: string;
+    requiredTools: string[];
+    availableTools: string[];
+    passedTools: string[];
+    blockedTools: string[];
+    restHandlerProbeStatus: string;
+    summary: string;
+    safeForPublicExport: true;
+    deterministicAuthority: true;
+    mutation: false;
+  };
   agentDrivenWorkflow: {
     status: "PASS" | "FAIL";
     splunkMcpServerRole: string;
@@ -398,6 +415,16 @@ Hosted-model access check: ${stringFromRecord(summary.hostedModelAccess, "status
 - Blocked tools: ${stringArrayFromRecord(summary.hostedModelAccess, "blockedTools").join(", ") || "none"}
 - Output: ${stringFromRecord(summary.hostedModelAccess, "outDir")}
 
+Operator live hosted-model status: ${summary.operatorLiveHostedModelStatus.status}
+- Artifact: ${summary.operatorLiveHostedModelStatus.artifactPath}
+- Blocker: ${summary.operatorLiveHostedModelStatus.blockerClass}
+- Permission: ${summary.operatorLiveHostedModelStatus.permissionStatus}
+- Permission blocker: ${summary.operatorLiveHostedModelStatus.permissionBlockerClass}
+- Route probe: ${summary.operatorLiveHostedModelStatus.restHandlerProbeStatus}
+- Passed tools: ${summary.operatorLiveHostedModelStatus.passedTools.join(", ") || "none"}
+- Blocked tools: ${summary.operatorLiveHostedModelStatus.blockedTools.join(", ") || "none"}
+- Summary: ${summary.operatorLiveHostedModelStatus.summary}
+
 Splunk MCP boundary: ${summary.splunkMcpBoundary.status}
 - Certified tool calls: ${summary.splunkMcpBoundary.certifiedToolNames.join(", ")}
 - Saved-search execution: ${summary.splunkMcpBoundary.includesSavedSearchExecution ? "yes" : "no"}
@@ -495,6 +522,9 @@ ${session.toolNames.map((name) => `- ${name}`).join("\n")}
 
 const stringArray = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+
+const safeRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 
 const collectEvidenceRefs = (value: unknown): string[] => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -969,6 +999,68 @@ const buildMcpClientSession = (
   };
 };
 
+const readOperatorLiveHostedModelStatus = async (
+  artifactPath = "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json"
+): Promise<McpProofSummary["operatorLiveHostedModelStatus"]> => {
+  const notProvided: McpProofSummary["operatorLiveHostedModelStatus"] = {
+    source: "splunkready-operator-live-hosted-model-status",
+    status: "NOT_PROVIDED",
+    artifactPath,
+    blockerClass: "NOT_PROVIDED",
+    permissionStatus: "NOT_PROVIDED",
+    permissionBlockerClass: "NOT_PROVIDED",
+    requiredTools: [],
+    availableTools: [],
+    passedTools: [],
+    blockedTools: [],
+    restHandlerProbeStatus: "NOT_PROVIDED",
+    summary:
+      "No operator-owned live hosted-model diagnostic artifact was present when the credential-free MCP proof was generated.",
+    safeForPublicExport: true,
+    deterministicAuthority: true,
+    mutation: false
+  };
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(await readFile(artifactPath, "utf8")) as unknown;
+  } catch {
+    return notProvided;
+  }
+
+  const record = safeRecord(parsed);
+  const permission = safeRecord(record.permission);
+  const restHandlerProbe = safeRecord(record.restHandlerProbe);
+  const remediation = safeRecord(record.remediation);
+  const status = stringFromRecord(record, "status") === "PASS" ? "PASS" : "BLOCKED";
+  const blockerClass = stringFromRecord(record, "blockerClass") || "UNKNOWN";
+  const permissionStatus = stringFromRecord(permission, "status") || "UNKNOWN";
+  const permissionBlockerClass = stringFromRecord(permission, "blockerClass") || blockerClass;
+  const restHandlerProbeStatus = stringFromRecord(restHandlerProbe, "status") || "NOT_RUN";
+  const summary =
+    stringFromRecord(remediation, "summary") ||
+    stringFromRecord(permission, "message") ||
+    "Operator-owned live hosted-model diagnostic artifact was present, but no summary field was available.";
+
+  return {
+    source: "splunkready-operator-live-hosted-model-status",
+    status,
+    artifactPath,
+    blockerClass,
+    permissionStatus,
+    permissionBlockerClass,
+    requiredTools: stringArray(record.requiredTools),
+    availableTools: stringArray(record.availableTools),
+    passedTools: stringArray(record.passedTools),
+    blockedTools: stringArray(record.blockedTools),
+    restHandlerProbeStatus,
+    summary,
+    safeForPublicExport: true,
+    deterministicAuthority: true,
+    mutation: false
+  };
+};
+
 export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise<McpProofWorkflowResult> => {
   const transcriptPath = input.transcriptPath ?? defaultTranscriptPath;
   const transcriptOutDir = join(input.outDir, "mcp-transcript-certification");
@@ -1139,6 +1231,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       hostedModelAccessResult,
       "splunkready_check_hosted_model_access"
     );
+    const operatorLiveHostedModelStatus = await readOperatorLiveHostedModelStatus();
     const certificationStatus = stringFromRecord(transcriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
     const inlineCertificationStatus =
       stringFromRecord(inlineTranscriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
@@ -1234,6 +1327,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       transcriptCertification,
       inlineTranscriptCertification,
       hostedModelAccess,
+      operatorLiveHostedModelStatus,
       agentDrivenWorkflow,
       splunkMcpBoundary,
       mcpComposition,
@@ -1273,7 +1367,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         `Initialized MCP server ${summary.handshake.serverName} with ${summary.tools.length} certification tool(s), ${summary.resources.length} resource(s), and ${summary.prompts.length} prompt(s).`,
         `Discovered ${summary.resourceTemplates.length} MCP resource template(s) and read splunkready://receipts/pass.`,
         `Certified transcript ${transcriptPath} through splunkready_certify_mcp_transcript and splunkready_certify_mcp_transcript_content.`,
-        "Checked hosted-model SAIA access through splunkready_check_hosted_model_access in fixture mode."
+        "Checked hosted-model SAIA access through splunkready_check_hosted_model_access in fixture mode.",
+        `Recorded operator live hosted-model status as ${operatorLiveHostedModelStatus.status}.`
       ]
     };
   } finally {

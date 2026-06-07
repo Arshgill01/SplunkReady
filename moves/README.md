@@ -156,6 +156,7 @@ commands, or filesystem paths.
 | P0 | [131](moves131.md) SAIA cloud MCP alias and header readiness | 0.5d | Supports more realistic SAIA/cloud MCP endpoint aliases and optional realm/tenant headers for hosted-model calls only. |
 | P0 | [132](moves132.md) Public package currentness proof | 0.5d | Adds a registry-backed audit that proves the published package judge-proof path and flags when MCP/SAIA source work has not reached npm yet. |
 | P0 | [133](moves133.md) SAIA cloud route blocker | 0.5d | Separates local Splunk AI Assistant REST-handler registration failures from downstream SAIA cloud hosted-model 404s. |
+| P0 | [134](moves134.md) MCP operator live hosted-model status | 0.5d | Makes MCP proof evidence distinguish fixture hosted-model PASS from the current operator-live SAIA cloud blocker. |
 
 ## Non-Negotiable Boundaries
 

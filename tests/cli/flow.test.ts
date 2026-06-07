@@ -1512,6 +1512,23 @@ describe("SplunkReady CLI flow", () => {
         remediation: { status: string; blockerClass: string; safeForPublicExport: boolean; mutation: boolean };
         artifacts: string[];
       };
+      operatorLiveHostedModelStatus: {
+        source: string;
+        status: string;
+        artifactPath: string;
+        blockerClass: string;
+        permissionStatus: string;
+        permissionBlockerClass: string;
+        requiredTools: string[];
+        availableTools: string[];
+        passedTools: string[];
+        blockedTools: string[];
+        restHandlerProbeStatus: string;
+        summary: string;
+        safeForPublicExport: boolean;
+        deterministicAuthority: boolean;
+        mutation: boolean;
+      };
       agentDrivenWorkflow: {
         status: string;
         splunkMcpServerRole: string;
@@ -1926,6 +1943,17 @@ describe("SplunkReady CLI flow", () => {
         join(hostedModelAccessDir, "hosted-model-diagnostic.json")
       ])
     );
+    expect(summary.operatorLiveHostedModelStatus).toMatchObject({
+      source: "splunkready-operator-live-hosted-model-status",
+      artifactPath: "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json",
+      safeForPublicExport: true,
+      deterministicAuthority: true,
+      mutation: false
+    });
+    expect(["NOT_PROVIDED", "PASS", "BLOCKED"]).toContain(summary.operatorLiveHostedModelStatus.status);
+    expect(summary.operatorLiveHostedModelStatus.summary.length).toBeGreaterThan(0);
+    expect(JSON.stringify(summary.operatorLiveHostedModelStatus)).not.toContain("Bearer");
+    expect(JSON.stringify(summary.operatorLiveHostedModelStatus)).not.toContain("https://");
     expect(summary.describe).toMatchObject({
       resourceTemplates: ["splunkready://receipts/{receiptId}"]
     });

@@ -13145,6 +13145,63 @@ Notes:
 - Did not use subagents.
 - Did not read, source, print, or commit `.splunkready*` or `.env*` secret
   contents.
+
+## 2026-06-07T13:35:00Z - Move 134 MCP operator live hosted-model status
+
+Intent:
+
+- Keep improving the MCP track while making the SAIA/hosted-model story honest:
+  fixture MCP hosted-model proof can pass, but the operator-owned live SAIA
+  cloud path is currently blocked.
+
+Actions:
+
+- Added an `operatorLiveHostedModelStatus` block to MCP proof summaries.
+- Read only the redacted live hosted-model diagnostic artifact and copied safe
+  status fields into the credential-free MCP proof.
+- Rendered the operator-live status in the MCP workbench route.
+- Updated submission-copy guards and claim ledger copy so the public evidence
+  pack must mention `operatorLiveHostedModelStatus`,
+  `SAIA_CLOUD_ROUTE_NOT_FOUND`, and `restHandlerProbeStatus`.
+- Regenerated tracked MCP proof evidence.
+- Rebuilt the public demo export and refreshed the Playwright screenshot for
+  the MCP proof route.
+
+Files changed:
+
+- `src/workflows/mcp-proof.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/cli/flow.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `scripts/audit-submission-copy.mjs`
+- `README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/**`
+- `submission-evidence/screenshots/workbench-mcp-proof.png`
+- `moves/README.md`
+- `moves/moves134.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Observed result:
+
+- Fixture hosted-model access in MCP proof remains `PASS`.
+- Operator-live hosted-model status is `BLOCKED`.
+- Operator-live blocker is `SAIA_CLOUD_ROUTE_NOT_FOUND`.
+- Local SAIA route probe status is `PASS`.
+- All four `saia_*` tools are available and all four remain blocked in the
+  live diagnostic.
+- Operator-live summary is marked `safeForPublicExport: true`,
+  `deterministicAuthority: true`, and `mutation: false`.
+
+Notes:
+
+- Did not use subagents.
+- Did not run new live calls from `mcp-proof`.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  contents.
 - The move improves SAIA/MCP readiness and evidence, but it does not claim live
   SAIA PASS until the operator-owned env file exposes a dedicated SAIA
   endpoint/token or the shared Splunk MCP route can invoke `saia_*`.

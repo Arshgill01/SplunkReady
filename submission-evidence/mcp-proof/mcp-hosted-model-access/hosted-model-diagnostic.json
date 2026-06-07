@@ -3,7 +3,7 @@
   "mode": "fixture",
   "mutation": false,
   "blockerClass": "NONE",
-  "proofPath": "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
+  "proofPath": "artifacts/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
   "contract": {
     "id": "contract-acme-soc-dev",
     "mode": "fixture"
@@ -70,6 +70,13 @@
       }
     }
   ],
+  "restHandlerProbe": {
+    "source": "splunkready-saia-rest-handler-probe",
+    "status": "NOT_RUN",
+    "mutation": false,
+    "query": "| rest /servicesNS/nobody/Splunk_AI_Assistant_Cloud",
+    "message": "SAIA REST handler probe only runs for live advertised-tool 404 failures."
+  },
   "remediation": {
     "source": "splunkready-hosted-model-remediation",
     "status": "CLEAR",
@@ -110,5 +117,5 @@
     "message": "The current MCP credentials can invoke saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question for advisory SPL remediation."
   },
   "deterministicAuthority": "deterministic-rule-engine",
-  "notes": "This diagnostic calls hosted-model helper tools only. It does not execute the SPL query, does not grade with an LLM, and does not mutate Splunk."
+  "notes": "This diagnostic calls hosted-model helper tools and may run one fixed read-only Splunk AI Assistant REST namespace probe after live 404 failures. It does not execute generated, unsafe, or optimized SPL, does not grade with an LLM, and does not mutate Splunk."
 }
