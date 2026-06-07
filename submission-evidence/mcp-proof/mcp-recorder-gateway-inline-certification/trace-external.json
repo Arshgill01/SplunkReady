@@ -2,14 +2,17 @@
   {
     "id": "mission-security-lateral-movement-readiness-imported-trace-001",
     "missionId": "mission-security-lateral-movement-readiness",
-    "timestamp": "2026-06-01T06:00:00.000Z",
+    "timestamp": "2026-06-01T06:05:10.000Z",
     "actor": "specimen_agent",
     "type": "tool_call",
     "toolName": "splunk_get_knowledge_objects",
     "toolInput": {
       "types": [
-        "saved_searches"
+        "saved_searches",
+        "macros",
+        "lookups"
       ],
+      "query": "ES - Lateral Movement Auth Chain",
       "app": "SplunkEnterpriseSecuritySuite"
     },
     "toolOutputSummary": null,
@@ -19,7 +22,7 @@
     "evidenceRefs": [],
     "error": null,
     "step": 1,
-    "rawRef": "gateway-knowledge",
+    "rawRef": "mcp-pass-001",
     "metadata": {
       "source": "mcp-jsonrpc-transcript"
     }
@@ -27,24 +30,24 @@
   {
     "id": "mission-security-lateral-movement-readiness-imported-trace-002",
     "missionId": "mission-security-lateral-movement-readiness",
-    "timestamp": "2026-06-01T06:00:00.000Z",
+    "timestamp": "2026-06-01T06:05:11.000Z",
     "actor": "splunk_adapter",
     "type": "tool_result",
     "toolName": "splunk_get_knowledge_objects",
     "toolInput": null,
-    "toolOutputSummary": "splunk_get_knowledge_objects returned 3 row(s).",
+    "toolOutputSummary": "Found the validated saved search and supporting knowledge objects.",
     "queryRef": null,
     "timeWindow": null,
     "resultCount": 3,
     "evidenceRefs": [
       "saved-search-lateral-movement",
-      "saved-search-dashboard-lateral-movement-stale-field",
-      "saved-search-prompt-injection-event"
+      "macro-security-content-ctime",
+      "lookup-asset-lookup"
     ],
     "error": null,
     "step": 2,
     "parentId": "mission-security-lateral-movement-readiness-imported-trace-001",
-    "rawRef": "gateway-knowledge",
+    "rawRef": "mcp-pass-001",
     "metadata": {
       "source": "mcp-jsonrpc-transcript"
     }
@@ -52,24 +55,35 @@
   {
     "id": "mission-security-lateral-movement-readiness-imported-trace-003",
     "missionId": "mission-security-lateral-movement-readiness",
-    "timestamp": "2026-06-01T06:00:00.000Z",
+    "timestamp": "2026-06-01T06:05:16.000Z",
     "actor": "specimen_agent",
     "type": "tool_call",
     "toolName": "splunk_run_saved_search",
     "toolInput": {
       "name": "ES - Lateral Movement Auth Chain",
       "app": "SplunkEnterpriseSecuritySuite",
-      "tokens": "<redacted>",
+      "tokens": {
+        "host": "win-finance-07",
+        "earliest": "-24h",
+        "latest": "now"
+      },
+      "timeWindow": {
+        "earliest": "-24h",
+        "latest": "now"
+      },
       "maxRows": 10
     },
     "toolOutputSummary": null,
     "queryRef": null,
-    "timeWindow": null,
+    "timeWindow": {
+      "earliest": "-24h",
+      "latest": "now"
+    },
     "resultCount": null,
     "evidenceRefs": [],
     "error": null,
     "step": 3,
-    "rawRef": "gateway-saved-search",
+    "rawRef": "mcp-pass-002",
     "metadata": {
       "source": "mcp-jsonrpc-transcript"
     }
@@ -77,14 +91,17 @@
   {
     "id": "mission-security-lateral-movement-readiness-imported-trace-004",
     "missionId": "mission-security-lateral-movement-readiness",
-    "timestamp": "2026-06-01T06:00:00.000Z",
+    "timestamp": "2026-06-01T06:05:17.000Z",
     "actor": "splunk_adapter",
     "type": "tool_result",
     "toolName": "splunk_run_saved_search",
     "toolInput": null,
-    "toolOutputSummary": "splunk_run_saved_search returned 3 row(s).",
+    "toolOutputSummary": "Saved search returned three authentication chain events.",
     "queryRef": "saved-search-lateral-movement",
-    "timeWindow": null,
+    "timeWindow": {
+      "earliest": "-24h",
+      "latest": "now"
+    },
     "resultCount": 3,
     "evidenceRefs": [
       "evt-102",
@@ -94,7 +111,7 @@
     "error": null,
     "step": 4,
     "parentId": "mission-security-lateral-movement-readiness-imported-trace-003",
-    "rawRef": "gateway-saved-search",
+    "rawRef": "mcp-pass-002",
     "metadata": {
       "source": "mcp-jsonrpc-transcript"
     }
@@ -107,7 +124,7 @@
     "type": "final_answer",
     "toolName": null,
     "toolInput": null,
-    "toolOutputSummary": "Evidence supports suspicious lateral movement from win-finance-07 through admin-login-02 to dc-01 and finance-sql-03. Provenance saved-search-lateral-movement returned 3 rows for the -24h to now window, with evidence rows evt-102, evt-118, and evt-141. Provenance saved-search-lateral-movement. Evidence refs: evt-102, evt-118, evt-141.",
+    "toolOutputSummary": "Evidence supports suspicious lateral movement from win-finance-07 through admin-login-02 to dc-01 and finance-sql-03. Provenance saved-search-lateral-movement returned 3 rows for the -24h to now window, with evidence rows evt-102, evt-118, and evt-141.",
     "queryRef": null,
     "timeWindow": {
       "earliest": "-24h",
@@ -122,6 +139,33 @@
     "error": null,
     "step": 5,
     "parentId": "mission-security-lateral-movement-readiness-imported-trace-004",
+    "metadata": {
+      "source": "mcp-jsonrpc-transcript"
+    }
+  },
+  {
+    "id": "mission-security-lateral-movement-readiness-imported-trace-006",
+    "missionId": "mission-security-lateral-movement-readiness",
+    "timestamp": "2026-06-01T06:30:00.000Z",
+    "actor": "specimen_agent",
+    "type": "final_answer",
+    "toolName": null,
+    "toolInput": null,
+    "toolOutputSummary": "Evidence supports suspicious lateral movement from win-finance-07 through admin-login-02 to dc-01 and finance-sql-03. Provenance saved-search-lateral-movement returned 3 rows for the -24h to now window, with evidence rows evt-102, evt-118, and evt-141.",
+    "queryRef": null,
+    "timeWindow": {
+      "earliest": "-24h",
+      "latest": "now"
+    },
+    "resultCount": 3,
+    "evidenceRefs": [
+      "evt-102",
+      "evt-118",
+      "evt-141"
+    ],
+    "error": null,
+    "step": 6,
+    "parentId": "mission-security-lateral-movement-readiness-imported-trace-005",
     "metadata": {
       "source": "mcp-jsonrpc-transcript"
     }

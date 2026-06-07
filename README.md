@@ -90,6 +90,12 @@ SplunkReady MCP certification loop:
 npm run mcp-proof
 ```
 
+The lower-level recorder gateway can also be run directly as a stdio MCP server:
+
+```bash
+npm run splunkready -- mcp-recorder --server splunk=mock-splunk-mcp --server splunkready=mcp --out artifacts/mcp-recorder
+```
+
 The judge bundle also records `llmActivation` and `llmEvidence` in
 `judge-proof-summary.json`. With no LLM environment enabled, that evidence stays
 `NOT_REQUESTED` so the command remains credential-free and makes no model calls.
@@ -198,7 +204,9 @@ preserves evidence refs, points at the generated receipt, and states that
 deterministic rules remained authoritative. It also includes a
 `compositionRecorder` block that writes a redacted dual-server MCP session to
 `dual-server-session.jsonl`, preserves `serverId` for the existing Splunk MCP
-and SplunkReady MCP sides, and certifies that recorder transcript through the
+and SplunkReady MCP sides, and, when `--live-mock` is used, captures a real
+pass-through recorder-gateway session against the mock Splunk MCP server plus
+the SplunkReady MCP server. It certifies that recorder transcript through the
 same deterministic transcript importer with zero skipped records. It also includes an
 `agentDrivenWorkflow` block showing the intended loop: an MCP client
 investigates with Splunk MCP, captures the JSON-RPC transcript, calls
@@ -483,7 +491,8 @@ evidence, MCP resource-template discovery, hosted-model diagnostic
 resource/prompt discovery, Claude Desktop and Cursor MCP client config
 resources, inline transcript certification, deterministic MCP composition
 review, a redacted dual-server recorder session at
-`dual-server-session.jsonl`, fixture hosted-model access,
+`dual-server-session.jsonl`, recorder-gateway inline and path certification
+receipts when run with `--live-mock`, fixture hosted-model access,
 operator-live hosted-model status when a redacted live diagnostic exists, the
 uploaded transcript copy, `trace-imported.json`, `trace-external.json`,
 `receipt-external-001.json`, `proof-audit.json`, and the transcript

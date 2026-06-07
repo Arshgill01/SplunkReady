@@ -245,6 +245,23 @@ const summarizeFrames = (
   };
 };
 
+export const writeMcpCompositionRecorderFrames = async (input: {
+  frames: McpRecorderFrame[];
+  artifactPath: string;
+  markdownPath: string;
+  certification?: McpCompositionRecorderSummary["certification"];
+}): Promise<McpCompositionRecorderSummary> => {
+  const summary: McpCompositionRecorderSummary = {
+    ...summarizeFrames(input.frames, input.artifactPath, input.markdownPath),
+    certification: input.certification
+  };
+
+  await writeFile(input.artifactPath, `${input.frames.map((frame) => JSON.stringify(frame)).join("\n")}\n`, "utf8");
+  await writeFile(input.markdownPath, renderMcpCompositionRecorderMarkdown(summary), "utf8");
+
+  return summary;
+};
+
 export const renderMcpCompositionRecorderMarkdown = (summary: McpCompositionRecorderSummary): string => `# MCP Composition Recorder
 
 Status: ${summary.status}
@@ -313,8 +330,10 @@ export const writeMcpCompositionRecorderSession = async (input: {
     markdownPath: input.markdownPath
   });
 
-  await writeFile(input.artifactPath, `${frames.map((frame) => JSON.stringify(frame)).join("\n")}\n`, "utf8");
-  await writeFile(input.markdownPath, renderMcpCompositionRecorderMarkdown(summary), "utf8");
-
-  return summary;
+  return writeMcpCompositionRecorderFrames({
+    frames,
+    artifactPath: input.artifactPath,
+    markdownPath: input.markdownPath,
+    certification: summary.certification
+  });
 };

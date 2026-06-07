@@ -18,6 +18,7 @@ import {
   runPolicyBackedRerunWorkflow
 } from "./workflows/policy-actions.js";
 import { startStdioMcpServer } from "./mcp/server.js";
+import { startStdioMcpRecorderGateway } from "./mcp/recorder-gateway.js";
 import { startStdioMockSplunkMcpServer } from "./mock-splunk-mcp/server.js";
 export {
   runHostedModelDiagnosticFromCli,
@@ -103,6 +104,17 @@ const main = async (): Promise<void> => {
   const options = await resolveCliInputPaths(parsedOptions);
   if (command === "mock-splunk-mcp") {
     await startStdioMockSplunkMcpServer({ fixturePath: options.fixture, state: options.mockState });
+    return;
+  }
+
+  if (command === "mcp-recorder") {
+    await startStdioMcpRecorderGateway({
+      serverSpecs: options.servers,
+      cliPath: process.argv[1] ?? fileURLToPath(import.meta.url),
+      fixturePath: options.fixture,
+      mockState: options.mockState,
+      outDir: options.out
+    });
     return;
   }
 

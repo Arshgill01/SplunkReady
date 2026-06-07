@@ -15744,3 +15744,113 @@ Result:
 
 - PASS: scaffold verification with 85 waves and 2345 project files.
 - PASS: `git diff --check`.
+
+## 2026-06-07T20:42:37Z - Move 163 MCP recorder pass-through gateway
+
+Build:
+
+- `npm run build`
+
+Result:
+
+- PASS: TypeScript compiled the new CLI entrypoint, recorder gateway, and
+  `mcp-proof` gateway wiring.
+
+Focused stdio gateway test:
+
+- `npx vitest run tests/cli/flow.test.ts -t "MCP recorder gateway"`
+
+Result:
+
+- PASS: the test starts `mcp-recorder`, discovers prefixed downstream tools,
+  calls mock Splunk MCP investigation tools, calls both SplunkReady MCP
+  transcript certification tools, flushes the recorder, and verifies
+  `mcp-transcript-import.json` reports `skippedRecords: 0`,
+  `unmatchedToolCalls: 0`, and `finalAnswers: 1`.
+
+Focused recorder and MCP proof tests:
+
+- `npx vitest run tests/mcp/composition-recorder.test.ts`
+- `npx vitest run tests/cli/flow.test.ts -t "runs MCP proof with a credential-free live mock Splunk MCP session"`
+- `npx vitest run tests/cli/flow.test.ts -t "runs MCP proof"`
+
+Result:
+
+- PASS: composition-recorder unit coverage passed with 2 tests.
+- PASS: the live-mock MCP proof test passed.
+- PASS: the non-live MCP proof test passed.
+
+Tracked MCP proof regeneration:
+
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json`
+
+Result:
+
+- PASS: command returned `status: "PASS"`.
+- PASS: `submission-evidence/mcp-proof/mcp-proof-summary.json`
+  `compositionRecorder` reports `status: "PASS"`, `frameCount: 9`, server IDs
+  `splunk` and `splunkready`, Splunk tools `splunk_get_knowledge_objects` and
+  `splunk_run_saved_search`, SplunkReady tools
+  `splunkready_certify_mcp_transcript_content` and
+  `splunkready_certify_mcp_transcript`, evidence refs `evt-102`, `evt-118`,
+  `evt-141`, redaction `PASS`, certification `PASS`, deterministic authority,
+  and `mutation: false`.
+- PASS: strict import summary in
+  `submission-evidence/mcp-proof/mcp-composition-recorder-certification/mcp-transcript-import.json`
+  reports `skippedRecords: 0` and `unmatchedToolCalls: 0`.
+
+Evidence hash refresh:
+
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS: evidence hash file was regenerated after the tracked MCP evidence
+  refresh.
+
+Public evidence safety and copy gates:
+
+- `rg -n "Authorization: Bearer|Bearer [A-Za-z0-9._~+/=-]+|/Users/|/private/|/tmp/|\\.splunkready|https?://[^\\\"' ,}]|SPLUNKREADY_.*TOKEN|SPLUNKREADY_.*URL|GEMINI_API_KEY|SAIA_.*URL|real-token" submission-evidence/mcp-proof/dual-server-session.jsonl submission-evidence/mcp-proof/dual-server-session.md submission-evidence/mcp-proof/mcp-composition-recorder-certification submission-evidence/mcp-proof/mcp-recorder-gateway-inline-certification submission-evidence/mcp-proof/mcp-recorder-gateway-path-certification || true`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `git diff --check`
+
+Result:
+
+- PASS: recorder evidence leak scan returned no matches.
+- PASS: all tracked evidence hashes verified.
+- PASS: submission-copy audit passed with 189 required claims.
+- PASS: `git diff --check`.
+
+Full gate:
+
+- `npm run check`
+
+Result:
+
+- PASS: scaffold verification with 85 waves and 2496 project files.
+- PASS: runtime contracts with 19 rules, 4 fixture missions, and 20 evidence
+  refs.
+- PASS: TypeScript build and production UI build.
+- PASS: public demo export audit with 274 files, default route `mcp-proof`, and
+  `mutation=false`.
+- PASS: package readiness audit with 181 packed files checked.
+- PASS: package installability audit; packed `splunkready-0.1.3.tgz`
+  installed, clean `npx splunkready judge-proof` returned `PASS`, and clean
+  `npx splunkready mcp` initialized.
+- PASS: full Vitest suite with 68 test files and 419 tests passed.
+- PASS: secret env ignore audit.
+- PASS: reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS: submission-copy audit with 189 required claims.
+- PASS: final `git diff --check`.
+
+Docker mock MCP validation:
+
+- `docker build -f Dockerfile.mock-splunk-mcp -t splunkready/mock-splunk-mcp:move163-final . && { printf '%s\n' '{"jsonrpc":"2.0","id":"init","method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"move163-final-docker-smoke","version":"1"}}}'; printf '%s\n' '{"jsonrpc":"2.0","method":"notifications/initialized"}'; printf '%s\n' '{"jsonrpc":"2.0","id":"tools","method":"tools/list"}'; } | docker run --rm -i splunkready/mock-splunk-mcp:move163-final > /tmp/splunkready-move163-final-docker-smoke.jsonl && node -e "const fs=require('fs'); const lines=fs.readFileSync('/tmp/splunkready-move163-final-docker-smoke.jsonl','utf8').trim().split(/\n/).map(JSON.parse); console.log(JSON.stringify({server:lines[0].result.serverInfo.name, toolCount:lines[1].result.tools.length, hasSavedSearch:lines[1].result.tools.some(t=>t.name==='splunk_run_saved_search')}, null, 2))"`
+
+Result:
+
+- PASS: `Dockerfile.mock-splunk-mcp` built locally against the final source
+  state, and the container initialized `splunkready-mock-splunk-mcp`, returned
+  11 tools, and included `splunk_run_saved_search`.

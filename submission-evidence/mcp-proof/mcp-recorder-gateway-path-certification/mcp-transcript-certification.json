@@ -2,18 +2,18 @@
   "status": "PASS",
   "source": "mcp-jsonrpc-transcript-certification",
   "mutation": false,
-  "transcriptPath": "submission-evidence/mcp-proof/dual-server-session.jsonl",
+  "transcriptPath": "submission-evidence/mcp-proof/mcp-recorder-gateway-path-certification/uploaded-mcp-transcript.jsonl",
   "missionPath": "fixtures/acme-soc-dev/missions/security-investigation-readiness.json",
   "agent": {
     "name": "MCP Recorder Gateway",
-    "version": "pass-through"
+    "version": "proof-path"
   },
   "receipt": {
     "id": "receipt-external-001",
     "verdict": "READY",
     "score": 100,
     "violations": 0,
-    "traceRefs": 5,
+    "traceRefs": 6,
     "evidenceRefs": 6
   },
   "audit": {
@@ -55,11 +55,11 @@
     ]
   },
   "artifacts": {
-    "contract": "submission-evidence/mcp-proof/mcp-composition-recorder-certification/environment-contract.json",
-    "importedTrace": "submission-evidence/mcp-proof/mcp-composition-recorder-certification/trace-imported.json",
-    "externalTrace": "submission-evidence/mcp-proof/mcp-composition-recorder-certification/trace-external.json",
-    "violations": "submission-evidence/mcp-proof/mcp-composition-recorder-certification/violations-external.json",
-    "receipt": "submission-evidence/mcp-proof/mcp-composition-recorder-certification/receipt-external-001.json",
-    "audit": "submission-evidence/mcp-proof/mcp-composition-recorder-certification/proof-audit.json"
+    "contract": "submission-evidence/mcp-proof/mcp-recorder-gateway-path-certification/environment-contract.json",
+    "importedTrace": "submission-evidence/mcp-proof/mcp-recorder-gateway-path-certification/trace-imported.json",
+    "externalTrace": "submission-evidence/mcp-proof/mcp-recorder-gateway-path-certification/trace-external.json",
+    "violations": "submission-evidence/mcp-proof/mcp-recorder-gateway-path-certification/violations-external.json",
+    "receipt": "submission-evidence/mcp-proof/mcp-recorder-gateway-path-certification/receipt-external-001.json",
+    "audit": "submission-evidence/mcp-proof/mcp-recorder-gateway-path-certification/proof-audit.json"
   }
 }

@@ -1,8 +1,8 @@
 {
   "source": "splunkready-proof-manifest",
   "generatedAt": "2026-06-01T06:45:00.000Z",
-  "proofDir": "submission-evidence/mcp-proof/mcp-composition-recorder-certification",
-  "aggregateSha256": "c0fbac2d22787da3d3b985534306f7d2647e7c32e498669294775fb9c2cdfe4e",
+  "proofDir": "submission-evidence/mcp-proof/mcp-recorder-gateway-path-certification",
+  "aggregateSha256": "2f1cc2fb734d2a4ec333b5d012e1e4766093ee22682abe4ee6fd5bbc41c74915",
   "files": [
     {
       "path": "agent-policy.json",
@@ -16,13 +16,13 @@
     },
     {
       "path": "mcp-transcript-certification.json",
-      "sizeBytes": 1964,
-      "sha256": "0b36cc6f6dd735e3c60b0ee1971e8a6bc4d3377a15c05c3dbb6721fa50482f7b"
+      "sizeBytes": 2012,
+      "sha256": "a295a28c782798a2096d2a6122d041b2fa061b00e936e473d522ebc3ddc07458"
     },
     {
       "path": "mcp-transcript-import.json",
-      "sizeBytes": 913,
-      "sha256": "963b468d9e30a76117a7ec933cc7ca8e486b9fad6f14e32e1fee45f2cd9770ed"
+      "sizeBytes": 958,
+      "sha256": "59a34cb223ed9a5da24e3c456c5f8ac7eb36ff65ebf1047fd32dfe3acccddaa5"
     },
     {
       "path": "missions.json",
@@ -31,8 +31,8 @@
     },
     {
       "path": "proof-audit.json",
-      "sizeBytes": 2248,
-      "sha256": "5acbe30d370dce1d9d6998f1e559fcdf8c39333eb74ca41a0e288097895300df"
+      "sizeBytes": 2249,
+      "sha256": "8ce84c9d344127f72bafa617975f1426663edc0c5caf0a16d5bd0bd90d8b07b0"
     },
     {
       "path": "readiness-profile.json",
@@ -41,13 +41,13 @@
     },
     {
       "path": "receipt-external-001.json",
-      "sizeBytes": 1410,
-      "sha256": "e929c8ca3b36591ae69f0ba2161de74cf47e0d47d45ba6f92c9c520ccab75557"
+      "sizeBytes": 1439,
+      "sha256": "41cbc171692a7ec87511d4e63758ecfce6a02b9e34e8cd50234fd140cdc663a7"
     },
     {
       "path": "receipt-external-001.md",
-      "sizeBytes": 1509,
-      "sha256": "a6e904efb4bb04fe1d71a43354bf4fdfb995d97cce3e47700756f09167e77d84"
+      "sizeBytes": 1535,
+      "sha256": "20caa9bb28d11fb58e90ae8c0e59c1aefec7ca4dd2b1d3347b135e58ccb699ce"
     },
     {
       "path": "score-external.json",
@@ -56,13 +56,18 @@
     },
     {
       "path": "trace-external.json",
-      "sizeBytes": 4091,
-      "sha256": "3155e7b1fda5886658910a2cf3af7c2f6275039d5a4e5c7853754642c69cceba"
+      "sizeBytes": 5289,
+      "sha256": "3c9ea71250cf8c944bdc8fa4f616020b1cfd0e4076c5ca01da745a3b9a339e8d"
     },
     {
       "path": "trace-imported.json",
-      "sizeBytes": 4091,
-      "sha256": "3155e7b1fda5886658910a2cf3af7c2f6275039d5a4e5c7853754642c69cceba"
+      "sizeBytes": 5289,
+      "sha256": "3c9ea71250cf8c944bdc8fa4f616020b1cfd0e4076c5ca01da745a3b9a339e8d"
+    },
+    {
+      "path": "uploaded-mcp-transcript.jsonl",
+      "sizeBytes": 3153,
+      "sha256": "4d00d2ca68f2bca31426c007cce5b020577d4c25df28d5713cf13ef30ac186a1"
     },
     {
       "path": "violations-external.json",

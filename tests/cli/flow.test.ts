@@ -362,6 +362,169 @@ describe("SplunkReady CLI flow", () => {
     }
   });
 
+  it("starts the MCP recorder gateway and certifies a recorded dual-server session", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-recorder-"));
+    const child = spawn(
+      process.execPath,
+      [
+        cliPath,
+        "mcp-recorder",
+        "--server",
+        "splunk=mock-splunk-mcp",
+        "--server",
+        "splunkready=mcp",
+        "--fixture",
+        "fixtures/acme-soc-dev/adapter-fixture.json",
+        "--out",
+        outDir
+      ],
+      {
+        cwd: process.cwd(),
+        env: { ...process.env },
+        stdio: ["pipe", "pipe", "pipe"]
+      }
+    );
+
+    const sendRequest = async <T>(message: Record<string, unknown>, timeoutMs = 10_000): Promise<T> => {
+      child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", ...message })}\n`);
+      return JSON.parse(await readStdoutLine(child, timeoutMs)) as T;
+    };
+
+    try {
+      const initialize = await sendRequest<{ result: { serverInfo: { name: string } } }>({
+        id: "recorder-initialize",
+        method: "initialize",
+        params: {
+          protocolVersion: "2025-06-18",
+          capabilities: {},
+          clientInfo: { name: "cli-flow-test", version: "1.0.0" }
+        }
+      });
+      expect(initialize.result.serverInfo.name).toBe("splunkready-mcp-recorder");
+
+      const toolsList = await sendRequest<{ result: { tools: Array<{ name: string }> } }>({
+        id: "recorder-tools",
+        method: "tools/list"
+      });
+      const toolNames = toolsList.result.tools.map((tool) => tool.name);
+
+      expect(toolNames).toEqual(
+        expect.arrayContaining([
+          "splunk__splunk_get_knowledge_objects",
+          "splunk__splunk_run_saved_search",
+          "splunkready__splunkready_certify_mcp_transcript",
+          "splunkready__splunkready_certify_mcp_transcript_content",
+          "splunkready_recorder_flush"
+        ])
+      );
+
+      await sendRequest({
+        id: "recorder-knowledge",
+        method: "tools/call",
+        params: {
+          name: "splunk__splunk_get_knowledge_objects",
+          arguments: { types: ["saved_searches"], app: "SplunkEnterpriseSecuritySuite" }
+        }
+      });
+      await sendRequest({
+        id: "recorder-saved-search",
+        method: "tools/call",
+        params: {
+          name: "splunk__splunk_run_saved_search",
+          arguments: {
+            name: "ES - Lateral Movement Auth Chain",
+            app: "SplunkEnterpriseSecuritySuite",
+            tokens: { host: "win-finance-07", earliest: "-24h", latest: "now" },
+            maxRows: 10
+          }
+        }
+      });
+      const transcript = await readFile("examples/sample-mcp-transcript-pass.jsonl", "utf8");
+      await sendRequest(
+        {
+          id: "recorder-certify-content",
+          method: "tools/call",
+          params: {
+            name: "splunkready__splunkready_certify_mcp_transcript_content",
+            arguments: {
+              transcript,
+              finalAnswer:
+                "Evidence supports suspicious lateral movement. Provenance saved-search-lateral-movement returned 3 rows with evidence evt-102, evt-118, and evt-141.",
+              outDir: join(outDir, "downstream-certification"),
+              strictImport: true,
+              requirePass: true,
+              agentName: "CLI flow recorder fixture",
+              agentVersion: "test"
+            }
+          }
+        },
+        60_000
+      );
+      await sendRequest(
+        {
+          id: "recorder-certify-path",
+          method: "tools/call",
+          params: {
+            name: "splunkready__splunkready_certify_mcp_transcript",
+            arguments: {
+              transcriptPath: "examples/sample-mcp-transcript-pass.jsonl",
+              finalAnswer:
+                "Evidence supports suspicious lateral movement. Provenance saved-search-lateral-movement returned 3 rows with evidence evt-102, evt-118, and evt-141.",
+              outDir: join(outDir, "downstream-path-certification"),
+              strictImport: true,
+              requirePass: true,
+              agentName: "CLI flow recorder fixture",
+              agentVersion: "test"
+            }
+          }
+        },
+        60_000
+      );
+      const flush = await sendRequest<{
+        result: { structuredContent: { status: string; certification?: { status: string }; frameCount: number } };
+      }>(
+        {
+          id: "recorder-flush",
+          method: "tools/call",
+          params: {
+            name: "splunkready_recorder_flush",
+            arguments: {
+              finalAnswer:
+                "Evidence supports suspicious lateral movement from win-finance-07 through admin-login-02 to dc-01 and finance-sql-03.",
+              requirePass: true
+            }
+          }
+        },
+        60_000
+      );
+
+      expect(flush.result.structuredContent.status).toBe("PASS");
+      expect(flush.result.structuredContent.certification?.status).toBe("PASS");
+      expect(flush.result.structuredContent.frameCount).toBeGreaterThanOrEqual(5);
+
+      const sessionText = await readFile(join(outDir, "mcp-recorder-session.jsonl"), "utf8");
+      const sessionFrames = sessionText
+        .trim()
+        .split(/\r?\n/)
+        .map((line) => JSON.parse(line) as { serverId: string; message: unknown });
+      const importSummary = JSON.parse(
+        await readFile(join(outDir, "mcp-recorder-certification", "mcp-transcript-import.json"), "utf8")
+      ) as { unmatchedToolCalls: number; skippedRecords: number; finalAnswers: number };
+
+      expect(new Set(sessionFrames.map((frame) => frame.serverId))).toEqual(new Set(["splunk", "splunkready"]));
+      expect(sessionText).toContain("splunk_run_saved_search");
+      expect(sessionText).toContain("splunkready_certify_mcp_transcript_content");
+      expect(sessionText).not.toMatch(/Bearer\s+(?!<redacted-token>)[A-Za-z0-9._~+/=-]+/);
+      expect(sessionText).not.toMatch(/\/Users\/|\/private\/|\/tmp\//);
+      expect(importSummary.unmatchedToolCalls).toBe(0);
+      expect(importSummary.skippedRecords).toBe(0);
+      expect(importSummary.finalAnswers).toBe(1);
+    } finally {
+      child.stdin.end();
+      child.kill();
+    }
+  }, 120_000);
+
   it("runs fixture compile, evaluate, receipt, and rerun commands with stable artifacts", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-cli-"));
 

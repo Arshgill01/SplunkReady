@@ -34,6 +34,7 @@ export interface CliOptions {
   firewall: boolean;
   liveMock: boolean;
   mockState: "ok" | "degraded" | "route-not-found";
+  servers: string[];
   json: boolean;
 }
 
@@ -70,6 +71,7 @@ Commands:
   judge-proof --out <dir> [--include-llm-proof true|false] [--json]
   mcp       Start the SplunkReady stdio MCP server
   mock-splunk-mcp --fixture <path> [--mock-state ok|degraded|route-not-found] Start the credential-free mock Splunk stdio MCP server
+  mcp-recorder --server splunk=<command|mock-splunk-mcp> --server splunkready=<command|mcp> --out <dir> [--fixture <path>] [--mock-state ok|degraded|route-not-found]
   mcp-proof --out <dir> [--transcript <path>] [--live-mock] [--mock-state ok|degraded|route-not-found] [--json]
   live-candidates --out <dir> [--candidate-limit <n>] [--live-mock]
   live-security-check --out <dir> [--live-mock] [--json]
@@ -122,6 +124,7 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
   firewall: false,
   liveMock: false,
   mockState: "ok",
+  servers: [],
   json: false,
   ...overrides
 });
@@ -256,6 +259,8 @@ export const parseArgs = (argv: string[]): { command: string; options: CliOption
       }
 
       options.mockState = value;
+    } else if (flag === "--server") {
+      options.servers.push(value);
     } else {
       throw new Error(`Unknown option ${flag}.\n${usage}`);
     }

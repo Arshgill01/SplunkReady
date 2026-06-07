@@ -7,6 +7,7 @@ import {
   writeMcpCompositionRecorderSession,
   type McpCompositionRecorderSummary
 } from "../mcp/composition-recorder.js";
+import { runMcpRecorderGatewayProofSession } from "../mcp/recorder-gateway.js";
 import { runMcpTranscriptCertificationFromPathWorkflow } from "./external-certification.js";
 
 export interface McpProofWorkflowInput {
@@ -1280,6 +1281,66 @@ const runLiveMockSplunkMcpSession = async (input: {
   }
 };
 
+const buildCompositionRecorderEvidence = async (input: {
+  liveMock?: boolean;
+  cliPath?: string;
+  fixturePath?: string;
+  mockState: "ok" | "degraded" | "route-not-found";
+  transcriptPath: string;
+  finalAnswer: string;
+  splunkReadySession: McpClientSessionRecord[];
+  artifactPath: string;
+  markdownPath: string;
+  certificationOutDir: string;
+  downstreamCertificationOutDir: string;
+  downstreamPathCertificationOutDir: string;
+}): Promise<McpCompositionRecorderSummary> => {
+  if (input.liveMock && input.cliPath && input.fixturePath) {
+    return runMcpRecorderGatewayProofSession({
+      cliPath: input.cliPath,
+      fixturePath: input.fixturePath,
+      mockState: input.mockState,
+      transcriptPath: input.transcriptPath,
+      finalAnswer: input.finalAnswer,
+      artifactPath: input.artifactPath,
+      markdownPath: input.markdownPath,
+      certificationOutDir: input.certificationOutDir,
+      downstreamCertificationOutDir: input.downstreamCertificationOutDir,
+      downstreamPathCertificationOutDir: input.downstreamPathCertificationOutDir
+    });
+  }
+
+  const compositionRecorderBase = await writeMcpCompositionRecorderSession({
+    splunkTranscriptPath: input.transcriptPath,
+    splunkReadySession: input.splunkReadySession,
+    artifactPath: input.artifactPath,
+    markdownPath: input.markdownPath
+  });
+  const compositionRecorderCertification = await runMcpTranscriptCertificationFromPathWorkflow({
+    outDir: input.certificationOutDir,
+    transcriptPath: input.artifactPath,
+    strictImport: true,
+    requirePass: true,
+    agentName: "MCP Composition Recorder",
+    agentVersion: "dual-server-redacted-session"
+  });
+  const compositionRecorder: McpCompositionRecorderSummary = {
+    ...compositionRecorderBase,
+    certification: {
+      status: compositionRecorderCertification.status,
+      outDir: compositionRecorderCertification.outDir,
+      artifactCount: compositionRecorderCertification.artifacts.length
+    },
+    status:
+      compositionRecorderBase.status === "PASS" && compositionRecorderCertification.status === "PASS"
+        ? "PASS"
+        : "FAIL"
+  };
+  await writeFile(input.markdownPath, renderMcpCompositionRecorderMarkdown(compositionRecorder), "utf8");
+
+  return compositionRecorder;
+};
+
 export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise<McpProofWorkflowResult> => {
   const transcriptPath = input.transcriptPath ?? defaultTranscriptPath;
   const transcriptOutDir = join(input.outDir, "mcp-transcript-certification");
@@ -1296,6 +1357,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
   const compositionRecorderSessionPath = join(input.outDir, "dual-server-session.jsonl");
   const compositionRecorderMarkdownPath = join(input.outDir, "dual-server-session.md");
   const compositionRecorderCertificationOutDir = join(input.outDir, "mcp-composition-recorder-certification");
+  const recorderGatewayDownstreamCertificationOutDir = join(input.outDir, "mcp-recorder-gateway-inline-certification");
+  const recorderGatewayDownstreamPathCertificationOutDir = join(input.outDir, "mcp-recorder-gateway-path-certification");
 
   await mkdir(input.outDir, { recursive: true });
   await mkdir(transcriptOutDir, { recursive: true });
@@ -1544,33 +1607,20 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       markdownPath: liveMockSplunkMcpMarkdownPath
     });
     const clientSession = buildMcpClientSession(client.session(), clientSessionPath, clientSessionMarkdownPath);
-    const compositionRecorderBase = await writeMcpCompositionRecorderSession({
-      splunkTranscriptPath: transcriptPath,
+    const compositionRecorder = await buildCompositionRecorderEvidence({
+      liveMock: input.liveMock,
+      cliPath: input.mockServerPath,
+      fixturePath: input.mockFixturePath,
+      mockState: input.mockState ?? "ok",
+      transcriptPath,
+      finalAnswer: input.finalAnswer ?? defaultFinalAnswer,
       splunkReadySession: client.session(),
       artifactPath: compositionRecorderSessionPath,
-      markdownPath: compositionRecorderMarkdownPath
+      markdownPath: compositionRecorderMarkdownPath,
+      certificationOutDir: compositionRecorderCertificationOutDir,
+      downstreamCertificationOutDir: recorderGatewayDownstreamCertificationOutDir,
+      downstreamPathCertificationOutDir: recorderGatewayDownstreamPathCertificationOutDir
     });
-    const compositionRecorderCertification = await runMcpTranscriptCertificationFromPathWorkflow({
-      outDir: compositionRecorderCertificationOutDir,
-      transcriptPath: compositionRecorderSessionPath,
-      strictImport: true,
-      requirePass: true,
-      agentName: "MCP Composition Recorder",
-      agentVersion: "dual-server-redacted-session"
-    });
-    const compositionRecorder: McpCompositionRecorderSummary = {
-      ...compositionRecorderBase,
-      certification: {
-        status: compositionRecorderCertification.status,
-        outDir: compositionRecorderCertification.outDir,
-        artifactCount: compositionRecorderCertification.artifacts.length
-      },
-      status:
-        compositionRecorderBase.status === "PASS" && compositionRecorderCertification.status === "PASS"
-          ? "PASS"
-          : "FAIL"
-    };
-    await writeFile(compositionRecorderMarkdownPath, renderMcpCompositionRecorderMarkdown(compositionRecorder), "utf8");
     const summary: McpProofSummary = {
       source: "splunkready-mcp-proof",
       status:
@@ -1635,7 +1685,9 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         liveMockSplunkMcpMarkdownPath,
         compositionRecorderSessionPath,
         compositionRecorderMarkdownPath,
-        ...compositionRecorderCertification.artifacts,
+        ...(compositionRecorder.certification ? [compositionRecorder.certification.outDir] : []),
+        recorderGatewayDownstreamCertificationOutDir,
+        recorderGatewayDownstreamPathCertificationOutDir,
         ...toolArtifacts,
         ...inlineToolArtifacts,
         ...hostedModelAccessArtifacts

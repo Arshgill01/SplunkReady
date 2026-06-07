@@ -86,8 +86,10 @@ The MCP proof also includes a client-neutral dual-server recorder artifact at
 `submission-evidence/mcp-proof/dual-server-session.jsonl`. It preserves
 `serverId` for the existing Splunk MCP investigation frames and the SplunkReady
 certification frames, redacts endpoint/token/local-path material, then certifies
-the recorder transcript with strict import and zero skipped records. This is not
-claimed as a third-party desktop-client recording.
+the recorder transcript with strict import and zero skipped records. In
+`--live-mock` mode that artifact is produced by the `mcp-recorder` pass-through
+gateway against mock Splunk MCP plus SplunkReady MCP, not by a closed desktop
+client recording.
 
 The tracked Splunk app package evidence is
 `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`. It embeds the

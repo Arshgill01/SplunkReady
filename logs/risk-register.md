@@ -1046,3 +1046,13 @@ live pass-through recorder/proxy mode and it is not claimed as an observed
 Antigravity, Zed, Claude Desktop, or Cursor session. A later MCP move should
 turn the recorder into an actual proxy/gateway before claiming third-party
 client evidence.
+
+Move 163 reduces the "recorder artifact is not a real MCP server" risk by
+adding a stdio MCP recorder gateway. The gateway proxies two downstream stdio
+servers, exposes prefixed downstream tools, records redacted request-response
+frames with server IDs, appends a final answer, and certifies the Splunk-side
+transcript through the deterministic importer. `mcp-proof --live-mock` now uses
+this pass-through gateway for the tracked `compositionRecorder` evidence.
+Residual risk: this is still a credential-free mock Splunk MCP path, not an
+observed closed-client Antigravity/Zed/Claude/Cursor session, and it does not
+yet support remote HTTP/SSE MCP targets or arbitrary client config discovery.

@@ -15013,3 +15013,53 @@ Files changed:
 - `moves/README.md`
 - `moves/moves163.md`
 - `moves/moves164.md`
+
+## 2026-06-07T20:42:37Z - Move 163 MCP recorder pass-through gateway
+
+Intent:
+
+- Close the gap between a generated dual-server recorder artifact and a real
+  MCP server that can sit in front of two downstream MCP servers, proxy tool
+  calls, preserve server identity, redact frames, and certify the captured
+  Splunk transcript.
+
+Actions:
+
+- Added `mcp-recorder` as a stdio CLI entrypoint with repeated `--server`
+  options for `splunk=...` and `splunkready=...`.
+- Added `src/mcp/recorder-gateway.ts`, a pass-through recorder gateway that
+  starts downstream stdio MCP servers, exposes prefixed tools, records
+  Splunk/SplunkReady request-response frames, appends a final-answer record,
+  writes redacted JSONL/Markdown evidence, and certifies the Splunk-side
+  transcript through the deterministic MCP transcript importer.
+- Extended the composition-recorder writer so gateway-generated frames and
+  synthetic recorder frames share the same summary/Markdown path.
+- Updated `mcp-proof --live-mock` so the tracked `compositionRecorder` evidence
+  comes from the pass-through gateway against mock Splunk MCP plus SplunkReady
+  MCP.
+- Added a CLI-level stdio integration test that starts `mcp-recorder`, calls
+  downstream Splunk investigation tools, calls both SplunkReady transcript
+  certification tools, flushes the recorder, and verifies the generated
+  transcript import has zero skipped records and zero unmatched calls.
+- Refreshed `submission-evidence/mcp-proof/` and public claim copy to cite the
+  pass-through gateway evidence honestly.
+
+Files changed:
+
+- `README.md`
+- `docs/devpost-submission.md`
+- `logs/execution-log.md`
+- `logs/risk-register.md`
+- `logs/verification-log.md`
+- `scripts/audit-submission-copy.mjs`
+- `src/cli.ts`
+- `src/cli/options.ts`
+- `src/mcp/composition-recorder.ts`
+- `src/mcp/recorder-gateway.ts`
+- `src/workflows/mcp-proof.ts`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/mcp-proof/*`
+- `tests/cli/flow.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`

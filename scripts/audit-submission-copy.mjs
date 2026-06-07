@@ -179,7 +179,7 @@ const checks = [
   [
     "Claim ledger MCP composition recorder",
     files.claimLedger,
-    "The MCP proof records a redacted dual-server composition session without requiring a closed desktop client."
+    "The MCP proof records a redacted pass-through dual-server composition session without requiring a closed desktop client."
   ],
   ["Claim ledger MCP composition recorder source", files.claimLedger, "splunkready-mcp-composition-recorder"],
   ["Claim ledger MCP composition recorder artifact", files.claimLedger, "submission-evidence/mcp-proof/dual-server-session.jsonl"],
@@ -190,6 +190,8 @@ const checks = [
   ],
   ["Claim ledger MCP composition recorder redaction", files.claimLedger, "redaction.status: \"PASS\""],
   ["Claim ledger MCP composition recorder skipped records", files.claimLedger, "skippedRecords: 0"],
+  ["Claim ledger MCP recorder gateway command", files.claimLedger, "mcp-recorder --server splunk=mock-splunk-mcp --server splunkready=mcp"],
+  ["Claim ledger MCP recorder gateway test", files.claimLedger, "tests/cli/flow.test.ts -t \"MCP recorder gateway\""],
   ["Claim ledger MCP composition recorder test", files.claimLedger, "tests/mcp/composition-recorder.test.ts"],
   ["README MCP composition recorder", files.readme, "compositionRecorder"],
   ["README MCP composition recorder artifact", files.readme, "dual-server-session.jsonl"],
