@@ -1616,6 +1616,20 @@ describe("SplunkReady CLI flow", () => {
         deterministicAuthority: boolean;
         mutation: boolean;
       };
+      liveMockSplunkMcp: {
+        source: string;
+        status: string;
+        artifactPath: string;
+        markdownPath: string;
+        routeState: string;
+        toolNames: string[];
+        evidenceRefs: string[];
+        includesSavedSearchExecution: boolean;
+        requestCount: number;
+        responseCount: number;
+        deterministicAuthority: boolean;
+        mutation: boolean;
+      };
       artifacts: string[];
     };
     const clientWalkthrough = JSON.parse(await readFile(join(outDir, "mcp-client-walkthrough.json"), "utf8")) as {
@@ -1801,6 +1815,20 @@ describe("SplunkReady CLI flow", () => {
           "splunkready_review_mcp_composition",
           "splunkready_check_hosted_model_access"
         ]),
+        deterministicAuthority: true,
+        mutation: false
+      },
+      liveMockSplunkMcp: {
+        source: "splunkready-live-mock-splunk-mcp",
+        status: "NOT_REQUESTED",
+        artifactPath: join(outDir, "mock-splunk-mcp-session.jsonl"),
+        markdownPath: join(outDir, "mock-splunk-mcp-session.md"),
+        routeState: "ok",
+        toolNames: [],
+        evidenceRefs: [],
+        includesSavedSearchExecution: false,
+        requestCount: 0,
+        responseCount: 0,
         deterministicAuthority: true,
         mutation: false
       }
@@ -2073,6 +2101,56 @@ describe("SplunkReady CLI flow", () => {
       status: "PASS",
       artifacts: [join(transcriptProofDir, "proof-manifest-verification.json")]
     });
+  });
+
+  it("runs MCP proof with a credential-free live mock Splunk MCP session", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-proof-live-mock-"));
+
+    const output = parseCliJsonOutput((await runCli(["mcp-proof", "--out", outDir, "--live-mock", "--json"])).stdout);
+    const summary = JSON.parse(await readFile(join(outDir, "mcp-proof-summary.json"), "utf8")) as {
+      status: string;
+      mutation: boolean;
+      liveMockSplunkMcp: {
+        status: string;
+        routeState: string;
+        toolNames: string[];
+        evidenceRefs: string[];
+        includesSavedSearchExecution: boolean;
+        requestCount: number;
+        responseCount: number;
+        deterministicAuthority: boolean;
+        mutation: boolean;
+      };
+    };
+    const mockSession = await readFile(join(outDir, "mock-splunk-mcp-session.jsonl"), "utf8");
+    const mockSessionMarkdown = await readFile(join(outDir, "mock-splunk-mcp-session.md"), "utf8");
+
+    expect(output).toMatchObject({
+      command: "mcp-proof",
+      status: "PASS",
+      artifacts: expect.arrayContaining([
+        join(outDir, "mcp-proof-summary.json"),
+        join(outDir, "mock-splunk-mcp-session.jsonl"),
+        join(outDir, "mock-splunk-mcp-session.md")
+      ])
+    });
+    expect(summary).toMatchObject({
+      status: "PASS",
+      mutation: false,
+      liveMockSplunkMcp: {
+        status: "PASS",
+        routeState: "ok",
+        toolNames: ["splunk_get_info", "splunk_get_knowledge_objects", "splunk_run_saved_search"],
+        evidenceRefs: ["evt-102", "evt-118", "evt-141"],
+        includesSavedSearchExecution: true,
+        deterministicAuthority: true,
+        mutation: false
+      }
+    });
+    expect(summary.liveMockSplunkMcp.requestCount).toBeGreaterThanOrEqual(5);
+    expect(summary.liveMockSplunkMcp.responseCount).toBe(summary.liveMockSplunkMcp.requestCount);
+    expect(mockSession).toContain("splunk_run_saved_search");
+    expect(mockSessionMarkdown).toContain("Saved-search execution: yes");
   });
 
   it("keeps failed MCP transcript certification artifacts while enforcing require-pass", async () => {

@@ -59,7 +59,7 @@ Agent-driven workflow: PASS
 Transcript certification: PASS
 
 Inline transcript certification: PASS
-- Output: artifacts/mcp-proof/mcp-inline-transcript-certification
+- Output: submission-evidence/mcp-proof/mcp-inline-transcript-certification
 
 MCP composition review: PASS
 - Score: 100
@@ -72,7 +72,7 @@ Hosted-model access check: PASS
 - Permission blocker: NONE
 - Passed tools: saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question
 - Blocked tools: none
-- Output: artifacts/mcp-proof/mcp-hosted-model-access
+- Output: submission-evidence/mcp-proof/mcp-hosted-model-access
 
 Operator live hosted-model status: BLOCKED
 - Artifact: artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json
@@ -88,7 +88,7 @@ Splunk MCP boundary: PASS
 - Certified tool calls: splunk_get_knowledge_objects, splunk_run_saved_search
 - Saved-search execution: yes
 - Evidence refs: evt-102, evt-118, evt-141
-- Receipt: artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json
+- Receipt: submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json
 
 MCP composition scorecard: PASS (100/100)
 - dual-server-client-config: PASS - Client config includes separate splunk and splunkready MCP servers.
@@ -113,19 +113,19 @@ Official Splunk MCP tool coverage: PASS
 - saia-hosted-model-tools: PASS - 4/4 SAIA hosted-model tools passed in the MCP proof.
 
 MCP client walkthrough: PASS
-- Artifact: artifacts/mcp-proof/mcp-client-walkthrough.json
-- Markdown: artifacts/mcp-proof/mcp-client-walkthrough.md
+- Artifact: submission-evidence/mcp-proof/mcp-client-walkthrough.json
+- Markdown: submission-evidence/mcp-proof/mcp-client-walkthrough.md
 - Existing Splunk MCP server: Existing Splunk MCP Server performs the read-only investigation and returns deployment evidence.
 - SplunkReady role: SplunkReady MCP certifies the captured Splunk MCP transcript into a deterministic Readiness Receipt.
 - client-discovers-two-servers: MCP client is configured with existing Splunk MCP plus SplunkReady MCP (client) - splunkready://client-config/splunk-and-splunkready
 - splunk-mcp-investigates: Agent investigates through read-only Splunk MCP tools (splunk) - splunk_get_knowledge_objects, splunk_run_saved_search
 - transcript-preserved: MCP JSON-RPC request/response transcript is preserved without secrets (client) - examples/sample-mcp-transcript-pass.jsonl
-- splunkready-certifies: SplunkReady certifies the captured transcript (splunkready) - artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json
+- splunkready-certifies: SplunkReady certifies the captured transcript (splunkready) - submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json
 - receipt-is-authoritative: Readiness Receipt is the authoritative verdict (splunkready) - certificationStatus=PASS; deterministicAuthority=true; mutation=false
 
 MCP client session: PASS
-- Artifact: artifacts/mcp-proof/mcp-client-session.jsonl
-- Markdown: artifacts/mcp-proof/mcp-client-session.md
+- Artifact: submission-evidence/mcp-proof/mcp-client-session.jsonl
+- Markdown: submission-evidence/mcp-proof/mcp-client-session.md
 - Protocol: stdio-jsonrpc
 - Requests: 25
 - Responses: 25
@@ -134,4 +134,12 @@ MCP client session: PASS
 - Prompts fetched: splunkready_certify_mcp_transcript, splunkready_splunk_mcp_certification_loop, splunkready_mcp_composition_review, splunkready_hosted_model_diagnostic
 - Tools called: splunkready_describe_certification, splunkready_review_mcp_composition, splunkready_certify_mcp_transcript, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access
 
-Receipt: artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json
+Live mock Splunk MCP: PASS
+- Artifact: submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl
+- Markdown: submission-evidence/mcp-proof/mock-splunk-mcp-session.md
+- Route state: ok
+- Tools called: splunk_get_info, splunk_get_knowledge_objects, splunk_run_saved_search
+- Evidence refs: evt-102, evt-118, evt-141
+- Saved-search execution: yes
+
+Receipt: submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json

@@ -5,6 +5,10 @@ import { join, relative } from "node:path";
 export interface McpProofWorkflowInput {
   outDir: string;
   serverPath: string;
+  mockServerPath?: string;
+  mockFixturePath?: string;
+  liveMock?: boolean;
+  mockState?: "ok" | "degraded" | "route-not-found";
   transcriptPath?: string;
   finalAnswer?: string;
 }
@@ -217,6 +221,20 @@ interface McpProofSummary {
     deterministicAuthority: true;
     mutation: false;
   };
+  liveMockSplunkMcp: {
+    source: "splunkready-live-mock-splunk-mcp";
+    status: "NOT_REQUESTED" | "PASS" | "FAIL";
+    artifactPath: string;
+    markdownPath: string;
+    routeState: "ok" | "degraded" | "route-not-found";
+    toolNames: string[];
+    evidenceRefs: string[];
+    includesSavedSearchExecution: boolean;
+    requestCount: number;
+    responseCount: number;
+    deterministicAuthority: true;
+    mutation: false;
+  };
   artifacts: string[];
   nextCommands: string[];
 }
@@ -259,8 +277,8 @@ class McpStdioClient {
   private stderrBuffer = "";
   private sequence = 0;
 
-  constructor(serverPath: string) {
-    this.child = spawn(process.execPath, [serverPath], {
+  constructor(serverPath: string, serverArgs: string[] = []) {
+    this.child = spawn(process.execPath, [serverPath, ...serverArgs], {
       env: process.env,
       stdio: ["pipe", "pipe", "pipe"]
     });
@@ -467,6 +485,14 @@ MCP client session: ${summary.clientSession.status}
 - Prompts fetched: ${summary.clientSession.promptNames.join(", ")}
 - Tools called: ${summary.clientSession.toolNames.join(", ")}
 
+Live mock Splunk MCP: ${summary.liveMockSplunkMcp.status}
+- Artifact: ${summary.liveMockSplunkMcp.artifactPath}
+- Markdown: ${summary.liveMockSplunkMcp.markdownPath}
+- Route state: ${summary.liveMockSplunkMcp.routeState}
+- Tools called: ${summary.liveMockSplunkMcp.toolNames.join(", ") || "none"}
+- Evidence refs: ${summary.liveMockSplunkMcp.evidenceRefs.join(", ") || "none"}
+- Saved-search execution: ${summary.liveMockSplunkMcp.includesSavedSearchExecution ? "yes" : "no"}
+
 Receipt: ${stringFromRecord(summary.transcriptCertification, "outDir")}/receipt-external-001.json
 `;
 
@@ -528,6 +554,29 @@ Tools:
 ${session.toolNames.map((name) => `- ${name}`).join("\n")}
 `;
 
+const liveMockSplunkMcpMarkdown = (liveMock: McpProofSummary["liveMockSplunkMcp"]): string => `# Live Mock Splunk MCP Session
+
+Status: ${liveMock.status}
+
+Route state: ${liveMock.routeState}
+
+Mutation: ${liveMock.mutation ? "yes" : "no"}
+
+Deterministic authority: ${liveMock.deterministicAuthority ? "yes" : "no"}
+
+Requests: ${liveMock.requestCount}
+
+Responses: ${liveMock.responseCount}
+
+Tools:
+${liveMock.toolNames.map((name) => `- ${name}`).join("\n")}
+
+Evidence refs:
+${liveMock.evidenceRefs.map((ref) => `- ${ref}`).join("\n")}
+
+Saved-search execution: ${liveMock.includesSavedSearchExecution ? "yes" : "no"}
+`;
+
 const stringArray = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 
@@ -542,6 +591,7 @@ const collectEvidenceRefs = (value: unknown): string[] => {
   const record = value as Record<string, unknown>;
   const directRefs = stringArray(record.evidenceRefs);
   const results = Array.isArray(record.results) ? record.results : [];
+  const rows = Array.isArray(record.rows) ? record.rows : [];
   const resultRefs = results.flatMap((result) => {
     if (!result || typeof result !== "object" || Array.isArray(result)) {
       return [];
@@ -550,8 +600,16 @@ const collectEvidenceRefs = (value: unknown): string[] => {
     const eventRef = (result as Record<string, unknown>).eventRef;
     return typeof eventRef === "string" ? [eventRef] : [];
   });
+  const rowRefs = rows.flatMap((row) => {
+    if (!row || typeof row !== "object" || Array.isArray(row)) {
+      return [];
+    }
 
-  return [...directRefs, ...resultRefs];
+    const eventRef = (row as Record<string, unknown>).eventRef;
+    return typeof eventRef === "string" ? [eventRef] : [];
+  });
+
+  return [...new Set([...directRefs, ...resultRefs, ...rowRefs])];
 };
 
 const textFromMcpResource = (resource: Record<string, unknown>): string => {
@@ -1085,6 +1143,125 @@ const readOperatorLiveHostedModelStatus = async (
   };
 };
 
+const notRequestedLiveMockSplunkMcp = (
+  artifactPath: string,
+  markdownPath: string,
+  routeState: "ok" | "degraded" | "route-not-found"
+): McpProofSummary["liveMockSplunkMcp"] => ({
+  source: "splunkready-live-mock-splunk-mcp",
+  status: "NOT_REQUESTED",
+  artifactPath,
+  markdownPath,
+  routeState,
+  toolNames: [],
+  evidenceRefs: [],
+  includesSavedSearchExecution: false,
+  requestCount: 0,
+  responseCount: 0,
+  deterministicAuthority: true,
+  mutation: false
+});
+
+const runLiveMockSplunkMcpSession = async (input: {
+  enabled?: boolean;
+  serverPath?: string;
+  fixturePath?: string;
+  routeState?: "ok" | "degraded" | "route-not-found";
+  artifactPath: string;
+  markdownPath: string;
+}): Promise<McpProofSummary["liveMockSplunkMcp"]> => {
+  const routeState = input.routeState ?? "ok";
+
+  if (!input.enabled) {
+    const summary = notRequestedLiveMockSplunkMcp(input.artifactPath, input.markdownPath, routeState);
+    await writeFile(input.artifactPath, "");
+    await writeFile(input.markdownPath, liveMockSplunkMcpMarkdown(summary), "utf8");
+    return summary;
+  }
+
+  if (!input.serverPath || !input.fixturePath) {
+    throw new Error("mcp-proof --live-mock requires a mock server path and fixture path.");
+  }
+
+  const client = new McpStdioClient(input.serverPath, [
+    "mock-splunk-mcp",
+    "--fixture",
+    input.fixturePath,
+    "--mock-state",
+    routeState
+  ]);
+
+  try {
+    await client.request("initialize", {
+      protocolVersion: "2025-06-18",
+      capabilities: {},
+      clientInfo: { name: "splunkready-mcp-proof-live-mock", version: "0.0.0" }
+    });
+    client.notify("notifications/initialized");
+    await client.request("tools/list");
+    await client.request("tools/call", {
+      name: "splunk_get_info",
+      arguments: {}
+    });
+    await client.request("tools/call", {
+      name: "splunk_get_knowledge_objects",
+      arguments: {
+        types: ["saved_searches", "macros", "lookups"],
+        query: "ES - Lateral Movement Auth Chain",
+        app: "SplunkEnterpriseSecuritySuite"
+      }
+    });
+    const savedSearchResult = await client.request("tools/call", {
+      name: "splunk_run_saved_search",
+      arguments: {
+        app: "SplunkEnterpriseSecuritySuite",
+        name: "ES - Lateral Movement Auth Chain",
+        tokens: { host: "win-finance-07" },
+        maxRows: 10
+      }
+    });
+    const requestRecords = client.session().filter((record) => record.direction === "request");
+    const responseRecords = client.session().filter((record) => record.direction === "response");
+    const toolNames = [
+      ...new Set(
+        requestRecords
+          .filter((record) => record.method === "tools/call")
+          .map((record) => paramsRecord(record.params).name)
+          .filter((name): name is string => typeof name === "string")
+      )
+    ];
+    const savedSearchStructuredContent = safeRecord(savedSearchResult.structuredContent);
+    const evidenceRefs = collectEvidenceRefs(savedSearchStructuredContent);
+    const summary: McpProofSummary["liveMockSplunkMcp"] = {
+      source: "splunkready-live-mock-splunk-mcp",
+      status:
+        toolNames.includes("splunk_get_info") &&
+        toolNames.includes("splunk_get_knowledge_objects") &&
+        toolNames.includes("splunk_run_saved_search") &&
+        evidenceRefs.length > 0
+          ? "PASS"
+          : "FAIL",
+      artifactPath: input.artifactPath,
+      markdownPath: input.markdownPath,
+      routeState,
+      toolNames,
+      evidenceRefs,
+      includesSavedSearchExecution: toolNames.includes("splunk_run_saved_search"),
+      requestCount: requestRecords.length,
+      responseCount: responseRecords.length,
+      deterministicAuthority: true,
+      mutation: false
+    };
+
+    await writeFile(input.artifactPath, `${client.session().map((record) => JSON.stringify(record)).join("\n")}\n`, "utf8");
+    await writeFile(input.markdownPath, liveMockSplunkMcpMarkdown(summary), "utf8");
+
+    return summary;
+  } finally {
+    client.close();
+  }
+};
+
 export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise<McpProofWorkflowResult> => {
   const transcriptPath = input.transcriptPath ?? defaultTranscriptPath;
   const transcriptOutDir = join(input.outDir, "mcp-transcript-certification");
@@ -1096,6 +1273,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
   const clientWalkthroughMarkdownPath = join(input.outDir, "mcp-client-walkthrough.md");
   const clientSessionPath = join(input.outDir, "mcp-client-session.jsonl");
   const clientSessionMarkdownPath = join(input.outDir, "mcp-client-session.md");
+  const liveMockSplunkMcpSessionPath = join(input.outDir, "mock-splunk-mcp-session.jsonl");
+  const liveMockSplunkMcpMarkdownPath = join(input.outDir, "mock-splunk-mcp-session.md");
 
   await mkdir(input.outDir, { recursive: true });
   await mkdir(transcriptOutDir, { recursive: true });
@@ -1334,6 +1513,14 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       splunkMcpBoundary,
       transcriptCertification
     });
+    const liveMockSplunkMcp = await runLiveMockSplunkMcpSession({
+      enabled: input.liveMock,
+      serverPath: input.mockServerPath,
+      fixturePath: input.mockFixturePath,
+      routeState: input.mockState,
+      artifactPath: liveMockSplunkMcpSessionPath,
+      markdownPath: liveMockSplunkMcpMarkdownPath
+    });
     const clientSession = buildMcpClientSession(client.session(), clientSessionPath, clientSessionMarkdownPath);
     const summary: McpProofSummary = {
       source: "splunkready-mcp-proof",
@@ -1341,7 +1528,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         certificationStatus === "PASS" &&
         inlineCertificationStatus === "PASS" &&
         compositionReviewStatus === "PASS" &&
-        hostedModelAccessStatus === "PASS"
+        hostedModelAccessStatus === "PASS" &&
+        (!input.liveMock || liveMockSplunkMcp.status === "PASS")
           ? "PASS"
           : "FAIL",
       mutation: false,
@@ -1384,6 +1572,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       officialSplunkMcpToolCoverage,
       clientWalkthrough,
       clientSession,
+      liveMockSplunkMcp,
       artifacts: [
         summaryPath,
         markdownPath,
@@ -1391,6 +1580,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         clientWalkthroughMarkdownPath,
         clientSessionPath,
         clientSessionMarkdownPath,
+        liveMockSplunkMcpSessionPath,
+        liveMockSplunkMcpMarkdownPath,
         ...toolArtifacts,
         ...inlineToolArtifacts,
         ...hostedModelAccessArtifacts
@@ -1418,7 +1609,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         `Discovered ${summary.resourceTemplates.length} MCP resource template(s) and read splunkready://receipts/pass.`,
         `Certified transcript ${transcriptPath} through splunkready_certify_mcp_transcript and splunkready_certify_mcp_transcript_content.`,
         "Checked hosted-model SAIA access through splunkready_check_hosted_model_access in fixture mode.",
-        `Recorded operator live hosted-model status as ${operatorLiveHostedModelStatus.status}.`
+        `Recorded operator live hosted-model status as ${operatorLiveHostedModelStatus.status}.`,
+        `Recorded live mock Splunk MCP status as ${liveMockSplunkMcp.status}.`
       ]
     };
   } finally {

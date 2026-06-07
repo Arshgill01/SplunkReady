@@ -912,3 +912,11 @@ the local Docker daemon was not running, so the image build is not yet
 validated; npm latest `0.1.2` still does not include the source-only
 `--live-mock`/`--mock-state` path; and `mcp-proof --live-mock` composition
 evidence remains pending.
+
+Move 147 sixth slice closes the `mcp-proof --live-mock` composition-evidence
+gap. The MCP proof now captures a second stdio JSON-RPC session against the
+mock Splunk MCP server, records `liveMockSplunkMcp.status: PASS`, and tracks raw
+mock frames under `submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl`.
+Residual risk remains release-related: npm latest `0.1.2` does not include this
+source-only path until a new OTP-backed publish succeeds. The mock evidence is
+fixture-backed and must not be described as real operator-owned Splunk evidence.

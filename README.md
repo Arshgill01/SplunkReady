@@ -67,6 +67,13 @@ docker compose -f docker-compose.mock.yml config
 The mock path is fixture-backed live-mode evidence. It is not a claim that a
 real Splunk deployment was contacted.
 
+The MCP proof can also capture a mock Splunk MCP session alongside the
+SplunkReady MCP certification loop:
+
+```bash
+npm run mcp-proof
+```
+
 The judge bundle also records `llmActivation` and `llmEvidence` in
 `judge-proof-summary.json`. With no LLM environment enabled, that evidence stays
 `NOT_REQUESTED` so the command remains credential-free and makes no model calls.

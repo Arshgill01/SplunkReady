@@ -216,6 +216,10 @@ export const mcpProofCommand = async (options: CliOptions): Promise<string[]> =>
   const result = await runMcpProofWorkflow({
     outDir: options.out,
     serverPath: join(cliModuleDir, "..", "mcp", "server.js"),
+    mockServerPath: join(cliModuleDir, "..", "cli.js"),
+    mockFixturePath: options.fixture,
+    liveMock: options.liveMock,
+    mockState: options.mockState,
     transcriptPath: options.transcript || undefined
   });
 

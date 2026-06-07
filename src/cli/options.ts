@@ -60,7 +60,7 @@ Commands:
   judge-proof --out <dir> [--include-llm-proof true|false] [--json]
   mcp       Start the SplunkReady stdio MCP server
   mock-splunk-mcp --fixture <path> [--mock-state ok|degraded|route-not-found] Start the credential-free mock Splunk stdio MCP server
-  mcp-proof --out <dir> [--transcript <path>] [--json]
+  mcp-proof --out <dir> [--transcript <path>] [--live-mock] [--mock-state ok|degraded|route-not-found] [--json]
   live-candidates --out <dir> [--candidate-limit <n>] [--live-mock]
   live-security-check --out <dir> [--live-mock] [--json]
   live-security-kit --out <dir> [--json]

@@ -74,3 +74,11 @@ and `.dockerignore` so the mock can be packaged without sending local env or
 `.splunkready*` files into Docker build context. Docker build validation was
 blocked because the local Docker daemon was not running; `docker compose -f
 docker-compose.mock.yml config` passed.
+
+Sixth slice implemented. `mcp-proof --live-mock` now starts the mock Splunk MCP
+server as a second stdio JSON-RPC session, calls `splunk_get_info`,
+`splunk_get_knowledge_objects`, and `splunk_run_saved_search`, tracks raw frames
+in `mock-splunk-mcp-session.jsonl`, and records `liveMockSplunkMcp.status:
+PASS` with evidence refs `evt-102`, `evt-118`, and `evt-141`. `npm run
+mcp-proof` now includes `--live-mock` so regenerated MCP proof evidence keeps
+the two-server composition proof.

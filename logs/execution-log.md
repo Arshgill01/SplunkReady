@@ -14101,3 +14101,58 @@ Notes:
 - Docker CLI is installed, but the local Docker daemon was not running during
   validation.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07T17:05:15Z - Move 147 MCP proof live-mock session slice
+
+Intent:
+
+- Make `mcp-proof --live-mock` produce concrete two-server composition evidence
+  by capturing a credential-free mock Splunk MCP JSON-RPC session alongside the
+  SplunkReady MCP certification loop.
+
+Actions:
+
+- Added `liveMockSplunkMcp` to the MCP proof summary.
+- Extended the MCP proof workflow to start the mock Splunk MCP server as a
+  second stdio JSON-RPC process when `--live-mock` is set.
+- Captured mock Splunk MCP frames to `mock-splunk-mcp-session.jsonl` and
+  markdown to `mock-splunk-mcp-session.md`.
+- The live-mock MCP proof calls `splunk_get_info`,
+  `splunk_get_knowledge_objects`, and `splunk_run_saved_search`, then records
+  saved-search evidence refs.
+- Updated `npm run mcp-proof` so regenerated MCP proof artifacts include
+  `--live-mock` by default.
+- Regenerated `submission-evidence/mcp-proof/` with live-mock session evidence.
+- Added claim-ledger and submission-copy audit guards for the live-mock MCP
+  session.
+
+Files changed:
+
+- `README.md`
+- `package.json`
+- `src/cli/options.ts`
+- `src/cli/proof-commands.ts`
+- `src/workflows/mcp-proof.ts`
+- `tests/cli/flow.test.ts`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/*`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `moves/moves147.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Deferred:
+
+- Full `live-security-proof --live-mock` without operator-owned LLM
+  credentials.
+- npm publish of source-only `--live-mock` and `--mock-state` remains blocked
+  by npm OTP.
+
+Notes:
+
+- The live-mock MCP session is fixture-backed evidence and does not claim a
+  real Splunk deployment was contacted.
+- No secret env file values were read, sourced, printed, or committed.

@@ -14500,3 +14500,78 @@ Results:
   - completed in 1m20s;
   - `Run canonical gate` passed;
   - `Run credential-free live mock proof` passed.
+
+## 2026-06-07 - Move 147 MCP proof live-mock session slice
+
+Commands:
+
+- `npm run build && npx vitest run tests/cli/flow.test.ts --testNamePattern "MCP"`
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json`
+- `node -e "const s=require('./submission-evidence/mcp-proof/mcp-proof-summary.json'); ..."`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "MCP"`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `npm run mcp-proof`
+- `npm run check`
+
+Results:
+
+- PASS for TypeScript build.
+- PASS for targeted MCP CLI tests:
+  - 1 test file passed;
+  - 9 tests passed;
+  - 39 tests skipped by test-name filter.
+- PASS for tracked MCP proof regeneration:
+  - command returned `status: "PASS"`;
+  - artifacts include `submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl`;
+  - artifacts include `submission-evidence/mcp-proof/mock-splunk-mcp-session.md`.
+- PASS for summary inspection:
+  - `status: "PASS"`;
+  - `liveMockSplunkMcp.status: "PASS"`;
+  - `routeState: "ok"`;
+  - tool names include `splunk_get_info`, `splunk_get_knowledge_objects`,
+    and `splunk_run_saved_search`;
+  - evidence refs include `evt-102`, `evt-118`, and `evt-141`;
+  - `includesSavedSearchExecution: true`;
+  - `deterministicAuthority: true`;
+  - `mutation: false`.
+- PASS for evidence pack hash regeneration and verification:
+  - every file listed in `submission-evidence/evidence-pack-sha256.txt`
+    returned OK, including `submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl`
+    and `submission-evidence/mcp-proof/mock-splunk-mcp-session.md`.
+- PASS for focused MCP CLI tests:
+  - 1 test file passed;
+  - 9 tests passed;
+  - 39 tests skipped by test-name filter.
+- PASS for targeted submission-copy audit tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for submission-copy audit:
+  - 108 required claims audited.
+- PASS for `npm run mcp-proof`:
+  - TypeScript build completed;
+  - command returned `status: "PASS"`;
+  - `artifacts/mcp-proof/mock-splunk-mcp-session.jsonl` was generated.
+- PASS for the full canonical gate:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 208 files;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 62 test files passed;
+  - 394 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 108 required claims;
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- The tracked MCP proof now captures both the SplunkReady MCP proof session and
+  a credential-free mock Splunk MCP session.
+- No secret env file values were read, sourced, printed, or committed.

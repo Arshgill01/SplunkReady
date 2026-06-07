@@ -70,7 +70,7 @@
     "judge-proof": "npm run build && node dist/src/cli.js judge-proof --out artifacts/judge-proof --json",
     "judge-proof:llm": "npm run build && node dist/src/cli.js judge-proof --out artifacts/judge-proof --include-llm-proof true --json",
     "llm-proof": "npm run build && node dist/src/cli.js llm-proof --out artifacts/llm-proof --require-pass true --json",
-    "mcp-proof": "npm run build && node dist/src/cli.js mcp-proof --out artifacts/mcp-proof --json",
+    "mcp-proof": "npm run build && node dist/src/cli.js mcp-proof --out artifacts/mcp-proof --live-mock --json",
     "live-mock-proof": "npm run build && node dist/src/cli.js live-proof --out submission-evidence/live-mock --live-mock --json",
     "mcp": "npm run build && node dist/src/mcp/server.js",
     "test:workbench": "vitest run tests/workbench tests/ui/app.test.ts",
