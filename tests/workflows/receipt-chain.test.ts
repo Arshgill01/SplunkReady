@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { runReceiptChainWorkflow } from "../../src/workflows/receipt-chain.js";
+import { initializeReceiptKeys, runReceiptChainWorkflow } from "../../src/workflows/receipt-chain.js";
 import type { ReadinessReceipt } from "../../src/schemas/core.js";
 
 const writeJson = async (path: string, value: unknown): Promise<void> => {
@@ -95,5 +95,49 @@ describe("receipt chain workflow", () => {
     expect(result.status).toBe("FAIL");
     expect(result.report.publicKey.status).toBe("MISSING");
     expect(result.report.failures).toEqual([`Public key not found: ${join(outDir, "missing-public-key.pem")}`]);
+  });
+
+  it("signs and verifies the receipt chain with an Ed25519 key pair", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-receipt-chain-sign-"));
+    const keyDir = await mkdtemp(join(tmpdir(), "splunkready-receipt-chain-keys-"));
+
+    await writeJson(join(outDir, "receipt-before-001.json"), receipt());
+    const [publicKeyPath, privateKeyPath] = await initializeReceiptKeys(keyDir);
+
+    const signed = await runReceiptChainWorkflow({
+      dir: outDir,
+      publicKeyPath,
+      privateKeyPath,
+      generatedAt: "2026-06-07T00:00:00.000Z"
+    });
+
+    expect(signed.status).toBe("PASS");
+    expect(signed.report.signature).toMatchObject({
+      algorithm: "ed25519",
+      signedPayload: "chainDigest",
+      status: "SIGNED"
+    });
+    expect(signed.report.signature.signatureBase64).toEqual(expect.any(String));
+
+    const verified = await runReceiptChainWorkflow({
+      dir: outDir,
+      publicKeyPath,
+      generatedAt: "2026-06-07T00:00:00.000Z"
+    });
+
+    expect(verified.status).toBe("PASS");
+    expect(verified.report.signature.status).toBe("VERIFIED");
+
+    await writeJson(join(outDir, "receipt-before-001.json"), receipt({ score: 61 }));
+
+    const tampered = await runReceiptChainWorkflow({
+      dir: outDir,
+      publicKeyPath,
+      generatedAt: "2026-06-07T00:00:00.000Z"
+    });
+
+    expect(tampered.status).toBe("FAIL");
+    expect(tampered.report.signature.status).toBe("INVALID");
+    expect(tampered.report.failures).toEqual([`Receipt chain signature does not verify with ${publicKeyPath}.`]);
   });
 });

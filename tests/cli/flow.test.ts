@@ -573,7 +573,31 @@ describe("SplunkReady CLI flow", () => {
       mutation: boolean;
       deterministicAuthority: boolean;
       receiptCount: number;
+      signature: { status: string; signatureBase64?: string };
       entries: Array<{ path: string; previousReceiptHash: string | null; receiptHash: string }>;
+    };
+    const keyDir = await mkdtemp(join(tmpdir(), "splunkready-cli-keys-"));
+    const keysInit = parseCliJsonOutput((await runCli(["keys", "init", "--out", keyDir, "--json"])).stdout);
+    const signReceipt = parseCliJsonOutput(
+      (
+        await runCli([
+          "sign-receipt",
+          "--dir",
+          outDir,
+          "--private-key",
+          join(keyDir, "receipt-private-key.local.pem"),
+          "--public-key",
+          join(keyDir, "receipt-public-key.pem"),
+          "--json"
+        ])
+      ).stdout
+    );
+    const verifySignedReceiptChain = parseCliJsonOutput(
+      (await runCli(["verify-receipt-chain", "--dir", outDir, "--public-key", join(keyDir, "receipt-public-key.pem"), "--json"]))
+        .stdout
+    );
+    const signedReceiptChain = JSON.parse(await readFile(join(outDir, "receipt-chain.json"), "utf8")) as {
+      signature: { status: string; signatureBase64?: string };
     };
 
     expect(manifestVerification).toMatchObject({
@@ -606,6 +630,23 @@ describe("SplunkReady CLI flow", () => {
     ]);
     expect(receiptChain.entries[0].previousReceiptHash).toBeNull();
     expect(receiptChain.entries[1].previousReceiptHash).toBe(receiptChain.entries[0].receiptHash);
+    expect(keysInit).toMatchObject({
+      command: "keys-init",
+      status: "PASS",
+      artifacts: [join(keyDir, "receipt-public-key.pem"), join(keyDir, "receipt-private-key.local.pem")]
+    });
+    expect(signReceipt).toMatchObject({
+      command: "sign-receipt",
+      status: "PASS",
+      artifacts: [join(outDir, "receipt-chain.json")]
+    });
+    expect(verifySignedReceiptChain).toMatchObject({
+      command: "verify-receipt-chain",
+      status: "PASS",
+      artifacts: [join(outDir, "receipt-chain.json")]
+    });
+    expect(signedReceiptChain.signature.status).toBe("VERIFIED");
+    expect(signedReceiptChain.signature.signatureBase64).toEqual(expect.any(String));
     await expect(runCli(["proof-audit", "--out", outDir, "--require-pass", "true"])).rejects.toMatchObject({
       stderr: expect.stringContaining("proof-audit strict gate failed with WARN")
     });

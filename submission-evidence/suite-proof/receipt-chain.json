@@ -7,10 +7,19 @@
   "mutation": false,
   "deterministicAuthority": true,
   "chainValid": true,
+  "chainDigest": "92c5abbf67697dd8033af5bb33391240be6dee0f14f1ca3139d0b0ff588e609a",
   "receiptCount": 6,
   "publicKey": {
-    "path": "",
-    "status": "NOT_PROVIDED"
+    "path": "submission-evidence/receipt-public-key.pem",
+    "status": "PRESENT",
+    "sha256": "58c159aaed1695c272472424bf01df13b4ccd4003e7fe8e0d7a48a18e08129a3"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "signedPayload": "chainDigest",
+    "status": "VERIFIED",
+    "signatureBase64": "G+Wn4GyLAB7L4lL8gOTw8FfHd9m7pDUWO/EUD/LHjCq9c6D++92AbQcOZtP9H/+veg231pynUFa2WB+FJN4gBQ==",
+    "publicKeySha256": "58c159aaed1695c272472424bf01df13b4ccd4003e7fe8e0d7a48a18e08129a3"
   },
   "entries": [
     {

@@ -14270,3 +14270,65 @@ Files changed:
 Notes:
 
 - No source code was changed.
+
+## 2026-06-07T17:30:55Z - Move 148 receipt-chain signing slice
+
+Intent:
+
+- Add Ed25519 receipt-chain signing and verification without committing private
+  keys.
+
+Actions:
+
+- Added `keys init --out <dir>` command support.
+- Added `sign-receipt --dir <dir> --private-key <path> --public-key <path>`.
+- Extended `verify-receipt-chain --public-key <path>` to verify an existing
+  chain signature.
+- Added private/public key mismatch detection during signing.
+- Updated `.gitignore` to ignore `receipt-private-key.local.pem`.
+- Added workflow tests for key initialization, signing, successful
+  verification, and tamper failure.
+- Added CLI-flow coverage for key initialization, signing, and signed-chain
+  verification.
+- Generated a temporary Ed25519 key pair under `/tmp`, copied only the public
+  key to `submission-evidence/receipt-public-key.pem`, signed
+  `submission-evidence/suite-proof/receipt-chain.json`, verified the signature,
+  and removed the temp private key directory.
+- Refreshed suite proof audit/manifest verification and evidence-pack hashes.
+- Updated README, submission evidence README, claim ledger, and
+  submission-copy audit guards for the signed-chain evidence.
+
+Files changed:
+
+- `.gitignore`
+- `README.md`
+- `scripts/audit-submission-copy.mjs`
+- `src/cli/dispatch.ts`
+- `src/cli/options.ts`
+- `src/cli/proof-commands.ts`
+- `src/workflows/receipt-chain.ts`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/receipt-public-key.pem`
+- `submission-evidence/suite-proof/proof-audit.json`
+- `submission-evidence/suite-proof/proof-manifest.json`
+- `submission-evidence/suite-proof/proof-manifest-verification.json`
+- `submission-evidence/suite-proof/receipt-chain.json`
+- `tests/cli/flow.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `tests/workflows/receipt-chain.test.ts`
+- `moves/moves148.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Deferred:
+
+- Embedded receipt hash fields.
+- Deterministic receipt replay re-derivation.
+
+Notes:
+
+- No `receipt-private-key.local.pem` file was found under the repository after
+  signing.
+- No secret env file values were read, sourced, printed, or committed.

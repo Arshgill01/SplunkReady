@@ -1,12 +1,13 @@
 # SplunkReady Submission Evidence
 
-Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, and Move 113 hosted-model MCP access evidence.
+Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, and Move 148 signed receipt-chain evidence.
 
 This directory is the judge-facing evidence pack. It is tracked in git so it can be inspected from a clean clone without access to ignored local `artifacts/`, `.splunkready*` env files, live credentials, or private deployment details.
 
 ## Contents
 
-- `suite-proof/`: credential-free multi-mission fixture proof. It includes the full proof bundle, compiler diagnostics, strict `proof-audit.json`, `proof-manifest.json`, and `proof-manifest-verification.json`.
+- `suite-proof/`: credential-free multi-mission fixture proof. It includes the full proof bundle, compiler diagnostics, strict `proof-audit.json`, `proof-manifest.json`, `proof-manifest-verification.json`, and signed `receipt-chain.json`.
+- `receipt-public-key.pem`: public Ed25519 key for verifying the tracked suite proof receipt-chain signature. The private key is not tracked.
 - `live-mock/`: credential-free live-mode proof generated through `live-proof --live-mock`. It exercises the live adapter normalization boundary against the fixture-backed mock Splunk MCP transport and produces a saved-search fail-to-pass proof with `mode: live` and `mutation: false`.
 - `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, records the raw JSON-RPC client session, discovers tools/resources/resource templates/prompts, reads a templated Readiness Receipt resource, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript through both path-based and inline-content MCP tools, checks hosted-model SAIA access through the MCP server in fixture mode, writes a client walkthrough showing existing Splunk MCP investigation followed by SplunkReady certification, and verifies the nested transcript proof manifests.
 - `public-proof-export/`: redacted derivative export generated from a managed workbench run. It includes the public export manifest, summary, audit, receipts, traces, redacted source proof manifest, and manifest verification. It is intentionally not the unredacted source proof.
@@ -21,6 +22,7 @@ Run these from the repository root:
 ```bash
 npm run splunkready -- proof-audit --out submission-evidence/suite-proof --require-pass true --json
 npm run splunkready -- verify-manifest --out submission-evidence/suite-proof --json
+npm run splunkready -- verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json
 npm run live-mock-proof
 npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json
 npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-inline-transcript-certification --json
@@ -41,6 +43,8 @@ Expected proof status:
 - READY-after-patch missions: `3`
 - final evidence refs: `15`
 - manifest verification: `PASS`
+- receipt-chain verification: `PASS`
+- receipt-chain signature: `VERIFIED`, `ed25519`
 - compiler diagnostics: present
 - live-mock status: `PASS`
 - live-mock mode: `live`
@@ -50,13 +54,14 @@ Expected proof status:
 - live-mock before verdict: `NOT READY`
 - live-mock after verdict: `READY`
 - MCP proof status: `PASS`
-- MCP tools: `5`
-- MCP resources: `8`
+- MCP tools: `6`
+- MCP resources: `13`
 - MCP resource templates: `1`
-- MCP prompts: `5`
+- MCP prompts: `6`
 - dual-server MCP client kit: `splunkready://client-config/splunk-and-splunkready`
 - MCP client walkthrough: `PASS`
-- MCP client session: `PASS`, `18` request/response pairs
+- MCP client session: `PASS`, `25` request/response pairs
+- MCP live-mock session: `PASS`
 - MCP template receipt read: `splunkready://receipts/pass`
 - MCP inline transcript certification: `PASS`
 - MCP hosted-model access: `PASS`, permission `OK`, mutation `false`

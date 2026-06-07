@@ -34,3 +34,14 @@ Deferred: embedded `receiptHash` / `previousReceiptHash` fields on generated
 receipts, key initialization, receipt signatures, and deterministic replay
 re-derivation. This slice establishes the chain verifier and tracked evidence
 without changing the existing receipt schema or pass/fail authority.
+
+Second slice implemented. Added `keys init`, `sign-receipt`, Ed25519
+chain-signature verification, and tracked public-key evidence at
+`submission-evidence/receipt-public-key.pem`. The tracked suite proof
+`receipt-chain.json` now reports `signature.status: "VERIFIED"` and
+`signature.algorithm: "ed25519"` when checked with
+`verify-receipt-chain --public-key submission-evidence/receipt-public-key.pem`.
+The private signing key was generated under `/tmp`, used to sign the tracked
+chain, then removed; no private key is tracked.
+
+Deferred: embedded receipt hash fields and deterministic replay re-derivation.

@@ -14713,3 +14713,77 @@ Results:
 Notes:
 
 - Remote CI covers the committed Move 148 first slice.
+
+## 2026-06-07 - Move 148 receipt-chain signing slice
+
+Commands:
+
+- `npm run build`
+- `npx vitest run tests/workflows/receipt-chain.test.ts`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "machine-readable"`
+- `tmp=$(mktemp -d /tmp/splunkready-receipt-signing-XXXXXX); node dist/src/cli.js keys init --out "$tmp" --json; cp "$tmp/receipt-public-key.pem" submission-evidence/receipt-public-key.pem; node dist/src/cli.js sign-receipt --dir submission-evidence/suite-proof --private-key "$tmp/receipt-private-key.local.pem" --public-key submission-evidence/receipt-public-key.pem --json; node dist/src/cli.js verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json; rm -rf "$tmp"; node -e "const r=require('./submission-evidence/suite-proof/receipt-chain.json'); ..."`
+- `node dist/src/cli.js proof-audit --out submission-evidence/suite-proof --require-pass true --json`
+- `node dist/src/cli.js verify-manifest --out submission-evidence/suite-proof --json`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt >/tmp/splunkready-sha-check.log && tail -n 8 /tmp/splunkready-sha-check.log`
+- `find . -name 'receipt-private-key.local.pem' -print`
+- `npx vitest run tests/workflows/receipt-chain.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `node dist/src/cli.js verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json`
+- `npm run check`
+
+Results:
+
+- PASS for TypeScript build.
+- PASS for receipt-chain workflow signing tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for CLI-flow signing path:
+  - 1 test file passed;
+  - 1 test passed;
+  - 47 tests skipped by test-name filter.
+- PASS for temp-key signing evidence:
+  - `keys-init` returned `PASS`;
+  - `sign-receipt` returned `PASS`;
+  - `verify-receipt-chain --public-key` returned `PASS`;
+  - tracked chain reports `status: "PASS"`;
+  - tracked chain reports `chainValid: true`;
+  - tracked chain reports `receiptCount: 6`;
+  - tracked chain reports `signature.status: "VERIFIED"`;
+  - tracked chain reports `signature.algorithm: "ed25519"`;
+  - public key SHA-256 matches the signature public-key SHA-256.
+- PASS for suite proof audit refresh with `--require-pass true`.
+- PASS for suite proof manifest verification.
+- PASS for evidence pack hash regeneration and verification, including
+  `submission-evidence/receipt-public-key.pem` and
+  `submission-evidence/suite-proof/receipt-chain.json`.
+- PASS for private-key absence check:
+  - `find . -name 'receipt-private-key.local.pem' -print` returned no output.
+- PASS for focused receipt-chain plus submission-copy tests:
+  - 2 test files passed;
+  - 6 tests passed.
+- PASS for submission-copy audit:
+  - 121 required claims audited.
+- PASS for tracked signed-chain verification through the built CLI.
+- PASS for full canonical gate:
+  - scaffold verified with 85 waves;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 209 files and `mutation=false`;
+  - package readiness audit passed with 170 packed files checked;
+  - package installability audit passed for `splunkready-0.1.2.tgz`,
+    clean `judge-proof`, and MCP initialization;
+  - 63 test files passed;
+  - 397 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission-copy audit passed with 121 required claims;
+  - final `git diff --check` completed with no output.
+
+Notes:
+
+- The private key used for tracked evidence was generated in `/tmp` and removed
+  after signing.
+- No secret env file values were read, sourced, printed, or committed.

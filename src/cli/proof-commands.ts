@@ -32,7 +32,7 @@ import {
 } from "../workflows/manifest-verification.js";
 import { runMcpProofWorkflow } from "../workflows/mcp-proof.js";
 import { runProofAuditWorkflow } from "../workflows/proof-audit.js";
-import { runReceiptChainWorkflow } from "../workflows/receipt-chain.js";
+import { initializeReceiptKeys, runReceiptChainWorkflow } from "../workflows/receipt-chain.js";
 import { runSuiteProofWorkflow } from "../workflows/suite-proof.js";
 
 const compiledAt = "2026-06-01T06:45:00.000Z";
@@ -78,6 +78,32 @@ export const receiptChainCommand = async (options: CliOptions): Promise<string[]
   }
 
   return result.artifacts;
+};
+
+export const signReceiptCommand = async (options: CliOptions): Promise<string[]> => {
+  const dir = options.dir || options.out;
+
+  if (!options.privateKey || !options.publicKey) {
+    throw new Error("sign-receipt requires --private-key <path> and --public-key <path>.");
+  }
+
+  const result = await runReceiptChainWorkflow({
+    dir,
+    publicKeyPath: options.publicKey,
+    privateKeyPath: options.privateKey,
+    generatedAt: compiledAt
+  });
+  const [reportPath] = result.artifacts;
+
+  if (result.status !== "PASS") {
+    throw new Error(`sign-receipt failed with ${result.status}. Inspect ${reportPath}.`);
+  }
+
+  return result.artifacts;
+};
+
+export const keysInitCommand = async (options: CliOptions): Promise<string[]> => {
+  return initializeReceiptKeys(options.out);
 };
 
 export const certificationIndexCommand = async (options: CliOptions): Promise<string[]> => {

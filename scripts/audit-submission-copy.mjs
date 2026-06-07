@@ -64,11 +64,18 @@ const checks = [
   [
     "Claim ledger receipt chain lineage",
     files.claimLedger,
-    "The tracked suite proof has deterministic receipt-chain lineage."
+    "The tracked suite proof has deterministic signed receipt-chain lineage."
   ],
   ["Claim ledger receipt chain artifact", files.claimLedger, "submission-evidence/suite-proof/receipt-chain.json"],
+  ["Claim ledger receipt public key artifact", files.claimLedger, "submission-evidence/receipt-public-key.pem"],
   ["Claim ledger receipt chain source", files.claimLedger, "splunkready-receipt-chain"],
-  ["Claim ledger receipt chain command", files.claimLedger, "verify-receipt-chain --dir submission-evidence/suite-proof --json"],
+  ["Claim ledger receipt chain signature", files.claimLedger, "signature.status: \"VERIFIED\""],
+  ["Claim ledger receipt chain algorithm", files.claimLedger, "signature.algorithm: \"ed25519\""],
+  [
+    "Claim ledger receipt chain command",
+    files.claimLedger,
+    "verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json"
+  ],
   ["README hosted MCP proof URL", files.readme, hostedMcpProofUrl],
   ["README hosted judge proof URL", files.readme, hostedJudgeProofUrl],
   ["Devpost hosted MCP proof URL", files.devpost, hostedMcpProofUrl],
@@ -153,7 +160,11 @@ const checks = [
   ["README SAIA tenant header placeholder", files.readme, "SPLUNKREADY_SAIA_TENANT"],
   ["README package MCP entrypoint", files.readme, "splunkready mcp"],
   ["README receipt chain command", files.readme, "verify-receipt-chain"],
+  ["README sign receipt command", files.readme, "sign-receipt"],
+  ["README keys init command", files.readme, "keys init"],
   ["README receipt chain artifact", files.readme, "receipt-chain.json"],
+  ["README receipt public key evidence", files.readme, "submission-evidence/receipt-public-key.pem"],
+  ["README receipt private key local", files.readme, "receipt-private-key.local.pem"],
   ["Demo no LLM vibes", files.demo, "not another LLM judging vibes"],
   ["Demo no mutation", files.demo, "does not mutate Splunk"],
   ["Demo route", files.demo, "splunkready-shell.html#rerun-receipts"],

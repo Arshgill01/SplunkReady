@@ -8,6 +8,7 @@ output/
 .netlify/
 .splunkready*
 !.splunkready.example
+receipt-private-key.local.pem
 .env
 .env.*
 !.env.example

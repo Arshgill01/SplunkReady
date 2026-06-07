@@ -326,6 +326,22 @@ schema-valid `receipt-*.json` artifact in the directory tree. The chain report
 records `mutation: false` and keeps deterministic grading as the authority; it
 does not make any model or Splunk calls.
 
+For a signed local chain, initialize a key pair outside tracked evidence and
+sign the bundle:
+
+```bash
+tmp=$(mktemp -d /tmp/splunkready-signing-XXXXXX)
+npm run splunkready -- keys init --out "$tmp" --json
+npm run splunkready -- sign-receipt \
+  --dir submission-evidence/suite-proof \
+  --private-key "$tmp/receipt-private-key.local.pem" \
+  --public-key "$tmp/receipt-public-key.pem" \
+  --json
+```
+
+The submission evidence commits only
+`submission-evidence/receipt-public-key.pem`, never the private key.
+
 See [examples/README.md](examples/README.md) for runnable external-trace capture scripts and generated sample receipts for both `NOT READY` and `READY / 100` external agent traces.
 
 If an external agent only logs Splunk MCP JSON-RPC calls, certify the transcript directly:

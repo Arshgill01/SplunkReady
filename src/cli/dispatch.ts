@@ -20,10 +20,12 @@ import {
   hostedModelDiagnosticCommand,
   hostedModelProofCommand,
   judgeProofCommand,
+  keysInitCommand,
   llmProofCommand,
   mcpProofCommand,
   proofAuditCommand,
   receiptChainCommand,
+  signReceiptCommand,
   suiteProofCommand,
   verifyManifestCommand
 } from "./proof-commands.js";
@@ -75,6 +77,10 @@ export const runCliCommand = async (command: string, options: CliOptions): Promi
     artifacts = await verifyManifestCommand(options);
   } else if (command === "verify-receipt-chain") {
     artifacts = await receiptChainCommand(options);
+  } else if (command === "sign-receipt") {
+    artifacts = await signReceiptCommand(options);
+  } else if (command === "keys-init") {
+    artifacts = await keysInitCommand(options);
   } else if (command === "certification-index") {
     artifacts = await certificationIndexCommand(options);
   } else if (command === "judge-proof") {

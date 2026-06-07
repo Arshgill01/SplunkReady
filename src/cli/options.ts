@@ -22,6 +22,7 @@ export interface CliOptions {
   trace: string;
   transcript: string;
   publicKey: string;
+  privateKey: string;
   agentName: string;
   agentVersion: string;
   agentModel: string;
@@ -59,6 +60,8 @@ Commands:
   proof-audit --out <dir> [--require-pass true|false] [--json]
   verify-manifest --out <dir> [--json]
   verify-receipt-chain --dir <dir> [--public-key <path>] [--json]
+  sign-receipt --dir <dir> --private-key <path> --public-key <path> [--json]
+  keys init --out <dir> [--json]
   certification-index --proof-dirs <dir[,dir]> --out <dir> [--require-pass true|false] [--json]
   judge-proof --out <dir> [--include-llm-proof true|false] [--json]
   mcp       Start the SplunkReady stdio MCP server
@@ -103,6 +106,7 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
   trace: "",
   transcript: "",
   publicKey: "",
+  privateKey: "",
   agentName: "External Splunk MCP Agent",
   agentVersion: "unversioned",
   agentModel: "",
@@ -118,7 +122,15 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
 });
 
 export const parseArgs = (argv: string[]): { command: string; options: CliOptions } => {
-  const [command = "help", ...rest] = argv;
+  const [rawCommand = "help", ...rawRest] = argv;
+  let command = rawCommand;
+  let rest = rawRest;
+
+  if (rawCommand === "keys" && rawRest[0] === "init") {
+    command = "keys-init";
+    rest = rawRest.slice(1);
+  }
+
   const options: CliOptions = defaultCliOptions();
 
   for (let index = 0; index < rest.length; index += 1) {
@@ -216,6 +228,8 @@ export const parseArgs = (argv: string[]): { command: string; options: CliOption
       options.transcript = value;
     } else if (flag === "--public-key") {
       options.publicKey = value;
+    } else if (flag === "--private-key") {
+      options.privateKey = value;
     } else if (flag === "--agent-name") {
       options.agentName = value;
     } else if (flag === "--agent-version") {
