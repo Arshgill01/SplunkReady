@@ -14865,3 +14865,19 @@ Notes:
   included `undefined` optional keys and replay used strict mission schema
   parsing instead of mission DSL parsing. Both defects were fixed before the
   passing verification above.
+
+## 2026-06-07 — Move 148 Receipt Replay Remote CI
+
+Commit:
+
+- `4e2fef6` (`Add deterministic receipt replay lineage`)
+
+Remote verification:
+
+- `gh run watch 27100144741 --exit-status`
+
+Result:
+
+- PASS for GitHub Actions run `27100144741`.
+- PASS for job `npm run check` in 1m7s.
+- PASS for the credential-free live mock proof step.

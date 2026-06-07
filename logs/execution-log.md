@@ -14402,3 +14402,16 @@ Notes:
 - The private signing key was generated in `/tmp`, used only for the tracked
   evidence signature, then removed.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 — Move 148 Receipt Replay Remote CI Log
+
+Recorded the remote GitHub Actions result for commit `4e2fef6`.
+
+Run:
+
+- `27100144741`
+
+Result:
+
+- GitHub Actions `CI / npm run check` passed in 1m7s.
+- The remote gate also ran and passed the credential-free live mock proof.
