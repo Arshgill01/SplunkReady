@@ -130,7 +130,10 @@ describe("SplunkReady MCP server", () => {
 
     expect(String(claudeConfigContents[0].text)).toContain("\"splunk\"");
     expect(String(claudeConfigContents[0].text)).toContain("\"splunkready\"");
-    expect(String(claudeConfigContents[0].text)).toContain("\"splunkready@latest\"");
+    expect(String(claudeConfigContents[0].text)).toContain("\"command\": \"npm\"");
+    expect(String(claudeConfigContents[0].text)).toContain("\"run\"");
+    expect(String(claudeConfigContents[0].text)).toContain("\"mcp\"");
+    expect(String(claudeConfigContents[0].text)).toContain("\"cwd\": \"/path/to/SplunkReady\"");
     expect(String(claudeConfigContents[0].text)).toContain("\"certificationTool\": \"splunkready_certify_mcp_transcript_content\"");
     expect(String(claudeConfigContents[0].text)).toContain("\"mutation\": false");
 
@@ -145,7 +148,10 @@ describe("SplunkReady MCP server", () => {
 
     expect(String(cursorConfigContents[0].text)).toContain("\"splunk\"");
     expect(String(cursorConfigContents[0].text)).toContain("\"splunkready\"");
-    expect(String(cursorConfigContents[0].text)).toContain("\"splunkready@latest\"");
+    expect(String(cursorConfigContents[0].text)).toContain("\"command\": \"npm\"");
+    expect(String(cursorConfigContents[0].text)).toContain("\"run\"");
+    expect(String(cursorConfigContents[0].text)).toContain("\"mcp\"");
+    expect(String(cursorConfigContents[0].text)).toContain("\"cwd\": \"/path/to/SplunkReady\"");
     expect(String(cursorConfigContents[0].text)).toContain("\"preserveTranscript\"");
     expect(String(cursorConfigContents[0].text)).toContain("\"mutation\": false");
 

@@ -37,15 +37,15 @@ const checks = [
   ["Devpost no credentials", files.devpost, "requires no live Splunk credentials"],
   ["Devpost no mutation", files.devpost, "does not mutate Splunk"],
   ["README npm package link", files.readme, "https://www.npmjs.com/package/splunkready"],
-  ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json"],
-  ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json"],
+  ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json"],
+  ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json"],
   [
     "Claim ledger published npm package",
     files.claimLedger,
-    "The package is published on npm and the current source is prepared for the next judge-runnable package smoke."
+    "The package is published on npm and the current published no-clone judge proof is smoke-tested."
   ],
   ["Claim ledger npm package page", files.claimLedger, "https://www.npmjs.com/package/splunkready"],
-  ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json"],
+  ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json"],
   ["README hosted MCP proof URL", files.readme, hostedMcpProofUrl],
   ["README hosted judge proof URL", files.readme, hostedJudgeProofUrl],
   ["Devpost hosted MCP proof URL", files.devpost, hostedMcpProofUrl],

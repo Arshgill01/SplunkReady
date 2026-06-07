@@ -590,9 +590,10 @@ const dualServerClientConfig = (): Record<string, unknown> => ({
   }
 });
 
-const packageMcpServerConfig = (): Record<string, unknown> => ({
-  command: "npx",
-  args: ["-y", "splunkready@latest", "mcp"],
+const sourceCloneMcpServerConfig = (): Record<string, unknown> => ({
+  command: "npm",
+  args: ["run", "mcp"],
+  cwd: "/path/to/SplunkReady",
   env: {
     NO_COLOR: "1"
   }
@@ -612,8 +613,8 @@ const claudeDesktopClientConfig = (): Record<string, unknown> => ({
     },
     splunkready: {
       description:
-        "SplunkReady Agent Readiness Compiler. Requires a package version that includes the `splunkready mcp` command.",
-      ...packageMcpServerConfig()
+        "SplunkReady Agent Readiness Compiler from a source clone. Replace cwd with the checked-out repository path until the next npm package release includes `splunkready mcp`.",
+      ...sourceCloneMcpServerConfig()
     }
   },
   workflow: {
@@ -642,8 +643,8 @@ const cursorClientConfig = (): Record<string, unknown> => ({
     },
     splunkready: {
       description:
-        "SplunkReady certification server for receipts, resources, prompts, and no-mutation readiness checks.",
-      ...packageMcpServerConfig()
+        "SplunkReady certification server for receipts, resources, prompts, and no-mutation readiness checks from a source clone.",
+      ...sourceCloneMcpServerConfig()
     }
   },
   workflow: {

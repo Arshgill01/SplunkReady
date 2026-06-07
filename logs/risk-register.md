@@ -674,3 +674,12 @@ and `splunkready_check_hosted_model_access` now include a public-export-safe
 rerun command. This does not resolve the live operator-side
 `SAIA_ROUTE_NOT_FOUND` blocker, does not mutate Splunk, and does not make SAIA
 authoritative; deterministic SplunkReady rules still decide readiness.
+
+Move 126 reduces public package and MCP copy risk by aligning public commands
+with the actual npm registry state. npm latest is still `splunkready@0.1.0`;
+that package passes clean temp-folder `judge-proof`, but it does not support the
+`mcp` entrypoint. README, Devpost copy, claim ledger, submission-copy audit
+guards, and MCP client-config resources now separate the published no-clone
+judge-proof path from current-source MCP client setup. Residual risk remains
+until an npm-authenticated publish makes the current source MCP entrypoint
+available through `splunkready@latest`.

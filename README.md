@@ -31,16 +31,15 @@ npm install
 npm run judge-proof
 ```
 
-After this source version is published, the judge path from any clean folder is:
+The currently published no-clone judge path is:
 
 ```bash
-npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json
 ```
 
-That command should return `PASS` with `mutation: false` and write the same
-credential-free judge proof bundle without cloning the repository. Run
-`npm run audit:npm-release-preflight` before publishing to confirm whether the
-current source version is still available on npm.
+That command was smoke-tested from a clean temp folder and returns `PASS` with
+`mutation: false`. The checked-out source is newer than the published package;
+run `npm run audit:npm-release-preflight` before publishing the next version.
 
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, writes `compiler-diagnostics.json` / `.md` showing deterministic rule activation and resolution from readiness profiles and receipts, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 
@@ -144,16 +143,19 @@ overriding it. This is still fixture-only, credential-free, and non-mutating; it
 proves SplunkReady as an MCP certification interface for captured Splunk MCP
 behavior, not as a Splunk search copilot.
 
-For external MCP clients, a package version that includes this entrypoint can
-start the stdio server with:
+For external MCP clients, the checked-out source can start the stdio server
+with:
 
 ```bash
-splunkready mcp
+npm run mcp
 ```
 
-The client-config resources use `npx -y splunkready@latest mcp` for
-SplunkReady and leave the existing Splunk MCP server URL/token as
-operator-owned placeholders.
+The client-config resources use `npm run mcp` with a `/path/to/SplunkReady`
+placeholder for SplunkReady and leave the existing Splunk MCP server URL/token
+as operator-owned placeholders. The published `splunkready@0.1.0` package
+supports the no-clone `judge-proof` command but does not yet include the
+`splunkready mcp` entrypoint; the local package-installability gate verifies
+that the current source tarball does.
 
 The release gate also packs the current source into a clean temp project and
 requires the installed package to complete both `npx splunkready judge-proof`

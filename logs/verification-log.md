@@ -9958,6 +9958,57 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-07 - Move 126 Published-Package Copy Hygiene
+
+Commands:
+
+- `npm view splunkready version --json`
+- `tmp=$(mktemp -d /tmp/splunkready-publish-smoke-XXXXXX); cd "$tmp"; npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json`
+- `tmp=$(mktemp -d /tmp/splunkready-mcp-publish-smoke-XXXXXX); cd "$tmp"; printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","clientInfo":{"name":"publish-smoke","version":"0.0.0"}}}' | npx -y splunkready@0.1.0 mcp`
+- `npx tsc --noEmit && npx vitest run tests/mcp/server.test.ts tests/cli/flow.test.ts tests/scripts/submission-copy-audit.test.ts --testNamePattern "client config|MCP proof|submission copy|published npm"`
+- `npx vitest run tests/mcp/server.test.ts tests/cli/flow.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run mcp-proof && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json && npm run public-demo:build`
+- `python3 -m http.server 4181 --bind 127.0.0.1 --directory artifacts/public-demo`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open 'http://127.0.0.1:4181/?artifacts=artifacts%2Fmcp-proof#mcp-proof'`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" console error`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval "JSON.stringify({title: document.title, sourceCloneConfig: document.body.textContent.includes('/path/to/SplunkReady') && document.body.textContent.includes('npm') && document.body.textContent.includes('mcp'), staleLatest: document.body.textContent.includes('splunkready@latest'), stale011: document.body.textContent.includes('splunkready@0.1.1'), artifactFailure: document.body.textContent.includes('Artifact bundle incomplete'), route: location.hash})"`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval "(async () => { const summary = await fetch('/artifacts/mcp-proof/mcp-proof-summary.json').then(r => r.json()); const text = JSON.stringify(summary); return JSON.stringify({hasCwd: text.includes('/path/to/SplunkReady'), staleLatest: text.includes('splunkready@latest'), stale011: text.includes('splunkready@0.1.1')}); })()"`
+- `rg -n '"command": "npm"|"run"|"mcp"|/path/to/SplunkReady|splunkready@latest|splunkready@0\\.1\\.1' submission-evidence/mcp-proof/mcp-proof-summary.json submission-evidence/mcp-proof/mcp-client-session.jsonl artifacts/public-demo/artifacts/mcp-proof/mcp-proof-summary.json`
+
+Result:
+
+- PASS registry check:
+  - npm reports latest published `splunkready` version is `0.1.0`.
+- PASS published judge-proof smoke:
+  - clean temp-folder `npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json` returned `status: "PASS"`.
+- EXPECTED BLOCKER for published MCP entrypoint:
+  - clean temp-folder `npx -y splunkready@0.1.0 mcp` returned `Unknown command mcp`;
+  - this proves public copy must not claim `splunkready@latest mcp` until the next package version is published.
+- PASS for MCP server, CLI flow, and submission-copy tests:
+  - 3 test files passed;
+  - 60 tests passed.
+- PASS for MCP proof regeneration and public demo rebuild.
+- PASS for Playwright public MCP proof route:
+  - title `SplunkReady`;
+  - route `#mcp-proof`;
+  - no stale `splunkready@latest` or `splunkready@0.1.1` text;
+  - no `Artifact bundle incomplete` text;
+  - console reported 0 errors and 0 warnings.
+- PASS for local artifact inspection:
+  - regenerated `mcp-proof-summary.json` and `mcp-client-session.jsonl` contain `command: "npm"`, `args: ["run", "mcp"]`, and `/path/to/SplunkReady`;
+  - stale `splunkready@latest` and `splunkready@0.1.1` strings are absent from regenerated MCP evidence.
+
+Notes:
+
+- The visible MCP route does not render the full client-config JSON, so Playwright also fetched generated artifact JSON and local `rg` inspected the escaped resource text.
+- No `.splunkready*` or `.env*` secret contents were read, sourced, printed, or committed.
+
+Open blockers:
+
+- Full `npm run check` and hosted CI still need to run after final log updates.
+- Public npm package MCP claims remain source-clone-only until `0.1.1` is published.
+
 ## 2026-06-07 - Move 125 Hosted-Model Remediation Packet
 
 Commands:

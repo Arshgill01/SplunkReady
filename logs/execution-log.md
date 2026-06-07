@@ -12857,3 +12857,47 @@ Open blockers:
   strict live hosted-model proof can pass.
 - The next high-value probability work should continue on MCP category depth
   and real SAIA live proof once the endpoint can service `tools/call`.
+
+## 2026-06-07 17:32 - Move 126 Published-Package Copy Hygiene
+
+Scope:
+- Verified npm latest is still `splunkready@0.1.0`.
+- Smoke-tested `npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json`
+  from a clean temp folder; it returned `PASS`.
+- Verified published `splunkready@0.1.0 mcp` fails with `Unknown command mcp`,
+  so public MCP client templates must not use `splunkready@latest mcp` yet.
+- Updated README, Devpost copy, claim ledger, and submission-copy audit guards
+  to cite the currently published `0.1.0` no-clone judge-proof command.
+- Updated Claude Desktop and Cursor MCP client-config resources to use
+  source-clone `npm run mcp` with `/path/to/SplunkReady` until the next package
+  release includes the MCP entrypoint.
+- Regenerated tracked MCP proof evidence and rebuilt the public demo export.
+- Used Playwright to verify the public MCP proof route loads without stale
+  `splunkready@latest` / `splunkready@0.1.1` strings.
+- Did not use subagents.
+- Did not mutate Splunk.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  contents.
+
+Files changed:
+- `README.md`
+- `docs/devpost-submission.md`
+- `scripts/audit-submission-copy.mjs`
+- `src/mcp/server.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/mcp-client-session.jsonl`
+- `submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `moves/README.md`
+- `moves/moves126.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- `splunkready@0.1.1` still needs an npm-authenticated publish before public
+  package commands can claim the MCP stdio entrypoint.
+- Until then, no-clone package claims are limited to `judge-proof`; MCP client
+  proof uses the checked-out source.

@@ -1766,13 +1766,15 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain(
       "\"certificationTool\": \"splunkready_certify_mcp_transcript\""
     );
-    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"splunkready@latest\"");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"command\": \"npm\"");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"cwd\": \"/path/to/SplunkReady\"");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"mcp\"");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain(
       "\"certificationTool\": \"splunkready_certify_mcp_transcript_content\""
     );
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"mutation\": false");
-    expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"splunkready@latest\"");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"command\": \"npm\"");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"cwd\": \"/path/to/SplunkReady\"");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"preserveTranscript\"");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"certifyWith\": \"splunkready\"");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"mutation\": false");

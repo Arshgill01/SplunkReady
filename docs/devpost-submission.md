@@ -39,15 +39,18 @@ The tracked evidence pack is in `submission-evidence/`:
 
 The demo uses security investigation readiness. A naive Splunk-facing agent investigates possible lateral movement, searches too broadly, uses the wrong field, ignores validated saved-search provenance, and gives an unsupported answer. SplunkReady catches the unsafe trace with deterministic rule IDs, exports a reviewable policy patch, reruns the mission, and produces a READY receipt with evidence refs.
 
-The local fixture path requires no live Splunk credentials. After this source
-version is published, the clean-folder judge command is:
+The local fixture path requires no live Splunk credentials. The currently
+published clean-folder judge command is:
 
 ```bash
-npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json
 ```
 
-That clean-folder command should return `PASS`, record `mutation: false`, and
-write the judge proof bundle without requiring a repository clone.
+That clean-folder command has been smoke-tested from a temp folder, returns
+`PASS`, records `mutation: false`, and writes the judge proof bundle without
+requiring a repository clone. The checked-out source contains newer MCP/SAIA
+work that is verified locally and should be published as the next package
+version before claiming it through `npx splunkready@latest`.
 
 The credential-free hosted workbench is available at:
 
@@ -132,7 +135,7 @@ The tracked evidence pack does not claim live hosted-model entitlement. The work
 - Zod
 - Vitest
 - Vite
-- Published npm CLI: `npm install -g splunkready` or `npx splunkready@latest judge-proof`
+- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.0 judge-proof`
 - Splunk MCP adapter boundary
 - Deterministic trace grader rules
 - Local workbench API and UI
