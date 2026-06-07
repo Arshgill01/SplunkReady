@@ -54,6 +54,13 @@ const checks = [
     "The public registry currentness proof separates the published judge-proof path from current-source MCP/SAIA work."
   ],
   ["Claim ledger public package currentness artifact", files.claimLedger, "submission-evidence/public-package-currentness/public-package-currentness.json"],
+  [
+    "Claim ledger hosted demo currentness",
+    files.claimLedger,
+    "The hosted public demo is source-current against the latest public-demo input commit."
+  ],
+  ["Claim ledger hosted demo currentness artifact", files.claimLedger, "submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json"],
+  ["Claim ledger hosted demo currentness command", files.claimLedger, "npm run audit:hosted-demo-currentness"],
   ["README hosted MCP proof URL", files.readme, hostedMcpProofUrl],
   ["README hosted judge proof URL", files.readme, hostedJudgeProofUrl],
   ["Devpost hosted MCP proof URL", files.devpost, hostedMcpProofUrl],

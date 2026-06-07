@@ -13689,3 +13689,72 @@ Notes:
 
 - The hosted currentness audit is intentionally separate from `npm run check`
   because it depends on the public GitHub Pages URL.
+
+## 2026-06-07 - Move 139 hosted demo currentness evidence
+
+Commands:
+
+- `npm view splunkready version --json`
+- `npm run audit:public-package-currentness -- --out /tmp/splunkready-public-package-currentness-now.json`
+- `gh run list --branch splunkready-build --limit 5 --json databaseId,name,status,conclusion,headSha,createdAt,url`
+- `npm run mcp-proof -- --out /tmp/splunkready-mcp-proof-now --json`
+- `npm run audit:hosted-demo-currentness -- --require-current --out /tmp/splunkready-hosted-demo-currentness-now.json`
+- `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `npm run audit:hosted-demo-currentness -- --require-current --out /tmp/splunkready-hosted-demo-currentness-after-move139.json`
+- `npm run check`
+
+Result:
+
+- PASS for latest GitHub Actions status:
+  - `CI` succeeded at head `22777f32146531050f9a7b56576026bba290b31c`;
+  - `Public Demo Pages` succeeded at the same head.
+- PASS for current source MCP proof:
+  - `mcp-proof` returned `PASS`;
+  - artifacts were written under `/tmp/splunkready-mcp-proof-now`;
+  - included transcript certification, inline transcript certification,
+    hosted-model fixture access, client walkthrough, and client session
+    artifacts.
+- PASS for hosted demo currentness:
+  - status `CURRENT`;
+  - expected public-demo input commit
+    `22777f32146531050f9a7b56576026bba290b31c`;
+  - hosted source commit
+    `22777f32146531050f9a7b56576026bba290b31c`;
+  - hosted source short commit `22777f3`;
+  - local and hosted assets matched:
+    `index-BMPTXFQp.css`, `index-DW1LU_yl.js`;
+  - hosted manifest reports `mutation=false`.
+- STALE for public package currentness:
+  - npm latest is still `splunkready@0.1.0`;
+  - local source is `0.1.1`;
+  - published `0.1.0` judge-proof still returns `PASS` and `mutation=false`;
+  - published `0.1.0` MCP remains `BLOCKED` because `mcp` is not in that
+    published command surface.
+- PASS for focused submission-copy test:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for `audit:submission-copy`:
+  - 86 required claims audited.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 61 test files passed;
+  - 376 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 86 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- No secret env file values were read, sourced, printed, or committed.
+- This move does not claim that npm `splunkready@latest` is current.

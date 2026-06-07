@@ -1,0 +1,34 @@
+{
+  "source": "splunkready-hosted-demo-currentness",
+  "status": "CURRENT",
+  "hostedUrl": "https://arshgill01.github.io/SplunkReady/",
+  "manifestUrl": "https://arshgill01.github.io/SplunkReady/public-demo-manifest.json",
+  "expectedPublicDemoInputCommit": "22777f32146531050f9a7b56576026bba290b31c",
+  "localHead": "22777f32146531050f9a7b56576026bba290b31c",
+  "hostedSourceCommit": "22777f32146531050f9a7b56576026bba290b31c",
+  "hostedSourceCommitShort": "22777f3",
+  "assets": {
+    "local": [
+      "index-BMPTXFQp.css",
+      "index-DW1LU_yl.js"
+    ],
+    "hosted": [
+      "index-BMPTXFQp.css",
+      "index-DW1LU_yl.js"
+    ],
+    "match": true
+  },
+  "manifest": {
+    "source": "splunkready-public-demo-export",
+    "mutation": false,
+    "defaultUrl": "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
+    "artifactBases": [
+      "artifacts/mcp-proof",
+      "artifacts/suite-proof",
+      "artifacts/public-proof-export",
+      "artifacts/judge-proof"
+    ]
+  },
+  "mutation": false,
+  "failures": []
+}

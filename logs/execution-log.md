@@ -13146,6 +13146,55 @@ Notes:
 - Did not read, source, print, or commit `.splunkready*` or `.env*` secret
   contents.
 
+## 2026-06-07T15:45:00Z - Move 139 hosted demo currentness evidence
+
+Intent:
+
+- Stop the postponed external-client screencast path from consuming more time.
+- Track the successful GitHub Pages currentness audit as judge-facing evidence.
+- Keep hosted-demo claims tied to source commit and asset provenance.
+
+Actions:
+
+- Stopped the leftover Playwright browser automation session from the recording
+  attempt.
+- Verified the worktree was clean at `22777f3` before starting the move.
+- Confirmed latest GitHub Actions runs for CI and Public Demo Pages were
+  `success` on `splunkready-build`.
+- Reran the hosted demo currentness audit with `--require-current`.
+- Stored the resulting `CURRENT` audit JSON under
+  `submission-evidence/hosted-demo-currentness/`.
+- Added a claim-ledger row for source-current hosted public demo evidence.
+- Extended `audit:submission-copy` and its test fixture so the currentness claim,
+  artifact path, and audit command cannot drift out of the submission evidence.
+
+Files changed:
+
+- `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `submission-evidence/claim-ledger.md`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `moves/README.md`
+- `moves/moves139.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Observed result:
+
+- Hosted demo currentness reports `CURRENT`.
+- Hosted source commit is `22777f3`.
+- Hosted and local public-demo asset names match.
+- Hosted manifest reports `mutation: false`.
+
+Notes:
+
+- Did not use subagents.
+- Did not change public demo export inputs, npm package state, live Splunk
+  behavior, or SAIA behavior.
+- Npm registry latest still reports `splunkready@0.1.0`; current source remains
+  `0.1.1`, so package currentness is still operator-side.
+
 ## 2026-06-07T15:20:00Z - Move 137 SAIA ask route diagnostic alignment
 
 Intent:

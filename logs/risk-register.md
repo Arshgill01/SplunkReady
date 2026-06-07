@@ -795,3 +795,12 @@ manifest predates the new `sourceCommit` field; hosted and local assets match.
 Residual risk remains until the Pages workflow is rerun from the new head and
 `npm run audit:hosted-demo-currentness -- --require-current` returns
 `CURRENT`.
+
+Move 139 closes the hosted-demo staleness evidence gap by tracking the
+post-deploy `CURRENT` audit result in the submission evidence pack and guarding
+the claim ledger through `audit:submission-copy`. The GitHub Pages demo now has
+tracked source commit evidence for `22777f3`, matching hosted/local asset names,
+and `mutation=false`. Residual risk remains public-package currentness: npm
+latest still reports `splunkready@0.1.0`, so judges do not get current
+source-side MCP/SAIA work from `splunkready@latest` until an
+npm-authenticated publish of `0.1.1` completes.
