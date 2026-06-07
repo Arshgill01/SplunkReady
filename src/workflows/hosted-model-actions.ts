@@ -35,6 +35,8 @@ export interface HostedModelWorkflowResult {
 
 export interface HostedModelSetupVariable {
   name: string;
+  aliases?: string[];
+  sourceName?: string;
   status: "set" | "missing" | "invalid";
   requiredValue: string;
   purpose: string;
@@ -134,7 +136,28 @@ const envVariableStatus = (
   return isValid(value) ? "set" : "invalid";
 };
 
+const envVariableFromNames = (
+  env: NodeJS.ProcessEnv,
+  name: string,
+  aliases: string[],
+  isValid: (value: string) => boolean = (value) => value.length > 0
+): Pick<HostedModelSetupVariable, "aliases" | "sourceName" | "status"> => {
+  const sourceName = [name, ...aliases].find((candidate) => Boolean(env[candidate]));
+
+  if (!sourceName) {
+    return aliases.length > 0 ? { aliases, status: "missing" } : { status: "missing" };
+  }
+
+  return {
+    ...(aliases.length > 0 ? { aliases } : {}),
+    sourceName,
+    status: isValid(env[sourceName] ?? "") ? "set" : "invalid"
+  };
+};
+
 const liveHostedModelSetupFromEnv = (env: NodeJS.ProcessEnv): HostedModelSetup => {
+  const saiaEndpoint = envVariableFromNames(env, "SPLUNKREADY_SAIA_ENDPOINT", ["SPLUNKREADY_SAIA_MCP_URL"]);
+  const saiaToken = envVariableFromNames(env, "SPLUNKREADY_SAIA_TOKEN", ["SPLUNKREADY_SAIA_MCP_TOKEN"]);
   const requiredEnvironment: HostedModelSetupVariable[] = [
     {
       name: "SPLUNKREADY_LIVE_ENABLED",
@@ -160,7 +183,7 @@ const liveHostedModelSetupFromEnv = (env: NodeJS.ProcessEnv): HostedModelSetup =
     source: "splunkready-live-hosted-model-preflight",
     configured: requiredEnvironment.every((variable) => variable.status === "set"),
     hostedModelTransport:
-      env.SPLUNKREADY_SAIA_ENDPOINT && env.SPLUNKREADY_SAIA_TOKEN ? "dedicated-saia-mcp" : "shared-splunk-mcp",
+      saiaEndpoint.status === "set" && saiaToken.status === "set" ? "dedicated-saia-mcp" : "shared-splunk-mcp",
     requiredEnvironment,
     optionalEnvironment: [
       {
@@ -171,13 +194,13 @@ const liveHostedModelSetupFromEnv = (env: NodeJS.ProcessEnv): HostedModelSetup =
       },
       {
         name: "SPLUNKREADY_SAIA_ENDPOINT",
-        status: envVariableStatus(env, "SPLUNKREADY_SAIA_ENDPOINT"),
+        ...saiaEndpoint,
         requiredValue: "set when SAIA uses a dedicated MCP endpoint",
         purpose: "Routes only saia_* hosted-model tool calls to the operator-owned SAIA/cloud MCP endpoint."
       },
       {
         name: "SPLUNKREADY_SAIA_TOKEN",
-        status: envVariableStatus(env, "SPLUNKREADY_SAIA_TOKEN"),
+        ...saiaToken,
         requiredValue: "set when SAIA uses a dedicated MCP token",
         purpose: "Authenticates only saia_* hosted-model tool calls when a dedicated SAIA endpoint is configured."
       }

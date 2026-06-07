@@ -2592,8 +2592,8 @@ describe("SplunkReady CLI flow", () => {
         "SPLUNKREADY_LIVE_ENABLED=true",
         `SPLUNKREADY_SPLUNK_MCP_URL=${mcp.url}`,
         `SPLUNKREADY_SPLUNK_MCP_TOKEN=${token}`,
-        `SPLUNKREADY_SAIA_ENDPOINT=${saiaMcp.url}`,
-        `SPLUNKREADY_SAIA_TOKEN=${saiaToken}`,
+        `SPLUNKREADY_SAIA_MCP_URL=${saiaMcp.url}`,
+        `SPLUNKREADY_SAIA_MCP_TOKEN=${saiaToken}`,
         "SPLUNKREADY_SAIA_ENABLED=true"
       ].join("\n"),
       "utf8"
@@ -2617,13 +2617,15 @@ describe("SplunkReady CLI flow", () => {
             ],
             process.cwd(),
             {
-              SPLUNKREADY_LIVE_ENABLED: "",
-              SPLUNKREADY_SPLUNK_MCP_URL: "",
-              SPLUNKREADY_SPLUNK_MCP_TOKEN: "",
-              SPLUNKREADY_SAIA_ENDPOINT: "",
-              SPLUNKREADY_SAIA_TOKEN: "",
-              SPLUNKREADY_SAIA_ENABLED: ""
-            }
+        SPLUNKREADY_LIVE_ENABLED: "",
+        SPLUNKREADY_SPLUNK_MCP_URL: "",
+        SPLUNKREADY_SPLUNK_MCP_TOKEN: "",
+        SPLUNKREADY_SAIA_ENDPOINT: "",
+        SPLUNKREADY_SAIA_TOKEN: "",
+        SPLUNKREADY_SAIA_MCP_URL: "",
+        SPLUNKREADY_SAIA_MCP_TOKEN: "",
+        SPLUNKREADY_SAIA_ENABLED: ""
+      }
           )
         ).stdout
       );
@@ -2651,7 +2653,7 @@ describe("SplunkReady CLI flow", () => {
       setup: {
         hostedModelTransport: string;
         requiredEnvironment: Array<{ name: string; status: string }>;
-        optionalEnvironment: Array<{ name: string; status: string }>;
+        optionalEnvironment: Array<{ name: string; status: string; sourceName?: string; aliases?: string[] }>;
       };
     };
 
@@ -2668,8 +2670,18 @@ describe("SplunkReady CLI flow", () => {
         ],
         optionalEnvironment: [
           { name: "SPLUNKREADY_SAIA_ENABLED", status: "set" },
-          { name: "SPLUNKREADY_SAIA_ENDPOINT", status: "set" },
-          { name: "SPLUNKREADY_SAIA_TOKEN", status: "set" }
+          {
+            name: "SPLUNKREADY_SAIA_ENDPOINT",
+            aliases: ["SPLUNKREADY_SAIA_MCP_URL"],
+            sourceName: "SPLUNKREADY_SAIA_MCP_URL",
+            status: "set"
+          },
+          {
+            name: "SPLUNKREADY_SAIA_TOKEN",
+            aliases: ["SPLUNKREADY_SAIA_MCP_TOKEN"],
+            sourceName: "SPLUNKREADY_SAIA_MCP_TOKEN",
+            status: "set"
+          }
         ]
       }
     });

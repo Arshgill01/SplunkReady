@@ -704,3 +704,13 @@ the submission-copy audit fails if that claim disappears from the claim ledger.
 Residual risk remains live connectivity: this proves the wiring and public
 evidence path, not a live hosted-model PASS against the operator-owned SAIA
 endpoint.
+
+Move 129 reduces live SAIA setup friction by accepting
+`SPLUNKREADY_SAIA_MCP_URL` and `SPLUNKREADY_SAIA_MCP_TOKEN` as aliases for the
+canonical dedicated SAIA endpoint/token variables. Diagnostics now record alias
+names and `sourceName` without writing values, and CLI env-file tests prove the
+alias path routes `saia_*` calls to the dedicated mock endpoint. The current
+operator-owned env file still reports both canonical and alias SAIA variables
+as missing, so the live diagnostic remains `SAIA_ROUTE_NOT_FOUND` on the shared
+Splunk MCP endpoint. Residual risk is operator configuration, not deterministic
+grading or fixture/live parity.

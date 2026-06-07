@@ -492,4 +492,26 @@ describe("live Splunk adapter skeleton", () => {
       capabilities: undefined
     });
   });
+
+  it("builds hosted-model config from canonical and MCP alias environment names", () => {
+    expect(
+      createLiveSplunkAdapterConfigFromEnv({
+        SPLUNKREADY_SAIA_ENDPOINT: "https://saia.example.invalid/canonical",
+        SPLUNKREADY_SAIA_TOKEN: "canonical-token"
+      })
+    ).toMatchObject({
+      hostedModelEndpointUrl: "https://saia.example.invalid/canonical",
+      hostedModelAuthToken: "canonical-token"
+    });
+
+    expect(
+      createLiveSplunkAdapterConfigFromEnv({
+        SPLUNKREADY_SAIA_MCP_URL: "https://saia.example.invalid/alias",
+        SPLUNKREADY_SAIA_MCP_TOKEN: "alias-token"
+      })
+    ).toMatchObject({
+      hostedModelEndpointUrl: "https://saia.example.invalid/alias",
+      hostedModelAuthToken: "alias-token"
+    });
+  });
 });

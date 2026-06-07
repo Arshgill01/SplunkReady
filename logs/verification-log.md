@@ -10024,6 +10024,52 @@ Open blockers:
   endpoint/token values or a shared Splunk MCP endpoint that can invoke all four
   `saia_*` tools successfully.
 
+## 2026-06-07 18:01 - Move 129 SAIA MCP Env Alias Readiness
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/adapters/live.test.ts tests/cli/flow.test.ts tests/workflows/hosted-model-actions.test.ts --testNamePattern "SAIA|hosted-model|hosted model|dedicated|env file|live Splunk adapter|MCP alias"`
+- `npm run build && rm -rf artifacts/live-hosted-model-diagnostic && NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json`
+- `jq '{status, mutation, mode, blockerClass, hostedModelTransport: .setup.hostedModelTransport, requiredEnv: [.setup.requiredEnvironment[] | {name, status}], optionalEnv: [.setup.optionalEnvironment[] | {name, aliases, sourceName, status}], passedTools, blockedTools, toolResults: [.toolResults[]? | {toolName, status, contractAdvertised}], remediation: {status: .remediation.status, blockerClass: .remediation.blockerClass}}' artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused live/SAIA tests:
+  - 3 test files passed;
+  - 21 tests passed;
+  - 38 tests skipped by focused pattern.
+- FAIL as expected for strict live SAIA diagnostic:
+  - command returned `status: "FAIL"` because hosted-model proof was
+    `BLOCKED`;
+  - artifact summary remained secret-safe:
+    - `status: "BLOCKED"`;
+    - `mutation: false`;
+    - `mode: "live"`;
+    - `blockerClass: "SAIA_ROUTE_NOT_FOUND"`;
+    - `hostedModelTransport: "shared-splunk-mcp"`;
+    - required Splunk MCP env names were `set`;
+    - `SPLUNKREADY_SAIA_ENDPOINT` was `missing` with alias
+      `SPLUNKREADY_SAIA_MCP_URL`;
+    - `SPLUNKREADY_SAIA_TOKEN` was `missing` with alias
+      `SPLUNKREADY_SAIA_MCP_TOKEN`;
+    - all four `saia_*` tools were advertised and blocked.
+
+Notes:
+
+- Playwright was not run because this move did not change UI source or public
+  demo artifacts.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- The ignored env file still needs the dedicated SAIA endpoint and token under
+  either canonical names or the new MCP alias names before the diagnostic can
+  attempt `dedicated-saia-mcp`.
+
 ## 2026-06-07 17:45 - Move 127 Dedicated SAIA MCP Routing
 
 Commands:

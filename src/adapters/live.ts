@@ -58,14 +58,17 @@ export interface HttpLiveSplunkTransportOptions {
   fetch?: typeof fetch;
 }
 
+const firstEnvValue = (env: NodeJS.ProcessEnv, names: string[]): string | undefined =>
+  names.map((name) => env[name]).find((value): value is string => Boolean(value));
+
 export const createLiveSplunkAdapterConfigFromEnv = (
   env: NodeJS.ProcessEnv = process.env
 ): LiveSplunkAdapterConfig => ({
   enabled: env.SPLUNKREADY_LIVE_ENABLED === "true",
   endpointUrl: env.SPLUNKREADY_SPLUNK_MCP_URL,
   authToken: env.SPLUNKREADY_SPLUNK_MCP_TOKEN,
-  hostedModelEndpointUrl: env.SPLUNKREADY_SAIA_ENDPOINT,
-  hostedModelAuthToken: env.SPLUNKREADY_SAIA_TOKEN,
+  hostedModelEndpointUrl: firstEnvValue(env, ["SPLUNKREADY_SAIA_ENDPOINT", "SPLUNKREADY_SAIA_MCP_URL"]),
+  hostedModelAuthToken: firstEnvValue(env, ["SPLUNKREADY_SAIA_TOKEN", "SPLUNKREADY_SAIA_MCP_TOKEN"]),
   defaultApp: env.SPLUNKREADY_SPLUNK_APP,
   timeoutMs: env.SPLUNKREADY_SPLUNK_TIMEOUT_MS ? Number(env.SPLUNKREADY_SPLUNK_TIMEOUT_MS) : undefined,
   capabilities: parseCapabilities(env.SPLUNKREADY_SPLUNK_CAPABILITIES)

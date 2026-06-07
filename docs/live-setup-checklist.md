@@ -66,6 +66,11 @@ export SPLUNKREADY_SAIA_ENDPOINT='https://<SAIA_MCP_ENDPOINT>'
 export SPLUNKREADY_SAIA_TOKEN='<YOUR_SAIA_MCP_TOKEN>'
 ```
 
+`SPLUNKREADY_SAIA_MCP_URL` and `SPLUNKREADY_SAIA_MCP_TOKEN` are accepted as
+aliases for the endpoint/token when an operator copies names from an MCP client
+configuration. Diagnostics still report only variable names and set/missing
+status, never values.
+
 Leave `SPLUNKREADY_SPLUNK_CAPABILITIES` unset for `live-smoke`. The command pins its own inventory-only allowlist:
 
 - `splunk_get_info`

@@ -12991,3 +12991,41 @@ Open blockers:
   live SAIA PASS still depends on the operator-owned ignored env file providing
   a reachable SAIA/cloud MCP endpoint and token, or the shared Splunk MCP
   endpoint invoking all four `saia_*` tools successfully.
+
+## 2026-06-07 18:00 - Move 129 SAIA MCP Env Alias Readiness
+
+Scope:
+- Added `SPLUNKREADY_SAIA_MCP_URL` as an alias for
+  `SPLUNKREADY_SAIA_ENDPOINT`.
+- Added `SPLUNKREADY_SAIA_MCP_TOKEN` as an alias for
+  `SPLUNKREADY_SAIA_TOKEN`.
+- Kept canonical diagnostic entries while recording alias names and `sourceName`
+  when an alias is used.
+- Updated the live hosted-model setup artifact shape without writing endpoint
+  or token values.
+- Updated README and the live setup checklist to document the aliases.
+- Ran the operator-owned live hosted-model diagnostic through
+  `./.splunkready-live.env` without reading, sourcing, printing, or committing
+  the secret file.
+- Did not use subagents.
+- Did not mutate Splunk.
+- Did not make SAIA or any LLM output authoritative for pass/fail readiness.
+
+Files changed:
+- `src/adapters/live.ts`
+- `src/workflows/hosted-model-actions.ts`
+- `tests/adapters/live.test.ts`
+- `tests/cli/flow.test.ts`
+- `README.md`
+- `docs/live-setup-checklist.md`
+- `moves/README.md`
+- `moves/moves129.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- The current ignored env file still reports both canonical SAIA variables and
+  the new `SPLUNKREADY_SAIA_MCP_URL` / `SPLUNKREADY_SAIA_MCP_TOKEN` aliases as
+  missing. The live diagnostic therefore remains on `shared-splunk-mcp` and
+  stays `SAIA_ROUTE_NOT_FOUND`.
