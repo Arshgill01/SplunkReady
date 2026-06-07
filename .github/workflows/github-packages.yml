@@ -1,0 +1,67 @@
+name: GitHub Packages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Publish GitHub npm package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: "@arshgill01"
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build package
+        run: npm run build
+
+      - name: Publish scoped package to GitHub Packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          package_version="$(node -p 'require("./package.json").version')"
+          package_name="@arshgill01/splunkready"
+
+          if npm view "${package_name}@${package_version}" version --registry=https://npm.pkg.github.com >/tmp/github-package-version.txt 2>/tmp/github-package-view.err; then
+            echo "${package_name}@${package_version} already exists in GitHub Packages."
+            exit 0
+          fi
+
+          pack_dir="$(mktemp -d "${RUNNER_TEMP}/splunkready-ghpkg-XXXXXX")"
+          pack_json="$(npm pack --pack-destination "${pack_dir}" --json)"
+          pack_file="$(node -e 'const fs = require("node:fs"); const pack = JSON.parse(fs.readFileSync(0, "utf8")); console.log(pack[0].filename);' <<<"${pack_json}")"
+
+          tar -xzf "${pack_dir}/${pack_file}" -C "${pack_dir}"
+          cd "${pack_dir}/package"
+
+          node <<'NODE'
+          const fs = require("node:fs");
+          const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          packageJson.name = "@arshgill01/splunkready";
+          packageJson.publishConfig = { registry: "https://npm.pkg.github.com" };
+          packageJson.repository = {
+            type: "git",
+            url: "git+https://github.com/Arshgill01/SplunkReady.git"
+          };
+          fs.writeFileSync("package.json", `${JSON.stringify(packageJson, null, 2)}\n`);
+          NODE
+
+          npm publish --registry=https://npm.pkg.github.com
