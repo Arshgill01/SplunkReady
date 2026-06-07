@@ -13799,6 +13799,40 @@ Notes:
 - Verification of the newly written plan is pending `audit:submission-copy` and
   `git diff --check`.
 
+## 2026-06-07 - Move 147 mock Splunk MCP server first slice
+
+Commands:
+
+- `npx vitest run tests/mcp/mock-splunk-server.test.ts`
+- `npm run build`
+- `npm run audit:package-readiness`
+- Built CLI stdio smoke:
+  `node dist/src/cli.js mock-splunk-mcp --fixture fixtures/acme-soc-dev/adapter-fixture.json`
+  with JSON-RPC `initialize`, `notifications/initialized`, `tools/list`,
+  `tools/call splunk_get_info`, and
+  `tools/call splunk_get_knowledge_objects`.
+
+Results:
+
+- Initial focused test run failed because the test expected server version
+  `9.3.0`; the fixture correctly reports `fixture-splunk-9.x`.
+- PASS after correcting the test expectation:
+  - 1 test file passed;
+  - 5 tests passed.
+- PASS for TypeScript build.
+- PASS for package readiness:
+  - 168 packed files checked;
+  - new mock server export included in package readiness.
+- PASS for built CLI stdio smoke:
+  - tools listed: `splunk_get_info`, `splunk_get_knowledge_objects`;
+  - deployment name: `acme-soc-dev`;
+  - knowledge result count: `2`;
+  - `mutation=false`.
+
+Notes:
+
+- No secret env file values were read, sourced, printed, or committed.
+
 ## 2026-06-07 - Move 145 published package with MCP review tool
 
 Commands:

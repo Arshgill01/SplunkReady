@@ -18,6 +18,7 @@ import {
   runPolicyBackedRerunWorkflow
 } from "./workflows/policy-actions.js";
 import { startStdioMcpServer } from "./mcp/server.js";
+import { startStdioMockSplunkMcpServer } from "./mock-splunk-mcp/server.js";
 export {
   runHostedModelDiagnosticFromCli,
   runHostedModelProofFromCli,
@@ -99,6 +100,11 @@ const main = async (): Promise<void> => {
   }
 
   const options = await resolveCliInputPaths(parsedOptions);
+  if (command === "mock-splunk-mcp") {
+    await startStdioMockSplunkMcpServer({ fixturePath: options.fixture });
+    return;
+  }
+
   const output = await runCliCommand(command, options);
 
   if (!output) {

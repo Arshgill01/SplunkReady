@@ -57,6 +57,7 @@ Commands:
   certification-index --proof-dirs <dir[,dir]> --out <dir> [--require-pass true|false] [--json]
   judge-proof --out <dir> [--include-llm-proof true|false] [--json]
   mcp       Start the SplunkReady stdio MCP server
+  mock-splunk-mcp --fixture <path> Start the credential-free mock Splunk stdio MCP server
   mcp-proof --out <dir> [--transcript <path>] [--json]
   live-candidates --out <dir> [--candidate-limit <n>]
   live-security-check --out <dir> [--json]

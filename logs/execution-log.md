@@ -13838,3 +13838,47 @@ Notes:
 
 - No source code changed in this planning move.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07T16:20:59Z - Move 147 mock Splunk MCP server first slice
+
+Intent:
+
+- Start the self-hostable live-mode-without-Splunk path with a credential-free,
+  read-only mock Splunk MCP stdio server.
+
+Actions:
+
+- Added `src/mock-splunk-mcp/server.ts` as a separate MCP JSON-RPC stdio server
+  backed by the existing fixture dataset.
+- Added read-only mock tools:
+  - `splunk_get_info`;
+  - `splunk_get_knowledge_objects`.
+- Added package subpath export `splunkready/mock-splunk-mcp`.
+- Added CLI command `mock-splunk-mcp --fixture <path>`.
+- Added focused mock MCP server tests for initialize, tools/list, tool calls,
+  read-only annotations, and fixture secret hygiene.
+- Ran a built CLI stdio smoke that initialized the server, listed tools, called
+  both mock tools, and returned fixture-backed data.
+
+Files changed:
+
+- `src/mock-splunk-mcp/server.ts`
+- `src/cli.ts`
+- `src/cli/options.ts`
+- `package.json`
+- `tests/mcp/mock-splunk-server.test.ts`
+- `moves/moves147.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Deferred:
+
+- `--live-mock` wiring for `live-proof`, `live-security-proof`, and `mcp-proof`.
+- Mock `splunk_run_query`, `splunk_run_saved_search`, and SAIA tools.
+- Docker packaging and CI live-mock proof.
+
+Notes:
+
+- This slice does not claim real Splunk deployment evidence.
+- No secret env file values were read, sourced, printed, or committed.

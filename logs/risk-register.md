@@ -864,3 +864,11 @@ that do not depend on a closed desktop app: mock live Splunk MCP, receipt-chain
 verification, interactive hosted certification, and signed policy registry.
 Residual risk is execution scope: Moves 147-150 are multi-day features, so each
 must land in small verified slices without broad speculative rewrites.
+
+Move 147 first slice reduces mock-server implementation risk by proving the MCP
+transport and fixture-backed read-only tool surface before touching live-proof
+workflow behavior. The mock server currently supports only `splunk_get_info` and
+`splunk_get_knowledge_objects`; it does not yet make `live-proof --live-mock`
+pass. Residual risk remains in the larger Move 147 scope: saved-search/query
+behavior, hosted-model route states, Docker packaging, CI proof, and
+`submission-evidence/live-mock/` are still pending.

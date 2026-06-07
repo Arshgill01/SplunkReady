@@ -26,7 +26,12 @@ transport boundary.
 - Focused mock MCP server tests.
 - `npm run build`.
 - `npm run audit:package-readiness` if package exports change.
+- Built CLI stdio smoke for initialize, tools/list, `splunk_get_info`, and
+  `splunk_get_knowledge_objects`.
 
 ## Result
 
-Not started.
+First slice implemented. `mock-splunk-mcp` initializes over stdio, lists two
+read-only Splunk tools, returns fixture deployment info, returns fixture
+knowledge objects, and reports no mutation. Full `--live-mock` workflow wiring
+remains deferred to the next Move 147 slice.

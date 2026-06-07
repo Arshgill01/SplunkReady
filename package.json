@@ -38,6 +38,10 @@
       "types": "./dist/src/schemas/core.d.ts",
       "import": "./dist/src/schemas/core.js"
     },
+    "./mock-splunk-mcp": {
+      "types": "./dist/src/mock-splunk-mcp/server.d.ts",
+      "import": "./dist/src/mock-splunk-mcp/server.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
