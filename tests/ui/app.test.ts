@@ -940,6 +940,7 @@ const hostedModelDiagnostic = {
   status: "PASS",
   mode: "live",
   mutation: false,
+  blockerClass: "NONE",
   proofPath: "artifacts/hosted-model-proof/hosted-model-proof.json",
   contract: {
     id: "contract-192-168-1-4",
@@ -951,6 +952,7 @@ const hostedModelDiagnostic = {
   missingTools: [],
   permission: {
     status: "OK",
+    blockerClass: "NONE",
     message:
       "The current MCP credentials can invoke saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question for advisory SPL remediation."
   },
@@ -1611,6 +1613,8 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Inline transcript certification");
     expect(html).toContain("submission-evidence/mcp-proof/mcp-inline-transcript-certification");
     expect(html).toContain("Hosted-model access");
+    expect(html).toContain("Hosted-model blocker");
+    expect(html).toContain("Hosted-model permission blocker");
     expect(html).toContain("Hosted-model passed tools");
     expect(html).toContain("Hosted-model tool results");
     expect(html).toContain("saia_generate_spl:PASS");

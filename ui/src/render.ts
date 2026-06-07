@@ -266,7 +266,9 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
                   ["Transcript certification", summary.transcriptCertification.status],
                   ["Inline transcript certification", summary.inlineTranscriptCertification.status],
                   ["Hosted-model access", summary.hostedModelAccess.status],
+                  ["Hosted-model blocker", summary.hostedModelAccess.blockerClass ?? "NONE"],
                   ["Hosted-model permission", summary.hostedModelAccess.permissionStatus],
+                  ["Hosted-model permission blocker", summary.hostedModelAccess.permissionBlockerClass ?? "NONE"],
                   ["Hosted-model passed tools", summary.hostedModelAccess.passedTools?.join(" / ") || "none"],
                   ["Hosted-model blocked tools", summary.hostedModelAccess.blockedTools?.join(" / ") || "none"],
                   [
@@ -627,6 +629,7 @@ const renderHostedModelDiagnostic = (diagnostic: HostedModelDiagnostic | undefin
     <h2>Hosted model diagnostic</h2>
     ${renderFactTable([
       ["Status", diagnostic.status],
+      ["Blocker", diagnostic.blockerClass],
       ["Mode", diagnostic.mode],
       ["Contract", diagnostic.contract.id],
       ["Required tools", diagnostic.requiredTools.join(" / ")],
@@ -639,6 +642,7 @@ const renderHostedModelDiagnostic = (diagnostic: HostedModelDiagnostic | undefin
         diagnostic.toolResults?.map((result) => `${result.toolName}:${result.status}`).join(" / ") || "not recorded"
       ],
       ["Permission", diagnostic.permission.status],
+      ["Permission blocker", diagnostic.permission.blockerClass],
       ["Error", diagnostic.permission.error ?? "none"],
       ["Required actions", diagnostic.permission.requiredActions?.join(" / ") ?? "none"],
       ...renderHostedModelSetupRows(diagnostic.setup),

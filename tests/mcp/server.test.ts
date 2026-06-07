@@ -411,7 +411,9 @@ describe("SplunkReady MCP server", () => {
     expect(result.isError).toBe(false);
     expect(structured).toMatchObject({
       status: "PASS",
+      blockerClass: "NONE",
       permissionStatus: "OK",
+      permissionBlockerClass: "NONE",
       outDir,
       mutation: false,
       requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
@@ -446,7 +448,9 @@ describe("SplunkReady MCP server", () => {
     expect(result.isError).toBe(false);
     expect(structured).toMatchObject({
       status: "BLOCKED",
+      blockerClass: "LIVE_CONFIG_MISSING",
       permissionStatus: "BLOCKED",
+      permissionBlockerClass: "LIVE_CONFIG_MISSING",
       outDir,
       mutation: false,
       requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],

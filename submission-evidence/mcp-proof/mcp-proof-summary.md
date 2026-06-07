@@ -59,7 +59,11 @@ Inline transcript certification: PASS
 - Output: submission-evidence/mcp-proof/mcp-inline-transcript-certification
 
 Hosted-model access check: PASS
+- Blocker: NONE
 - Permission: OK
+- Permission blocker: NONE
+- Passed tools: saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question
+- Blocked tools: none
 - Output: submission-evidence/mcp-proof/mcp-hosted-model-access
 
 Splunk MCP boundary: PASS

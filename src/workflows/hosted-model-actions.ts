@@ -49,6 +49,14 @@ export interface HostedModelSetup {
   secretHandling: string;
 }
 
+type HostedModelBlockerClass =
+  | "NONE"
+  | "LIVE_CONFIG_MISSING"
+  | "SAIA_TOOLS_NOT_ADVERTISED"
+  | "SAIA_ROUTE_NOT_FOUND"
+  | "SAIA_ACTION_FORBIDDEN"
+  | "SAIA_INVOCATION_BLOCKED";
+
 export const hostedModelToolNames: ReadOnlySplunkToolName[] = [
   "saia_generate_spl",
   "saia_explain_spl",
@@ -261,6 +269,30 @@ const hostedModelBlockedRequiredActions = (error: string, contractAvailable: boo
     ...hostedModelToolNames.map((toolName) => `Grant the Splunk/MCP user permission to invoke ${toolName}.`),
     "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
   ];
+};
+
+const hostedModelBlockerClass = (
+  error: string,
+  contractAvailable: boolean,
+  missingTools: ReadOnlySplunkToolName[]
+): HostedModelBlockerClass => {
+  if (!contractAvailable) {
+    return "LIVE_CONFIG_MISSING";
+  }
+
+  if (missingTools.length > 0) {
+    return "SAIA_TOOLS_NOT_ADVERTISED";
+  }
+
+  if (/404|not found/i.test(error)) {
+    return "SAIA_ROUTE_NOT_FOUND";
+  }
+
+  if (/action forbidden|forbidden/i.test(error)) {
+    return "SAIA_ACTION_FORBIDDEN";
+  }
+
+  return "SAIA_INVOCATION_BLOCKED";
 };
 
 type HostedModelToolResult = {
@@ -580,11 +612,14 @@ export const runHostedModelDiagnosticWorkflow = async (
   const missingTools = contract ? hostedModelToolNames.filter((toolName) => !contract.mcpTools.includes(toolName)) : hostedModelToolNames;
   const diagnosticPath = join(input.outDir, "hosted-model-diagnostic.json");
   const blocked = proofStatus !== "PASS";
+  const permissionError = stringFromRecord(proof, "error") ?? "Hosted-model proof did not pass.";
+  const blockerClass = blocked ? hostedModelBlockerClass(permissionError, Boolean(contract), missingTools) : "NONE";
 
   await writeJson(diagnosticPath, {
     status: blocked ? "BLOCKED" : "PASS",
     mode,
     mutation: false,
+    blockerClass,
     proofPath,
     contract: {
       id: contract?.id ?? "live-hosted-model-unconfigured",
@@ -600,18 +635,17 @@ export const runHostedModelDiagnosticWorkflow = async (
     permission: blocked
       ? {
           status: "BLOCKED",
+          blockerClass,
           message: hostedModelBlockedMessage(
-            stringFromRecord(proof, "error") ?? "Hosted-model proof did not pass.",
+            permissionError,
             Boolean(contract)
           ),
-          error: stringFromRecord(proof, "error") ?? "Hosted-model proof did not pass.",
-          requiredActions: hostedModelBlockedRequiredActions(
-            stringFromRecord(proof, "error") ?? "Hosted-model proof did not pass.",
-            Boolean(contract)
-          )
+          error: permissionError,
+          requiredActions: hostedModelBlockedRequiredActions(permissionError, Boolean(contract))
         }
       : {
           status: "OK",
+          blockerClass,
           message: `The current MCP credentials can invoke ${hostedModelToolNames.join(", ")} for advisory SPL remediation.`
         },
     deterministicAuthority: "deterministic-rule-engine",

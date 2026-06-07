@@ -9958,6 +9958,71 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-07 - Move 123 Hosted-Model Blocker Evidence
+
+Commands:
+
+- `npx tsc --noEmit && npx vitest run tests/workflows/hosted-model-actions.test.ts tests/cli/flow.test.ts --testNamePattern "hosted-model|SAIA"`
+- `npx tsc --noEmit && npx vitest run tests/workflows/hosted-model-actions.test.ts tests/mcp/server.test.ts tests/cli/flow.test.ts tests/ui/app.test.ts --testNamePattern "hosted-model|SAIA|MCP proof summary|SplunkReady MCP server"`
+- `npm run mcp-proof`
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json`
+- `npm run public-demo:build`
+- `python3 -m http.server 4179 --directory artifacts/public-demo`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open 'http://127.0.0.1:4179/?artifacts=artifacts%2Fmcp-proof#mcp-proof'`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" console error`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval "..." --json`
+- `npm run check`
+
+Result:
+
+- PASS for focused hosted-model/SAIA workflow and CLI tests:
+  - 2 files passed;
+  - 10 tests passed;
+  - 38 tests skipped by focused pattern.
+- PASS for focused hosted-model, MCP server, CLI, and UI tests:
+  - 4 files passed;
+  - 24 tests passed;
+  - 63 tests skipped by focused pattern.
+- PASS for `npm run mcp-proof`; regenerated `artifacts/mcp-proof`.
+- PASS for tracked MCP proof regeneration into `submission-evidence/mcp-proof`.
+- PASS for public demo rebuild into `artifacts/public-demo`.
+- PASS for Playwright browser verification:
+  - MCP proof route loaded at `http://127.0.0.1:4179/?artifacts=artifacts%2Fmcp-proof#mcp-proof`;
+  - page title was `SplunkReady`;
+  - route rendered hosted-model blocker rows;
+  - no artifact-load failure was present;
+  - browser console reported 0 errors and 0 warnings.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 207 files and default route `mcp-proof`;
+  - package readiness audit checked 164 packed files;
+  - package installability audit installed `splunkready-0.1.1.tgz`, ran `npx splunkready judge-proof`, and initialized `npx splunkready mcp`;
+  - 59 test files passed;
+  - 366 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 57 required claims;
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright scratch output was not committed.
+- The live env file was passed only to the diagnostic command; its contents were
+  not read, sourced, printed, or committed.
+- The live diagnostic remains `BLOCKED` with blocker class
+  `SAIA_ROUTE_NOT_FOUND`; no live SAIA PASS is claimed.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Live SAIA endpoint/app routing still needs operator-side remediation before
+  SplunkReady can claim hosted-model live PASS.
+
 ## 2026-06-07 - Move 122 Next Package Release Alignment
 
 Commands:

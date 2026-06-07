@@ -369,7 +369,9 @@ Inline transcript certification: ${stringFromRecord(summary.inlineTranscriptCert
 - Output: ${stringFromRecord(summary.inlineTranscriptCertification, "outDir")}
 
 Hosted-model access check: ${stringFromRecord(summary.hostedModelAccess, "status")}
+- Blocker: ${stringFromRecord(summary.hostedModelAccess, "blockerClass") ?? "NONE"}
 - Permission: ${stringFromRecord(summary.hostedModelAccess, "permissionStatus")}
+- Permission blocker: ${stringFromRecord(summary.hostedModelAccess, "permissionBlockerClass") ?? "NONE"}
 - Passed tools: ${stringArrayFromRecord(summary.hostedModelAccess, "passedTools").join(", ") || "none"}
 - Blocked tools: ${stringArrayFromRecord(summary.hostedModelAccess, "blockedTools").join(", ") || "none"}
 - Output: ${stringFromRecord(summary.hostedModelAccess, "outDir")}

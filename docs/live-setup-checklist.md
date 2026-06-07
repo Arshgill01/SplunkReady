@@ -253,6 +253,7 @@ Expected files:
 Pass criteria:
 
 - `hosted-model-diagnostic.json` has `status: "PASS"`.
+- `blockerClass` is `NONE`.
 - `permission.status` is `OK`.
 - `requiredTools` includes `saia_generate_spl`, `saia_explain_spl`, `saia_optimize_spl`, and `saia_ask_splunk_question`.
 - `mutation` is `false`.
@@ -266,6 +267,9 @@ values.
 
 If this command fails with a hosted-model access error:
 
+- Inspect `blockerClass` first. Stable values are `LIVE_CONFIG_MISSING`,
+  `SAIA_TOOLS_NOT_ADVERTISED`, `SAIA_ROUTE_NOT_FOUND`,
+  `SAIA_ACTION_FORBIDDEN`, and `SAIA_INVOCATION_BLOCKED`.
 - Keep the same read-only Splunk/MCP user if possible.
 - Grant that user permission or entitlement to invoke `saia_generate_spl`.
 - Grant that user permission or entitlement to invoke `saia_explain_spl`.
@@ -274,13 +278,16 @@ If this command fails with a hosted-model access error:
 - Rerun the command with `--require-pass true`.
 
 If the diagnostic says the MCP endpoint returned not found while invoking SAIA
-tools:
+tools, `blockerClass` is `SAIA_ROUTE_NOT_FOUND`:
 
 - Confirm the endpoint can invoke `saia_generate_spl`, `saia_explain_spl`,
   `saia_optimize_spl`, and `saia_ask_splunk_question`, not only advertise them
   in tool discovery.
 - Confirm the MCP server route or app version backing hosted-model tools is
   installed and reachable.
+- Confirm the deployment is using the current Splunk MCP Server App path, not a
+  stale legacy endpoint path that can advertise tools but fail routed
+  invocations.
 - Rerun the command with `--require-pass true`.
 
 This diagnostic is separate from grading. SAIA output may generate, explain, optimize, or answer questions about SPL, but deterministic SplunkReady rules still decide pass/fail.
@@ -344,7 +351,8 @@ blocked at invocation time:
 - passed tools: none
 - blocked tools: `saia_generate_spl`, `saia_explain_spl`,
   `saia_optimize_spl`, `saia_ask_splunk_question`
-- blocker class: the endpoint advertises hosted-model tools, but the live route
+- `blockerClass`: `SAIA_ROUTE_NOT_FOUND`
+- interpretation: the endpoint advertises hosted-model tools, but the live route
   returns not found when invoking them.
 - redaction check: hosted-model proof and diagnostic errors contain
   `[REDACTED_URL]` and no raw `https://` endpoint URL.

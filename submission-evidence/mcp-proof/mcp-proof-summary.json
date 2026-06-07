@@ -341,7 +341,9 @@
   },
   "hostedModelAccess": {
     "status": "PASS",
+    "blockerClass": "NONE",
     "permissionStatus": "OK",
+    "permissionBlockerClass": "NONE",
     "outDir": "submission-evidence/mcp-proof/mcp-hosted-model-access",
     "mutation": false,
     "requiredTools": [

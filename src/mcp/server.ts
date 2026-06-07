@@ -280,7 +280,9 @@ export const splunkReadyMcpTools: McpTool[] = [
     ),
     outputSchema: objectSchema({
       status: stringProperty("PASS when SAIA hosted-model access is available; BLOCKED otherwise."),
+      blockerClass: stringProperty("Stable hosted-model blocker class, or NONE when the diagnostic passes."),
       permissionStatus: stringProperty("OK or BLOCKED permission result from the diagnostic."),
+      permissionBlockerClass: stringProperty("Stable hosted-model blocker class from the permission block."),
       outDir: stringProperty("Output directory that received hosted-model diagnostic artifacts."),
       mutation: { type: "boolean", description: "Whether SplunkReady mutated Splunk." },
       requiredTools: { type: "array", items: { type: "string" }, description: "Hosted-model tools required by the diagnostic." },
@@ -1075,7 +1077,14 @@ const callTool = async (name: string, args: unknown, env: NodeJS.ProcessEnv): Pr
 
       return toolResult({
         status: result.status,
+        blockerClass: typeof diagnostic.blockerClass === "string" ? diagnostic.blockerClass : result.status === "PASS" ? "NONE" : "SAIA_INVOCATION_BLOCKED",
         permissionStatus: typeof permission.status === "string" ? permission.status : result.status,
+        permissionBlockerClass:
+          typeof permission.blockerClass === "string"
+            ? permission.blockerClass
+            : result.status === "PASS"
+              ? "NONE"
+              : "SAIA_INVOCATION_BLOCKED",
         outDir: result.outDir,
         mutation: false,
         requiredTools: Array.isArray(diagnostic.requiredTools) ? diagnostic.requiredTools : [],

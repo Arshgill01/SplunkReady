@@ -2,6 +2,7 @@
   "status": "PASS",
   "mode": "fixture",
   "mutation": false,
+  "blockerClass": "NONE",
   "proofPath": "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
   "contract": {
     "id": "contract-acme-soc-dev",
@@ -71,6 +72,7 @@
   ],
   "permission": {
     "status": "OK",
+    "blockerClass": "NONE",
     "message": "The current MCP credentials can invoke saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question for advisory SPL remediation."
   },
   "deterministicAuthority": "deterministic-rule-engine",

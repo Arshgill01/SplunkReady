@@ -645,3 +645,14 @@ not npm-authenticated, so `npm run audit:npm-release-preflight -- --require-read
 is `BLOCKED` by npm auth even though the registry reports 0.1.1 is available.
 Residual prize risk remains concentrated in live SAIA endpoint readiness and
 external MCP-client storytelling rather than package mechanics.
+
+Move 123 reduces hosted-model and MCP evidence ambiguity by adding stable
+blocker classes to hosted-model diagnostics and surfacing them through
+`splunkready_check_hosted_model_access`, MCP proof summaries, and the public
+workbench route. The current live operator-owned endpoint state is now
+classified as `SAIA_ROUTE_NOT_FOUND`: all four SAIA tools are advertised, but
+invocation returns route-not-found. This protects the product from claiming a
+live SAIA pass while making the next remediation target concrete. Residual risk
+remains outside SplunkReady's read-only harness: the Splunk MCP endpoint or app
+route must actually invoke the advertised SAIA tools before live hosted-model
+proof can pass.

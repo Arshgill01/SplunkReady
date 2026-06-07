@@ -12715,3 +12715,53 @@ Open blockers:
   pack checks are clean.
 - After package release alignment, the next high-value probability work remains
   live SAIA route remediation and stronger external MCP-client evidence.
+
+## 2026-06-07 16:59 - Move 123 Hosted-Model Blocker Evidence
+
+Scope:
+- Used the operator-owned live hosted-model diagnostic result to ground the
+  next SAIA move without reading, sourcing, printing, or committing the ignored
+  `.splunkready-live.env` file.
+- Added a stable hosted-model blocker class to hosted-model diagnostics:
+  `NONE`, `LIVE_CONFIG_MISSING`, `SAIA_TOOLS_NOT_ADVERTISED`,
+  `SAIA_ROUTE_NOT_FOUND`, `SAIA_ACTION_FORBIDDEN`, and
+  `SAIA_INVOCATION_BLOCKED`.
+- Propagated the blocker class through
+  `splunkready_check_hosted_model_access`, MCP proof summaries, and public
+  workbench rendering.
+- Regenerated tracked credential-free MCP proof evidence and public demo
+  artifacts.
+- Updated the live setup checklist so the current live SAIA failure is framed
+  as advertised tools with route-not-found invocation, not a missing-tool or
+  deterministic-grader issue.
+- Kept SAIA advisory-only; deterministic rules remain authoritative.
+- Did not mutate Splunk.
+- Did not use subagents.
+
+Files changed:
+- `src/workflows/hosted-model-actions.ts`
+- `src/workflows/mcp-proof.ts`
+- `src/mcp/server.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/workflows/hosted-model-actions.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/mcp/server.test.ts`
+- `tests/ui/app.test.ts`
+- `docs/live-setup-checklist.md`
+- `submission-evidence/mcp-proof/mcp-client-session.jsonl`
+- `submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-diagnostic.json`
+- `submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `submission-evidence/mcp-proof/mcp-proof-summary.md`
+- `moves/README.md`
+- `moves/moves123.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- The live operator-owned SAIA endpoint still advertises all four hosted-model
+  tools but returns route-not-found at invocation time, so live hosted-model
+  proof remains `BLOCKED`.
+- The next high-value probability work is still live SAIA route remediation and
+  stronger external MCP-client walkthrough evidence, not low-value docs polish.

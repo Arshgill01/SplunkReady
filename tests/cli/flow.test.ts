@@ -2483,6 +2483,7 @@ describe("SplunkReady CLI flow", () => {
       mode: string;
       mutation: boolean;
       permission: { status: string; message: string };
+      blockerClass: string;
       requiredTools: string[];
       availableTools: string[];
       passedTools: string[];
@@ -2494,8 +2495,10 @@ describe("SplunkReady CLI flow", () => {
       status: "PASS",
       mode: "live",
       mutation: false,
+      blockerClass: "NONE",
       permission: {
         status: "OK",
+        blockerClass: "NONE",
         message:
           "The current MCP credentials can invoke saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question for advisory SPL remediation."
       },
@@ -2578,13 +2581,15 @@ describe("SplunkReady CLI flow", () => {
     const proofText = await readFile(join(outDir, "hosted-model-proof.json"), "utf8");
     const diagnostic = JSON.parse(diagnosticText) as {
       status: string;
-      permission: { status: string };
+      blockerClass: string;
+      permission: { status: string; blockerClass: string };
       setup: { requiredEnvironment: Array<{ name: string; status: string }>; optionalEnvironment: Array<{ name: string; status: string }> };
     };
 
     expect(diagnostic).toMatchObject({
       status: "PASS",
-      permission: { status: "OK" },
+      blockerClass: "NONE",
+      permission: { status: "OK", blockerClass: "NONE" },
       setup: {
         requiredEnvironment: [
           { name: "SPLUNKREADY_LIVE_ENABLED", status: "set" },
@@ -2643,7 +2648,8 @@ describe("SplunkReady CLI flow", () => {
       passedTools: string[];
       blockedTools: string[];
       toolResults: Array<{ toolName: string; status: string; error?: string }>;
-      permission: { status: string; error: string };
+      blockerClass: string;
+      permission: { status: string; blockerClass: string; error: string };
     };
 
     expect(proof).toMatchObject({
@@ -2657,8 +2663,10 @@ describe("SplunkReady CLI flow", () => {
       status: "BLOCKED",
       passedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl"],
       blockedTools: ["saia_ask_splunk_question"],
+      blockerClass: "SAIA_ACTION_FORBIDDEN",
       permission: {
         status: "BLOCKED",
+        blockerClass: "SAIA_ACTION_FORBIDDEN",
         error: expect.stringContaining("saia_ask_splunk_question")
       }
     });
@@ -2733,7 +2741,8 @@ describe("SplunkReady CLI flow", () => {
       status: string;
       mutation: boolean;
       blockedTools: string[];
-      permission: { status: string; error: string; requiredActions: string[] };
+      blockerClass: string;
+      permission: { status: string; blockerClass: string; error: string; requiredActions: string[] };
     };
     const proof = JSON.parse(await readFile(join(outDir, "hosted-model-proof.json"), "utf8")) as {
       status: string;
@@ -2750,8 +2759,10 @@ describe("SplunkReady CLI flow", () => {
       status: "BLOCKED",
       mutation: false,
       blockedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+      blockerClass: "SAIA_ACTION_FORBIDDEN",
       permission: {
         status: "BLOCKED",
+        blockerClass: "SAIA_ACTION_FORBIDDEN",
         error: expect.stringContaining("saia_generate_spl: Hosted-model SAIA action forbidden")
       }
     });
@@ -2795,14 +2806,17 @@ describe("SplunkReady CLI flow", () => {
     const diagnostic = JSON.parse(await readFile(join(outDir, "hosted-model-diagnostic.json"), "utf8")) as {
       status: string;
       mutation: boolean;
-      permission: { status: string; message: string; error: string; requiredActions: string[] };
+      blockerClass: string;
+      permission: { status: string; blockerClass: string; message: string; error: string; requiredActions: string[] };
     };
 
     expect(diagnostic).toMatchObject({
       status: "BLOCKED",
       mutation: false,
+      blockerClass: "SAIA_ROUTE_NOT_FOUND",
       permission: {
         status: "BLOCKED",
+        blockerClass: "SAIA_ROUTE_NOT_FOUND",
         message:
           "The MCP contract advertises hosted-model tools, but the live MCP endpoint returned not found when invoking SAIA tools.",
         error: expect.stringContaining("404 Client Error: Not Found")

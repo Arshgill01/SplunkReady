@@ -47,6 +47,15 @@ const hostedModelToolNameSchema = z.enum([
   "saia_ask_splunk_question"
 ]);
 
+const hostedModelBlockerClassSchema = z.enum([
+  "NONE",
+  "LIVE_CONFIG_MISSING",
+  "SAIA_TOOLS_NOT_ADVERTISED",
+  "SAIA_ROUTE_NOT_FOUND",
+  "SAIA_ACTION_FORBIDDEN",
+  "SAIA_INVOCATION_BLOCKED"
+]);
+
 const artifactFileManifestSchema = z
   .object({
     source: z.literal("splunkready-artifact-file-manifest"),
@@ -179,6 +188,7 @@ const hostedModelDiagnosticSchema = z
     status: z.enum(["PASS", "BLOCKED"]),
     mode: z.enum(["fixture", "live"]),
     mutation: z.boolean(),
+    blockerClass: hostedModelBlockerClassSchema.optional().default("NONE"),
     proofPath: z.string().min(1),
     contract: z
       .object({
@@ -208,6 +218,7 @@ const hostedModelDiagnosticSchema = z
     permission: z
       .object({
         status: z.enum(["OK", "BLOCKED"]),
+        blockerClass: hostedModelBlockerClassSchema.optional().default("NONE"),
         message: z.string().min(1),
         error: z.string().min(1).optional(),
         requiredActions: z.array(z.string().min(1)).optional()
@@ -763,7 +774,9 @@ const mcpProofSummarySchema = z
     hostedModelAccess: z
       .object({
         status: z.enum(["PASS", "BLOCKED"]),
+        blockerClass: hostedModelBlockerClassSchema.optional(),
         permissionStatus: z.enum(["OK", "BLOCKED"]),
+        permissionBlockerClass: hostedModelBlockerClassSchema.optional(),
         outDir: z.string().min(1),
         mutation: z.boolean(),
         requiredTools: z.array(hostedModelToolNameSchema),

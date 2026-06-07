@@ -50,8 +50,9 @@ describe("hosted model workflows", () => {
     const diagnostic = JSON.parse(await readFile(join(outDir, "hosted-model-diagnostic.json"), "utf8")) as {
       status: string;
       mutation: boolean;
+      blockerClass: string;
       deterministicAuthority: string;
-      permission: { status: string };
+      permission: { status: string; blockerClass: string };
     };
 
     expect(result).toMatchObject({ status: "PASS", outDir, mutation: false });
@@ -59,8 +60,9 @@ describe("hosted model workflows", () => {
     expect(diagnostic).toMatchObject({
       status: "PASS",
       mutation: false,
+      blockerClass: "NONE",
       deterministicAuthority: "deterministic-rule-engine",
-      permission: { status: "OK" }
+      permission: { status: "OK", blockerClass: "NONE" }
     });
   });
 
@@ -94,7 +96,8 @@ describe("hosted model workflows", () => {
       missingTools: string[];
       passedTools: string[];
       blockedTools: string[];
-      permission: { status: string; message: string; requiredActions: string[] };
+      blockerClass: string;
+      permission: { status: string; blockerClass: string; message: string; requiredActions: string[] };
       setup: {
         configured: boolean;
         requiredEnvironment: Array<{ name: string; status: string }>;
@@ -130,8 +133,10 @@ describe("hosted model workflows", () => {
       missingTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       passedTools: [],
       blockedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+      blockerClass: "LIVE_CONFIG_MISSING",
       permission: {
         status: "BLOCKED",
+        blockerClass: "LIVE_CONFIG_MISSING",
         message:
           "Live hosted-model diagnostic could not compile a Splunk contract because required live configuration is not available in this process."
       },
