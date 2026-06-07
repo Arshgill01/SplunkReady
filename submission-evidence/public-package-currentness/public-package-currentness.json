@@ -1,30 +1,36 @@
 {
   "source": "splunkready-public-package-currentness",
-  "status": "STALE",
+  "status": "CURRENT",
   "registry": {
     "packageName": "splunkready",
     "versions": [
-      "0.1.0"
+      "0.1.0",
+      "0.1.1"
     ],
-    "latestVersion": "0.1.0",
+    "latestVersion": "0.1.1",
     "localVersion": "0.1.1",
-    "localVersionPublished": false,
-    "latestMatchesLocal": false
+    "localVersionPublished": true,
+    "latestMatchesLocal": true
   },
   "publishedJudgeProof": {
-    "packageSpec": "splunkready@0.1.0",
+    "packageSpec": "splunkready@0.1.1",
     "status": "PASS",
     "mutation": false,
-    "command": "npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json",
+    "command": "npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json",
     "error": null
   },
   "publishedMcp": {
-    "packageSpec": "splunkready@0.1.0",
-    "status": "BLOCKED",
-    "initialized": false,
-    "error": "published mcp exited before initialize response: code=1 signal=null stderr=Unknown command mcp. SplunkReady CLI Commands: compile --mode fixture|live --fixture <path> --mission <path> --out <dir> [--json] evaluate --mode fixture|live --out <dir> [--firewall] [--json] firewall-check --mode fixture|live --out <dir> [--json] import-mcp-transcript --transcript <path> --mission <path> --out <dir> [--strict-import true|false] [--json] grade-trace --trace <path> --out <dir> [--agent-name <name>] [--age"
+    "packageSpec": "splunkready@0.1.1",
+    "status": "PASS",
+    "initialized": true,
+    "serverInfo": {
+      "name": "splunkready",
+      "title": "SplunkReady Agent Readiness Compiler",
+      "version": "0.0.0"
+    },
+    "error": null
   },
-  "recommendedAction": "Publish splunkready@0.1.1 after npm-authenticated release preflight passes, then rerun this audit.",
+  "recommendedAction": "No registry action required.",
   "mutation": false,
   "failures": []
 }

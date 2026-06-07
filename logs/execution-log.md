@@ -13633,3 +13633,40 @@ Notes:
 - Did not use subagents.
 - Did not read, source, print, or commit `.splunkready*` or `.env*` secret
   contents.
+
+## 2026-06-07T15:50:00Z - Move 142 published package currentness refresh
+
+Intent:
+
+- Verify the user-published `splunkready@0.1.1` package and remove the stale
+  public-package blocker from tracked submission evidence.
+
+Actions:
+
+- Checked npm registry metadata for `splunkready`.
+- Ran the exact no-clone clean temp-folder judge proof smoke against
+  `splunkready@0.1.1`.
+- Refreshed the tracked public-package currentness evidence.
+- Updated README, Devpost copy, submission-copy guard, tests, and claim ledger
+  from the stale `0.1.0` package path to the verified `0.1.1` path.
+
+Files changed:
+
+- `README.md`
+- `docs/devpost-submission.md`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/public-package-currentness/public-package-currentness.json`
+- `moves/README.md`
+- `moves/moves142.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Notes:
+
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  contents.
+- The earlier publish attempt from this shell failed with npm auth `E401`; the
+  user fixed auth and published the package before this verification move.

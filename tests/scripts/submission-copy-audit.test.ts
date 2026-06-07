@@ -36,7 +36,7 @@ Not MCP telemetry.
 Not a detection-health dashboard.
 Not a generic eval harness.
 Not an LLM judging another LLM.
-npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json
 npm run audit:public-package-currentness
 splunkready_certify_mcp_transcript_content
 splunkready_check_hosted_model_access
@@ -72,7 +72,7 @@ Readiness Receipt
 security investigation readiness
 requires no live Splunk credentials
 does not mutate Splunk
-npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json
 submission-evidence/public-package-currentness/
 ${hostedMcpProofUrl}
 ${hostedJudgeProofUrl}
@@ -97,8 +97,8 @@ const baseClaimLedger = `# Submission Claim Ledger
 
 | Claim | Status | Evidence | Verification |
 | --- | --- | --- | --- |
-| The package is published on npm and the current published no-clone judge proof is smoke-tested. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json |
-| The public registry currentness proof separates the published judge-proof path from current-source MCP/SAIA work. | Supported | submission-evidence/public-package-currentness/public-package-currentness.json | npm run audit:public-package-currentness |
+| The package is published on npm and the current published no-clone judge proof is smoke-tested. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json |
+| The public registry currentness proof verifies the current published judge-proof and MCP entrypoint paths. | Supported | submission-evidence/public-package-currentness/public-package-currentness.json | npm run audit:public-package-currentness |
 | The hosted public demo is source-current against the latest public-demo input commit. | Supported | submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json | npm run audit:hosted-demo-currentness |
 | The hosted public demo exposes the credential-free judge proof and LLM evidence boundary. | Supported | submission-evidence/screenshots/public-judge-proof-proof-browser.png | ${hostedJudgeProofUrl} |
 | The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof. | Supported | submission-evidence/mcp-proof/mcp-client-session.jsonl, resources/templates/list, splunkready://receipts/{receiptId}, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access, splunkready://workflows/hosted-model-diagnostic, splunkready_hosted_model_diagnostic, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready://client-config/antigravity, splunkready://client-config/zed, ~/.gemini/antigravity/mcp_config.json, context_servers, splunkready mcp | npm run mcp-proof |

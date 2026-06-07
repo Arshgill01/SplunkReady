@@ -822,3 +822,12 @@ currentness audit reports `CURRENT`, matching hosted/local asset names and
 `splunkready@latest` still needs to publish the current source version before
 the no-clone package path exposes the current MCP entrypoint and client-config
 resources.
+
+Move 142 closes the public-package currentness blocker for the current source
+version. npm latest now reports `splunkready@0.1.1`; a clean temp-folder
+`npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json` smoke returns
+`PASS`; and the public-package currentness audit reports published `judge-proof`
+`PASS`, published `mcp` `PASS`, `initialized=true`, `CURRENT`, and
+`mutation=false`. Residual risk remains practical rather than registry-related:
+new source changes after Move 142 must either be published or described as
+source-only until the next npm currentness audit passes.

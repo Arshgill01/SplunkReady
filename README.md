@@ -34,12 +34,13 @@ npm run judge-proof
 The currently published no-clone judge path is:
 
 ```bash
-npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json
 ```
 
 That command was smoke-tested from a clean temp folder and returns `PASS` with
-`mutation: false`. The checked-out source is newer than the published package;
-run `npm run audit:npm-release-preflight` before publishing the next version.
+`mutation: false`. The published package also exposes the SplunkReady MCP stdio
+entrypoint; `npm run audit:public-package-currentness -- --require-current`
+verifies both the no-clone judge proof and `splunkready mcp` initialization.
 
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, writes `compiler-diagnostics.json` / `.md` showing deterministic rule activation and resolution from readiness profiles and receipts, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 
@@ -168,9 +169,8 @@ placeholder for SplunkReady. Antigravity uses
 side uses an `npx -y mcp-remote` template with
 `${SPLUNKREADY_SPLUNK_MCP_URL}` and `${SPLUNKREADY_SPLUNK_MCP_TOKEN}`
 placeholders copied from the Splunk MCP Server app sample client configuration.
-The published `splunkready@0.1.0` package supports the no-clone `judge-proof`
-command but does not yet include the `splunkready mcp` entrypoint; the local
-package-installability gate verifies that the current source tarball does.
+The published `splunkready@0.1.1` package supports the no-clone `judge-proof`
+command and the `splunkready mcp` entrypoint.
 
 The release gate also packs the current source into a clean temp project and
 requires the installed package to complete both `npx splunkready judge-proof`

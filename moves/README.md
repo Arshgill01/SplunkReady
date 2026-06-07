@@ -164,6 +164,7 @@ commands, or filesystem paths.
 | P0 | [139](moves139.md) Hosted demo currentness evidence | 0.5d | Tracks the current GitHub Pages audit result in the evidence pack and guards the claim ledger against drift. |
 | P0 | [140](moves140.md) Antigravity and Zed MCP client configs | 0.5d | Adds non-Claude external-client MCP config resources for Antigravity and Zed and proves them through `mcp-proof`. |
 | P0 | [141](moves141.md) Hosted demo currentness refresh | 0.5d | Redeploys the public demo after Move 140 and refreshes tracked currentness evidence for the hosted source commit. |
+| P0 | [142](moves142.md) Published package currentness refresh | 0.5d | Verifies `splunkready@0.1.1` is npm latest and refreshes no-clone judge-proof plus MCP currentness evidence. |
 
 ## Non-Negotiable Boundaries
 

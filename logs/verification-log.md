@@ -13879,3 +13879,49 @@ Results:
 Notes:
 
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 - Move 142 published package currentness refresh
+
+Commands:
+
+- `npm view splunkready version dist-tags --json`
+- `tmp=$(mktemp -d /tmp/splunkready-publish-smoke-XXXXXX) && cd "$tmp" && npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json`
+- `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:public-package-currentness -- --require-current --out /tmp/splunkready-public-package-currentness-move142`
+- `rg -n 'splunkready@0\\.1\\.0|status: "STALE"|published MCP `BLOCKED`|latest `splunkready@0\\.1\\.0`' README.md docs/devpost-submission.md submission-evidence/claim-ledger.md scripts/audit-submission-copy.mjs tests/scripts/submission-copy-audit.test.ts`
+
+Results:
+
+- PASS for npm registry metadata:
+  - version `0.1.1`;
+  - latest dist-tag `0.1.1`.
+- PASS for the clean temp-folder no-clone smoke:
+  - command returned JSON status `PASS`;
+  - artifacts written under `./judge-proof`;
+  - judge-proof path is credential-free and reports `mutation=false`.
+- PASS for public-package currentness audit:
+  - status `CURRENT`;
+  - registry versions `0.1.0`, `0.1.1`;
+  - latest version `0.1.1`;
+  - local version `0.1.1`;
+  - local version published `true`;
+  - published `judge-proof` status `PASS`;
+  - published `mcp` status `PASS`;
+  - published MCP initialized `true`;
+  - recommended action: no registry action required;
+  - `mutation=false`;
+  - failures empty.
+- PASS for submission-copy audit:
+  - 95 required claims audited.
+- PASS for submission-copy audit tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for the stale package-copy search:
+  - no stale `splunkready@0.1.0`, `STALE`, or published MCP `BLOCKED` strings
+    remain in guarded README, Devpost, claim-ledger, script, or test copy.
+
+Notes:
+
+- No secret env file values were read, sourced, printed, or committed.
