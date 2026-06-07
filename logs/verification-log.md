@@ -9958,6 +9958,57 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-07T12:49:33Z - Move 131 verification
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/adapters/live.test.ts tests/workflows/hosted-model-actions.test.ts tests/cli/flow.test.ts --testNamePattern "hosted-model|SAIA|live config|cloud headers|MCP aliases|dedicated hosted-model"`
+- `npx vitest run tests/adapters/live.test.ts tests/workflows/hosted-model-actions.test.ts tests/mcp/server.test.ts tests/cli/flow.test.ts tests/scripts/submission-copy-audit.test.ts --testNamePattern "hosted-model|SAIA|live config|cloud headers|MCP aliases|dedicated hosted-model|client config|MCP proof|mcp-proof|submission copy"`
+- `npm run mcp-proof && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json && npm run public-demo:build`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open "http://127.0.0.1:4182/?artifacts=artifacts%2Fmcp-proof#mcp-proof"`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" console`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval 'async () => { ... }'`
+
+Result:
+
+- PASS for TypeScript.
+- PASS for focused hosted-model runtime tests:
+  - 3 test files passed;
+  - 14 tests passed;
+  - 46 tests skipped by focused pattern.
+- PASS for focused MCP/submission-copy tests:
+  - 5 test files passed;
+  - 19 tests passed;
+  - 56 tests skipped by focused pattern.
+- PASS for MCP proof generation and tracked submission-evidence regeneration.
+- PASS for public demo export build.
+- PASS for Playwright:
+  - MCP proof route loaded;
+  - snapshot showed the MCP proof route with `PASS` sections;
+  - console reported 0 errors and 0 warnings;
+  - browser-loaded JSON included `mcp-remote`,
+    `SPLUNKREADY_SPLUNK_MCP_URL`,
+    `Authorization: Bearer ${SPLUNKREADY_SPLUNK_MCP_TOKEN}`,
+    `SAIA_MCP_URL`, `SAIA_MCP_TOKEN`,
+    `SPLUNK_AI_ASSISTANT_MCP_URL`, `SPLUNK_AI_ASSISTANT_MCP_TOKEN`,
+    `SPLUNKREADY_SAIA_REALM`, and `SPLUNKREADY_SAIA_TENANT`;
+  - no artifact failure was visible.
+- LIVE CHECK remains blocked:
+  - `status: BLOCKED`;
+  - `blockerClass: SAIA_ROUTE_NOT_FOUND`;
+  - `hostedModelTransport: shared-splunk-mcp`;
+  - `mutation: false`;
+  - supported dedicated SAIA endpoint/token names remain missing in the
+    ignored env file.
+
+Notes:
+
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  contents.
+
 ## 2026-06-07 17:49 - Move 128 MCP Client Config SAIA Routing Evidence
 
 Commands:

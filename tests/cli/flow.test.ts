@@ -1776,6 +1776,10 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TOKEN");
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_URL");
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_TOKEN");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SAIA_MCP_URL");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNK_AI_ASSISTANT_MCP_URL");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_REALM");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TENANT");
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain(
       "\"hostedModelDiagnosticTool\": \"splunkready_check_hosted_model_access\""
     );
@@ -1792,6 +1796,10 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TOKEN");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_URL");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_TOKEN");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SAIA_MCP_URL");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNK_AI_ASSISTANT_MCP_URL");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_REALM");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TENANT");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain(
       "\"certificationTool\": \"splunkready_certify_mcp_transcript_content\""
     );
@@ -1809,6 +1817,10 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TOKEN");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_URL");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_MCP_TOKEN");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("SAIA_MCP_URL");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNK_AI_ASSISTANT_MCP_URL");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_REALM");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TENANT");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain(
       "\"hostedModelDiagnosticTool\": \"splunkready_check_hosted_model_access\""
     );
@@ -2618,6 +2630,8 @@ describe("SplunkReady CLI flow", () => {
         `SPLUNKREADY_SPLUNK_MCP_TOKEN=${token}`,
         `SPLUNKREADY_SAIA_MCP_URL=${saiaMcp.url}`,
         `SPLUNKREADY_SAIA_MCP_TOKEN=${saiaToken}`,
+        "SAIA_REALM=us0",
+        "SAIA_TENANT=tenant-1",
         "SPLUNKREADY_SAIA_ENABLED=true"
       ].join("\n"),
       "utf8"
@@ -2648,6 +2662,15 @@ describe("SplunkReady CLI flow", () => {
         SPLUNKREADY_SAIA_TOKEN: "",
         SPLUNKREADY_SAIA_MCP_URL: "",
         SPLUNKREADY_SAIA_MCP_TOKEN: "",
+        SAIA_MCP_URL: "",
+        SAIA_MCP_TOKEN: "",
+        SPLUNK_AI_ASSISTANT_MCP_URL: "",
+        SPLUNK_AI_ASSISTANT_MCP_TOKEN: "",
+        SPLUNKREADY_HOSTED_MODEL_MCP_URL: "",
+        SPLUNKREADY_HOSTED_MODEL_MCP_TOKEN: "",
+        SPLUNKREADY_SAIA_REALM: "",
+        SPLUNKREADY_SAIA_TENANT: "",
+        SPLUNKREADY_SAIA_SF_TOKEN: "",
         SPLUNKREADY_SAIA_ENABLED: ""
       }
           )
@@ -2691,28 +2714,44 @@ describe("SplunkReady CLI flow", () => {
           { name: "SPLUNKREADY_LIVE_ENABLED", status: "set" },
           { name: "SPLUNKREADY_SPLUNK_MCP_URL", status: "set" },
           { name: "SPLUNKREADY_SPLUNK_MCP_TOKEN", status: "set" }
-        ],
-        optionalEnvironment: [
-          { name: "SPLUNKREADY_SAIA_ENABLED", status: "set" },
-          {
-            name: "SPLUNKREADY_SAIA_ENDPOINT",
-            aliases: ["SPLUNKREADY_SAIA_MCP_URL"],
-            sourceName: "SPLUNKREADY_SAIA_MCP_URL",
-            status: "set"
-          },
-          {
-            name: "SPLUNKREADY_SAIA_TOKEN",
-            aliases: ["SPLUNKREADY_SAIA_MCP_TOKEN"],
-            sourceName: "SPLUNKREADY_SAIA_MCP_TOKEN",
-            status: "set"
-          }
         ]
       }
     });
+    expect(diagnostic.setup.optionalEnvironment).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "SPLUNKREADY_SAIA_ENABLED", status: "set" }),
+        expect.objectContaining({
+          name: "SPLUNKREADY_SAIA_ENDPOINT",
+          aliases: expect.arrayContaining(["SPLUNKREADY_SAIA_MCP_URL", "SAIA_MCP_URL", "SPLUNK_AI_ASSISTANT_MCP_URL"]),
+          sourceName: "SPLUNKREADY_SAIA_MCP_URL",
+          status: "set"
+        }),
+        expect.objectContaining({
+          name: "SPLUNKREADY_SAIA_TOKEN",
+          aliases: expect.arrayContaining(["SPLUNKREADY_SAIA_MCP_TOKEN", "SAIA_MCP_TOKEN", "SPLUNK_AI_ASSISTANT_MCP_TOKEN"]),
+          sourceName: "SPLUNKREADY_SAIA_MCP_TOKEN",
+          status: "set"
+        }),
+        expect.objectContaining({
+          name: "SPLUNKREADY_SAIA_REALM",
+          aliases: expect.arrayContaining(["SAIA_REALM"]),
+          sourceName: "SAIA_REALM",
+          status: "set"
+        }),
+        expect.objectContaining({
+          name: "SPLUNKREADY_SAIA_TENANT",
+          aliases: expect.arrayContaining(["SAIA_TENANT"]),
+          sourceName: "SAIA_TENANT",
+          status: "set"
+        })
+      ])
+    );
     expect(diagnosticText).not.toContain(token);
     expect(diagnosticText).not.toContain(saiaToken);
+    expect(diagnosticText).not.toContain("tenant-1");
     expect(proofText).not.toContain(token);
     expect(proofText).not.toContain(saiaToken);
+    expect(proofText).not.toContain("tenant-1");
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(
       expect.arrayContaining(["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"])
     );

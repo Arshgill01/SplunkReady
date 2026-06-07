@@ -33,6 +33,7 @@ export interface LiveSplunkTransportRequest<TInput> {
   input: TInput;
   endpointUrl: string;
   authToken: string;
+  headers?: Record<string, string>;
   defaultApp?: string;
   timeoutMs: number;
   options: AdapterCallOptions;
@@ -48,6 +49,7 @@ export interface LiveSplunkAdapterConfig {
   authToken?: string;
   hostedModelEndpointUrl?: string;
   hostedModelAuthToken?: string;
+  hostedModelHeaders?: Record<string, string>;
   defaultApp?: string;
   timeoutMs?: number;
   capabilities?: ReadOnlySplunkToolName[];
@@ -61,14 +63,57 @@ export interface HttpLiveSplunkTransportOptions {
 const firstEnvValue = (env: NodeJS.ProcessEnv, names: string[]): string | undefined =>
   names.map((name) => env[name]).find((value): value is string => Boolean(value));
 
+export const liveCoreEndpointEnvNames = ["SPLUNKREADY_SPLUNK_MCP_URL", "SPLUNK_MCP_URL"];
+export const liveCoreTokenEnvNames = ["SPLUNKREADY_SPLUNK_MCP_TOKEN", "SPLUNK_MCP_TOKEN"];
+export const liveHostedModelEndpointEnvNames = [
+  "SPLUNKREADY_SAIA_ENDPOINT",
+  "SPLUNKREADY_SAIA_MCP_URL",
+  "SAIA_MCP_URL",
+  "SPLUNK_AI_ASSISTANT_MCP_URL",
+  "SPLUNKREADY_HOSTED_MODEL_MCP_URL"
+];
+export const liveHostedModelTokenEnvNames = [
+  "SPLUNKREADY_SAIA_TOKEN",
+  "SPLUNKREADY_SAIA_MCP_TOKEN",
+  "SAIA_MCP_TOKEN",
+  "SPLUNK_AI_ASSISTANT_MCP_TOKEN",
+  "SPLUNKREADY_HOSTED_MODEL_MCP_TOKEN"
+];
+
+export const liveHostedModelRealmEnvNames = ["SPLUNKREADY_SAIA_REALM", "SAIA_REALM", "SPLUNK_REALM"];
+export const liveHostedModelTenantEnvNames = ["SPLUNKREADY_SAIA_TENANT", "SAIA_TENANT", "SPLUNK_TENANT"];
+export const liveHostedModelSfTokenEnvNames = ["SPLUNKREADY_SAIA_SF_TOKEN", "SAIA_SF_TOKEN", "SPLUNK_SF_TOKEN"];
+
+const createHostedModelHeadersFromEnv = (env: NodeJS.ProcessEnv): Record<string, string> | undefined => {
+  const realm = firstEnvValue(env, liveHostedModelRealmEnvNames);
+  const tenant = firstEnvValue(env, liveHostedModelTenantEnvNames);
+  const sfToken = firstEnvValue(env, liveHostedModelSfTokenEnvNames) ?? firstEnvValue(env, liveHostedModelTokenEnvNames);
+  const headers: Record<string, string> = {};
+
+  if (realm) {
+    headers["X-SF-REALM"] = realm;
+  }
+
+  if (tenant) {
+    headers.splunk_tenant = tenant;
+  }
+
+  if ((realm || tenant) && sfToken) {
+    headers["X-SF-TOKEN"] = sfToken;
+  }
+
+  return Object.keys(headers).length > 0 ? headers : undefined;
+};
+
 export const createLiveSplunkAdapterConfigFromEnv = (
   env: NodeJS.ProcessEnv = process.env
 ): LiveSplunkAdapterConfig => ({
   enabled: env.SPLUNKREADY_LIVE_ENABLED === "true",
-  endpointUrl: env.SPLUNKREADY_SPLUNK_MCP_URL,
-  authToken: env.SPLUNKREADY_SPLUNK_MCP_TOKEN,
-  hostedModelEndpointUrl: firstEnvValue(env, ["SPLUNKREADY_SAIA_ENDPOINT", "SPLUNKREADY_SAIA_MCP_URL"]),
-  hostedModelAuthToken: firstEnvValue(env, ["SPLUNKREADY_SAIA_TOKEN", "SPLUNKREADY_SAIA_MCP_TOKEN"]),
+  endpointUrl: firstEnvValue(env, liveCoreEndpointEnvNames),
+  authToken: firstEnvValue(env, liveCoreTokenEnvNames),
+  hostedModelEndpointUrl: firstEnvValue(env, liveHostedModelEndpointEnvNames),
+  hostedModelAuthToken: firstEnvValue(env, liveHostedModelTokenEnvNames),
+  hostedModelHeaders: createHostedModelHeadersFromEnv(env),
   defaultApp: env.SPLUNKREADY_SPLUNK_APP,
   timeoutMs: env.SPLUNKREADY_SPLUNK_TIMEOUT_MS ? Number(env.SPLUNKREADY_SPLUNK_TIMEOUT_MS) : undefined,
   capabilities: parseCapabilities(env.SPLUNKREADY_SPLUNK_CAPABILITIES)
@@ -399,6 +444,7 @@ export const createHttpLiveSplunkTransport = (options: HttpLiveSplunkTransportOp
         const response = await fetchImpl(request.endpointUrl, {
           method: "POST",
           headers: {
+            ...request.headers,
             authorization: `Bearer ${request.authToken}`,
             "content-type": "application/json"
           },
@@ -460,6 +506,7 @@ const assertLiveAdapterReady = (
 ): {
   endpointUrl: string;
   authToken: string;
+  headers?: Record<string, string>;
   timeoutMs: number;
   transport: LiveSplunkTransport;
 } => {
@@ -499,6 +546,7 @@ const assertLiveAdapterReady = (
   return {
     endpointUrl: useHostedModelTarget ? config.hostedModelEndpointUrl ?? endpointUrl : endpointUrl,
     authToken: useHostedModelTarget ? config.hostedModelAuthToken ?? authToken : authToken,
+    headers: useHostedModelTarget ? config.hostedModelHeaders : undefined,
     timeoutMs: config.timeoutMs ?? 30_000,
     transport
   };
@@ -566,6 +614,7 @@ export const createLiveSplunkAccessAdapter = (
         input,
         endpointUrl: readyConfig.endpointUrl,
         authToken: readyConfig.authToken,
+        headers: readyConfig.headers,
         defaultApp: config.defaultApp,
         timeoutMs: readyConfig.timeoutMs,
         options

@@ -46,6 +46,10 @@ splunkready://client-config/cursor
 mcp-remote
 SPLUNKREADY_SPLUNK_MCP_URL
 SPLUNKREADY_SPLUNK_MCP_TOKEN
+SAIA_MCP_URL
+SPLUNK_AI_ASSISTANT_MCP_URL
+SPLUNKREADY_SAIA_REALM
+SPLUNKREADY_SAIA_TENANT
 splunkready mcp
 ${hostedMcpProofUrl}
 ${hostedJudgeProofUrl}
@@ -89,7 +93,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | The package is published on npm and the current published no-clone judge proof is smoke-tested. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json |
 | The hosted public demo exposes the credential-free judge proof and LLM evidence boundary. | Supported | submission-evidence/screenshots/public-judge-proof-proof-browser.png | ${hostedJudgeProofUrl} |
 | The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof. | Supported | submission-evidence/mcp-proof/mcp-client-session.jsonl, resources/templates/list, splunkready://receipts/{receiptId}, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access, splunkready://workflows/hosted-model-diagnostic, splunkready_hosted_model_diagnostic, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready mcp | npm run mcp-proof |
-| The MCP client config resources expose dedicated SAIA cloud routing placeholders without committing credentials. | Supported | SPLUNKREADY_SAIA_ENDPOINT, SPLUNKREADY_SAIA_TOKEN, hostedModelDiagnosticTool | npm run mcp-proof |
+| The MCP client config resources expose dedicated SAIA cloud routing placeholders without committing credentials. | Supported | SPLUNKREADY_SAIA_ENDPOINT, SPLUNKREADY_SAIA_TOKEN, SAIA_MCP_URL, SPLUNK_AI_ASSISTANT_MCP_URL, SPLUNKREADY_SAIA_REALM, SPLUNKREADY_SAIA_TENANT, hostedModelDiagnosticTool | npm run mcp-proof |
 | The MCP client config resources use Splunk's \`mcp-remote\` client shape for the existing Splunk MCP Server side. | Supported | mcp-remote, SPLUNKREADY_SPLUNK_MCP_URL, Authorization: Bearer \${SPLUNKREADY_SPLUNK_MCP_TOKEN} | npm run mcp-proof |
 `;
 

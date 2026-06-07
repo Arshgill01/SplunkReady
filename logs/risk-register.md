@@ -724,3 +724,14 @@ resources. The generated proof and public export now show
 source-clone SplunkReady MCP entrypoint. Residual risk remains registry timing:
 until npm latest includes the current MCP entrypoint, SplunkReady's side of the
 external client config must stay source-clone `npm run mcp`.
+
+Move 131 reduces live SAIA setup and MCP-category routing risk by accepting
+common SAIA/cloud MCP endpoint aliases and optional realm/tenant headers for
+dedicated hosted-model calls. Core `splunk_*` calls still use the core Splunk
+MCP endpoint; only `saia_*` calls receive dedicated SAIA endpoint/token/header
+configuration. The public MCP proof resources now expose the supported aliases,
+and Playwright verified the exported MCP proof JSON. Residual live risk remains:
+the ignored operator env file still reports every supported dedicated SAIA
+endpoint/token name as missing, so live hosted-model diagnostic remains
+`SAIA_ROUTE_NOT_FOUND` on `shared-splunk-mcp`. This move does not mutate Splunk
+and does not make SAIA authoritative.

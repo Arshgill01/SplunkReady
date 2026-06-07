@@ -567,6 +567,12 @@ const splunkMcpEnvPlaceholders = (): Record<string, string> => ({
   SPLUNKREADY_SAIA_TOKEN: "${SPLUNKREADY_SAIA_TOKEN}",
   SPLUNKREADY_SAIA_MCP_URL: "${SPLUNKREADY_SAIA_MCP_URL}",
   SPLUNKREADY_SAIA_MCP_TOKEN: "${SPLUNKREADY_SAIA_MCP_TOKEN}",
+  SAIA_MCP_URL: "${SAIA_MCP_URL}",
+  SAIA_MCP_TOKEN: "${SAIA_MCP_TOKEN}",
+  SPLUNK_AI_ASSISTANT_MCP_URL: "${SPLUNK_AI_ASSISTANT_MCP_URL}",
+  SPLUNK_AI_ASSISTANT_MCP_TOKEN: "${SPLUNK_AI_ASSISTANT_MCP_TOKEN}",
+  SPLUNKREADY_SAIA_REALM: "${SPLUNKREADY_SAIA_REALM}",
+  SPLUNKREADY_SAIA_TENANT: "${SPLUNKREADY_SAIA_TENANT}",
   SPLUNKREADY_SAIA_ENABLED: "true"
 });
 
@@ -587,7 +593,7 @@ const splunkMcpRemoteServerConfig = (description: string): Record<string, unknow
 const dualServerClientConfig = (): Record<string, unknown> => ({
   mcpServers: {
     splunk: splunkMcpRemoteServerConfig(
-      "Operator-provided Splunk MCP Server. Replace placeholders with the endpoint and encrypted token copied from the Splunk MCP Server app sample client configuration. Keep credentials in the MCP client or environment, not in captured transcripts. If SAIA hosted-model calls use a separate cloud MCP endpoint, set the SPLUNKREADY_SAIA_* placeholders or their SAIA_MCP aliases."
+      "Operator-provided Splunk MCP Server. Replace placeholders with the endpoint and encrypted token copied from the Splunk MCP Server app sample client configuration. Keep credentials in the MCP client or environment, not in captured transcripts. If SAIA hosted-model calls use a separate cloud MCP endpoint, set the SPLUNKREADY_SAIA_* placeholders, SAIA_MCP_* short aliases, or SPLUNK_AI_ASSISTANT_MCP_* aliases."
     ),
     splunkready: {
       description: "Local SplunkReady certification server for deterministic Readiness Receipts.",
@@ -603,7 +609,7 @@ const dualServerClientConfig = (): Record<string, unknown> => ({
     certificationTool: "splunkready_certify_mcp_transcript",
     hostedModelDiagnosticTool: "splunkready_check_hosted_model_access",
     hostedModelRouting:
-      "Core splunk_* calls use SPLUNKREADY_SPLUNK_MCP_URL/TOKEN; optional dedicated SAIA calls use SPLUNKREADY_SAIA_ENDPOINT/TOKEN.",
+      "Core splunk_* calls use SPLUNKREADY_SPLUNK_MCP_URL/TOKEN; optional dedicated SAIA calls use SPLUNKREADY_SAIA_ENDPOINT/TOKEN or supported SAIA_MCP/SPLUNK_AI_ASSISTANT aliases.",
     readOnlySplunkTools: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
     hostedModelTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
     deterministicAuthority: true,
@@ -623,7 +629,7 @@ const sourceCloneMcpServerConfig = (): Record<string, unknown> => ({
 const claudeDesktopClientConfig = (): Record<string, unknown> => ({
   mcpServers: {
     splunk: splunkMcpRemoteServerConfig(
-      "Existing Splunk MCP Server. Replace placeholders with the endpoint and encrypted token copied from the Splunk MCP Server app sample client configuration. Use SPLUNKREADY_SAIA_ENDPOINT/TOKEN or SPLUNKREADY_SAIA_MCP_URL/TOKEN only when SAIA hosted-model tools use a separate cloud MCP target."
+      "Existing Splunk MCP Server. Replace placeholders with the endpoint and encrypted token copied from the Splunk MCP Server app sample client configuration. Use SPLUNKREADY_SAIA_ENDPOINT/TOKEN, SPLUNKREADY_SAIA_MCP_URL/TOKEN, SAIA_MCP_URL/TOKEN, or SPLUNK_AI_ASSISTANT_MCP_URL/TOKEN only when SAIA hosted-model tools use a separate cloud MCP target."
     ),
     splunkready: {
       description:
@@ -639,7 +645,7 @@ const claudeDesktopClientConfig = (): Record<string, unknown> => ({
     certificationTool: "splunkready_certify_mcp_transcript_content",
     hostedModelDiagnosticTool: "splunkready_check_hosted_model_access",
     hostedModelRouting:
-      "Set SPLUNKREADY_SAIA_ENDPOINT and SPLUNKREADY_SAIA_TOKEN when SAIA/cloud hosted-model calls do not share the core Splunk MCP endpoint.",
+      "Set SPLUNKREADY_SAIA_ENDPOINT and SPLUNKREADY_SAIA_TOKEN, or supported SAIA_MCP/SPLUNK_AI_ASSISTANT aliases, when SAIA/cloud hosted-model calls do not share the core Splunk MCP endpoint.",
     deterministicAuthority: true,
     mutation: false
   }
@@ -664,7 +670,7 @@ const cursorClientConfig = (): Record<string, unknown> => ({
     certificationTool: "splunkready_certify_mcp_transcript_content",
     hostedModelDiagnosticTool: "splunkready_check_hosted_model_access",
     hostedModelRouting:
-      "Set SPLUNKREADY_SAIA_ENDPOINT and SPLUNKREADY_SAIA_TOKEN only when hosted-model calls use a separate SAIA MCP target.",
+      "Set SPLUNKREADY_SAIA_ENDPOINT and SPLUNKREADY_SAIA_TOKEN, or supported SAIA_MCP/SPLUNK_AI_ASSISTANT aliases, only when hosted-model calls use a separate SAIA MCP target.",
     deterministicAuthority: true,
     mutation: false
   }

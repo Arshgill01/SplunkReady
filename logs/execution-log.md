@@ -13074,3 +13074,77 @@ Open blockers:
 - The public npm package still reports only `splunkready@0.1.0`, so public MCP
   client resources continue to use source-clone `npm run mcp` for SplunkReady
   until a later registry publish includes the MCP entrypoint.
+
+## 2026-06-07T12:49:33Z - Move 131 SAIA cloud MCP alias and header readiness
+
+Intent:
+
+- Address the user's high-priority MCP/SAIA probability caps by making the
+  hosted-model route work with more realistic operator MCP/cloud naming shapes
+  instead of only `SPLUNKREADY_SAIA_ENDPOINT` and `SPLUNKREADY_SAIA_TOKEN`.
+- Keep deterministic rules authoritative and keep SplunkReady read-only.
+
+Actions:
+
+- Added runtime support for core Splunk MCP aliases:
+  `SPLUNK_MCP_URL` and `SPLUNK_MCP_TOKEN`.
+- Added dedicated SAIA hosted-model endpoint/token aliases:
+  `SAIA_MCP_URL`, `SAIA_MCP_TOKEN`,
+  `SPLUNK_AI_ASSISTANT_MCP_URL`, `SPLUNK_AI_ASSISTANT_MCP_TOKEN`,
+  `SPLUNKREADY_HOSTED_MODEL_MCP_URL`, and
+  `SPLUNKREADY_HOSTED_MODEL_MCP_TOKEN`.
+- Added optional cloud header support for dedicated `saia_*` calls only:
+  `SPLUNKREADY_SAIA_REALM`, `SPLUNKREADY_SAIA_TENANT`, and
+  `SPLUNKREADY_SAIA_SF_TOKEN`, with short aliases.
+- Updated hosted-model setup reporting to record source variable names and
+  set/missing/invalid statuses without writing secret values.
+- Updated MCP client-config resources to expose the expanded SAIA/cloud aliases
+  and optional realm/tenant placeholders.
+- Updated README, live setup checklist, claim ledger, submission-copy audit,
+  and tests.
+- Regenerated tracked MCP proof evidence and rebuilt the public demo export.
+- Used Playwright against the exported MCP proof route.
+- Re-ran the live hosted-model diagnostic through `--env-file
+  ./.splunkready-live.env` without reading, sourcing, or printing the env file.
+
+Files changed:
+
+- `src/adapters/live.ts`
+- `src/workflows/hosted-model-actions.ts`
+- `src/mcp/server.ts`
+- `tests/adapters/live.test.ts`
+- `tests/workflows/hosted-model-actions.test.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `scripts/audit-submission-copy.mjs`
+- `README.md`
+- `docs/live-setup-checklist.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/mcp-client-session.jsonl`
+- `submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `moves/README.md`
+- `moves/moves131.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Live diagnostic result:
+
+- Status remains `BLOCKED`.
+- Blocker remains `SAIA_ROUTE_NOT_FOUND`.
+- `mutation: false`.
+- The env file reports the core Splunk MCP endpoint/token as set.
+- The env file still reports all supported dedicated SAIA endpoint/token names
+  as missing, including canonical names, SAIA MCP aliases, Splunk AI Assistant
+  aliases, and hosted-model aliases.
+- Runtime therefore remains on `shared-splunk-mcp`.
+
+Notes:
+
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  contents.
+- The move improves SAIA/MCP readiness and evidence, but it does not claim live
+  SAIA PASS until the operator-owned env file exposes a dedicated SAIA
+  endpoint/token or the shared Splunk MCP route can invoke `saia_*`.

@@ -122,6 +122,10 @@ describe("SplunkReady MCP server", () => {
     expect(String(dualConfigContents[0].text)).toContain("Authorization: Bearer ${SPLUNKREADY_SPLUNK_MCP_TOKEN}");
     expect(String(dualConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_MCP_URL");
     expect(String(dualConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_MCP_TOKEN");
+    expect(String(dualConfigContents[0].text)).toContain("SAIA_MCP_URL");
+    expect(String(dualConfigContents[0].text)).toContain("SPLUNK_AI_ASSISTANT_MCP_URL");
+    expect(String(dualConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_REALM");
+    expect(String(dualConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_TENANT");
     expect(String(dualConfigContents[0].text)).toContain("\"certificationTool\": \"splunkready_certify_mcp_transcript\"");
     expect(String(dualConfigContents[0].text)).toContain("\"mutation\": false");
 
@@ -148,6 +152,10 @@ describe("SplunkReady MCP server", () => {
     expect(String(claudeConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_TOKEN");
     expect(String(claudeConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_MCP_URL");
     expect(String(claudeConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_MCP_TOKEN");
+    expect(String(claudeConfigContents[0].text)).toContain("SAIA_MCP_URL");
+    expect(String(claudeConfigContents[0].text)).toContain("SPLUNK_AI_ASSISTANT_MCP_URL");
+    expect(String(claudeConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_REALM");
+    expect(String(claudeConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_TENANT");
     expect(String(claudeConfigContents[0].text)).toContain("\"certificationTool\": \"splunkready_certify_mcp_transcript_content\"");
     expect(String(claudeConfigContents[0].text)).toContain("\"hostedModelDiagnosticTool\": \"splunkready_check_hosted_model_access\"");
     expect(String(claudeConfigContents[0].text)).toContain("\"mutation\": false");
@@ -176,6 +184,10 @@ describe("SplunkReady MCP server", () => {
     expect(String(cursorConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_TOKEN");
     expect(String(cursorConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_MCP_URL");
     expect(String(cursorConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_MCP_TOKEN");
+    expect(String(cursorConfigContents[0].text)).toContain("SAIA_MCP_URL");
+    expect(String(cursorConfigContents[0].text)).toContain("SPLUNK_AI_ASSISTANT_MCP_URL");
+    expect(String(cursorConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_REALM");
+    expect(String(cursorConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_TENANT");
     expect(String(cursorConfigContents[0].text)).toContain("\"hostedModelDiagnosticTool\": \"splunkready_check_hosted_model_access\"");
     expect(String(cursorConfigContents[0].text)).toContain("\"mutation\": false");
 

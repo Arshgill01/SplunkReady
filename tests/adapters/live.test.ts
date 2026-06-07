@@ -158,10 +158,15 @@ describe("live Splunk adapter skeleton", () => {
   });
 
   it("routes SAIA tools to a dedicated hosted-model MCP target when configured", async () => {
-    const calls: Array<{ toolName: string; endpointUrl: string; authToken: string }> = [];
+    const calls: Array<{ toolName: string; endpointUrl: string; authToken: string; headers?: Record<string, string> }> = [];
     const transport: LiveSplunkTransport = {
       async call<TInput, TOutput>(request: LiveSplunkTransportRequest<TInput>): Promise<TOutput> {
-        calls.push({ toolName: request.toolName, endpointUrl: request.endpointUrl, authToken: request.authToken });
+        calls.push({
+          toolName: request.toolName,
+          endpointUrl: request.endpointUrl,
+          authToken: request.authToken,
+          headers: request.headers
+        });
 
         if (request.toolName === "splunk_get_info") {
           return { deploymentName: "acme-soc-prod", readOnlyTools: ["splunk_get_info"] } as TOutput;
@@ -180,6 +185,7 @@ describe("live Splunk adapter skeleton", () => {
       authToken: "splunk-token",
       hostedModelEndpointUrl: "https://saia.example.invalid/mcp",
       hostedModelAuthToken: "saia-token",
+      hostedModelHeaders: { "X-SF-REALM": "us0", splunk_tenant: "tenant-1", "X-SF-TOKEN": "saia-token" },
       capabilities: ["splunk_get_info", "saia_explain_spl"],
       transport
     });
@@ -191,12 +197,14 @@ describe("live Splunk adapter skeleton", () => {
       {
         toolName: "splunk_get_info",
         endpointUrl: "https://splunk.example.invalid/mcp",
-        authToken: "splunk-token"
+        authToken: "splunk-token",
+        headers: undefined
       },
       {
         toolName: "saia_explain_spl",
         endpointUrl: "https://saia.example.invalid/mcp",
-        authToken: "saia-token"
+        authToken: "saia-token",
+        headers: { "X-SF-REALM": "us0", splunk_tenant: "tenant-1", "X-SF-TOKEN": "saia-token" }
       }
     ]);
   });
@@ -487,6 +495,7 @@ describe("live Splunk adapter skeleton", () => {
       authToken: undefined,
       hostedModelEndpointUrl: undefined,
       hostedModelAuthToken: undefined,
+      hostedModelHeaders: undefined,
       defaultApp: undefined,
       timeoutMs: undefined,
       capabilities: undefined
@@ -512,6 +521,35 @@ describe("live Splunk adapter skeleton", () => {
     ).toMatchObject({
       hostedModelEndpointUrl: "https://saia.example.invalid/alias",
       hostedModelAuthToken: "alias-token"
+    });
+
+    expect(
+      createLiveSplunkAdapterConfigFromEnv({
+        SAIA_MCP_URL: "https://saia.example.invalid/short-alias",
+        SAIA_MCP_TOKEN: "short-alias-token"
+      })
+    ).toMatchObject({
+      hostedModelEndpointUrl: "https://saia.example.invalid/short-alias",
+      hostedModelAuthToken: "short-alias-token"
+    });
+  });
+
+  it("builds core MCP aliases and optional SAIA cloud headers from environment names", () => {
+    expect(
+      createLiveSplunkAdapterConfigFromEnv({
+        SPLUNK_MCP_URL: "https://splunk.example.invalid/mcp",
+        SPLUNK_MCP_TOKEN: "splunk-token",
+        SPLUNK_AI_ASSISTANT_MCP_URL: "https://saia.example.invalid/mcp",
+        SPLUNK_AI_ASSISTANT_MCP_TOKEN: "saia-token",
+        SAIA_REALM: "us0",
+        SAIA_TENANT: "tenant-1"
+      })
+    ).toMatchObject({
+      endpointUrl: "https://splunk.example.invalid/mcp",
+      authToken: "splunk-token",
+      hostedModelEndpointUrl: "https://saia.example.invalid/mcp",
+      hostedModelAuthToken: "saia-token",
+      hostedModelHeaders: { "X-SF-REALM": "us0", splunk_tenant: "tenant-1", "X-SF-TOKEN": "saia-token" }
     });
   });
 });

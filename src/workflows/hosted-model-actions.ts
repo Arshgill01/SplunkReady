@@ -5,7 +5,14 @@ import { createFixtureSplunkAccessAdapter, loadFixtureSplunkDatasetFromFile } fr
 import {
   createHttpLiveSplunkTransport,
   createLiveSplunkAccessAdapter,
-  createLiveSplunkAdapterConfigFromEnv
+  createLiveSplunkAdapterConfigFromEnv,
+  liveCoreEndpointEnvNames,
+  liveCoreTokenEnvNames,
+  liveHostedModelEndpointEnvNames,
+  liveHostedModelRealmEnvNames,
+  liveHostedModelSfTokenEnvNames,
+  liveHostedModelTenantEnvNames,
+  liveHostedModelTokenEnvNames
 } from "../adapters/live.js";
 import type { SplunkAccessAdapter } from "../adapters/splunk-access.js";
 import { compileEnvironmentContract } from "../compiler/environment.js";
@@ -156,8 +163,17 @@ const envVariableFromNames = (
 };
 
 const liveHostedModelSetupFromEnv = (env: NodeJS.ProcessEnv): HostedModelSetup => {
-  const saiaEndpoint = envVariableFromNames(env, "SPLUNKREADY_SAIA_ENDPOINT", ["SPLUNKREADY_SAIA_MCP_URL"]);
-  const saiaToken = envVariableFromNames(env, "SPLUNKREADY_SAIA_TOKEN", ["SPLUNKREADY_SAIA_MCP_TOKEN"]);
+  const splunkEndpoint = envVariableFromNames(env, liveCoreEndpointEnvNames[0] ?? "", liveCoreEndpointEnvNames.slice(1));
+  const splunkToken = envVariableFromNames(env, liveCoreTokenEnvNames[0] ?? "", liveCoreTokenEnvNames.slice(1));
+  const saiaEndpoint = envVariableFromNames(
+    env,
+    liveHostedModelEndpointEnvNames[0] ?? "",
+    liveHostedModelEndpointEnvNames.slice(1)
+  );
+  const saiaToken = envVariableFromNames(env, liveHostedModelTokenEnvNames[0] ?? "", liveHostedModelTokenEnvNames.slice(1));
+  const saiaRealm = envVariableFromNames(env, liveHostedModelRealmEnvNames[0] ?? "", liveHostedModelRealmEnvNames.slice(1));
+  const saiaTenant = envVariableFromNames(env, liveHostedModelTenantEnvNames[0] ?? "", liveHostedModelTenantEnvNames.slice(1));
+  const saiaSfToken = envVariableFromNames(env, liveHostedModelSfTokenEnvNames[0] ?? "", liveHostedModelSfTokenEnvNames.slice(1));
   const requiredEnvironment: HostedModelSetupVariable[] = [
     {
       name: "SPLUNKREADY_LIVE_ENABLED",
@@ -167,13 +183,13 @@ const liveHostedModelSetupFromEnv = (env: NodeJS.ProcessEnv): HostedModelSetup =
     },
     {
       name: "SPLUNKREADY_SPLUNK_MCP_URL",
-      status: envVariableStatus(env, "SPLUNKREADY_SPLUNK_MCP_URL"),
+      ...splunkEndpoint,
       requiredValue: "set",
       purpose: "Points SplunkReady at the operator-owned Splunk MCP endpoint."
     },
     {
       name: "SPLUNKREADY_SPLUNK_MCP_TOKEN",
-      status: envVariableStatus(env, "SPLUNKREADY_SPLUNK_MCP_TOKEN"),
+      ...splunkToken,
       requiredValue: "set",
       purpose: "Authenticates the live read-only Splunk MCP tool calls."
     }
@@ -203,6 +219,24 @@ const liveHostedModelSetupFromEnv = (env: NodeJS.ProcessEnv): HostedModelSetup =
         ...saiaToken,
         requiredValue: "set when SAIA uses a dedicated MCP token",
         purpose: "Authenticates only saia_* hosted-model tool calls when a dedicated SAIA endpoint is configured."
+      },
+      {
+        name: "SPLUNKREADY_SAIA_REALM",
+        ...saiaRealm,
+        requiredValue: "set only when the SAIA/cloud MCP target requires an X-SF-REALM header",
+        purpose: "Adds the cloud realm header for dedicated hosted-model MCP calls without affecting core Splunk MCP calls."
+      },
+      {
+        name: "SPLUNKREADY_SAIA_TENANT",
+        ...saiaTenant,
+        requiredValue: "set only when the SAIA/cloud MCP target requires a splunk_tenant header",
+        purpose: "Adds the cloud tenant header for dedicated hosted-model MCP calls without affecting core Splunk MCP calls."
+      },
+      {
+        name: "SPLUNKREADY_SAIA_SF_TOKEN",
+        ...saiaSfToken,
+        requiredValue: "set only when the SAIA/cloud MCP target requires a distinct X-SF-TOKEN header",
+        purpose: "Adds the cloud token header for dedicated hosted-model MCP calls; the value is never written to proof artifacts."
       }
     ],
     operatorCommand: hostedModelDiagnosticCommand,

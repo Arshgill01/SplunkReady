@@ -144,15 +144,19 @@ describe("hosted model workflows", () => {
           { name: "SPLUNKREADY_LIVE_ENABLED", status: "missing" },
           { name: "SPLUNKREADY_SPLUNK_MCP_URL", status: "missing" },
           { name: "SPLUNKREADY_SPLUNK_MCP_TOKEN", status: "missing" }
-        ],
-        optionalEnvironment: [
-          { name: "SPLUNKREADY_SAIA_ENABLED", status: "missing" },
-          { name: "SPLUNKREADY_SAIA_ENDPOINT", status: "missing" },
-          { name: "SPLUNKREADY_SAIA_TOKEN", status: "missing" }
         ]
       },
       assistance: null
     });
+    expect(proof.setup.optionalEnvironment).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "SPLUNKREADY_SAIA_ENABLED", status: "missing" }),
+        expect.objectContaining({ name: "SPLUNKREADY_SAIA_ENDPOINT", status: "missing" }),
+        expect.objectContaining({ name: "SPLUNKREADY_SAIA_TOKEN", status: "missing" }),
+        expect.objectContaining({ name: "SPLUNKREADY_SAIA_REALM", status: "missing" }),
+        expect.objectContaining({ name: "SPLUNKREADY_SAIA_TENANT", status: "missing" })
+      ])
+    );
     expect(proof.error).toContain("SPLUNKREADY_SPLUNK_MCP_TOKEN:missing");
     expect(proof.setup.secretHandling).toContain("Secret values are never written.");
     expect(JSON.stringify(proof)).not.toContain("test-token");

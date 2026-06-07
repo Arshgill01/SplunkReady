@@ -340,9 +340,12 @@ For operator-owned live SAIA checks, `hosted-model-proof` and
 If Splunk AI Assistant uses a separate cloud MCP endpoint, set
 `SPLUNKREADY_SAIA_ENDPOINT` and `SPLUNKREADY_SAIA_TOKEN`; SplunkReady keeps core
 Splunk MCP calls on `SPLUNKREADY_SPLUNK_MCP_URL` and routes only `saia_*`
-hosted-model calls to the SAIA target. `SPLUNKREADY_SAIA_MCP_URL` and
-`SPLUNKREADY_SAIA_MCP_TOKEN` are accepted aliases when the values are copied
-from an MCP client configuration.
+hosted-model calls to the SAIA target. `SPLUNKREADY_SAIA_MCP_URL` /
+`SPLUNKREADY_SAIA_MCP_TOKEN`, `SAIA_MCP_URL` / `SAIA_MCP_TOKEN`, and
+`SPLUNK_AI_ASSISTANT_MCP_URL` / `SPLUNK_AI_ASSISTANT_MCP_TOKEN` are accepted
+aliases when the values are copied from an MCP client configuration. Dedicated
+SAIA/cloud routes can also set `SPLUNKREADY_SAIA_REALM` and
+`SPLUNKREADY_SAIA_TENANT` when the remote MCP gateway requires those headers.
 
 To summarize several proof bundles for one environment, generate a certification index:
 
