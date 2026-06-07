@@ -87,12 +87,16 @@ readiness for the next version, run:
 
 ```bash
 npm run audit:npm-release-preflight
+npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness
 ```
 
 That preflight checks package metadata, dry-run pack contents, npm registry
 state, and local npm authentication. It prints `PUBLISHED` for the current
 released version, `READY` for a bumped unpublished version, and `BLOCKED` when
-the package is otherwise ready but the machine is not logged in to npm.
+the package is otherwise ready but the machine is not logged in to npm. The
+currentness audit checks the public registry, runs the latest published
+`judge-proof` from a clean temp folder, and verifies whether the published
+package can initialize the SplunkReady MCP stdio server.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:

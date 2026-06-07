@@ -33,7 +33,7 @@ export interface CliOptions {
 
 export interface CliOutput {
   command: string;
-  status: "PASS" | "SKIP" | "FAIL";
+  status: "PASS" | "SKIP" | "FAIL" | "BLOCKED";
   artifacts: string[];
   messages?: string[];
   error?: string;

@@ -50,7 +50,9 @@ That clean-folder command has been smoke-tested from a temp folder, returns
 `PASS`, records `mutation: false`, and writes the judge proof bundle without
 requiring a repository clone. The checked-out source contains newer MCP/SAIA
 work that is verified locally and should be published as the next package
-version before claiming it through `npx splunkready@latest`.
+version before claiming it through `npx splunkready@latest`. The tracked
+currentness audit in `submission-evidence/public-package-currentness/` records
+the public registry state for that claim.
 
 The credential-free hosted workbench is available at:
 

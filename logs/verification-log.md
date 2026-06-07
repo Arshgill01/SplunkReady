@@ -13319,3 +13319,93 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
+## 2026-06-07 - Move 132 public package currentness proof
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/scripts/public-package-currentness.test.ts tests/scripts/npm-release-preflight.test.ts`
+- `npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused public package audit tests:
+  - 2 test files passed;
+  - 4 tests passed.
+- PASS for the live registry audit command itself:
+  - report status is `STALE`;
+  - npm latest is `splunkready@0.1.0`;
+  - local source is `0.1.1`;
+  - published judge-proof status is `PASS`;
+  - published judge-proof mutation is `false`;
+  - published MCP status is `BLOCKED`.
+
+- PASS for focused submission-copy audit regression:
+  - 1 test file passed.
+- PASS for submission-copy audit:
+  - 80 required claims passed.
+- PASS for full `npm run check`:
+  - TypeScript build completed;
+  - production UI build completed;
+  - package readiness and package installability passed;
+  - 60 test files passed;
+  - 371 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 80 required claims;
+  - included `git diff --check` completed with no output.
+
+## 2026-06-07 - Move 133 SAIA cloud route blocker
+
+Commands:
+
+- `/Applications/Splunk/bin/splunk restart --accept-license --answer-yes --no-prompt`
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts tests/workflows/hosted-model-actions.test.ts --testNamePattern "hosted-model|SAIA|REST handlers"`
+- `npm run build`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --json`
+
+Result:
+
+- PASS for Splunk restart:
+  - splunkd stopped and started successfully.
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused hosted-model classifier tests:
+  - 2 test files passed;
+  - 11 tests passed;
+  - 38 tests skipped by focused pattern.
+- PASS for build:
+  - TypeScript emitted `dist`.
+- PASS for live diagnostic command execution:
+  - CLI status is `BLOCKED`;
+  - `mutation` is `false`;
+  - all four `saia_*` tools are advertised;
+  - all four `saia_*` tools remain blocked;
+  - local SAIA route probe status is `PASS`;
+  - blocker class is `SAIA_CLOUD_ROUTE_NOT_FOUND`.
+
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed;
+  - 60 test files passed;
+  - 372 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 80 required claims;
+  - included `git diff --check` completed with no output.
+
+- PASS for explicit final `git diff --check`:
+  - completed with no output after log updates.

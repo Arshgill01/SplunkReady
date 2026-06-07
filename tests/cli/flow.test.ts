@@ -80,9 +80,12 @@ const startMockMcpServer = async (
     blockHostedModels?: boolean;
     hostedModelErrorText?: string;
     hostedModelErrorByToolName?: Partial<Record<string, string>>;
+    saiaManagementRestStatus?: number;
+    restHandlerProbeErrorText?: string;
   } = {}
 ) => {
   const calls: Array<{ method: string; params: { name: string; arguments: unknown } }> = [];
+  const managementCalls: Array<{ method: string; path: string }> = [];
   const savedSearchRows = options.savedSearchRows ?? defaultSavedSearchRows;
   const savedSearches = options.savedSearches ?? [
     {
@@ -93,6 +96,14 @@ const startMockMcpServer = async (
     }
   ];
   const server = createServer((request, response) => {
+    if (request.method === "GET" && request.url?.startsWith("/servicesNS/")) {
+      const path = request.url.split("?")[0] ?? request.url;
+      managementCalls.push({ method: "GET", path });
+      response.writeHead(options.saiaManagementRestStatus ?? 200, { "content-type": "application/json" });
+      response.end(JSON.stringify({ entry: [] }));
+      return;
+    }
+
     let body = "";
     request.setEncoding("utf8");
     request.on("data", (chunk) => {
@@ -124,6 +135,31 @@ const startMockMcpServer = async (
           })
         );
         return;
+      }
+
+      if (options.restHandlerProbeErrorText && parsed.params.name === "splunk_run_query") {
+        const query =
+          parsed.params.arguments &&
+          typeof parsed.params.arguments === "object" &&
+          "query" in parsed.params.arguments &&
+          typeof (parsed.params.arguments as { query?: unknown }).query === "string"
+            ? (parsed.params.arguments as { query: string }).query
+            : "";
+
+        if (query.includes("Splunk_AI_Assistant_Cloud")) {
+          response.writeHead(200, { "content-type": "application/json" });
+          response.end(
+            JSON.stringify({
+              jsonrpc: "2.0",
+              id: parsed.id,
+              result: {
+                isError: true,
+                content: [{ type: "text", text: options.restHandlerProbeErrorText }]
+              }
+            })
+          );
+          return;
+        }
       }
 
       const outputByToolName: Record<string, unknown> = {
@@ -205,6 +241,7 @@ const startMockMcpServer = async (
 
   return {
     calls,
+    managementCalls,
     url: `http://127.0.0.1:${address.port}`,
     close: () =>
       new Promise<void>((resolve, reject) => {
@@ -2782,7 +2819,7 @@ describe("SplunkReady CLI flow", () => {
 
       expect(output).toMatchObject({
         command: "hosted-model-diagnostic",
-        status: "PASS",
+        status: "BLOCKED",
         artifacts: expect.arrayContaining([join(outDir, "hosted-model-proof.json"), join(outDir, "hosted-model-diagnostic.json")])
       });
     } finally {
@@ -2861,7 +2898,7 @@ describe("SplunkReady CLI flow", () => {
 
       expect(output).toMatchObject({
         command: "hosted-model-diagnostic",
-        status: "PASS",
+        status: "BLOCKED",
         artifacts: expect.arrayContaining([join(outDir, "hosted-model-diagnostic.json")])
       });
       await expect(
@@ -2945,7 +2982,7 @@ describe("SplunkReady CLI flow", () => {
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
   });
 
-  it("distinguishes hosted-model not-found failures from entitlement failures", async () => {
+  it("distinguishes downstream SAIA cloud 404s from local route failures", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-hosted-model-diagnostic-not-found-"));
     const mcp = await startMockMcpServer({
       hostedModelErrorText: "404 Client Error: Not Found for url: https://splunk.example.invalid/saia/explain"
@@ -2964,7 +3001,7 @@ describe("SplunkReady CLI flow", () => {
 
       expect(output).toMatchObject({
         command: "hosted-model-diagnostic",
-        status: "PASS",
+        status: "BLOCKED",
         artifacts: expect.arrayContaining([join(outDir, "hosted-model-diagnostic.json")])
       });
     } finally {
@@ -2982,13 +3019,13 @@ describe("SplunkReady CLI flow", () => {
     expect(diagnostic).toMatchObject({
       status: "BLOCKED",
       mutation: false,
-      blockerClass: "SAIA_ROUTE_NOT_FOUND",
-      remediation: { status: "ACTION_REQUIRED", blockerClass: "SAIA_ROUTE_NOT_FOUND" },
+      blockerClass: "SAIA_CLOUD_ROUTE_NOT_FOUND",
+      remediation: { status: "ACTION_REQUIRED", blockerClass: "SAIA_CLOUD_ROUTE_NOT_FOUND" },
       permission: {
         status: "BLOCKED",
-        blockerClass: "SAIA_ROUTE_NOT_FOUND",
+        blockerClass: "SAIA_CLOUD_ROUTE_NOT_FOUND",
         message:
-          "The MCP contract advertises hosted-model tools, but the live MCP endpoint returned not found when invoking SAIA tools.",
+          "The MCP contract advertises hosted-model tools and splunkd serves the local SAIA routes, but the downstream Splunk AI Assistant cloud route returned not found.",
         error: expect.stringContaining("404 Client Error: Not Found")
       }
     });
@@ -2996,8 +3033,8 @@ describe("SplunkReady CLI flow", () => {
     expect(diagnostic.permission.error).not.toContain("splunk.example.invalid");
     expect(diagnostic.permission.requiredActions).toEqual(
       expect.arrayContaining([
-        "Confirm the Splunk MCP endpoint supports invoking saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question, not only advertising them in tool discovery.",
-        "Confirm the MCP server route or app version that backs hosted-model tools is installed and reachable."
+        "Keep the Splunk MCP endpoint unchanged; local SAIA management routes are registered and served by splunkd.",
+        "Confirm the tenant is entitled to the SAIA v2 hosted-model SPL endpoints used by Splunk AI Assistant."
       ])
     );
     expect(diagnostic.permission.requiredActions).not.toEqual(
@@ -3005,12 +3042,119 @@ describe("SplunkReady CLI flow", () => {
     );
     expect(diagnostic.remediation.operatorChecks).toEqual(
       expect.arrayContaining([
-        "Copy the endpoint again from the Splunk MCP Server app sample client configuration; do not guess or hand-edit the path.",
-        "Verify tools/list and tools/call use the same endpoint and MCP client configuration.",
-        "Confirm Splunk AI Assistant and the cloud connection are enabled for the same tenant, user, and token."
+        "Do not change the local Splunk MCP endpoint yet; SplunkReady proved the local SAIA management routes are served by splunkd.",
+        "Confirm the tenant is provisioned for the SAIA v2 hosted-model SPL API used by generate, explain, optimize, and ask-splunk-question."
       ])
     );
     expect(diagnostic.remediation.rerunCommand).toContain("--env-file <operator-env-file>");
+    expect(mcp.managementCalls.map((call) => call.path)).toEqual(
+      expect.arrayContaining([
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/explainspl",
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/optimizespl",
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme"
+      ])
+    );
+  });
+
+  it("classifies SAIA app REST namespace 404s as unregistered REST handlers", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-hosted-model-diagnostic-rest-handlers-"));
+    const mcp = await startMockMcpServer({
+      hostedModelErrorText: "404 Client Error: Not Found for url: https://splunk.example.invalid/mcp/saia",
+      saiaManagementRestStatus: 404
+    });
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: mcp.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token"
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["hosted-model-diagnostic", "--mode", "live", "--out", outDir, "--json"], process.cwd(), env))
+          .stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "hosted-model-diagnostic",
+        status: "BLOCKED",
+        artifacts: expect.arrayContaining([join(outDir, "hosted-model-diagnostic.json")])
+      });
+    } finally {
+      await mcp.close();
+    }
+
+    const diagnostic = JSON.parse(await readFile(join(outDir, "hosted-model-diagnostic.json"), "utf8")) as {
+      status: string;
+      mutation: boolean;
+      blockerClass: string;
+      remediation: { status: string; blockerClass: string; summary: string; operatorChecks: string[] };
+      permission: { status: string; blockerClass: string; message: string; error: string; requiredActions: string[] };
+      restHandlerProbe: {
+        status: string;
+        query: string;
+        error: string;
+        mutation: boolean;
+        managementRoutes: Array<{ method: string; path: string; status: string; httpStatus: number }>;
+      };
+    };
+
+    expect(diagnostic).toMatchObject({
+      status: "BLOCKED",
+      mutation: false,
+      blockerClass: "SAIA_REST_HANDLERS_NOT_REGISTERED",
+      remediation: {
+        status: "ACTION_REQUIRED",
+        blockerClass: "SAIA_REST_HANDLERS_NOT_REGISTERED",
+        summary:
+          "The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are not registered for the SAIA routes."
+      },
+      permission: {
+        status: "BLOCKED",
+        blockerClass: "SAIA_REST_HANDLERS_NOT_REGISTERED",
+        message:
+          "The MCP contract advertises hosted-model tools, but Splunk AI Assistant REST handlers are not registered with splunkd for the advertised SAIA routes.",
+        error: expect.stringContaining("REST namespace Splunk_AI_Assistant_Cloud returned 404")
+      }
+    });
+    expect(diagnostic.permission.error).toContain("[REDACTED_URL]");
+    expect(diagnostic.permission.error).not.toContain("splunk.example.invalid");
+    expect(diagnostic.restHandlerProbe).toMatchObject({
+      status: "NOT_REGISTERED",
+      mutation: false,
+      query: "| rest /servicesNS/nobody/Splunk_AI_Assistant_Cloud",
+      error: expect.stringContaining("Splunk_AI_Assistant_Cloud returned 404")
+    });
+    expect(diagnostic.restHandlerProbe.managementRoutes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          method: "GET",
+          path: "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
+          status: "NOT_REGISTERED",
+          httpStatus: 404
+        })
+      ])
+    );
+    expect(diagnostic.permission.requiredActions).toEqual(
+      expect.arrayContaining([
+        "Restart splunkd after installing or activating Splunk AI Assistant so its Python REST handlers register with splunkd.",
+        "Probe the Splunk AI Assistant app REST namespace from the operator shell; the Splunk_AI_Assistant_Cloud namespace must not return 404.",
+        "If restart does not register the namespace, reinstall Splunk_AI_Assistant_Cloud v2.0.0 or later and confirm the app contains its Python REST handlers."
+      ])
+    );
+    expect(diagnostic.remediation.operatorChecks).toEqual(
+      expect.arrayContaining([
+        "Restart splunkd after the Splunk AI Assistant install, upgrade, or cloud-connect activation.",
+        "Confirm `$SPLUNK_HOME/etc/apps/Splunk_AI_Assistant_Cloud/bin/` contains the app's Python REST handler files."
+      ])
+    );
+    expect(mcp.managementCalls.map((call) => call.path)).toEqual(
+      expect.arrayContaining([
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme"
+      ])
+    );
+    expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
   });
 
   it("writes blocked hosted-model artifacts when live SAIA config is not exported", async () => {
@@ -3028,7 +3172,7 @@ describe("SplunkReady CLI flow", () => {
 
     expect(output).toMatchObject({
       command: "hosted-model-diagnostic",
-      status: "PASS",
+      status: "BLOCKED",
       artifacts: expect.arrayContaining([
         join(outDir, "hosted-model-proof.json"),
         join(outDir, "hosted-model-diagnostic.json")

@@ -288,8 +288,9 @@ values.
 If this command fails with a hosted-model access error:
 
 - Inspect `blockerClass` first. Stable values are `LIVE_CONFIG_MISSING`,
-  `SAIA_TOOLS_NOT_ADVERTISED`, `SAIA_ROUTE_NOT_FOUND`,
-  `SAIA_ACTION_FORBIDDEN`, and `SAIA_INVOCATION_BLOCKED`.
+  `SAIA_TOOLS_NOT_ADVERTISED`, `SAIA_REST_HANDLERS_NOT_REGISTERED`,
+  `SAIA_CLOUD_ROUTE_NOT_FOUND`, `SAIA_ROUTE_NOT_FOUND`, `SAIA_ACTION_FORBIDDEN`, and
+  `SAIA_INVOCATION_BLOCKED`.
 - Inspect `remediation` next. It is safe for public export and records
   `status`, `blockerClass`, tool evidence, operator checks, and a rerun command
   without writing endpoint or token values.
@@ -301,7 +302,39 @@ If this command fails with a hosted-model access error:
 - Rerun the command with `--require-pass true`.
 
 If the diagnostic says the MCP endpoint returned not found while invoking SAIA
-tools, `blockerClass` is `SAIA_ROUTE_NOT_FOUND`:
+tools because the Splunk AI Assistant app namespace is not served by splunkd,
+`blockerClass` is `SAIA_REST_HANDLERS_NOT_REGISTERED`:
+
+- Restart splunkd after installing, upgrading, or activating Splunk AI
+  Assistant. Cloud-connect activation in the UI is not enough if splunkd has
+  not loaded the app's REST handlers.
+- Probe the app REST namespace from the operator shell. The
+  `/servicesNS/nobody/Splunk_AI_Assistant_Cloud` namespace and the
+  generate/explain/optimize/tellme handlers must not return 404.
+- Confirm `$SPLUNK_HOME/etc/apps/Splunk_AI_Assistant_Cloud/bin/` contains the
+  app's Python REST handler files.
+- If the namespace still returns 404 after restart, reinstall
+  `Splunk_AI_Assistant_Cloud` v2.0.0 or later and restart splunkd again.
+- Rerun the command with `--require-pass true`.
+
+If the diagnostic proves the local Splunk AI Assistant app namespace is served
+by splunkd, but the SAIA hosted-model call still returns not found,
+`blockerClass` is `SAIA_CLOUD_ROUTE_NOT_FOUND`:
+
+- Keep the local Splunk MCP endpoint unchanged; the local handler probe already
+  proved the SAIA app routes are registered.
+- Confirm the Splunk AI Assistant cloud connection was activated for the same
+  tenant, deployment, and user backing the MCP token.
+- Confirm the tenant is provisioned for the SAIA v2 hosted-model SPL API used
+  by generate, explain, optimize, and ask-splunk-question.
+- If SAIA metadata succeeds but hosted-model SPL calls return 404, re-run
+  cloud-connect activation or escalate the tenant provisioning mismatch to
+  Splunk support.
+- Rerun the command with `--require-pass true`.
+
+If the diagnostic says the MCP endpoint returned not found while invoking SAIA
+tools but the error does not identify the Splunk AI Assistant app REST
+namespace, `blockerClass` is `SAIA_ROUTE_NOT_FOUND`:
 
 - Use `remediation.operatorChecks` as the source of truth for the next operator
   steps.
@@ -383,6 +416,16 @@ blocked at invocation time:
 - `blockerClass`: `SAIA_ROUTE_NOT_FOUND`
 - interpretation: the endpoint advertises hosted-model tools, but the live route
   returns not found when invoking them.
+- refined 2026-06-07 interpretation: if the underlying MCP error names the
+  `Splunk_AI_Assistant_Cloud` `/servicesNS/...` route, SplunkReady now reports
+  `SAIA_REST_HANDLERS_NOT_REGISTERED`, which points to restart/reinstall checks
+  for the Splunk AI Assistant app's splunkd REST handlers.
+- refined 2026-06-07 live probe: after splunkd restart, the local SAIA routes
+  `/generatespl`, `/explainspl`, `/optimizespl`, and `/tellme` were served by
+  splunkd, while hosted-model invocation still returned 404 downstream. The
+  expected classifier for this state is now `SAIA_CLOUD_ROUTE_NOT_FOUND`, which
+  points to tenant/cloud hosted-model provisioning instead of local app
+  reinstall.
 - redaction check: hosted-model proof and diagnostic errors contain
   `[REDACTED_URL]` and no raw `https://` endpoint URL.
 - follow-up support: SplunkReady now accepts `SPLUNKREADY_SAIA_ENDPOINT` and

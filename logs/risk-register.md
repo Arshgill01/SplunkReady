@@ -735,3 +735,23 @@ the ignored operator env file still reports every supported dedicated SAIA
 endpoint/token name as missing, so live hosted-model diagnostic remains
 `SAIA_ROUTE_NOT_FOUND` on `shared-splunk-mcp`. This move does not mutate Splunk
 and does not make SAIA authoritative.
+
+Move 132 reduces public-package overclaiming risk by adding a registry-backed
+currentness proof. The public npm package still reports only
+`splunkready@0.1.0`, which passes no-clone `judge-proof` with `mutation=false`
+but does not expose the `splunkready mcp` entrypoint. Current-source MCP/SAIA
+work remains verified locally and through packed-source installability, not via
+`splunkready@latest`, until npm reports the current source version and
+`npm run audit:public-package-currentness -- --require-current` returns
+`CURRENT`.
+
+Move 133 reduces live SAIA diagnostic ambiguity by separating local Splunk AI
+Assistant REST-handler registration from downstream SAIA cloud hosted-model
+404s. The operator-owned live diagnostic now proves the local
+`Splunk_AI_Assistant_Cloud` namespace and `/generatespl`, `/explainspl`,
+`/optimizespl`, and `/tellme` routes are served by splunkd, then classifies the
+remaining hosted-model invocation failure as `SAIA_CLOUD_ROUTE_NOT_FOUND`.
+Residual risk remains external to SplunkReady: the configured SAIA cloud tenant
+or cloud-connect activation must expose the SAIA v2 SPL hosted-model endpoints
+before the four `saia_*` tools can return advisory output. This move does not
+mutate Splunk and does not make SAIA authoritative for readiness.

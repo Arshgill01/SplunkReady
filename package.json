@@ -59,6 +59,7 @@
     "audit:package-readiness": "node scripts/audit-package-readiness.mjs",
     "audit:package-installability": "node scripts/audit-package-installability.mjs",
     "audit:npm-release-preflight": "node scripts/audit-npm-release-preflight.mjs",
+    "audit:public-package-currentness": "node scripts/audit-public-package-currentness.mjs",
     "audit:public-demo-export": "node scripts/audit-public-demo-export.mjs",
     "check": "npm run verify:scaffold && npm run verify:runtime-contracts && npm run build && npm run ui:build && npm run audit:public-demo-export && npm run audit:package-readiness && npm run audit:package-installability && npm test && npm run audit:secret-env-ignore && npm run audit:reviewers && npm run audit:submission-copy && git diff --check",
     "judge-proof": "npm run build && node dist/src/cli.js judge-proof --out artifacts/judge-proof --json",

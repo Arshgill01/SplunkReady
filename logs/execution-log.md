@@ -13148,3 +13148,103 @@ Notes:
 - The move improves SAIA/MCP readiness and evidence, but it does not claim live
   SAIA PASS until the operator-owned env file exposes a dedicated SAIA
   endpoint/token or the shared Splunk MCP route can invoke `saia_*`.
+## 2026-06-07T13:05:00Z - Move 132 public package currentness proof
+
+Intent:
+
+- Address the user's high-priority package and MCP probability cap by proving
+  whether the public npm package contains the current MCP/SAIA surface.
+- Avoid overclaiming after the npm publish attempt: use the public registry as
+  the source of truth.
+
+Actions:
+
+- Added `scripts/audit-public-package-currentness.mjs` and
+  `npm run audit:public-package-currentness`.
+- Added a test fixture that mocks npm/npx for stale and current registry states.
+- Ran the real audit against npm and wrote
+  `submission-evidence/public-package-currentness/public-package-currentness.json`.
+- Updated README, Devpost copy, claim ledger, submission-copy guards, and move
+  docs to distinguish public `0.1.0` judge-proof support from current-source
+  `0.1.1` MCP/SAIA support.
+
+Files changed:
+
+- `package.json`
+- `scripts/audit-public-package-currentness.mjs`
+- `tests/scripts/public-package-currentness.test.ts`
+- `scripts/audit-submission-copy.mjs`
+- `README.md`
+- `docs/devpost-submission.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/public-package-currentness/public-package-currentness.json`
+- `moves/README.md`
+- `moves/moves132.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Observed registry result:
+
+- npm latest remains `splunkready@0.1.0`.
+- source is `0.1.1`.
+- published `0.1.0` judge-proof returns `PASS` with `mutation: false`.
+- published `0.1.0` MCP initializes as `BLOCKED` because the command is absent.
+
+Notes:
+
+- This move does not publish anything to npm.
+- This move does not read, source, print, or commit `.splunkready*` or `.env*`
+  secret files.
+
+## 2026-06-07T13:25:00Z - Move 133 SAIA cloud route blocker
+
+Intent:
+
+- Verify the operator-reported SAIA blocker against the running Splunk instance.
+- Stop conflating local Splunk AI Assistant REST-handler registration failures
+  with downstream SAIA cloud hosted-model 404s.
+
+Actions:
+
+- Restarted the local Splunk instance after the Splunk AI Assistant cloud
+  connection setup.
+- Verified the installed Splunk AI Assistant app has Python REST handlers and
+  that the MCP Server app maps `saia_ask_splunk_question` to `/tellme`, not
+  `/ask`.
+- Updated hosted-model diagnostics with a new
+  `SAIA_CLOUD_ROUTE_NOT_FOUND` blocker class.
+- Changed the fixed local SAIA route probe to check
+  `/generatespl`, `/explainspl`, `/optimizespl`, and `/tellme`.
+- Treated non-auth, non-404 management-route responses as proof that splunkd is
+  serving the local SAIA route.
+- Updated CLI flow tests and live setup docs.
+- Reran the live hosted-model diagnostic through the ignored env file without
+  printing or sourcing its contents.
+
+Files changed:
+
+- `src/workflows/hosted-model-actions.ts`
+- `tests/cli/flow.test.ts`
+- `docs/live-setup-checklist.md`
+- `moves/README.md`
+- `moves/moves133.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Observed live result:
+
+- Status remains `BLOCKED`.
+- `mutation: false`.
+- All four SAIA hosted-model tools are advertised.
+- The local Splunk AI Assistant routes are served by splunkd.
+- All four hosted-model invocations still return redacted downstream 404s.
+- SplunkReady now reports `SAIA_CLOUD_ROUTE_NOT_FOUND`, which points to
+  tenant/cloud hosted-model provisioning rather than local route reinstall.
+
+Notes:
+
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  contents.

@@ -63,9 +63,11 @@ export const runCliCommand = async (command: string, options: CliOptions): Promi
   } else if (command === "llm-proof") {
     artifacts = await llmProofCommand(options);
   } else if (command === "hosted-model-proof") {
-    artifacts = await hostedModelProofCommand(options);
+    const result = await hostedModelProofCommand(options);
+    return { command, status: result.status, artifacts: result.artifacts, messages: result.messages };
   } else if (command === "hosted-model-diagnostic") {
-    artifacts = await hostedModelDiagnosticCommand(options);
+    const result = await hostedModelDiagnosticCommand(options);
+    return { command, status: result.status, artifacts: result.artifacts, messages: result.messages };
   } else if (command === "proof-audit") {
     artifacts = await proofAuditCommand(options);
   } else if (command === "verify-manifest") {

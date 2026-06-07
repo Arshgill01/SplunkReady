@@ -1,0 +1,30 @@
+{
+  "source": "splunkready-public-package-currentness",
+  "status": "STALE",
+  "registry": {
+    "packageName": "splunkready",
+    "versions": [
+      "0.1.0"
+    ],
+    "latestVersion": "0.1.0",
+    "localVersion": "0.1.1",
+    "localVersionPublished": false,
+    "latestMatchesLocal": false
+  },
+  "publishedJudgeProof": {
+    "packageSpec": "splunkready@0.1.0",
+    "status": "PASS",
+    "mutation": false,
+    "command": "npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json",
+    "error": null
+  },
+  "publishedMcp": {
+    "packageSpec": "splunkready@0.1.0",
+    "status": "BLOCKED",
+    "initialized": false,
+    "error": "published mcp exited before initialize response: code=1 signal=null stderr=Unknown command mcp. SplunkReady CLI Commands: compile --mode fixture|live --fixture <path> --mission <path> --out <dir> [--json] evaluate --mode fixture|live --out <dir> [--firewall] [--json] firewall-check --mode fixture|live --out <dir> [--json] import-mcp-transcript --transcript <path> --mission <path> --out <dir> [--strict-import true|false] [--json] grade-trace --trace <path> --out <dir> [--agent-name <name>] [--age"
+  },
+  "recommendedAction": "Publish splunkready@0.1.1 after npm-authenticated release preflight passes, then rerun this audit.",
+  "mutation": false,
+  "failures": []
+}

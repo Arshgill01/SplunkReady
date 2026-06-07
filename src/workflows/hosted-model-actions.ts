@@ -63,6 +63,8 @@ type HostedModelBlockerClass =
   | "NONE"
   | "LIVE_CONFIG_MISSING"
   | "SAIA_TOOLS_NOT_ADVERTISED"
+  | "SAIA_REST_HANDLERS_NOT_REGISTERED"
+  | "SAIA_CLOUD_ROUTE_NOT_FOUND"
   | "SAIA_ROUTE_NOT_FOUND"
   | "SAIA_ACTION_FORBIDDEN"
   | "SAIA_INVOCATION_BLOCKED";
@@ -85,6 +87,24 @@ type HostedModelRemediationPacket = {
   rerunCommand: string;
 };
 
+type SaiaRestHandlerProbe = {
+  source: "splunkready-saia-rest-handler-probe";
+  status: "NOT_RUN" | "PASS" | "NOT_REGISTERED" | "BLOCKED";
+  mutation: false;
+  query: string;
+  managementRoutes?: Array<{
+    method: "GET";
+    path: string;
+    status: "PASS" | "NOT_REGISTERED" | "BLOCKED";
+    httpStatus?: number;
+    message: string;
+  }>;
+  message: string;
+  error?: string;
+};
+
+type SaiaRestHandlerRouteStatus = "PASS" | "NOT_REGISTERED" | "BLOCKED";
+
 export const hostedModelToolNames: ReadOnlySplunkToolName[] = [
   "saia_generate_spl",
   "saia_explain_spl",
@@ -103,6 +123,14 @@ const hostedModelQuestion =
   "Why should a Splunk-connected agent prefer authorized indexes and saved-search provenance when investigating lateral movement?";
 const hostedModelDiagnosticCommand =
   "splunkready hosted-model-diagnostic --mode live --out artifacts/hosted-model-diagnostic --require-pass true --json";
+const saiaRestHandlerProbeQuery = "| rest /servicesNS/nobody/Splunk_AI_Assistant_Cloud";
+const saiaRestHandlerProbePaths = [
+  "/servicesNS/nobody/Splunk_AI_Assistant_Cloud",
+  "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
+  "/servicesNS/-/Splunk_AI_Assistant_Cloud/explainspl",
+  "/servicesNS/-/Splunk_AI_Assistant_Cloud/optimizespl",
+  "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme"
+];
 
 const writeJson = async (filePath: string, value: unknown): Promise<void> => {
   await mkdir(dirname(filePath), { recursive: true });
@@ -161,6 +189,9 @@ const envVariableFromNames = (
     status: isValid(env[sourceName] ?? "") ? "set" : "invalid"
   };
 };
+
+const envValueFromNames = (env: NodeJS.ProcessEnv, names: string[]): string | undefined =>
+  names.map((name) => env[name]).find((value): value is string => Boolean(value));
 
 const liveHostedModelSetupFromEnv = (env: NodeJS.ProcessEnv): HostedModelSetup => {
   const splunkEndpoint = envVariableFromNames(env, liveCoreEndpointEnvNames[0] ?? "", liveCoreEndpointEnvNames.slice(1));
@@ -322,12 +353,36 @@ const formatHostedModelProofError = (error: unknown, env: NodeJS.ProcessEnv = pr
     return `Hosted-model SAIA action forbidden. The current MCP token or Splunk user can access live read-only Splunk tools, but not ${hostedModelToolNames.join("/")}.`;
   }
 
-  return redactText(formatted.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(), env);
+  const cleaned = redactText(formatted.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(), env);
+
+  if (isSaiaRestHandlersNotRegisteredError(formatted)) {
+    return `${cleaned} Diagnosis: Splunk AI Assistant REST namespace Splunk_AI_Assistant_Cloud returned 404; its splunkd REST handlers are not registered or not loaded.`;
+  }
+
+  return cleaned;
 };
+
+const isSaiaRestHandlersNotRegisteredError = (error: string): boolean =>
+  /404|not found/i.test(error) &&
+  /(?:servicesNS|Splunk_AI_Assistant_Cloud|generatespl|explainspl|optimizespl|\/tellme\b|REST namespace Splunk_AI_Assistant_Cloud|REST handlers are not registered)/i.test(
+    error
+  );
+
+const isSaiaCloudRouteNotFoundError = (error: string): boolean =>
+  /404|not found/i.test(error) &&
+  /(?:downstream SAIA cloud API|SAIA cloud hosted-model route|saia-api-v2|cloud route)/i.test(error);
 
 const hostedModelBlockedMessage = (error: string, contractAvailable: boolean): string => {
   if (!contractAvailable) {
     return "Live hosted-model diagnostic could not compile a Splunk contract because required live configuration is not available in this process.";
+  }
+
+  if (isSaiaRestHandlersNotRegisteredError(error)) {
+    return "The MCP contract advertises hosted-model tools, but Splunk AI Assistant REST handlers are not registered with splunkd for the advertised SAIA routes.";
+  }
+
+  if (isSaiaCloudRouteNotFoundError(error)) {
+    return "The MCP contract advertises hosted-model tools and splunkd serves the local SAIA routes, but the downstream Splunk AI Assistant cloud route returned not found.";
   }
 
   if (/404|not found/i.test(error)) {
@@ -343,6 +398,25 @@ const hostedModelBlockedRequiredActions = (error: string, contractAvailable: boo
       "Export SPLUNKREADY_LIVE_ENABLED=true in the shell that runs the proof.",
       "Export SPLUNKREADY_SPLUNK_MCP_URL without committing or printing it.",
       "Export SPLUNKREADY_SPLUNK_MCP_TOKEN without committing or printing it.",
+      "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
+    ];
+  }
+
+  if (isSaiaRestHandlersNotRegisteredError(error)) {
+    return [
+      "Restart splunkd after installing or activating Splunk AI Assistant so its Python REST handlers register with splunkd.",
+      "Probe the Splunk AI Assistant app REST namespace from the operator shell; the Splunk_AI_Assistant_Cloud namespace must not return 404.",
+      "If restart does not register the namespace, reinstall Splunk_AI_Assistant_Cloud v2.0.0 or later and confirm the app contains its Python REST handlers.",
+      "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
+    ];
+  }
+
+  if (isSaiaCloudRouteNotFoundError(error)) {
+    return [
+      "Keep the Splunk MCP endpoint unchanged; local SAIA management routes are registered and served by splunkd.",
+      "Verify the Splunk AI Assistant cloud connection is activated for the same tenant, deployment, and user used by the MCP token.",
+      "Confirm the tenant is entitled to the SAIA v2 hosted-model SPL endpoints used by Splunk AI Assistant.",
+      "If SAIA metadata succeeds but SPL hosted-model calls still return 404, re-run cloud-connect activation or escalate the tenant provisioning mismatch to Splunk support.",
       "Rerun hosted-model-diagnostic with --require-pass true before claiming hosted-model proof."
     ];
   }
@@ -372,6 +446,14 @@ const hostedModelRemediationSummary = (blockerClass: HostedModelBlockerClass): s
 
   if (blockerClass === "SAIA_TOOLS_NOT_ADVERTISED") {
     return "The live contract does not advertise every required Splunk AI Assistant hosted-model tool.";
+  }
+
+  if (blockerClass === "SAIA_REST_HANDLERS_NOT_REGISTERED") {
+    return "The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are not registered for the SAIA routes.";
+  }
+
+  if (blockerClass === "SAIA_CLOUD_ROUTE_NOT_FOUND") {
+    return "The MCP contract advertises hosted-model tools and the local SAIA routes are registered, but the downstream Splunk AI Assistant cloud hosted-model route returned not found.";
   }
 
   if (blockerClass === "SAIA_ROUTE_NOT_FOUND") {
@@ -406,6 +488,26 @@ const hostedModelRemediationChecks = (
       "Confirm Splunk AI Assistant and the Splunk MCP Server app are enabled for the same tenant, user, and token.",
       `Confirm tools/list advertises ${hostedModelToolNames.join(", ")} from the operator-owned Splunk MCP endpoint.`,
       "Rerun the strict diagnostic from the same shell or MCP client configuration."
+    ];
+  }
+
+  if (blockerClass === "SAIA_REST_HANDLERS_NOT_REGISTERED") {
+    return [
+      "Restart splunkd after the Splunk AI Assistant install, upgrade, or cloud-connect activation.",
+      "Probe the Splunk AI Assistant app REST namespace from the operator shell; `/servicesNS/nobody/Splunk_AI_Assistant_Cloud` and the generate/explain/optimize/tellme handlers must not return 404.",
+      "Confirm `$SPLUNK_HOME/etc/apps/Splunk_AI_Assistant_Cloud/bin/` contains the app's Python REST handler files.",
+      "If the namespace still returns 404 after restart, reinstall Splunk_AI_Assistant_Cloud v2.0.0 or later, then restart splunkd again.",
+      "Rerun the strict hosted-model diagnostic from the same env file."
+    ];
+  }
+
+  if (blockerClass === "SAIA_CLOUD_ROUTE_NOT_FOUND") {
+    return [
+      "Do not change the local Splunk MCP endpoint yet; SplunkReady proved the local SAIA management routes are served by splunkd.",
+      "Confirm the Splunk AI Assistant cloud connection was activated for the same Splunk deployment, tenant, and user backing the MCP token.",
+      "Confirm the tenant is provisioned for the SAIA v2 hosted-model SPL API used by generate, explain, optimize, and ask-splunk-question.",
+      "If the SAIA metadata endpoint works but hosted-model SPL calls return 404, re-run cloud-connect activation or escalate the tenant provisioning mismatch to Splunk support.",
+      "Rerun the strict hosted-model diagnostic from the same env file."
     ];
   }
 
@@ -475,6 +577,14 @@ const hostedModelBlockerClass = (
   }
 
   if (/404|not found/i.test(error)) {
+    if (isSaiaCloudRouteNotFoundError(error)) {
+      return "SAIA_CLOUD_ROUTE_NOT_FOUND";
+    }
+
+    if (isSaiaRestHandlersNotRegisteredError(error)) {
+      return "SAIA_REST_HANDLERS_NOT_REGISTERED";
+    }
+
     return "SAIA_ROUTE_NOT_FOUND";
   }
 
@@ -626,6 +736,169 @@ const hostedModelFailureSummary = (toolResults: HostedModelToolResult[]): string
     .filter((result) => result.status === "BLOCKED")
     .map((result) => `${result.toolName}: ${result.error ?? "blocked"}`)
     .join("; ");
+
+const shouldProbeSaiaRestHandlers = (
+  mode: "fixture" | "live",
+  blocked: boolean,
+  error: string,
+  contractAvailable: boolean,
+  missingTools: ReadOnlySplunkToolName[]
+): boolean => mode === "live" && blocked && contractAvailable && missingTools.length === 0 && /404|not found/i.test(error);
+
+const notRunSaiaRestHandlerProbe = (message: string): SaiaRestHandlerProbe => ({
+  source: "splunkready-saia-rest-handler-probe",
+  status: "NOT_RUN",
+  mutation: false,
+  query: saiaRestHandlerProbeQuery,
+  message
+});
+
+const runSaiaManagementRouteProbe = async (env: NodeJS.ProcessEnv): Promise<SaiaRestHandlerProbe | undefined> => {
+  const endpointUrl = envValueFromNames(env, liveCoreEndpointEnvNames);
+  const authToken = envValueFromNames(env, liveCoreTokenEnvNames);
+
+  if (!endpointUrl || !authToken) {
+    return undefined;
+  }
+
+  let origin: URL;
+  try {
+    origin = new URL(endpointUrl);
+  } catch {
+    return {
+      source: "splunkready-saia-rest-handler-probe",
+      status: "BLOCKED",
+      mutation: false,
+      query: saiaRestHandlerProbeQuery,
+      message: "Splunk MCP endpoint URL could not be parsed for SAIA management-route probing.",
+      error: "SPLUNKREADY_SPLUNK_MCP_URL is not a valid URL."
+    };
+  }
+
+  const managementRoutes = await Promise.all(
+    saiaRestHandlerProbePaths.map(async (path) => {
+      try {
+        const response = await fetch(new URL(path, origin), {
+          method: "GET",
+          headers: {
+            authorization: `Bearer ${authToken}`,
+            accept: "application/json"
+          }
+        });
+        const routeStatus: SaiaRestHandlerRouteStatus =
+          response.status === 404
+            ? "NOT_REGISTERED"
+            : response.status === 401 || response.status === 403
+              ? "BLOCKED"
+              : "PASS";
+
+        return {
+          method: "GET" as const,
+          path,
+          status: routeStatus,
+          httpStatus: response.status,
+          message:
+            routeStatus === "NOT_REGISTERED"
+              ? "Splunk AI Assistant management route returned 404."
+              : routeStatus === "PASS"
+                ? "Splunk AI Assistant management route is served by splunkd; this registration probe treats any non-auth, non-404 response as route-present evidence."
+                : "Splunk AI Assistant management route probe was blocked before handler registration could be proven."
+        };
+      } catch {
+        return {
+          method: "GET" as const,
+          path,
+          status: "BLOCKED" as const,
+          message: "Splunk AI Assistant management route probe could not reach the shared Splunk MCP origin."
+        };
+      }
+    })
+  );
+
+  if (managementRoutes.some((route) => route.status === "NOT_REGISTERED")) {
+    return {
+      source: "splunkready-saia-rest-handler-probe",
+      status: "NOT_REGISTERED",
+      mutation: false,
+      query: saiaRestHandlerProbeQuery,
+      managementRoutes,
+      message: "One or more Splunk AI Assistant management routes returned 404 through a fixed read-only GET probe.",
+      error:
+        "Splunk AI Assistant REST namespace Splunk_AI_Assistant_Cloud returned 404; its splunkd REST handlers are not registered or not loaded."
+    };
+  }
+
+  if (managementRoutes.every((route) => route.status === "PASS")) {
+    return {
+      source: "splunkready-saia-rest-handler-probe",
+      status: "PASS",
+      mutation: false,
+      query: saiaRestHandlerProbeQuery,
+      managementRoutes,
+      message: "Splunk AI Assistant management namespace and handler routes are served by splunkd."
+    };
+  }
+
+  return {
+    source: "splunkready-saia-rest-handler-probe",
+    status: "BLOCKED",
+    mutation: false,
+    query: saiaRestHandlerProbeQuery,
+    managementRoutes,
+    message: "Splunk AI Assistant management-route probe could not prove handler registration."
+  };
+};
+
+const runSaiaRestHandlerProbe = async (
+  input: HostedModelWorkflowInput,
+  env: NodeJS.ProcessEnv
+): Promise<SaiaRestHandlerProbe> => {
+  const managementRouteProbe = await runSaiaManagementRouteProbe(env);
+
+  if (managementRouteProbe && managementRouteProbe.status !== "BLOCKED") {
+    return managementRouteProbe;
+  }
+
+  try {
+    const adapter = await createSplunkAccessAdapter({ ...input, mode: "live" }, env);
+
+    if (!adapter.runQuery) {
+      return (
+        managementRouteProbe ??
+        notRunSaiaRestHandlerProbe("Live adapter does not expose splunk_run_query for REST namespace probing.")
+      );
+    }
+
+    const result = await adapter.runQuery(
+      { query: saiaRestHandlerProbeQuery, maxRows: 1, app: "search" },
+      { requestId: "req-hosted-model-rest-handler-probe-1", missionId: "hosted-model-diagnostic" }
+    );
+
+    return {
+      source: "splunkready-saia-rest-handler-probe",
+      status: "PASS",
+      mutation: false,
+      query: saiaRestHandlerProbeQuery,
+      ...(managementRouteProbe?.managementRoutes ? { managementRoutes: managementRouteProbe.managementRoutes } : {}),
+      message: `Splunk AI Assistant REST namespace is reachable through splunk_run_query; probe returned ${result.resultCount} row(s).`
+    };
+  } catch (error) {
+    const formatted = formatHostedModelProofError(error, env);
+    const notRegistered = /404|not found/i.test(formatted);
+
+    return {
+      source: "splunkready-saia-rest-handler-probe",
+      status: notRegistered ? "NOT_REGISTERED" : "BLOCKED",
+      mutation: false,
+      query: saiaRestHandlerProbeQuery,
+      ...(managementRouteProbe?.managementRoutes ? { managementRoutes: managementRouteProbe.managementRoutes } : {}),
+      message: notRegistered
+        ? "Splunk AI Assistant REST namespace returned not found through a fixed read-only REST probe."
+        : "Splunk AI Assistant REST namespace probe was blocked before it could prove handler registration.",
+      error: formatted
+    };
+  }
+};
 
 export const writeHostedModelProofArtifact = async (
   input: { outDir: string; mode: "fixture" | "live"; setup?: HostedModelSetup },
@@ -803,7 +1076,23 @@ export const runHostedModelDiagnosticWorkflow = async (
   const diagnosticPath = join(input.outDir, "hosted-model-diagnostic.json");
   const blocked = proofStatus !== "PASS";
   const permissionError = stringFromRecord(proof, "error") ?? "Hosted-model proof did not pass.";
-  const blockerClass = blocked ? hostedModelBlockerClass(permissionError, Boolean(contract), missingTools) : "NONE";
+  const restHandlerProbe = shouldProbeSaiaRestHandlers(mode, blocked, permissionError, Boolean(contract), missingTools)
+    ? await runSaiaRestHandlerProbe({ ...input, mode }, env)
+    : notRunSaiaRestHandlerProbe("SAIA REST handler probe only runs for live advertised-tool 404 failures.");
+  const localSaiaRoutesServed = restHandlerProbe.status === "PASS";
+  const blockerClass = blocked
+    ? restHandlerProbe.status === "NOT_REGISTERED"
+      ? "SAIA_REST_HANDLERS_NOT_REGISTERED"
+      : localSaiaRoutesServed && /404|not found/i.test(permissionError)
+        ? "SAIA_CLOUD_ROUTE_NOT_FOUND"
+      : hostedModelBlockerClass(permissionError, Boolean(contract), missingTools)
+    : "NONE";
+  const diagnosticPermissionError =
+    blocked && blockerClass === "SAIA_REST_HANDLERS_NOT_REGISTERED" && restHandlerProbe.error
+      ? `${permissionError}; REST handler probe: ${restHandlerProbe.error}`
+      : blocked && blockerClass === "SAIA_CLOUD_ROUTE_NOT_FOUND"
+        ? `${permissionError}; Local SAIA management routes are served by splunkd, so the remaining 404 is from the downstream SAIA cloud hosted-model route.`
+      : permissionError;
   const remediation = hostedModelRemediationPacket({
     blockerClass,
     requiredTools: hostedModelToolNames,
@@ -830,17 +1119,15 @@ export const runHostedModelDiagnosticWorkflow = async (
     passedTools,
     blockedTools,
     toolResults: Array.isArray(proofRecord.toolResults) ? proofRecord.toolResults : [],
+    restHandlerProbe,
     remediation,
     permission: blocked
       ? {
           status: "BLOCKED",
           blockerClass,
-          message: hostedModelBlockedMessage(
-            permissionError,
-            Boolean(contract)
-          ),
-          error: permissionError,
-          requiredActions: hostedModelBlockedRequiredActions(permissionError, Boolean(contract))
+          message: hostedModelBlockedMessage(diagnosticPermissionError, Boolean(contract)),
+          error: diagnosticPermissionError,
+          requiredActions: hostedModelBlockedRequiredActions(diagnosticPermissionError, Boolean(contract))
         }
       : {
           status: "OK",
@@ -849,7 +1136,7 @@ export const runHostedModelDiagnosticWorkflow = async (
         },
     deterministicAuthority: "deterministic-rule-engine",
     notes:
-      "This diagnostic calls hosted-model helper tools only. It does not execute the SPL query, does not grade with an LLM, and does not mutate Splunk."
+      "This diagnostic calls hosted-model helper tools and may run one fixed read-only Splunk AI Assistant REST namespace probe after live 404 failures. It does not execute generated, unsafe, or optimized SPL, does not grade with an LLM, and does not mutate Splunk."
   });
 
   if (input.requirePass && blocked) {

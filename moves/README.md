@@ -154,6 +154,8 @@ commands, or filesystem paths.
 | P0 | [129](moves129.md) SAIA MCP env alias readiness | 0.5d | Accepts SAIA MCP URL/token aliases from operator env files and records alias source names without writing secret values. |
 | P0 | [130](moves130.md) Splunk MCP remote client config evidence | 0.5d | Makes external MCP client resources use Splunk's `mcp-remote` sample-client shape with credential placeholders. |
 | P0 | [131](moves131.md) SAIA cloud MCP alias and header readiness | 0.5d | Supports more realistic SAIA/cloud MCP endpoint aliases and optional realm/tenant headers for hosted-model calls only. |
+| P0 | [132](moves132.md) Public package currentness proof | 0.5d | Adds a registry-backed audit that proves the published package judge-proof path and flags when MCP/SAIA source work has not reached npm yet. |
+| P0 | [133](moves133.md) SAIA cloud route blocker | 0.5d | Separates local Splunk AI Assistant REST-handler registration failures from downstream SAIA cloud hosted-model 404s. |
 
 ## Non-Negotiable Boundaries
 

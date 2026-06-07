@@ -136,9 +136,9 @@ export const llmProofCommand = async (
 export const hostedModelProofCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
-): Promise<string[]> => {
+): Promise<HostedModelWorkflowResult> => {
   const hostedModelEnv = await mergeEnvFile(env, options.envFile);
-  const result = await runHostedModelProofWorkflow(
+  return runHostedModelProofWorkflow(
     {
       outDir: options.out,
       mode: options.mode,
@@ -147,16 +147,14 @@ export const hostedModelProofCommand = async (
     },
     hostedModelEnv
   );
-
-  return result.artifacts;
 };
 
 export const hostedModelDiagnosticCommand = async (
   options: CliOptions,
   env: NodeJS.ProcessEnv = process.env
-): Promise<string[]> => {
+): Promise<HostedModelWorkflowResult> => {
   const hostedModelEnv = await mergeEnvFile(env, options.envFile);
-  const result = await runHostedModelDiagnosticWorkflow(
+  return runHostedModelDiagnosticWorkflow(
     {
       outDir: options.out,
       mode: options.mode,
@@ -166,8 +164,6 @@ export const hostedModelDiagnosticCommand = async (
     },
     hostedModelEnv
   );
-
-  return result.artifacts;
 };
 
 export const judgeProofCommand = async (
