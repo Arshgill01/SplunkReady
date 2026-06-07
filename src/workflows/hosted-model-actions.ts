@@ -64,6 +64,7 @@ type HostedModelBlockerClass =
   | "LIVE_CONFIG_MISSING"
   | "SAIA_TOOLS_NOT_ADVERTISED"
   | "SAIA_REST_HANDLERS_NOT_REGISTERED"
+  | "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED"
   | "SAIA_CLOUD_ROUTE_NOT_FOUND"
   | "SAIA_ROUTE_NOT_FOUND"
   | "SAIA_ACTION_FORBIDDEN"
@@ -89,7 +90,7 @@ type HostedModelRemediationPacket = {
 
 type SaiaRestHandlerProbe = {
   source: "splunkready-saia-rest-handler-probe";
-  status: "NOT_RUN" | "PASS" | "NOT_REGISTERED" | "BLOCKED";
+  status: "NOT_RUN" | "PASS" | "NOT_REGISTERED" | "PARTIALLY_REGISTERED" | "BLOCKED";
   mutation: false;
   query: string;
   managementRoutes?: Array<{
@@ -378,6 +379,10 @@ const hostedModelBlockedMessage = (error: string, contractAvailable: boolean): s
   }
 
   if (isSaiaRestHandlersNotRegisteredError(error)) {
+    if (/partially registered/i.test(error)) {
+      return "The MCP contract advertises hosted-model tools, but Splunk AI Assistant REST handlers are only partially registered with splunkd for the advertised SAIA routes.";
+    }
+
     return "The MCP contract advertises hosted-model tools, but Splunk AI Assistant REST handlers are not registered with splunkd for the advertised SAIA routes.";
   }
 
@@ -403,6 +408,16 @@ const hostedModelBlockedRequiredActions = (error: string, contractAvailable: boo
   }
 
   if (isSaiaRestHandlersNotRegisteredError(error)) {
+    if (/partially registered/i.test(error)) {
+      return [
+        "Compare the Splunk MCP Server app's SAIA endpoint metadata against the Splunk AI Assistant app routes served by splunkd.",
+        "Confirm every advertised SAIA handler route is present; partial route registration means the app or MCP tool metadata is not aligned.",
+        "Restart splunkd after the Splunk AI Assistant install, upgrade, or cloud-connect activation.",
+        "If a route remains missing after restart, reinstall or upgrade Splunk_AI_Assistant_Cloud and the Splunk MCP Server app together.",
+        "If local routes are present but hosted-model calls still return 404, confirm the tenant is not a Splunk Trial stack and is provisioned for Splunk AI Assistant cloud connected hosted-model endpoints."
+      ];
+    }
+
     return [
       "Restart splunkd after installing or activating Splunk AI Assistant so its Python REST handlers register with splunkd.",
       "Probe the Splunk AI Assistant app REST namespace from the operator shell; the Splunk_AI_Assistant_Cloud namespace must not return 404.",
@@ -452,6 +467,10 @@ const hostedModelRemediationSummary = (blockerClass: HostedModelBlockerClass): s
     return "The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are not registered for the SAIA routes.";
   }
 
+  if (blockerClass === "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED") {
+    return "The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are only partially registered for the SAIA routes.";
+  }
+
   if (blockerClass === "SAIA_CLOUD_ROUTE_NOT_FOUND") {
     return "The MCP contract advertises hosted-model tools and the local SAIA routes are registered, but the downstream Splunk AI Assistant cloud hosted-model route returned not found.";
   }
@@ -498,6 +517,16 @@ const hostedModelRemediationChecks = (
       "Confirm `$SPLUNK_HOME/etc/apps/Splunk_AI_Assistant_Cloud/bin/` contains the app's Python REST handler files.",
       "If the namespace still returns 404 after restart, reinstall Splunk_AI_Assistant_Cloud v2.0.0 or later, then restart splunkd again.",
       "Rerun the strict hosted-model diagnostic from the same env file."
+    ];
+  }
+
+  if (blockerClass === "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED") {
+    return [
+      "Compare the Splunk MCP Server app's SAIA endpoint metadata against the Splunk AI Assistant app routes served by splunkd.",
+      "Confirm every advertised SAIA handler route is present; partial route registration means the app or MCP tool metadata is not aligned.",
+      "Restart splunkd after the Splunk AI Assistant install, upgrade, or cloud-connect activation.",
+      "If a route remains missing after restart, reinstall or upgrade Splunk_AI_Assistant_Cloud and the Splunk MCP Server app together.",
+      "If local routes are present but hosted-model calls still return 404, confirm the tenant is not a Splunk Trial stack and is provisioned for Splunk AI Assistant cloud connected hosted-model endpoints."
     ];
   }
 
@@ -815,7 +844,23 @@ const runSaiaManagementRouteProbe = async (env: NodeJS.ProcessEnv): Promise<Saia
     })
   );
 
-  if (managementRoutes.some((route) => route.status === "NOT_REGISTERED")) {
+  const routeNotRegistered = managementRoutes.some((route) => route.status === "NOT_REGISTERED");
+  const routePresent = managementRoutes.some((route) => route.status === "PASS");
+
+  if (routeNotRegistered && routePresent) {
+    return {
+      source: "splunkready-saia-rest-handler-probe",
+      status: "PARTIALLY_REGISTERED",
+      mutation: false,
+      query: saiaRestHandlerProbeQuery,
+      managementRoutes,
+      message: "Some Splunk AI Assistant management routes are served by splunkd, but one or more advertised SAIA routes returned 404.",
+      error:
+        "Splunk AI Assistant REST namespace Splunk_AI_Assistant_Cloud is only partially registered; at least one advertised SAIA route returned 404."
+    };
+  }
+
+  if (routeNotRegistered) {
     return {
       source: "splunkready-saia-rest-handler-probe",
       status: "NOT_REGISTERED",
@@ -1083,6 +1128,8 @@ export const runHostedModelDiagnosticWorkflow = async (
   const blockerClass = blocked
     ? restHandlerProbe.status === "NOT_REGISTERED"
       ? "SAIA_REST_HANDLERS_NOT_REGISTERED"
+      : restHandlerProbe.status === "PARTIALLY_REGISTERED"
+        ? "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED"
       : localSaiaRoutesServed && /404|not found/i.test(permissionError)
         ? "SAIA_CLOUD_ROUTE_NOT_FOUND"
       : hostedModelBlockerClass(permissionError, Boolean(contract), missingTools)
@@ -1090,6 +1137,8 @@ export const runHostedModelDiagnosticWorkflow = async (
   const diagnosticPermissionError =
     blocked && blockerClass === "SAIA_REST_HANDLERS_NOT_REGISTERED" && restHandlerProbe.error
       ? `${permissionError}; REST handler probe: ${restHandlerProbe.error}`
+      : blocked && blockerClass === "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED" && restHandlerProbe.error
+        ? `${permissionError}; REST handler probe: ${restHandlerProbe.error}`
       : blocked && blockerClass === "SAIA_CLOUD_ROUTE_NOT_FOUND"
         ? `${permissionError}; Local SAIA management routes are served by splunkd, so the remaining 404 is from the downstream SAIA cloud hosted-model route.`
       : permissionError;

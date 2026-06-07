@@ -550,9 +550,9 @@
     "source": "splunkready-operator-live-hosted-model-status",
     "status": "BLOCKED",
     "artifactPath": "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json",
-    "blockerClass": "SAIA_REST_HANDLERS_NOT_REGISTERED",
+    "blockerClass": "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED",
     "permissionStatus": "BLOCKED",
-    "permissionBlockerClass": "SAIA_REST_HANDLERS_NOT_REGISTERED",
+    "permissionBlockerClass": "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED",
     "requiredTools": [
       "saia_generate_spl",
       "saia_explain_spl",
@@ -572,8 +572,8 @@
       "saia_optimize_spl",
       "saia_ask_splunk_question"
     ],
-    "restHandlerProbeStatus": "NOT_REGISTERED",
-    "summary": "The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are not registered for the SAIA routes.",
+    "restHandlerProbeStatus": "PARTIALLY_REGISTERED",
+    "summary": "The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are only partially registered for the SAIA routes.",
     "safeForPublicExport": true,
     "deterministicAuthority": true,
     "mutation": false

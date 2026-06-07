@@ -76,13 +76,13 @@ Hosted-model access check: PASS
 
 Operator live hosted-model status: BLOCKED
 - Artifact: artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json
-- Blocker: SAIA_REST_HANDLERS_NOT_REGISTERED
+- Blocker: SAIA_REST_HANDLERS_PARTIALLY_REGISTERED
 - Permission: BLOCKED
-- Permission blocker: SAIA_REST_HANDLERS_NOT_REGISTERED
-- Route probe: NOT_REGISTERED
+- Permission blocker: SAIA_REST_HANDLERS_PARTIALLY_REGISTERED
+- Route probe: PARTIALLY_REGISTERED
 - Passed tools: none
 - Blocked tools: saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question
-- Summary: The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are not registered for the SAIA routes.
+- Summary: The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are only partially registered for the SAIA routes.
 
 Splunk MCP boundary: PASS
 - Certified tool calls: splunk_get_knowledge_objects, splunk_run_saved_search

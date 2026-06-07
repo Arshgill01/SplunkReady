@@ -2,7 +2,7 @@
   "source": "splunkready-proof-manifest",
   "generatedAt": "2026-06-01T06:45:00.000Z",
   "proofDir": "submission-evidence/mcp-proof/mcp-transcript-certification",
-  "aggregateSha256": "c7173d4e99a4ef104bc3a8228a806a16adb5b87a55450a1641b248956882a0f7",
+  "aggregateSha256": "657dc20008c37bc97bf7baff44c0eb95ee05ca3288a3d5ae30f48be625f16802",
   "files": [
     {
       "path": "agent-policy.json",
@@ -41,8 +41,8 @@
     },
     {
       "path": "receipt-external-001.json",
-      "sizeBytes": 1364,
-      "sha256": "90eb5dda389dc7ae1a626bef0ef0297c58aa48cebf39ae47acb106741864fefa"
+      "sizeBytes": 1449,
+      "sha256": "9547bda4ae5aad0a877fb790599f306aa0e47642775e69ae569d2f3ae0679204"
     },
     {
       "path": "receipt-external-001.md",

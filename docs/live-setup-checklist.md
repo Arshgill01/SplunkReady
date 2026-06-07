@@ -10,7 +10,16 @@ When it passes, `artifacts/live-smoke/live-smoke-contract.json` must contain rea
 
 ## 1. Prepare Splunk
 
-Use a non-production Splunk Enterprise trial, Splunk Cloud trial, or another approved read-only Splunk deployment.
+Use a non-production Splunk Enterprise deployment, paid Splunk Cloud stack, or another approved read-only Splunk deployment.
+
+Do not assume Splunk AI Assistant hosted-model proof will work on a Splunk Trial stack. Splunk's AI Assistant documentation says Splunk AI Assistant is not compatible with Splunk Trial stacks:
+
+- https://help.splunk.com/en/splunk-cloud-platform/search/splunk-ai-assistant
+- https://help.splunk.com/en/splunk-cloud-platform/search/splunk-ai-assistant-for-spl/1.5.0/about-splunk-ai-assistant-for-spl/about-splunk-ai-assistant-for-spl
+
+For Splunk Enterprise, hosted-model access must use Splunk AI Assistant through the Cloud Connected solution:
+
+- https://help.splunk.com/en/splunk-cloud-platform/search/splunk-ai-assistant/2.0.0/install-and-configure-splunk-ai-assistant-for-spl/install-splunk-ai-assistant-for-spl-for-splunk-enterprise-customers-with-cloud-connected
 
 1. Install and start Splunk.
 2. Confirm you can sign in to Splunk Web.
@@ -289,8 +298,8 @@ If this command fails with a hosted-model access error:
 
 - Inspect `blockerClass` first. Stable values are `LIVE_CONFIG_MISSING`,
   `SAIA_TOOLS_NOT_ADVERTISED`, `SAIA_REST_HANDLERS_NOT_REGISTERED`,
-  `SAIA_CLOUD_ROUTE_NOT_FOUND`, `SAIA_ROUTE_NOT_FOUND`, `SAIA_ACTION_FORBIDDEN`, and
-  `SAIA_INVOCATION_BLOCKED`.
+  `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`, `SAIA_CLOUD_ROUTE_NOT_FOUND`,
+  `SAIA_ROUTE_NOT_FOUND`, `SAIA_ACTION_FORBIDDEN`, and `SAIA_INVOCATION_BLOCKED`.
 - Inspect `remediation` next. It is safe for public export and records
   `status`, `blockerClass`, tool evidence, operator checks, and a rerun command
   without writing endpoint or token values.
@@ -315,6 +324,24 @@ tools because the Splunk AI Assistant app namespace is not served by splunkd,
   app's Python REST handler files.
 - If the namespace still returns 404 after restart, reinstall
   `Splunk_AI_Assistant_Cloud` v2.0.0 or later and restart splunkd again.
+- Rerun the command with `--require-pass true`.
+
+If the diagnostic shows some Splunk AI Assistant REST routes are served by
+splunkd but one or more advertised SAIA routes return 404, `blockerClass` is
+`SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`:
+
+- Compare the Splunk MCP Server app's SAIA endpoint metadata against the
+  `Splunk_AI_Assistant_Cloud` routes actually served by splunkd.
+- Confirm every advertised SAIA handler route is present. Partial route
+  registration means the app version, app handler registration, or MCP tool
+  metadata is not aligned.
+- Restart splunkd after installing, upgrading, or activating Splunk AI
+  Assistant, then rerun the diagnostic.
+- If a route remains missing after restart, reinstall or upgrade
+  `Splunk_AI_Assistant_Cloud` and the Splunk MCP Server app together.
+- If local routes are present but hosted-model calls still return 404, confirm
+  the tenant is not a Splunk Trial stack and is provisioned for Splunk AI
+  Assistant cloud-connected hosted-model endpoints.
 - Rerun the command with `--require-pass true`.
 
 If the diagnostic proves the local Splunk AI Assistant app namespace is served
@@ -424,9 +451,13 @@ blocked at invocation time:
   `saia_ask_splunk_question` route shape, the local SAIA namespace and
   `/generatespl`, `/explainspl`, and `/optimizespl` routes are served by
   splunkd, but `/ask` returns 404. The current classifier is
-  `SAIA_REST_HANDLERS_NOT_REGISTERED`, which points to a local ask-route handler
-  registration or app-version mismatch before live SAIA hosted-model PASS can be
-  claimed.
+  `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`, which points to a local ask-route
+  handler registration, app-version mismatch, MCP metadata mismatch, or
+  tenant/provisioning issue before live SAIA hosted-model PASS can be claimed.
+- refined 2026-06-08 documentation check: Splunk AI Assistant docs state that
+  Splunk AI Assistant is not compatible with Splunk Trial stacks. If the current
+  deployment is a Trial stack, hosted-model 404s may be an entitlement or
+  provisioning boundary rather than a SplunkReady bug.
 - redaction check: hosted-model proof and diagnostic errors contain
   `[REDACTED_URL]` and no raw `https://` endpoint URL.
 - follow-up support: SplunkReady now accepts `SPLUNKREADY_SAIA_ENDPOINT` and

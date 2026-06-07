@@ -2,10 +2,10 @@
   "source": "splunkready-live-hosted-model-status",
   "status": "BLOCKED",
   "mode": "live",
-  "blockerClass": "SAIA_REST_HANDLERS_NOT_REGISTERED",
+  "blockerClass": "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED",
   "permissionStatus": "BLOCKED",
-  "permissionBlockerClass": "SAIA_REST_HANDLERS_NOT_REGISTERED",
-  "restHandlerProbeStatus": "NOT_REGISTERED",
+  "permissionBlockerClass": "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED",
+  "restHandlerProbeStatus": "PARTIALLY_REGISTERED",
   "requiredTools": [
     "saia_generate_spl",
     "saia_explain_spl",
@@ -25,13 +25,13 @@
     "saia_optimize_spl",
     "saia_ask_splunk_question"
   ],
-  "summary": "The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are not registered for the SAIA routes.",
+  "summary": "The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are only partially registered for the SAIA routes.",
   "operatorChecks": [
+    "Compare the Splunk MCP Server app's SAIA endpoint metadata against the Splunk AI Assistant app routes served by splunkd.",
+    "Confirm every advertised SAIA handler route is present; partial route registration means the app or MCP tool metadata is not aligned.",
     "Restart splunkd after the Splunk AI Assistant install, upgrade, or cloud-connect activation.",
-    "Probe the Splunk AI Assistant app REST namespace from the operator shell; `/servicesNS/nobody/Splunk_AI_Assistant_Cloud` and the generate/explain/optimize/ask handlers must not return 404.",
-    "Confirm `$SPLUNK_HOME/etc/apps/Splunk_AI_Assistant_Cloud/bin/` contains the app's Python REST handler files.",
-    "If the namespace still returns 404 after restart, reinstall Splunk_AI_Assistant_Cloud v2.0.0 or later, then restart splunkd again.",
-    "Rerun the strict hosted-model diagnostic from the same env file."
+    "If a route remains missing after restart, reinstall or upgrade Splunk_AI_Assistant_Cloud and the Splunk MCP Server app together.",
+    "If local routes are present but hosted-model calls still return 404, confirm the tenant is not a Splunk Trial stack and is provisioned for Splunk AI Assistant cloud connected hosted-model endpoints."
   ],
   "safeForPublicExport": true,
   "rawArtifactTracked": false,

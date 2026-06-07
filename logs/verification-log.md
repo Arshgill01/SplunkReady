@@ -15426,6 +15426,59 @@ Result:
   secret values and reported zero leaked secret names.
 - PASS: `mutation=false`.
 
+MCP proof refresh:
+
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json >/tmp/splunkready-mcp-proof-move156.json`
+
+Result:
+
+- PASS: command completed and refreshed tracked MCP proof evidence.
+- PASS: `operatorLiveHostedModelStatus.blockerClass` is
+  `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`.
+- PASS: `operatorLiveHostedModelStatus.restHandlerProbeStatus` is
+  `PARTIALLY_REGISTERED`.
+
+Evidence hash:
+
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS: all tracked submission evidence hashes verified.
+
+Focused gates:
+
+- `npx vitest run tests/scripts/live-hosted-model-status.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+
+Result:
+
+- PASS: 2 test files passed.
+- PASS: 6 tests passed.
+- PASS: submission-copy audit passed with 152 required claims.
+
+Full gate:
+
+- `npm run check`
+
+Result:
+
+- PASS: scaffold verification with 85 waves and 2270 project files.
+- PASS: runtime contracts with 19 rules, 4 fixture missions, and 20 evidence refs.
+- PASS: TypeScript build and production UI build.
+- PASS: public demo export audit with 228 files and `mutation=false`.
+- PASS: package readiness audit with 177 packed files checked.
+- PASS: package installability audit; packed `splunkready-0.1.3.tgz`
+  installed, clean `npx splunkready judge-proof` returned `PASS`, and clean
+  `npx splunkready mcp` initialized.
+- PASS: full Vitest suite with 65 test files and 409 tests passed.
+- PASS: secret env ignore audit.
+- PASS: reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS: submission-copy audit with 152 required claims.
+- PASS: final `git diff --check`.
+
 Fresh live diagnostic:
 
 - `npm run build >/tmp/splunkready-hosted-build-move155.log && NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --json >/tmp/splunkready-hosted-model-diagnostic-move155.json`
@@ -15481,3 +15534,47 @@ Result:
   0 failing latest verdicts.
 - PASS: submission-copy audit with 152 required claims.
 - PASS: final `git diff --check`.
+
+## 2026-06-07T19:44:27Z - Move 156 SAIA partial route and trial compatibility evidence
+
+Targeted classifier test:
+
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "hosted-model|SAIA|partially registered"`
+
+Result:
+
+- PASS: 1 test file passed.
+- PASS: 9 tests passed.
+- PASS: the mixed route case reports
+  `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED` and
+  `restHandlerProbe.status: "PARTIALLY_REGISTERED"`.
+
+Fresh live diagnostic:
+
+- `npm run build >/tmp/splunkready-hosted-build-move156.log && NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --json >/tmp/splunkready-hosted-model-diagnostic-move156.json`
+
+Result:
+
+- PASS: command completed and wrote ignored raw artifacts.
+- BLOCKED: CLI and diagnostic status remain `BLOCKED`.
+- PASS: blocker is `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`.
+- PASS: route probe is `PARTIALLY_REGISTERED`.
+- PASS: all four SAIA tools are advertised and blocked.
+- PASS: `mutation=false`.
+- Note: `NODE_TLS_REJECT_UNAUTHORIZED=0` was used only for the local
+  self-signed Splunk endpoint verification path.
+
+Public-safe export:
+
+- `node scripts/audit-live-hosted-model-status.mjs --artifact artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json --env-file ./.splunkready-live.env --out submission-evidence/live-hosted-model-status/live-hosted-model-status.json --require-blocked --expect-blocker SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`
+
+Result:
+
+- PASS: exported a public-safe summary to
+  `submission-evidence/live-hosted-model-status/live-hosted-model-status.json`.
+- PASS: current operator-live status remains `BLOCKED`.
+- PASS: blocker is `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`.
+- PASS: all four SAIA tools are advertised and blocked.
+- PASS: redaction audit checked the ignored live diagnostic against env-file
+  secret values and reported zero leaked secret names.
+- PASS: `mutation=false`.

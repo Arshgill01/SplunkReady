@@ -81,6 +81,7 @@ const startMockMcpServer = async (
     hostedModelErrorText?: string;
     hostedModelErrorByToolName?: Partial<Record<string, string>>;
     saiaManagementRestStatus?: number;
+    saiaManagementRestStatusByPath?: Partial<Record<string, number>>;
     restHandlerProbeErrorText?: string;
   } = {}
 ) => {
@@ -99,7 +100,8 @@ const startMockMcpServer = async (
     if (request.method === "GET" && request.url?.startsWith("/servicesNS/")) {
       const path = request.url.split("?")[0] ?? request.url;
       managementCalls.push({ method: "GET", path });
-      response.writeHead(options.saiaManagementRestStatus ?? 200, { "content-type": "application/json" });
+      const status = options.saiaManagementRestStatusByPath?.[path] ?? options.saiaManagementRestStatus ?? 200;
+      response.writeHead(status, { "content-type": "application/json" });
       response.end(JSON.stringify({ entry: [] }));
       return;
     }
@@ -3472,6 +3474,102 @@ describe("SplunkReady CLI flow", () => {
       ])
     );
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));
+  });
+
+  it("classifies partially registered SAIA app REST routes separately from total handler absence", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-hosted-model-diagnostic-partial-routes-"));
+    const mcp = await startMockMcpServer({
+      hostedModelErrorText: "404 Client Error: Not Found for url: https://splunk.example.invalid/mcp/saia",
+      saiaManagementRestStatusByPath: {
+        "/servicesNS/nobody/Splunk_AI_Assistant_Cloud": 200,
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl": 400,
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/explainspl": 400,
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/optimizespl": 400,
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask": 404
+      }
+    });
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: mcp.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token"
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["hosted-model-diagnostic", "--mode", "live", "--out", outDir, "--json"], process.cwd(), env))
+          .stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "hosted-model-diagnostic",
+        status: "BLOCKED",
+        artifacts: expect.arrayContaining([join(outDir, "hosted-model-diagnostic.json")])
+      });
+    } finally {
+      await mcp.close();
+    }
+
+    const diagnostic = JSON.parse(await readFile(join(outDir, "hosted-model-diagnostic.json"), "utf8")) as {
+      status: string;
+      mutation: boolean;
+      blockerClass: string;
+      remediation: { status: string; blockerClass: string; summary: string; operatorChecks: string[] };
+      permission: { status: string; blockerClass: string; message: string; error: string; requiredActions: string[] };
+      restHandlerProbe: {
+        status: string;
+        error: string;
+        managementRoutes: Array<{ method: string; path: string; status: string; httpStatus: number }>;
+      };
+    };
+
+    expect(diagnostic).toMatchObject({
+      status: "BLOCKED",
+      mutation: false,
+      blockerClass: "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED",
+      remediation: {
+        status: "ACTION_REQUIRED",
+        blockerClass: "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED",
+        summary:
+          "The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are only partially registered for the SAIA routes."
+      },
+      permission: {
+        status: "BLOCKED",
+        blockerClass: "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED",
+        message:
+          "The MCP contract advertises hosted-model tools, but Splunk AI Assistant REST handlers are only partially registered with splunkd for the advertised SAIA routes.",
+        error: expect.stringContaining("only partially registered")
+      }
+    });
+    expect(diagnostic.restHandlerProbe).toMatchObject({
+      status: "PARTIALLY_REGISTERED",
+      error: expect.stringContaining("only partially registered")
+    });
+    expect(diagnostic.restHandlerProbe.managementRoutes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
+          status: "PASS",
+          httpStatus: 400
+        }),
+        expect.objectContaining({
+          path: "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask",
+          status: "NOT_REGISTERED",
+          httpStatus: 404
+        })
+      ])
+    );
+    expect(diagnostic.permission.requiredActions).toEqual(
+      expect.arrayContaining([
+        "Compare the Splunk MCP Server app's SAIA endpoint metadata against the Splunk AI Assistant app routes served by splunkd.",
+        "If local routes are present but hosted-model calls still return 404, confirm the tenant is not a Splunk Trial stack and is provisioned for Splunk AI Assistant cloud connected hosted-model endpoints."
+      ])
+    );
+    expect(diagnostic.remediation.operatorChecks).toEqual(
+      expect.arrayContaining([
+        "Confirm every advertised SAIA handler route is present; partial route registration means the app or MCP tool metadata is not aligned.",
+        "If local routes are present but hosted-model calls still return 404, confirm the tenant is not a Splunk Trial stack and is provisioned for Splunk AI Assistant cloud connected hosted-model endpoints."
+      ])
+    );
   });
 
   it("writes blocked hosted-model artifacts when live SAIA config is not exported", async () => {

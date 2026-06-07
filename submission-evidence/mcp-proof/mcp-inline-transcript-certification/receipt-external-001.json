@@ -37,6 +37,7 @@
   ],
   "policyPatchSummary": [],
   "rerunComparison": {},
+  "receiptHash": "7fe3f3e2c0adc1fa27568910166c0901a4e29d155fb2d23c4561726331163755",
   "generatedBy": "Agent Readiness Compiler",
   "notes": "This receipt grades an externally supplied trace. The deterministic rule engine decides pass/fail; the trace producer is outside SplunkReady."
 }

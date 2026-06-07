@@ -1000,3 +1000,14 @@ public-safe and the redaction audit found no env-file secret value leaks.
 Residual risk: hosted-model proof is not real PASS evidence until splunkd serves
 the Splunk AI Assistant REST handlers and
 `hosted-model-diagnostic --require-pass true` passes.
+
+Move 156 narrows the current operator-live hosted-model blocker. The local SAIA
+namespace and generate/explain/optimize routes are served by splunkd, but the
+advertised ask route still returns 404 and all four `saia_*` tool calls remain
+blocked. SplunkReady now reports
+`SAIA_REST_HANDLERS_PARTIALLY_REGISTERED` instead of total handler absence.
+Residual risk remains external to SplunkReady: the deployment may need a Splunk
+restart, aligned Splunk AI Assistant and MCP Server app versions, route metadata
+repair, or tenant provisioning. Splunk's own AI Assistant docs also say Trial
+stacks are not compatible, so a Trial stack can be an entitlement/provisioning
+blocker even when the local app appears installed.

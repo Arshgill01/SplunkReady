@@ -140,7 +140,7 @@ const checks = [
   ["Claim ledger MCP live mock status", files.claimLedger, "liveMockSplunkMcp"],
   ["Claim ledger MCP live mock command", files.claimLedger, "mcp-proof --out submission-evidence/mcp-proof --live-mock --json"],
   ["Claim ledger operator live hosted-model status", files.claimLedger, "operatorLiveHostedModelStatus"],
-  ["Claim ledger operator live SAIA route blocker", files.claimLedger, "SAIA_REST_HANDLERS_NOT_REGISTERED"],
+  ["Claim ledger operator live SAIA route blocker", files.claimLedger, "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED"],
   ["Claim ledger operator live route probe status", files.claimLedger, "restHandlerProbeStatus"],
   ["Claim ledger live hosted-model status artifact", files.claimLedger, "submission-evidence/live-hosted-model-status/live-hosted-model-status.json"],
   ["Claim ledger live hosted-model redaction audit", files.claimLedger, "redactionAudit.status: \"PASS\""],

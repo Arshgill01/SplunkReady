@@ -178,6 +178,7 @@ commands, or filesystem paths.
 | P0 | [153](moves153.md) Hosted demo currentness after package release | 0.5d | Keeps the GitHub Pages demo source-current and asset-current after the latest package and UI changes. |
 | P1 | [154](moves154.md) GitHub Packages scoped mirror | 0.5d | Publishes and verifies the repo-linked `@arshgill01/splunkready` package for the GitHub Packages sidebar. |
 | P0 | [155](moves155.md) Live hosted-model status redaction evidence | 0.5d | Tracks the current operator-live SAIA blocker as public-safe evidence while proving raw live artifacts do not leak secrets. |
+| P0 | [156](moves156.md) SAIA partial route and trial compatibility evidence | 0.5d | Separates partial Splunk AI Assistant route registration from total handler absence and documents the official Trial-stack compatibility boundary. |
 
 ## Non-Negotiable Boundaries
 

@@ -2444,6 +2444,57 @@ Files changed:
 - `logs/execution-log.md`
 - `logs/verification-log.md`
 
+## 2026-06-07T19:44:27Z - Move 156 SAIA partial route and trial compatibility evidence
+
+Intent:
+
+- Give the operator-owned live hosted-model path one more diagnostic pass after
+  the cloud connection/token setup and distinguish partial Splunk AI Assistant
+  route registration from total REST handler absence.
+
+Actions:
+
+- Added `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED` as a distinct hosted-model
+  blocker class.
+- Updated the SAIA management-route probe so mixed route results report
+  `PARTIALLY_REGISTERED`.
+- Added a CLI regression test for the current live shape: namespace plus
+  generate/explain/optimize routes present, ask route missing, and all four
+  hosted-model tool calls returning not found.
+- Reran the live diagnostic with the ignored operator env file and local
+  self-signed TLS workaround.
+- Refreshed public-safe live hosted-model evidence and MCP proof summaries.
+- Updated the live setup checklist with the official Splunk AI Assistant Trial
+  stack limitation and Cloud Connected Enterprise path.
+- Updated the claim ledger, move index, and risk log.
+
+Files changed:
+
+- `src/workflows/hosted-model-actions.ts`
+- `tests/cli/flow.test.ts`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `docs/live-setup-checklist.md`
+- `moves/README.md`
+- `moves/moves156.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/live-hosted-model-status/live-hosted-model-status.json`
+- `submission-evidence/mcp-proof/`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Result:
+
+- The current operator-live status remains `BLOCKED`.
+- The blocker is now classified as
+  `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`.
+- The safe summary reports all four SAIA tools advertised and blocked,
+  `restHandlerProbeStatus: "PARTIALLY_REGISTERED"`, `redactionAudit.status:
+  "PASS"`, and `mutation=false`.
+- Full `npm run check` passed with 65 test files and 409 tests.
+- No raw endpoint, token, or env-file value was committed.
+
 ## 2026-06-07T19:22:02Z - Move 154 GitHub Packages scoped mirror
 
 Intent:
