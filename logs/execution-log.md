@@ -11989,3 +11989,34 @@ Files changed:
 
 Open blockers:
 - Hosted CI needs to run after push for Move 107.
+
+## 2026-06-07 14:26 - Move 108 Current Goal Audit Refresh
+
+Scope:
+- Refreshed `docs/goal-completion-audit.md` from stale Wave 80-era evidence
+  to the current post-package, post-hosted-demo, post-cleanroom state.
+- Mapped the locked product requirements to concrete artifacts, commands,
+  hosted routes, CI runs, and residual risks.
+- Added explicit evidence for the published npm package, hosted demo routes,
+  MCP composition proof, CLI modularization progress, public evidence pack,
+  remote cleanroom proof, and public live-security redaction guard.
+- Kept the explicit user-approval stop condition intact.
+- Did not call `update_goal`.
+- Did not mark the objective complete.
+- Did not change product behavior.
+- Did not use live Splunk credentials.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `docs/goal-completion-audit.md`
+- `moves/README.md`
+- `moves/moves108.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 108.
+- The overall goal remains open until explicit user approval.

@@ -493,3 +493,11 @@ redacts `live-security-proof-summary.json` endpoint URLs, private IPs, user
 paths, raw bodies, bearer strings, and token-like keys before writing public
 export files. This still does not claim that the current operator-owned live
 proof has been exported and tracked; it proves the redaction path is guarded.
+
+Move 108 reduces context-compaction and stale-status risk by refreshing
+`docs/goal-completion-audit.md` against the current published-package,
+hosted-demo, MCP-composition, remote-cleanroom, and live-redaction evidence.
+Residual risk remains explicit: the overall goal is not complete until the user
+approves completion, the user still owns final submission/video materials, and
+MCP-award odds can improve with stronger public evidence of external MCP
+client usage.

@@ -9635,6 +9635,36 @@ Open blockers:
 
 - Hosted CI still needs to run after push.
 
+## 2026-06-07 - Move 108 Current Goal Audit Refresh
+
+Commands:
+
+- `npm run verify:scaffold`
+- `git diff --check`
+
+Result:
+
+- PASS for scaffold verification:
+  - `PASS: scaffold verified`;
+  - `waves: 85`;
+  - `project files: 2087`.
+- PASS for whitespace/diff validation:
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was not run because this move changed only documentation and
+  process logs, not UI source or behavior.
+- Full `npm run check` is expected to run in hosted CI after push.
+- Did not call `update_goal`.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- The overall goal remains open until explicit user approval.
+
 ## 2026-06-07 - Move 106 Live Security Public Export Redaction Guard
 
 Commands:

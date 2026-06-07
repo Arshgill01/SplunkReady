@@ -1,156 +1,152 @@
 # Goal Completion Audit
 
-Wave: 80 - Goal Audit After Demo Route Cleanroom
+Move: 108 - Current Goal Audit Refresh
 
 ## Objective Restated
 
-Build SplunkReady end to end, wave by wave, as a Splunk-native certification harness that proves whether a specific AI agent is safe and correct enough to operate on a specific Splunk deployment.
+Build SplunkReady end to end as a Splunk-native certification harness that
+proves whether a specific AI agent is safe and correct enough to operate on a
+specific Splunk deployment.
 
 Concrete success criteria:
 
-- preserve the locked product identity: SplunkReady, Agent Readiness Compiler, Readiness Receipt, Platform & Developer Experience, security investigation readiness;
-- implement a fixture-first certification flow that does not require live Splunk credentials for normal tests;
+- preserve the locked product identity: `SplunkReady`, `Agent Readiness
+  Compiler`, `Readiness Receipt`, Platform & Developer Experience, and security
+  investigation readiness;
+- keep fixture mode credential-free and live mode behind explicit operator
+  configuration;
 - keep fixture and live modes aligned after the adapter boundary;
-- run a real but naive specimen agent, record traces, grade them with deterministic rule IDs, and generate receipts;
-- avoid LLM-primary pass/fail grading, Splunk auto-mutation, chatbot/copilot/dashboard/generic-eval drift, and hardcoded pass/fail behavior;
-- demonstrate fail -> compile -> patch -> rerun -> pass in under 3 minutes with reviewable artifacts;
+- run a real but naive specimen agent, record traces, grade them with
+  deterministic rule IDs, and generate receipts;
+- keep LLM/SAIA output advisory and never use it as the pass/fail authority;
+- never auto-mutate Splunk;
+- demonstrate fail -> compile -> patch -> rerun -> pass with reviewable
+  artifacts;
+- expose judge-friendly paths through published npm package, hosted demo,
+  tracked evidence, and remote cleanroom proof;
 - keep reviewer findings resolved or explicitly waived;
-- keep the pushed `splunkready-build` branch clean and verifiable from a fresh remote clone;
-- do not mark the overall thread goal complete until the user explicitly approves completion.
+- keep the pushed `splunkready-build` branch clean and verifiable;
+- do not mark the overall thread goal complete until the user explicitly
+  approves completion.
 
-This audit does not mark the goal complete. The explicit user approval to mark completion has not been given, and no `update_goal` call has been made.
+This audit does not mark the goal complete. The explicit user approval to mark
+completion has not been given, and no `update_goal` call has been made.
 
 ## Prompt-To-Artifact Checklist
 
 | Requirement | Evidence checked | Status |
 | --- | --- | --- |
-| Product name is `SplunkReady` | `README.md`, `docs/devpost-submission.md`, `npm run audit:submission-copy` | PASS |
-| Tagline is `Certify AI agents before they touch production Splunk.` | `README.md`, `docs/devpost-submission.md`, `npm run audit:submission-copy` | PASS |
-| Engine is `Agent Readiness Compiler` | README, Devpost draft, receipt/UI copy, submission-copy audit | PASS |
-| Primary artifact is `Readiness Receipt` | receipt generator tests, CLI artifacts, UI shell, README | PASS |
-| Submission track is Platform & Developer Experience | `docs/devpost-submission.md`, `npm run audit:submission-copy` | PASS |
-| Flagship story is security investigation readiness | `docs/demo-script.md`, security missions, fresh Wave 80 demo artifacts | PASS |
-| Product is not a chatbot, SOC copilot, MCP telemetry dashboard, detection-health dashboard, or generic eval harness | README, Devpost draft, negative-claim audit, UI bounded to receipt/trace evidence | PASS |
-| Does not use an LLM as primary pass/fail grader | `src/grader`, deterministic rule tests, `docs/grader-rule-catalog.md`, demo rule IDs | PASS |
-| Deterministic grader rules cite rule IDs from catalog | `docs/grader-rule-catalog.md`; Wave 80 demo violations include `SPL-001`, `SPL-003`, `KO-001`, `EVD-001`, `ANS-001` | PASS |
-| Specimen agent is real but naive, not hardcoded to fail/pass | `tests/agents/specimen.test.ts`, CLI flow tests, before/after traces and receipts | PASS |
-| Does not auto-mutate Splunk | policy patch Markdown, README, Devpost draft, live adapter docs, live smoke tests | PASS |
-| Normal fixture tests require no live Splunk credentials | `npm run check` and fresh Wave 80 demo ran with live env vars unset | PASS |
-| Fixture and live mode do not diverge after adapter boundary | `docs/fixture-live-parity.md`, adapter tests, live smoke tests, shared CLI/artifact contracts | PASS |
-| Golden traces are representable by real trace data | fixture trace tests, CLI demo artifacts, trace recorder tests, `docs/golden-traces.md` | PASS |
-| Important UI claims are backed by contract, trace, violation, receipt, or evidence data | `tests/ui/shell.test.ts`, Wave 77 certification replay, Wave 80 shell inspection | PASS |
-| UI remains creative without AI-slop/dashboard drift | Wave 77 replay UI and Wave 78 route changes use artifact-backed certification replay, not fake live telemetry or generic charts | PASS |
-| Demo follows current `docs/demo-script.md` | Fresh Wave 80 demo route is `splunkready-shell.html#certification-replay`; supporting rerun receipt route remains present | PASS |
-| Readiness Receipts show fail -> patch -> rerun -> pass | Fresh Wave 80 demo: before `NOT READY` score 0 with 6 violations; after `READY` score 100 with 0 violations; policy patch present | PASS |
-| Demo rehearsed under 3 minutes | Fresh Wave 80 `demo-rehearsal.json` reported `fitsUnderThreeMinutes: true`, measured CLI orchestration `0.06s` | PASS |
-| Reviewer Critical/High findings resolved or waived | `npm run audit:reviewers` passed: 81 groups, 4 pass-with-concerns files, 0 failing latest verdicts | PASS |
-| Branch is long-running `splunkready-build` | `git status --short --branch` showed `splunkready-build...origin/splunkready-build` | PASS |
-| Remote branch is pushed and verifiable | `git rev-parse HEAD` and `git rev-parse origin/splunkready-build` both returned `29f03d63cc65252d710b7a3ca8c747512b8e76c1`; Wave 79 cleanroom verified Wave 78 pushed commit | PASS |
-| One commit per completed wave by default | Recent history contains separate Wave 77, Wave 78, and Wave 79 commits; Wave 77 used a small follow-up commit for a late reviewer pass | PASS |
-| Do not start next wave with unresolved dirty implementation changes | Wave 80 started from a clean `splunkready-build` worktree after Wave 79 push | PASS |
-| Logs are updated per wave | `logs/execution-log.md` and `logs/verification-log.md` contain Wave 80 entries with exact command/result evidence | PASS |
-| Current-state docs reflect implementation progress | `MANIFEST.md`, `PLAN.md`, handoff, wave index, logs, and this audit are refreshed through Wave 80 | PASS |
-| Goal is not marked complete without explicit user approval | No `update_goal` call has been made; this report records approval as missing | PASS |
+| Product name is `SplunkReady` | `README.md`; `docs/devpost-submission.md`; `npm run audit:submission-copy` | PASS |
+| Tagline is `Certify AI agents before they touch production Splunk.` | `README.md`; `docs/devpost-submission.md`; `npm run audit:submission-copy` | PASS |
+| Engine is `Agent Readiness Compiler` | README, Devpost draft, receipts, UI copy, submission-copy audit | PASS |
+| Primary artifact is `Readiness Receipt` | receipt artifacts, UI proof browser, `submission-evidence/claim-ledger.md` | PASS |
+| Submission track is Platform & Developer Experience | `docs/devpost-submission.md`; `npm run audit:submission-copy` | PASS |
+| Flagship story is security investigation readiness | README, Devpost draft, suite proof, live-security docs | PASS |
+| Product is not a chatbot, SOC copilot, MCP telemetry dashboard, detection-health dashboard, or generic eval harness | README, Devpost draft, forbidden-claim audit | PASS |
+| Deterministic rules are authoritative | `docs/grader-rule-catalog.md`; receipts; `judge-proof-summary.json`; `llmEvidence.passFailAuthority=deterministic-rule-engine` | PASS |
+| LLM/SAIA output is advisory only | `DECISIONS.md`; README LLM sections; judge-proof LLM evidence slot | PASS |
+| Specimen agent is real but naive, not hardcoded pass/fail | agent tests, fixture traces, LLM proof workflow, judge proof | PASS |
+| SplunkReady never auto-mutates Splunk | README, Devpost draft, live actions, proof summaries, `mutation=false` audits | PASS |
+| Fixture tests require no live Splunk credentials | `npm run check`; remote cleanroom; published `npx` smoke | PASS |
+| Fixture/live parity is preserved after the adapter | `docs/fixture-live-parity.md`; adapter tests; live action workflows | PASS |
+| Demo shows fail -> patch -> rerun -> pass | `submission-evidence/suite-proof/suite-proof-summary.json`; proof audit; receipts | PASS |
+| Receipt provenance is visible | suite proof receipts, MCP transcript receipt, compiler diagnostics, proof manifests | PASS |
+| MCP story uses existing Splunk MCP plus SplunkReady certification | `submission-evidence/mcp-proof/mcp-client-walkthrough.*`; MCP resources/prompts/composition scorecard | PASS |
+| MCP server surface has tools, resources, and prompts | `npm run mcp-proof`; `submission-evidence/mcp-proof/mcp-proof-summary.json` | PASS |
+| CLI is no longer a 4k-line monolith | CLI extraction moves 86-90; current `src/cli.ts` handoff status | PASS |
+| Package is public and judge-runnable | `https://www.npmjs.com/package/splunkready`; clean-folder `npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json` | PASS |
+| Hosted demo URL is public-copy guarded | README, Devpost draft, `audit:submission-copy` requiring hosted MCP and judge-proof routes | PASS |
+| Evidence pack reflects current judge-facing proof | `submission-evidence/README.md`; claim ledger; screenshots; SHA ledger | PASS |
+| Evidence pack hashes verify | `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt` in Move 105 cleanroom | PASS |
+| Public proof export redacts live-security summary fields | `tests/workflows/public-proof-export.test.ts` | PASS |
+| Remote branch is pushed and verifiable | Move 105 remote cleanroom at commit `2835916b11ba7c99df062f7a7e2d553985d5c9e2`; latest CI at `7f3c1bb87d7f89114d154fe8f5dafe88b2b8058e` | PASS |
+| Reviewer inbox has no failing latest verdicts | `npm run audit:reviewers` in local, hosted CI, and cleanroom gates | PASS |
+| Secret/env files are not required or tracked for fixture proof | `npm run audit:secret-env-ignore`; cleanroom fixture gates | PASS |
+| Goal is not marked complete without explicit user approval | No `update_goal` call; PLAN and handoff keep goal open | PASS |
 
 ## Current Verification Evidence
 
-Commands run on June 1, 2026 from `/Users/arshdeepsingh/Developer/SplunkReady`.
+Evidence baseline before this Move 108 commit:
+
+- Commit: `7f3c1bb87d7f89114d154fe8f5dafe88b2b8058e`
+- Branch: `splunkready-build`
+- Local state after push: clean and tracking `origin/splunkready-build`
+- Hosted CI: run `27087904074`, job `npm run check`, success
+
+Recent local gates:
 
 ```bash
 npm run check
 ```
 
-Result: PASS. Scaffold verifier passed with 81 wave files and 417 project files; Vitest passed 31 test files / 143 tests.
+Result at Move 106: PASS.
+
+- scaffold verified;
+- runtime contracts verified;
+- TypeScript build completed;
+- production UI build completed;
+- public demo export audit passed with 183 files;
+- package readiness audit checked 162 packed files;
+- package installability audit installed `splunkready-0.1.0.tgz` and `npx
+  splunkready judge-proof` returned `PASS`;
+- 59 test files passed;
+- 355 tests passed;
+- secret env ignore audit passed;
+- reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and 0
+  failing latest verdicts;
+- submission copy audit passed with 39 required claims.
+
+Remote cleanroom:
+
+- Report: `docs/remote-cleanroom-after-hosted-copy-report.md`
+- Commit verified:
+  `2835916b11ba7c99df062f7a7e2d553985d5c9e2`
+- `npm ci --ignore-scripts`: PASS, 0 vulnerabilities.
+- `npm run check`: PASS, 58 test files / 354 tests.
+- evidence-pack SHA verification: PASS.
+- published package smoke from a separate clean temp folder: PASS,
+  `mutation=false`, deterministic rule-engine authority.
+- hosted MCP proof fetch: PASS.
+- hosted judge-proof fetch: PASS.
+- tracked sidecar artifact scan: absent.
+
+Published package judge path:
 
 ```bash
-npm run audit:submission-copy
+npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json
 ```
 
-Result: PASS. The audit checked 28 required claims.
+Expected and verified result: `PASS`, `mutation=false`.
 
-```bash
-npm run audit:reviewers
+Hosted routes:
+
+```text
+https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof
+https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser
 ```
 
-Result: PASS. Reviewer inbox audit passed across 81 groups, 4 pass-with-concerns files, and 0 failing latest verdicts.
-
-```bash
-npm run build
-```
-
-Result: PASS. TypeScript compiled to `dist`.
-
-```bash
-tmp=$(mktemp -d /tmp/splunkready-wave80-audit-XXXXXX) && \
-  unset SPLUNK_HOST SPLUNK_TOKEN SPLUNK_USERNAME SPLUNK_PASSWORD SPLUNK_SCHEME SPLUNK_PORT && \
-  npm run splunkready -- demo --out "$tmp"
-```
-
-Result: PASS. Fresh Wave 80 demo output directory: `/tmp/splunkready-wave80-audit-QwNqbe`.
-
-Demo inspection summary:
-
-```json
-{
-  "out": "/tmp/splunkready-wave80-audit-QwNqbe",
-  "artifactCount": 18,
-  "shellExists": true,
-  "replayRoute": true,
-  "notesHasReplay": true,
-  "shellHasReplay": true,
-  "shellHasRerun": true,
-  "policyPatchMarkdownNoMutation": true,
-  "policyPatchRules": [
-    "inject-contract-summary",
-    "discover-saved-searches-first",
-    "carry-evidence-into-final-answer"
-  ],
-  "before": {
-    "id": "receipt-before-001",
-    "verdict": "NOT READY",
-    "score": 0,
-    "violations": 6
-  },
-  "after": {
-    "id": "receipt-after-001",
-    "verdict": "READY",
-    "score": 100,
-    "violations": 0
-  },
-  "rehearsal": {
-    "status": "PASS",
-    "targetSeconds": 180,
-    "measuredSeconds": 0.06,
-    "fitsUnderThreeMinutes": true,
-    "story": "fail -> compile -> patch -> rerun -> pass",
-    "uiRoute": "/tmp/splunkready-wave80-audit-QwNqbe/splunkready-shell.html#certification-replay"
-  },
-  "ruleIds": [
-    "ANS-001",
-    "EVD-001",
-    "KO-001",
-    "SPL-001",
-    "SPL-003"
-  ]
-}
-```
-
-Current pushed branch evidence:
-
-- Local `HEAD`: `29f03d63cc65252d710b7a3ca8c747512b8e76c1`
-- `origin/splunkready-build`: `29f03d63cc65252d710b7a3ca8c747512b8e76c1`
-- Wave 79 remote cleanroom verified the pushed Wave 78 commit `a2d36b88b6a61afe5dffde61d12b81718215b4b2` from a fresh clone.
-- Wave 79 cleanroom passed `npm ci --ignore-scripts`, `npm run audit:reviewers`, `npm run check`, `npm run build`, fixture demo route inspection, and tracked sidecar artifact scan.
+Both routes were Playwright-verified in prior hosted-demo moves and fetched in
+the Move 105 remote cleanroom.
 
 ## Missing Or Weakly Verified Items
 
-- Overall goal completion is intentionally blocked until the user explicitly approves marking it complete.
-- No real live Splunk endpoint was used during this audit. This is expected for normal fixture and cleanroom verification; live mode remains optional and read-only through the documented live-smoke path.
-- `npm ci --ignore-scripts` in Wave 79 cleanroom reported one critical npm audit warning. No dependency change was made in that verification wave.
-- The final demo video itself has not been produced in this repository; the rehearsed artifact path and script are ready and verified.
+- Overall goal completion remains intentionally blocked until the user
+  explicitly approves marking it complete.
+- The user owns the final video/submission upload; the repo must not claim a
+  public video or final submission URL until the user provides one.
+- Raw operator-owned live proof artifacts remain ignored. Move 106 verifies the
+  redaction path for live-security summaries with synthetic data, but no current
+  real live proof export has been sanitized, tracked, and submitted.
+- MCP award chances can still improve with stronger public evidence of an
+  external MCP client using existing Splunk MCP plus SplunkReady certification.
 
 ## Conclusion
 
-The implementation evidence is strong for the product lock, deterministic grading, fixture/live boundaries, specimen-agent honesty, receipt provenance, certification replay demo route, fail -> patch -> rerun -> pass story, reviewer workflow, and pushed-branch cleanroom verification.
+The implementation evidence is now strong for product lock, deterministic
+grading, fixture/live boundaries, specimen-agent honesty, receipt provenance,
+MCP composition, published package installability, hosted demo availability,
+tracked evidence integrity, remote cleanroom reproducibility, and redaction
+guardrails.
 
-The objective must remain open because explicit user approval to mark completion has not been given and continuation QA is still active.
+The objective remains open because explicit user approval to mark completion has
+not been given and further award-maximization work is still possible.
