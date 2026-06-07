@@ -14555,3 +14555,29 @@ Notes:
   deterministic rule implementations. It does not introduce an executable policy
   DSL or LLM-based pass/fail path.
 - The mock Splunk MCP Docker image is now locally build- and smoke-validated.
+
+## 2026-06-07T18:45:28Z - Move 150 Docker CI hardening
+
+Intent:
+
+- Make the mock Splunk MCP Docker build a remote CI-validated claim instead of
+  only a local validation result.
+
+Actions:
+
+- Added a GitHub Actions step that builds `Dockerfile.mock-splunk-mcp` as
+  `splunkready/mock-splunk-mcp:ci`.
+- Added a CI container stdio JSON-RPC smoke that calls `initialize`,
+  `tools/list`, and `splunk_run_saved_search`.
+- The smoke asserts the mock MCP server identity, required read-only Splunk and
+  SAIA tool exposure, and the fixture-backed lateral-movement saved-search
+  payload.
+- Updated the risk register to keep this open until the next pushed CI run
+  passes.
+
+Files changed:
+
+- `.github/workflows/ci.yml`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`

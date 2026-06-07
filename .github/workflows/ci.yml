@@ -37,3 +37,39 @@ jobs:
 
       - name: Run credential-free live mock proof
         run: npm run live-mock-proof
+
+      - name: Build mock Splunk MCP Docker image
+        run: docker build -f Dockerfile.mock-splunk-mcp -t splunkready/mock-splunk-mcp:ci .
+
+      - name: Smoke test mock Splunk MCP Docker image
+        run: |
+          {
+            printf '%s\n' '{"jsonrpc":"2.0","id":"init","method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci-docker-smoke","version":"1"}}}'
+            printf '%s\n' '{"jsonrpc":"2.0","id":"tools","method":"tools/list","params":{}}'
+            printf '%s\n' '{"jsonrpc":"2.0","id":"saved","method":"tools/call","params":{"name":"splunk_run_saved_search","arguments":{"name":"ES - Lateral Movement Auth Chain","app":"SplunkEnterpriseSecuritySuite"}}}'
+          } | timeout 10 docker run --rm -i splunkready/mock-splunk-mcp:ci > /tmp/mock-splunk-mcp-smoke.jsonl
+
+          node <<'NODE'
+          const fs = require("node:fs");
+          const lines = fs.readFileSync("/tmp/mock-splunk-mcp-smoke.jsonl", "utf8").trim().split(/\n+/);
+          const messages = lines.map((line) => JSON.parse(line));
+          const init = messages.find((message) => message.id === "init");
+          const tools = messages.find((message) => message.id === "tools");
+          const saved = messages.find((message) => message.id === "saved");
+          if (init?.result?.serverInfo?.name !== "splunkready-mock-splunk-mcp") {
+            throw new Error("mock MCP container did not initialize correctly");
+          }
+          const toolNames = new Set((tools?.result?.tools ?? []).map((tool) => tool.name));
+          for (const required of ["splunk_get_info", "splunk_run_saved_search", "saia_generate_spl"]) {
+            if (!toolNames.has(required)) {
+              throw new Error(`mock MCP container missing tool ${required}`);
+            }
+          }
+          if (saved?.result?.isError) {
+            throw new Error("mock MCP saved-search call returned an error");
+          }
+          const savedPayload = saved?.result?.structuredContent;
+          if (savedPayload?.savedSearchRef !== "saved-search-lateral-movement" || savedPayload.resultCount !== 3) {
+            throw new Error("mock MCP saved-search smoke returned unexpected payload");
+          }
+          NODE

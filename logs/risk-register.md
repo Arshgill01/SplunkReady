@@ -935,3 +935,11 @@ passed for `initialize`, `tools/list`, and `splunk_run_saved_search`, and
 `docker compose -f docker-compose.mock.yml build mock-splunk-mcp` passed.
 Residual risk: this is local Docker validation, not a remote CI Docker build
 unless CI is later extended to run Docker.
+
+Move 150 Docker CI hardening closes that residual CI gap in source. The GitHub
+Actions workflow now builds `Dockerfile.mock-splunk-mcp` and runs the same
+container stdio JSON-RPC smoke against `initialize`, `tools/list`, and
+`splunk_run_saved_search`, asserting the mock MCP server name, required Splunk
+and SAIA tool exposure, and the fixture-backed saved-search payload. Residual
+risk: this needs the next pushed CI run to pass before it can be called
+remote-validated.

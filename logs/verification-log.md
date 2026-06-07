@@ -15058,3 +15058,49 @@ Result:
   0 failing latest verdicts.
 - PASS for submission-copy audit with 146 required claims.
 - PASS for final `git diff --check`.
+
+## 2026-06-07T18:45:28Z - Move 150 Docker CI hardening
+
+Commands:
+
+- `docker build -f Dockerfile.mock-splunk-mcp -t splunkready/mock-splunk-mcp:ci .`
+- `printf ... | timeout 10 docker run --rm -i splunkready/mock-splunk-mcp:ci > /tmp/mock-splunk-mcp-smoke.jsonl && node <<'NODE' ...`
+
+Results:
+
+- Initial local run of the new CI smoke failed because it attempted to parse the
+  MCP display text as JSON. The mock MCP tool response exposes the saved-search
+  payload through `structuredContent`; the CI assertion was corrected to use
+  that field.
+- PASS for the corrected Docker build and container stdio JSON-RPC smoke.
+- PASS assertions:
+  - `initialize` returned `splunkready-mock-splunk-mcp`;
+  - `tools/list` exposed `splunk_get_info`, `splunk_run_saved_search`, and
+    `saia_generate_spl`;
+  - `splunk_run_saved_search` returned
+    `savedSearchRef: "saved-search-lateral-movement"` and `resultCount: 3`.
+
+Pending:
+
+- Next pushed GitHub Actions run must pass before the Docker build/smoke is
+  remote-validated.
+
+Final local gate:
+
+- `npm run check`
+
+Result:
+
+- PASS for scaffold verification with 85 waves and 2260 project files.
+- PASS for runtime contracts with 19 rules, 4 fixture missions, and 20 evidence refs.
+- PASS for TypeScript build and production UI build.
+- PASS for public demo export audit with 228 files and `mutation=false`.
+- PASS for package readiness and package installability audits.
+- PASS for full Vitest suite:
+  - 64 test files passed;
+  - 404 tests passed.
+- PASS for secret env ignore audit.
+- PASS for reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS for submission-copy audit with 146 required claims.
+- PASS for final `git diff --check`.
