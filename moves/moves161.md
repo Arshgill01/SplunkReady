@@ -39,3 +39,8 @@ boundary.
   `[install] is_configured = false`, and the tracked `.spl` package reports
   AppInspect `SUCCESS` with 0 failures and 0 errors. KV-store, dashboard, and
   live-install evidence remain open.
+- 2026-06-08: Operator-owned receipt-store slice implemented. The package now
+  defines the optional `splunkready_receipts` KV Store collection,
+  `splunkready_receipts_lookup`, and `splunkready_overview.xml` Splunk Web view.
+  AppInspect reports 0 failures, 0 errors, and 5 warnings. Live-install
+  evidence remains open.

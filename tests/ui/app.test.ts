@@ -652,14 +652,14 @@ const mcpProofSummary = {
       summary: {
         error: 0,
         failure: 0,
-        not_applicable: 150,
+        not_applicable: 145,
         skipped: 0,
-        success: 95,
-        warning: 4
+        success: 99,
+        warning: 5
       },
       failureCount: 0,
       errorCount: 0,
-      warningCount: 4,
+      warningCount: 5,
       validationGroupCount: 1,
       nextSteps: ["All validation checks passed. No fixes from AppInspect required."],
       logsPreview: "Validation completed with 0 failures and 0 errors.",

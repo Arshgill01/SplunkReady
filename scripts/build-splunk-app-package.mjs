@@ -142,6 +142,7 @@ export = system
 
 const navXml = `<nav search_view="search">
   <view name="splunkready" default="true" />
+  <view name="splunkready_overview" />
 </nav>
 `;
 
@@ -157,6 +158,65 @@ const viewXml = `<view version="1.1" type="html">
 </view>
 `;
 
+const overviewViewXml = `<form version="1.1" theme="light">
+  <label>SplunkReady Receipt Overview</label>
+  <description>Readiness Receipt status from bundled credential-free evidence and optional operator-owned KV Store rows.</description>
+  <fieldset submitButton="false"></fieldset>
+  <row>
+    <panel>
+      <title>Bundled Proof Evidence</title>
+      <table>
+        <search>
+          <query>| makeresults
+| eval source="bundled-static-evidence", status="PASS", receipt="submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json", mutation="false", authority="splunkready-deterministic"
+| table source status receipt mutation authority</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">5</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Operator-Owned Receipt Store</title>
+      <table>
+        <search>
+          <query>| inputlookup splunkready_receipts_lookup
+| sort 0 - updated_at
+| table updated_at receipt_id verdict score mutation policy_id receipt_hash previous_receipt_hash source</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</form>
+`;
+
+const collectionsConf = `[splunkready_receipts]
+enforceTypes = true
+field.receipt_id = string
+field.receipt_hash = string
+field.previous_receipt_hash = string
+field.verdict = string
+field.score = number
+field.mutation = bool
+field.policy_id = string
+field.policy_version = string
+field.source = string
+field.updated_at = time
+accelerated_fields.receipt_lookup = {"receipt_id": 1, "receipt_hash": 1}
+`;
+
+const transformsConf = `[splunkready_receipts_lookup]
+external_type = kvstore
+collection = splunkready_receipts
+fields_list = _key, receipt_id, receipt_hash, previous_receipt_hash, verdict, score, mutation, policy_id, policy_version, source, updated_at
+`;
+
 const packageReadme = ({ version }) => `# SplunkReady Splunk App Package
 
 This package embeds the credential-free SplunkReady artifact workbench inside a
@@ -170,6 +230,11 @@ Splunk app shell.
 The app package contains static proof evidence and a launcher view. It does not
 include Splunk credentials, Python REST handlers, scripted inputs, modular
 inputs, searches, or write operations.
+
+It also defines an optional splunkready_receipts KV Store collection plus
+splunkready_receipts_lookup lookup for operator-owned receipt storage. The
+collection is empty at install time; SplunkReady does not populate it
+automatically.
 `;
 
 export const buildSplunkAppPackage = async ({
@@ -199,7 +264,10 @@ export const buildSplunkAppPackage = async ({
   await mkdir(resolve(appRoot, "appserver", "static", staticAppPath), { recursive: true });
 
   await writeFile(resolve(appRoot, "default", "app.conf"), appConf({ version }), "utf8");
+  await writeFile(resolve(appRoot, "default", "collections.conf"), collectionsConf, "utf8");
+  await writeFile(resolve(appRoot, "default", "transforms.conf"), transformsConf, "utf8");
   await writeFile(resolve(appRoot, "default", "data", "ui", "views", "splunkready.xml"), viewXml, "utf8");
+  await writeFile(resolve(appRoot, "default", "data", "ui", "views", "splunkready_overview.xml"), overviewViewXml, "utf8");
   await writeFile(resolve(appRoot, "default", "data", "ui", "nav", "default.xml"), navXml, "utf8");
   await writeFile(resolve(appRoot, "metadata", "default.meta"), defaultMeta, "utf8");
   await writeFile(resolve(appRoot, "README.md"), packageReadme({ version }), "utf8");
@@ -240,6 +308,9 @@ export const buildSplunkAppPackage = async ({
     packageSha256,
     staticSource: relative(repoRoot, sourceRoot).split(sep).join("/"),
     launcherView: `${appId}/default/data/ui/views/splunkready.xml`,
+    overviewView: `${appId}/default/data/ui/views/splunkready_overview.xml`,
+    receiptCollection: "splunkready_receipts",
+    receiptLookup: "splunkready_receipts_lookup",
     staticEntry: `${appId}/appserver/static/${staticAppPath}/index.html`,
     publicDemoManifest: `${appId}/appserver/static/${staticAppPath}/public-demo-manifest.json`,
     fileCount: appFiles.length,
@@ -251,7 +322,8 @@ export const buildSplunkAppPackage = async ({
     ],
     noCredentialFiles: true,
     noPythonHandlers: true,
-    noScriptedInputs: true
+    noScriptedInputs: true,
+    operatorOwnedReceiptStore: true
   };
 
   await writeFile(resolve(outputRoot, "splunk-app-package-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");

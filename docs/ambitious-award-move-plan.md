@@ -64,7 +64,10 @@ failure modes that map to existing hosted-model diagnostics.
 
 ### Stop Conditions
 
-- Do not introduce write operations against Splunk.
+- Do not introduce implicit write operations against Splunk. Explicit
+  operator-approved live setup, app installation, or receipt-store population is
+  allowed when it is documented, reversible, and outside the default
+  credential-free proof path.
 - Do not make SAIA output authoritative.
 - Do not claim real Splunk deployment evidence from the mock path.
 - Do not add a heavy dependency unless the standard MCP JSON-RPC server shape is
@@ -145,9 +148,9 @@ The next execution priority is:
 | Order | Move | Status | Why Now | Done When |
 | --- | --- | --- | --- | --- |
 | 1 | [Move 163](../moves/moves163.md) MCP recorder pass-through gateway | Implemented | Converts Move 159 from generated composition evidence into a real client-facing recorder that any MCP client can use. | `splunkready mcp-recorder --server splunk=... --server splunkready=...` proxies JSON-RPC frames, emits a redacted dual-server JSONL session, certifies the Splunk transcript, and updates `mcp-proof` evidence. |
-| 2 | [Move 164](../moves/moves164.md) Splunk AppInspect MCP composition | Implemented | Uses an official Splunk MCP-adjacent validation server to show multi-server MCP composition: Splunk investigation, AppInspect validation, and SplunkReady certification. | `mcp-proof --live-mock` now invokes `uvx splunk-appinspect[mcp] mcp-server`, calls `inspect_app` against the tracked `.spl` package, and records AppInspect as advisory evidence while SplunkReady remains receipt authority. Current AppInspect validation is `SUCCESS` with 0 package failures, 0 errors, and 4 warnings. |
+| 2 | [Move 164](../moves/moves164.md) Splunk AppInspect MCP composition | Implemented | Uses an official Splunk MCP-adjacent validation server to show multi-server MCP composition: Splunk investigation, AppInspect validation, and SplunkReady certification. | `mcp-proof --live-mock` now invokes `uvx splunk-appinspect[mcp] mcp-server`, calls `inspect_app` against the tracked `.spl` package, and records AppInspect as advisory evidence while SplunkReady remains receipt authority. Current AppInspect validation is `SUCCESS` with 0 package failures, 0 errors, and 5 warnings. |
 | 3 | [Move 160](../moves/moves160.md) Standalone release artifacts | Planned | Still high-value for distribution, but lower MCP-award leverage than proving the recorder gateway and official Splunk MCP composition. | Tag-triggered release workflow builds signed/checksummed OS assets, and a clean temp smoke runs `splunkready judge-proof` without preinstalled project dependencies. |
-| 4 | [Move 161](../moves/moves161.md) AppInspect-grade Splunk app | Partially implemented | Builds on Move 164's AppInspect work and Move 157's `.spl` package. The package hygiene/AppInspect-clean slice is complete; KV-store/dashboard/live-install evidence remains open. | The app package passes AppInspect with 0 failures and 0 errors. The broader move is done when dashboard/KV-store config exists as operator-owned surfaces and tracked install evidence or an explicit blocked reason exists. |
+| 4 | [Move 161](../moves/moves161.md) AppInspect-grade Splunk app | Partially implemented | Builds on Move 164's AppInspect work and Move 157's `.spl` package. The package hygiene/AppInspect-clean slice is complete, and the package now includes operator-owned receipt KV-store/lookup config plus a Splunk Web overview view. Live-install evidence remains open. | The app package passes AppInspect with 0 failures and 0 errors. The broader move is done when tracked install evidence or an explicit blocked reason exists. |
 | 5 | [Move 162](../moves/moves162.md) Typed policy SDK | Planned | Platform/devtools move after MCP composition is stronger. | `import { definePolicy } from "splunkready/policy"` works in a clean TS project; example TS policies compile, sign, and grade fixture traces in CI. |
 
 Stop conditions:

@@ -49,15 +49,22 @@ describe("Splunk app package builder", () => {
       packagePath: "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
       staticSource: "artifacts/public-demo",
       staticEntry: "SplunkReady/appserver/static/splunkready/index.html",
+      overviewView: "SplunkReady/default/data/ui/views/splunkready_overview.xml",
+      receiptCollection: "splunkready_receipts",
+      receiptLookup: "splunkready_receipts_lookup",
       noCredentialFiles: true,
       noPythonHandlers: true,
-      noScriptedInputs: true
+      noScriptedInputs: true,
+      operatorOwnedReceiptStore: true
     });
     expect(manifest.files).toEqual(
       expect.arrayContaining([
         "default/app.conf",
+        "default/collections.conf",
+        "default/transforms.conf",
         "default/data/ui/nav/default.xml",
         "default/data/ui/views/splunkready.xml",
+        "default/data/ui/views/splunkready_overview.xml",
         "metadata/default.meta",
         "README.md",
         "appserver/static/splunkready/index.html",
@@ -68,7 +75,10 @@ describe("Splunk app package builder", () => {
 
     const { stdout } = await execFileAsync("tar", ["-tzf", join(root, manifest.packagePath)]);
     expect(stdout).toContain("SplunkReady/default/app.conf");
+    expect(stdout).toContain("SplunkReady/default/collections.conf");
+    expect(stdout).toContain("SplunkReady/default/transforms.conf");
     expect(stdout).toContain("SplunkReady/default/data/ui/views/splunkready.xml");
+    expect(stdout).toContain("SplunkReady/default/data/ui/views/splunkready_overview.xml");
     expect(stdout).toContain("SplunkReady/appserver/static/splunkready/index.html");
     expect(stdout).not.toContain("SplunkReady/local/");
     expect(stdout).not.toContain(".splunkready");
@@ -87,8 +97,20 @@ describe("Splunk app package builder", () => {
       "is_configured = false"
     );
     await expect(
+      readFile(join(root, "extracted", "SplunkReady", "default", "collections.conf"), "utf8")
+    ).resolves.toContain("[splunkready_receipts]");
+    await expect(
+      readFile(join(root, "extracted", "SplunkReady", "default", "transforms.conf"), "utf8")
+    ).resolves.toContain("collection = splunkready_receipts");
+    await expect(
+      readFile(join(root, "extracted", "SplunkReady", "default", "data", "ui", "nav", "default.xml"), "utf8")
+    ).resolves.toContain('<view name="splunkready_overview" />');
+    await expect(
       readFile(join(root, "extracted", "SplunkReady", "default", "data", "ui", "views", "splunkready.xml"), "utf8")
     ).resolves.toContain("/static/app/SplunkReady/splunkready/index.html");
+    await expect(
+      readFile(join(root, "extracted", "SplunkReady", "default", "data", "ui", "views", "splunkready_overview.xml"), "utf8")
+    ).resolves.toContain("splunkready_receipts_lookup");
   });
 
   it("refuses to package symbolic links from the static source", async () => {

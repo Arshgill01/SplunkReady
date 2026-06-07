@@ -77,7 +77,7 @@ Expected proof status:
 - MCP composition recorder: `PASS`, `9` pass-through gateway frames, servers `splunk`, `splunkready`
 - MCP composition recorder redaction: `PASS`
 - MCP composition recorder certification: `PASS`, strict import skipped records `0`
-- AppInspect MCP composition: `PASS`, server `AppInspect MCP Server 2.14.7`, tool `inspect_app`, validation `SUCCESS`, failures `0`, errors `0`, warnings `4`
+- AppInspect MCP composition: `PASS`, server `AppInspect MCP Server 2.14.7`, tool `inspect_app`, validation `SUCCESS`, failures `0`, errors `0`, warnings `5`
 - MCP live-mock session: `PASS`
 - MCP template receipt read: `splunkready://receipts/pass`
 - MCP inline transcript certification: `PASS`
@@ -91,6 +91,9 @@ Expected proof status:
 - policy evaluation receipt identity: `pci-dss-readiness`
 - Splunk app package status: `PASS`
 - Splunk app package mutation: `false`
+- Splunk app package overview view: `SplunkReady/default/data/ui/views/splunkready_overview.xml`
+- Splunk app package receipt collection: `splunkready_receipts`
+- Splunk app package receipt lookup: `splunkready_receipts_lookup`
 - Splunk app package credential files: none
 - Splunk app package Python handlers: none
 - Splunk app package scripted inputs: none

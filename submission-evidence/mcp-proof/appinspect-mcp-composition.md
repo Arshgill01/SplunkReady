@@ -16,15 +16,15 @@ Validation summary:
 - error: 0
 - failure: 0
 - future_failure: 0
-- not_applicable: 150
+- not_applicable: 145
 - skipped: 0
-- success: 95
-- warning: 4
+- success: 99
+- warning: 5
 
 Static validation counts:
 - failures: 0
 - errors: 0
-- warnings: 4
+- warnings: 5
 
 Next steps:
 - All validation checks passed. No fixes from AppInspect required.

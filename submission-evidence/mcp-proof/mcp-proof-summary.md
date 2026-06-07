@@ -151,7 +151,7 @@ AppInspect MCP composition: PASS
 - Validation: SUCCESS
 - AppInspect failures: 0
 - AppInspect errors: 0
-- AppInspect warnings: 4
+- AppInspect warnings: 5
 - Receipt authority: splunkready
 - AppInspect authority: advisory-static-validation
 

@@ -212,7 +212,7 @@ same deterministic transcript importer with zero skipped records. It also includ
 calls `inspect_app` against the tracked `.spl` package, and records AppInspect
 as advisory static validation while SplunkReady remains the deterministic
 Readiness Receipt authority. Current evidence reports AppInspect validation
-`SUCCESS` with 0 package failures, 0 errors, and 4 warnings; it is not claimed
+`SUCCESS` with 0 package failures, 0 errors, and 5 warnings; it is not claimed
 as Splunkbase approval.
 It also includes an
 `agentDrivenWorkflow` block showing the intended loop: an MCP client

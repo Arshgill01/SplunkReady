@@ -15940,6 +15940,80 @@ Result:
 - PASS: submission-copy audit with 200 required claims.
 - PASS: final `git diff --check`.
 
+## 2026-06-08T00:40:00Z - Move 161 operator-owned receipt store and overview slice
+
+Initial package rebuild:
+
+- `npm run splunk-app:package`
+- `npx vitest run tests/scripts/splunk-app-package.test.ts`
+
+Result:
+
+- FAIL: first run exposed a JavaScript template-string syntax error from
+  backticks in the generated package README text.
+- PASS: after removing those generated README backticks, package rebuild
+  succeeded and the focused package test passed with 1 file and 2 tests.
+
+AppInspect validation:
+
+- `APP=$(pwd)/submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl; uvx splunk-appinspect inspect "$APP" 2>&1 | tee /tmp/splunkready-appinspect-move161-kv.txt`
+
+Result:
+
+- PASS: AppInspect reported 0 errors, 0 failures, 5 warnings, 99 successes,
+  and 145 not-applicable checks.
+
+Tracked MCP proof regeneration:
+
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json`
+- `jq '.validation.failureCount, .validation.errorCount, .validation.warningCount, .validation.summary' submission-evidence/mcp-proof/appinspect-mcp-composition.json`
+
+Result:
+
+- PASS: `mcp-proof` returned `status: "PASS"`.
+- PASS: `appInspectComposition.validation` reports `failureCount: 0`,
+  `errorCount: 0`, `warningCount: 5`, and summary counts matching the local
+  AppInspect run.
+
+Evidence and focused gates:
+
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/splunk-app-package.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npx vitest run tests/ui/app.test.ts -t "MCP proof summary"`
+- `git diff --check`
+
+Result:
+
+- PASS: tracked evidence SHA file regenerated and verified.
+- PASS: submission-copy audit passed with 205 required claims.
+- PASS: package/submission-copy focused tests passed with 2 files and 5 tests.
+- PASS: filtered UI MCP proof summary test passed.
+- PASS: `git diff --check` returned clean.
+
+Full gate:
+
+- `npm run check`
+
+Result:
+
+- PASS: scaffold verified with 85 waves and 2502 project files.
+- PASS: runtime contracts verified with 19 rules, 4 fixture missions, and 20
+  evidence refs.
+- PASS: TypeScript build and production UI build.
+- PASS: public demo export audit with 276 files, default route `mcp-proof`, and
+  `mutation=false`.
+- PASS: package readiness audit with 183 packed files checked.
+- PASS: package installability audit; packed `splunkready-0.1.3.tgz` installed,
+  clean `npx splunkready judge-proof` returned `PASS`, and clean
+  `npx splunkready mcp` initialized.
+- PASS: Vitest suite with 69 test files and 421 tests passed.
+- PASS: secret env ignore audit.
+- PASS: reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and 0
+  failing latest verdicts.
+- PASS: submission-copy audit with 205 required claims.
+- PASS: final `git diff --check`.
+
 ## 2026-06-07T21:05:00Z - Move 161 AppInspect-clean package slice verification
 
 Remote baseline:

@@ -1069,3 +1069,12 @@ AppleDouble metadata, normalizes directory/file permissions, sets
 and 4 warnings. Residual risk: this is still not Splunkbase approval, Splunk
 Cloud vetting, or observed live installation evidence. The broader Move 161
 dashboard/KV-store/install-evidence scope remains open.
+
+Move 161's operator-owned receipt-store slice adds the optional
+`splunkready_receipts` KV Store collection, `splunkready_receipts_lookup`, and
+`splunkready_overview.xml` view to the `.spl` package. AppInspect now reports 0
+failures, 0 errors, and 5 warnings on the current package. Residual risk: this
+is still package-defined capability, not observed live installation evidence.
+SplunkReady still must not auto-populate the collection or mutate Splunk from
+the default credential-free judge path; explicit operator-approved live setup is
+now allowed and should be logged separately.

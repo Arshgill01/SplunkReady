@@ -18,6 +18,11 @@ The product is not a Splunk chatbot, SOC copilot, telemetry dashboard, or detect
 - LLMs may explain, summarize, and draft policy patches; they must not be the primary pass/fail judge.
 - The specimen agent must be real but naive, not hardcoded to fail/pass.
 - The app must not auto-mutate Splunk.
+- Real Splunk integration work is allowed and encouraged when it is explicit,
+  operator-scoped, and verified against fixture/live parity. Read-only live
+  probes are preferred. Write/install/setup operations against a Splunk
+  deployment require an explicit command, clear blast radius, and evidence log;
+  they must never run as a hidden side effect of a default proof.
 - Do not claim SplunkReady invents MCP telemetry or rate limiting.
 - Security is the flagship story; Platform & Developer Experience is the submission track.
 
@@ -65,7 +70,10 @@ Stop and ask before:
 - adding a heavy dependency;
 - changing the demo trap set;
 - removing deterministic checks;
-- introducing write operations against Splunk.
+- introducing implicit write operations against Splunk. Explicit
+  operator-approved live setup, app installation, or receipt-store population
+  is allowed only when documented, reversible, and not part of the default
+  credential-free judge path.
 
 ## Style
 

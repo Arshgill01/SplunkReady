@@ -1,17 +1,20 @@
 {
   "source": "splunkready-splunk-app-package",
   "status": "PASS",
-  "generatedAt": "2026-06-07T21:04:38.106Z",
+  "generatedAt": "2026-06-07T21:12:46.265Z",
   "appId": "SplunkReady",
   "version": "0.1.3",
   "mutation": false,
   "packagePath": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
-  "packageSha256": "3c8239d66c5c22c0f2350e1c280144411a3978fb98a32cdb723c7aba3081e5c8",
+  "packageSha256": "fc6887ef44332389b4a692c87f8b213904f1be091f52dd1dec4345f3be354d29",
   "staticSource": "artifacts/public-demo",
   "launcherView": "SplunkReady/default/data/ui/views/splunkready.xml",
+  "overviewView": "SplunkReady/default/data/ui/views/splunkready_overview.xml",
+  "receiptCollection": "splunkready_receipts",
+  "receiptLookup": "splunkready_receipts_lookup",
   "staticEntry": "SplunkReady/appserver/static/splunkready/index.html",
   "publicDemoManifest": "SplunkReady/appserver/static/splunkready/public-demo-manifest.json",
-  "fileCount": 281,
+  "fileCount": 284,
   "files": [
     "README.md",
     "appserver/static/splunkready/artifacts/interactive-demo/agent-policy.json",
@@ -291,8 +294,11 @@
     "appserver/static/splunkready/screenshots/workbench-packaged-fixture.png",
     "appserver/static/splunkready/screenshots/workbench-trace-timeline.png",
     "default/app.conf",
+    "default/collections.conf",
     "default/data/ui/nav/default.xml",
     "default/data/ui/views/splunkready.xml",
+    "default/data/ui/views/splunkready_overview.xml",
+    "default/transforms.conf",
     "metadata/default.meta"
   ],
   "officialSplunkPackagingReferences": [
@@ -302,5 +308,6 @@
   ],
   "noCredentialFiles": true,
   "noPythonHandlers": true,
-  "noScriptedInputs": true
+  "noScriptedInputs": true,
+  "operatorOwnedReceiptStore": true
 }

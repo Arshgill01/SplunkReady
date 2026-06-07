@@ -96,12 +96,15 @@ The same MCP proof records an AppInspect MCP composition artifact at
 `uvx splunk-appinspect[mcp] mcp-server`, calls `inspect_app` against the tracked
 `.spl` package, and keeps AppInspect as advisory static validation only.
 SplunkReady remains the deterministic receipt authority. Current evidence
-reports validation `SUCCESS` with 0 package failures, 0 errors, and 4 warnings;
+reports validation `SUCCESS` with 0 package failures, 0 errors, and 5 warnings;
 it does not claim Splunkbase approval.
 
 The tracked Splunk app package evidence is
 `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`. It embeds the
-public artifact workbench as static Splunk app content and intentionally avoids
+public artifact workbench as static Splunk app content, defines an optional
+operator-owned `splunkready_receipts` KV Store collection plus
+`splunkready_receipts_lookup`, ships `splunkready_overview.xml` for bundled
+evidence and operator-populated receipt rows, and intentionally avoids
 credentials, Python handlers, scripted inputs, and Splunk write operations. It
 is not a Splunkbase approval or live-install claim.
 

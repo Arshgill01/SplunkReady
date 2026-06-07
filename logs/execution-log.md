@@ -15185,3 +15185,68 @@ Result:
   advisory static validation only.
 - PARTIAL: this completes the AppInspect-clean package slice of Move 161; the
   broader dashboard/KV-store/live-install evidence scope remains open.
+
+## 2026-06-08T00:40:00Z - Move 161 operator-owned receipt store and overview slice
+
+Intent:
+
+- Advance the AppInspect-clean `.spl` package into a more Splunk-native package
+  by adding operator-owned receipt storage and a Splunk Web overview surface,
+  without making SplunkReady silently write to a deployment.
+
+Actions:
+
+- Updated the repository operating rules to distinguish prohibited implicit
+  Splunk mutation from explicit operator-approved live setup/install paths.
+- Added `default/collections.conf` with the optional
+  `splunkready_receipts` KV Store collection.
+- Added `default/transforms.conf` with the
+  `splunkready_receipts_lookup` lookup over that collection.
+- Added `default/data/ui/views/splunkready_overview.xml`, which shows bundled
+  proof evidence and operator-populated receipt rows when present.
+- Added the overview view to the generated Splunk app navigation.
+- Extended the package manifest with `overviewView`, `receiptCollection`,
+  `receiptLookup`, and `operatorOwnedReceiptStore`.
+- Rebuilt `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`.
+- Regenerated `submission-evidence/mcp-proof/` so AppInspect composition
+  validates the current package.
+- Updated README, Devpost copy, evidence README, claim ledger,
+  submission-copy audit guards, UI fixtures, move docs, and planning docs for
+  the current package surface.
+
+Files changed:
+
+- `AGENTS.md`
+- `README.md`
+- `docs/ambitious-award-move-plan.md`
+- `docs/devpost-submission.md`
+- `logs/execution-log.md`
+- `logs/risk-register.md`
+- `logs/verification-log.md`
+- `moves/moves161.md`
+- `scripts/audit-submission-copy.mjs`
+- `scripts/build-splunk-app-package.mjs`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/appinspect-mcp-composition.json`
+- `submission-evidence/mcp-proof/appinspect-mcp-composition.md`
+- `submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `submission-evidence/mcp-proof/mcp-proof-summary.md`
+- `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`
+- `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`
+- `tests/scripts/splunk-app-package.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `tests/ui/app.test.ts`
+
+Result:
+
+- PASS: package-builder tests cover the generated collection, lookup, overview
+  view, nav entry, manifest fields, package permissions, and forbidden archive
+  metadata.
+- PASS: local AppInspect reports 0 errors, 0 failures, 5 warnings, and 99
+  successful checks for `SplunkReady-0.1.3.spl`.
+- PASS: MCP proof still returns `status: "PASS"` and records AppInspect as
+  advisory static validation only.
+- PARTIAL: this completes the package-defined receipt-store/dashboard slice of
+  Move 161. Observed live installation against the local Splunk server remains
+  the next evidence gap.
