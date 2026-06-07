@@ -14787,3 +14787,19 @@ Notes:
 - The private key used for tracked evidence was generated in `/tmp` and removed
   after signing.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 — Move 148 Signed Chain Remote CI
+
+Commit:
+
+- `e4586dc` (`Add signed receipt chain evidence`)
+
+Remote verification:
+
+- `gh run watch 27099788400 --exit-status`
+
+Result:
+
+- PASS for GitHub Actions run `27099788400`.
+- PASS for job `npm run check` in 1m14s.
+- PASS for the credential-free live mock proof step.

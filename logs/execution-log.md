@@ -14332,3 +14332,16 @@ Notes:
 - No `receipt-private-key.local.pem` file was found under the repository after
   signing.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 — Move 148 Signed Chain Remote CI Log
+
+Recorded the remote GitHub Actions result for commit `e4586dc`.
+
+Run:
+
+- `27099788400`
+
+Result:
+
+- GitHub Actions `CI / npm run check` passed in 1m14s.
+- The remote gate also ran and passed the credential-free live mock proof.
