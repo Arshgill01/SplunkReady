@@ -1,0 +1,16 @@
+.git
+.github
+.env
+.env.*
+.splunkready
+.splunkready*
+.playwright-cli
+artifacts
+dist
+dist-ui
+node_modules
+npm-debug.log*
+submission-evidence
+logs
+references
+tmp

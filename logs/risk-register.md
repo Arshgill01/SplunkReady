@@ -902,3 +902,13 @@ risk shifts to release and packaging: npm latest `0.1.2` does not yet include
 `--live-mock`, Docker/docker-compose packaging is still absent, SAIA
 route-not-found/degraded-state simulation is not implemented, and
 `mcp-proof --live-mock` composition evidence remains pending.
+
+Move 147 fifth slice reduces mock-live operability risk by adding the
+documented `--mock-state ok|degraded|route-not-found` knob plus dedicated
+Docker/docker-compose packaging. The mock can now simulate SAIA route failure
+without disabling Splunk search tools, and `.dockerignore` keeps local
+`.splunkready*` and `.env*` files out of Docker build context. Residual risk:
+the local Docker daemon was not running, so the image build is not yet
+validated; npm latest `0.1.2` still does not include the source-only
+`--live-mock`/`--mock-state` path; and `mcp-proof --live-mock` composition
+evidence remains pending.

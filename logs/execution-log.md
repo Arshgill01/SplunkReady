@@ -14047,3 +14047,57 @@ Notes:
 - This evidence is self-hostable and credential-free, but it is still mock live
   evidence rather than operator-owned Splunk evidence.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07T16:55:37Z - Move 147 mock-state and Docker packaging slice
+
+Intent:
+
+- Add the documented mock-state knob and dedicated Docker packaging for the
+  self-hostable Splunk MCP mock server without expanding SplunkReady's scope or
+  making SAIA authoritative.
+
+Actions:
+
+- Added `--mock-state ok|degraded|route-not-found` parsing.
+- Passed `mockState` from CLI live commands into the live-mock transport.
+- Added mock server behavior:
+  - `ok`: existing fixture-backed read-only behavior;
+  - `degraded`: adds advisory hosted-model warnings;
+  - `route-not-found`: returns a public-export-safe SAIA route blocker while
+    leaving Splunk search tools available.
+- Added focused mock-server tests for degraded and route-not-found states.
+- Added `Dockerfile.mock-splunk-mcp` and `docker-compose.mock.yml`.
+- Added `.dockerignore` to keep `.splunkready*`, `.env*`, artifacts, logs,
+  dependencies, and build outputs out of Docker build context.
+- Added README usage for local stdio and Docker mock-server paths.
+
+Files changed:
+
+- `.dockerignore`
+- `Dockerfile.mock-splunk-mcp`
+- `docker-compose.mock.yml`
+- `README.md`
+- `src/cli.ts`
+- `src/cli/live-commands.ts`
+- `src/cli/options.ts`
+- `src/mock-splunk-mcp/server.ts`
+- `src/workflows/certification-actions.ts`
+- `src/workflows/live-actions.ts`
+- `tests/mcp/mock-splunk-server.test.ts`
+- `moves/moves147.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Deferred:
+
+- `mcp-proof --live-mock` composition evidence.
+- Full `live-security-proof --live-mock` without operator-owned LLM
+  credentials.
+- npm publish of source-only `--live-mock` remains blocked by npm OTP.
+
+Notes:
+
+- Docker CLI is installed, but the local Docker daemon was not running during
+  validation.
+- No secret env file values were read, sourced, printed, or committed.

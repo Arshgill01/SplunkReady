@@ -29,6 +29,7 @@ export interface CliOptions {
   includeLlmProof: boolean;
   firewall: boolean;
   liveMock: boolean;
+  mockState: "ok" | "degraded" | "route-not-found";
   json: boolean;
 }
 
@@ -58,7 +59,7 @@ Commands:
   certification-index --proof-dirs <dir[,dir]> --out <dir> [--require-pass true|false] [--json]
   judge-proof --out <dir> [--include-llm-proof true|false] [--json]
   mcp       Start the SplunkReady stdio MCP server
-  mock-splunk-mcp --fixture <path> Start the credential-free mock Splunk stdio MCP server
+  mock-splunk-mcp --fixture <path> [--mock-state ok|degraded|route-not-found] Start the credential-free mock Splunk stdio MCP server
   mcp-proof --out <dir> [--transcript <path>] [--json]
   live-candidates --out <dir> [--candidate-limit <n>] [--live-mock]
   live-security-check --out <dir> [--live-mock] [--json]
@@ -106,6 +107,7 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
   includeLlmProof: false,
   firewall: false,
   liveMock: false,
+  mockState: "ok",
   json: false,
   ...overrides
 });
@@ -218,6 +220,12 @@ export const parseArgs = (argv: string[]): { command: string; options: CliOption
       }
 
       options.candidateLimit = parsedLimit;
+    } else if (flag === "--mock-state") {
+      if (value !== "ok" && value !== "degraded" && value !== "route-not-found") {
+        throw new Error("--mock-state must be ok, degraded, or route-not-found.");
+      }
+
+      options.mockState = value;
     } else {
       throw new Error(`Unknown option ${flag}.\n${usage}`);
     }

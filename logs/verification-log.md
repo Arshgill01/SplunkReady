@@ -14418,3 +14418,66 @@ Notes:
 - The live-mock evidence path is credential-free and does not require Splunk
   MCP URL/token env vars.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07 - Move 147 mock-state and Docker packaging slice
+
+Commands:
+
+- `npm run build && npx vitest run tests/mcp/mock-splunk-server.test.ts`
+- `docker --version`
+- `printf '%s\n' '{"jsonrpc":"2.0","id":"route","method":"tools/call","params":{"name":"saia_generate_spl","arguments":{"prompt":"find lateral movement"}}}' | node dist/src/cli.js mock-splunk-mcp --mock-state route-not-found`
+- `printf '%s\n' '{"jsonrpc":"2.0","id":"degraded","method":"tools/call","params":{"name":"saia_explain_spl","arguments":{"spl":"search index=wineventlog | head 10"}}}' | node dist/src/cli.js mock-splunk-mcp --mock-state degraded`
+- `docker build -f Dockerfile.mock-splunk-mcp -t splunkready/mock-splunk-mcp:local .`
+- `docker compose -f docker-compose.mock.yml config`
+- `npm run check`
+
+Results:
+
+- PASS for TypeScript build.
+- PASS for focused mock-server tests:
+  - 1 test file passed;
+  - 14 tests passed.
+- PASS for Docker CLI availability:
+  - Docker version `28.5.1`, build `e180ab8`.
+- PASS for built CLI route-not-found stdio smoke:
+  - returned JSON-RPC error code `-32004`;
+  - message contained `SAIA_ROUTE_NOT_FOUND`;
+  - data included `blockerClass: "SAIA_ROUTE_NOT_FOUND"`,
+    `restHandlerProbeStatus: "NOT_REGISTERED"`, `mutation: false`, and
+    `safeForPublicExport: true`.
+- PASS for built CLI degraded stdio smoke:
+  - returned hosted-model advisory content;
+  - warnings included `MOCK_STATE_DEGRADED`.
+- FAIL/BLOCKED for Docker image build:
+  - Docker reported it could not connect to the daemon at
+    `unix:///Users/arshdeepsingh/.docker/run/docker.sock`.
+- PASS for Docker compose config parsing:
+  - service `mock-splunk-mcp` resolves to image
+    `splunkready/mock-splunk-mcp:local`;
+  - Dockerfile `Dockerfile.mock-splunk-mcp`;
+  - env defaults `SPLUNKREADY_MOCK_FIXTURE=fixtures/acme-soc-dev/adapter-fixture.json`
+    and `SPLUNKREADY_MOCK_STATE=ok`.
+- PASS for the full canonical gate:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 62 test files passed;
+  - 393 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 105 required claims;
+  - `git diff --check` completed with no output.
+
+Notes:
+
+- Docker packaging files were added, but the image itself was not built because
+  the local daemon was unavailable.
+- `.dockerignore` excludes `.splunkready*` and `.env*` so local secrets are not
+  sent to Docker build context.
+- No secret env file values were read, sourced, printed, or committed.

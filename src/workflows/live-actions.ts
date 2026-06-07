@@ -59,6 +59,7 @@ export interface LiveActionWorkflowInput {
   firewall?: boolean;
   agentModel?: string;
   liveMock?: boolean;
+  mockState?: "ok" | "degraded" | "route-not-found";
 }
 
 export interface LiveSecurityUiBundleInput {
@@ -178,6 +179,7 @@ const liveCertificationOptions = (
   agentModel: input.agentModel ?? "",
   requirePass: input.requirePass,
   liveMock: input.liveMock ?? false,
+  mockState: input.mockState ?? "ok",
   ...overrides
 });
 

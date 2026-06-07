@@ -250,6 +250,93 @@ describe("mock Splunk MCP server", () => {
     });
   });
 
+  it("adds advisory hosted-model warnings in degraded state", async () => {
+    const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
+    const response = await handleMockSplunkMcpMessage(
+      {
+        jsonrpc: "2.0",
+        id: "degraded-saia",
+        method: "tools/call",
+        params: {
+          name: "saia_explain_spl",
+          arguments: { spl: "search index=wineventlog | head 10" }
+        }
+      },
+      { fixture, state: "degraded" }
+    );
+    const result = resultOf(response);
+    const structuredContent = result.structuredContent as { warnings: string[] };
+
+    expect(structuredContent.warnings).toContain(
+      "MOCK_STATE_DEGRADED: fixture-backed mock is simulating slower hosted-model responses."
+    );
+  });
+
+  it("simulates hosted-model route-not-found without disabling Splunk tools", async () => {
+    const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
+    const hostedModelResponse = await handleMockSplunkMcpMessage(
+      {
+        jsonrpc: "2.0",
+        id: "route-not-found",
+        method: "tools/call",
+        params: {
+          name: "saia_generate_spl",
+          arguments: { prompt: "find lateral movement" }
+        }
+      },
+      { fixture, state: "route-not-found" }
+    );
+    const searchResponse = await handleMockSplunkMcpMessage(
+      {
+        jsonrpc: "2.0",
+        id: "route-search",
+        method: "tools/call",
+        params: {
+          name: "splunk_run_saved_search",
+          arguments: {
+            app: "SplunkEnterpriseSecuritySuite",
+            name: "ES - Lateral Movement Auth Chain"
+          }
+        }
+      },
+      { fixture, state: "route-not-found" }
+    );
+
+    expect(hostedModelResponse).toMatchObject({
+      jsonrpc: "2.0",
+      id: "route-not-found",
+      error: {
+        code: -32004,
+        message: "SAIA_ROUTE_NOT_FOUND: mock Splunk AI Assistant route is not being served.",
+        data: {
+          blockerClass: "SAIA_ROUTE_NOT_FOUND",
+          restHandlerProbeStatus: "NOT_REGISTERED",
+          mutation: false,
+          safeForPublicExport: true
+        }
+      }
+    });
+    expect(resultOf(searchResponse).structuredContent).toMatchObject({
+      savedSearchRef: "saved-search-lateral-movement"
+    });
+  });
+
+  it("surfaces route-not-found state through the live transport contract", async () => {
+    const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
+    const transport = createMockSplunkMcpLiveTransport(fixture, { state: "route-not-found" });
+
+    await expect(
+      transport.call({
+        toolName: "saia_generate_spl",
+        input: { prompt: "find lateral movement" },
+        endpointUrl: "mock://splunkready",
+        authToken: "mock-token",
+        timeoutMs: 30_000,
+        options: { requestId: "req-route-not-found" }
+      })
+    ).rejects.toThrow("SAIA_ROUTE_NOT_FOUND");
+  });
+
   it("rejects saved-search calls without required name and app", async () => {
     const fixture = await loadFixtureSplunkDatasetFromFile(fixturePath);
     const response = await handleMockSplunkMcpMessage(

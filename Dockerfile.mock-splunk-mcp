@@ -1,0 +1,26 @@
+FROM node:22-slim AS build
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY tsconfig.json ./
+COPY src ./src
+COPY fixtures ./fixtures
+RUN npm run build
+
+FROM node:22-slim
+
+WORKDIR /app
+ENV NODE_ENV=production
+ENV SPLUNKREADY_MOCK_FIXTURE=fixtures/acme-soc-dev/adapter-fixture.json
+ENV SPLUNKREADY_MOCK_STATE=ok
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/fixtures ./fixtures
+
+CMD ["sh", "-c", "node dist/src/cli.js mock-splunk-mcp --fixture \"$SPLUNKREADY_MOCK_FIXTURE\" --mock-state \"$SPLUNKREADY_MOCK_STATE\""]

@@ -1,0 +1,11 @@
+services:
+  mock-splunk-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock-splunk-mcp
+    image: splunkready/mock-splunk-mcp:local
+    environment:
+      SPLUNKREADY_MOCK_FIXTURE: fixtures/acme-soc-dev/adapter-fixture.json
+      SPLUNKREADY_MOCK_STATE: ok
+    stdin_open: true
+    tty: false

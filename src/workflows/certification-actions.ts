@@ -58,6 +58,7 @@ export interface CertificationActionOptions {
   agentModel: string;
   requirePass?: boolean;
   liveMock?: boolean;
+  mockState?: "ok" | "degraded" | "route-not-found";
 }
 
 interface FirewallBlockReport {
@@ -257,7 +258,7 @@ export const createSplunkAccessAdapter = async (
         authToken: "mock-token",
         defaultApp: env.SPLUNKREADY_SPLUNK_APP,
         capabilities: fixture.readOnlyTools,
-        transport: createMockSplunkMcpLiveTransport(fixture)
+        transport: createMockSplunkMcpLiveTransport(fixture, { state: options.mockState })
       });
     }
 

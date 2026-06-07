@@ -44,6 +44,29 @@ verifies both the no-clone judge proof and `splunkready mcp` initialization.
 
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, writes `compiler-diagnostics.json` / `.md` showing deterministic rule activation and resolution from readiness profiles and receipts, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 
+### Credential-Free Mock Splunk MCP
+
+The mock Splunk MCP server exercises the same read-only live adapter boundary
+without operator-owned Splunk credentials:
+
+```bash
+npm run build
+node dist/src/cli.js mock-splunk-mcp --mock-state ok
+```
+
+Use `--mock-state degraded` to add advisory hosted-model warnings, or
+`--mock-state route-not-found` to simulate SAIA route failures while keeping
+Splunk search tools available. Docker packaging is available for local CI
+smokes:
+
+```bash
+docker build -f Dockerfile.mock-splunk-mcp -t splunkready/mock-splunk-mcp:local .
+docker compose -f docker-compose.mock.yml config
+```
+
+The mock path is fixture-backed live-mode evidence. It is not a claim that a
+real Splunk deployment was contacted.
+
 The judge bundle also records `llmActivation` and `llmEvidence` in
 `judge-proof-summary.json`. With no LLM environment enabled, that evidence stays
 `NOT_REQUESTED` so the command remains credential-free and makes no model calls.

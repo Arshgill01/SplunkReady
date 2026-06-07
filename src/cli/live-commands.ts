@@ -33,7 +33,8 @@ export const liveCandidatesCommand = async (options: CliOptions): Promise<string
     compileFirst: false,
     firewall: options.firewall,
     agentModel: options.agentModel,
-    liveMock: options.liveMock
+    liveMock: options.liveMock,
+    mockState: options.mockState
   })
   ).artifacts;
 };
@@ -46,7 +47,8 @@ export const liveSecurityCheckCommand = async (options: CliOptions): Promise<str
     missionPath: options.mission,
     firewall: options.firewall,
     agentModel: options.agentModel,
-    liveMock: options.liveMock
+    liveMock: options.liveMock,
+    mockState: options.mockState
   })
   ).artifacts;
 };
@@ -63,7 +65,8 @@ export const liveSecurityProofCommand = async (options: CliOptions): Promise<str
     firewall: options.firewall,
     agentModel: options.agentModel,
     requirePass: options.requirePass,
-    liveMock: options.liveMock
+    liveMock: options.liveMock,
+    mockState: options.mockState
   });
 };
 
@@ -89,7 +92,8 @@ export const liveProofCommand = async (options: CliOptions): Promise<string[]> =
       firewall: options.firewall,
       agentModel: options.agentModel,
       requirePass: options.requirePass,
-      liveMock: options.liveMock
+      liveMock: options.liveMock,
+      mockState: options.mockState
     })
   ).artifacts;
 };

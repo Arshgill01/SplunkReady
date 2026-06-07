@@ -64,3 +64,13 @@ and regenerated `submission-evidence/evidence-pack-sha256.txt`. Docker
 packaging, route-state simulation, `mcp-proof --live-mock`, and full
 `live-security-proof --live-mock` without operator-owned LLM credentials remain
 deferred.
+
+Fifth slice implemented. Added `--mock-state ok|degraded|route-not-found` for
+the mock Splunk MCP server and live-mock transport. `route-not-found` simulates
+public-export-safe SAIA route failure while leaving Splunk search tools
+available; `degraded` adds advisory hosted-model warnings without making SAIA
+authoritative. Added `Dockerfile.mock-splunk-mcp`, `docker-compose.mock.yml`,
+and `.dockerignore` so the mock can be packaged without sending local env or
+`.splunkready*` files into Docker build context. Docker build validation was
+blocked because the local Docker daemon was not running; `docker compose -f
+docker-compose.mock.yml config` passed.

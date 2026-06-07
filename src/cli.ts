@@ -101,7 +101,7 @@ const main = async (): Promise<void> => {
 
   const options = await resolveCliInputPaths(parsedOptions);
   if (command === "mock-splunk-mcp") {
-    await startStdioMockSplunkMcpServer({ fixturePath: options.fixture });
+    await startStdioMockSplunkMcpServer({ fixturePath: options.fixture, state: options.mockState });
     return;
   }
 

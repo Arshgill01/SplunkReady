@@ -36,6 +36,7 @@ interface JsonRpcError {
 }
 
 export type MockSplunkMcpResponse = JsonRpcSuccess | JsonRpcError;
+export type MockSplunkMcpState = "ok" | "degraded" | "route-not-found";
 
 interface MockSplunkMcpTool {
   name: string;
@@ -48,6 +49,7 @@ interface MockSplunkMcpTool {
 
 export interface MockSplunkMcpOptions {
   fixture: FixtureSplunkDataset;
+  state?: MockSplunkMcpState;
 }
 
 const recordFromUnknown = (value: unknown): Record<string, unknown> =>
@@ -64,6 +66,9 @@ const optionalStringArrayFromUnknown = (value: unknown): string[] | undefined =>
 const stringFromUnknown = (value: unknown): string | undefined => (typeof value === "string" && value.length > 0 ? value : undefined);
 
 const numberFromUnknown = (value: unknown): number | undefined => (typeof value === "number" && Number.isFinite(value) ? value : undefined);
+
+const mockStateFromUnknown = (value: unknown): MockSplunkMcpState | undefined =>
+  value === "ok" || value === "degraded" || value === "route-not-found" ? value : undefined;
 
 const success = (id: JsonRpcId, result: unknown): JsonRpcSuccess => ({ jsonrpc: "2.0", id, result });
 
@@ -311,11 +316,43 @@ const readMetadataIndexes = (args: Record<string, unknown>): string[] | undefine
 
 const readSplInput = (args: Record<string, unknown>): string | undefined => stringFromUnknown(args.query) ?? stringFromUnknown(args.spl);
 
+const hostedModelToolNames = new Set(["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"]);
+
+const degradedWarnings = (warnings: unknown): string[] => [
+  ...stringArrayFromUnknown(warnings),
+  "MOCK_STATE_DEGRADED: fixture-backed mock is simulating slower hosted-model responses."
+];
+
+const withDegradedWarning = <T extends Record<string, unknown>>(content: T, state: MockSplunkMcpState): T => {
+  if (state !== "degraded") {
+    return content;
+  }
+
+  return {
+    ...content,
+    warnings: degradedWarnings(content.warnings)
+  };
+};
+
+const maybeHostedModelRouteError = (id: JsonRpcId, toolName: string, state: MockSplunkMcpState): JsonRpcError | undefined => {
+  if (state !== "route-not-found" || !hostedModelToolNames.has(toolName)) {
+    return undefined;
+  }
+
+  return error(id, -32004, "SAIA_ROUTE_NOT_FOUND: mock Splunk AI Assistant route is not being served.", {
+    blockerClass: "SAIA_ROUTE_NOT_FOUND",
+    restHandlerProbeStatus: "NOT_REGISTERED",
+    mutation: false,
+    safeForPublicExport: true
+  });
+};
+
 export const handleMockSplunkMcpMessage = async (
   request: JsonRpcRequest,
   options: MockSplunkMcpOptions
 ): Promise<MockSplunkMcpResponse | undefined> => {
   const id = request.id ?? null;
+  const state = options.state ?? "ok";
 
   if (request.method === "notifications/initialized") {
     return undefined;
@@ -343,6 +380,11 @@ export const handleMockSplunkMcpMessage = async (
     const { name, args } = readToolCall(request.params);
     const adapter = createFixtureSplunkAccessAdapter(options.fixture);
     const callOptions = { requestId: `mock-mcp-${String(id)}` };
+    const routeError = maybeHostedModelRouteError(id, name, state);
+
+    if (routeError) {
+      return routeError;
+    }
 
     if (name === "splunk_get_info") {
       return success(id, {
@@ -450,7 +492,10 @@ export const handleMockSplunkMcpMessage = async (
 
       return success(id, {
         content: [{ type: "text", text: "Mock Splunk AI Assistant generated SPL." }],
-        structuredContent: await adapter.generateSpl?.({ prompt, app: stringFromUnknown(args.app) }, callOptions)
+        structuredContent: withDegradedWarning(
+          recordFromUnknown(await adapter.generateSpl?.({ prompt, app: stringFromUnknown(args.app) }, callOptions)),
+          state
+        )
       });
     }
 
@@ -463,7 +508,10 @@ export const handleMockSplunkMcpMessage = async (
 
       return success(id, {
         content: [{ type: "text", text: "Mock Splunk AI Assistant explained SPL." }],
-        structuredContent: await adapter.explainSpl?.({ query, app: stringFromUnknown(args.app) }, callOptions)
+        structuredContent: withDegradedWarning(
+          recordFromUnknown(await adapter.explainSpl?.({ query, app: stringFromUnknown(args.app) }, callOptions)),
+          state
+        )
       });
     }
 
@@ -476,7 +524,10 @@ export const handleMockSplunkMcpMessage = async (
 
       return success(id, {
         content: [{ type: "text", text: "Mock Splunk AI Assistant optimized SPL." }],
-        structuredContent: await adapter.optimizeSpl?.({ query, app: stringFromUnknown(args.app) }, callOptions)
+        structuredContent: withDegradedWarning(
+          recordFromUnknown(await adapter.optimizeSpl?.({ query, app: stringFromUnknown(args.app) }, callOptions)),
+          state
+        )
       });
     }
 
@@ -489,7 +540,10 @@ export const handleMockSplunkMcpMessage = async (
 
       return success(id, {
         content: [{ type: "text", text: "Mock Splunk AI Assistant answered a question." }],
-        structuredContent: await adapter.askSplunkQuestion?.({ question, app: stringFromUnknown(args.app) }, callOptions)
+        structuredContent: withDegradedWarning(
+          recordFromUnknown(await adapter.askSplunkQuestion?.({ question, app: stringFromUnknown(args.app) }, callOptions)),
+          state
+        )
       });
     }
 
@@ -499,7 +553,10 @@ export const handleMockSplunkMcpMessage = async (
   return error(id, -32601, `Method not found: ${request.method}`);
 };
 
-export const createMockSplunkMcpLiveTransport = (fixture: FixtureSplunkDataset): LiveSplunkTransport => ({
+export const createMockSplunkMcpLiveTransport = (
+  fixture: FixtureSplunkDataset,
+  input: { state?: MockSplunkMcpState } = {}
+): LiveSplunkTransport => ({
   async call<TInput, TOutput>(request: LiveSplunkTransportRequest<TInput>): Promise<TOutput> {
     const response = await handleMockSplunkMcpMessage(
       {
@@ -508,7 +565,7 @@ export const createMockSplunkMcpLiveTransport = (fixture: FixtureSplunkDataset):
         method: "tools/call",
         params: { name: request.toolName, arguments: request.input }
       },
-      { fixture }
+      { fixture, state: input.state }
     );
 
     if (!response) {
@@ -538,8 +595,9 @@ export const createMockSplunkMcpLiveTransport = (fixture: FixtureSplunkDataset):
   }
 });
 
-export const startStdioMockSplunkMcpServer = async (input: { fixturePath: string }): Promise<void> => {
+export const startStdioMockSplunkMcpServer = async (input: { fixturePath: string; state?: string }): Promise<void> => {
   const fixture = await loadFixtureSplunkDatasetFromFile(input.fixturePath);
+  const state = mockStateFromUnknown(input.state) ?? "ok";
   const readline = createInterface({ input: process.stdin, crlfDelay: Infinity });
 
   for await (const line of readline) {
@@ -551,7 +609,7 @@ export const startStdioMockSplunkMcpServer = async (input: { fixturePath: string
 
     try {
       const request = JSON.parse(trimmed) as JsonRpcRequest;
-      const response = await handleMockSplunkMcpMessage(request, { fixture });
+      const response = await handleMockSplunkMcpMessage(request, { fixture, state });
 
       if (response) {
         process.stdout.write(`${JSON.stringify(response)}\n`);
