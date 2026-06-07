@@ -21,7 +21,7 @@ const writeFixture = async (path: string, value: string, mode?: number): Promise
   }
 };
 
-const writePackageJson = async (root: string, version = "0.1.1"): Promise<void> => {
+const writePackageJson = async (root: string, version = "0.1.2"): Promise<void> => {
   await writeFixture(
     join(root, "package.json"),
     `${JSON.stringify(
@@ -129,7 +129,7 @@ const runCurrentness = async (
 describe("public package currentness audit", () => {
   it("reports stale when npm latest is behind local source and lacks MCP", async () => {
     const root = await tempRoot();
-    await writePackageJson(root, "0.1.1");
+    await writePackageJson(root, "0.1.2");
 
     const report = await runCurrentness(root, {
       FAKE_NPM_VERSIONS: JSON.stringify(["0.1.0"]),
@@ -141,30 +141,30 @@ describe("public package currentness audit", () => {
       status: "STALE",
       registry: {
         latestVersion: "0.1.0",
-        localVersion: "0.1.1",
+        localVersion: "0.1.2",
         latestMatchesLocal: false
       },
       publishedJudgeProof: { status: "PASS", mutation: false },
       publishedMcp: { status: "BLOCKED", initialized: false }
     });
-    expect(report.recommendedAction).toContain("Publish splunkready@0.1.1");
+    expect(report.recommendedAction).toContain("Publish splunkready@0.1.2");
   });
 
   it("reports current when npm latest matches local source and MCP initializes", async () => {
     const root = await tempRoot();
-    await writePackageJson(root, "0.1.1");
+    await writePackageJson(root, "0.1.2");
 
     const report = await runCurrentness(root, {
-      FAKE_NPM_VERSIONS: JSON.stringify(["0.1.0", "0.1.1"]),
-      FAKE_NPM_LATEST: "0.1.1",
+      FAKE_NPM_VERSIONS: JSON.stringify(["0.1.0", "0.1.1", "0.1.2"]),
+      FAKE_NPM_LATEST: "0.1.2",
       FAKE_NPX_MCP_PASS: "true"
     });
 
     expect(report).toMatchObject({
       status: "CURRENT",
       registry: {
-        latestVersion: "0.1.1",
-        localVersion: "0.1.1",
+        latestVersion: "0.1.2",
+        localVersion: "0.1.2",
         latestMatchesLocal: true
       },
       publishedJudgeProof: { status: "PASS", mutation: false },

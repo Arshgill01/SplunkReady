@@ -13758,6 +13758,91 @@ Notes:
 
 - No secret env file values were read, sourced, printed, or committed.
 
+## 2026-06-07 - Move 145 published package with MCP review tool
+
+Commands:
+
+- `npm whoami && npm view splunkready version dist-tags --json`
+- `npm version 0.1.2 --no-git-tag-version`
+- `npm run audit:npm-release-preflight`
+- `npx vitest run tests/scripts/public-package-currentness.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:package-readiness`
+- `npm run audit:package-installability`
+- `npm run audit:submission-copy`
+- `npm run check`
+- `npm publish --access public`
+- `npm view splunkready version dist-tags versions --json`
+- `tmp=$(mktemp -d /tmp/splunkready-publish-smoke-XXXXXX) && cd "$tmp" && npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json`
+- `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
+- Published MCP `tools/list` smoke:
+  `{ initialize, notifications/initialized, tools/list } | npx -y splunkready@0.1.2 mcp`
+
+Results:
+
+- PASS for npm auth/registry before publish:
+  - authenticated user `brightybrainiac`;
+  - latest was `0.1.1`;
+  - `0.1.2` was available.
+- PASS for npm release preflight:
+  - status `READY`;
+  - package version `0.1.2`;
+  - authenticated `true`;
+  - current version available `true`;
+  - pack OK with 166 files;
+  - blockers empty;
+  - `mutation=false`.
+- PASS for package readiness:
+  - 166 packed files checked.
+- PASS for package installability:
+  - `splunkready-0.1.2.tgz` installed;
+  - clean `npx splunkready judge-proof` returned `PASS`;
+  - clean `npx splunkready mcp` initialized.
+- PASS for focused currentness/copy tests:
+  - 2 test files passed;
+  - 5 tests passed.
+- PASS for submission-copy audit:
+  - 101 required claims audited.
+- PASS for the full canonical gate:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed;
+  - 61 test files passed;
+  - 378 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files, and
+    0 failing latest verdicts;
+  - submission-copy audit passed with 101 required claims;
+  - final `git diff --check` completed with no output.
+- First publish attempt returned npm `EOTP`; publish required a one-time
+  password.
+- PASS after OTP-backed publish:
+  - npm version `0.1.2`;
+  - latest dist-tag `0.1.2`;
+  - registry versions `0.1.0`, `0.1.1`, `0.1.2`.
+- PASS for clean temp-folder published package smoke:
+  - `npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json`
+    returned `status: "PASS"`;
+  - `mutation=false`.
+- PASS for public-package currentness:
+  - status `CURRENT`;
+  - local/latest version `0.1.2`;
+  - published judge proof `PASS`;
+  - published MCP `PASS`;
+  - published MCP initialized `true`;
+  - `mutation=false`;
+  - failures empty.
+- PASS for published MCP tools smoke:
+  - `toolCount: 6`;
+  - `splunkready_review_mcp_composition` present.
+
+Notes:
+
+- No secret env file values were read, sourced, printed, or committed.
+
 ## 2026-06-07 - Move 144 hosted demo currentness after MCP review
 
 Commands:

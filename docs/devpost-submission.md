@@ -43,7 +43,7 @@ The local fixture path requires no live Splunk credentials. The currently
 published clean-folder judge command is:
 
 ```bash
-npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json
 ```
 
 That clean-folder command has been smoke-tested from a temp folder, returns
@@ -137,7 +137,7 @@ The tracked evidence pack does not claim live hosted-model entitlement. The work
 - Zod
 - Vitest
 - Vite
-- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.1 judge-proof`
+- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.2 judge-proof`
 - Splunk MCP adapter boundary
 - Deterministic trace grader rules
 - Local workbench API and UI

@@ -13753,3 +13753,49 @@ Notes:
 
 - No source code changed in this move.
 - No secret env file values were read, sourced, printed, or committed.
+
+## 2026-06-07T16:14:23Z - Move 145 published package with MCP review tool
+
+Intent:
+
+- Publish the current source package so `npx splunkready@latest mcp` includes
+  the Move 143 MCP composition-review tool.
+
+Actions:
+
+- Verified npm auth and registry state for `splunkready`.
+- Bumped package metadata from `0.1.1` to `0.1.2`.
+- Updated public install copy, submission-copy guard, package currentness tests,
+  and claim ledger package rows to reference the current published version.
+- Ran release preflight, package readiness, package installability, focused
+  package/current-copy tests, submission-copy audit, and the full canonical
+  gate before publishing.
+- Attempted `npm publish --access public`; the first attempt required npm OTP.
+- After the OTP-backed publish completed, verified npm latest reports
+  `splunkready@0.1.2`.
+- Smoke-tested clean no-clone `judge-proof` from `splunkready@0.1.2`.
+- Refreshed public-package currentness evidence.
+- Smoke-tested published MCP `tools/list` and verified
+  `splunkready_review_mcp_composition` is present.
+
+Files changed:
+
+- `package.json`
+- `package-lock.json`
+- `README.md`
+- `docs/devpost-submission.md`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/public-package-currentness.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/public-package-currentness/public-package-currentness.json`
+- `moves/README.md`
+- `moves/moves145.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Notes:
+
+- The npm publish payload included `dist/src/mcp/composition-review.js`.
+- No secret env file values were read, sourced, printed, or committed.

@@ -5,22 +5,23 @@
     "packageName": "splunkready",
     "versions": [
       "0.1.0",
-      "0.1.1"
+      "0.1.1",
+      "0.1.2"
     ],
-    "latestVersion": "0.1.1",
-    "localVersion": "0.1.1",
+    "latestVersion": "0.1.2",
+    "localVersion": "0.1.2",
     "localVersionPublished": true,
     "latestMatchesLocal": true
   },
   "publishedJudgeProof": {
-    "packageSpec": "splunkready@0.1.1",
+    "packageSpec": "splunkready@0.1.2",
     "status": "PASS",
     "mutation": false,
-    "command": "npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json",
+    "command": "npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json",
     "error": null
   },
   "publishedMcp": {
-    "packageSpec": "splunkready@0.1.1",
+    "packageSpec": "splunkready@0.1.2",
     "status": "PASS",
     "initialized": true,
     "serverInfo": {

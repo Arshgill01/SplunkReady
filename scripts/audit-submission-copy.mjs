@@ -37,9 +37,9 @@ const checks = [
   ["Devpost no credentials", files.devpost, "requires no live Splunk credentials"],
   ["Devpost no mutation", files.devpost, "does not mutate Splunk"],
   ["README npm package link", files.readme, "https://www.npmjs.com/package/splunkready"],
-  ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json"],
+  ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json"],
   ["README public package currentness audit", files.readme, "npm run audit:public-package-currentness"],
-  ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json"],
+  ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json"],
   ["Devpost public package currentness evidence", files.devpost, "submission-evidence/public-package-currentness/"],
   [
     "Claim ledger published npm package",
@@ -47,7 +47,7 @@ const checks = [
     "The package is published on npm and the current published no-clone judge proof is smoke-tested."
   ],
   ["Claim ledger npm package page", files.claimLedger, "https://www.npmjs.com/package/splunkready"],
-  ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.1 judge-proof --out ./judge-proof --json"],
+  ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json"],
   [
     "Claim ledger public package currentness",
     files.claimLedger,

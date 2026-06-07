@@ -849,3 +849,10 @@ failures. Residual risk remains release alignment: source-only changes after
 Move 143 are not yet published to npm, so package currentness should be rerun or
 the next package version should be published if judges need the new MCP review
 tool through `npx splunkready@latest mcp`.
+
+Move 145 closes that release-alignment risk for the MCP composition-review tool.
+npm latest now points at `splunkready@0.1.2`; the published package passes
+clean no-clone `judge-proof`, initializes `mcp`, and `tools/list` exposes
+`splunkready_review_mcp_composition`. Residual risk shifts to future source
+changes: any new post-145 code must either be published in a later package or
+kept out of public `npx @latest` claims until currentness is reverified.
