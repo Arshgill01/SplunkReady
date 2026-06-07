@@ -6,22 +6,23 @@
     "versions": [
       "0.1.0",
       "0.1.1",
-      "0.1.2"
+      "0.1.2",
+      "0.1.3"
     ],
-    "latestVersion": "0.1.2",
-    "localVersion": "0.1.2",
+    "latestVersion": "0.1.3",
+    "localVersion": "0.1.3",
     "localVersionPublished": true,
     "latestMatchesLocal": true
   },
   "publishedJudgeProof": {
-    "packageSpec": "splunkready@0.1.2",
+    "packageSpec": "splunkready@0.1.3",
     "status": "PASS",
     "mutation": false,
-    "command": "npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json",
+    "command": "npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json",
     "error": null
   },
   "publishedMcp": {
-    "packageSpec": "splunkready@0.1.2",
+    "packageSpec": "splunkready@0.1.3",
     "status": "PASS",
     "initialized": true,
     "serverInfo": {
@@ -29,6 +30,44 @@
       "title": "SplunkReady Agent Readiness Compiler",
       "version": "0.0.0"
     },
+    "toolNames": [
+      "splunkready_describe_certification",
+      "splunkready_certify_external_trace",
+      "splunkready_certify_mcp_transcript",
+      "splunkready_certify_mcp_transcript_content",
+      "splunkready_review_mcp_composition",
+      "splunkready_check_hosted_model_access"
+    ],
+    "requiredTools": [
+      "splunkready_certify_mcp_transcript_content",
+      "splunkready_check_hosted_model_access",
+      "splunkready_review_mcp_composition"
+    ],
+    "requiredToolsPresent": true,
+    "error": null
+  },
+  "publishedLiveMockProof": {
+    "packageSpec": "splunkready@0.1.3",
+    "status": "PASS",
+    "mutation": false,
+    "mode": "live",
+    "failToPass": true,
+    "command": "npx -y splunkready@0.1.3 live-proof --out ./live-mock --live-mock --json",
+    "error": null
+  },
+  "publishedPolicyRegistry": {
+    "packageSpec": "splunkready@0.1.3",
+    "status": "PASS",
+    "signedPolicyManifest": true,
+    "signatureAlgorithm": "ed25519",
+    "receiptPolicyId": "pci-dss-readiness",
+    "receiptPolicyHash": "ecef938107a9fae6777c7e36e850fb17625c6f064af2d2fb3cad74cb7f56c59e",
+    "commands": [
+      "npx -y splunkready@0.1.3 policy-publish --policy soc2-readiness --out ./policy-registry --json",
+      "npx -y splunkready@0.1.3 compile --out ./policy-eval --json",
+      "npx -y splunkready@0.1.3 evaluate --out ./policy-eval --policy pci-dss-readiness --json",
+      "npx -y splunkready@0.1.3 receipt --out ./policy-eval --json"
+    ],
     "error": null
   },
   "recommendedAction": "No registry action required.",

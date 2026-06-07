@@ -36,7 +36,7 @@ Not MCP telemetry.
 Not a detection-health dashboard.
 Not a generic eval harness.
 Not an LLM judging another LLM.
-npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
 npm run audit:public-package-currentness
 splunkready_certify_mcp_transcript_content
 splunkready_check_hosted_model_access
@@ -83,7 +83,7 @@ Readiness Receipt
 security investigation readiness
 requires no live Splunk credentials
 does not mutate Splunk
-npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
 submission-evidence/public-package-currentness/
 ${hostedMcpProofUrl}
 ${hostedJudgeProofUrl}
@@ -108,8 +108,8 @@ const baseClaimLedger = `# Submission Claim Ledger
 
 | Claim | Status | Evidence | Verification |
 | --- | --- | --- | --- |
-| The package is published on npm and the current published no-clone judge proof is smoke-tested. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json |
-| The public registry currentness proof verifies the current published judge-proof and MCP entrypoint paths. | Supported | submission-evidence/public-package-currentness/public-package-currentness.json | npm run audit:public-package-currentness |
+| The package is published on npm and the current published no-clone judge proof is smoke-tested. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json |
+| The public registry currentness proof verifies the current published judge-proof, MCP tools, live-mock proof, and policy-registry paths. | Supported | submission-evidence/public-package-currentness/public-package-currentness.json, publishedLiveMockProof, publishedPolicyRegistry | npm run audit:public-package-currentness |
 | The hosted public demo is source-current against the latest public-demo input commit. | Supported | submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json | npm run audit:hosted-demo-currentness |
 | The tracked suite proof has deterministic signed receipt-chain lineage and replay. | Supported | submission-evidence/suite-proof/receipt-chain.json, splunkready-receipt-chain, submission-evidence/suite-proof/receipt-replay.json, splunkready-receipt-replay, submission-evidence/receipt-public-key.pem, signature.status: "VERIFIED", signature.algorithm: "ed25519", replayedReceiptCount: 6 | verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json; receipt-replay --dir submission-evidence/suite-proof --json |
 | The hosted public demo exposes the credential-free judge proof and LLM evidence boundary. | Supported | submission-evidence/screenshots/public-judge-proof-proof-browser.png | ${hostedJudgeProofUrl} |

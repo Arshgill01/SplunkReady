@@ -90,12 +90,104 @@ if (command === "mcp") {
         instructions: "Deterministic rules decide readiness."
       }
     }));
+    console.log(JSON.stringify({
+      jsonrpc: "2.0",
+      id: "tools-list",
+      result: {
+        tools: [
+          { name: "splunkready_certify_mcp_transcript_content" },
+          { name: "splunkready_check_hosted_model_access" },
+          { name: "splunkready_review_mcp_composition" }
+        ]
+      }
+    }));
     setTimeout(() => {}, 10000);
     return;
   }
 
   console.error("Unknown command: mcp");
   process.exit(1);
+}
+
+if (command === "live-proof") {
+  if (process.env.FAKE_NPX_LIVE_MOCK_PASS === "true") {
+    const outIndex = args.indexOf("--out");
+    const outDir = outIndex >= 0 ? args[outIndex + 1] : "live-mock";
+    fs.mkdirSync(outDir, { recursive: true });
+    fs.writeFileSync(path.join(outDir, "live-proof-summary.json"), JSON.stringify({
+      status: "PASS",
+      mode: "live",
+      mutation: false,
+      failToPass: true
+    }, null, 2));
+    console.log(JSON.stringify({ command: "live-proof", status: "PASS" }));
+    process.exit(0);
+  }
+
+  console.error("Unknown option --live-mock");
+  process.exit(1);
+}
+
+if (command === "policy-publish") {
+  if (process.env.FAKE_NPX_POLICY_PASS !== "true") {
+    console.error("Unknown option --policy");
+    process.exit(1);
+  }
+
+  const outIndex = args.indexOf("--out");
+  const outDir = outIndex >= 0 ? args[outIndex + 1] : "policy-registry";
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, "soc2-readiness.policy-manifest.json"), JSON.stringify({
+    source: "splunkready-policy-registry",
+    signature: { status: "SIGNED", algorithm: "ed25519" }
+  }, null, 2));
+  console.log(JSON.stringify({ command: "policy-publish", status: "PASS" }));
+  process.exit(0);
+}
+
+if (command === "compile") {
+  if (process.env.FAKE_NPX_POLICY_PASS !== "true") {
+    console.error("compile failed");
+    process.exit(1);
+  }
+
+  const outIndex = args.indexOf("--out");
+  const outDir = outIndex >= 0 ? args[outIndex + 1] : "policy-eval";
+  fs.mkdirSync(outDir, { recursive: true });
+  console.log(JSON.stringify({ command: "compile", status: "PASS" }));
+  process.exit(0);
+}
+
+if (command === "evaluate") {
+  if (process.env.FAKE_NPX_POLICY_PASS !== "true") {
+    console.error("evaluate failed");
+    process.exit(1);
+  }
+
+  const outIndex = args.indexOf("--out");
+  const outDir = outIndex >= 0 ? args[outIndex + 1] : "policy-eval";
+  fs.mkdirSync(outDir, { recursive: true });
+  console.log(JSON.stringify({ command: "evaluate", status: "PASS" }));
+  process.exit(0);
+}
+
+if (command === "receipt") {
+  if (process.env.FAKE_NPX_POLICY_PASS !== "true") {
+    console.error("receipt failed");
+    process.exit(1);
+  }
+
+  const outIndex = args.indexOf("--out");
+  const outDir = outIndex >= 0 ? args[outIndex + 1] : "policy-eval";
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, "receipt-before-001.json"), JSON.stringify({
+    policy: {
+      id: "pci-dss-readiness",
+      hash: "f".repeat(64)
+    }
+  }, null, 2));
+  console.log(JSON.stringify({ command: "receipt", status: "PASS" }));
+  process.exit(0);
 }
 
 console.error("unexpected npx command: " + args.join(" "));
@@ -114,7 +206,15 @@ const runCurrentness = async (
   status: string;
   registry: { latestVersion: string; localVersion: string; latestMatchesLocal: boolean };
   publishedJudgeProof: { status: string; mutation: boolean };
-  publishedMcp: { status: string; initialized: boolean };
+  publishedMcp: { status: string; initialized: boolean; requiredToolsPresent: boolean; toolNames: string[] };
+  publishedLiveMockProof: { status: string; mutation: boolean; mode: string; failToPass: boolean };
+  publishedPolicyRegistry: {
+    status: string;
+    signedPolicyManifest: boolean;
+    signatureAlgorithm: string;
+    receiptPolicyId: string;
+    receiptPolicyHash: string;
+  };
   recommendedAction: string;
 }> => {
   const binDir = await createFakeNpmTools(root);
@@ -145,19 +245,23 @@ describe("public package currentness audit", () => {
         latestMatchesLocal: false
       },
       publishedJudgeProof: { status: "PASS", mutation: false },
-      publishedMcp: { status: "BLOCKED", initialized: false }
+      publishedMcp: { status: "BLOCKED", initialized: false },
+      publishedLiveMockProof: { status: "BLOCKED" },
+      publishedPolicyRegistry: { status: "BLOCKED" }
     });
     expect(report.recommendedAction).toContain("Publish splunkready@0.1.2");
   });
 
-  it("reports current when npm latest matches local source and MCP initializes", async () => {
+  it("reports current when npm latest matches local source and advanced public surfaces pass", async () => {
     const root = await tempRoot();
     await writePackageJson(root, "0.1.2");
 
     const report = await runCurrentness(root, {
       FAKE_NPM_VERSIONS: JSON.stringify(["0.1.0", "0.1.1", "0.1.2"]),
       FAKE_NPM_LATEST: "0.1.2",
-      FAKE_NPX_MCP_PASS: "true"
+      FAKE_NPX_MCP_PASS: "true",
+      FAKE_NPX_LIVE_MOCK_PASS: "true",
+      FAKE_NPX_POLICY_PASS: "true"
     });
 
     expect(report).toMatchObject({
@@ -168,9 +272,38 @@ describe("public package currentness audit", () => {
         latestMatchesLocal: true
       },
       publishedJudgeProof: { status: "PASS", mutation: false },
-      publishedMcp: { status: "PASS", initialized: true },
+      publishedMcp: { status: "PASS", initialized: true, requiredToolsPresent: true },
+      publishedLiveMockProof: { status: "PASS", mutation: false, mode: "live", failToPass: true },
+      publishedPolicyRegistry: {
+        status: "PASS",
+        signedPolicyManifest: true,
+        signatureAlgorithm: "ed25519",
+        receiptPolicyId: "pci-dss-readiness"
+      },
       recommendedAction: "No registry action required.",
       mutation: false
+    });
+    expect(report.publishedMcp.toolNames).toContain("splunkready_review_mcp_composition");
+    expect(report.publishedPolicyRegistry.receiptPolicyHash).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("fails when npm latest matches local version but lacks newer live-mock and policy surfaces", async () => {
+    const root = await tempRoot();
+    await writePackageJson(root, "0.1.2");
+
+    await expect(
+      execFileAsync(process.execPath, [scriptPath, "--require-current"], {
+        cwd: root,
+        env: {
+          ...process.env,
+          FAKE_NPM_VERSIONS: JSON.stringify(["0.1.0", "0.1.1", "0.1.2"]),
+          FAKE_NPM_LATEST: "0.1.2",
+          FAKE_NPX_MCP_PASS: "true",
+          PATH: `${await createFakeNpmTools(root)}:${process.env.PATH ?? ""}`
+        }
+      })
+    ).rejects.toMatchObject({
+      code: 1
     });
   });
 });

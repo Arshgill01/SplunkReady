@@ -48,7 +48,7 @@ const parseJson = (raw, fallback) => {
 
 const safeError = (value) => String(value ?? "").replace(/\s+/g, " ").trim().slice(0, 500);
 
-const readPublishedMcpInitialize = (packageSpec) =>
+const readPublishedMcpProbe = (packageSpec) =>
   new Promise((resolve) => {
     const child = spawn("npx", ["-y", packageSpec, "mcp"], {
       cwd: tempRoot,
@@ -62,6 +62,14 @@ const readPublishedMcpInitialize = (packageSpec) =>
     let stdout = "";
     let stderr = "";
     let settled = false;
+    let initialized = false;
+    let serverInfo = null;
+    let toolNames = [];
+    const requiredTools = [
+      "splunkready_certify_mcp_transcript_content",
+      "splunkready_check_hosted_model_access",
+      "splunkready_review_mcp_composition"
+    ];
 
     const finish = (result) => {
       if (settled) {
@@ -78,39 +86,57 @@ const readPublishedMcpInitialize = (packageSpec) =>
       finish({
         status: "BLOCKED",
         initialized: false,
-        error: safeError(`published mcp did not initialize before timeout. stderr=${stderr}`)
+        toolNames,
+        requiredTools,
+        requiredToolsPresent: false,
+        error: safeError(`published mcp did not complete initialize/tools-list probe before timeout. stderr=${stderr}`)
       });
     }, 15_000);
+
+    const inspectStdout = () => {
+      const lines = stdout
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      for (const line of lines) {
+        const parsed = parseJson(line, null);
+        const result = parsed?.result;
+
+        if (
+          parsed?.jsonrpc === "2.0" &&
+          parsed?.id === "initialize" &&
+          result?.protocolVersion === "2025-06-18" &&
+          result?.serverInfo?.name === "splunkready"
+        ) {
+          initialized = true;
+          serverInfo = result.serverInfo;
+        }
+
+        if (parsed?.jsonrpc === "2.0" && parsed?.id === "tools-list" && Array.isArray(result?.tools)) {
+          toolNames = result.tools.map((tool) => tool?.name).filter((name) => typeof name === "string");
+        }
+      }
+
+      const requiredToolsPresent = requiredTools.every((tool) => toolNames.includes(tool));
+
+      if (initialized && requiredToolsPresent) {
+        finish({
+          status: "PASS",
+          initialized,
+          serverInfo,
+          toolNames,
+          requiredTools,
+          requiredToolsPresent,
+          error: null
+        });
+      }
+    };
 
     child.stdout.setEncoding("utf8");
     child.stdout.on("data", (chunk) => {
       stdout += chunk;
-      const newlineIndex = stdout.indexOf("\n");
-
-      if (newlineIndex === -1) {
-        return;
-      }
-
-      const line = stdout.slice(0, newlineIndex).trim();
-
-      if (!line) {
-        return;
-      }
-
-      const parsed = parseJson(line, null);
-      const result = parsed?.result;
-      const initialized =
-        parsed?.jsonrpc === "2.0" &&
-        parsed?.id === "initialize" &&
-        result?.protocolVersion === "2025-06-18" &&
-        result?.serverInfo?.name === "splunkready";
-
-      finish({
-        status: initialized ? "PASS" : "BLOCKED",
-        initialized,
-        serverInfo: result?.serverInfo ?? null,
-        error: initialized ? null : "published mcp initialize response did not match SplunkReady MCP"
-      });
+      inspectStdout();
     });
 
     child.stderr.setEncoding("utf8");
@@ -124,15 +150,22 @@ const readPublishedMcpInitialize = (packageSpec) =>
 
     child.on("exit", (code, signal) => {
       if (!settled) {
+        const requiredToolsPresent = requiredTools.every((tool) => toolNames.includes(tool));
         finish({
           status: "BLOCKED",
-          initialized: false,
-          error: safeError(`published mcp exited before initialize response: code=${code} signal=${signal} stderr=${stderr}`)
+          initialized,
+          serverInfo,
+          toolNames,
+          requiredTools,
+          requiredToolsPresent,
+          error: safeError(
+            `published mcp exited before complete probe: code=${code} signal=${signal} initialized=${initialized} requiredToolsPresent=${requiredToolsPresent} stderr=${stderr}`
+          )
         });
       }
     });
 
-    child.stdin.end(
+    child.stdin.write(
       `${JSON.stringify({
         jsonrpc: "2.0",
         id: "initialize",
@@ -147,7 +180,129 @@ const readPublishedMcpInitialize = (packageSpec) =>
         }
       })}\n`
     );
+    child.stdin.end(
+      `${JSON.stringify({
+        jsonrpc: "2.0",
+        id: "tools-list",
+        method: "tools/list",
+        params: {}
+      })}\n`
+    );
   });
+
+const runPublishedLiveMockProof = (packageSpec) => {
+  const outDir = join(tempRoot, "live-mock");
+  const result = run("npx", ["-y", packageSpec, "live-proof", "--out", outDir, "--live-mock", "--json"], {
+    cwd: tempRoot,
+    timeoutMs: 120_000
+  });
+  const summary = run(
+    "node",
+    [
+      "-e",
+      "const fs=require('fs'); const p=process.argv[1]; console.log(fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '{}')",
+      join(outDir, "live-proof-summary.json")
+    ],
+    { cwd: tempRoot, timeoutMs: 5_000 }
+  );
+  const parsed = parseJson(result.stdout, {});
+  const summaryJson = parseJson(summary.stdout, {});
+  const passed =
+    result.ok &&
+    parsed.status === "PASS" &&
+    summaryJson.status === "PASS" &&
+    summaryJson.mode === "live" &&
+    summaryJson.mutation === false &&
+    summaryJson.failToPass === true;
+
+  return {
+    packageSpec,
+    status: passed ? "PASS" : "BLOCKED",
+    mutation: summaryJson.mutation ?? null,
+    mode: summaryJson.mode ?? null,
+    failToPass: summaryJson.failToPass ?? null,
+    command: `npx -y ${packageSpec} live-proof --out ./live-mock --live-mock --json`,
+    error: passed ? null : safeError(result.stderr || result.message || "published live-mock proof did not return PASS")
+  };
+};
+
+const runPublishedPolicyRegistryProof = (packageSpec) => {
+  const policyDir = join(tempRoot, "policy-registry");
+  const evalDir = join(tempRoot, "policy-eval");
+  const publish = run("npx", ["-y", packageSpec, "policy-publish", "--policy", "soc2-readiness", "--out", policyDir, "--json"], {
+    cwd: tempRoot,
+    timeoutMs: 60_000
+  });
+  const compile = publish.ok
+    ? run("npx", ["-y", packageSpec, "compile", "--out", evalDir, "--json"], { cwd: tempRoot, timeoutMs: 60_000 })
+    : { ok: false, stderr: "", message: "policy-publish failed" };
+  const evaluate = compile.ok
+    ? run("npx", ["-y", packageSpec, "evaluate", "--out", evalDir, "--policy", "pci-dss-readiness", "--json"], {
+        cwd: tempRoot,
+        timeoutMs: 60_000
+      })
+    : { ok: false, stderr: "", message: "compile failed" };
+  const receipt = evaluate.ok
+    ? run("npx", ["-y", packageSpec, "receipt", "--out", evalDir, "--json"], { cwd: tempRoot, timeoutMs: 60_000 })
+    : { ok: false, stderr: "", message: "policy evaluate failed" };
+  const manifest = run(
+    "node",
+    [
+      "-e",
+      "const fs=require('fs'); const p=process.argv[1]; console.log(fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '{}')",
+      join(policyDir, "soc2-readiness.policy-manifest.json")
+    ],
+    { cwd: tempRoot, timeoutMs: 5_000 }
+  );
+  const receiptJson = run(
+    "node",
+    [
+      "-e",
+      "const fs=require('fs'); const p=process.argv[1]; console.log(fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '{}')",
+      join(evalDir, "receipt-before-001.json")
+    ],
+    { cwd: tempRoot, timeoutMs: 5_000 }
+  );
+  const manifestParsed = parseJson(manifest.stdout, {});
+  const receiptParsed = parseJson(receiptJson.stdout, {});
+  const passed =
+    publish.ok &&
+    compile.ok &&
+    evaluate.ok &&
+    receipt.ok &&
+    manifestParsed?.signature?.status === "SIGNED" &&
+    manifestParsed?.signature?.algorithm === "ed25519" &&
+    receiptParsed?.policy?.id === "pci-dss-readiness" &&
+    receiptParsed?.policy?.hash;
+
+  return {
+    packageSpec,
+    status: passed ? "PASS" : "BLOCKED",
+    signedPolicyManifest: manifestParsed?.signature?.status === "SIGNED",
+    signatureAlgorithm: manifestParsed?.signature?.algorithm ?? null,
+    receiptPolicyId: receiptParsed?.policy?.id ?? null,
+    receiptPolicyHash: receiptParsed?.policy?.hash ?? null,
+    commands: [
+      `npx -y ${packageSpec} policy-publish --policy soc2-readiness --out ./policy-registry --json`,
+      `npx -y ${packageSpec} compile --out ./policy-eval --json`,
+      `npx -y ${packageSpec} evaluate --out ./policy-eval --policy pci-dss-readiness --json`,
+      `npx -y ${packageSpec} receipt --out ./policy-eval --json`
+    ],
+    error: passed
+      ? null
+      : safeError(
+          publish.stderr ||
+            publish.message ||
+            compile.stderr ||
+            compile.message ||
+            evaluate.stderr ||
+            evaluate.message ||
+            receipt.stderr ||
+            receipt.message ||
+            "published policy registry proof did not return signed policy identity"
+        )
+  };
+};
 
 try {
   const versionsResult = run("npm", ["view", packageJson.name, "versions", "--json"], { timeoutMs: 30_000 });
@@ -188,6 +343,24 @@ try {
     packageSpec,
     status: "BLOCKED",
     initialized: false,
+    requiredToolsPresent: false,
+    error: null
+  };
+  let publishedLiveMockProof = {
+    packageSpec,
+    status: "BLOCKED",
+    mutation: null,
+    mode: null,
+    failToPass: null,
+    error: null
+  };
+  let publishedPolicyRegistry = {
+    packageSpec,
+    status: "BLOCKED",
+    signedPolicyManifest: false,
+    signatureAlgorithm: null,
+    receiptPolicyId: null,
+    receiptPolicyHash: null,
     error: null
   };
 
@@ -231,8 +404,10 @@ try {
 
     publishedMcp = {
       packageSpec,
-      ...(await readPublishedMcpInitialize(packageSpec))
+      ...(await readPublishedMcpProbe(packageSpec))
     };
+    publishedLiveMockProof = runPublishedLiveMockProof(packageSpec);
+    publishedPolicyRegistry = runPublishedPolicyRegistryProof(packageSpec);
   }
 
   const registry = {
@@ -243,7 +418,11 @@ try {
     localVersionPublished,
     latestMatchesLocal
   };
-  const publishedSmokePassed = publishedJudgeProof.status === "PASS" && publishedMcp.status === "PASS";
+  const publishedSmokePassed =
+    publishedJudgeProof.status === "PASS" &&
+    publishedMcp.status === "PASS" &&
+    publishedLiveMockProof.status === "PASS" &&
+    publishedPolicyRegistry.status === "PASS";
   const status =
     failures.length > 0
       ? "FAIL"
@@ -258,6 +437,8 @@ try {
     registry,
     publishedJudgeProof,
     publishedMcp,
+    publishedLiveMockProof,
+    publishedPolicyRegistry,
     recommendedAction:
       status === "CURRENT"
         ? "No registry action required."

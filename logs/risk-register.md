@@ -949,3 +949,26 @@ Move 150 Docker CI hardening is now remote-validated. GitHub Actions run
 Splunk MCP Docker image build, and container stdio smoke. Residual risk is
 future drift only: Docker validation must stay in CI as the mock MCP server or
 Dockerfile changes.
+
+Move 152 found a public-package content-staleness risk that version equality
+alone did not catch. npm latest and local source both reported `0.1.2`, but
+published `splunkready@0.1.2` rejected `live-proof --live-mock` and
+`policy-publish --policy`, so newer Move 147 and Move 150 product surfaces were
+not actually available through the no-clone judge path. The strengthened
+public-package currentness audit now requires published `judge-proof`, MCP
+required tools, published `live-proof --live-mock`, and published
+policy-registry proof. Source is bumped to `0.1.3` and local gates pass.
+Residual risk: `npm publish --access public` is currently blocked by npm OTP
+(`EOTP`), so public currentness cannot become `CURRENT` until the one-time code
+is supplied or the user publishes `0.1.3`.
+
+Move 152 closes that public-package content-staleness risk. npm latest now
+reports `splunkready@0.1.3`; the strengthened currentness audit reports
+`CURRENT`; published `judge-proof` returns `PASS` with `mutation=false`;
+published MCP initializes and exposes the required certification tools;
+published `live-proof --live-mock` returns `PASS`, `mode: live`,
+`failToPass: true`, and `mutation=false`; and the published policy-registry
+flow signs `soc2-readiness` and emits a `pci-dss-readiness` receipt policy
+identity. Residual risk returns to future drift: any later public-surface source
+change must either publish a new version or be labeled source-only until this
+audit passes again.

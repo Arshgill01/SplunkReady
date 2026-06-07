@@ -14587,3 +14587,61 @@ Remote follow-up:
 - GitHub Actions run `27101503193` passed for commit `72e0469`.
 - The remote job included the canonical gate, credential-free live mock proof,
   mock Splunk MCP Docker image build, and container stdio smoke.
+
+## 2026-06-07T18:59:01Z - Move 152 published package advanced currentness
+
+Intent:
+
+- Close public no-clone release skew after Moves 147-150 by requiring npm
+  latest to expose the newer live-mock and policy-registry surfaces, not only
+  `judge-proof` and MCP initialization.
+
+Actions:
+
+- Added Move 152 and updated the move index.
+- Strengthened `scripts/audit-public-package-currentness.mjs` to verify:
+  - published `judge-proof` with `mutation: false`;
+  - published MCP `initialize` plus required `tools/list` entries;
+  - published `live-proof --live-mock` with `mode: live`, `mutation: false`,
+    and `failToPass: true`;
+  - published policy-registry flow through `policy-publish`, `compile`,
+    `evaluate --policy`, and `receipt`.
+- Added tests that fail when npm latest matches local semver but lacks the
+  newer live-mock and policy surfaces.
+- Bumped package source version from `0.1.2` to `0.1.3`.
+- Updated README, Devpost draft, claim ledger, and submission-copy guards to
+  require the stronger public-package proof.
+- Ran release preflight and local package gates for `0.1.3`.
+- Attempted `npm publish --access public`.
+
+Files changed:
+
+- `README.md`
+- `docs/ambitious-award-move-plan.md`
+- `docs/devpost-submission.md`
+- `moves/README.md`
+- `moves/moves152.md`
+- `package.json`
+- `package-lock.json`
+- `scripts/audit-public-package-currentness.mjs`
+- `scripts/audit-submission-copy.mjs`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/public-package-currentness/public-package-currentness.json`
+- `tests/scripts/public-package-currentness.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Status:
+
+- Source is ready for `splunkready@0.1.3`, but npm publish is blocked by
+  one-time password requirement (`EOTP`).
+
+Post-publish follow-up:
+
+- npm registry later reported latest `splunkready@0.1.3`.
+- Reran the strengthened public-package currentness audit.
+- Refreshed `submission-evidence/public-package-currentness/`.
+- Marked Move 152 implemented after the audit proved published `judge-proof`,
+  MCP required tools, `live-proof --live-mock`, and policy-registry proof.

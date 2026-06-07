@@ -15115,3 +15115,123 @@ Result:
 - PASS for remote credential-free live mock proof.
 - PASS for remote mock Splunk MCP Docker image build.
 - PASS for remote mock Splunk MCP container stdio smoke.
+
+## 2026-06-07T18:59:01Z - Move 152 published package advanced currentness
+
+Commands:
+
+- `npx -y splunkready@0.1.2 live-proof --out ./live-mock --live-mock --json`
+- `npx -y splunkready@0.1.2 policy-publish --policy soc2-readiness --out ./policy --json`
+- `npx vitest run tests/scripts/public-package-currentness.test.ts`
+- `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
+- `npm version 0.1.3 --no-git-tag-version`
+- `npx vitest run tests/scripts/public-package-currentness.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:npm-release-preflight -- --require-ready`
+- `npm run audit:package-readiness`
+- `npm run audit:package-installability`
+- `npm run audit:submission-copy`
+- `npm publish --access public`
+- `npm run check`
+
+Results:
+
+- Confirmed the published `splunkready@0.1.2` content is stale:
+  - published `judge-proof` passes;
+  - published MCP initializes and exposes the required MCP tools;
+  - published `live-proof --live-mock` is `BLOCKED` with `Unknown option
+    --live-mock`;
+  - published `policy-publish --policy` is `BLOCKED` with `Unknown option
+    --policy`.
+- PASS for the focused public-package currentness tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for focused public-package and submission-copy tests:
+  - 2 test files passed;
+  - 6 tests passed.
+- PASS for release preflight:
+  - status `READY`;
+  - package `splunkready@0.1.3`;
+  - npm auth present;
+  - registry reports `0.1.3` available;
+  - dry-run pack file count `177`.
+- PASS for package readiness audit with 177 packed files checked.
+- PASS for package installability audit:
+  - `splunkready-0.1.3.tgz` installed;
+  - clean `npx splunkready judge-proof` returned `PASS`;
+  - clean `npx splunkready mcp` initialized.
+- PASS for submission-copy audit with 148 required claims.
+- BLOCKED for `npm publish --access public`:
+  - npm returned `EOTP`;
+  - publish requires a one-time password.
+
+Canonical local gate:
+
+- `npm run check`
+
+Result:
+
+- PASS for scaffold verification with 85 waves and 2261 project files.
+- PASS for runtime contracts with 19 rules, 4 fixture missions, and 20 evidence refs.
+- PASS for TypeScript build and production UI build.
+- PASS for public demo export audit with 228 files and `mutation=false`.
+- PASS for package readiness and installability audits for `0.1.3`.
+- PASS for full Vitest suite:
+  - 64 test files passed;
+  - 405 tests passed.
+- PASS for secret env ignore audit.
+- PASS for reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS for submission-copy audit with 148 required claims.
+- PASS for final `git diff --check`.
+
+Pending:
+
+- Closed by the post-publish currentness audit below.
+
+Post-publish currentness gate:
+
+- `npm view splunkready version versions --json`
+- `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS: npm latest reports `splunkready@0.1.3`.
+- PASS: public-package currentness reports `CURRENT`.
+- PASS: published `judge-proof` returns `PASS` with `mutation=false`.
+- PASS: published MCP initializes and exposes required tools:
+  - `splunkready_certify_mcp_transcript_content`;
+  - `splunkready_check_hosted_model_access`;
+  - `splunkready_review_mcp_composition`.
+- PASS: published `live-proof --live-mock` returns `PASS`, `mode: live`,
+  `failToPass: true`, and `mutation=false`.
+- PASS: published policy-registry flow signs `soc2-readiness` with Ed25519 and
+  emits a receipt with `policy.id: "pci-dss-readiness"` and policy hash
+  `ecef938107a9fae6777c7e36e850fb17625c6f064af2d2fb3cad74cb7f56c59e`.
+- PASS: refreshed `submission-evidence/evidence-pack-sha256.txt` and verified
+  all tracked evidence files.
+
+Final gate:
+
+- `npm run check`
+
+Result:
+
+- PASS for scaffold verification with 85 waves and 2261 project files.
+- PASS for runtime contracts with 19 rules, 4 fixture missions, and 20 evidence refs.
+- PASS for TypeScript build and production UI build.
+- PASS for public demo export audit with 228 files and `mutation=false`.
+- PASS for package readiness audit with 177 packed files checked.
+- PASS for package installability audit:
+  - `splunkready-0.1.3.tgz` installed;
+  - clean `npx splunkready judge-proof` returned `PASS`;
+  - clean `npx splunkready mcp` initialized.
+- PASS for full Vitest suite:
+  - 64 test files passed;
+  - 405 tests passed.
+- PASS for secret env ignore audit.
+- PASS for reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS for submission-copy audit with 148 required claims.
+- PASS for final `git diff --check`.

@@ -43,14 +43,14 @@ The local fixture path requires no live Splunk credentials. The currently
 published clean-folder judge command is:
 
 ```bash
-npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
 ```
 
-That clean-folder command has been smoke-tested from a temp folder, returns
-`PASS`, records `mutation: false`, and writes the judge proof bundle without
-requiring a repository clone. The current published package also exposes the
-`splunkready mcp` entrypoint, verified by the public-package currentness audit.
-version before claiming it through `npx splunkready@latest`. The tracked
+That clean-folder command is smoke-tested from a temp folder, returns `PASS`,
+records `mutation: false`, and writes the judge proof bundle without requiring a
+repository clone. The public-package currentness audit also verifies the
+published MCP tool surface, credential-free `live-proof --live-mock`, and signed
+policy-registry commands before the package is called current. The tracked
 currentness audit in `submission-evidence/public-package-currentness/` records
 the public registry state for that claim.
 
@@ -137,7 +137,7 @@ The tracked evidence pack does not claim live hosted-model entitlement. The work
 - Zod
 - Vitest
 - Vite
-- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.2 judge-proof`
+- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.3 judge-proof`
 - Splunk MCP adapter boundary
 - Deterministic trace grader rules
 - Local workbench API and UI
