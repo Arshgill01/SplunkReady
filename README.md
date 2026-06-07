@@ -203,6 +203,12 @@ Verified hosted demo:
 https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof
 ```
 
+Hosted judge-proof receipt view:
+
+```text
+https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser
+```
+
 ## Grade a Captured Agent Trace
 
 The fixture demo is reproducible, but SplunkReady is not limited to its bundled specimen. After compiling the environment contract, pass in a schema-valid trace captured from another Splunk-connected agent:

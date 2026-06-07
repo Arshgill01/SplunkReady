@@ -11853,3 +11853,39 @@ Files changed:
 
 Open blockers:
 - Hosted CI needs to run after push for Move 103.
+
+## 2026-06-07 14:08 - Move 104 Hosted Demo Public Copy Guard
+
+Scope:
+- Added the verified hosted MCP proof route to Devpost copy and kept it in the
+  README public demo section.
+- Added the hosted judge-proof receipt route to README and Devpost copy.
+- Extended `audit:submission-copy` to require:
+  - README hosted MCP proof URL;
+  - README hosted judge-proof URL;
+  - Devpost hosted MCP proof URL;
+  - Devpost hosted judge-proof URL;
+  - claim-ledger hosted judge-proof URL.
+- Added focused regression coverage for missing hosted demo copy.
+- Refreshed the submission evidence SHA-256 ledger after updating the claim
+  ledger URL.
+- Did not change product behavior.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `README.md`
+- `docs/devpost-submission.md`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `moves/README.md`
+- `moves/moves104.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 104.

@@ -2,6 +2,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const rootDir = process.argv[2] ?? ".";
+const hostedMcpProofUrl = "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof";
+const hostedJudgeProofUrl =
+  "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser";
 
 const files = {
   readme: readFileSync(join(rootDir, "README.md"), "utf8"),
@@ -39,6 +42,11 @@ const checks = [
   ["Claim ledger published npm package", files.claimLedger, "The package is published on npm and judge-runnable from a clean folder."],
   ["Claim ledger npm package page", files.claimLedger, "https://www.npmjs.com/package/splunkready"],
   ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json"],
+  ["README hosted MCP proof URL", files.readme, hostedMcpProofUrl],
+  ["README hosted judge proof URL", files.readme, hostedJudgeProofUrl],
+  ["Devpost hosted MCP proof URL", files.devpost, hostedMcpProofUrl],
+  ["Devpost hosted judge proof URL", files.devpost, hostedJudgeProofUrl],
+  ["Claim ledger hosted judge proof URL", files.claimLedger, hostedJudgeProofUrl],
   ["Demo no LLM vibes", files.demo, "not another LLM judging vibes"],
   ["Demo no mutation", files.demo, "does not mutate Splunk"],
   ["Demo route", files.demo, "splunkready-shell.html#rerun-receipts"],

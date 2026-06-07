@@ -48,6 +48,18 @@ npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json
 That clean-folder command returns `PASS`, records `mutation: false`, and writes
 the judge proof bundle without requiring a repository clone.
 
+The credential-free hosted workbench is available at:
+
+```text
+https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof
+```
+
+The hosted judge-proof receipt view is available at:
+
+```text
+https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser
+```
+
 For the full local workbench from a clone:
 
 ```bash
@@ -129,5 +141,7 @@ The tracked evidence pack does not claim live hosted-model entitlement. The work
 
 - Evidence pack: `submission-evidence/README.md`
 - Claim ledger: `submission-evidence/claim-ledger.md`
+- Hosted MCP proof: `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof`
+- Hosted judge proof: `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser`
 - Architecture diagram: `architecture_diagram.md`
 - Dev verification: `npm run check`

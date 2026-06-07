@@ -472,3 +472,9 @@ verification, workflow regression coverage, and `npm run check`. Hosted CI run
 `Node.js 20 actions are deprecated` annotation. Residual workflow-maintenance
 risk is limited to raw Node `punycode` deprecation warnings emitted by
 GitHub-owned action internals.
+
+Move 104 reduces the hosted-demo public-copy risk by requiring both the hosted
+MCP proof route and hosted judge-proof route in README and Devpost copy through
+`audit:submission-copy`. The audit now checks 39 required claims. This does not
+create new hosted-demo evidence; it prevents the already verified GitHub Pages
+routes from disappearing from the judge-facing path.

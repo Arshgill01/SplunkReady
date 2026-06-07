@@ -9604,6 +9604,64 @@ Notes:
 Open blockers:
 
 - Hosted CI still needs to run after push.
+
+## 2026-06-07 - Move 104 Hosted Demo Public Copy Guard
+
+Commands:
+
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run verify:scaffold`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS for focused submission-copy audit tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for submission-copy audit:
+  - 39 required claims passed.
+- PASS for evidence-pack checksum:
+  - every tracked `submission-evidence/` file verified after claim-ledger
+    update.
+- PASS for scaffold verification:
+  - scaffold verified;
+  - waves: 85;
+  - project files: 2081.
+- PASS for `git diff --check`:
+  - completed with no output.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 183 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and `npx
+    splunkready judge-proof` returned `PASS`;
+  - 58 test files passed;
+  - 354 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 39 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- No new Playwright run was needed because this move only guards public copy
+  for URLs already verified by Playwright in prior hosted-demo moves.
+- Did not change product behavior.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 

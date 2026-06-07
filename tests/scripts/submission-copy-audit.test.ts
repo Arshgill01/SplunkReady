@@ -9,6 +9,9 @@ import { describe, expect, it } from "vitest";
 const execFileAsync = promisify(execFile);
 const repoRoot = resolve(import.meta.dirname, "../..");
 const scriptPath = resolve(repoRoot, "scripts/audit-submission-copy.mjs");
+const hostedMcpProofUrl = "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof";
+const hostedJudgeProofUrl =
+  "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser";
 
 const tempRoot = async (): Promise<string> => mkdtemp(join(tmpdir(), "splunkready-submission-copy-test-"));
 
@@ -34,6 +37,8 @@ Not a detection-health dashboard.
 Not a generic eval harness.
 Not an LLM judging another LLM.
 npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json
+${hostedMcpProofUrl}
+${hostedJudgeProofUrl}
 `;
 
 const baseDevpost = `# Devpost Submission Draft
@@ -48,6 +53,8 @@ security investigation readiness
 requires no live Splunk credentials
 does not mutate Splunk
 npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json
+${hostedMcpProofUrl}
+${hostedJudgeProofUrl}
 `;
 
 const baseDemo = `# Demo
@@ -70,6 +77,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | Claim | Status | Evidence | Verification |
 | --- | --- | --- | --- |
 | The package is published on npm and judge-runnable from a clean folder. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json |
+| The hosted public demo exposes the credential-free judge proof and LLM evidence boundary. | Supported | submission-evidence/screenshots/public-judge-proof-proof-browser.png | ${hostedJudgeProofUrl} |
 `;
 
 const writeSubmissionTree = async (root: string, claimLedger = baseClaimLedger): Promise<void> => {
@@ -93,6 +101,16 @@ describe("submission copy audit", () => {
   it("fails when the claim ledger omits the published npm package claim", async () => {
     const root = await tempRoot();
     await writeSubmissionTree(root, "# Submission Claim Ledger\n");
+
+    await expect(execFileAsync(process.execPath, [scriptPath, root])).rejects.toMatchObject({
+      code: 1
+    });
+  });
+
+  it("fails when Devpost omits the hosted public demo URL", async () => {
+    const root = await tempRoot();
+    await writeSubmissionTree(root);
+    await writeFixture(join(root, "docs/devpost-submission.md"), baseDevpost.replace(hostedMcpProofUrl, ""));
 
     await expect(execFileAsync(process.execPath, [scriptPath, root])).rejects.toMatchObject({
       code: 1
