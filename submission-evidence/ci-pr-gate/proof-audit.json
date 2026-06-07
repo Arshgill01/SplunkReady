@@ -1,0 +1,115 @@
+{
+  "status": "WARN",
+  "proofType": "live",
+  "proofDir": "submission-evidence/ci-pr-gate",
+  "mode": "live",
+  "mutation": false,
+  "failToPass": true,
+  "readyAfterPatch": true,
+  "readyWithoutPatch": false,
+  "proofLoop": "fail-to-pass",
+  "hostedModelStatus": "invoked",
+  "checks": [
+    {
+      "id": "contract-loaded",
+      "status": "PASS",
+      "detail": "Environment contract is present and schema-valid.",
+      "evidence": {
+        "id": "contract-acme-soc-dev",
+        "mode": "live"
+      }
+    },
+    {
+      "id": "receipt-before-loaded",
+      "status": "PASS",
+      "detail": "Before receipt is present and schema-valid.",
+      "evidence": {
+        "id": "receipt-before-001",
+        "verdict": "NOT READY",
+        "score": 10
+      }
+    },
+    {
+      "id": "receipt-after-loaded",
+      "status": "PASS",
+      "detail": "After receipt is present and schema-valid.",
+      "evidence": {
+        "id": "receipt-after-001",
+        "verdict": "READY",
+        "score": 100
+      }
+    },
+    {
+      "id": "before-not-ready",
+      "status": "PASS",
+      "detail": "The proof begins from a NOT READY receipt.",
+      "evidence": {
+        "verdict": "NOT READY",
+        "score": 10,
+        "violations": 4
+      }
+    },
+    {
+      "id": "after-ready",
+      "status": "PASS",
+      "detail": "The proof ends with a READY receipt.",
+      "evidence": {
+        "verdict": "READY",
+        "score": 100,
+        "violations": 0
+      }
+    },
+    {
+      "id": "fail-to-pass",
+      "status": "PASS",
+      "detail": "The proof demonstrates NOT READY -> READY.",
+      "evidence": {
+        "before": {
+          "verdict": "NOT READY",
+          "score": 10
+        },
+        "after": {
+          "verdict": "READY",
+          "score": 100
+        }
+      }
+    },
+    {
+      "id": "mutation-false",
+      "status": "PASS",
+      "detail": "All available proof summaries declare mutation=false.",
+      "evidence": {
+        "observed": [
+          false
+        ]
+      }
+    },
+    {
+      "id": "evidence-refs-present",
+      "status": "PASS",
+      "detail": "The final receipt contains evidence references.",
+      "evidence": {
+        "evidenceRefs": [
+          "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+          "saved_searches:search:ES - Lateral Movement Auth Chain",
+          "evt-102",
+          "evt-118",
+          "evt-141"
+        ]
+      }
+    },
+    {
+      "id": "live-security-summary",
+      "status": "WARN",
+      "detail": "No live-security-proof-summary.json was found; this is not the flagship live security proof."
+    },
+    {
+      "id": "hosted-model-status",
+      "status": "PASS",
+      "detail": "Hosted-model assistance is present in the proof artifacts.",
+      "evidence": {
+        "status": "invoked"
+      }
+    }
+  ]
+}

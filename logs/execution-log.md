@@ -14861,3 +14861,76 @@ Boundaries:
   modular inputs, saved searches, tokens, or write operations.
 - This is not a Splunkbase approval, Splunk Cloud vetting, or live-install
   claim.
+
+## 2026-06-07T20:00:00Z - Next ambitious move planning
+
+Intent:
+
+- Stop adding low-value cleanup moves and identify the next five product moves
+  that materially improve award odds after Moves 147-157.
+
+Actions:
+
+- Reviewed the current ambitious plan, repository move index, CI workflows, MCP
+  client resources, policy registry, and Move 157 package proof.
+- Checked current official references for Node single executable applications,
+  GitHub release assets, and Splunk AppInspect.
+- Rejected the literal "Claude Desktop" framing because the user explicitly
+  parked Claude/Cursor-agent recording attempts.
+- Reframed the next tier as product/distribution/integration moves:
+  - Move 158 live readiness PR gate;
+  - Move 159 MCP composition recorder gateway;
+  - Move 160 standalone release artifacts;
+  - Move 161 AppInspect-grade Splunk app;
+  - Move 162 typed policy SDK.
+
+Files changed:
+
+- `docs/ambitious-award-move-plan.md`
+- `moves/README.md`
+- `moves/moves158.md`
+- `moves/moves159.md`
+- `moves/moves160.md`
+- `moves/moves161.md`
+- `moves/moves162.md`
+
+## 2026-06-07T20:03:54Z - Move 158 live readiness PR gate
+
+Intent:
+
+- Turn the credential-free live-mock proof into a first-class GitHub
+  pull-request review surface.
+
+Actions:
+
+- Added `.github/workflows/live-certification-gate.yml`.
+- Added `scripts/render-pr-gate-comment.mjs`, which fails closed on mutation,
+  non-PASS live proof status, FAIL proof audits, and arbitrary proof-audit
+  warnings while accepting the known generic-live warning that this is not the
+  flagship live-security proof.
+- Added `npm run pr-gate:sample`.
+- Added focused renderer and workflow tests.
+- Generated tracked sample evidence under `submission-evidence/ci-pr-gate/`.
+- Updated README, Devpost draft, evidence README, claim ledger, and
+  submission-copy audit coverage for the PR gate claim.
+
+Files changed:
+
+- `.github/workflows/live-certification-gate.yml`
+- `README.md`
+- `docs/devpost-submission.md`
+- `logs/execution-log.md`
+- `logs/risk-register.md`
+- `logs/verification-log.md`
+- `moves/moves158.md`
+- `package.json`
+- `scripts/audit-submission-copy.mjs`
+- `scripts/render-pr-gate-comment.mjs`
+- `scripts/render-pr-gate-comment.d.mts`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/ci-pr-gate/*`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `tests/examples/repository-ci-workflow.test.ts`
+- `tests/scripts/pr-gate-comment.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`

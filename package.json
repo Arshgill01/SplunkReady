@@ -74,6 +74,7 @@
     "llm-proof": "npm run build && node dist/src/cli.js llm-proof --out artifacts/llm-proof --require-pass true --json",
     "mcp-proof": "npm run build && node dist/src/cli.js mcp-proof --out artifacts/mcp-proof --live-mock --json",
     "live-mock-proof": "npm run build && node dist/src/cli.js live-proof --out submission-evidence/live-mock --live-mock --json",
+    "pr-gate:sample": "npm run build && node -e \"require('node:fs').rmSync('submission-evidence/ci-pr-gate',{recursive:true,force:true})\" && node dist/src/cli.js live-proof --out submission-evidence/ci-pr-gate --live-mock --json && node dist/src/cli.js proof-audit --out submission-evidence/ci-pr-gate --json && node scripts/render-pr-gate-comment.mjs --proof-dir submission-evidence/ci-pr-gate --out submission-evidence/ci-pr-gate/pr-comment.md --json-out submission-evidence/ci-pr-gate/ci-pr-gate.json",
     "mcp": "npm run build && node dist/src/mcp/server.js",
     "splunk-app:package": "npm run public-demo:build && node scripts/build-splunk-app-package.mjs",
     "test:workbench": "vitest run tests/workbench tests/ui/app.test.ts",

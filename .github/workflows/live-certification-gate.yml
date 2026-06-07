@@ -1,0 +1,82 @@
+name: Live Certification PR Gate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  live-readiness:
+    name: live-mock readiness receipt
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build runtime
+        run: npm run build
+
+      - name: Run credential-free live readiness proof
+        run: node dist/src/cli.js live-proof --out artifacts/pr-gate --live-mock --json
+
+      - name: Run proof audit
+        run: node dist/src/cli.js proof-audit --out artifacts/pr-gate --json
+
+      - name: Render PR readiness comment
+        run: node scripts/render-pr-gate-comment.mjs --proof-dir artifacts/pr-gate --out artifacts/pr-gate/pr-comment.md --json-out artifacts/pr-gate/ci-pr-gate.json
+
+      - name: Upload PR gate artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: splunkready-live-readiness-pr-gate
+          path: artifacts/pr-gate
+          if-no-files-found: error
+
+      - name: Post or update PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require("node:fs");
+            const marker = "<!-- splunkready-live-readiness-pr-gate -->";
+            const body = fs.readFileSync("artifacts/pr-gate/pr-comment.md", "utf8");
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100
+            });
+            const existing = comments.find((comment) => comment.user?.type === "Bot" && comment.body?.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body
+              });
+            }

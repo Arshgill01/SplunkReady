@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "mode": "live",
+  "mutation": false,
+  "derivedMission": {
+    "strategy": "saved-search-with-evidence",
+    "reason": "Generated from live saved search SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain with 3 row(s).",
+    "missionId": "mission-live-saved-search-readiness",
+    "artifacts": [
+      "submission-evidence/ci-pr-gate/live-derived-mission.json",
+      "submission-evidence/ci-pr-gate/live-derived-readiness-profile.json"
+    ]
+  },
+  "before": {
+    "verdict": "NOT READY",
+    "score": 10,
+    "violations": 4
+  },
+  "after": {
+    "verdict": "READY",
+    "score": 100,
+    "violations": 0
+  },
+  "failToPass": true,
+  "readyWithoutPatch": false,
+  "proofLoop": "fail-to-pass",
+  "hostedModels": {
+    "status": "invoked",
+    "availableTools": [
+      "saia_generate_spl",
+      "saia_explain_spl",
+      "saia_optimize_spl",
+      "saia_ask_splunk_question"
+    ],
+    "missingTools": [],
+    "assistanceItems": 2,
+    "notes": "SAIA explain/optimize returned advisory output for SPL-rule violations. Deterministic rules remained authoritative for pass/fail."
+  },
+  "notes": "The live-derived mission exercised a NOT READY -> READY patch loop."
+}

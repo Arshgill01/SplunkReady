@@ -1,0 +1,43 @@
+{
+  "source": "splunkready-live-readiness-pr-gate",
+  "status": "PASS",
+  "generatedAt": "2026-06-07T20:05:11.798Z",
+  "proofDir": "submission-evidence/ci-pr-gate",
+  "mode": "live",
+  "mutation": false,
+  "proofLoop": "fail-to-pass",
+  "failToPass": true,
+  "before": {
+    "verdict": "NOT READY",
+    "score": 10,
+    "violations": 4
+  },
+  "after": {
+    "verdict": "READY",
+    "score": 100,
+    "violations": 0
+  },
+  "audit": {
+    "status": "WARN",
+    "readyAfterPatch": true,
+    "failToPass": true,
+    "checkCount": 10
+  },
+  "policy": {
+    "patchId": "patch-security-readiness",
+    "ruleCount": 3,
+    "violationRefs": 4
+  },
+  "hostedModels": {
+    "status": "invoked",
+    "advisoryOnly": true,
+    "assistanceItems": 2
+  },
+  "artifacts": {
+    "summary": "submission-evidence/ci-pr-gate/live-proof-summary.json",
+    "audit": "submission-evidence/ci-pr-gate/proof-audit.json",
+    "beforeReceipt": "submission-evidence/ci-pr-gate/receipt-before-001.json",
+    "afterReceipt": "submission-evidence/ci-pr-gate/receipt-after-001.json",
+    "policyPatch": "submission-evidence/ci-pr-gate/policy-patch.json"
+  }
+}

@@ -180,6 +180,11 @@ commands, or filesystem paths.
 | P0 | [155](moves155.md) Live hosted-model status redaction evidence | 0.5d | Tracks the current operator-live SAIA blocker as public-safe evidence while proving raw live artifacts do not leak secrets. |
 | P0 | [156](moves156.md) SAIA partial route and trial compatibility evidence | 0.5d | Separates partial Splunk AI Assistant route registration from total handler absence and documents the official Trial-stack compatibility boundary. |
 | P0 | [157](moves157.md) Splunk app package proof | 0.5d | Packages the public artifact workbench into a credential-free Splunk app shell without handlers, inputs, credentials, or mutation. |
+| P0 | [158](moves158.md) Live readiness PR gate | 4-6d | Posts credential-free live-mock Readiness Receipt evidence directly on pull requests. |
+| P0 | [159](moves159.md) MCP composition recorder gateway | 4-6d | Productizes dual-server MCP session capture before retrying fragile desktop-client evidence. |
+| P1 | [160](moves160.md) Standalone release artifacts | 5-7d | Removes Node/npm as the install-friction cap through real release binaries or equivalent standalone assets. |
+| P1 | [161](moves161.md) AppInspect grade Splunk app | 7-10d | Evolves the static `.spl` proof into install/vetting-grade Splunk app evidence. |
+| P1 | [162](moves162.md) Typed policy SDK | 6-8d | Makes policy authoring typed, testable, signed, and reusable through a package SDK. |
 
 ## Non-Negotiable Boundaries
 

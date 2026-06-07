@@ -1019,3 +1019,19 @@ secret/env-style filenames and the manifest records `mutation=false`,
 `noCredentialFiles=true`, `noPythonHandlers=true`, and
 `noScriptedInputs=true`. Residual risk remains: this is package proof only, not
 Splunkbase vetting or live installation evidence.
+
+Next-tier planning after Move 157 avoids two false starts. First, the Splunk app
+gap is no longer "make a `.spl` at all"; it is AppInspect/live-install/KV-store
+grade evidence. Second, external MCP evidence should not restart with fragile
+Claude Desktop/Cursor-agent capture after the user parked that work. Residual
+probability caps are now prioritized as: PR-visible live readiness evidence,
+client-neutral MCP composition recording, no-Node release distribution,
+AppInspect-grade Splunk app evidence, and typed policy authoring SDK.
+
+Move 158 reduces the "CI logs are invisible to judges" risk by rendering a
+credential-free live-mock Readiness comment for pull requests. The gate is
+strict on live proof status, mutation=false, fail-to-pass, before/after
+receipts, and arbitrary proof-audit warnings, but it accepts the known generic
+live warning that the proof is not the flagship live-security proof. Residual
+risk: until a real pull request runs the workflow, tracked evidence is a sample
+render plus workflow/test coverage, not an observed GitHub comment on a PR.

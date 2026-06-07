@@ -15520,17 +15520,49 @@ Residual risk:
   Splunkbase, so public claims must stay limited to "inspectable app package
   proof" until a later live install/vetting move exists.
 
-MCP proof refresh:
+## 2026-06-07T20:03:54Z - Move 158 live readiness PR gate
 
-- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json >/tmp/splunkready-mcp-proof-move156.json`
+Focused tests:
+
+- `npx vitest run tests/scripts/pr-gate-comment.test.ts tests/examples/repository-ci-workflow.test.ts`
 
 Result:
 
-- PASS: command completed and refreshed tracked MCP proof evidence.
-- PASS: `operatorLiveHostedModelStatus.blockerClass` is
-  `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`.
-- PASS: `operatorLiveHostedModelStatus.restHandlerProbeStatus` is
-  `PARTIALLY_REGISTERED`.
+- PASS: 2 test files passed.
+- PASS: 7 tests passed.
+- PASS: renderer fails closed on mutation.
+- PASS: renderer accepts only the expected generic-live
+  `live-security-summary` proof-audit warning and rejects arbitrary warnings.
+- PASS: workflow test verifies pull-request trigger, comment permissions,
+  live-mock proof command, proof-audit command, artifact upload, GitHub comment
+  action, and absence of live Splunk/Gemini secret names.
+
+Sample PR gate evidence:
+
+- `npm run pr-gate:sample`
+
+Result:
+
+- PASS: TypeScript build completed.
+- PASS: `live-proof --live-mock` wrote
+  `submission-evidence/ci-pr-gate/live-proof-summary.json` with `status:
+  "PASS"` and `mutation: false`.
+- PASS: `proof-audit` wrote `submission-evidence/ci-pr-gate/proof-audit.json`
+  and `proof-manifest.json`.
+- PASS: renderer wrote `submission-evidence/ci-pr-gate/pr-comment.md` and
+  `submission-evidence/ci-pr-gate/ci-pr-gate.json`.
+- PASS: `ci-pr-gate.json` reports
+  `source: "splunkready-live-readiness-pr-gate"`, `status: "PASS"`,
+  `mode: "live"`, `mutation: false`, `proofLoop: "fail-to-pass"`, before
+  `NOT READY` score 10 with 4 violations, after `READY` score 100 with 0
+  violations, and hosted-model evidence as advisory only.
+
+Remote dependency:
+
+- The workflow is committed as source and sample-rendered locally. A later PR
+  must still observe `.github/workflows/live-certification-gate.yml` posting or
+  updating the actual GitHub comment before public copy claims a real observed
+  PR comment.
 
 Evidence hash:
 
@@ -15543,14 +15575,16 @@ Result:
 
 Focused gates:
 
-- `npx vitest run tests/scripts/live-hosted-model-status.test.ts tests/scripts/submission-copy-audit.test.ts`
 - `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/pr-gate-comment.test.ts tests/examples/repository-ci-workflow.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `git diff --check`
 
 Result:
 
-- PASS: 2 test files passed.
-- PASS: 6 tests passed.
-- PASS: submission-copy audit passed with 152 required claims.
+- PASS: submission-copy audit passed with 177 required claims.
+- PASS: 3 test files passed.
+- PASS: 10 tests passed.
+- PASS: `git diff --check`.
 
 Full gate:
 
@@ -15566,67 +15600,11 @@ Result:
 - PASS: package installability audit; packed `splunkready-0.1.3.tgz`
   installed, clean `npx splunkready judge-proof` returned `PASS`, and clean
   `npx splunkready mcp` initialized.
-- PASS: full Vitest suite with 65 test files and 409 tests passed.
+- PASS: full Vitest suite with 67 test files and 416 tests passed.
 - PASS: secret env ignore audit.
 - PASS: reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
   0 failing latest verdicts.
-- PASS: submission-copy audit with 152 required claims.
-- PASS: final `git diff --check`.
-
-Fresh live diagnostic:
-
-- `npm run build >/tmp/splunkready-hosted-build-move155.log && NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --json >/tmp/splunkready-hosted-model-diagnostic-move155.json`
-
-Result:
-
-- PASS: command completed and wrote ignored raw artifacts.
-- BLOCKED: CLI and diagnostic status remain `BLOCKED`.
-- PASS: blocker remains `SAIA_REST_HANDLERS_NOT_REGISTERED`.
-- PASS: all four SAIA tools are advertised and blocked.
-- PASS: `mutation=false`.
-- Note: `NODE_TLS_REJECT_UNAUTHORIZED=0` was used only for the local
-  self-signed Splunk endpoint verification path.
-
-Evidence hash:
-
-- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
-- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
-
-Result:
-
-- PASS: all tracked submission evidence hashes verified after adding
-  `submission-evidence/live-hosted-model-status/live-hosted-model-status.json`.
-
-Focused gates:
-
-- `npm run audit:submission-copy`
-- `npx vitest run tests/scripts/live-hosted-model-status.test.ts tests/scripts/submission-copy-audit.test.ts`
-
-Result:
-
-- PASS: submission-copy audit passed with 152 required claims.
-- PASS: 2 test files passed.
-- PASS: 6 tests passed.
-
-Full gate:
-
-- `npm run check`
-
-Result:
-
-- PASS: scaffold verification with 85 waves and 2269 project files.
-- PASS: runtime contracts with 19 rules, 4 fixture missions, and 20 evidence refs.
-- PASS: TypeScript build and production UI build.
-- PASS: public demo export audit with 228 files and `mutation=false`.
-- PASS: package readiness audit with 177 packed files checked.
-- PASS: package installability audit; packed `splunkready-0.1.3.tgz`
-  installed, clean `npx splunkready judge-proof` returned `PASS`, and clean
-  `npx splunkready mcp` initialized.
-- PASS: full Vitest suite with 65 test files and 408 tests passed.
-- PASS: secret env ignore audit.
-- PASS: reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
-  0 failing latest verdicts.
-- PASS: submission-copy audit with 152 required claims.
+- PASS: submission-copy audit with 177 required claims.
 - PASS: final `git diff --check`.
 
 ## 2026-06-07T19:44:27Z - Move 156 SAIA partial route and trial compatibility evidence

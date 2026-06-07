@@ -94,3 +94,37 @@ For every ambitious move:
   audits.
 - If a source change affects npm judge paths, publish or clearly label it as
   source-only until package currentness passes.
+
+## Next Tier After Move 157
+
+Captured: 2026-06-07
+
+DeepSeek's latest list is directionally useful, but several items need to be
+rewritten against current repo reality and the user's constraints:
+
+- The `.spl` package proof already exists in Move 157. The next Splunk-app move
+  must be AppInspect/live-install/KV-store grade, not another static package.
+- A naive `esbuild` bundle does not remove the Node.js dependency. A true
+  no-Node artifact should use Node single executable application packaging or an
+  equivalent release-matrix wrapper. Node's SEA support is documented in the
+  official Node 22+ docs.
+- The closed-client MCP recording is still useful, but the user explicitly
+  rejected Claude Desktop and Cursor-as-agent work. Build a client-neutral MCP
+  session recorder/composition gateway first; Antigravity or Zed can consume it
+  later.
+- The strongest immediate platform move is a PR certification gate, because it
+  turns the already-real live-mock proof into review-surface evidence.
+
+Research anchors:
+
+- Node SEA: https://nodejs.org/api/single-executable-applications.html
+- GitHub release assets: https://docs.github.com/en/rest/releases/assets
+- Splunk AppInspect CLI/API: https://dev.splunk.com/enterprise/reference/appinspect/appinspectcliref and https://dev.splunk.com/enterprise/docs/developapps/testvalidate/appinspect/useappinspectapi
+
+| Order | Move | Status | Why Now | Done When |
+| --- | --- | --- | --- | --- |
+| 1 | [Move 158](../moves/moves158.md) Live readiness PR gate | Planned | Highest leverage per day: uses live-mock proof, receipt artifacts, and GitHub review surface with no external license dependency. | A PR workflow runs `live-proof --live-mock`, strict `proof-audit`, renders a stable markdown Readiness comment, uploads artifacts, and has a tracked sample comment JSON/Markdown. |
+| 2 | [Move 159](../moves/moves159.md) MCP composition recorder gateway | Planned | Replaces fragile desktop recording with a productized way to capture dual-server MCP sessions from any client, then certify the captured transcript. | A local recorder can proxy/capture Splunk MCP and SplunkReady MCP JSON-RPC frames, redact them, and emit a certifiable dual-server session artifact. |
+| 3 | [Move 160](../moves/moves160.md) Standalone release artifacts | Planned | Removes Node/npm as the judge friction cap, but only if it produces real no-Node executables rather than a JS bundle. | Tag-triggered release workflow builds signed/checksummed OS assets, and a clean temp smoke runs `splunkready judge-proof` without preinstalled project dependencies. |
+| 4 | [Move 161](../moves/moves161.md) AppInspect-grade Splunk app | Planned | Move 157 proves packaging; the next value jump is install/vetting evidence and optional operator-owned receipt storage. | The app package passes local AppInspect-compatible checks, includes dashboard/KV-store config as operator-owned surfaces, and has tracked install evidence or an explicit blocked reason. |
+| 5 | [Move 162](../moves/moves162.md) Typed policy SDK | Planned | Turns the signed JSON policy registry into a developer platform with IDE types, tests, and package subpath exports. | `import { definePolicy } from "splunkready/policy"` works in a clean TS project; example TS policies compile, sign, and grade fixture traces in CI. |

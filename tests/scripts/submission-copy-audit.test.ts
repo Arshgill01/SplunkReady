@@ -39,8 +39,10 @@ Not an LLM judging another LLM.
 npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
 npm run audit:public-package-currentness
 npm run splunk-app:package
+npm run pr-gate:sample
 submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
 submission-evidence/splunk-app-package/splunk-app-package-manifest.json
+submission-evidence/ci-pr-gate/
 splunkready_certify_mcp_transcript_content
 splunkready_check_hosted_model_access
 splunkready_review_mcp_composition
@@ -89,6 +91,7 @@ does not mutate Splunk
 npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
 submission-evidence/public-package-currentness/
 submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
+submission-evidence/ci-pr-gate/
 ${hostedMcpProofUrl}
 ${hostedJudgeProofUrl}
 `;
@@ -123,6 +126,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof. | Supported | submission-evidence/mcp-proof/mcp-client-session.jsonl, resources/templates/list, splunkready://receipts/{receiptId}, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access, splunkready_review_mcp_composition, splunkready://workflows/hosted-model-diagnostic, splunkready_hosted_model_diagnostic, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready://client-config/antigravity, splunkready://client-config/zed, ~/.gemini/antigravity/mcp_config.json, context_servers, splunkready mcp | npm run mcp-proof |
 | The MCP proof exposes deterministic composition review as a first-class MCP tool. | Supported | mcpCompositionReview, splunkready_review_mcp_composition, composition-review-tool, splunk_get_knowledge_objects, splunk_run_saved_search, evt-102, evt-118, evt-141, deterministicAuthority, mutation: false | npm run mcp-proof |
 | The self-hostable mock Splunk MCP path produces a credential-free live-mode proof without Splunk credentials. | Supported | submission-evidence/live-mock/live-proof-summary.json, proofLoop: "fail-to-pass", derivedMission.strategy: "saved-search-with-evidence" | npm run live-mock-proof |
+| Pull requests can get a credential-free live readiness comment backed by Readiness Receipt artifacts. | Supported | .github/workflows/live-certification-gate.yml, submission-evidence/ci-pr-gate/ci-pr-gate.json, submission-evidence/ci-pr-gate/pr-comment.md, splunkready-live-readiness-pr-gate | npm run pr-gate:sample; tests/scripts/pr-gate-comment.test.ts |
 | The MCP proof can run a credential-free live mock Splunk MCP session as part of the composition evidence. | Supported | liveMockSplunkMcp, submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl | mcp-proof --out submission-evidence/mcp-proof --live-mock --json |
 | The MCP proof distinguishes credential-free fixture hosted-model PASS from the current operator-live SAIA blocker. | Supported | operatorLiveHostedModelStatus, SAIA_REST_HANDLERS_PARTIALLY_REGISTERED, restHandlerProbeStatus | npm run mcp-proof |
 | The tracked live hosted-model status is public-safe while raw operator artifacts stay ignored. | Supported | submission-evidence/live-hosted-model-status/live-hosted-model-status.json, redactionAudit.status: "PASS", rawArtifactTracked: false | npm run audit:live-hosted-model-status |

@@ -47,4 +47,27 @@ describe("repository CI workflow", () => {
     expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_TOKEN");
     expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_URL");
   });
+
+  it("defines a live readiness PR gate without live secrets", async () => {
+    const workflow = await readFile(new URL("../../.github/workflows/live-certification-gate.yml", import.meta.url), "utf8");
+
+    expect(workflow).toContain("name: Live Certification PR Gate");
+    expect(workflow).toContain("pull_request:");
+    expect(workflow).toContain("workflow_dispatch:");
+    expect(workflow).toContain("pull-requests: write");
+    expect(workflow).toContain("issues: write");
+    expect(workflow).toContain("uses: actions/checkout@v5");
+    expect(workflow).toContain("uses: actions/setup-node@v5");
+    expect(workflow).toContain("node-version: 22");
+    expect(workflow).toContain("run: npm ci --ignore-scripts");
+    expect(workflow).toContain("node dist/src/cli.js live-proof --out artifacts/pr-gate --live-mock --json");
+    expect(workflow).toContain("node dist/src/cli.js proof-audit --out artifacts/pr-gate --json");
+    expect(workflow).toContain("node scripts/render-pr-gate-comment.mjs --proof-dir artifacts/pr-gate");
+    expect(workflow).toContain("uses: actions/upload-artifact@v4");
+    expect(workflow).toContain("uses: actions/github-script@v8");
+    expect(workflow).toContain("splunkready-live-readiness-pr-gate");
+    expect(workflow).not.toContain("GEMINI_API_KEY");
+    expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_TOKEN");
+    expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_URL");
+  });
 });

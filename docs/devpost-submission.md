@@ -76,6 +76,12 @@ npm run workbench
 
 The command builds the runtime and UI, starts one localhost-only workbench origin, and prints the local URL, artifact root, fixture capability, live capability, and SAIA status.
 
+The repository also ships a credential-free live readiness PR gate. The workflow
+uses the mock Splunk MCP live adapter path, produces a NOT READY -> READY
+Readiness Receipt sequence, uploads the PR-gate artifacts, and posts a stable
+SplunkReady comment when pull-request permissions allow it. The tracked sample
+is in `submission-evidence/ci-pr-gate/`.
+
 The tracked Splunk app package evidence is
 `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`. It embeds the
 public artifact workbench as static Splunk app content and intentionally avoids

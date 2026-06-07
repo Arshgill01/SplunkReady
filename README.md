@@ -71,6 +71,18 @@ docker compose -f docker-compose.mock.yml config
 The mock path is fixture-backed live-mode evidence. It is not a claim that a
 real Splunk deployment was contacted.
 
+The pull-request gate uses the same credential-free live-mock path and renders a
+review comment from real receipt artifacts:
+
+```bash
+npm run pr-gate:sample
+```
+
+The sample evidence is tracked under `submission-evidence/ci-pr-gate/`. On pull
+requests, `.github/workflows/live-certification-gate.yml` runs the proof,
+renders `pr-comment.md`, uploads the artifact bundle, and updates one
+SplunkReady bot comment when GitHub permissions allow it.
+
 The MCP proof can also capture a mock Splunk MCP session alongside the
 SplunkReady MCP certification loop:
 
