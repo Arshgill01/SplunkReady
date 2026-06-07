@@ -75,6 +75,7 @@
     "mcp-proof": "npm run build && node dist/src/cli.js mcp-proof --out artifacts/mcp-proof --live-mock --json",
     "live-mock-proof": "npm run build && node dist/src/cli.js live-proof --out submission-evidence/live-mock --live-mock --json",
     "mcp": "npm run build && node dist/src/mcp/server.js",
+    "splunk-app:package": "npm run public-demo:build && node scripts/build-splunk-app-package.mjs",
     "test:workbench": "vitest run tests/workbench tests/ui/app.test.ts",
     "workbench": "npm run build && npm run ui:build && node dist/src/workbench/server.js",
     "workbench:dev": "npm run build && node dist/src/workbench/server.js --dev-ui",

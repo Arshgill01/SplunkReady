@@ -15426,6 +15426,100 @@ Result:
   secret values and reported zero leaked secret names.
 - PASS: `mutation=false`.
 
+## 2026-06-07T19:57:45Z - Move 157 Splunk app package proof
+
+Package generation:
+
+- `npm run splunk-app:package`
+
+Result:
+
+- PASS: TypeScript build completed.
+- PASS: Vite production UI build completed.
+- PASS: public demo export regenerated from credential-free tracked evidence.
+- PASS: generated
+  `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`.
+- PASS: generated
+  `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`.
+- PASS: manifest reports `source: "splunkready-splunk-app-package"`,
+  `status: "PASS"`, `mutation: false`, `fileCount: 233`,
+  `noCredentialFiles: true`, `noPythonHandlers: true`, and
+  `noScriptedInputs: true`.
+- PASS: package SHA-256 is
+  `4107e7a5efc0e83f681c7864747ea06716d82ba2a1e87066d21f01e796335280`.
+
+Archive inspection:
+
+- `tar -tzf submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl | rg 'SplunkReady/(default/app.conf|default/data/ui/views/splunkready.xml|metadata/default.meta|appserver/static/splunkready/index.html|appserver/static/splunkready/public-demo-manifest.json)$|SplunkReady/local/|\\.splunkready|\\.env'`
+
+Result:
+
+- PASS: archive contains `SplunkReady/default/app.conf`.
+- PASS: archive contains
+  `SplunkReady/default/data/ui/views/splunkready.xml`.
+- PASS: archive contains `SplunkReady/metadata/default.meta`.
+- PASS: archive contains
+  `SplunkReady/appserver/static/splunkready/index.html`.
+- PASS: archive contains
+  `SplunkReady/appserver/static/splunkready/public-demo-manifest.json`.
+- PASS: no forbidden `SplunkReady/local/`, `.splunkready`, or `.env` matches
+  appeared in the archive listing.
+
+Focused tests:
+
+- `npx vitest run tests/scripts/splunk-app-package.test.ts tests/scripts/submission-copy-audit.test.ts`
+
+Result:
+
+- PASS: 2 test files passed.
+- PASS: 5 tests passed.
+
+Evidence hash:
+
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS: all tracked submission evidence hashes verified, including the new
+  `.spl` archive and package manifest.
+
+Focused audit:
+
+- `npm run audit:submission-copy`
+
+Result:
+
+- PASS: submission-copy audit passed with 166 required claims.
+
+Full gate:
+
+- `npm run check`
+
+Result:
+
+- PASS: scaffold verification with 85 waves and 2276 project files.
+- PASS: runtime contracts with 19 rules, 4 fixture missions, and 20 evidence
+  refs.
+- PASS: TypeScript build and production UI build.
+- PASS: public demo export audit with 228 files and `mutation=false`.
+- PASS: package readiness audit with 177 packed files checked.
+- PASS: package installability audit; packed `splunkready-0.1.3.tgz`
+  installed, clean `npx splunkready judge-proof` returned `PASS`, and clean
+  `npx splunkready mcp` initialized.
+- PASS: full Vitest suite with 66 test files and 411 tests passed.
+- PASS: secret env ignore audit.
+- PASS: reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS: submission-copy audit with 166 required claims.
+- PASS: final `git diff --check`.
+
+Residual risk:
+
+- The package has not been installed into a live Splunk deployment or vetted by
+  Splunkbase, so public claims must stay limited to "inspectable app package
+  proof" until a later live install/vetting move exists.
+
 MCP proof refresh:
 
 - `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json >/tmp/splunkready-mcp-proof-move156.json`

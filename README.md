@@ -16,7 +16,7 @@ The Agent Readiness Compiler compiles a fixture or live Splunk environment into 
 
 The flagship demo story is security investigation readiness: the bundled specimen confidently clears possible lateral movement after using `index=*`, a stale field, and no saved search provenance. SplunkReady catches the unsafe trace, exports a reviewable policy patch, reruns the same mission, and shows a bounded pass with evidence. The default specimen is deterministic for local reproducibility; set `SPLUNKREADY_LLM_ENABLED=true` to run the Gemini-backed specimen instead.
 
-The tracked evidence pack is in [submission-evidence/](submission-evidence/README.md). It includes a self-verifiable three-mission fixture proof, a redacted public proof export, manually inspected workbench screenshots, and a claim ledger that maps public claims to evidence paths.
+The tracked evidence pack is in [submission-evidence/](submission-evidence/README.md). It includes a self-verifiable three-mission fixture proof, a redacted public proof export, a credential-free Splunk app package proof, manually inspected workbench screenshots, and a claim ledger that maps public claims to evidence paths.
 
 ## Judge-Runnable Fixture Demo
 
@@ -291,6 +291,21 @@ Hosted judge-proof receipt view:
 ```text
 https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser
 ```
+
+## Splunk App Package Proof
+
+To build an inspectable Splunk app shell around the public artifact workbench:
+
+```bash
+npm run splunk-app:package
+```
+
+The command writes `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`
+and `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`.
+The package is static and credential-free: it contains no `local/` directory,
+Python REST handlers, scripted inputs, modular inputs, saved searches, tokens,
+or Splunk write operations. This is packaging evidence, not a Splunkbase-vetted
+or live-installed app claim.
 
 ## Grade a Captured Agent Trace
 

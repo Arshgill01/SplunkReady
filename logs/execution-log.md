@@ -14808,3 +14808,56 @@ Files changed:
 - `logs/risk-register.md`
 - `logs/execution-log.md`
 - `logs/verification-log.md`
+
+## 2026-06-08T00:00:00Z - Move 157 Splunk app package proof
+
+Intent:
+
+- Move on from the operator-live SAIA blocker and close a higher-control
+  Splunk-native packaging gap: SplunkReady should have an inspectable Splunk
+  app artifact, not only a CLI, npm package, and hosted static demo.
+
+Actions:
+
+- Added `scripts/build-splunk-app-package.mjs` and
+  `npm run splunk-app:package`.
+- The package builder wraps `artifacts/public-demo` in a Splunk app directory
+  containing `default/app.conf`, a Simple XML launcher view, `metadata`, and
+  static workbench assets under `appserver/static/splunkready/`.
+- Added package guards that reject symlinks and secret/env-style filenames
+  before creating the `.spl` archive.
+- Added `tests/scripts/splunk-app-package.test.ts`, including tar listing and
+  extraction checks.
+- Generated
+  `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl` and
+  `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`.
+- Updated README, Devpost draft, evidence README, claim ledger, and
+  submission-copy audit coverage for the package claim.
+
+Files changed:
+
+- `README.md`
+- `docs/devpost-submission.md`
+- `moves/README.md`
+- `moves/moves157.md`
+- `package.json`
+- `scripts/build-splunk-app-package.mjs`
+- `scripts/build-splunk-app-package.d.mts`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/splunk-app-package.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/splunk-app-package/*`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Boundaries:
+
+- The package is static and credential-free.
+- It contains no `local/` directory, Python REST handlers, scripted inputs,
+  modular inputs, saved searches, tokens, or write operations.
+- This is not a Splunkbase approval, Splunk Cloud vetting, or live-install
+  claim.

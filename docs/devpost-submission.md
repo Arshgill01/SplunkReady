@@ -32,6 +32,7 @@ The tracked evidence pack is in `submission-evidence/`:
 
 - `suite-proof/` proves three credential-free missions across security and observability.
 - `public-proof-export/` shows the redacted derivative export boundary.
+- `splunk-app-package/` contains an inspectable, credential-free Splunk app package shell for the public artifact workbench.
 - `screenshots/` shows the packaged workbench, Vite-backed workbench, and public proof export UI.
 - `claim-ledger.md` maps public claims to concrete evidence paths and verification commands.
 
@@ -74,6 +75,12 @@ npm run workbench
 ```
 
 The command builds the runtime and UI, starts one localhost-only workbench origin, and prints the local URL, artifact root, fixture capability, live capability, and SAIA status.
+
+The tracked Splunk app package evidence is
+`submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`. It embeds the
+public artifact workbench as static Splunk app content and intentionally avoids
+credentials, Python handlers, scripted inputs, and Splunk write operations. It
+is not a Splunkbase approval or live-install claim.
 
 For a strict CLI evidence gate:
 

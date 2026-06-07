@@ -86,6 +86,28 @@ const checks = [
   ["Claim ledger policy publish command", files.claimLedger, "policy-publish --policy policies/soc2-readiness.policy.json --json"],
   ["Claim ledger policy evaluate command", files.claimLedger, "evaluate --policy pci-dss-readiness"],
   ["Claim ledger policy receipt identity", files.claimLedger, "policy.id: \"pci-dss-readiness\""],
+  [
+    "Claim ledger Splunk app package",
+    files.claimLedger,
+    "SplunkReady ships a credential-free Splunk app package proof for the public artifact workbench."
+  ],
+  ["Claim ledger Splunk app package archive", files.claimLedger, "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl"],
+  [
+    "Claim ledger Splunk app package manifest",
+    files.claimLedger,
+    "submission-evidence/splunk-app-package/splunk-app-package-manifest.json"
+  ],
+  ["Claim ledger Splunk app package source", files.claimLedger, "splunkready-splunk-app-package"],
+  ["Claim ledger Splunk app package static entry", files.claimLedger, "SplunkReady/appserver/static/splunkready/index.html"],
+  ["Claim ledger Splunk app package no credentials", files.claimLedger, "noCredentialFiles: true"],
+  ["Claim ledger Splunk app package no handlers", files.claimLedger, "noPythonHandlers: true"],
+  ["Claim ledger Splunk app package no scripted inputs", files.claimLedger, "noScriptedInputs: true"],
+  ["Claim ledger Splunk app package command", files.claimLedger, "npm run splunk-app:package"],
+  ["Claim ledger Splunk app package tar command", files.claimLedger, "tar -tzf submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl"],
+  ["README Splunk app package command", files.readme, "npm run splunk-app:package"],
+  ["README Splunk app package archive", files.readme, "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl"],
+  ["README Splunk app package manifest", files.readme, "submission-evidence/splunk-app-package/splunk-app-package-manifest.json"],
+  ["Devpost Splunk app package archive", files.devpost, "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl"],
   ["Claim ledger hosted demo currentness artifact", files.claimLedger, "submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json"],
   ["Claim ledger hosted demo currentness command", files.claimLedger, "npm run audit:hosted-demo-currentness"],
   [

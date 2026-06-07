@@ -1011,3 +1011,11 @@ restart, aligned Splunk AI Assistant and MCP Server app versions, route metadata
 repair, or tenant provisioning. Splunk's own AI Assistant docs also say Trial
 stacks are not compatible, so a Trial stack can be an entitlement/provisioning
 blocker even when the local app appears installed.
+
+Move 157 reduces the "SplunkReady lives beside Splunk" packaging risk by
+building a credential-free `.spl` artifact that embeds the public artifact
+workbench inside a Splunk app shell. The package builder rejects symlinks and
+secret/env-style filenames and the manifest records `mutation=false`,
+`noCredentialFiles=true`, `noPythonHandlers=true`, and
+`noScriptedInputs=true`. Residual risk remains: this is package proof only, not
+Splunkbase vetting or live installation evidence.

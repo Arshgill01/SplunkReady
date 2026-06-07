@@ -38,6 +38,9 @@ Not a generic eval harness.
 Not an LLM judging another LLM.
 npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
 npm run audit:public-package-currentness
+npm run splunk-app:package
+submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
+submission-evidence/splunk-app-package/splunk-app-package-manifest.json
 splunkready_certify_mcp_transcript_content
 splunkready_check_hosted_model_access
 splunkready_review_mcp_composition
@@ -85,6 +88,7 @@ requires no live Splunk credentials
 does not mutate Splunk
 npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
 submission-evidence/public-package-currentness/
+submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
 ${hostedMcpProofUrl}
 ${hostedJudgeProofUrl}
 `;
@@ -115,6 +119,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | The hosted public demo exposes the credential-free judge proof and LLM evidence boundary. | Supported | submission-evidence/screenshots/public-judge-proof-proof-browser.png | ${hostedJudgeProofUrl} |
 | The hosted public demo accepts a trace and runs real in-browser certification without Splunk credentials. | Supported | submission-evidence/screenshots/interactive-demo.png, artifacts/public-demo/artifacts/interactive-demo/artifact-manifest.json, ui/src/interactiveCertifier.ts, ?demo=interactive, receipt-interactive-001 | Playwright hosted static route |
 | SplunkReady ships signed, named policy bundles for default, SOC2, and PCI DSS readiness. | Supported | policies/default.policy.json, policies/soc2-readiness.policy.json, policies/pci-dss-readiness.policy.json, submission-evidence/policy-registry/default-readiness/policy-manifest.json, submission-evidence/policy-registry/soc2-readiness/policy-manifest.json, submission-evidence/policy-registry/pci-dss-readiness/policy-manifest.json, docs/policy-authoring.md, policy.id: "pci-dss-readiness" | policy-publish --policy policies/soc2-readiness.policy.json --json; evaluate --policy pci-dss-readiness |
+| SplunkReady ships a credential-free Splunk app package proof for the public artifact workbench. | Supported | submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl, submission-evidence/splunk-app-package/splunk-app-package-manifest.json, splunkready-splunk-app-package, SplunkReady/appserver/static/splunkready/index.html, noCredentialFiles: true, noPythonHandlers: true, noScriptedInputs: true | npm run splunk-app:package; tar -tzf submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl |
 | The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof. | Supported | submission-evidence/mcp-proof/mcp-client-session.jsonl, resources/templates/list, splunkready://receipts/{receiptId}, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access, splunkready_review_mcp_composition, splunkready://workflows/hosted-model-diagnostic, splunkready_hosted_model_diagnostic, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready://client-config/antigravity, splunkready://client-config/zed, ~/.gemini/antigravity/mcp_config.json, context_servers, splunkready mcp | npm run mcp-proof |
 | The MCP proof exposes deterministic composition review as a first-class MCP tool. | Supported | mcpCompositionReview, splunkready_review_mcp_composition, composition-review-tool, splunk_get_knowledge_objects, splunk_run_saved_search, evt-102, evt-118, evt-141, deterministicAuthority, mutation: false | npm run mcp-proof |
 | The self-hostable mock Splunk MCP path produces a credential-free live-mode proof without Splunk credentials. | Supported | submission-evidence/live-mock/live-proof-summary.json, proofLoop: "fail-to-pass", derivedMission.strategy: "saved-search-with-evidence" | npm run live-mock-proof |
