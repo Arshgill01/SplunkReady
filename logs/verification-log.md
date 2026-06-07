@@ -9958,6 +9958,72 @@ Open blockers:
 - Hosted demo, refreshed submission evidence, public package publication, and
   live proof export remain open Minimax caps.
 
+## 2026-06-07 17:49 - Move 128 MCP Client Config SAIA Routing Evidence
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/mcp/server.test.ts tests/cli/flow.test.ts tests/scripts/submission-copy-audit.test.ts --testNamePattern "client config|MCP proof|hosted-model|SAIA|mcp-proof|submission copy|published npm"`
+- `npm run mcp-proof && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json && npm run public-demo:build`
+- `command -v npx >/dev/null 2>&1`
+- `python3 -m http.server 4182 --bind 127.0.0.1 --directory artifacts/public-demo`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open "http://127.0.0.1:4182/?artifacts=artifacts%2Fmcp-proof#mcp-proof"`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" console`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" eval "async () => { const response = await fetch('/artifacts/mcp-proof/mcp-proof-summary.json'); const summary = await response.json(); const joined = [summary.dualServerClientConfigResource.contents[0].text, summary.claudeDesktopClientConfigResource.contents[0].text, summary.cursorClientConfigResource.contents[0].text, summary.hostedModelDiagnosticResource.contents[0].text].join('\\n'); return { hasSaiaEndpoint: joined.includes('SPLUNKREADY_SAIA_ENDPOINT'), hasSaiaToken: joined.includes('SPLUNKREADY_SAIA_TOKEN'), hasHostedDiagnosticTool: joined.includes('splunkready_check_hosted_model_access'), artifactFailure: document.body.textContent.includes('Artifact load failure') }; }"`
+- `lsof -ti tcp:4182 | xargs -r kill`
+- `npm run check`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused MCP/CLI/submission-copy tests:
+  - 3 test files passed;
+  - 12 tests passed;
+  - 48 tests skipped by focused pattern.
+- PASS for MCP proof and public demo rebuild:
+  - `artifacts/mcp-proof` returned `status: "PASS"`;
+  - `submission-evidence/mcp-proof` returned `status: "PASS"`;
+  - public demo export copied `mcp-proof`, `suite-proof`,
+    `public-proof-export`, and `judge-proof`.
+- PASS for Playwright public route verification:
+  - opened `http://127.0.0.1:4182/?artifacts=artifacts%2Fmcp-proof#mcp-proof`;
+  - snapshot showed the MCP proof route loaded from the MCP proof artifact
+    source;
+  - console reported 0 errors and 0 warnings;
+  - browser eval returned `hasSaiaEndpoint: true`, `hasSaiaToken: true`,
+    `hasHostedDiagnosticTool: true`, and `artifactFailure: false`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 207 files and `mutation=false`;
+  - package readiness audit checked 164 packed files;
+  - package installability audit installed `splunkready-0.1.1.tgz`, passed
+    `npx splunkready judge-proof`, and initialized `npx splunkready mcp`;
+  - 59 test files passed;
+  - 367 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 61 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- Playwright was run because the public MCP proof export changed.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Live SAIA hosted-model PASS still requires operator-owned dedicated SAIA
+  endpoint/token values or a shared Splunk MCP endpoint that can invoke all four
+  `saia_*` tools successfully.
+
 ## 2026-06-07 17:45 - Move 127 Dedicated SAIA MCP Routing
 
 Commands:

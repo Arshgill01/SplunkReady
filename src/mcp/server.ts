@@ -560,17 +560,22 @@ const splunkReadyClientConfig = (): Record<string, unknown> => ({
   }
 });
 
+const splunkMcpEnvPlaceholders = (): Record<string, string> => ({
+  SPLUNK_MCP_URL: "${SPLUNKREADY_SPLUNK_MCP_URL}",
+  SPLUNK_MCP_TOKEN: "${SPLUNKREADY_SPLUNK_MCP_TOKEN}",
+  SPLUNKREADY_SAIA_ENDPOINT: "${SPLUNKREADY_SAIA_ENDPOINT}",
+  SPLUNKREADY_SAIA_TOKEN: "${SPLUNKREADY_SAIA_TOKEN}",
+  SPLUNKREADY_SAIA_ENABLED: "true"
+});
+
 const dualServerClientConfig = (): Record<string, unknown> => ({
   mcpServers: {
     splunk: {
       description:
-        "Operator-provided Splunk MCP Server. Keep credentials in the MCP client or environment, not in captured transcripts.",
+        "Operator-provided Splunk MCP Server. Keep credentials in the MCP client or environment, not in captured transcripts. If SAIA hosted-model calls use a separate cloud MCP endpoint, set the SPLUNKREADY_SAIA_* placeholders.",
       command: "<existing-splunk-mcp-server-command>",
       args: ["<existing-splunk-mcp-server-args>"],
-      env: {
-        SPLUNK_MCP_URL: "${SPLUNKREADY_SPLUNK_MCP_URL}",
-        SPLUNK_MCP_TOKEN: "${SPLUNKREADY_SPLUNK_MCP_TOKEN}"
-      }
+      env: splunkMcpEnvPlaceholders()
     },
     splunkready: {
       description: "Local SplunkReady certification server for deterministic Readiness Receipts.",
@@ -584,7 +589,11 @@ const dualServerClientConfig = (): Record<string, unknown> => ({
     certifyWith: "splunkready",
     capture: "Preserve the Splunk MCP JSON-RPC request/response transcript as JSONL without tokens or environment files.",
     certificationTool: "splunkready_certify_mcp_transcript",
+    hostedModelDiagnosticTool: "splunkready_check_hosted_model_access",
+    hostedModelRouting:
+      "Core splunk_* calls use SPLUNKREADY_SPLUNK_MCP_URL/TOKEN; optional dedicated SAIA calls use SPLUNKREADY_SAIA_ENDPOINT/TOKEN.",
     readOnlySplunkTools: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+    hostedModelTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
     deterministicAuthority: true,
     mutation: false
   }
@@ -603,13 +612,10 @@ const claudeDesktopClientConfig = (): Record<string, unknown> => ({
   mcpServers: {
     splunk: {
       description:
-        "Existing Splunk MCP Server. Replace the command/args with the operator-approved Splunk MCP launch command; keep credentials in the operator environment.",
+        "Existing Splunk MCP Server. Replace the command/args with the operator-approved Splunk MCP launch command; keep credentials in the operator environment. Use SPLUNKREADY_SAIA_ENDPOINT/TOKEN only when SAIA hosted-model tools use a separate cloud MCP target.",
       command: "<existing-splunk-mcp-server-command>",
       args: ["<existing-splunk-mcp-server-args>"],
-      env: {
-        SPLUNK_MCP_URL: "${SPLUNKREADY_SPLUNK_MCP_URL}",
-        SPLUNK_MCP_TOKEN: "${SPLUNKREADY_SPLUNK_MCP_TOKEN}"
-      }
+      env: splunkMcpEnvPlaceholders()
     },
     splunkready: {
       description:
@@ -624,6 +630,8 @@ const claudeDesktopClientConfig = (): Record<string, unknown> => ({
     certificationPrompt: "splunkready_splunk_mcp_certification_loop",
     certificationTool: "splunkready_certify_mcp_transcript_content",
     hostedModelDiagnosticTool: "splunkready_check_hosted_model_access",
+    hostedModelRouting:
+      "Set SPLUNKREADY_SAIA_ENDPOINT and SPLUNKREADY_SAIA_TOKEN when SAIA/cloud hosted-model calls do not share the core Splunk MCP endpoint.",
     deterministicAuthority: true,
     mutation: false
   }
@@ -633,13 +641,10 @@ const cursorClientConfig = (): Record<string, unknown> => ({
   mcpServers: {
     splunk: {
       description:
-        "Existing Splunk MCP Server. Replace this placeholder with the operator-approved Splunk MCP command and keep tokens outside captured transcripts.",
+        "Existing Splunk MCP Server. Replace this placeholder with the operator-approved Splunk MCP command and keep tokens outside captured transcripts. Dedicated SAIA/cloud endpoint placeholders are optional and only affect saia_* calls.",
       command: "<existing-splunk-mcp-server-command>",
       args: ["<existing-splunk-mcp-server-args>"],
-      env: {
-        SPLUNK_MCP_URL: "${SPLUNKREADY_SPLUNK_MCP_URL}",
-        SPLUNK_MCP_TOKEN: "${SPLUNKREADY_SPLUNK_MCP_TOKEN}"
-      }
+      env: splunkMcpEnvPlaceholders()
     },
     splunkready: {
       description:
@@ -653,6 +658,9 @@ const cursorClientConfig = (): Record<string, unknown> => ({
     preserveTranscript: "Store Splunk MCP JSON-RPC request/response lines without env files, bearer tokens, or passwords.",
     certificationPrompt: "splunkready_splunk_mcp_certification_loop",
     certificationTool: "splunkready_certify_mcp_transcript_content",
+    hostedModelDiagnosticTool: "splunkready_check_hosted_model_access",
+    hostedModelRouting:
+      "Set SPLUNKREADY_SAIA_ENDPOINT and SPLUNKREADY_SAIA_TOKEN only when hosted-model calls use a separate SAIA MCP target.",
     deterministicAuthority: true,
     mutation: false
   }
@@ -827,8 +835,9 @@ const readResource = async (uri: string): Promise<Record<string, unknown>> => {
             "1. Keep SAIA credentials in the operator-owned environment or MCP client configuration; do not include tokens in transcripts.",
             "2. Call `splunkready_check_hosted_model_access` with `mode=fixture` for public proof or `mode=live` only from an operator-owned shell.",
             "3. Require `saia_generate_spl`, `saia_explain_spl`, `saia_optimize_spl`, and `saia_ask_splunk_question` to be available for a PASS diagnostic.",
-            "4. Treat SAIA generate/explain/optimize/ask output as advisory only; SAIA is not the judge.",
-            "5. Deterministic SplunkReady rules remain the pass/fail authority, and SplunkReady reports `mutation=false`.",
+            "4. For live mode, keep core `splunk_*` calls on `SPLUNKREADY_SPLUNK_MCP_URL` / `SPLUNKREADY_SPLUNK_MCP_TOKEN`; if SAIA uses a separate cloud MCP target, also set `SPLUNKREADY_SAIA_ENDPOINT` and `SPLUNKREADY_SAIA_TOKEN` so only `saia_*` calls use that target.",
+            "5. Treat SAIA generate/explain/optimize/ask output as advisory only; SAIA is not the judge.",
+            "6. Deterministic SplunkReady rules remain the pass/fail authority, and SplunkReady reports `mutation=false`.",
             "",
             "The diagnostic calls hosted-model helper tools only. It does not execute the unsafe SPL query and does not mutate Splunk."
           ].join("\n")

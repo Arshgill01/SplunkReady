@@ -134,7 +134,10 @@ describe("SplunkReady MCP server", () => {
     expect(String(claudeConfigContents[0].text)).toContain("\"run\"");
     expect(String(claudeConfigContents[0].text)).toContain("\"mcp\"");
     expect(String(claudeConfigContents[0].text)).toContain("\"cwd\": \"/path/to/SplunkReady\"");
+    expect(String(claudeConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_ENDPOINT");
+    expect(String(claudeConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_TOKEN");
     expect(String(claudeConfigContents[0].text)).toContain("\"certificationTool\": \"splunkready_certify_mcp_transcript_content\"");
+    expect(String(claudeConfigContents[0].text)).toContain("\"hostedModelDiagnosticTool\": \"splunkready_check_hosted_model_access\"");
     expect(String(claudeConfigContents[0].text)).toContain("\"mutation\": false");
 
     const cursorConfigResponse = await handleMcpMessage({
@@ -153,6 +156,9 @@ describe("SplunkReady MCP server", () => {
     expect(String(cursorConfigContents[0].text)).toContain("\"mcp\"");
     expect(String(cursorConfigContents[0].text)).toContain("\"cwd\": \"/path/to/SplunkReady\"");
     expect(String(cursorConfigContents[0].text)).toContain("\"preserveTranscript\"");
+    expect(String(cursorConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_ENDPOINT");
+    expect(String(cursorConfigContents[0].text)).toContain("SPLUNKREADY_SAIA_TOKEN");
+    expect(String(cursorConfigContents[0].text)).toContain("\"hostedModelDiagnosticTool\": \"splunkready_check_hosted_model_access\"");
     expect(String(cursorConfigContents[0].text)).toContain("\"mutation\": false");
 
     const workflowResponse = await handleMcpMessage({

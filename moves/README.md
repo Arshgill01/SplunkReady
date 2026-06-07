@@ -150,6 +150,7 @@ commands, or filesystem paths.
 | P0 | [125](moves125.md) Hosted-model remediation packet | 0.5d | Adds a public-export-safe SAIA remediation packet to CLI diagnostics, MCP tool output, and workbench views. |
 | P0 | [126](moves126.md) Published-package copy hygiene | 0.5d | Aligns public package claims and MCP client templates with the actually published `splunkready@0.1.0` package. |
 | P0 | [127](moves127.md) Dedicated SAIA MCP routing | 0.5d | Lets live hosted-model proof route `saia_*` calls to a dedicated SAIA/cloud MCP endpoint while keeping core Splunk MCP calls separate. |
+| P0 | [128](moves128.md) MCP client config SAIA routing evidence | 0.5d | Exposes dedicated SAIA endpoint/token placeholders through MCP client-config resources, proof evidence, and submission-copy guards. |
 
 ## Non-Negotiable Boundaries
 

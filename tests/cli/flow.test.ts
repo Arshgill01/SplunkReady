@@ -1766,9 +1766,16 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.dualServerClientConfigResource.contents[0].text).toContain(
       "\"certificationTool\": \"splunkready_certify_mcp_transcript\""
     );
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_ENDPOINT");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TOKEN");
+    expect(summary.dualServerClientConfigResource.contents[0].text).toContain(
+      "\"hostedModelDiagnosticTool\": \"splunkready_check_hosted_model_access\""
+    );
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"command\": \"npm\"");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"cwd\": \"/path/to/SplunkReady\"");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("\"mcp\"");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_ENDPOINT");
+    expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TOKEN");
     expect(summary.claudeDesktopClientConfigResource.contents[0].text).toContain(
       "\"certificationTool\": \"splunkready_certify_mcp_transcript_content\""
     );
@@ -1776,6 +1783,11 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"command\": \"npm\"");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"cwd\": \"/path/to/SplunkReady\"");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"preserveTranscript\"");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_ENDPOINT");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TOKEN");
+    expect(summary.cursorClientConfigResource.contents[0].text).toContain(
+      "\"hostedModelDiagnosticTool\": \"splunkready_check_hosted_model_access\""
+    );
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"certifyWith\": \"splunkready\"");
     expect(summary.cursorClientConfigResource.contents[0].text).toContain("\"mutation\": false");
     expect(summary.certificationLoopResource.contents[0].text).toContain("Splunk MCP Certification Loop");
@@ -1787,6 +1799,8 @@ describe("SplunkReady CLI flow", () => {
     expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("saia_generate_spl");
     expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("saia_explain_spl");
     expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("saia_ask_splunk_question");
+    expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("SPLUNKREADY_SAIA_ENDPOINT");
+    expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("SPLUNKREADY_SAIA_TOKEN");
     expect(summary.hostedModelDiagnosticResource.contents[0].text).toContain("advisory only");
     expect(summary.receiptTemplateResource.contents[0].text).toContain("Verdict: READY");
     expect(summary.inlineTranscriptCertification).toMatchObject({

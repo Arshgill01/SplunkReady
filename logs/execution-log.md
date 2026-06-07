@@ -12947,3 +12947,47 @@ Open blockers:
 - A real live SAIA PASS still requires either those dedicated SAIA variables or
   a shared MCP endpoint that can actually invoke all four advertised `saia_*`
   tools.
+
+## 2026-06-07 17:47 - Move 128 MCP Client Config SAIA Routing Evidence
+
+Scope:
+- Added dedicated SAIA/cloud MCP placeholders to the Splunk MCP side of the
+  dual-server, Claude Desktop, and Cursor MCP client-config resources:
+  `SPLUNKREADY_SAIA_ENDPOINT`, `SPLUNKREADY_SAIA_TOKEN`, and
+  `SPLUNKREADY_SAIA_ENABLED`.
+- Added `hostedModelDiagnosticTool` and hosted-model routing guidance so
+  external MCP clients can discover `splunkready_check_hosted_model_access`
+  and know that only `saia_*` calls should use the dedicated SAIA route.
+- Updated the hosted-model diagnostic workflow resource to document the split
+  between core Splunk MCP routing and optional dedicated SAIA/cloud routing.
+- Regenerated tracked MCP proof evidence and rebuilt the public demo export.
+- Added claim-ledger evidence and submission-copy audit guards for the
+  dedicated SAIA MCP client-routing claim.
+- Used Playwright against the exported public MCP proof route to verify the
+  generated JSON includes the SAIA endpoint/token placeholders and hosted-model
+  diagnostic tool without an artifact load failure.
+- Did not use subagents.
+- Did not mutate Splunk.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  contents.
+
+Files changed:
+- `src/mcp/server.ts`
+- `tests/mcp/server.test.ts`
+- `tests/cli/flow.test.ts`
+- `scripts/audit-submission-copy.mjs`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/mcp-proof/mcp-client-session.jsonl`
+- `submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `moves/README.md`
+- `moves/moves128.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- This move proves the MCP client configuration and public evidence path. A real
+  live SAIA PASS still depends on the operator-owned ignored env file providing
+  a reachable SAIA/cloud MCP endpoint and token, or the shared Splunk MCP
+  endpoint invoking all four `saia_*` tools successfully.

@@ -694,3 +694,13 @@ stays on `shared-splunk-mcp` and returns `SAIA_ROUTE_NOT_FOUND`. Residual risk
 is now operational rather than architectural: add the dedicated SAIA endpoint
 and token to the ignored env file, or fix the shared MCP endpoint so it can
 invoke all four advertised `saia_*` tools.
+
+Move 128 reduces MCP-client usability and SAIA evidence risk by exposing the
+dedicated SAIA/cloud route directly in the dual-server, Claude Desktop, and
+Cursor MCP client-config resources. The tracked MCP proof and public export now
+show `SPLUNKREADY_SAIA_ENDPOINT`, `SPLUNKREADY_SAIA_TOKEN`, and
+`splunkready_check_hosted_model_access` in client-discoverable resources, and
+the submission-copy audit fails if that claim disappears from the claim ledger.
+Residual risk remains live connectivity: this proves the wiring and public
+evidence path, not a live hosted-model PASS against the operator-owned SAIA
+endpoint.

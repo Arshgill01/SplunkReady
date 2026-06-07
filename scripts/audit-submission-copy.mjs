@@ -65,6 +65,14 @@ const checks = [
   ["Claim ledger hosted model MCP prompt", files.claimLedger, "splunkready_hosted_model_diagnostic"],
   ["Claim ledger Claude Desktop MCP config", files.claimLedger, "splunkready://client-config/claude-desktop"],
   ["Claim ledger Cursor MCP config", files.claimLedger, "splunkready://client-config/cursor"],
+  [
+    "Claim ledger dedicated SAIA client config routing",
+    files.claimLedger,
+    "The MCP client config resources expose dedicated SAIA cloud routing placeholders without committing credentials."
+  ],
+  ["Claim ledger dedicated SAIA endpoint placeholder", files.claimLedger, "SPLUNKREADY_SAIA_ENDPOINT"],
+  ["Claim ledger dedicated SAIA token placeholder", files.claimLedger, "SPLUNKREADY_SAIA_TOKEN"],
+  ["Claim ledger client config hosted diagnostic tool", files.claimLedger, "hostedModelDiagnosticTool"],
   ["Claim ledger package MCP entrypoint", files.claimLedger, "splunkready mcp"],
   ["README inline MCP transcript tool", files.readme, "splunkready_certify_mcp_transcript_content"],
   ["README hosted model MCP tool", files.readme, "splunkready_check_hosted_model_access"],
