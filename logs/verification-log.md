@@ -13571,3 +13571,73 @@ Result:
   - trace phase grid collapsed to one column;
   - sequence labels remained phase-scoped;
   - no trace preview event overflow was detected.
+
+## 2026-06-07 - Move 137 SAIA ask route diagnostic alignment
+
+Commands:
+
+- `git status --short`
+- `rm -f submission-evidence/screenshots/hosted-judge-proof-current.png submission-evidence/screenshots/hosted-mcp-proof-current.png && git status --short`
+- `find .. . -maxdepth 3 \( -name '.splunkready*' -o -name '.env*' \) -type f -print | sed 's#^./##'`
+- `awk -F= '/^[A-Za-z_][A-Za-z0-9_]*=/{print $1}' .splunkready-live.env | sort`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 npm run splunkready -- hosted-model-diagnostic --mode live --env-file .splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass false --json`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "hosted-model-diagnostic|SAIA"`
+- `npm run build`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file .splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass false --json`
+- `npm run check`
+
+Result:
+
+- PASS for cleanup:
+  - removed only untracked screenshots from the parked hosted-demo/video
+    evidence path;
+  - worktree was clean before the SAIA edits.
+- PASS for secret-file handling:
+  - discovered `.splunkready-live.env`;
+  - printed only variable names, not values;
+  - confirmed `.splunkready-live.env` is ignored by `.gitignore`.
+- PASS for focused hosted-model regression:
+  - 1 test file passed;
+  - 6 tests passed;
+  - 40 tests skipped by focused pattern.
+- PASS for TypeScript build:
+  - `npm run build` completed.
+- BLOCKED, correctly classified, for operator-owned live SAIA proof:
+  - `hosted-model-diagnostic.status`: `BLOCKED`;
+  - `mutation`: `false`;
+  - `setup.configured`: `true`;
+  - `hostedModelTransport`: `shared-splunk-mcp`;
+  - all four SAIA tools are advertised;
+  - no SAIA tools passed;
+  - `/servicesNS/nobody/Splunk_AI_Assistant_Cloud` returned 200;
+  - `/generatespl`, `/explainspl`, and `/optimizespl` returned 400, proving
+    those local handlers are served by splunkd;
+  - `/ask` returned 404;
+  - `blockerClass`: `SAIA_REST_HANDLERS_NOT_REGISTERED`.
+- PASS for redaction:
+  - `hosted-model-diagnostic.json` contains `[REDACTED_URL]`;
+  - it does not contain raw `https://` endpoint URLs;
+  - it contains `/ask`;
+  - it no longer contains `/tellme`.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed;
+  - package installability audit passed, including clean tarball
+    `judge-proof` and `mcp` initialization;
+  - 60 test files passed;
+  - 374 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 83 required claims;
+  - included `git diff --check` completed with no output.
+
+Notes:
+
+- This move does not claim live SAIA hosted-model PASS.
+- `NODE_TLS_REJECT_UNAUTHORIZED=0` was used only for the local self-signed
+  Splunk endpoint probe.

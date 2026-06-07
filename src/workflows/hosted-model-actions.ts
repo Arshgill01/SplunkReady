@@ -129,7 +129,7 @@ const saiaRestHandlerProbePaths = [
   "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
   "/servicesNS/-/Splunk_AI_Assistant_Cloud/explainspl",
   "/servicesNS/-/Splunk_AI_Assistant_Cloud/optimizespl",
-  "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme"
+  "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask"
 ];
 
 const writeJson = async (filePath: string, value: unknown): Promise<void> => {
@@ -364,7 +364,7 @@ const formatHostedModelProofError = (error: unknown, env: NodeJS.ProcessEnv = pr
 
 const isSaiaRestHandlersNotRegisteredError = (error: string): boolean =>
   /404|not found/i.test(error) &&
-  /(?:servicesNS|Splunk_AI_Assistant_Cloud|generatespl|explainspl|optimizespl|\/tellme\b|REST namespace Splunk_AI_Assistant_Cloud|REST handlers are not registered)/i.test(
+  /(?:servicesNS|Splunk_AI_Assistant_Cloud|generatespl|explainspl|optimizespl|\/ask\b|REST namespace Splunk_AI_Assistant_Cloud|REST handlers are not registered)/i.test(
     error
   );
 
@@ -494,7 +494,7 @@ const hostedModelRemediationChecks = (
   if (blockerClass === "SAIA_REST_HANDLERS_NOT_REGISTERED") {
     return [
       "Restart splunkd after the Splunk AI Assistant install, upgrade, or cloud-connect activation.",
-      "Probe the Splunk AI Assistant app REST namespace from the operator shell; `/servicesNS/nobody/Splunk_AI_Assistant_Cloud` and the generate/explain/optimize/tellme handlers must not return 404.",
+      "Probe the Splunk AI Assistant app REST namespace from the operator shell; `/servicesNS/nobody/Splunk_AI_Assistant_Cloud` and the generate/explain/optimize/ask handlers must not return 404.",
       "Confirm `$SPLUNK_HOME/etc/apps/Splunk_AI_Assistant_Cloud/bin/` contains the app's Python REST handler files.",
       "If the namespace still returns 404 after restart, reinstall Splunk_AI_Assistant_Cloud v2.0.0 or later, then restart splunkd again.",
       "Rerun the strict hosted-model diagnostic from the same env file."

@@ -159,6 +159,7 @@ commands, or filesystem paths.
 | P0 | [134](moves134.md) MCP operator live hosted-model status | 0.5d | Makes MCP proof evidence distinguish fixture hosted-model PASS from the current operator-live SAIA cloud blocker. |
 | P0 | [135](moves135.md) Splunk MCP transcript compatibility | 0.5d | Accepts real Splunk MCP transcript field aliases during deterministic transcript certification. |
 | P0 | [136](moves136.md) Runs trace preview repair | 0.5d | Makes the Runs detail trace preview visible earlier, phase-scoped, and Playwright-verified across desktop and mobile widths. |
+| P0 | [137](moves137.md) SAIA ask route diagnostic alignment | 0.5d | Aligns the hosted-model live route probe with the current `/ask` SAIA handler and keeps the resulting blocker honest. |
 
 ## Non-Negotiable Boundaries
 

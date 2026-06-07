@@ -3080,7 +3080,7 @@ describe("SplunkReady CLI flow", () => {
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/explainspl",
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/optimizespl",
-        "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme"
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask"
       ])
     );
   });
@@ -3179,7 +3179,7 @@ describe("SplunkReady CLI flow", () => {
     expect(mcp.managementCalls.map((call) => call.path)).toEqual(
       expect.arrayContaining([
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
-        "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme"
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask"
       ])
     );
     expect(mcp.calls.map((call) => call.params.name)).not.toEqual(expect.arrayContaining(["splunk_run_query"]));

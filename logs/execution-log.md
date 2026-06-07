@@ -13146,6 +13146,60 @@ Notes:
 - Did not read, source, print, or commit `.splunkready*` or `.env*` secret
   contents.
 
+## 2026-06-07T15:20:00Z - Move 137 SAIA ask route diagnostic alignment
+
+Intent:
+
+- Park the low-value external-client screencast work and return to the
+  hosted-model/SAIA proof path.
+- Align the SAIA REST-handler probe with the current
+  `saia_ask_splunk_question` route shape.
+- Keep live hosted-model evidence honest instead of claiming PASS while the
+  live route is still blocked.
+
+Actions:
+
+- Removed the two untracked hosted-demo screenshots left from the parked
+  evidence pass.
+- Ran the live hosted-model diagnostic through the ignored
+  `.splunkready-live.env` path without printing or committing secret values.
+- Confirmed the live diagnostic still does not produce hosted-model PASS.
+- Updated the fixed local SAIA route probe from `/tellme` to `/ask`.
+- Updated CLI regression assertions and the live setup checklist to use
+  generate/explain/optimize/ask route language.
+- Rebuilt `dist/` and reran the operator-owned live diagnostic.
+
+Files changed:
+
+- `src/workflows/hosted-model-actions.ts`
+- `tests/cli/flow.test.ts`
+- `docs/live-setup-checklist.md`
+- `moves/README.md`
+- `moves/moves137.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Observed live result after the `/ask` alignment:
+
+- `status`: `BLOCKED`
+- `mutation`: `false`
+- all four SAIA hosted-model tools are advertised by the live contract
+- local SAIA namespace route returns 200
+- local `/generatespl`, `/explainspl`, and `/optimizespl` routes return 400,
+  which proves splunkd serves those handlers but the GET probe did not supply
+  POST arguments
+- local `/ask` returns 404
+- `blockerClass`: `SAIA_REST_HANDLERS_NOT_REGISTERED`
+- hosted-model proof and diagnostic artifacts contain `[REDACTED_URL]` and no
+  raw `https://` endpoint URL
+
+Notes:
+
+- No Splunk write or mutation operation was introduced.
+- SAIA remains advisory only; deterministic rules remain authoritative.
+- Did not use subagents.
+
 ## 2026-06-07T14:56:07Z - Move 136 Runs trace preview repair
 
 Intent:

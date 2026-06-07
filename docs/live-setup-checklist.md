@@ -310,7 +310,7 @@ tools because the Splunk AI Assistant app namespace is not served by splunkd,
   not loaded the app's REST handlers.
 - Probe the app REST namespace from the operator shell. The
   `/servicesNS/nobody/Splunk_AI_Assistant_Cloud` namespace and the
-  generate/explain/optimize/tellme handlers must not return 404.
+  generate/explain/optimize/ask handlers must not return 404.
 - Confirm `$SPLUNK_HOME/etc/apps/Splunk_AI_Assistant_Cloud/bin/` contains the
   app's Python REST handler files.
 - If the namespace still returns 404 after restart, reinstall
@@ -420,12 +420,13 @@ blocked at invocation time:
   `Splunk_AI_Assistant_Cloud` `/servicesNS/...` route, SplunkReady now reports
   `SAIA_REST_HANDLERS_NOT_REGISTERED`, which points to restart/reinstall checks
   for the Splunk AI Assistant app's splunkd REST handlers.
-- refined 2026-06-07 live probe: after splunkd restart, the local SAIA routes
-  `/generatespl`, `/explainspl`, `/optimizespl`, and `/tellme` were served by
-  splunkd, while hosted-model invocation still returned 404 downstream. The
-  expected classifier for this state is now `SAIA_CLOUD_ROUTE_NOT_FOUND`, which
-  points to tenant/cloud hosted-model provisioning instead of local app
-  reinstall.
+- refined 2026-06-07 live probe: after aligning the probe to the current
+  `saia_ask_splunk_question` route shape, the local SAIA namespace and
+  `/generatespl`, `/explainspl`, and `/optimizespl` routes are served by
+  splunkd, but `/ask` returns 404. The current classifier is
+  `SAIA_REST_HANDLERS_NOT_REGISTERED`, which points to a local ask-route handler
+  registration or app-version mismatch before live SAIA hosted-model PASS can be
+  claimed.
 - redaction check: hosted-model proof and diagnostic errors contain
   `[REDACTED_URL]` and no raw `https://` endpoint URL.
 - follow-up support: SplunkReady now accepts `SPLUNKREADY_SAIA_ENDPOINT` and

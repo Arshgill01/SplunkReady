@@ -775,3 +775,14 @@ workbench Runs route at desktop and mobile widths with no trace preview
 overflow. Residual risk remains public-package currentness: npm latest is still
 `splunkready@0.1.0`, so judges do not receive current MCP/SAIA source work from
 `splunkready@latest` until an npm-authenticated publish of `0.1.1` completes.
+
+Move 137 reduces live SAIA diagnostic ambiguity by aligning the local REST
+handler probe with the current `saia_ask_splunk_question` route shape. The
+operator-owned diagnostic now probes `/ask` rather than stale `/tellme`
+evidence. Current live result remains `BLOCKED`, `mutation=false`: the SAIA
+namespace and generate/explain/optimize handlers are served by splunkd, but the
+canonical `/ask` route returns 404, so SplunkReady reports
+`SAIA_REST_HANDLERS_NOT_REGISTERED`. Residual risk remains external to the
+deterministic compiler: the local Splunk AI Assistant app or MCP tool routing
+must serve the ask handler, or a dedicated SAIA MCP endpoint/token must be
+provided, before SplunkReady can claim live hosted-model PASS.
