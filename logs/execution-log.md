@@ -15250,3 +15250,31 @@ Result:
 - PARTIAL: this completes the package-defined receipt-store/dashboard slice of
   Move 161. Observed live installation against the local Splunk server remains
   the next evidence gap.
+
+## 2026-06-08T01:00:00Z - Post-Move 161 ambitious strategy update
+
+Intent:
+
+- Re-evaluate the next five high-value moves after the AppInspect-clean Splunk
+  app package gained an operator-owned receipt store and overview view.
+
+Actions:
+
+- Compared the latest external recommendation list against actual repo state.
+- Rejected duplicate work: live PR gate already exists as Move 158, Splunk app
+  packaging exists through Moves 157/161/164, and the desktop MCP-client
+  recording path remains parked until it can produce real client evidence.
+- Added Move 165 for operator-approved live Splunk app install/probe evidence.
+- Added Move 166 for operator-approved signed receipt KV ingestion evidence.
+- Updated the move index and ambitious award plan with the current five-move
+  priority:
+  1. Move 165 live Splunk app install proof;
+  2. Move 166 receipt KV ingestion proof;
+  3. Move 160 standalone release artifacts;
+  4. Move 162 typed policy SDK;
+  5. Move 151 external MCP-client session, parked until after the first four.
+
+Result:
+
+- PASS: the next implementation target is now Move 165, because it turns the
+  current `.spl` artifact into observed live Splunk integration evidence.

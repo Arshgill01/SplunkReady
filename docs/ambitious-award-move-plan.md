@@ -162,3 +162,35 @@ Stop conditions:
   Receipt verdicts.
 - Do not add standalone release artifacts until the no-Node path is proven with
   an actual executable smoke, not only a bundled JavaScript file.
+
+## Strategy Update After Move 161 Receipt Store
+
+Captured: 2026-06-08
+
+DeepSeek's recommendation is directionally useful, but the repo state has moved
+past parts of it:
+
+- The live PR gate already exists as Move 158 and is remote-validated in CI.
+- Splunk app packaging exists, is AppInspect-clean, and now defines an
+  operator-owned receipt collection and overview view.
+- The desktop external-client MCP capture remains parked because the previous
+  attempts produced low-signal static-window evidence; the productized recorder
+  gateway is the safer MCP surface until a real client session can be captured
+  cleanly.
+- Standalone release artifacts and typed policy SDK remain high-value existing
+  moves: Move 160 and Move 162.
+
+The next five high-leverage moves are therefore:
+
+| Order | Move | Status | Why Now | Done When |
+| --- | --- | --- | --- | --- |
+| 1 | [Move 165](../moves/moves165.md) Operator live Splunk app install proof | Planned | The new `.spl` package and overview surface need observed Splunk evidence, not only archive/AppInspect proof. This directly addresses the user's concern that SplunkReady must integrate with Splunk rather than sit beside it. | A local operator-approved install/probe writes public-safe evidence proving app metadata, nav/view, collection, and lookup presence, without leaking secrets or making install part of default proofs. |
+| 2 | [Move 166](../moves/moves166.md) Operator receipt KV ingestion proof | Planned | The package now declares `splunkready_receipts`; the next value jump is proving signed receipts can live inside Splunk and be queried by the overview view. | A bounded signed receipt set is written with an explicit confirm flag, read back through `splunkready_receipts_lookup`, and recorded as redacted evidence. |
+| 3 | [Move 160](../moves/moves160.md) Standalone release artifacts | Planned | Removes Node/npm as the remaining distribution friction cap after npm and GitHub Packages are already published. | Current-OS artifact smoke passes locally, tag workflow builds/checksums per-OS assets, and no-Node claims are guarded. |
+| 4 | [Move 162](../moves/moves162.md) Typed policy SDK | Planned | Turns signed policies from static JSON artifacts into a real developer platform surface with type-safe authoring and package subpath imports. | Clean consumer project imports `splunkready/policy`; example TS policies compile, sign, and grade fixture traces in CI. |
+| 5 | [Move 151](../moves/moves151.md) Real external MCP-client session evidence | Parked until after 1-4 | Still valuable for MCP judging, but only if captured from a real client doing real tool calls. It should not consume time before the Splunk-native and distribution gaps above. | A redacted real-client session exists with actual calls through the recorder, and the session is certified by SplunkReady. |
+
+This changes the current execution priority from generic cleanup to
+Splunk-native proof first. It also relaxes the old "never touch Splunk" reading:
+implicit mutation is still prohibited, but explicit operator-approved install
+and receipt-store workflows are now in scope.

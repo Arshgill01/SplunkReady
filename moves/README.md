@@ -187,6 +187,8 @@ commands, or filesystem paths.
 | P1 | [162](moves162.md) Typed policy SDK | 6-8d | Makes policy authoring typed, testable, signed, and reusable through a package SDK. |
 | P0 | [163](moves163.md) MCP recorder pass-through gateway | 3-5d | Converts the current client-neutral recorder artifact into a real MCP gateway/proxy that clients can use. |
 | P0 | [164](moves164.md) Splunk AppInspect MCP composition | 3-5d | Composes Splunk investigation, Splunk app validation, and SplunkReady certification through MCP evidence. |
+| P0 | [165](moves165.md) Operator live Splunk app install proof | 1-2d | Installs/probes the AppInspect-clean `.spl` on the operator-owned Splunk server and records redacted live app evidence. |
+| P0 | [166](moves166.md) Operator receipt KV ingestion proof | 1-2d | Pushes signed receipt summaries into the installed app's KV Store through an explicit operator-approved workflow. |
 
 ## Non-Negotiable Boundaries
 
