@@ -129,6 +129,7 @@ commands, or filesystem paths.
 | P0 | [104](moves104.md) Hosted demo public copy guard | 0.5d | Requires the hosted MCP proof and judge-proof routes in public submission copy. |
 | P0 | [105](moves105.md) Remote cleanroom after hosted copy | 0.5d | Verifies the pushed branch, hosted routes, evidence pack, and published package from fresh clean-room paths. |
 | P0 | [106](moves106.md) Live security public export redaction guard | 0.5d | Proves live-security proof summaries are redacted before public export. |
+| P0 | [107](moves107.md) Current handoff refresh | 0.5d | Updates current-state docs after package, hosted demo, cleanroom, and redaction work. |
 
 ## Non-Negotiable Boundaries
 

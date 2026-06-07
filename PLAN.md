@@ -1,6 +1,6 @@
 # SplunkReady Execution Plan
 
-Status: implemented through Wave 84 Splunk-derived readiness profile on `splunkready-build`; overall goal remains open until explicit user approval.
+Status: implemented through Move 106 on `splunkready-build`; overall goal remains open until explicit user approval.
 
 ## Objective
 
@@ -88,8 +88,9 @@ Do not build all features. Build the smallest real vertical slice:
 - one patch/rerun path;
 - fixture mode first, live mode second.
 
-Current highest-leverage continuation work after Wave 84:
+Current highest-leverage continuation work after Move 106:
 
-- replace the bundled deterministic specimen as the only demo producer by adding a real LLM/MCP trace runner or connector;
-- run `live-smoke` against a real Splunk MCP endpoint and preserve the contract/profile proof pack;
-- update the demo video path to show real MCP calls plus deterministic receipt grading.
+- preserve the published package, hosted demo, submission-copy guard, and remote cleanroom evidence as public judge paths;
+- keep strengthening MCP-category evidence around existing Splunk MCP plus SplunkReady certification composition;
+- if operator approval allows it, generate a redacted live-security proof export through the guarded public-proof-export path;
+- keep the user-owned video/submission upload out of repo claims until public URLs are actually provided.

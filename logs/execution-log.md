@@ -11954,3 +11954,38 @@ Files changed:
 
 Open blockers:
 - Hosted CI needs to run after push for Move 106.
+
+## 2026-06-07 14:28 - Move 107 Current Handoff Refresh
+
+Scope:
+- Refreshed top-level current-state docs from stale Wave 84 language to current
+  Move 106 status.
+- Updated `MANIFEST.md` to include the published package, hosted demo, MCP
+  composition proof, remote cleanroom proof, and live-security redaction guard.
+- Updated `PLAN.md` next-step priorities to reflect the current post-package
+  and post-hosted-demo state.
+- Updated `docs/implementation-handoff.md` with:
+  - pushed head `72e2839c41ec4a650130967701c34856aead41ff`;
+  - hosted CI run `27087842901`;
+  - published package smoke command;
+  - hosted MCP proof route;
+  - hosted judge-proof route;
+  - realistic remaining next actions.
+- Did not mark the goal complete.
+- Did not change product behavior.
+- Did not use live Splunk credentials.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `MANIFEST.md`
+- `PLAN.md`
+- `docs/implementation-handoff.md`
+- `moves/README.md`
+- `moves/moves107.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 107.

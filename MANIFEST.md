@@ -1,6 +1,6 @@
 # SplunkReady Scaffold Manifest
 
-Status: implemented through Phase Live on `splunkready-build`: live Splunk MCP proof, Gemini-backed LLM specimen, strict flagship `live-security-proof`, Vite artifact UI, expanded fixtures, external trace SDK example, CI JSON gate, firewall gateway, policy simulator, and local proof-bundle selector.
+Status: implemented through Phase Live and Move 106 on `splunkready-build`: live Splunk MCP proof, Gemini-backed LLM specimen, strict flagship `live-security-proof`, Vite artifact UI, expanded fixtures, external trace SDK example, CI JSON gate, firewall gateway, policy simulator, local proof-bundle selector, MCP resources/prompts/composition proof, published npm package, verified GitHub Pages demo, refreshed submission evidence, remote cleanroom proof, and live-security public-export redaction guard.
 
 This repository turns the locked SplunkReady idea into an implemented certification harness that can grade fixture traces, externally captured traces, and live Splunk MCP LLM-agent traces through the same contracts. The scaffold process remains in force for future continuation waves, but Phase Live decisions in `DECISIONS.md` supersede older fixture-first implementation assumptions where they conflict.
 

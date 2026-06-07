@@ -2,7 +2,17 @@
 
 ## Current State
 
-SplunkReady is implemented through Wave 84 Splunk-derived readiness profile on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, optional read-only live smoke path, reviewer audit automation, submission guardrails, external trace grading through `grade-trace`, deployment-bound `readiness-profile.json` artifacts, explicit live-proof gap documentation, and a routed static UI shell whose primary replay route is a Minimax-derived Readiness Pre-Flight Card.
+SplunkReady is implemented through Move 106 on the long-running `splunkready-build` branch. The build includes the fixture-first certification flow, deterministic grader, Readiness Receipts, policy patch and rerun path, optional read-only live smoke path, reviewer audit automation, submission guardrails, external trace grading through `grade-trace`, deployment-bound `readiness-profile.json` artifacts, explicit live-proof gap documentation, Vite artifact workbench, published npm CLI, GitHub Pages public demo, MCP resources/prompts/composition proof, refreshed submission evidence, remote cleanroom proof, and live-security public-export redaction coverage.
+
+Current pushed head at this handoff refresh:
+
+- Commit: `72e2839c41ec4a650130967701c34856aead41ff`
+- Branch: `splunkready-build`
+- Hosted CI: run `27087842901`, `npm run check`, success
+- Remote cleanroom report: `docs/remote-cleanroom-after-hosted-copy-report.md`
+- Published package smoke: `npx -y splunkready@0.1.0 judge-proof --out ./judge-proof --json`
+- Hosted MCP proof: `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof`
+- Hosted judge proof: `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser`
 
 ## Start Here
 
@@ -23,7 +33,7 @@ Wave 02 selected the implementation stack. Current core choices:
 - TypeScript is the implementation language.
 - Runtime schema validation is mandatory.
 - Fixture mode runs without Splunk credentials.
-- UI work follows the schema, grader, receipt, and artifact spine and is currently implemented as a static TypeScript-generated artifact shell.
+- UI work follows the schema, grader, receipt, and artifact spine. The primary judge UI is now the Vite artifact workbench; the generated static shell remains a fallback artifact.
 
 ## Main Executor Rule
 
@@ -52,7 +62,7 @@ Do not parallelize:
 
 ## Next Concrete Step
 
-Continue with the next narrow product wave. The highest-leverage next move is a real LLM/MCP specimen trace runner or live Splunk MCP proof pack, not more fixture-only QA. Start from a clean `splunkready-build` checkout, read the latest wave file, check `logs/reviewer-inbox/`, then run the wave-specific verification. The current broad health check is:
+Continue with the next narrow product wave. The highest-leverage remaining work is either stronger MCP-category public evidence around existing Splunk MCP plus SplunkReady certification, or an operator-approved redacted live-security proof export. Do not read or commit ignored live artifacts or secret env files unless the operator explicitly asks for that export path. Start from a clean `splunkready-build` checkout, read the latest move file, check `logs/reviewer-inbox/`, then run the move-specific verification. The current broad health check is:
 
 ```bash
 npm run check
