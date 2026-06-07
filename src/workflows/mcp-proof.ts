@@ -35,6 +35,16 @@ interface JsonRpcError {
 
 type JsonRpcResponse = JsonRpcSuccess | JsonRpcError;
 
+interface McpClientSessionRecord {
+  direction: "request" | "notification" | "response";
+  sequence: number;
+  method?: string;
+  id?: string | number | null;
+  params?: unknown;
+  result?: unknown;
+  error?: unknown;
+}
+
 interface McpProofSummary {
   source: "splunkready-mcp-proof";
   status: "PASS" | "FAIL";
@@ -141,6 +151,21 @@ interface McpProofSummary {
       authoritative: true;
     };
   };
+  clientSession: {
+    source: "splunkready-mcp-client-session";
+    status: "PASS" | "FAIL";
+    artifactPath: string;
+    markdownPath: string;
+    protocol: "stdio-jsonrpc";
+    requestCount: number;
+    responseCount: number;
+    methods: string[];
+    resourceUris: string[];
+    promptNames: string[];
+    toolNames: string[];
+    deterministicAuthority: true;
+    mutation: false;
+  };
   artifacts: string[];
   nextCommands: string[];
 }
@@ -169,8 +194,10 @@ const stringFromRecord = (record: Record<string, unknown>, key: string): string 
 class McpStdioClient {
   private readonly child: ChildProcessWithoutNullStreams;
   private readonly pending: Array<(response: JsonRpcResponse) => void> = [];
+  private readonly sessionRecords: McpClientSessionRecord[] = [];
   private stdoutBuffer = "";
   private stderrBuffer = "";
+  private sequence = 0;
 
   constructor(serverPath: string) {
     this.child = spawn(process.execPath, [serverPath], {
@@ -197,7 +224,15 @@ class McpStdioClient {
   }
 
   notify(method: string, params?: unknown): void {
-    this.child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method, params })}\n`);
+    const message = { jsonrpc: "2.0", method, params };
+
+    this.sessionRecords.push({
+      direction: "notification",
+      sequence: ++this.sequence,
+      method,
+      params
+    });
+    this.child.stdin.write(`${JSON.stringify(message)}\n`);
   }
 
   close(): void {
@@ -205,7 +240,22 @@ class McpStdioClient {
     this.child.kill();
   }
 
+  session(): McpClientSessionRecord[] {
+    return [...this.sessionRecords];
+  }
+
   private async send(message: Record<string, unknown>): Promise<JsonRpcResponse> {
+    const id = typeof message.id === "string" || typeof message.id === "number" || message.id === null ? message.id : null;
+    const method = typeof message.method === "string" ? message.method : undefined;
+
+    this.sessionRecords.push({
+      direction: "request",
+      sequence: ++this.sequence,
+      id,
+      method,
+      params: message.params
+    });
+
     const response = new Promise<JsonRpcResponse>((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error(`Timed out waiting for MCP response. ${this.stderrBuffer.trim()}`.trim()));
@@ -237,7 +287,16 @@ class McpStdioClient {
       const resolve = this.pending.shift();
 
       if (resolve) {
-        resolve(JSON.parse(line) as JsonRpcResponse);
+        const parsed = JSON.parse(line) as JsonRpcResponse;
+
+        this.sessionRecords.push({
+          direction: "response",
+          sequence: ++this.sequence,
+          id: parsed.id,
+          result: "result" in parsed ? parsed.result : undefined,
+          error: "error" in parsed ? parsed.error : undefined
+        });
+        resolve(parsed);
       }
     }
   }
@@ -298,6 +357,17 @@ MCP client walkthrough: ${summary.clientWalkthrough.status}
 - SplunkReady role: ${summary.clientWalkthrough.servers.find((server) => server.name === "splunkready")?.role ?? ""}
 ${summary.clientWalkthrough.stages.map((stage) => `- ${stage.id}: ${stage.title} (${stage.server}) - ${stage.evidence}`).join("\n")}
 
+MCP client session: ${summary.clientSession.status}
+- Artifact: ${summary.clientSession.artifactPath}
+- Markdown: ${summary.clientSession.markdownPath}
+- Protocol: ${summary.clientSession.protocol}
+- Requests: ${summary.clientSession.requestCount}
+- Responses: ${summary.clientSession.responseCount}
+- Methods: ${summary.clientSession.methods.join(", ")}
+- Resources read: ${summary.clientSession.resourceUris.join(", ")}
+- Prompts fetched: ${summary.clientSession.promptNames.join(", ")}
+- Tools called: ${summary.clientSession.toolNames.join(", ")}
+
 Receipt: ${stringFromRecord(summary.transcriptCertification, "outDir")}/receipt-external-001.json
 `;
 
@@ -330,6 +400,33 @@ ${walkthrough.stages.map((stage) => `- ${stage.id}: ${stage.title}\n  - Server: 
 - Path: ${walkthrough.receipt.path}
 - Status: ${walkthrough.receipt.status}
 - Authoritative: ${walkthrough.receipt.authoritative ? "yes" : "no"}
+`;
+
+const mcpClientSessionMarkdown = (session: McpProofSummary["clientSession"]): string => `# SplunkReady MCP Client Session
+
+Status: ${session.status}
+
+Protocol: ${session.protocol}
+
+Mutation: ${session.mutation ? "yes" : "no"}
+
+Deterministic authority: ${session.deterministicAuthority ? "yes" : "no"}
+
+Requests: ${session.requestCount}
+
+Responses: ${session.responseCount}
+
+Methods:
+${session.methods.map((method) => `- ${method}`).join("\n")}
+
+Resources:
+${session.resourceUris.map((uri) => `- ${uri}`).join("\n")}
+
+Prompts:
+${session.promptNames.map((name) => `- ${name}`).join("\n")}
+
+Tools:
+${session.toolNames.map((name) => `- ${name}`).join("\n")}
 `;
 
 const stringArray = (value: unknown): string[] =>
@@ -624,6 +721,74 @@ const buildMcpClientWalkthrough = (input: {
   };
 };
 
+const paramsRecord = (value: unknown): Record<string, unknown> => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  return value as Record<string, unknown>;
+};
+
+const buildMcpClientSession = (
+  records: McpClientSessionRecord[],
+  artifactPath: string,
+  markdownPath: string
+): McpProofSummary["clientSession"] => {
+  const requestRecords = records.filter((record) => record.direction === "request");
+  const responseRecords = records.filter((record) => record.direction === "response");
+  const methods = [...new Set(requestRecords.map((record) => record.method).filter((method): method is string => Boolean(method)))];
+  const resourceUris = [
+    ...new Set(
+      requestRecords
+        .filter((record) => record.method === "resources/read")
+        .map((record) => paramsRecord(record.params).uri)
+        .filter((uri): uri is string => typeof uri === "string")
+    )
+  ];
+  const promptNames = [
+    ...new Set(
+      requestRecords
+        .filter((record) => record.method === "prompts/get")
+        .map((record) => paramsRecord(record.params).name)
+        .filter((name): name is string => typeof name === "string")
+    )
+  ];
+  const toolNames = [
+    ...new Set(
+      requestRecords
+        .filter((record) => record.method === "tools/call")
+        .map((record) => paramsRecord(record.params).name)
+        .filter((name): name is string => typeof name === "string")
+    )
+  ];
+  const status =
+    methods.includes("initialize") &&
+    methods.includes("tools/list") &&
+    methods.includes("resources/list") &&
+    methods.includes("prompts/list") &&
+    resourceUris.includes("splunkready://client-config/splunk-and-splunkready") &&
+    promptNames.includes("splunkready_splunk_mcp_certification_loop") &&
+    toolNames.includes("splunkready_certify_mcp_transcript")
+      ? "PASS"
+      : "FAIL";
+
+  return {
+    source: "splunkready-mcp-client-session",
+    status,
+    artifactPath,
+    markdownPath,
+    protocol: "stdio-jsonrpc",
+    requestCount: requestRecords.length,
+    responseCount: responseRecords.length,
+    methods,
+    resourceUris,
+    promptNames,
+    toolNames,
+    deterministicAuthority: true,
+    mutation: false
+  };
+};
+
 export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise<McpProofWorkflowResult> => {
   const transcriptPath = input.transcriptPath ?? defaultTranscriptPath;
   const transcriptOutDir = join(input.outDir, "mcp-transcript-certification");
@@ -631,6 +796,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
   const markdownPath = join(input.outDir, "mcp-proof-summary.md");
   const clientWalkthroughPath = join(input.outDir, "mcp-client-walkthrough.json");
   const clientWalkthroughMarkdownPath = join(input.outDir, "mcp-client-walkthrough.md");
+  const clientSessionPath = join(input.outDir, "mcp-client-session.jsonl");
+  const clientSessionMarkdownPath = join(input.outDir, "mcp-client-session.md");
 
   await mkdir(input.outDir, { recursive: true });
   await mkdir(transcriptOutDir, { recursive: true });
@@ -771,6 +938,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       splunkMcpBoundary,
       transcriptCertification
     });
+    const clientSession = buildMcpClientSession(client.session(), clientSessionPath, clientSessionMarkdownPath);
     const summary: McpProofSummary = {
       source: "splunkready-mcp-proof",
       status: certificationStatus,
@@ -800,7 +968,16 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       splunkMcpBoundary,
       mcpComposition,
       clientWalkthrough,
-      artifacts: [summaryPath, markdownPath, clientWalkthroughPath, clientWalkthroughMarkdownPath, ...toolArtifacts],
+      clientSession,
+      artifacts: [
+        summaryPath,
+        markdownPath,
+        clientWalkthroughPath,
+        clientWalkthroughMarkdownPath,
+        clientSessionPath,
+        clientSessionMarkdownPath,
+        ...toolArtifacts
+      ],
       nextCommands: [
         `npm run mcp`,
         `npm run splunkready -- certify-mcp-transcript --transcript ${transcriptPath} --out ${transcriptOutDir} --strict-import true --require-pass true --agent-name "External MCP Agent" --agent-version "mcp-proof-jsonrpc-pass" --json`
@@ -811,6 +988,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
     await writeFile(markdownPath, mcpProofMarkdown(summary), "utf8");
     await writeFile(clientWalkthroughPath, `${JSON.stringify(clientWalkthrough, null, 2)}\n`, "utf8");
     await writeFile(clientWalkthroughMarkdownPath, mcpClientWalkthroughMarkdown(clientWalkthrough), "utf8");
+    await writeFile(clientSessionPath, `${client.session().map((record) => JSON.stringify(record)).join("\n")}\n`, "utf8");
+    await writeFile(clientSessionMarkdownPath, mcpClientSessionMarkdown(clientSession), "utf8");
 
     return {
       status: summary.status,

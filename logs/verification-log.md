@@ -9665,6 +9665,116 @@ Open blockers:
 - Hosted CI still needs to run after push.
 - The overall goal remains open until explicit user approval.
 
+## 2026-06-07 - Move 109 MCP Client Session Evidence
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "MCP server proof|MCP JSON-RPC transcript|mcp-proof"`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "MCP proof"`
+- `npx vitest run tests/scripts/public-demo-export.test.ts`
+- `npm run mcp-proof`
+- `npm run build && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json`
+- `node dist/src/cli.js verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json`
+- `npm run audit:public-demo-export`
+- `npx --yes --package playwright node --input-type=module <move-109-static-mcp-proof-check>`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `npm run check`
+- `npm run verify:scaffold`
+- `git diff --check`
+
+Result:
+
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused MCP CLI proof coverage after correcting the expected
+  request/response count:
+  - 1 test file passed;
+  - 3 tests passed;
+  - 37 tests skipped by focused pattern.
+- PASS for focused MCP UI rendering coverage:
+  - 1 test file passed;
+  - 1 test passed;
+  - 26 tests skipped by focused pattern.
+- PASS for public demo export tests:
+  - 1 test file passed;
+  - 2 tests passed.
+- PASS for `npm run mcp-proof`:
+  - wrote `artifacts/mcp-proof/mcp-client-session.jsonl`;
+  - wrote `artifacts/mcp-proof/mcp-client-session.md`;
+  - returned `status: "PASS"`.
+- PASS for tracked MCP proof regeneration:
+  - wrote `submission-evidence/mcp-proof/mcp-client-session.jsonl`;
+  - wrote `submission-evidence/mcp-proof/mcp-client-session.md`;
+  - returned `status: "PASS"`.
+- PASS for nested MCP transcript manifest verification.
+- PASS for public demo export audit:
+  - `artifacts/public-demo`;
+  - 185 files;
+  - `mutation=false`;
+  - default route `mcp-proof`.
+- PASS for Playwright static public-demo MCP route:
+  - URL `http://127.0.0.1:4339/?artifacts=artifacts%2Fmcp-proof#mcp-proof`;
+  - rendered `MCP client session`;
+  - rendered `stdio-jsonrpc`, `resources/read`, `prompts/get`, `tools/call`,
+    and `splunkready_certify_mcp_transcript`;
+  - captured `output/playwright/move109-workbench-mcp-proof.png`;
+  - copied refreshed screenshot to
+    `submission-evidence/screenshots/workbench-mcp-proof.png`;
+  - zero console errors;
+  - zero failed responses.
+- PASS for evidence-pack SHA verification after regenerating
+  `submission-evidence/evidence-pack-sha256.txt`.
+- PASS for focused submission-copy audit coverage:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for submission-copy audit:
+  - 41 required claims.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified with 19 rules, 4 fixture missions, 20 evidence
+    refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 185 files;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and `npx
+    splunkready judge-proof` returned `PASS`;
+  - 59 test files passed;
+  - 355 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 41 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for final post-log scaffold verification after removing temporary
+  Playwright scratch output:
+  - `PASS: scaffold verified`;
+  - `waves: 85`;
+  - `project files: 2013`.
+- PASS for final `git diff --check`:
+  - completed with no output.
+
+Notes:
+
+- Initial Playwright check against the local workbench route timed out on
+  `networkidle`; rerun with explicit text checks showed the only local
+  workbench 404 was `public-demo-manifest.json`.
+- Final Playwright verification used the regenerated static public demo export,
+  where `public-demo-manifest.json` exists and the route had zero failed
+  responses.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Real SAIA/hosted-model proof remains the next high-value track now that the
+  operator reports cloud connection and token setup are available.
+
 ## 2026-06-07 - Move 106 Live Security Public Export Redaction Guard
 
 Commands:

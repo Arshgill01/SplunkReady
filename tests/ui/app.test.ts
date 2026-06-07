@@ -496,8 +496,37 @@ const mcpProofSummary = {
       authoritative: true
     }
   },
+  clientSession: {
+    source: "splunkready-mcp-client-session",
+    status: "PASS",
+    artifactPath: "submission-evidence/mcp-proof/mcp-client-session.jsonl",
+    markdownPath: "submission-evidence/mcp-proof/mcp-client-session.md",
+    protocol: "stdio-jsonrpc",
+    requestCount: 14,
+    responseCount: 14,
+    methods: [
+      "initialize",
+      "tools/list",
+      "resources/list",
+      "resources/read",
+      "prompts/list",
+      "prompts/get",
+      "tools/call"
+    ],
+    resourceUris: [
+      "splunkready://certification/posture",
+      "splunkready://client-config/splunk-and-splunkready",
+      "splunkready://workflows/splunk-mcp-certification-loop"
+    ],
+    promptNames: ["splunkready_splunk_mcp_certification_loop", "splunkready_mcp_composition_review"],
+    toolNames: ["splunkready_describe_certification", "splunkready_certify_mcp_transcript"],
+    deterministicAuthority: true,
+    mutation: false
+  },
   artifacts: [
     "submission-evidence/mcp-proof/mcp-proof-summary.json",
+    "submission-evidence/mcp-proof/mcp-client-session.jsonl",
+    "submission-evidence/mcp-proof/mcp-client-session.md",
     "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json"
   ],
   nextCommands: [
@@ -1435,12 +1464,17 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("MCP proof");
     expect(html).toContain("Certification loop");
     expect(html).toContain("MCP composition scorecard");
+    expect(html).toContain("MCP client session");
     expect(html).toContain("dual-server-client-config: PASS");
     expect(html).toContain("existing-splunk-mcp-boundary: PASS");
     expect(html).toContain("splunk: Existing Splunk MCP server");
     expect(html).toContain("splunkready://workflows/splunk-mcp-certification-loop");
     expect(html).toContain("splunkready_splunk_mcp_certification_loop");
     expect(html).toContain("splunkready_certify_mcp_transcript");
+    expect(html).toContain("resources/read");
+    expect(html).toContain("prompts/get");
+    expect(html).toContain("tools/call");
+    expect(html).toContain("submission-evidence/mcp-proof/mcp-client-session.jsonl");
     expect(html).toContain("splunk_get_knowledge_objects / splunk_run_saved_search");
     expect(html).toContain("Saved-search execution");
     expect(html).toContain("evt-102 / evt-118 / evt-141");

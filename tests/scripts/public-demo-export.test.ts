@@ -19,6 +19,8 @@ const createSourceTree = async (): Promise<string> => {
   await writeFixture(join(root, "dist-ui", "index.html"), "<!doctype html><div id=\"app\"></div>");
   await writeFixture(join(root, "dist-ui", "assets", "index.js"), "window.__splunkready = true;");
   await writeFixture(join(root, "submission-evidence", "mcp-proof", "mcp-proof-summary.json"), "{\"status\":\"PASS\"}\n");
+  await writeFixture(join(root, "submission-evidence", "mcp-proof", "mcp-client-session.jsonl"), "{\"method\":\"initialize\"}\n");
+  await writeFixture(join(root, "submission-evidence", "mcp-proof", "mcp-client-session.md"), "# MCP client session\n");
   await writeFixture(join(root, "submission-evidence", "suite-proof", "suite-proof-summary.json"), "{\"status\":\"PASS\"}\n");
   await writeFixture(
     join(root, "submission-evidence", "public-proof-export", "public-proof-summary.json"),
@@ -85,6 +87,9 @@ describe("public demo export", () => {
     );
     await expect(readFile(join(root, "out/public-demo/artifacts/mcp-proof/artifact-manifest.json"), "utf8")).resolves.toContain(
       "mcp-proof-summary.json"
+    );
+    await expect(readFile(join(root, "out/public-demo/artifacts/mcp-proof/mcp-client-session.jsonl"), "utf8")).resolves.toContain(
+      "initialize"
     );
     await expect(readFile(join(root, "out/public-demo/screenshots/workbench-mcp-proof.png"), "utf8")).resolves.toBe("png-bytes");
     await expect(readFile(join(root, "out/public-demo/artifacts/judge-proof/judge-proof-summary.json"), "utf8")).resolves.toContain(

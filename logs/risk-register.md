@@ -501,3 +501,12 @@ Residual risk remains explicit: the overall goal is not complete until the user
 approves completion, the user still owns final submission/video materials, and
 MCP-award odds can improve with stronger public evidence of external MCP
 client usage.
+
+Move 109 reduces MCP-award evidence risk by recording the actual SplunkReady
+MCP stdio JSON-RPC client session used by `mcp-proof`. The tracked proof now
+contains `mcp-client-session.jsonl`, a markdown summary, a typed
+`clientSession` block in `mcp-proof-summary.json`, public-demo export guards,
+submission-copy guards, and a Playwright-verified MCP workbench screenshot.
+Residual MCP risk is no longer "only two tools"; it is the absence of a public
+video/live recording of an external MCP client using the two-server Splunk MCP
++ SplunkReady setup.

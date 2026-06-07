@@ -47,6 +47,12 @@ const checks = [
   ["Devpost hosted MCP proof URL", files.devpost, hostedMcpProofUrl],
   ["Devpost hosted judge proof URL", files.devpost, hostedJudgeProofUrl],
   ["Claim ledger hosted judge proof URL", files.claimLedger, hostedJudgeProofUrl],
+  [
+    "Claim ledger raw MCP client session",
+    files.claimLedger,
+    "The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof."
+  ],
+  ["Claim ledger MCP client session JSONL", files.claimLedger, "submission-evidence/mcp-proof/mcp-client-session.jsonl"],
   ["Demo no LLM vibes", files.demo, "not another LLM judging vibes"],
   ["Demo no mutation", files.demo, "does not mutate Splunk"],
   ["Demo route", files.demo, "splunkready-shell.html#rerun-receipts"],

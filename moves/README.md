@@ -131,6 +131,7 @@ commands, or filesystem paths.
 | P0 | [106](moves106.md) Live security public export redaction guard | 0.5d | Proves live-security proof summaries are redacted before public export. |
 | P0 | [107](moves107.md) Current handoff refresh | 0.5d | Updates current-state docs after package, hosted demo, cleanroom, and redaction work. |
 | P0 | [108](moves108.md) Current goal audit refresh | 0.5d | Refreshes the prompt-to-artifact completion audit without marking the goal complete. |
+| P0 | [109](moves109.md) MCP client session evidence | 0.5d | Tracks the actual MCP JSON-RPC client session behind the MCP proof and surfaces it in the public workbench. |
 
 ## Non-Negotiable Boundaries
 

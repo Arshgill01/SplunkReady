@@ -240,6 +240,22 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
                 ])}
               </section>
               <section class="panel mcp-proof-panel">
+                <h2>MCP client session</h2>
+                ${renderFactTable([
+                  ["Status", summary.clientSession.status],
+                  ["Protocol", summary.clientSession.protocol],
+                  ["Requests", String(summary.clientSession.requestCount)],
+                  ["Responses", String(summary.clientSession.responseCount)],
+                  ["Methods", summary.clientSession.methods.join(" / ")],
+                  ["Resources read", summary.clientSession.resourceUris.join(" / ")],
+                  ["Prompts fetched", summary.clientSession.promptNames.join(" / ")],
+                  ["Tools called", summary.clientSession.toolNames.join(" / ")],
+                  ["Transcript", summary.clientSession.artifactPath],
+                  ["Deterministic authority", summary.clientSession.deterministicAuthority ? "yes" : "no"],
+                  ["Mutation", summary.clientSession.mutation ? "yes" : "no"]
+                ])}
+              </section>
+              <section class="panel mcp-proof-panel">
                 <h2>Certified boundary</h2>
                 ${renderFactTable([
                   ["Boundary", summary.splunkMcpBoundary.transcriptKind],

@@ -1420,6 +1420,21 @@ describe("SplunkReady CLI flow", () => {
         };
         receipt: { path: string; status: string; authoritative: boolean };
       };
+      clientSession: {
+        source: string;
+        status: string;
+        artifactPath: string;
+        markdownPath: string;
+        protocol: string;
+        requestCount: number;
+        responseCount: number;
+        methods: string[];
+        resourceUris: string[];
+        promptNames: string[];
+        toolNames: string[];
+        deterministicAuthority: boolean;
+        mutation: boolean;
+      };
       artifacts: string[];
     };
     const clientWalkthrough = JSON.parse(await readFile(join(outDir, "mcp-client-walkthrough.json"), "utf8")) as {
@@ -1447,6 +1462,8 @@ describe("SplunkReady CLI flow", () => {
         join(outDir, "mcp-proof-summary.md"),
         join(outDir, "mcp-client-walkthrough.json"),
         join(outDir, "mcp-client-walkthrough.md"),
+        join(outDir, "mcp-client-session.jsonl"),
+        join(outDir, "mcp-client-session.md"),
         join(transcriptProofDir, "receipt-external-001.json")
       ])
     });
@@ -1523,8 +1540,41 @@ describe("SplunkReady CLI flow", () => {
           status: "PASS",
           authoritative: true
         }
+      },
+      clientSession: {
+        source: "splunkready-mcp-client-session",
+        status: "PASS",
+        artifactPath: join(outDir, "mcp-client-session.jsonl"),
+        markdownPath: join(outDir, "mcp-client-session.md"),
+        protocol: "stdio-jsonrpc",
+        methods: expect.arrayContaining([
+          "initialize",
+          "tools/list",
+          "resources/list",
+          "resources/read",
+          "prompts/list",
+          "prompts/get",
+          "tools/call"
+        ]),
+        resourceUris: expect.arrayContaining([
+          "splunkready://client-config/splunk-and-splunkready",
+          "splunkready://workflows/splunk-mcp-certification-loop",
+          "splunkready://workflows/mcp-composition-scorecard"
+        ]),
+        promptNames: expect.arrayContaining([
+          "splunkready_splunk_mcp_certification_loop",
+          "splunkready_mcp_composition_review"
+        ]),
+        toolNames: expect.arrayContaining([
+          "splunkready_describe_certification",
+          "splunkready_certify_mcp_transcript"
+        ]),
+        deterministicAuthority: true,
+        mutation: false
       }
     });
+    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(14);
+    expect(summary.clientSession.responseCount).toBe(summary.clientSession.requestCount);
     expect(summary.splunkMcpBoundary.localMcpServerRole).toContain("certification interface");
     expect(summary.splunkMcpBoundary.splunkMcpServerRole).toContain("Splunk MCP Server boundary");
     expect(summary.tools.map((tool) => tool.name)).toEqual([
@@ -1606,6 +1656,8 @@ describe("SplunkReady CLI flow", () => {
       expect.arrayContaining([
         join(outDir, "mcp-client-walkthrough.json"),
         join(outDir, "mcp-client-walkthrough.md"),
+        join(outDir, "mcp-client-session.jsonl"),
+        join(outDir, "mcp-client-session.md"),
         join(transcriptProofDir, "uploaded-mcp-transcript.jsonl"),
         join(transcriptProofDir, "trace-external.json"),
         join(transcriptProofDir, "receipt-external-001.json"),

@@ -54,6 +54,8 @@ try {
     "artifacts/mcp-proof/mcp-proof-summary.json",
     "artifacts/mcp-proof/mcp-client-walkthrough.json",
     "artifacts/mcp-proof/mcp-client-walkthrough.md",
+    "artifacts/mcp-proof/mcp-client-session.jsonl",
+    "artifacts/mcp-proof/mcp-client-session.md",
     "artifacts/suite-proof/artifact-manifest.json",
     "artifacts/suite-proof/suite-proof-summary.json",
     "artifacts/judge-proof/artifact-manifest.json",

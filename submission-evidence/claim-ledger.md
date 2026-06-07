@@ -1,6 +1,6 @@
 # Submission Claim Ledger
 
-Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, and Move 103 public judge-proof evidence.
+Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, and Move 109 raw MCP client-session evidence.
 
 | Claim | Status | Evidence | Verification |
 | --- | --- | --- | --- |
@@ -16,6 +16,7 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 | The MCP category story uses Splunk MCP behavior and SplunkReady certification rather than only a local certifier server. | Supported | `submission-evidence/mcp-proof/mcp-proof-summary.json`; `submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json` | `npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json` |
 | The MCP proof exposes reusable resources and prompts for an agent-driven certification loop. | Supported | `submission-evidence/mcp-proof/mcp-proof-summary.json` lists 8 resources and 5 prompts, including `splunkready://client-config/splunk-and-splunkready`, `splunkready://workflows/splunk-mcp-certification-loop`, `splunkready://workflows/mcp-composition-scorecard`, `splunkready_splunk_mcp_certification_loop`, and `splunkready_mcp_composition_review` | `npm run mcp-proof` |
 | The MCP proof shows a client workflow that uses the existing Splunk MCP Server before SplunkReady certification. | Supported | `submission-evidence/mcp-proof/mcp-client-walkthrough.json`; `submission-evidence/mcp-proof/mcp-client-walkthrough.md`; `submission-evidence/mcp-proof/mcp-proof-summary.json` | `npm run mcp-proof` plus `npm run audit:public-demo-export` |
+| The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof. | Supported | `submission-evidence/mcp-proof/mcp-client-session.jsonl`; `submission-evidence/mcp-proof/mcp-client-session.md`; `submission-evidence/mcp-proof/mcp-proof-summary.json` clientSession block | `npm run mcp-proof` plus `npm run audit:public-demo-export` |
 | The Vite workbench exposes the MCP proof as a first-class judge-visible view. | Supported | `submission-evidence/screenshots/workbench-mcp-proof.png`; `ui/src/render.ts`; `ui/src/artifacts.ts` | Playwright opened `?artifacts=artifacts%2Fmcp-proof#mcp-proof` and captured the screenshot |
 | The public proof export is redacted before sharing. | Supported | `submission-evidence/public-proof-export/public-proof-export-manifest.json`; `submission-evidence/public-proof-export/public-proof-summary.json`; `submission-evidence/screenshots/public-proof-export-proof-browser.png` | Secret scan plus manifest inspection |
 | The refreshed public proof export has a verified manifest. | Supported | `submission-evidence/public-proof-export/proof-manifest.json`; `submission-evidence/public-proof-export/proof-manifest-verification.json` | `npm run splunkready -- verify-manifest --out submission-evidence/public-proof-export --json` |

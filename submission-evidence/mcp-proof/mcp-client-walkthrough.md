@@ -24,7 +24,7 @@ Deterministic authority: yes
   - Evidence: examples/sample-mcp-transcript-pass.jsonl
 - splunkready-certifies: SplunkReady certifies the captured transcript
   - Server: splunkready
-  - Evidence: artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json
+  - Evidence: submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json
 - receipt-is-authoritative: Readiness Receipt is the authoritative verdict
   - Server: splunkready
   - Evidence: certificationStatus=PASS; deterministicAuthority=true; mutation=false
@@ -39,6 +39,6 @@ Deterministic authority: yes
 
 ## Receipt
 
-- Path: artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json
+- Path: submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json
 - Status: PASS
 - Authoritative: yes

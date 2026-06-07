@@ -772,6 +772,23 @@ const mcpProofSummarySchema = z
           .strict()
       })
       .strict(),
+    clientSession: z
+      .object({
+        source: z.literal("splunkready-mcp-client-session"),
+        status: z.enum(["PASS", "FAIL"]),
+        artifactPath: z.string().min(1),
+        markdownPath: z.string().min(1),
+        protocol: z.literal("stdio-jsonrpc"),
+        requestCount: z.number().int().nonnegative(),
+        responseCount: z.number().int().nonnegative(),
+        methods: z.array(z.string().min(1)),
+        resourceUris: z.array(z.string().min(1)),
+        promptNames: z.array(z.string().min(1)),
+        toolNames: z.array(z.string().min(1)),
+        deterministicAuthority: z.boolean(),
+        mutation: z.boolean()
+      })
+      .strict(),
     artifacts: z.array(z.string().min(1)),
     nextCommands: z.array(z.string().min(1))
   })

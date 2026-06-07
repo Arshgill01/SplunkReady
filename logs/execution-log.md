@@ -12020,3 +12020,52 @@ Files changed:
 Open blockers:
 - Hosted CI needs to run after push for Move 108.
 - The overall goal remains open until explicit user approval.
+
+## 2026-06-07 14:39 - Move 109 MCP Client Session Evidence
+
+Scope:
+- Added a raw credential-free SplunkReady MCP stdio JSON-RPC client session
+  transcript to the `mcp-proof` workflow.
+- Added a `clientSession` block to `mcp-proof-summary.json` with request and
+  response counts, methods, resources read, prompts fetched, and tools called.
+- Added `mcp-client-session.jsonl` and `mcp-client-session.md` to generated
+  MCP proof artifacts and tracked submission evidence.
+- Rendered the client-session evidence in the Vite MCP proof workbench view.
+- Required the client-session artifacts in the public demo export audit.
+- Added the raw MCP client-session claim to `audit:submission-copy`.
+- Refreshed `submission-evidence/mcp-proof`, `submission-evidence/screenshots/workbench-mcp-proof.png`,
+  and `submission-evidence/evidence-pack-sha256.txt`.
+- Verified the MCP proof route with Playwright against the regenerated static
+  public demo export: zero console errors and zero failed responses.
+- Did not make LLM, SAIA, or MCP output authoritative.
+- Did not add Splunk write actions.
+- Did not use live Splunk credentials.
+- Did not run `npm publish`.
+- Did not use subagents.
+- Did not read, source, print, or commit `.splunkready*` / `.env*` secret files.
+
+Files changed:
+- `src/workflows/mcp-proof.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `tests/scripts/public-demo-export.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `scripts/audit-public-demo-export.mjs`
+- `scripts/audit-submission-copy.mjs`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/mcp-proof/*`
+- `submission-evidence/screenshots/workbench-mcp-proof.png`
+- `moves/README.md`
+- `moves/moves109.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Hosted CI needs to run after push for Move 109.
+- The next high-value slice is real SAIA/hosted-model proof now that the
+  operator reports cloud connection and token setup are available.
