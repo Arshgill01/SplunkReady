@@ -23,4 +23,4 @@ RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/fixtures ./fixtures
 
-CMD ["sh", "-c", "node dist/src/cli.js mock-splunk-mcp --fixture \"$SPLUNKREADY_MOCK_FIXTURE\" --mock-state \"$SPLUNKREADY_MOCK_STATE\""]
+CMD ["sh", "-c", "node dist/cli.js mock-splunk-mcp --fixture \"$SPLUNKREADY_MOCK_FIXTURE\" --mock-state \"$SPLUNKREADY_MOCK_STATE\""]

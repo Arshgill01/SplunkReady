@@ -1,6 +1,6 @@
 # SplunkReady Submission Evidence
 
-Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, and Move 148 signed receipt-chain plus deterministic replay evidence.
+Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, Move 148 signed receipt-chain plus deterministic replay evidence, and Move 150 signed policy-registry evidence.
 
 This directory is the judge-facing evidence pack. It is tracked in git so it can be inspected from a clean clone without access to ignored local `artifacts/`, `.splunkready*` env files, live credentials, or private deployment details.
 
@@ -10,6 +10,7 @@ This directory is the judge-facing evidence pack. It is tracked in git so it can
 - `receipt-public-key.pem`: public Ed25519 key for verifying the tracked suite proof receipt-chain signature. The private key is not tracked.
 - `live-mock/`: credential-free live-mode proof generated through `live-proof --live-mock`. It exercises the live adapter normalization boundary against the fixture-backed mock Splunk MCP transport and produces a saved-search fail-to-pass proof with `mode: live` and `mutation: false`.
 - `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, records the raw JSON-RPC client session, discovers tools/resources/resource templates/prompts, reads a templated Readiness Receipt resource, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript through both path-based and inline-content MCP tools, checks hosted-model SAIA access through the MCP server in fixture mode, writes a client walkthrough showing existing Splunk MCP investigation followed by SplunkReady certification, and verifies the nested transcript proof manifests.
+- `policy-registry/`: signed default, SOC2, and PCI DSS policy bundles. Each installed policy includes `policy.json` and an Ed25519-backed `policy-manifest.json` with `deterministicAuthority: true` and `mutation: false`.
 - `public-proof-export/`: redacted derivative export generated from a managed workbench run. It includes the public export manifest, summary, audit, receipts, traces, redacted source proof manifest, and manifest verification. It is intentionally not the unredacted source proof.
 - `screenshots/`: Playwright screenshots for the packaged workbench fixture run, trace timeline, MCP proof view, verified public proof export UI, hosted public judge-proof view, and interactive hosted certification route. The earlier Vite-backed fixture screenshot is retained as historical evidence but is not the primary refreshed screenshot.
 - `claim-ledger.md`: public claim to evidence mapping.
@@ -27,6 +28,8 @@ npm run splunkready -- receipt-replay --dir submission-evidence/suite-proof --js
 npm run live-mock-proof
 npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json
 npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-inline-transcript-certification --json
+npm run splunkready -- policy-publish --policy policies/soc2-readiness.policy.json --json
+npm run splunkready -- evaluate --out artifacts/policy-eval --policy pci-dss-readiness --json
 npm run splunkready -- verify-manifest --out submission-evidence/public-proof-export --json
 shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt
 npm run audit:submission-copy
@@ -71,6 +74,9 @@ Expected proof status:
 - public judge proof status: `PASS`
 - public judge proof mutation: `false`
 - public judge proof LLM authority: `deterministic-rule-engine`
+- signed policy registry: default, SOC2, and PCI DSS policy manifests present
+- policy registry signatures: `ed25519`, `SIGNED`
+- policy evaluation receipt identity: `pci-dss-readiness`
 
 ## Redaction Boundary
 

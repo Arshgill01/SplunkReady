@@ -31,6 +31,7 @@ import {
   type ManifestVerificationWorkflowResult
 } from "../workflows/manifest-verification.js";
 import { runMcpProofWorkflow } from "../workflows/mcp-proof.js";
+import { installPolicy, publishPolicy } from "../policies/registry.js";
 import { runProofAuditWorkflow } from "../workflows/proof-audit.js";
 import { initializeReceiptKeys, runReceiptChainWorkflow, runReceiptReplayWorkflow } from "../workflows/receipt-chain.js";
 import { runSuiteProofWorkflow } from "../workflows/suite-proof.js";
@@ -116,6 +117,44 @@ export const receiptReplayCommand = async (options: CliOptions): Promise<string[
 
 export const keysInitCommand = async (options: CliOptions): Promise<string[]> => {
   return initializeReceiptKeys(options.out);
+};
+
+export const policyPublishCommand = async (options: CliOptions): Promise<string[]> => {
+  if (!options.policy) {
+    throw new Error("policy-publish requires --policy <path|name>.");
+  }
+
+  const result = await publishPolicy({
+    policyRef: options.policy,
+    outDir: options.out || undefined,
+    privateKeyPath: options.privateKey || undefined,
+    publicKeyPath: options.publicKey || undefined
+  });
+
+  if (result.manifest.signature.status === "INVALID") {
+    throw new Error(`policy-publish failed to verify the generated signature for ${result.policy.id}.`);
+  }
+
+  return result.artifacts;
+};
+
+export const policyInstallCommand = async (options: CliOptions): Promise<string[]> => {
+  if (!options.policy) {
+    throw new Error("policy-install requires --policy <path|name>.");
+  }
+
+  const result = await installPolicy({
+    policyRef: options.policy,
+    outDir: options.out,
+    privateKeyPath: options.privateKey || undefined,
+    publicKeyPath: options.publicKey || undefined
+  });
+
+  if (result.manifest.signature.status === "INVALID") {
+    throw new Error(`policy-install failed to verify the generated signature for ${result.policy.id}.`);
+  }
+
+  return result.artifacts;
 };
 
 export const certificationIndexCommand = async (options: CliOptions): Promise<string[]> => {

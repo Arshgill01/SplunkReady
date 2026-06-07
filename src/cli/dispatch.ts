@@ -23,6 +23,8 @@ import {
   keysInitCommand,
   llmProofCommand,
   mcpProofCommand,
+  policyInstallCommand,
+  policyPublishCommand,
   proofAuditCommand,
   receiptReplayCommand,
   receiptChainCommand,
@@ -84,6 +86,10 @@ export const runCliCommand = async (command: string, options: CliOptions): Promi
     artifacts = await signReceiptCommand(options);
   } else if (command === "keys-init") {
     artifacts = await keysInitCommand(options);
+  } else if (command === "policy-publish") {
+    artifacts = await policyPublishCommand(options);
+  } else if (command === "policy-install") {
+    artifacts = await policyInstallCommand(options);
   } else if (command === "certification-index") {
     artifacts = await certificationIndexCommand(options);
   } else if (command === "judge-proof") {

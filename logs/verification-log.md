@@ -14968,3 +14968,93 @@ Result:
   0 failing latest verdicts.
 - PASS for submission-copy audit with 133 required claims.
 - PASS for final `git diff --check`.
+
+## 2026-06-07T18:41:11Z - Move 150 signed multi-tenant policy registry
+
+Commands run:
+
+- `npm run build`
+- `tmp=$(mktemp -d /tmp/splunkready-policy-smoke-XXXXXX); node dist/src/cli.js policy-publish --policy policies/soc2-readiness.policy.json --out "$tmp" --json; node dist/src/cli.js compile --out "$tmp/eval" --json; node dist/src/cli.js evaluate --out "$tmp/eval" --policy pci-dss-readiness --json; node dist/src/cli.js receipt --out "$tmp/eval" --json; jq '.policy' "$tmp/eval/receipt-before-001.json"`
+- `npm run build && npx vitest run tests/policies/registry.test.ts tests/cli/flow.test.ts --testNamePattern "policy"`
+- `npm run build && rm -rf submission-evidence/policy-registry; node dist/src/cli.js policy-install --policy default-readiness --out submission-evidence --json; node dist/src/cli.js policy-install --policy soc2-readiness --out submission-evidence --json; node dist/src/cli.js policy-install --policy pci-dss-readiness --out submission-evidence --json; find submission-evidence/policy-registry -maxdepth 3 -type f | sort`
+- `npm run build && npx vitest run tests/policies/registry.test.ts tests/cli/flow.test.ts tests/scripts/submission-copy-audit.test.ts --testNamePattern "policy|submission copy" && npm run audit:submission-copy`
+- `docker version`
+- `docker build -f Dockerfile.mock-splunk-mcp -t splunkready/mock-splunk-mcp:local .`
+- `printf ... | timeout 10 docker run --rm -i splunkready/mock-splunk-mcp:local`
+- `docker compose -f docker-compose.mock.yml config >/tmp/splunkready-compose-config.yml && docker compose -f docker-compose.mock.yml build mock-splunk-mcp`
+- `node dist/src/cli.js compile --out artifacts/policy-eval --json`
+- `node dist/src/cli.js evaluate --out artifacts/policy-eval --policy pci-dss-readiness --json`
+- `node dist/src/cli.js receipt --out artifacts/policy-eval --json`
+- `node dist/src/cli.js proof-audit --out artifacts/policy-eval --json`
+- `npm run ui:build`
+- `bash "$PWCLI" open 'http://127.0.0.1:4182/dist-ui/index.html?artifacts=..%2Fartifacts%2Fpolicy-eval#receipt'`
+- `bash "$PWCLI" snapshot`
+- `bash "$PWCLI" screenshot --filename output/playwright/move150-policy-receipt-ui.png --full-page`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run check`
+
+Results:
+
+- PASS for TypeScript build after policy schema, CLI, receipt, and UI changes.
+- Initial policy evidence install failed for `default-readiness` because policy
+  lookup only resolved file names, not policy IDs. Fixed policy lookup to scan
+  bundled policy files and resolve by `id`.
+- PASS for policy CLI smoke. `receipt-before-001.json` included:
+  `policy.id: "pci-dss-readiness"`, policy name
+  `PCI DSS Splunk Agent Readiness`, version `2026.06.07`, and a SHA-256 policy
+  hash.
+- PASS for focused policy tests:
+  - 2 test files passed;
+  - 4 tests passed with the `policy` test filter.
+- PASS for focused policy/submission-copy tests:
+  - 3 test files passed;
+  - 7 tests passed with the `policy|submission copy` filter.
+- PASS for `npm run audit:submission-copy` with 146 required claims.
+- PASS for Docker daemon availability check via `docker version`.
+- Initial Docker container smoke failed because `Dockerfile.mock-splunk-mcp`
+  invoked `/app/dist/src/cli.js`, but the Docker build-stage output is
+  `/app/dist/cli.js`. Fixed the Dockerfile CMD.
+- PASS for `docker build -f Dockerfile.mock-splunk-mcp -t splunkready/mock-splunk-mcp:local .`.
+- PASS for container stdio JSON-RPC smoke:
+  - `initialize` returned `splunkready-mock-splunk-mcp`;
+  - `tools/list` returned read-only Splunk and SAIA advisory tools;
+  - `splunk_run_saved_search` returned saved-search ref
+    `saved-search-lateral-movement`, result count `3`, evidence refs
+    `evt-102`, `evt-118`, and `evt-141`.
+- PASS for `docker compose -f docker-compose.mock.yml config`.
+- PASS for `docker compose -f docker-compose.mock.yml build mock-splunk-mcp`.
+- PASS for Playwright policy receipt UI smoke:
+  - opened the built Vite UI against `artifacts/policy-eval`;
+  - snapshot showed `Policy PCI DSS Splunk Agent Readiness 2026.06.07 / pci-dss-readiness`;
+  - screenshot saved to `output/playwright/move150-policy-receipt-ui.png`.
+- Playwright limitation: the temp `artifacts/policy-eval` bundle was before-phase
+  only, so optional missing-artifact fetches logged 404 console entries. The
+  policy receipt row rendered correctly.
+- PASS for refreshed `submission-evidence/evidence-pack-sha256.txt`, including
+  all six policy-registry evidence files.
+
+Final gate:
+
+- `npm run check`
+
+Result:
+
+- PASS for scaffold verification with 85 waves and 2260 project files.
+- PASS for runtime contracts with 19 rules, 4 fixture missions, and 20 evidence refs.
+- PASS for TypeScript build.
+- PASS for production UI build.
+- PASS for public demo export audit with 228 files and `mutation=false`.
+- PASS for package readiness audit with 177 packed files checked.
+- PASS for package installability audit:
+  - `splunkready-0.1.2.tgz` installed;
+  - clean `npx splunkready judge-proof` returned `PASS`;
+  - clean `npx splunkready mcp` initialized.
+- PASS for full Vitest suite:
+  - 64 test files passed;
+  - 404 tests passed.
+- PASS for secret env ignore audit.
+- PASS for reviewer inbox audit with 85 groups, 5 pass-with-concerns files, and
+  0 failing latest verdicts.
+- PASS for submission-copy audit with 146 required claims.
+- PASS for final `git diff --check`.

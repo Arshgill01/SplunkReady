@@ -23,6 +23,7 @@ export interface GenerateReceiptInput {
   id: string;
   agent: ReceiptAgent;
   environment: EnvironmentContract;
+  policy?: ReadinessReceipt["policy"];
   missionSuiteVersion: string;
   missions: Mission[];
   traceEvents: TraceEvent[];
@@ -116,6 +117,9 @@ export const renderReceiptMarkdown = (
     "",
     `- Agent: ${receipt.agent.name} ${receipt.agent.version}`,
     `- Environment: ${receipt.environment.name} (\`${receipt.environment.id}\`)`,
+    ...(receipt.policy
+      ? [`- Policy: ${receipt.policy.name} ${receipt.policy.version} (\`${receipt.policy.id}\`)`]
+      : []),
     `- Mode: ${receipt.mode}`,
     `- Contract version: ${receipt.contractVersion}`,
     `- Mission suite: ${receipt.missionSuiteVersion}`,
@@ -173,6 +177,7 @@ export const generateReadinessReceipt = (input: GenerateReceiptInput): Generated
     id: input.id,
     agent: input.agent,
     environment: { id: input.environment.id, name: input.environment.name },
+    policy: input.policy,
     mode: input.environment.mode,
     contractVersion: input.environment.version,
     missionSuiteVersion: input.missionSuiteVersion,

@@ -14485,3 +14485,73 @@ Result:
 - GitHub Actions `CI / npm run check` passed in 1m16s.
 - The remote canonical gate passed.
 - The remote credential-free live mock proof passed.
+
+## 2026-06-07T18:41:11Z - Move 150 signed multi-tenant policy registry
+
+Intent:
+
+- Turn built-in deterministic readiness standards into named, versioned, signed
+  policy bundles that can be shared and cited by Readiness Receipts.
+
+Actions:
+
+- Added `policies/default.policy.json`,
+  `policies/soc2-readiness.policy.json`, and
+  `policies/pci-dss-readiness.policy.json`.
+- Added `src/policies/registry.ts` with policy schema validation, canonical
+  policy hashing, Ed25519 manifest signing, policy lookup by path/file name/id,
+  policy install, and mission-policy fail-closed validation.
+- Added `policy-publish` and `policy-install` CLI commands.
+- Added `evaluate --policy <name|path>` support. The command validates policy
+  rule coverage for the active mission, writes `policy-evaluation.json`, and
+  preserves deterministic rule authority.
+- Extended `ReadinessReceipt` with optional policy id/name/version/hash and
+  rendered that policy identity in generated Markdown, the static shell receipt
+  table, and the Vite receipt route.
+- Added `docs/policy-authoring.md`.
+- Added signed tracked evidence under `submission-evidence/policy-registry/`.
+- Updated `README.md`, `submission-evidence/README.md`,
+  `submission-evidence/claim-ledger.md`, `scripts/audit-submission-copy.mjs`,
+  and the submission-copy audit fixture.
+- Fixed `Dockerfile.mock-splunk-mcp` to run `dist/cli.js` inside the container,
+  matching the Docker build-stage output layout.
+
+Files changed:
+
+- `Dockerfile.mock-splunk-mcp`
+- `README.md`
+- `docs/policy-authoring.md`
+- `moves/moves150.md`
+- `package.json`
+- `policies/default.policy.json`
+- `policies/pci-dss-readiness.policy.json`
+- `policies/soc2-readiness.policy.json`
+- `scripts/audit-submission-copy.mjs`
+- `src/cli.ts`
+- `src/cli/dispatch.ts`
+- `src/cli/options.ts`
+- `src/cli/proof-commands.ts`
+- `src/policies/registry.ts`
+- `src/receipts/generator.ts`
+- `src/schemas/core.ts`
+- `src/ui/shell.ts`
+- `src/workflows/certification-actions.ts`
+- `src/workflows/receipt-chain.ts`
+- `submission-evidence/README.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/evidence-pack-sha256.txt`
+- `submission-evidence/policy-registry/**`
+- `tests/cli/flow.test.ts`
+- `tests/policies/registry.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `ui/src/render.ts`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Notes:
+
+- Policy JSON is intentionally metadata and rule selection over existing
+  deterministic rule implementations. It does not introduce an executable policy
+  DSL or LLM-based pass/fail path.
+- The mock Splunk MCP Docker image is now locally build- and smoke-validated.

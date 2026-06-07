@@ -667,6 +667,60 @@ describe("SplunkReady CLI flow", () => {
     });
   });
 
+  it("publishes signed policy bundles and records policy identity in receipts", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-cli-policy-"));
+    const evalDir = join(outDir, "eval");
+
+    const publish = parseCliJsonOutput(
+      (await runCli(["policy-publish", "--policy", "soc2-readiness", "--out", outDir, "--json"])).stdout
+    );
+
+    expect(publish).toMatchObject({
+      command: "policy-publish",
+      status: "PASS",
+      artifacts: expect.arrayContaining([join(outDir, "soc2-readiness.policy-manifest.json")])
+    });
+
+    const manifest = JSON.parse(await readFile(join(outDir, "soc2-readiness.policy-manifest.json"), "utf8")) as {
+      policyHash: string;
+      deterministicAuthority: boolean;
+      mutation: boolean;
+      signature: { algorithm: string; status: string };
+    };
+
+    expect(manifest).toMatchObject({
+      deterministicAuthority: true,
+      mutation: false,
+      signature: { algorithm: "ed25519", status: "SIGNED" }
+    });
+    expect(manifest.policyHash).toMatch(/^[a-f0-9]{64}$/);
+
+    await runCli(["compile", "--out", evalDir, "--json"]);
+    const evaluate = parseCliJsonOutput(
+      (await runCli(["evaluate", "--out", evalDir, "--policy", "pci-dss-readiness", "--json"])).stdout
+    );
+
+    expect(evaluate).toMatchObject({
+      command: "evaluate",
+      status: "PASS",
+      artifacts: expect.arrayContaining([join(evalDir, "policy-evaluation.json")])
+    });
+
+    await runCli(["receipt", "--out", evalDir, "--json"]);
+    const receipt = JSON.parse(await readFile(join(evalDir, "receipt-before-001.json"), "utf8")) as {
+      policy?: { id: string; name: string; version: string; hash: string };
+    };
+    const markdown = await readFile(join(evalDir, "receipt-before-001.md"), "utf8");
+
+    expect(receipt.policy).toMatchObject({
+      id: "pci-dss-readiness",
+      name: "PCI DSS Splunk Agent Readiness",
+      version: "2026.06.07",
+      hash: expect.stringMatching(/^[a-f0-9]{64}$/)
+    });
+    expect(markdown).toContain("Policy: PCI DSS Splunk Agent Readiness 2026.06.07 (`pci-dss-readiness`)");
+  });
+
   it("runs a multi-mission fixture proof across security and observability", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-suite-proof-"));
 

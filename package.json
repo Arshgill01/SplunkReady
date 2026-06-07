@@ -49,6 +49,7 @@
     "dist/src",
     "examples",
     "fixtures",
+    "policies",
     "README.md"
   ],
   "scripts": {

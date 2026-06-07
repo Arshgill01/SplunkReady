@@ -208,6 +208,15 @@ export const readinessReceiptSchema = z
     id: idSchema,
     agent: z.object({ name: z.string().min(1), version: z.string().min(1) }).strict(),
     environment: z.object({ id: idSchema, name: z.string().min(1) }).strict(),
+    policy: z
+      .object({
+        id: idSchema,
+        name: z.string().min(1),
+        version: z.string().min(1),
+        hash: sha256HexSchema.optional()
+      })
+      .strict()
+      .optional(),
     mode: modeSchema,
     contractVersion: z.string().min(1),
     missionSuiteVersion: z.string().min(1),

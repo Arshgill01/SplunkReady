@@ -348,6 +348,41 @@ npm run splunkready -- sign-receipt \
 The submission evidence commits only
 `submission-evidence/receipt-public-key.pem`, never the private key.
 
+### Signed Policy Registry
+
+SplunkReady policies are named, versioned JSON bundles that select existing
+deterministic grader rules. They make readiness standards shareable without
+turning policy JSON, LLM output, or SAIA output into the pass/fail judge.
+
+Publish a signed policy manifest:
+
+```bash
+npm run splunkready -- policy-publish \
+  --policy policies/soc2-readiness.policy.json \
+  --json
+```
+
+Evaluate the default fixture mission against a named policy and record policy
+identity in the Readiness Receipt:
+
+```bash
+npm run splunkready -- compile --out artifacts/policy-eval --json
+npm run splunkready -- evaluate \
+  --out artifacts/policy-eval \
+  --policy pci-dss-readiness \
+  --json
+npm run splunkready -- receipt --out artifacts/policy-eval --json
+```
+
+The receipt will include `policy.id: "pci-dss-readiness"` plus the policy
+version and canonical policy hash. The tracked examples are
+`policies/default.policy.json`, `policies/soc2-readiness.policy.json`, and
+`policies/pci-dss-readiness.policy.json`; signed installed copies are tracked in
+`submission-evidence/policy-registry/`. See
+[docs/policy-authoring.md](docs/policy-authoring.md) for the authoring contract.
+For a compact smoke path, the important step is
+`evaluate --policy pci-dss-readiness` before generating the receipt.
+
 See [examples/README.md](examples/README.md) for runnable external-trace capture scripts and generated sample receipts for both `NOT READY` and `READY / 100` external agent traces.
 
 If an external agent only logs Splunk MCP JSON-RPC calls, certify the transcript directly:

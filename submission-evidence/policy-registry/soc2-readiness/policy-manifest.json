@@ -1,0 +1,20 @@
+{
+  "source": "splunkready-policy-registry",
+  "policy": {
+    "id": "soc2-readiness",
+    "name": "SOC2 Splunk Agent Readiness",
+    "version": "2026.06.07"
+  },
+  "policyPath": "policies/soc2-readiness.policy.json",
+  "policyHash": "9919ccea9d85493039e07a6ef9f8633e906e620cc6f4448327029a8089eaaefe",
+  "signature": {
+    "algorithm": "ed25519",
+    "signedPayload": "policyHash",
+    "status": "SIGNED",
+    "signatureBase64": "oGh4LPaNQb+251vMUyT+W6DtjXI2A8J7SqBKHa5Hyp1Kd3xBoR5ZLH9NnoOV9/T1ziuW0rGFDKcVbj1ZyhMjBQ==",
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAMHjh5W55mS64YlYXZG21FUaYqbAf/h3FivpDMmcplWs=\n-----END PUBLIC KEY-----\n",
+    "publicKeySha256": "a755a33d0e4ac94996014c9232188e8aad2cff7f1d12a0a7a932eb77229c988e"
+  },
+  "deterministicAuthority": true,
+  "mutation": false
+}

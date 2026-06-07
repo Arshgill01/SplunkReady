@@ -29,6 +29,13 @@ import { createSplStructuralRules } from "../grader/spl.js";
 import { parseMissionDefinition, type MissionDefinition } from "../missions/dsl.js";
 import { compileAgentPolicy, type AgentPolicy } from "../policy/compiler.js";
 import { generatePolicyPatch } from "../policy/patch.js";
+import {
+  loadPolicyBundle,
+  policyIdentityFor,
+  publishPolicy,
+  validatePolicyForMission,
+  type PolicyIdentity
+} from "../policies/registry.js";
 import { generateReadinessReceipt } from "../receipts/generator.js";
 import {
   environmentContractSchema,
@@ -59,6 +66,7 @@ export interface CertificationActionOptions {
   requirePass?: boolean;
   liveMock?: boolean;
   mockState?: "ok" | "degraded" | "route-not-found";
+  policy?: string;
 }
 
 interface FirewallBlockReport {
@@ -124,6 +132,17 @@ const loadTrace = async (outDir: string, phase: string): Promise<TraceEvent[]> =
 
 const loadViolations = async (outDir: string, phase: string): Promise<Violation[]> =>
   readJson(join(outDir, `violations-${phase}.json`), `${phase} violations`);
+
+const loadPolicyIdentity = async (outDir: string): Promise<PolicyIdentity | undefined> => {
+  const policyPath = join(outDir, "policy-evaluation.json");
+
+  if (!(await exists(policyPath))) {
+    return undefined;
+  }
+
+  const parsed = await readJson<{ policy?: PolicyIdentity }>(policyPath, "policy evaluation");
+  return parsed.policy;
+};
 
 const allRules = (): GraderRule[] => [
   ...createSplStructuralRules(),
@@ -378,6 +397,21 @@ export const evaluateCommand = async (
   const baseAdapter = await createSplunkAccessAdapter(options, env);
   const contract = await loadContract(options.out);
   const mission = await loadMission(options.mission);
+  let policyIdentity: PolicyIdentity | undefined;
+  if (options.policy) {
+    const { policy } = await loadPolicyBundle(options.policy);
+    const published = await publishPolicy({ policyRef: options.policy, outDir: options.out });
+
+    validatePolicyForMission(policy, mission);
+    policyIdentity = policyIdentityFor(policy, published.manifest.policyHash);
+    await writeJson(join(options.out, "policy-evaluation.json"), {
+      source: "splunkready-policy-evaluation",
+      policy: policyIdentity,
+      policyManifest: published.artifacts[0],
+      deterministicAuthority: true,
+      mutation: false
+    });
+  }
   const policy = options.firewall ? await readJson<AgentPolicy>(join(options.out, "agent-policy.json"), "agent policy") : undefined;
   const adapter = policy ? maybeWrapFirewall(baseAdapter, contract, policy, options) : baseAdapter;
   const agent = llmEnabled(env) ? createLlmSpecimenAgent(contract, options, env) : new NaiveSpecimenAgent();
@@ -401,6 +435,7 @@ export const evaluateCommand = async (
   await writeJson(join(options.out, "score-before.json"), score);
 
   return [
+    ...(policyIdentity ? [join(options.out, "policy-evaluation.json")] : []),
     join(options.out, "trace-before.json"),
     join(options.out, "violations-before.json"),
     join(options.out, "score-before.json")
@@ -415,11 +450,13 @@ export const receiptCommand = async (
   const mission = await loadMission(options.mission);
   const traceEvents = await loadTrace(options.out, options.phase);
   const violations = await loadViolations(options.out, options.phase);
+  const policyIdentity = await loadPolicyIdentity(options.out);
   const receiptId = `receipt-${options.phase}-001`;
   const generated = generateReadinessReceipt({
     id: receiptId,
     agent: specimenAgentDescriptor(options, env),
     environment: contract,
+    policy: policyIdentity,
     missionSuiteVersion: "security-readiness-1",
     missions: [mission],
     traceEvents,
@@ -487,6 +524,7 @@ export const rerunCommand = async (
   const beforeReceipt = readinessReceiptSchema.safeParse(
     await readJson(join(options.out, "receipt-before-001.json"), "before receipt")
   );
+  const policyIdentity = await loadPolicyIdentity(options.out);
   const resolvedViolations = beforeReceipt.success
     ? beforeReceipt.data.violations.filter((violationId) => !violations.some((violation) => violation.id === violationId))
     : [];
@@ -494,6 +532,7 @@ export const rerunCommand = async (
     id: "receipt-after-001",
     agent: specimenAgentDescriptor(options, env),
     environment: contract,
+    policy: policyIdentity,
     missionSuiteVersion: "security-readiness-1",
     missions: [mission],
     traceEvents: run.traceEvents,

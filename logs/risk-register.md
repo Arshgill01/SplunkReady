@@ -926,3 +926,12 @@ Splunk MCP Dockerfile and compose file remain source-only packaging until a
 machine with a running Docker daemon verifies the image build and container
 smoke. Keep this open before making any claim that the mock server image itself
 is CI-validated.
+
+Move 150 closes the local Docker validation gap from Move 147. Docker Desktop
+was running, `docker build -f Dockerfile.mock-splunk-mcp -t
+splunkready/mock-splunk-mcp:local .` passed, a container stdio JSON-RPC smoke
+passed for `initialize`, `tools/list`, and `splunk_run_saved_search`, and
+`docker compose -f docker-compose.mock.yml config` plus
+`docker compose -f docker-compose.mock.yml build mock-splunk-mcp` passed.
+Residual risk: this is local Docker validation, not a remote CI Docker build
+unless CI is later extended to run Docker.

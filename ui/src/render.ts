@@ -378,6 +378,10 @@ const renderReceiptPanel = (receipt: ReadinessReceipt | undefined, title: string
     return `<section class="panel"><h2>${value(title)}</h2><p class="empty">Receipt artifact not loaded.</p></section>`;
   }
 
+  const policyRows: Array<[string, unknown]> = receipt.policy
+    ? [["Policy", `${receipt.policy.name} ${receipt.policy.version} / ${receipt.policy.id}`]]
+    : [];
+
   return `<section class="panel">
     <h2>${value(title)}</h2>
     ${renderFactTable([
@@ -385,6 +389,7 @@ const renderReceiptPanel = (receipt: ReadinessReceipt | undefined, title: string
       ["Verdict", receipt.verdict],
       ["Score", receipt.score],
       ["Contract", `${receipt.environment.id} / ${receipt.contractVersion}`],
+      ...policyRows,
       ["Trace refs", receipt.traceRefs.length],
       ["Evidence refs", receipt.evidenceRefs.length],
       ["Violations", receipt.violations.length]
@@ -1442,6 +1447,9 @@ const renderPolicyFirewall = (bundle: UiArtifactBundle, options: RenderOptions):
 
 const renderReceipt = (bundle: UiArtifactBundle, options: RenderOptions): string => {
   const receipt = bundle.receipt;
+  const policyRows: Array<[string, unknown]> = receipt?.policy
+    ? [["Policy", `${receipt.policy.name} ${receipt.policy.version} / ${receipt.policy.id}`]]
+    : [];
 
   return `<main class="view" data-view="receipt">
     <section class="workbench">
@@ -1458,6 +1466,7 @@ const renderReceipt = (bundle: UiArtifactBundle, options: RenderOptions): string
               ["Verdict", receipt.verdict],
               ["Score", receipt.score],
               ["Contract", `${receipt.environment.id} / ${receipt.contractVersion}`],
+              ...policyRows,
               ["Trace refs", receipt.traceRefs.length],
               ["Evidence refs", receipt.evidenceRefs.length],
               ["Violations", receipt.violations.length]

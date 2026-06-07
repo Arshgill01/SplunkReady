@@ -422,6 +422,7 @@ const replayReceipt = async (dir: string, relativePath: string): Promise<Receipt
     id: sourceReceipt.id,
     agent: sourceReceipt.agent,
     environment,
+    policy: sourceReceipt.policy,
     missionSuiteVersion: sourceReceipt.missionSuiteVersion,
     missions,
     traceEvents,

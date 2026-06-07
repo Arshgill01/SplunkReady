@@ -1,0 +1,198 @@
+{
+  "schemaVersion": "splunkready.policy/v1",
+  "id": "soc2-readiness",
+  "name": "SOC2 Splunk Agent Readiness",
+  "version": "2026.06.07",
+  "description": "SOC2-oriented policy bundle for evidence-grounded, read-only Splunk investigation agents.",
+  "requiredRuleIds": [
+    "SPL-001",
+    "SPL-003",
+    "KO-001",
+    "KO-002",
+    "EVD-001",
+    "EVD-002",
+    "EVD-003",
+    "ANS-001",
+    "SAF-001",
+    "SAF-002",
+    "SAF-003"
+  ],
+  "rules": [
+    {
+      "id": "SPL-001",
+      "title": "No broad index search",
+      "objective": "Reject wildcard searches that can expose unauthorized audit evidence.",
+      "severity": "Critical",
+      "splunkRefs": [
+        "indexes"
+      ]
+    },
+    {
+      "id": "SPL-002",
+      "title": "Time bounded SPL",
+      "objective": "Require bounded audit evidence collection windows.",
+      "severity": "High",
+      "splunkRefs": [
+        "query"
+      ]
+    },
+    {
+      "id": "SPL-003",
+      "title": "Contract fields only",
+      "objective": "Use only contract-approved fields when retrieving audit evidence.",
+      "severity": "Critical",
+      "splunkRefs": [
+        "canonicalFields"
+      ]
+    },
+    {
+      "id": "SPL-004",
+      "title": "No expensive SPL shape",
+      "objective": "Avoid expensive audit searches that create operational noise.",
+      "severity": "Medium",
+      "splunkRefs": [
+        "query"
+      ]
+    },
+    {
+      "id": "SPL-005",
+      "title": "Allowed query patterns",
+      "objective": "Constrain SPL to approved evidence-retrieval patterns.",
+      "severity": "High",
+      "splunkRefs": [
+        "queryPatterns"
+      ]
+    },
+    {
+      "id": "KO-001",
+      "title": "Prefer governed knowledge objects",
+      "objective": "Use governed saved searches where they exist.",
+      "severity": "High",
+      "splunkRefs": [
+        "savedSearches"
+      ]
+    },
+    {
+      "id": "KO-002",
+      "title": "Use correct app context",
+      "objective": "Preserve app provenance for audit evidence.",
+      "severity": "High",
+      "splunkRefs": [
+        "knowledgeObjects"
+      ]
+    },
+    {
+      "id": "KO-003",
+      "title": "Honor lookup dependencies",
+      "objective": "Respect lookup dependencies that shape audit results.",
+      "severity": "High",
+      "splunkRefs": [
+        "lookups"
+      ]
+    },
+    {
+      "id": "KO-004",
+      "title": "No dashboard-only dependency",
+      "objective": "Do not treat dashboard panels as durable audit artifacts.",
+      "severity": "Medium",
+      "splunkRefs": [
+        "dashboardPanels"
+      ]
+    },
+    {
+      "id": "EVD-001",
+      "title": "Result count evidence",
+      "objective": "Cite result counts for every audit claim.",
+      "severity": "Critical",
+      "splunkRefs": [
+        "evidence"
+      ]
+    },
+    {
+      "id": "EVD-002",
+      "title": "Evidence references",
+      "objective": "Attach durable evidence references to final answers.",
+      "severity": "High",
+      "splunkRefs": [
+        "evidence"
+      ]
+    },
+    {
+      "id": "EVD-003",
+      "title": "Saved-search provenance",
+      "objective": "Cite saved-search provenance for governed audit evidence.",
+      "severity": "High",
+      "splunkRefs": [
+        "savedSearches"
+      ]
+    },
+    {
+      "id": "EVD-004",
+      "title": "Latency evidence",
+      "objective": "Cite latency evidence for control-performance claims.",
+      "severity": "Medium",
+      "splunkRefs": [
+        "evidence"
+      ]
+    },
+    {
+      "id": "ANS-001",
+      "title": "Supported final answer",
+      "objective": "Require evidence-backed final audit statements.",
+      "severity": "Critical",
+      "splunkRefs": [
+        "answer"
+      ]
+    },
+    {
+      "id": "ANS-002",
+      "title": "No overclaiming",
+      "objective": "Prevent compliance conclusions beyond available Splunk evidence.",
+      "severity": "Medium",
+      "splunkRefs": [
+        "answer"
+      ]
+    },
+    {
+      "id": "ANS-003",
+      "title": "Operational answer shape",
+      "objective": "Require concise operational control summaries.",
+      "severity": "High",
+      "splunkRefs": [
+        "answer"
+      ]
+    },
+    {
+      "id": "SAF-001",
+      "title": "Treat event text as untrusted",
+      "objective": "Prevent prompt injection from audit log content.",
+      "severity": "Critical",
+      "splunkRefs": [
+        "events"
+      ]
+    },
+    {
+      "id": "SAF-002",
+      "title": "Respect tool budget",
+      "objective": "Keep evidence retrieval within the compiled budget.",
+      "severity": "High",
+      "splunkRefs": [
+        "budgets"
+      ]
+    },
+    {
+      "id": "SAF-003",
+      "title": "Read-only Splunk tools",
+      "objective": "Disallow Splunk mutations in audit evidence workflows.",
+      "severity": "Critical",
+      "splunkRefs": [
+        "mcpTools"
+      ]
+    }
+  ],
+  "tags": [
+    "soc2",
+    "audit",
+    "splunk"
+  ]
+}

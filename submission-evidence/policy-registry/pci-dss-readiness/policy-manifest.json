@@ -1,0 +1,20 @@
+{
+  "source": "splunkready-policy-registry",
+  "policy": {
+    "id": "pci-dss-readiness",
+    "name": "PCI DSS Splunk Agent Readiness",
+    "version": "2026.06.07"
+  },
+  "policyPath": "policies/pci-dss-readiness.policy.json",
+  "policyHash": "ecef938107a9fae6777c7e36e850fb17625c6f064af2d2fb3cad74cb7f56c59e",
+  "signature": {
+    "algorithm": "ed25519",
+    "signedPayload": "policyHash",
+    "status": "SIGNED",
+    "signatureBase64": "ROJMK2Mu8w7gH9qrSY5LEG9Q97QuAPrFF5pY0jSmAFhFfsSCfG+lcGiQVVgArizkNyBTnuZUoswjUKy3wzA8Bg==",
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAuBD1ODZGPzXE7emuAmlHvUrUvXtgub6dVyYkw07T/bc=\n-----END PUBLIC KEY-----\n",
+    "publicKeySha256": "a58e85a01ee0afb336c112cabd806a5c84c8b555ee66b35b0a0528b53ae8eeb5"
+  },
+  "deterministicAuthority": true,
+  "mutation": false
+}

@@ -1,0 +1,20 @@
+{
+  "source": "splunkready-policy-registry",
+  "policy": {
+    "id": "default-readiness",
+    "name": "Default SplunkReady Readiness",
+    "version": "2026.06.07"
+  },
+  "policyPath": "policies/default.policy.json",
+  "policyHash": "b4cd2167cff5d51b7e95106e712571e97f30afad8079d2161e48feeb6583d8e3",
+  "signature": {
+    "algorithm": "ed25519",
+    "signedPayload": "policyHash",
+    "status": "SIGNED",
+    "signatureBase64": "awyGW3J9S5ikVnEY1ZIXOYAqddPFrVX2P+cU+5Rtu8oJ8nIsbsJiz9Sx1GSfxBrWorJ3ziddNKE7RzWzdH/2AA==",
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAAgm/iolfPvlAZ6X3twcIslgJKH+b4eDimh5Ge/2jtWs=\n-----END PUBLIC KEY-----\n",
+    "publicKeySha256": "5feb88a942959fcf7fa4e9e944ba7bc3edebe08c16197308d103f08b9d384696"
+  },
+  "deterministicAuthority": true,
+  "mutation": false
+}

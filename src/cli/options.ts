@@ -21,6 +21,7 @@ export interface CliOptions {
   requireFailToPass: boolean;
   trace: string;
   transcript: string;
+  policy: string;
   publicKey: string;
   privateKey: string;
   agentName: string;
@@ -63,6 +64,8 @@ Commands:
   receipt-replay --dir <dir> [--json]
   sign-receipt --dir <dir> --private-key <path> --public-key <path> [--json]
   keys init --out <dir> [--json]
+  policy-publish --policy <path|name> [--out <dir>] [--private-key <path> --public-key <path>] [--json]
+  policy-install --policy <path|name> --out <dir> [--private-key <path> --public-key <path>] [--json]
   certification-index --proof-dirs <dir[,dir]> --out <dir> [--require-pass true|false] [--json]
   judge-proof --out <dir> [--include-llm-proof true|false] [--json]
   mcp       Start the SplunkReady stdio MCP server
@@ -106,6 +109,7 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
   requireFailToPass: false,
   trace: "",
   transcript: "",
+  policy: "",
   publicKey: "",
   privateKey: "",
   agentName: "External Splunk MCP Agent",
@@ -227,6 +231,8 @@ export const parseArgs = (argv: string[]): { command: string; options: CliOption
       options.trace = value;
     } else if (flag === "--transcript") {
       options.transcript = value;
+    } else if (flag === "--policy") {
+      options.policy = value;
     } else if (flag === "--public-key") {
       options.publicKey = value;
     } else if (flag === "--private-key") {

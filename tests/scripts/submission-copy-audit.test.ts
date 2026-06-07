@@ -62,6 +62,8 @@ verify-receipt-chain
 receipt-replay
 sign-receipt
 keys init
+policy-publish
+evaluate --policy pci-dss-readiness
 receipt-chain.json
 receipt-replay.json
 submission-evidence/receipt-public-key.pem
@@ -112,6 +114,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | The tracked suite proof has deterministic signed receipt-chain lineage and replay. | Supported | submission-evidence/suite-proof/receipt-chain.json, splunkready-receipt-chain, submission-evidence/suite-proof/receipt-replay.json, splunkready-receipt-replay, submission-evidence/receipt-public-key.pem, signature.status: "VERIFIED", signature.algorithm: "ed25519", replayedReceiptCount: 6 | verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json; receipt-replay --dir submission-evidence/suite-proof --json |
 | The hosted public demo exposes the credential-free judge proof and LLM evidence boundary. | Supported | submission-evidence/screenshots/public-judge-proof-proof-browser.png | ${hostedJudgeProofUrl} |
 | The hosted public demo accepts a trace and runs real in-browser certification without Splunk credentials. | Supported | submission-evidence/screenshots/interactive-demo.png, artifacts/public-demo/artifacts/interactive-demo/artifact-manifest.json, ui/src/interactiveCertifier.ts, ?demo=interactive, receipt-interactive-001 | Playwright hosted static route |
+| SplunkReady ships signed, named policy bundles for default, SOC2, and PCI DSS readiness. | Supported | policies/default.policy.json, policies/soc2-readiness.policy.json, policies/pci-dss-readiness.policy.json, submission-evidence/policy-registry/default-readiness/policy-manifest.json, submission-evidence/policy-registry/soc2-readiness/policy-manifest.json, submission-evidence/policy-registry/pci-dss-readiness/policy-manifest.json, docs/policy-authoring.md, policy.id: "pci-dss-readiness" | policy-publish --policy policies/soc2-readiness.policy.json --json; evaluate --policy pci-dss-readiness |
 | The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof. | Supported | submission-evidence/mcp-proof/mcp-client-session.jsonl, resources/templates/list, splunkready://receipts/{receiptId}, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access, splunkready_review_mcp_composition, splunkready://workflows/hosted-model-diagnostic, splunkready_hosted_model_diagnostic, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready://client-config/antigravity, splunkready://client-config/zed, ~/.gemini/antigravity/mcp_config.json, context_servers, splunkready mcp | npm run mcp-proof |
 | The MCP proof exposes deterministic composition review as a first-class MCP tool. | Supported | mcpCompositionReview, splunkready_review_mcp_composition, composition-review-tool, splunk_get_knowledge_objects, splunk_run_saved_search, evt-102, evt-118, evt-141, deterministicAuthority, mutation: false | npm run mcp-proof |
 | The self-hostable mock Splunk MCP path produces a credential-free live-mode proof without Splunk credentials. | Supported | submission-evidence/live-mock/live-proof-summary.json, proofLoop: "fail-to-pass", derivedMission.strategy: "saved-search-with-evidence" | npm run live-mock-proof |

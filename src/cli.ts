@@ -83,7 +83,8 @@ const resolveCliInputPaths = async (options: CliOptions): Promise<CliOptions> =>
   mission: await resolveBundledInputPath(options.mission),
   suite: await resolveBundledInputPath(options.suite),
   trace: options.trace ? await resolveBundledInputPath(options.trace) : options.trace,
-  transcript: options.transcript ? await resolveBundledInputPath(options.transcript) : options.transcript
+  transcript: options.transcript ? await resolveBundledInputPath(options.transcript) : options.transcript,
+  policy: options.policy ? await resolveBundledInputPath(options.policy) : options.policy
 });
 
 export const runFixtureCertificationFromCli = runFixtureCertificationWorkflow;
