@@ -11,6 +11,7 @@ import {
   runExternalTraceCertificationFromPathWorkflow,
   runMcpTranscriptCertificationWorkflow
 } from "../workflows/external-certification.js";
+import { runHostedModelDiagnosticWorkflow } from "../workflows/hosted-model-actions.js";
 
 const protocolVersion = "2025-06-18";
 
@@ -113,6 +114,16 @@ const certifyMcpTranscriptContentSchema = z
   })
   .strict();
 
+const hostedModelDiagnosticSchema = z
+  .object({
+    outDir: z.string().trim().min(1),
+    mode: z.enum(["fixture", "live"]).optional().default("fixture"),
+    fixturePath: z.string().trim().min(1).optional(),
+    missionPath: z.string().trim().min(1).optional(),
+    requirePass: z.boolean().optional().default(false)
+  })
+  .strict();
+
 const emptyObjectSchema = z.object({}).strict();
 
 const secretPathPattern = /(^|[/\\])(?:\.env(?:\.|$)|\.splunkready(?:\.|$))/i;
@@ -129,6 +140,9 @@ const assertNoInlineSecrets = (input: string): void => {
     throw new Error("Refusing to certify inline MCP transcript content that appears to contain secrets.");
   }
 };
+
+const recordFromUnknown = (value: unknown): Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 
 const objectSchema = (properties: Record<string, unknown>, required: string[] = []): Record<string, unknown> => ({
   type: "object",
@@ -241,6 +255,37 @@ export const splunkReadyMcpTools: McpTool[] = [
       status: stringProperty("PASS when the inline transcript receipt is READY, otherwise FAIL."),
       outDir: stringProperty("Output directory that received certification artifacts."),
       mutation: { type: "boolean", description: "Whether SplunkReady mutated Splunk." },
+      artifacts: { type: "array", items: { type: "string" }, description: "Written artifact paths." }
+    }),
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false
+    }
+  },
+  {
+    name: "splunkready_check_hosted_model_access",
+    title: "Check Hosted Model Access",
+    description:
+      "Run SplunkReady's hosted-model diagnostic to prove SAIA explain/optimize access is available or honestly BLOCKED.",
+    inputSchema: objectSchema(
+      {
+        outDir: stringProperty("Local output directory for hosted-model diagnostic artifacts."),
+        mode: { type: "string", enum: ["fixture", "live"], default: "fixture", description: "Use fixture for public proof or live for operator-owned SAIA checks." },
+        fixturePath: stringProperty("Optional fixture adapter path for fixture mode."),
+        missionPath: stringProperty("Optional mission definition path."),
+        requirePass: booleanProperty("Return a tool error if hosted-model access is not PASS.", false)
+      },
+      ["outDir"]
+    ),
+    outputSchema: objectSchema({
+      status: stringProperty("PASS when SAIA hosted-model access is available; BLOCKED otherwise."),
+      permissionStatus: stringProperty("OK or BLOCKED permission result from the diagnostic."),
+      outDir: stringProperty("Output directory that received hosted-model diagnostic artifacts."),
+      mutation: { type: "boolean", description: "Whether SplunkReady mutated Splunk." },
+      requiredTools: { type: "array", items: { type: "string" }, description: "Hosted-model tools required by the diagnostic." },
+      availableTools: { type: "array", items: { type: "string" }, description: "Hosted-model tools available to the current adapter." },
+      missingTools: { type: "array", items: { type: "string" }, description: "Hosted-model tools missing or blocked for the current adapter." },
       artifacts: { type: "array", items: { type: "string" }, description: "Written artifact paths." }
     }),
     annotations: {
@@ -822,6 +867,52 @@ const callTool = async (name: string, args: unknown, env: NodeJS.ProcessEnv): Pr
       const status = receipt.verdict === "READY" ? "PASS" : "FAIL";
 
       return toolResult({ ...result, status, outDir: parsed.data.outDir, mutation: false });
+    } catch (caught) {
+      return toolResult({ status: "ERROR", message: redactUnknownError(caught, env) }, true);
+    }
+  }
+
+  if (name === "splunkready_check_hosted_model_access") {
+    const parsed = hostedModelDiagnosticSchema.safeParse(args ?? {});
+
+    if (!parsed.success) {
+      return toolResult({ status: "ERROR", message: zodMessage(parsed) }, true);
+    }
+
+    try {
+      assertNonSecretPath(parsed.data.outDir);
+      if (parsed.data.fixturePath) {
+        assertNonSecretPath(parsed.data.fixturePath);
+      }
+      if (parsed.data.missionPath) {
+        assertNonSecretPath(parsed.data.missionPath);
+      }
+
+      const result = await runHostedModelDiagnosticWorkflow(
+        {
+          outDir: parsed.data.outDir,
+          mode: parsed.data.mode,
+          fixturePath: parsed.data.fixturePath,
+          missionPath: parsed.data.missionPath,
+          requirePass: parsed.data.requirePass
+        },
+        env
+      );
+      const diagnostic = recordFromUnknown(
+        JSON.parse(await readFile(join(parsed.data.outDir, "hosted-model-diagnostic.json"), "utf8"))
+      );
+      const permission = recordFromUnknown(diagnostic.permission);
+
+      return toolResult({
+        status: result.status,
+        permissionStatus: typeof permission.status === "string" ? permission.status : result.status,
+        outDir: result.outDir,
+        mutation: false,
+        requiredTools: Array.isArray(diagnostic.requiredTools) ? diagnostic.requiredTools : [],
+        availableTools: Array.isArray(diagnostic.availableTools) ? diagnostic.availableTools : [],
+        missingTools: Array.isArray(diagnostic.missingTools) ? diagnostic.missingTools : [],
+        artifacts: result.artifacts
+      });
     } catch (caught) {
       return toolResult({ status: "ERROR", message: redactUnknownError(caught, env) }, true);
     }

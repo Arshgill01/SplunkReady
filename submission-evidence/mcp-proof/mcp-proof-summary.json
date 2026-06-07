@@ -30,6 +30,11 @@
       "name": "splunkready_certify_mcp_transcript_content",
       "destructiveHint": false,
       "readOnlyHint": true
+    },
+    {
+      "name": "splunkready_check_hosted_model_access",
+      "destructiveHint": false,
+      "readOnlyHint": true
     }
   ],
   "resources": [
@@ -114,7 +119,8 @@
       "splunkready_describe_certification",
       "splunkready_certify_external_trace",
       "splunkready_certify_mcp_transcript",
-      "splunkready_certify_mcp_transcript_content"
+      "splunkready_certify_mcp_transcript_content",
+      "splunkready_check_hosted_model_access"
     ],
     "resources": [
       "splunkready://certification/posture",
@@ -142,7 +148,7 @@
       {
         "uri": "splunkready://certification/posture",
         "mimeType": "application/json",
-        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_certify_mcp_transcript_content\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://client-config/splunk-and-splunkready\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\",\n    \"splunkready://workflows/mcp-composition-scorecard\"\n  ],\n  \"resourceTemplates\": [\n    \"splunkready://receipts/{receiptId}\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\",\n    \"splunkready_mcp_composition_review\"\n  ]\n}"
+        "text": "{\n  \"product\": \"SplunkReady\",\n  \"engine\": \"Agent Readiness Compiler\",\n  \"primaryArtifact\": \"Readiness Receipt\",\n  \"deterministicAuthority\": true,\n  \"advisoryLlmOnly\": true,\n  \"mutation\": false,\n  \"tools\": [\n    \"splunkready_describe_certification\",\n    \"splunkready_certify_external_trace\",\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_certify_mcp_transcript_content\",\n    \"splunkready_check_hosted_model_access\"\n  ],\n  \"resources\": [\n    \"splunkready://certification/posture\",\n    \"splunkready://examples/external-trace-pass\",\n    \"splunkready://examples/mcp-transcript-pass\",\n    \"splunkready://examples/pass-receipt\",\n    \"splunkready://client-config/stdio\",\n    \"splunkready://client-config/splunk-and-splunkready\",\n    \"splunkready://workflows/splunk-mcp-certification-loop\",\n    \"splunkready://workflows/mcp-composition-scorecard\"\n  ],\n  \"resourceTemplates\": [\n    \"splunkready://receipts/{receiptId}\"\n  ],\n  \"prompts\": [\n    \"splunkready_certify_mcp_transcript\",\n    \"splunkready_capture_trace\",\n    \"splunkready_explain_receipt\",\n    \"splunkready_splunk_mcp_certification_loop\",\n    \"splunkready_mcp_composition_review\"\n  ]\n}"
       }
     ]
   },
@@ -271,6 +277,29 @@
     "outDir": "submission-evidence/mcp-proof/mcp-inline-transcript-certification",
     "mutation": false
   },
+  "hostedModelAccess": {
+    "status": "PASS",
+    "permissionStatus": "OK",
+    "outDir": "submission-evidence/mcp-proof/mcp-hosted-model-access",
+    "mutation": false,
+    "requiredTools": [
+      "saia_explain_spl",
+      "saia_optimize_spl"
+    ],
+    "availableTools": [
+      "saia_explain_spl",
+      "saia_optimize_spl"
+    ],
+    "missingTools": [],
+    "artifacts": [
+      "submission-evidence/mcp-proof/mcp-hosted-model-access/environment-contract.json",
+      "submission-evidence/mcp-proof/mcp-hosted-model-access/missions.json",
+      "submission-evidence/mcp-proof/mcp-hosted-model-access/agent-policy.json",
+      "submission-evidence/mcp-proof/mcp-hosted-model-access/readiness-profile.json",
+      "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
+      "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-diagnostic.json"
+    ]
+  },
   "agentDrivenWorkflow": {
     "status": "PASS",
     "splunkMcpServerRole": "Splunk MCP performs the read-only investigation actions and returns operational data to the agent.",
@@ -351,7 +380,12 @@
       {
         "id": "no-splunkready-mutation",
         "status": "PASS",
-        "evidence": "SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, and receipt artifacts."
+        "evidence": "SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, hosted-model access, and receipt artifacts."
+      },
+      {
+        "id": "hosted-model-advisory-access",
+        "status": "PASS",
+        "evidence": "Hosted-model access check returned PASS; SAIA remains advisory and deterministic rules remain authoritative."
       }
     ],
     "deterministicAuthority": true,
@@ -434,8 +468,8 @@
     "artifactPath": "submission-evidence/mcp-proof/mcp-client-session.jsonl",
     "markdownPath": "submission-evidence/mcp-proof/mcp-client-session.md",
     "protocol": "stdio-jsonrpc",
-    "requestCount": 17,
-    "responseCount": 17,
+    "requestCount": 18,
+    "responseCount": 18,
     "methods": [
       "initialize",
       "tools/list",
@@ -462,7 +496,8 @@
     "toolNames": [
       "splunkready_describe_certification",
       "splunkready_certify_mcp_transcript",
-      "splunkready_certify_mcp_transcript_content"
+      "splunkready_certify_mcp_transcript_content",
+      "splunkready_check_hosted_model_access"
     ],
     "deterministicAuthority": true,
     "mutation": false
@@ -503,7 +538,13 @@
     "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.md",
     "submission-evidence/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-certification.json",
     "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-audit.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-manifest.json"
+    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-manifest.json",
+    "submission-evidence/mcp-proof/mcp-hosted-model-access/environment-contract.json",
+    "submission-evidence/mcp-proof/mcp-hosted-model-access/missions.json",
+    "submission-evidence/mcp-proof/mcp-hosted-model-access/agent-policy.json",
+    "submission-evidence/mcp-proof/mcp-hosted-model-access/readiness-profile.json",
+    "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
+    "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-diagnostic.json"
   ],
   "nextCommands": [
     "npm run mcp",

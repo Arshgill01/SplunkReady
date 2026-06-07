@@ -8,9 +8,9 @@ Mutation: no
 
 Deterministic authority: yes
 
-Requests: 17
+Requests: 18
 
-Responses: 17
+Responses: 18
 
 Methods:
 - initialize
@@ -39,3 +39,4 @@ Tools:
 - splunkready_describe_certification
 - splunkready_certify_mcp_transcript
 - splunkready_certify_mcp_transcript_content
+- splunkready_check_hosted_model_access

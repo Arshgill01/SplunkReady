@@ -88,6 +88,7 @@ interface McpProofSummary {
   compositionReviewPrompt: Record<string, unknown>;
   transcriptCertification: Record<string, unknown>;
   inlineTranscriptCertification: Record<string, unknown>;
+  hostedModelAccess: Record<string, unknown>;
   agentDrivenWorkflow: {
     status: "PASS" | "FAIL";
     splunkMcpServerRole: string;
@@ -357,6 +358,10 @@ Transcript certification: ${stringFromRecord(summary.transcriptCertification, "s
 Inline transcript certification: ${stringFromRecord(summary.inlineTranscriptCertification, "status")}
 - Output: ${stringFromRecord(summary.inlineTranscriptCertification, "outDir")}
 
+Hosted-model access check: ${stringFromRecord(summary.hostedModelAccess, "status")}
+- Permission: ${stringFromRecord(summary.hostedModelAccess, "permissionStatus")}
+- Output: ${stringFromRecord(summary.hostedModelAccess, "outDir")}
+
 Splunk MCP boundary: ${summary.splunkMcpBoundary.status}
 - Certified tool calls: ${summary.splunkMcpBoundary.certifiedToolNames.join(", ")}
 - Saved-search execution: ${summary.splunkMcpBoundary.includesSavedSearchExecution ? "yes" : "no"}
@@ -567,6 +572,7 @@ const buildMcpCompositionScorecard = (input: {
   prompts: McpProofSummary["prompts"];
   transcriptCertification: Record<string, unknown>;
   inlineTranscriptCertification: Record<string, unknown>;
+  hostedModelAccess: Record<string, unknown>;
   agentDrivenWorkflow: McpProofSummary["agentDrivenWorkflow"];
   splunkMcpBoundary: McpProofSummary["splunkMcpBoundary"];
 }): McpProofSummary["mcpComposition"] => {
@@ -578,6 +584,8 @@ const buildMcpCompositionScorecard = (input: {
     stringFromRecord(input.transcriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
   const inlineCertificationStatus =
     stringFromRecord(input.inlineTranscriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
+  const hostedModelAccessStatus =
+    stringFromRecord(input.hostedModelAccess, "status") === "PASS" ? "PASS" : "FAIL";
 
   const checks: McpProofSummary["mcpComposition"]["checks"] = [
     {
@@ -633,10 +641,16 @@ const buildMcpCompositionScorecard = (input: {
         input.agentDrivenWorkflow.mutation === false &&
         input.splunkMcpBoundary.mutation === false &&
         input.transcriptCertification.mutation === false &&
-        input.inlineTranscriptCertification.mutation === false
+        input.inlineTranscriptCertification.mutation === false &&
+        input.hostedModelAccess.mutation === false
           ? "PASS"
           : "FAIL",
-      evidence: "SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, and receipt artifacts."
+      evidence: "SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, hosted-model access, and receipt artifacts."
+    },
+    {
+      id: "hosted-model-advisory-access",
+      status: hostedModelAccessStatus,
+      evidence: `Hosted-model access check returned ${hostedModelAccessStatus}; SAIA remains advisory and deterministic rules remain authoritative.`
     }
   ];
   const passed = checks.filter((check) => check.status === "PASS").length;
@@ -795,7 +809,8 @@ const buildMcpClientSession = (
     resourceUris.includes("splunkready://receipts/pass") &&
     promptNames.includes("splunkready_splunk_mcp_certification_loop") &&
     toolNames.includes("splunkready_certify_mcp_transcript") &&
-    toolNames.includes("splunkready_certify_mcp_transcript_content")
+    toolNames.includes("splunkready_certify_mcp_transcript_content") &&
+    toolNames.includes("splunkready_check_hosted_model_access")
       ? "PASS"
       : "FAIL";
 
@@ -820,6 +835,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
   const transcriptPath = input.transcriptPath ?? defaultTranscriptPath;
   const transcriptOutDir = join(input.outDir, "mcp-transcript-certification");
   const inlineTranscriptOutDir = join(input.outDir, "mcp-inline-transcript-certification");
+  const hostedModelAccessOutDir = join(input.outDir, "mcp-hosted-model-access");
   const summaryPath = join(input.outDir, "mcp-proof-summary.json");
   const markdownPath = join(input.outDir, "mcp-proof-summary.md");
   const clientWalkthroughPath = join(input.outDir, "mcp-client-walkthrough.json");
@@ -830,6 +846,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
   await mkdir(input.outDir, { recursive: true });
   await mkdir(transcriptOutDir, { recursive: true });
   await mkdir(inlineTranscriptOutDir, { recursive: true });
+  await mkdir(hostedModelAccessOutDir, { recursive: true });
 
   const client = new McpStdioClient(input.serverPath);
 
@@ -907,6 +924,14 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         agentVersion: "mcp-proof-inline-jsonrpc-pass"
       }
     });
+    const hostedModelAccessResult = await client.request("tools/call", {
+      name: "splunkready_check_hosted_model_access",
+      arguments: {
+        outDir: hostedModelAccessOutDir,
+        mode: "fixture",
+        requirePass: true
+      }
+    });
     const serverInfo = asRecord(initialize.serverInfo, "initialize.serverInfo");
     const tools = (Array.isArray(toolsList.tools) ? toolsList.tools : []).map((tool) => {
       const record = asRecord(tool, "tools/list tool");
@@ -956,14 +981,22 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       inlineTranscriptResult,
       "splunkready_certify_mcp_transcript_content"
     );
+    const hostedModelAccess = extractStructuredContent(
+      hostedModelAccessResult,
+      "splunkready_check_hosted_model_access"
+    );
     const certificationStatus = stringFromRecord(transcriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
     const inlineCertificationStatus =
       stringFromRecord(inlineTranscriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
+    const hostedModelAccessStatus = stringFromRecord(hostedModelAccess, "status") === "PASS" ? "PASS" : "FAIL";
     const toolArtifacts = Array.isArray(transcriptCertification.artifacts)
       ? transcriptCertification.artifacts.filter((artifact): artifact is string => typeof artifact === "string")
       : [];
     const inlineToolArtifacts = Array.isArray(inlineTranscriptCertification.artifacts)
       ? inlineTranscriptCertification.artifacts.filter((artifact): artifact is string => typeof artifact === "string")
+      : [];
+    const hostedModelAccessArtifacts = Array.isArray(hostedModelAccess.artifacts)
+      ? hostedModelAccess.artifacts.filter((artifact): artifact is string => typeof artifact === "string")
       : [];
     const receiptPath = join(transcriptOutDir, "receipt-external-001.json");
     const splunkMcpBoundary = await readSplunkMcpBoundaryEvidence(transcriptPath, certificationStatus, receiptPath);
@@ -994,6 +1027,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       prompts,
       transcriptCertification,
       inlineTranscriptCertification,
+      hostedModelAccess,
       agentDrivenWorkflow,
       splunkMcpBoundary
     });
@@ -1007,7 +1041,10 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
     const clientSession = buildMcpClientSession(client.session(), clientSessionPath, clientSessionMarkdownPath);
     const summary: McpProofSummary = {
       source: "splunkready-mcp-proof",
-      status: certificationStatus === "PASS" && inlineCertificationStatus === "PASS" ? "PASS" : "FAIL",
+      status:
+        certificationStatus === "PASS" && inlineCertificationStatus === "PASS" && hostedModelAccessStatus === "PASS"
+          ? "PASS"
+          : "FAIL",
       mutation: false,
       generatedAt,
       serverPath: displayPath(input.serverPath),
@@ -1033,6 +1070,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       compositionReviewPrompt,
       transcriptCertification,
       inlineTranscriptCertification,
+      hostedModelAccess,
       agentDrivenWorkflow,
       splunkMcpBoundary,
       mcpComposition,
@@ -1046,7 +1084,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         clientSessionPath,
         clientSessionMarkdownPath,
         ...toolArtifacts,
-        ...inlineToolArtifacts
+        ...inlineToolArtifacts,
+        ...hostedModelAccessArtifacts
       ],
       nextCommands: [
         `npm run mcp`,
@@ -1069,7 +1108,8 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       messages: [
         `Initialized MCP server ${summary.handshake.serverName} with ${summary.tools.length} certification tool(s), ${summary.resources.length} resource(s), and ${summary.prompts.length} prompt(s).`,
         `Discovered ${summary.resourceTemplates.length} MCP resource template(s) and read splunkready://receipts/pass.`,
-        `Certified transcript ${transcriptPath} through splunkready_certify_mcp_transcript and splunkready_certify_mcp_transcript_content.`
+        `Certified transcript ${transcriptPath} through splunkready_certify_mcp_transcript and splunkready_certify_mcp_transcript_content.`,
+        "Checked hosted-model SAIA access through splunkready_check_hosted_model_access in fixture mode."
       ]
     };
   } finally {

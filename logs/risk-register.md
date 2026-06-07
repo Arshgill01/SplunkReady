@@ -541,3 +541,13 @@ surfaces the result in the public workbench, and tracks both proof manifests in
 submission evidence. Residual MCP risk remains external-client storytelling and
 live client capture: this proves the protocol surface locally, but a public
 Claude/Cursor/client walkthrough would still improve judge perception.
+
+Move 113 reduces both MCP-category thin-surface risk and hosted-model/SAIA
+proof risk by adding `splunkready_check_hosted_model_access` to the MCP server.
+The tool reuses the hosted-model diagnostic workflow and returns
+`PASS`/`BLOCKED`, permission status, required/available/missing SAIA tools,
+artifacts, and `mutation=false`. The public MCP proof calls it in fixture mode
+so judge-facing evidence is credential-free, while live mode remains available
+for an operator shell with exported Splunk MCP and SAIA environment variables.
+Residual risk remains live hosted-model proof: this process did not have the
+token-bearing environment exported, so no live SAIA PASS claim was made.

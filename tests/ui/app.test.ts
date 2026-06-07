@@ -331,7 +331,8 @@ const mcpProofSummary = {
     { name: "splunkready_describe_certification", destructiveHint: false, readOnlyHint: true },
     { name: "splunkready_certify_external_trace", destructiveHint: false, readOnlyHint: true },
     { name: "splunkready_certify_mcp_transcript", destructiveHint: false, readOnlyHint: true },
-    { name: "splunkready_certify_mcp_transcript_content", destructiveHint: false, readOnlyHint: true }
+    { name: "splunkready_certify_mcp_transcript_content", destructiveHint: false, readOnlyHint: true },
+    { name: "splunkready_check_hosted_model_access", destructiveHint: false, readOnlyHint: true }
   ],
   resources: [
     { uri: "splunkready://certification/posture", name: "certification-posture", mimeType: "application/json" },
@@ -384,6 +385,19 @@ const mcpProofSummary = {
     artifacts: [
       "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.json",
       "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-audit.json"
+    ]
+  },
+  hostedModelAccess: {
+    status: "PASS",
+    permissionStatus: "OK",
+    outDir: "submission-evidence/mcp-proof/mcp-hosted-model-access",
+    mutation: false,
+    requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
+    availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+    missingTools: [],
+    artifacts: [
+      "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
+      "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-diagnostic.json"
     ]
   },
   agentDrivenWorkflow: {
@@ -464,7 +478,13 @@ const mcpProofSummary = {
         id: "no-splunkready-mutation",
         status: "PASS",
         evidence:
-          "SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, and receipt artifacts."
+          "SplunkReady certification reports mutation=false across workflow, boundary, path transcript, inline transcript, hosted-model access, and receipt artifacts."
+      },
+      {
+        id: "hosted-model-advisory-access",
+        status: "PASS",
+        evidence:
+          "Hosted-model access check returned PASS; SAIA remains advisory and deterministic rules remain authoritative."
       }
     ],
     deterministicAuthority: true,
@@ -522,8 +542,8 @@ const mcpProofSummary = {
     artifactPath: "submission-evidence/mcp-proof/mcp-client-session.jsonl",
     markdownPath: "submission-evidence/mcp-proof/mcp-client-session.md",
     protocol: "stdio-jsonrpc",
-    requestCount: 17,
-    responseCount: 17,
+    requestCount: 18,
+    responseCount: 18,
     methods: [
       "initialize",
       "tools/list",
@@ -544,7 +564,8 @@ const mcpProofSummary = {
     toolNames: [
       "splunkready_describe_certification",
       "splunkready_certify_mcp_transcript",
-      "splunkready_certify_mcp_transcript_content"
+      "splunkready_certify_mcp_transcript_content",
+      "splunkready_check_hosted_model_access"
     ],
     deterministicAuthority: true,
     mutation: false
@@ -1521,8 +1542,11 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("splunkready_splunk_mcp_certification_loop");
     expect(html).toContain("splunkready_certify_mcp_transcript");
     expect(html).toContain("splunkready_certify_mcp_transcript_content");
+    expect(html).toContain("splunkready_check_hosted_model_access");
     expect(html).toContain("Inline transcript certification");
     expect(html).toContain("submission-evidence/mcp-proof/mcp-inline-transcript-certification");
+    expect(html).toContain("Hosted-model access");
+    expect(html).toContain("submission-evidence/mcp-proof/mcp-hosted-model-access");
     expect(html).toContain("resources/read");
     expect(html).toContain("resources/templates/list");
     expect(html).toContain("prompts/get");
@@ -1532,7 +1556,7 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Saved-search execution");
     expect(html).toContain("evt-102 / evt-118 / evt-141");
     expect(html).toContain("Deterministic");
-    expect(html).toContain("mcp proof pass 4 tools");
+    expect(html).toContain("mcp proof pass 5 tools");
     expect(html).toContain("<td>no</td>");
     expect(html).not.toContain("Artifact bundle incomplete");
   });

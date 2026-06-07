@@ -123,7 +123,9 @@ posture resource and MCP-client configuration, fetches reusable transcript and
 Splunk MCP certification-loop prompts, then certifies the checked-in passing
 MCP JSON-RPC transcript through
 `splunkready_certify_mcp_transcript` and also proves the direct-content MCP
-tool `splunkready_certify_mcp_transcript_content`. It writes
+tool `splunkready_certify_mcp_transcript_content`. It also calls
+`splunkready_check_hosted_model_access` so the MCP proof includes SAIA
+hosted-model access as advisory evidence. It writes
 `artifacts/mcp-proof/mcp-proof-summary.json` / `.md` plus the generated
 Readiness Receipt artifacts. The summary includes a `splunkMcpBoundary` block
 that names the certified `splunk_*` tools, records saved-search execution,
@@ -297,7 +299,7 @@ npm run mcp-proof
 ```
 
 That command writes an MCP proof summary with explicit Splunk MCP boundary
-evidence, MCP resource-template discovery, inline transcript certification, the uploaded transcript copy, `trace-imported.json`,
+evidence, MCP resource-template discovery, inline transcript certification, hosted-model access, the uploaded transcript copy, `trace-imported.json`,
 `trace-external.json`, `receipt-external-001.json`, `proof-audit.json`, and the
 transcript certification summary under `artifacts/mcp-proof/`.
 

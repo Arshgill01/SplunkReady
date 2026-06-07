@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "mode": "fixture",
+  "mutation": false,
+  "proofPath": "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
+  "contract": {
+    "id": "contract-acme-soc-dev",
+    "mode": "fixture"
+  },
+  "requiredTools": [
+    "saia_explain_spl",
+    "saia_optimize_spl"
+  ],
+  "availableTools": [
+    "saia_explain_spl",
+    "saia_optimize_spl"
+  ],
+  "missingTools": [],
+  "permission": {
+    "status": "OK",
+    "message": "The current MCP credentials can invoke saia_explain_spl and saia_optimize_spl for advisory SPL remediation."
+  },
+  "deterministicAuthority": "deterministic-rule-engine",
+  "notes": "This diagnostic calls hosted-model helper tools only. It does not execute the SPL query, does not grade with an LLM, and does not mutate Splunk."
+}

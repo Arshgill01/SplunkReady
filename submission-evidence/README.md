@@ -1,13 +1,13 @@
 # SplunkReady Submission Evidence
 
-Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, and Move 112 inline MCP transcript certification evidence.
+Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, and Move 113 hosted-model MCP access evidence.
 
 This directory is the judge-facing evidence pack. It is tracked in git so it can be inspected from a clean clone without access to ignored local `artifacts/`, `.splunkready*` env files, live credentials, or private deployment details.
 
 ## Contents
 
 - `suite-proof/`: credential-free multi-mission fixture proof. It includes the full proof bundle, compiler diagnostics, strict `proof-audit.json`, `proof-manifest.json`, and `proof-manifest-verification.json`.
-- `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, records the raw JSON-RPC client session, discovers tools/resources/resource templates/prompts, reads a templated Readiness Receipt resource, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript through both path-based and inline-content MCP tools, writes a client walkthrough showing existing Splunk MCP investigation followed by SplunkReady certification, and verifies the nested transcript proof manifests.
+- `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, records the raw JSON-RPC client session, discovers tools/resources/resource templates/prompts, reads a templated Readiness Receipt resource, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript through both path-based and inline-content MCP tools, checks hosted-model SAIA access through the MCP server in fixture mode, writes a client walkthrough showing existing Splunk MCP investigation followed by SplunkReady certification, and verifies the nested transcript proof manifests.
 - `public-proof-export/`: redacted derivative export generated from a managed workbench run. It includes the public export manifest, summary, audit, receipts, traces, redacted source proof manifest, and manifest verification. It is intentionally not the unredacted source proof.
 - `screenshots/`: Playwright screenshots for the packaged workbench fixture run, trace timeline, MCP proof view, verified public proof export UI, and hosted public judge-proof view. The earlier Vite-backed fixture screenshot is retained as historical evidence but is not the primary refreshed screenshot.
 - `claim-ledger.md`: public claim to evidence mapping.
@@ -41,15 +41,16 @@ Expected proof status:
 - manifest verification: `PASS`
 - compiler diagnostics: present
 - MCP proof status: `PASS`
-- MCP tools: `4`
+- MCP tools: `5`
 - MCP resources: `8`
 - MCP resource templates: `1`
 - MCP prompts: `5`
 - dual-server MCP client kit: `splunkready://client-config/splunk-and-splunkready`
 - MCP client walkthrough: `PASS`
-- MCP client session: `PASS`, `17` request/response pairs
+- MCP client session: `PASS`, `18` request/response pairs
 - MCP template receipt read: `splunkready://receipts/pass`
 - MCP inline transcript certification: `PASS`
+- MCP hosted-model access: `PASS`, permission `OK`, mutation `false`
 - certified Splunk MCP tools: `splunk_get_knowledge_objects`, `splunk_run_saved_search`
 - public judge proof status: `PASS`
 - public judge proof mutation: `false`

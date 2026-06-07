@@ -265,8 +265,11 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
                   ["Splunk MCP role", summary.splunkMcpBoundary.splunkMcpServerRole],
                   ["Transcript certification", summary.transcriptCertification.status],
                   ["Inline transcript certification", summary.inlineTranscriptCertification.status],
+                  ["Hosted-model access", summary.hostedModelAccess.status],
+                  ["Hosted-model permission", summary.hostedModelAccess.permissionStatus],
                   ["Certification out dir", summary.transcriptCertification.outDir],
                   ["Inline certification out dir", summary.inlineTranscriptCertification.outDir],
+                  ["Hosted-model out dir", summary.hostedModelAccess.outDir],
                   ["Generated artifacts", summary.transcriptCertification.artifacts.length],
                   ["Next commands", summary.nextCommands.join(" / ")]
                 ])}

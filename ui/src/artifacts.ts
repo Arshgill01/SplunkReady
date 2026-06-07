@@ -714,6 +714,18 @@ const mcpProofSummarySchema = z
         artifacts: z.array(z.string().min(1))
       })
       .strict(),
+    hostedModelAccess: z
+      .object({
+        status: z.enum(["PASS", "BLOCKED"]),
+        permissionStatus: z.enum(["OK", "BLOCKED"]),
+        outDir: z.string().min(1),
+        mutation: z.boolean(),
+        requiredTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+        availableTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+        missingTools: z.array(z.enum(["saia_explain_spl", "saia_optimize_spl"])),
+        artifacts: z.array(z.string().min(1))
+      })
+      .strict(),
     agentDrivenWorkflow: z
       .object({
         status: z.enum(["PASS", "FAIL"]),

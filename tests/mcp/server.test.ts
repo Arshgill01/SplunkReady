@@ -64,7 +64,8 @@ describe("SplunkReady MCP server", () => {
       "splunkready_describe_certification",
       "splunkready_certify_external_trace",
       "splunkready_certify_mcp_transcript",
-      "splunkready_certify_mcp_transcript_content"
+      "splunkready_certify_mcp_transcript_content",
+      "splunkready_check_hosted_model_access"
     ]);
     expect(splunkReadyMcpTools.every((tool) => tool.annotations.destructiveHint === false)).toBe(true);
   });
@@ -319,6 +320,72 @@ describe("SplunkReady MCP server", () => {
 
     expect(result.isError).toBe(true);
     expect(structured.message).toBe("Refusing to certify inline MCP transcript content that appears to contain secrets.");
+  });
+
+  it("checks hosted-model access through tools/call in fixture mode", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-hosted-model-"));
+    const response = await handleMcpMessage({
+      jsonrpc: "2.0",
+      id: "hosted-model",
+      method: "tools/call",
+      params: {
+        name: "splunkready_check_hosted_model_access",
+        arguments: {
+          outDir,
+          mode: "fixture",
+          requirePass: true
+        }
+      }
+    });
+    const result = resultOf(response);
+    const structured = result.structuredContent as Record<string, unknown>;
+
+    expect(result.isError).toBe(false);
+    expect(structured).toMatchObject({
+      status: "PASS",
+      permissionStatus: "OK",
+      outDir,
+      mutation: false,
+      requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
+      availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+      missingTools: []
+    });
+    expect(structured.artifacts).toEqual(
+      expect.arrayContaining([join(outDir, "hosted-model-proof.json"), join(outDir, "hosted-model-diagnostic.json")])
+    );
+  });
+
+  it("reports hosted-model access as blocked in live mode when env is not exported", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-hosted-model-blocked-"));
+    const response = await handleMcpMessage(
+      {
+        jsonrpc: "2.0",
+        id: "hosted-model-blocked",
+        method: "tools/call",
+        params: {
+          name: "splunkready_check_hosted_model_access",
+          arguments: {
+            outDir,
+            mode: "live"
+          }
+        }
+      },
+      {}
+    );
+    const result = resultOf(response);
+    const structured = result.structuredContent as Record<string, unknown>;
+
+    expect(result.isError).toBe(false);
+    expect(structured).toMatchObject({
+      status: "BLOCKED",
+      permissionStatus: "BLOCKED",
+      outDir,
+      mutation: false,
+      requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
+      availableTools: [],
+      missingTools: ["saia_explain_spl", "saia_optimize_spl"]
+    });
+    expect(JSON.stringify(structured)).not.toContain("Bearer");
   });
 
   it("returns a tool error instead of reading secret environment files", async () => {

@@ -135,6 +135,7 @@ commands, or filesystem paths.
 | P0 | [110](moves110.md) SAIA live proof readiness | 0.5d | Makes hosted-model diagnostics produce redacted, reviewable artifacts when live SAIA setup is missing and public-export-safe when present. |
 | P0 | [111](moves111.md) MCP resource template proof | 0.5d | Adds MCP resource-template discovery and a templated receipt read to the server, proof session, workbench, and tracked evidence. |
 | P0 | [112](moves112.md) Inline MCP transcript certification | 0.5d | Adds a read-only MCP tool that certifies transcript JSONL content directly, with secret rejection and tracked path-vs-inline proof evidence. |
+| P0 | [113](moves113.md) MCP hosted model access check | 0.5d | Adds a read-only MCP tool that proves hosted-model SAIA access as advisory evidence and records it in the MCP proof. |
 
 ## Non-Negotiable Boundaries
 

@@ -1376,6 +1376,16 @@ describe("SplunkReady CLI flow", () => {
       compositionReviewPrompt: { messages: Array<{ content: { text: string } }> };
       transcriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
       inlineTranscriptCertification: { status: string; mutation: boolean; outDir: string; artifacts: string[] };
+      hostedModelAccess: {
+        status: string;
+        permissionStatus: string;
+        mutation: boolean;
+        outDir: string;
+        requiredTools: string[];
+        availableTools: string[];
+        missingTools: string[];
+        artifacts: string[];
+      };
       agentDrivenWorkflow: {
         status: string;
         splunkMcpServerRole: string;
@@ -1456,6 +1466,7 @@ describe("SplunkReady CLI flow", () => {
       receipt: { status: string; authoritative: boolean };
     };
     const transcriptProofDir = join(outDir, "mcp-transcript-certification");
+    const hostedModelAccessDir = join(outDir, "mcp-hosted-model-access");
 
     expect(output).toMatchObject({
       command: "mcp-proof",
@@ -1519,7 +1530,8 @@ describe("SplunkReady CLI flow", () => {
           expect.objectContaining({ id: "existing-splunk-mcp-boundary", status: "PASS" }),
           expect.objectContaining({ id: "saved-search-evidence", status: "PASS" }),
           expect.objectContaining({ id: "readiness-receipt-authority", status: "PASS" }),
-          expect.objectContaining({ id: "no-splunkready-mutation", status: "PASS" })
+          expect.objectContaining({ id: "no-splunkready-mutation", status: "PASS" }),
+          expect.objectContaining({ id: "hosted-model-advisory-access", status: "PASS" })
         ],
         deterministicAuthority: true,
         mutation: false
@@ -1573,13 +1585,14 @@ describe("SplunkReady CLI flow", () => {
         toolNames: expect.arrayContaining([
           "splunkready_describe_certification",
           "splunkready_certify_mcp_transcript",
-          "splunkready_certify_mcp_transcript_content"
+          "splunkready_certify_mcp_transcript_content",
+          "splunkready_check_hosted_model_access"
         ]),
         deterministicAuthority: true,
         mutation: false
       }
     });
-    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(17);
+    expect(summary.clientSession.requestCount).toBeGreaterThanOrEqual(18);
     expect(summary.clientSession.responseCount).toBe(summary.clientSession.requestCount);
     expect(summary.splunkMcpBoundary.localMcpServerRole).toContain("certification interface");
     expect(summary.splunkMcpBoundary.splunkMcpServerRole).toContain("Splunk MCP Server boundary");
@@ -1587,7 +1600,8 @@ describe("SplunkReady CLI flow", () => {
       "splunkready_describe_certification",
       "splunkready_certify_external_trace",
       "splunkready_certify_mcp_transcript",
-      "splunkready_certify_mcp_transcript_content"
+      "splunkready_certify_mcp_transcript_content",
+      "splunkready_check_hosted_model_access"
     ]);
     expect(summary.resources.map((resource) => resource.uri)).toEqual([
       "splunkready://certification/posture",
@@ -1629,6 +1643,21 @@ describe("SplunkReady CLI flow", () => {
       expect.arrayContaining([
         join(outDir, "mcp-inline-transcript-certification", "receipt-external-001.json"),
         join(outDir, "mcp-inline-transcript-certification", "uploaded-mcp-transcript.jsonl")
+      ])
+    );
+    expect(summary.hostedModelAccess).toMatchObject({
+      status: "PASS",
+      permissionStatus: "OK",
+      mutation: false,
+      outDir: hostedModelAccessDir,
+      requiredTools: ["saia_explain_spl", "saia_optimize_spl"],
+      availableTools: ["saia_explain_spl", "saia_optimize_spl"],
+      missingTools: []
+    });
+    expect(summary.hostedModelAccess.artifacts).toEqual(
+      expect.arrayContaining([
+        join(hostedModelAccessDir, "hosted-model-proof.json"),
+        join(hostedModelAccessDir, "hosted-model-diagnostic.json")
       ])
     );
     expect(summary.describe).toMatchObject({

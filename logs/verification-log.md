@@ -10045,6 +10045,121 @@ Open blockers:
 - Live SAIA PASS still requires a token-bearing shell with the required live
   variables exported.
 
+## 2026-06-07 - Move 113 MCP Hosted Model Access Check
+
+Commands:
+
+- `node -e 'const names=["SPLUNKREADY_SAIA_ENABLED","SPLUNKREADY_SAIA_ENDPOINT","SPLUNKREADY_SAIA_TOKEN","SPLUNKREADY_SPLUNK_MCP_URL","SPLUNKREADY_SPLUNK_MCP_TOKEN","GEMINI_API_KEY"]; for (const name of names) console.log(`${name}=${process.env[name]?"present":"missing"}`);'`
+- `rm -rf artifacts/hosted-model-diagnostic && npm run splunkready -- hosted-model-diagnostic --mode live --out artifacts/hosted-model-diagnostic --require-pass true --json`
+- `jq '{status, permission, requiredTools, availableTools, missingTools, setup}' artifacts/hosted-model-diagnostic/hosted-model-diagnostic.json`
+- `jq '{status, mutation, setup, safety}' artifacts/hosted-model-diagnostic/hosted-model-proof.json`
+- `npx tsc --noEmit`
+- `npx vitest run tests/mcp/server.test.ts`
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "MCP proof"`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "MCP server proof"`
+- `npm run build && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json && node dist/src/cli.js verify-manifest --out submission-evidence/mcp-proof/mcp-transcript-certification --json && node dist/src/cli.js verify-manifest --out submission-evidence/mcp-proof/mcp-inline-transcript-certification --json && jq -r '"status=\\(.status):tools=\\(.tools|length):hosted=\\(.hostedModelAccess.status):permission=\\(.hostedModelAccess.permissionStatus):requests=\\(.clientSession.requestCount):session=\\(.clientSession.status):mutation=\\(.hostedModelAccess.mutation)"' submission-evidence/mcp-proof/mcp-proof-summary.json`
+- `npm run public-demo:build`
+- `bash "$PWCLI" --session splunkready-move113 open 'http://127.0.0.1:4342/?artifacts=artifacts%2Fmcp-proof#mcp-proof'`
+- `bash "$PWCLI" --session splunkready-move113 snapshot`
+- `bash "$PWCLI" --session splunkready-move113 screenshot`
+- `cp .playwright-cli/page-2026-06-07T09-52-10-871Z.png submission-evidence/screenshots/workbench-mcp-proof.png`
+- `rm -rf .playwright-cli`
+- `lsof -ti tcp:4342 | xargs -r kill`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:public-demo-export`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `git diff --check`
+- `test ! -d .playwright-cli`
+- `npm run check`
+
+Result:
+
+- PASS for env-presence inspection without printing values:
+  - `SPLUNKREADY_SAIA_ENABLED`, `SPLUNKREADY_SAIA_ENDPOINT`,
+    `SPLUNKREADY_SAIA_TOKEN`, `SPLUNKREADY_SPLUNK_MCP_URL`,
+    `SPLUNKREADY_SPLUNK_MCP_TOKEN`, and `GEMINI_API_KEY` were missing in this
+    process.
+- Expected FAIL for strict live hosted-model diagnostic:
+  - status was `FAIL` because hosted-model proof status was `BLOCKED`;
+  - blocked artifacts were written under `artifacts/hosted-model-diagnostic`;
+  - artifact inspection showed `mutation=false`, required SAIA tools
+    `saia_explain_spl` / `saia_optimize_spl`, no available tools, and setup
+    status by environment variable name only.
+- PASS for TypeScript.
+- PASS for focused MCP server tests:
+  - 1 test file passed;
+  - 12 tests passed.
+- PASS for focused MCP UI route test:
+  - 1 test passed;
+  - 26 tests skipped by focused pattern.
+- PASS for focused MCP CLI proof test:
+  - 1 test passed;
+  - 40 tests skipped by focused pattern.
+- PASS for MCP proof regeneration:
+  - `mcp-proof-summary.json` recorded `status=PASS`;
+  - MCP tool count is 5;
+  - hosted-model access status is `PASS`;
+  - hosted-model permission status is `OK`;
+  - client session status is `PASS`;
+  - client session request count is 18;
+  - hosted-model access mutation is `false`.
+- PASS for both path-based and inline transcript proof manifest verification.
+- PASS for Playwright verification of the public MCP proof route:
+  - route rendered `mcp proof pass 5 tools`;
+  - route rendered `splunkready_check_hosted_model_access`;
+  - route rendered `Hosted-model access PASS`;
+  - route rendered `Hosted-model permission OK`;
+  - route rendered `submission-evidence/mcp-proof/mcp-hosted-model-access`;
+  - refreshed `submission-evidence/screenshots/workbench-mcp-proof.png`.
+- PASS for evidence-pack SHA verification, including the new
+  `submission-evidence/mcp-proof/mcp-hosted-model-access/*` artifacts.
+- PASS for public-demo export audit:
+  - 207 files;
+  - mutation `false`;
+  - default route `mcp-proof`.
+- PASS for submission-copy audit:
+  - 47 required claims checked.
+- PASS for focused submission-copy audit tests:
+  - 1 test file passed;
+  - 3 tests passed.
+- PASS for CLI cleanup hygiene:
+  - `.playwright-cli` was absent.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit checked 162 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz` and
+    `npx splunkready judge-proof` returned `PASS`;
+  - 59 test files passed;
+  - 362 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 47 required claims;
+  - final `git diff --check` completed with no output.
+
+Notes:
+
+- The first direct Playwright screenshot-path attempt failed because the CLI
+  interpreted the path as an element selector. The screenshot was captured with
+  the CLI's default screenshot command, then copied into the tracked evidence
+  path.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- Did not make SAIA or any LLM output authoritative.
+- Did not use subagents.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Live SAIA PASS still requires a token-bearing shell with the required live
+  variables exported.
+
 ## 2026-06-07 - Move 111 MCP Resource Template Proof
 
 Commands:
