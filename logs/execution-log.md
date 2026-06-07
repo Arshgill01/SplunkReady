@@ -12619,3 +12619,52 @@ Open blockers:
 - This is still credential-free public proof, not a live SAIA PASS claim.
 - The operator-owned Splunk MCP endpoint still needs to invoke all four SAIA
   tools successfully before live hosted-model proof can be claimed.
+
+## 2026-06-07 16:42 - Move 121 Live SAIA Prompt Compatibility And Redaction
+
+Scope:
+- Ran the strict live hosted-model diagnostic through the ignored
+  `./.splunkready-live.env` path without reading, sourcing, printing, or
+  committing env file contents.
+- First live run without TLS override failed at `splunk_get_info` transport.
+- Reran with the existing local-trial TLS workaround
+  `NODE_TLS_REJECT_UNAUTHORIZED=0`; the diagnostic reached the live MCP
+  endpoint and wrote hosted-model artifacts, but strict PASS failed because
+  hosted-model proof remained `BLOCKED`.
+- Observed that the live endpoint advertised all four SAIA tools, but
+  `saia_ask_splunk_question` rejected the old `question` argument with
+  `Missing required argument: prompt`.
+- Changed live adapter mapping for `saia_ask_splunk_question` to send
+  `{ prompt: input.question }`.
+- Extended central redaction to replace URLs with `[REDACTED_URL]`.
+- Passed the command env object into hosted-model error formatting so artifact
+  errors redact exact secret values and URLs.
+- Rebuilt and reran the live diagnostic with TLS override. The result still
+  blocked all four advertised SAIA tools at route invocation time, but the ask
+  tool now fails consistently with route-not-found instead of an argument-shape
+  error, and live artifacts contain no raw `https://` URL.
+- Updated `docs/live-setup-checklist.md` with the current four-tool live SAIA
+  blocked state.
+- Did not commit `artifacts/live-hosted-model-diagnostic`.
+- Did not mutate Splunk.
+- Did not use subagents.
+
+Files changed:
+- `src/adapters/live.ts`
+- `src/workbench/redaction.ts`
+- `src/workflows/hosted-model-actions.ts`
+- `tests/adapters/live.test.ts`
+- `tests/cli/flow.test.ts`
+- `tests/workbench/workbench.test.ts`
+- `docs/live-setup-checklist.md`
+- `moves/README.md`
+- `moves/moves121.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- Live SAIA is still not PASS: the operator-owned endpoint advertises all four
+  SAIA tools but returns route-not-found for invocation.
+- The endpoint/app route backing Splunk AI Assistant tools likely needs to be
+  fixed outside SplunkReady before a live hosted-model PASS can be claimed.

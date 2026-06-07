@@ -624,3 +624,14 @@ per-tool SAIA health. This makes partial live failures actionable instead of a
 generic BLOCKED state. Residual risk remains live endpoint readiness: no live
 SAIA PASS is claimed until the operator-owned endpoint invokes all four SAIA
 tools successfully.
+
+Move 121 reduces live hosted-model setup risk by using the operator-owned env
+file path to exercise the live SAIA diagnostic and fix an observed adapter
+argument mismatch. `saia_ask_splunk_question` now sends `prompt` to the live
+MCP endpoint, matching the observed route requirement, and hosted-model
+diagnostic errors redact raw URLs as `[REDACTED_URL]`. The current live endpoint
+still blocks all four advertised SAIA tools with route-not-found errors, so
+SplunkReady still does not claim live SAIA PASS. Residual risk is outside the
+adapter: the Splunk MCP endpoint/app route backing Splunk AI Assistant tools
+must invoke the advertised tools successfully before hosted-model proof can be
+claimed.

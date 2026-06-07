@@ -2808,6 +2808,8 @@ describe("SplunkReady CLI flow", () => {
         error: expect.stringContaining("404 Client Error: Not Found")
       }
     });
+    expect(diagnostic.permission.error).toContain("[REDACTED_URL]");
+    expect(diagnostic.permission.error).not.toContain("splunk.example.invalid");
     expect(diagnostic.permission.requiredActions).toEqual(
       expect.arrayContaining([
         "Confirm the Splunk MCP endpoint supports invoking saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question, not only advertising them in tool discovery.",

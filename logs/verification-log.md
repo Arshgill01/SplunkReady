@@ -10175,6 +10175,78 @@ Open blockers:
 - Live SAIA proof remains blocked until the operator-owned endpoint invokes all
   four advertised SAIA tools successfully.
 
+## 2026-06-07 - Move 121 Live SAIA Prompt Compatibility And Redaction
+
+Commands:
+
+- `node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json`
+- `npx tsc --noEmit`
+- `npx vitest run tests/adapters/live.test.ts tests/cli/flow.test.ts tests/workbench/workbench.test.ts --testNamePattern "SPL assistance|live MCP arguments|hosted-model|redacts secret-looking|not-found|SAIA"`
+- `npm run build`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json`
+- `node - <<'NODE' ... redacted live artifact inspection ... NODE`
+- `npm run check`
+
+Result:
+
+- PASS for full `npm run check` after updating public-export redaction tests:
+  - scaffold verified;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 207 files and default route
+    `mcp-proof`;
+  - package readiness audit checked 164 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz`, verified
+    `npx splunkready judge-proof` returned PASS, and initialized
+    `npx splunkready mcp`;
+  - 59 test files passed;
+  - 366 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 57 required claims;
+  - included `git diff --check` completed with no output.
+- FAIL, then useful diagnostic, for the first strict live hosted-model run:
+  - without TLS override, the command failed before SAIA at
+    `splunk_get_info` with `fetch failed`;
+  - with `NODE_TLS_REJECT_UNAUTHORIZED=0`, the command wrote live diagnostic
+    artifacts but exited strict failure because hosted-model proof was
+    `BLOCKED`.
+- PASS for focused TypeScript and tests after the fix:
+  - TypeScript completed with no output;
+  - 3 test files passed;
+  - 10 tests passed;
+  - 75 tests skipped by focused pattern.
+- PASS for rebuilt live diagnostic after the fix:
+  - `hosted-model-diagnostic.status`: `BLOCKED`;
+  - `mutation`: `false`;
+  - available tools: `saia_generate_spl`, `saia_explain_spl`,
+    `saia_optimize_spl`, and `saia_ask_splunk_question`;
+  - passed tools: none;
+  - blocked tools: all four SAIA tools;
+  - `saia_ask_splunk_question` now sends `prompt` and no longer fails with
+    `Missing required argument: prompt`;
+  - each SAIA tool now reports route-not-found invocation failure;
+  - artifact inspection returned `containsUrl: false`;
+  - artifact inspection returned `containsRedactedUrl: true`.
+
+Notes:
+
+- The live artifact directory is ignored and was not staged.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+- The TLS override is only the existing local-trial workaround; it is not a
+  production recommendation.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Live SAIA proof remains blocked until the operator-owned endpoint can invoke
+  the advertised SAIA routes instead of only advertising the tools.
+
 ## 2026-06-07 - Move 116 External MCP Client Config Resources
 
 Commands:

@@ -331,3 +331,23 @@ On 2026-06-03, the local Splunk MCP endpoint produced a live security fail-to-pa
 - `failToPass`: `true`
 - `hosted-model-proof.status`: `BLOCKED`
 - blocked tools: `saia_explain_spl`, `saia_optimize_spl`
+
+On 2026-06-07, after the operator-owned cloud connection and token were
+available, the strict hosted-model diagnostic reached the live MCP endpoint with
+the ignored env file and the local TLS workaround, but live SAIA proof remained
+blocked at invocation time:
+
+- `hosted-model-diagnostic.status`: `BLOCKED`
+- `mutation`: `false`
+- advertised tools: `saia_generate_spl`, `saia_explain_spl`,
+  `saia_optimize_spl`, `saia_ask_splunk_question`
+- passed tools: none
+- blocked tools: `saia_generate_spl`, `saia_explain_spl`,
+  `saia_optimize_spl`, `saia_ask_splunk_question`
+- blocker class: the endpoint advertises hosted-model tools, but the live route
+  returns not found when invoking them.
+- redaction check: hosted-model proof and diagnostic errors contain
+  `[REDACTED_URL]` and no raw `https://` endpoint URL.
+
+Do not claim live SAIA PASS until this same command exits PASS with
+`--require-pass true`.

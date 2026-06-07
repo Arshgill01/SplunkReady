@@ -13,6 +13,7 @@ import { compileReadinessProfile } from "../compiler/readiness-profile.js";
 import { parseMissionDefinition } from "../missions/dsl.js";
 import { compileAgentPolicy } from "../policy/compiler.js";
 import type { EnvironmentContract, ReadOnlySplunkToolName } from "../schemas/core.js";
+import { redactText } from "../workbench/redaction.js";
 
 export type HostedModelWorkflow = "hosted-model-diagnostic" | "hosted-model-proof";
 
@@ -192,7 +193,7 @@ const compileHostedModelArtifacts = async (
   ];
 };
 
-const formatHostedModelProofError = (error: unknown): string => {
+const formatHostedModelProofError = (error: unknown, env: NodeJS.ProcessEnv = process.env): string => {
   const formatted = (() => {
     if (error instanceof Error) {
       return error.message;
@@ -223,7 +224,7 @@ const formatHostedModelProofError = (error: unknown): string => {
     return `Hosted-model SAIA action forbidden. The current MCP token or Splunk user can access live read-only Splunk tools, but not ${hostedModelToolNames.join("/")}.`;
   }
 
-  return formatted.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return redactText(formatted.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(), env);
 };
 
 const hostedModelBlockedMessage = (error: string, contractAvailable: boolean): string => {
@@ -297,7 +298,8 @@ const hostedModelToolOutput = (value: Record<string, unknown>): Record<string, u
 const collectHostedModelToolResults = async (
   adapter: SplunkAccessAdapter,
   contract: EnvironmentContract,
-  callOptions: { requestId: string; missionId: string }
+  callOptions: { requestId: string; missionId: string },
+  env: NodeJS.ProcessEnv
 ): Promise<{ assistance: HostedModelAssistance; toolResults: HostedModelToolResult[] }> => {
   const assistance: HostedModelAssistance = { warnings: [] };
   const toolResults: HostedModelToolResult[] = [];
@@ -390,7 +392,7 @@ const collectHostedModelToolResults = async (
         output: hostedModelToolOutput({ answer: answer.answer, warnings: answer.warnings })
       });
     } catch (error) {
-      toolResults.push(hostedModelToolBlockedResult(toolName, contractAdvertised, formatHostedModelProofError(error)));
+      toolResults.push(hostedModelToolBlockedResult(toolName, contractAdvertised, formatHostedModelProofError(error, env)));
     }
   }
 
@@ -406,7 +408,8 @@ const hostedModelFailureSummary = (toolResults: HostedModelToolResult[]): string
 export const writeHostedModelProofArtifact = async (
   input: { outDir: string; mode: "fixture" | "live"; setup?: HostedModelSetup },
   adapter: SplunkAccessAdapter,
-  contract: EnvironmentContract
+  contract: EnvironmentContract,
+  env: NodeJS.ProcessEnv = process.env
 ): Promise<string> => {
   if (!adapter.generateSpl || !adapter.explainSpl || !adapter.optimizeSpl || !adapter.askSplunkQuestion) {
     throw new Error(`hosted-model-proof requires adapters that expose ${hostedModelToolNames.join(", ")}.`);
@@ -435,7 +438,7 @@ export const writeHostedModelProofArtifact = async (
     toolCalls: hostedModelToolNames
   };
 
-  const { assistance, toolResults } = await collectHostedModelToolResults(adapter, contract, callOptions);
+  const { assistance, toolResults } = await collectHostedModelToolResults(adapter, contract, callOptions, env);
   const blocked = toolResults.some((result) => result.status === "BLOCKED");
 
   if (!blocked) {
@@ -543,7 +546,7 @@ export const runHostedModelProofWorkflow = async (
   const compileArtifacts = await compileHostedModelArtifacts({ ...input, mode }, env);
   const adapter = await createSplunkAccessAdapter({ ...input, mode }, env);
   const contract = await readJson<EnvironmentContract>(join(input.outDir, "environment-contract.json"), "environment contract");
-  const proofPath = await writeHostedModelProofArtifact({ outDir: input.outDir, mode, setup }, adapter, contract);
+  const proofPath = await writeHostedModelProofArtifact({ outDir: input.outDir, mode, setup }, adapter, contract, env);
   const status = await hostedModelStatusFromArtifact(proofPath);
 
   return { status, outDir: input.outDir, artifacts: [...compileArtifacts, proofPath], mutation: false, messages: [] };

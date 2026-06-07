@@ -160,12 +160,14 @@ describe("workbench backend", () => {
   });
 
   it("redacts secret-looking text and environment values", () => {
-    const redacted = redactText("Bearer abcdefghijkl TOKEN=secret-value and exact-token", {
+    const redacted = redactText("Bearer abcdefghijkl TOKEN=secret-value https://tenant.example.invalid/mcp and exact-token", {
       SPLUNKREADY_SPLUNK_MCP_TOKEN: "exact-token"
     });
 
     expect(redacted).toContain("Bearer [REDACTED]");
     expect(redacted).toContain("TOKEN=[REDACTED]");
+    expect(redacted).toContain("[REDACTED_URL]");
+    expect(redacted).not.toContain("tenant.example.invalid");
     expect(redacted).not.toContain("exact-token");
   });
 

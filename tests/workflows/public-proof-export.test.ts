@@ -73,7 +73,8 @@ describe("public proof export workflow", () => {
       expect.arrayContaining([expect.objectContaining({ path: "live-security-proof-summary.json", redacted: true })])
     );
     expect(exportedSummary).toContain("[REDACTED]");
-    expect(exportedSummary).toContain("https://[REDACTED-ENDPOINT]");
+    expect(exportedSummary).toContain("[REDACTED_URL]");
+    expect(exportedSummary).not.toContain("https://");
     expect(exportedSummary).not.toContain("live-token");
     expect(exportedSummary).not.toContain("10.9.8.7");
     expect(exportedSummary).not.toContain("192.168.1.42");
@@ -187,7 +188,8 @@ describe("public proof export workflow", () => {
     );
     for (const exported of [exportedProof, exportedDiagnostic]) {
       expect(exported).toContain("[REDACTED]");
-      expect(exported).toContain("https://[REDACTED-ENDPOINT]");
+      expect(exported).toContain("[REDACTED_URL]");
+      expect(exported).not.toContain("https://");
       expect(exported).not.toContain("saia-token");
       expect(exported).not.toContain("10.4.3.2");
       expect(exported).not.toContain("172.16.4.20");

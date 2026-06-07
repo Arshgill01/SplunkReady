@@ -269,7 +269,7 @@ const liveSplGenerationInput = (input: GenerateSplRequest): Record<string, unkno
 });
 
 const liveSplunkQuestionInput = (input: AskSplunkQuestionRequest): Record<string, unknown> => ({
-  question: input.question
+  prompt: input.question
 });
 
 const normalizeGenerateSplResult = (value: unknown): GenerateSplResult => {
