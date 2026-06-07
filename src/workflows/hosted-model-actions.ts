@@ -262,6 +262,147 @@ const hostedModelBlockedRequiredActions = (error: string, contractAvailable: boo
   ];
 };
 
+type HostedModelToolResult = {
+  toolName: ReadOnlySplunkToolName;
+  status: "PASS" | "BLOCKED";
+  contractAdvertised: boolean;
+  output?: Record<string, unknown>;
+  error?: string;
+};
+
+type HostedModelAssistance = {
+  generatedQuery?: string;
+  generationRationale?: string;
+  explanation?: string;
+  optimizedQuery?: string;
+  rationale?: string;
+  answer?: string;
+  warnings: string[];
+};
+
+const hostedModelToolBlockedResult = (
+  toolName: ReadOnlySplunkToolName,
+  contractAdvertised: boolean,
+  error: string
+): HostedModelToolResult => ({
+  toolName,
+  status: "BLOCKED",
+  contractAdvertised,
+  error
+});
+
+const hostedModelToolOutput = (value: Record<string, unknown>): Record<string, unknown> =>
+  Object.fromEntries(Object.entries(value).filter(([, outputValue]) => outputValue !== undefined));
+
+const collectHostedModelToolResults = async (
+  adapter: SplunkAccessAdapter,
+  contract: EnvironmentContract,
+  callOptions: { requestId: string; missionId: string }
+): Promise<{ assistance: HostedModelAssistance; toolResults: HostedModelToolResult[] }> => {
+  const assistance: HostedModelAssistance = { warnings: [] };
+  const toolResults: HostedModelToolResult[] = [];
+
+  for (const toolName of hostedModelToolNames) {
+    const contractAdvertised = contract.mcpTools.includes(toolName);
+
+    if (!contractAdvertised) {
+      toolResults.push(hostedModelToolBlockedResult(toolName, false, `${toolName} is not advertised by the environment contract.`));
+      continue;
+    }
+
+    try {
+      if (toolName === "saia_generate_spl") {
+        const generation = await adapter.generateSpl?.({ prompt: hostedModelGenerationPrompt }, callOptions);
+
+        if (!generation) {
+          toolResults.push(hostedModelToolBlockedResult(toolName, true, "Adapter does not expose generateSpl."));
+          continue;
+        }
+
+        assistance.generatedQuery = generation.query;
+        assistance.generationRationale = generation.rationale;
+        assistance.warnings.push(...generation.warnings);
+        toolResults.push({
+          toolName,
+          status: "PASS",
+          contractAdvertised,
+          output: hostedModelToolOutput({ query: generation.query, rationale: generation.rationale, warnings: generation.warnings })
+        });
+        continue;
+      }
+
+      if (toolName === "saia_explain_spl") {
+        const explanation = await adapter.explainSpl?.({ query: hostedModelProofQuery }, callOptions);
+
+        if (!explanation) {
+          toolResults.push(hostedModelToolBlockedResult(toolName, true, "Adapter does not expose explainSpl."));
+          continue;
+        }
+
+        assistance.explanation = explanation.explanation;
+        assistance.warnings.push(...explanation.warnings);
+        toolResults.push({
+          toolName,
+          status: "PASS",
+          contractAdvertised,
+          output: hostedModelToolOutput({ explanation: explanation.explanation, warnings: explanation.warnings })
+        });
+        continue;
+      }
+
+      if (toolName === "saia_optimize_spl") {
+        const optimization = await adapter.optimizeSpl?.({ query: hostedModelProofQuery }, callOptions);
+
+        if (!optimization) {
+          toolResults.push(hostedModelToolBlockedResult(toolName, true, "Adapter does not expose optimizeSpl."));
+          continue;
+        }
+
+        assistance.optimizedQuery = optimization.optimizedQuery;
+        assistance.rationale = optimization.rationale;
+        assistance.warnings.push(...optimization.warnings);
+        toolResults.push({
+          toolName,
+          status: "PASS",
+          contractAdvertised,
+          output: hostedModelToolOutput({
+            optimizedQuery: optimization.optimizedQuery,
+            rationale: optimization.rationale,
+            warnings: optimization.warnings
+          })
+        });
+        continue;
+      }
+
+      const answer = await adapter.askSplunkQuestion?.({ question: hostedModelQuestion }, callOptions);
+
+      if (!answer) {
+        toolResults.push(hostedModelToolBlockedResult(toolName, true, "Adapter does not expose askSplunkQuestion."));
+        continue;
+      }
+
+      assistance.answer = answer.answer;
+      assistance.warnings.push(...answer.warnings);
+      toolResults.push({
+        toolName,
+        status: "PASS",
+        contractAdvertised,
+        output: hostedModelToolOutput({ answer: answer.answer, warnings: answer.warnings })
+      });
+    } catch (error) {
+      toolResults.push(hostedModelToolBlockedResult(toolName, contractAdvertised, formatHostedModelProofError(error)));
+    }
+  }
+
+  return { assistance, toolResults };
+};
+
+const hostedModelFailureSummary = (toolResults: HostedModelToolResult[]): string =>
+  toolResults
+    .filter((result) => result.status === "BLOCKED")
+    .map((result) => `${result.toolName}: ${result.error ?? "blocked"}`)
+    .join("; ");
+
 export const writeHostedModelProofArtifact = async (
   input: { outDir: string; mode: "fixture" | "live"; setup?: HostedModelSetup },
   adapter: SplunkAccessAdapter,
@@ -294,40 +435,35 @@ export const writeHostedModelProofArtifact = async (
     toolCalls: hostedModelToolNames
   };
 
-  try {
-    const [generation, explanation, optimization, question] = await Promise.all([
-      adapter.generateSpl({ prompt: hostedModelGenerationPrompt }, callOptions),
-      adapter.explainSpl({ query: hostedModelProofQuery }, callOptions),
-      adapter.optimizeSpl({ query: hostedModelProofQuery }, callOptions),
-      adapter.askSplunkQuestion({ question: hostedModelQuestion }, callOptions)
-    ]);
+  const { assistance, toolResults } = await collectHostedModelToolResults(adapter, contract, callOptions);
+  const blocked = toolResults.some((result) => result.status === "BLOCKED");
 
+  if (!blocked) {
     await writeJson(proofPath, {
       status: "PASS",
       ...baseProof,
-      assistance: {
-        generatedQuery: generation.query,
-        generationRationale: generation.rationale,
-        explanation: explanation.explanation,
-        optimizedQuery: optimization.optimizedQuery,
-        rationale: optimization.rationale,
-        answer: question.answer,
-        warnings: [...generation.warnings, ...explanation.warnings, ...optimization.warnings, ...question.warnings]
-      },
+      toolResults,
+      passedTools: hostedModelToolNames,
+      blockedTools: [],
+      assistance,
       error: null,
       notes:
         "This proof calls hosted-model tools only. It does not run generated, unsafe, or optimized SPL, does not grade with an LLM, and does not mutate Splunk."
     });
-  } catch (error) {
-    await writeJson(proofPath, {
-      status: "BLOCKED",
-      ...baseProof,
-      assistance: null,
-      error: formatHostedModelProofError(error),
-      notes:
-        "Hosted-model tools were advertised in the live contract but could not be invoked with the current MCP credentials."
-    });
+    return proofPath;
   }
+
+  await writeJson(proofPath, {
+    status: "BLOCKED",
+    ...baseProof,
+    toolResults,
+    passedTools: toolResults.filter((result) => result.status === "PASS").map((result) => result.toolName),
+    blockedTools: toolResults.filter((result) => result.status === "BLOCKED").map((result) => result.toolName),
+    assistance: null,
+    error: hostedModelFailureSummary(toolResults),
+    notes:
+      "Hosted-model tools were advertised in the live contract but could not all be invoked with the current MCP credentials."
+  });
 
   return proofPath;
 };
@@ -355,6 +491,11 @@ const writeBlockedHostedModelProofArtifact = async (
       purpose: "Demonstrate hosted-model SAIA assistance as advisory remediation for deterministic SPL violations. No generated or optimized SPL is executed."
     },
     toolCalls: hostedModelToolNames,
+    toolResults: hostedModelToolNames.map((toolName) =>
+      hostedModelToolBlockedResult(toolName, false, "Live hosted-model proof is missing required configuration.")
+    ),
+    passedTools: [],
+    blockedTools: hostedModelToolNames,
     assistance: null,
     error: input.error,
     notes:
@@ -421,6 +562,17 @@ export const runHostedModelDiagnosticWorkflow = async (
   const proofPath = join(input.outDir, "hosted-model-proof.json");
   const proof = await readJson<unknown>(proofPath, "hosted model proof");
   const proofStatus = stringFromRecord(proof, "status") ?? "UNKNOWN";
+  const proofRecord = isRecord(proof) ? proof : {};
+  const passedTools = Array.isArray(proofRecord.passedTools)
+    ? proofRecord.passedTools.filter((toolName): toolName is ReadOnlySplunkToolName =>
+        hostedModelToolNames.includes(toolName as ReadOnlySplunkToolName)
+      )
+    : [];
+  const blockedTools = Array.isArray(proofRecord.blockedTools)
+    ? proofRecord.blockedTools.filter((toolName): toolName is ReadOnlySplunkToolName =>
+        hostedModelToolNames.includes(toolName as ReadOnlySplunkToolName)
+      )
+    : hostedModelToolNames;
   const availableTools = contract ? hostedModelToolNames.filter((toolName) => contract.mcpTools.includes(toolName)) : [];
   const missingTools = contract ? hostedModelToolNames.filter((toolName) => !contract.mcpTools.includes(toolName)) : hostedModelToolNames;
   const diagnosticPath = join(input.outDir, "hosted-model-diagnostic.json");
@@ -439,6 +591,9 @@ export const runHostedModelDiagnosticWorkflow = async (
     requiredTools: hostedModelToolNames,
     availableTools,
     missingTools,
+    passedTools,
+    blockedTools,
+    toolResults: Array.isArray(proofRecord.toolResults) ? proofRecord.toolResults : [],
     permission: blocked
       ? {
           status: "BLOCKED",

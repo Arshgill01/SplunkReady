@@ -10101,6 +10101,80 @@ Open blockers:
 - Live SAIA proof remains blocked until the operator-owned endpoint invokes
   advertised SAIA tools successfully.
 
+## 2026-06-07 - Move 120 Per-Tool SAIA Hosted-Model Receipt
+
+Commands:
+
+- `npx tsc --noEmit`
+- `npx vitest run tests/workflows/hosted-model-actions.test.ts tests/cli/flow.test.ts tests/mcp/server.test.ts tests/ui/app.test.ts --testNamePattern "hosted-model|Hosted model|SAIA|MCP proof|hosted_model"`
+- `npm run build && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --json && npm run public-demo:build`
+- `python3 -m http.server 4343 --bind 127.0.0.1` from `artifacts/public-demo`
+- `bash "$PWCLI" --session splunkready-move120b open 'http://127.0.0.1:4343/?artifacts=artifacts%2Fmcp-proof#mcp-proof'`
+- `bash "$PWCLI" --session splunkready-move120b eval 'async () => { ... }'`
+- `bash "$PWCLI" --session splunkready-move120b console error`
+- `npm run check`
+
+Result:
+
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified with 19 rules, 4 fixture missions, and 20
+    evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 207 files and default route
+    `mcp-proof`;
+  - package readiness audit checked 164 packed files;
+  - package installability audit installed `splunkready-0.1.0.tgz`, verified
+    `npx splunkready judge-proof` returned PASS, and initialized
+    `npx splunkready mcp`;
+  - 59 test files passed;
+  - 366 tests passed;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed with 85 groups, 5 pass-with-concerns files,
+    and 0 failing latest verdicts;
+  - submission copy audit passed with 57 required claims;
+  - included `git diff --check` completed with no output.
+- PASS for TypeScript:
+  - completed with no output.
+- PASS for focused hosted-model, MCP proof, and UI coverage:
+  - 4 test files passed;
+  - 14 tests passed;
+  - 73 tests skipped by focused pattern.
+- PASS for regenerated MCP proof and public demo build:
+  - `mcp-proof` returned `status: "PASS"`;
+  - `hosted-model-proof.json` reports `passedTools` for
+    `saia_generate_spl`, `saia_explain_spl`, `saia_optimize_spl`, and
+    `saia_ask_splunk_question`;
+  - `blockedTools` is empty in the credential-free public proof;
+  - `toolResults` records all four SAIA tools as `PASS`;
+  - public demo export completed with default route
+    `?artifacts=artifacts%2Fmcp-proof#mcp-proof`.
+- PASS for Playwright static browser verification:
+  - route loaded `http://127.0.0.1:4343/?artifacts=artifacts%2Fmcp-proof#mcp-proof`;
+  - `mcp-proof-summary.json` reported `status: "PASS"` and
+    hosted-model access `PASS`;
+  - body contained `Hosted-model passed tools`,
+    `Hosted-model tool results`, `saia_generate_spl:PASS`, and
+    `saia_ask_splunk_question:PASS`;
+  - no `Artifact load failed` text was present;
+  - console check reported zero errors and zero warnings.
+
+Notes:
+
+- The first Playwright check after adding nested proof fields showed the JSON was
+  correct but the MCP page did not visibly render the per-tool rows. The fix
+  forwarded the fields through `splunkready_check_hosted_model_access`,
+  `mcp-proof-summary.json`, and the MCP proof route.
+- Did not read, source, print, or commit `.splunkready*` or `.env*` secret
+  files.
+
+Open blockers:
+
+- Hosted CI still needs to run after push.
+- Live SAIA proof remains blocked until the operator-owned endpoint invokes all
+  four advertised SAIA tools successfully.
+
 ## 2026-06-07 - Move 116 External MCP Client Config Resources
 
 Commands:

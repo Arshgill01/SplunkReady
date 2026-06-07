@@ -1081,6 +1081,9 @@ const callTool = async (name: string, args: unknown, env: NodeJS.ProcessEnv): Pr
         requiredTools: Array.isArray(diagnostic.requiredTools) ? diagnostic.requiredTools : [],
         availableTools: Array.isArray(diagnostic.availableTools) ? diagnostic.availableTools : [],
         missingTools: Array.isArray(diagnostic.missingTools) ? diagnostic.missingTools : [],
+        passedTools: Array.isArray(diagnostic.passedTools) ? diagnostic.passedTools : [],
+        blockedTools: Array.isArray(diagnostic.blockedTools) ? diagnostic.blockedTools : [],
+        toolResults: Array.isArray(diagnostic.toolResults) ? diagnostic.toolResults : [],
         artifacts: result.artifacts
       });
     } catch (caught) {

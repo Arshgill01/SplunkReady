@@ -428,6 +428,14 @@ const mcpProofSummary = {
     requiredTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
     availableTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
     missingTools: [],
+    passedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+    blockedTools: [],
+    toolResults: [
+      { toolName: "saia_generate_spl", status: "PASS", contractAdvertised: true },
+      { toolName: "saia_explain_spl", status: "PASS", contractAdvertised: true },
+      { toolName: "saia_optimize_spl", status: "PASS", contractAdvertised: true },
+      { toolName: "saia_ask_splunk_question", status: "PASS", contractAdvertised: true }
+    ],
     artifacts: [
       "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
       "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-diagnostic.json"
@@ -1603,6 +1611,10 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Inline transcript certification");
     expect(html).toContain("submission-evidence/mcp-proof/mcp-inline-transcript-certification");
     expect(html).toContain("Hosted-model access");
+    expect(html).toContain("Hosted-model passed tools");
+    expect(html).toContain("Hosted-model tool results");
+    expect(html).toContain("saia_generate_spl:PASS");
+    expect(html).toContain("saia_ask_splunk_question:PASS");
     expect(html).toContain("submission-evidence/mcp-proof/mcp-hosted-model-access");
     expect(html).toContain("resources/read");
     expect(html).toContain("resources/templates/list");

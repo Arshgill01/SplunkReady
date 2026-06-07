@@ -613,3 +613,14 @@ Playwright caught the stale UI enum that would have broken the public MCP proof
 route, and the fixed route now loads with zero console errors. Residual risk
 remains live endpoint readiness: this is fixture/public proof until the
 operator-owned Splunk MCP endpoint can invoke all advertised SAIA tools.
+
+Move 120 reduces live SAIA ambiguity and MCP/hosted-model evidence risk by
+recording per-tool hosted-model invocation receipts. Hosted-model proof and
+diagnostic artifacts now show `passedTools`, `blockedTools`, and `toolResults`
+for `saia_generate_spl`, `saia_explain_spl`, `saia_optimize_spl`, and
+`saia_ask_splunk_question`; the SplunkReady MCP tool forwards those fields to
+external MCP clients; and the public MCP proof route visibly renders the
+per-tool SAIA health. This makes partial live failures actionable instead of a
+generic BLOCKED state. Residual risk remains live endpoint readiness: no live
+SAIA PASS is claimed until the operator-owned endpoint invokes all four SAIA
+tools successfully.

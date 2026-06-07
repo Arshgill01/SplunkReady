@@ -142,6 +142,7 @@ commands, or filesystem paths.
 | P0 | [117](moves117.md) Live SAIA not-found diagnostic | 0.5d | Runs the operator-owned live hosted-model diagnostic and tightens blocked-result classification when advertised SAIA tools return not found at invocation time. |
 | P0 | [118](moves118.md) Package MCP installability audit | 0.5d | Extends the packed-package installability audit so a clean temp install must pass judge-proof and initialize the `splunkready mcp` stdio server. |
 | P0 | [119](moves119.md) Four-tool SAIA hosted-model proof | 0.5d | Expands hosted-model proof from explain/optimize to SAIA generate, explain, optimize, and ask, then regenerates MCP evidence and Playwright-verifies the public route. |
+| P0 | [120](moves120.md) Per-tool SAIA hosted-model receipt | 0.5d | Records passed/blocked status for each SAIA hosted-model tool and surfaces it through MCP proof evidence and the public route. |
 
 ## Non-Negotiable Boundaries
 

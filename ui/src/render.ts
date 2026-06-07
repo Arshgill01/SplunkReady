@@ -267,6 +267,13 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
                   ["Inline transcript certification", summary.inlineTranscriptCertification.status],
                   ["Hosted-model access", summary.hostedModelAccess.status],
                   ["Hosted-model permission", summary.hostedModelAccess.permissionStatus],
+                  ["Hosted-model passed tools", summary.hostedModelAccess.passedTools?.join(" / ") || "none"],
+                  ["Hosted-model blocked tools", summary.hostedModelAccess.blockedTools?.join(" / ") || "none"],
+                  [
+                    "Hosted-model tool results",
+                    summary.hostedModelAccess.toolResults?.map((result) => `${result.toolName}:${result.status}`).join(" / ") ||
+                      "not recorded"
+                  ],
                   ["Certification out dir", summary.transcriptCertification.outDir],
                   ["Inline certification out dir", summary.inlineTranscriptCertification.outDir],
                   ["Hosted-model out dir", summary.hostedModelAccess.outDir],
@@ -579,6 +586,12 @@ const renderHostedModelProof = (proof: HostedModelProof | undefined): string => 
       ["Mode", proof.mode],
       ["Contract", proof.contract.id],
       ["Tool calls", proof.toolCalls.join(" / ")],
+      ["Passed tools", proof.passedTools?.join(" / ") || "none"],
+      ["Blocked tools", proof.blockedTools?.join(" / ") || "none"],
+      [
+        "Tool results",
+        proof.toolResults?.map((result) => `${result.toolName}:${result.status}`).join(" / ") || "not recorded"
+      ],
       ["Rule context", proof.deterministicContext.ruleIds.join(" / ")],
       ["Pass/fail authority", proof.deterministicContext.passFailAuthority],
       ...renderHostedModelSetupRows(proof.setup),
@@ -619,6 +632,12 @@ const renderHostedModelDiagnostic = (diagnostic: HostedModelDiagnostic | undefin
       ["Required tools", diagnostic.requiredTools.join(" / ")],
       ["Available tools", diagnostic.availableTools.length > 0 ? diagnostic.availableTools.join(" / ") : "none"],
       ["Missing tools", diagnostic.missingTools.length > 0 ? diagnostic.missingTools.join(" / ") : "none"],
+      ["Passed tools", diagnostic.passedTools?.join(" / ") || "none"],
+      ["Blocked tools", diagnostic.blockedTools?.join(" / ") || "none"],
+      [
+        "Tool results",
+        diagnostic.toolResults?.map((result) => `${result.toolName}:${result.status}`).join(" / ") || "not recorded"
+      ],
       ["Permission", diagnostic.permission.status],
       ["Error", diagnostic.permission.error ?? "none"],
       ["Required actions", diagnostic.permission.requiredActions?.join(" / ") ?? "none"],

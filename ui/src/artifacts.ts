@@ -102,6 +102,8 @@ const hostedModelProofSchema = z
       .strict(),
     setup: hostedModelSetupSchema.optional(),
     query: z.string().min(1),
+    generationPrompt: z.string().min(1).optional(),
+    question: z.string().min(1).optional(),
     deterministicContext: z
       .object({
         ruleIds: z.array(z.string().min(1)),
@@ -122,6 +124,21 @@ const hostedModelProofSchema = z
       .strict()
       .nullable(),
     toolCalls: z.array(hostedModelToolNameSchema),
+    toolResults: z
+      .array(
+        z
+          .object({
+            toolName: hostedModelToolNameSchema,
+            status: z.enum(["PASS", "BLOCKED"]),
+            contractAdvertised: z.boolean(),
+            output: z.record(z.string(), z.unknown()).optional(),
+            error: z.string().min(1).optional()
+          })
+          .strict()
+      )
+      .optional(),
+    passedTools: z.array(hostedModelToolNameSchema).optional(),
+    blockedTools: z.array(hostedModelToolNameSchema).optional(),
     error: z.string().min(1).nullable(),
     notes: z.string().min(1)
   })
@@ -173,6 +190,21 @@ const hostedModelDiagnosticSchema = z
     requiredTools: z.array(hostedModelToolNameSchema),
     availableTools: z.array(hostedModelToolNameSchema),
     missingTools: z.array(hostedModelToolNameSchema),
+    passedTools: z.array(hostedModelToolNameSchema).optional(),
+    blockedTools: z.array(hostedModelToolNameSchema).optional(),
+    toolResults: z
+      .array(
+        z
+          .object({
+            toolName: hostedModelToolNameSchema,
+            status: z.enum(["PASS", "BLOCKED"]),
+            contractAdvertised: z.boolean(),
+            output: z.record(z.string(), z.unknown()).optional(),
+            error: z.string().min(1).optional()
+          })
+          .strict()
+      )
+      .optional(),
     permission: z
       .object({
         status: z.enum(["OK", "BLOCKED"]),
@@ -737,6 +769,21 @@ const mcpProofSummarySchema = z
         requiredTools: z.array(hostedModelToolNameSchema),
         availableTools: z.array(hostedModelToolNameSchema),
         missingTools: z.array(hostedModelToolNameSchema),
+        passedTools: z.array(hostedModelToolNameSchema).optional(),
+        blockedTools: z.array(hostedModelToolNameSchema).optional(),
+        toolResults: z
+          .array(
+            z
+              .object({
+                toolName: hostedModelToolNameSchema,
+                status: z.enum(["PASS", "BLOCKED"]),
+                contractAdvertised: z.boolean(),
+                output: z.record(z.string(), z.unknown()).optional(),
+                error: z.string().min(1).optional()
+              })
+              .strict()
+          )
+          .optional(),
         artifacts: z.array(z.string().min(1))
       })
       .strict(),

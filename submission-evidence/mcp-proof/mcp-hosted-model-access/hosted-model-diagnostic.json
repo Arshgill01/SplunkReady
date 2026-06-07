@@ -20,6 +20,55 @@
     "saia_ask_splunk_question"
   ],
   "missingTools": [],
+  "passedTools": [
+    "saia_generate_spl",
+    "saia_explain_spl",
+    "saia_optimize_spl",
+    "saia_ask_splunk_question"
+  ],
+  "blockedTools": [],
+  "toolResults": [
+    {
+      "toolName": "saia_generate_spl",
+      "status": "PASS",
+      "contractAdvertised": true,
+      "output": {
+        "query": "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now",
+        "rationale": "Fixture SAIA generated SPL from prompt: Generate read-only SPL for investigating lateral movement involving host win-finance-07 in the authorized Windows security index.",
+        "warnings": []
+      }
+    },
+    {
+      "toolName": "saia_explain_spl",
+      "status": "PASS",
+      "contractAdvertised": true,
+      "output": {
+        "explanation": "The query searches all indexes and references src_ip, which is not canonical in this fixture.",
+        "warnings": [
+          "Prefer a validated saved search or canonical field src."
+        ]
+      }
+    },
+    {
+      "toolName": "saia_optimize_spl",
+      "status": "PASS",
+      "contractAdvertised": true,
+      "output": {
+        "optimizedQuery": "search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now",
+        "rationale": "Narrow to the known authentication index and canonical src field.",
+        "warnings": []
+      }
+    },
+    {
+      "toolName": "saia_ask_splunk_question",
+      "status": "PASS",
+      "contractAdvertised": true,
+      "output": {
+        "answer": "Fixture SAIA guidance for question: Why should a Splunk-connected agent prefer authorized indexes and saved-search provenance when investigating lateral movement?",
+        "warnings": []
+      }
+    }
+  ],
   "permission": {
     "status": "OK",
     "message": "The current MCP credentials can invoke saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question for advisory SPL remediation."

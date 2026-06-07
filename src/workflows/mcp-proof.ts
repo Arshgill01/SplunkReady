@@ -203,6 +203,12 @@ const stringFromRecord = (record: Record<string, unknown>, key: string): string 
   return typeof value === "string" ? value : "";
 };
 
+const stringArrayFromRecord = (record: Record<string, unknown>, key: string): string[] => {
+  const value = record[key];
+
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+};
+
 class McpStdioClient {
   private readonly child: ChildProcessWithoutNullStreams;
   private readonly pending: Array<(response: JsonRpcResponse) => void> = [];
@@ -364,6 +370,8 @@ Inline transcript certification: ${stringFromRecord(summary.inlineTranscriptCert
 
 Hosted-model access check: ${stringFromRecord(summary.hostedModelAccess, "status")}
 - Permission: ${stringFromRecord(summary.hostedModelAccess, "permissionStatus")}
+- Passed tools: ${stringArrayFromRecord(summary.hostedModelAccess, "passedTools").join(", ") || "none"}
+- Blocked tools: ${stringArrayFromRecord(summary.hostedModelAccess, "blockedTools").join(", ") || "none"}
 - Output: ${stringFromRecord(summary.hostedModelAccess, "outDir")}
 
 Splunk MCP boundary: ${summary.splunkMcpBoundary.status}

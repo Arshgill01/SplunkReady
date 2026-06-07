@@ -12570,3 +12570,52 @@ Open blockers:
   tools successfully before SplunkReady can claim live hosted-model proof.
 - Registry `@latest` needs a later publish before public installs contain
   Moves 116-119.
+
+## 2026-06-07 16:33 - Move 120 Per-Tool SAIA Hosted-Model Receipt
+
+Scope:
+- Changed hosted-model proof generation from an aggregate all-or-nothing SAIA
+  call set into per-tool invocation receipts for `saia_generate_spl`,
+  `saia_explain_spl`, `saia_optimize_spl`, and
+  `saia_ask_splunk_question`.
+- Added `toolResults`, `passedTools`, and `blockedTools` to
+  `hosted-model-proof.json` and `hosted-model-diagnostic.json`.
+- Kept the proof strict: generated, unsafe, and optimized SPL is not executed;
+  SAIA output remains advisory; deterministic rules remain the pass/fail
+  authority.
+- Forwarded per-tool SAIA health through
+  `splunkready_check_hosted_model_access`, so MCP clients and
+  `mcp-proof-summary.json` can inspect exact hosted-model readiness.
+- Updated the MCP proof page to render hosted-model passed tools, blocked
+  tools, and tool results in the judge-facing certified-boundary panel.
+- Added a partial-failure regression where `saia_ask_splunk_question` is blocked
+  but the other three SAIA tools are still probed and recorded as passed.
+- Regenerated `submission-evidence/mcp-proof` and rebuilt the public demo.
+- Playwright-verified the static MCP route shows the new per-tool rows, has no
+  artifact-load failure, and has zero console errors.
+- Did not call live Splunk.
+- Did not read, source, print, or commit real `.splunkready*` / `.env*` secret
+  values.
+- Did not mutate Splunk.
+- Did not use subagents.
+
+Files changed:
+- `src/workflows/hosted-model-actions.ts`
+- `src/mcp/server.ts`
+- `src/workflows/mcp-proof.ts`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `tests/cli/flow.test.ts`
+- `tests/ui/app.test.ts`
+- `tests/workflows/hosted-model-actions.test.ts`
+- `submission-evidence/mcp-proof/*`
+- `moves/README.md`
+- `moves/moves120.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+- `logs/risk-register.md`
+
+Open blockers:
+- This is still credential-free public proof, not a live SAIA PASS claim.
+- The operator-owned Splunk MCP endpoint still needs to invoke all four SAIA
+  tools successfully before live hosted-model proof can be claimed.

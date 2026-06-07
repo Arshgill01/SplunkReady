@@ -17,6 +17,9 @@ describe("hosted model workflows", () => {
       mutation: boolean;
       deterministicContext: { passFailAuthority: string };
       toolCalls: string[];
+      passedTools: string[];
+      blockedTools: string[];
+      toolResults: Array<{ toolName: string; status: string; contractAdvertised: boolean }>;
     };
 
     expect(result).toMatchObject({ status: "PASS", outDir, mutation: false });
@@ -27,8 +30,18 @@ describe("hosted model workflows", () => {
       status: "PASS",
       mutation: false,
       deterministicContext: { passFailAuthority: "deterministic-rule-engine" },
-      toolCalls: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"]
+      toolCalls: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+      passedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+      blockedTools: []
     });
+    expect(proof.toolResults).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ toolName: "saia_generate_spl", status: "PASS", contractAdvertised: true }),
+        expect.objectContaining({ toolName: "saia_explain_spl", status: "PASS", contractAdvertised: true }),
+        expect.objectContaining({ toolName: "saia_optimize_spl", status: "PASS", contractAdvertised: true }),
+        expect.objectContaining({ toolName: "saia_ask_splunk_question", status: "PASS", contractAdvertised: true })
+      ])
+    );
   });
 
   it("writes fixture hosted-model diagnostics with advisory-only authority", async () => {
@@ -79,6 +92,8 @@ describe("hosted model workflows", () => {
       mutation: boolean;
       contract: { id: string; mode: string };
       missingTools: string[];
+      passedTools: string[];
+      blockedTools: string[];
       permission: { status: string; message: string; requiredActions: string[] };
       setup: {
         configured: boolean;
@@ -113,6 +128,8 @@ describe("hosted model workflows", () => {
       mutation: false,
       contract: { id: "live-hosted-model-unconfigured", mode: "live" },
       missingTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
+      passedTools: [],
+      blockedTools: ["saia_generate_spl", "saia_explain_spl", "saia_optimize_spl", "saia_ask_splunk_question"],
       permission: {
         status: "BLOCKED",
         message:
