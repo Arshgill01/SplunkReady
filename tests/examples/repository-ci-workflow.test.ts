@@ -87,6 +87,7 @@ describe("repository CI workflow", () => {
     expect(workflow).toContain("uses: actions/upload-artifact@v4");
     expect(workflow).toContain("publish-release:");
     expect(workflow).toContain("needs: standalone");
+    expect(workflow).toContain("uses: actions/checkout@v5");
     expect(workflow).toContain("uses: actions/download-artifact@v4");
     expect(workflow).toContain("Expected 9 release assets");
     expect(workflow).toContain('gh release upload "${tag}" "${assets[@]}" --clobber');

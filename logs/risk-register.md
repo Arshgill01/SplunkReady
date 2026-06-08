@@ -1153,3 +1153,8 @@ removes a tag-workflow race by publishing GitHub Release assets from one
 post-matrix job instead of from each matrix runner. Residual risk: this remains
 unproven until the `v0.1.3` tag workflow builds, smokes, downloads, and uploads
 all 9 expected release files successfully.
+
+Move 172 first tag run exposed a publisher-job setup gap: matrix jobs passed,
+but `gh release create` failed outside a git checkout. Residual risk remains
+until the fixed tag workflow is rerun from a commit with publisher checkout and
+the GitHub Release contains all 9 expected assets.

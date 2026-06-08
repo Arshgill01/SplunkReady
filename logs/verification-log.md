@@ -16461,6 +16461,15 @@ Commands:
 - `npm run audit:submission-copy`
 - `git diff --check`
 - `npm run check`
+- `gh run watch 27128849544 --exit-status`
+- `git tag -a v0.1.3 -m "SplunkReady v0.1.3"`
+- `git push origin v0.1.3`
+- `gh run watch 27128968130 --exit-status` (failed in publisher job)
+- `gh run view 27128968130 --job 80064961994 --log`
+- `npx vitest run tests/examples/repository-ci-workflow.test.ts`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `npm run check`
 
 Result:
 
@@ -16469,3 +16478,17 @@ Result:
 - PASS: submission-copy audit passed with 292 required claims.
 - PASS: whitespace diff check passed.
 - PASS: full `npm run check` passed with 73 test files and 430 tests.
+- PASS: remote CI run `27128849544` passed for release-publication commit
+  `32b6144`, including canonical gate, credential-free live mock proof, Docker
+  mock build, and Docker mock smoke.
+- FAIL expected during iteration: first tag-triggered release run `27128968130`
+  built, smoked, and uploaded workflow artifacts for Linux, macOS, and Windows,
+  but the `publish-release` job failed because `gh release create` ran without a
+  git checkout.
+- PASS: publisher failure root cause was isolated from job `80064961994` logs.
+- PASS: focused workflow tests passed with 1 file and 4 tests after adding
+  checkout to the publisher job.
+- PASS: submission-copy audit passed with 292 required claims.
+- PASS: whitespace diff check passed.
+- PASS: full `npm run check` passed with 73 test files and 430 tests after the
+  publisher checkout fix.

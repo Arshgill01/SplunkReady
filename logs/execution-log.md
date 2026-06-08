@@ -15576,3 +15576,8 @@ Result:
 
 - IN PROGRESS: release workflow race risk is addressed locally; validation and
   tag-triggered publication are pending.
+- FAIL: first tag-triggered release run `27128968130` built, smoked, and
+  uploaded Linux/macOS/Windows workflow artifacts, but the `publish-release` job
+  failed because it did not check out the repository before `gh release create`.
+- Added checkout to the `publish-release` job and extended workflow tests to
+  preserve that requirement.
