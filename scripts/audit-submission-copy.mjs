@@ -440,8 +440,10 @@ const checks = [
     "A real Zed Agent session consumed the SplunkReady MCP recorder gateway and certified the captured Splunk MCP investigation, with compact-session boundaries documented."
   ],
   ["Claim ledger Zed MCP scorecard", files.claimLedger, "submission-evidence/mcp-proof/mcp-category-scorecard.json"],
-  ["Claim ledger Zed compact tier", files.claimLedger, 'zedEvidenceTier: "VERIFIED_COMPACT"'],
-  ["Claim ledger Zed flush boundary", files.claimLedger, "zedJsonlContainsSplunkReadyFlushFrame: false"],
+  ["Claim ledger Zed compact tier", files.claimLedger, 'zedEvidenceTier: "VERIFIED_COMPACT_WITH_FLUSH"'],
+  ["Claim ledger Zed flush boundary", files.claimLedger, "zedJsonlContainsSplunkReadyFlushFrame: true"],
+  ["Claim ledger Zed compact frame count", files.claimLedger, "zedFrames: 7"],
+  ["Claim ledger Zed scorecard score", files.claimLedger, "score `98`"],
   ["Claim ledger Zed investigation boundary", files.claimLedger, "zedJsonlContainsSplunkInvestigationFrames: true"],
   ["Claim ledger MCP category scorecard claim", files.claimLedger, "The MCP category scorecard summarizes SplunkReady MCP, mock Splunk MCP, AppInspect MCP, hosted-model MCP, and Zed evidence without overclaiming the current Zed transcript depth."],
   ["Claim ledger MCP category scorecard status", files.claimLedger, 'status `PASS_WITH_LIMITATIONS`'],

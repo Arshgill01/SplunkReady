@@ -6,15 +6,15 @@ Mutation: no
 
 Deterministic authority: yes
 
-Artifact: artifacts/zed-external-mcp-client-session/mcp-recorder-session.jsonl
+Artifact: artifacts/zed-external-mcp-client-session-strong/mcp-recorder-session.jsonl
 
-Frames: 5
+Frames: 7
 
 Servers: splunk, splunkready
 
-Requests: 2
+Requests: 3
 
-Responses: 2
+Responses: 3
 
 Splunk tools:
 - splunk_get_knowledge_objects

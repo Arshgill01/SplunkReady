@@ -16361,3 +16361,53 @@ Result:
 - CURRENT PUBLIC STATE: npm latest remains `splunkready@0.1.5`, so public
   submission copy continues to cite `0.1.5` until `0.1.6` is actually
   published and verified.
+
+## 2026-06-08T14:54:42Z - Move 191 Zed MCP recorder flush evidence
+
+Context:
+
+- Move 188 made the MCP category evidence honest but left Zed at a compact
+  5-frame session with no visible `splunkready_recorder_flush` JSONL frame.
+- Move 189 fixed the recorder gateway so future flushes are persisted as
+  redacted SplunkReady MCP request/response frames.
+- The goal for this move was to recapture a real Zed desktop-client session
+  against the improved recorder without mutating live Splunk or claiming a
+  large external transcript.
+
+Actions:
+
+- Added `moves/moves191.md`.
+- Backed up the user's Zed settings, temporarily configured a credential-free
+  `splunkready-recorder` context server, and drove Zed Agent through Computer
+  Use in a disposable workspace.
+- Sanity-checked the recorder gateway from the terminal before using Zed.
+- Captured one failed Zed attempt where the agent picked the wrong saved search
+  and deterministic certification returned `FAIL`; that artifact was discarded.
+- Recaptured a passing Zed session by naming the exact saved search
+  `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`, token
+  `host=win-finance-07`, and expected evidence refs.
+- Copied the redacted Zed session, certification, and receipt into
+  `submission-evidence/mcp-proof/zed-client-session/`.
+- Captured `submission-evidence/screenshots/zed-mcp-recorder-summary.png`,
+  showing Zed tool calls and the PASS/READY summary.
+- Updated `scripts/audit-mcp-category-evidence.mjs` and focused tests so the
+  scorecard distinguishes compact Zed evidence with visible flush from compact
+  evidence without visible flush.
+- Updated claim-ledger, submission README, submission-copy guardrails, and the
+  Zed external-client ExecPlan to document the improved but still compact claim
+  boundary.
+
+Result:
+
+- PASS: Zed Agent initiated `splunk__splunk_get_knowledge_objects`,
+  `splunk__splunk_run_saved_search`, and `splunkready_recorder_flush`.
+- PASS: tracked Zed JSONL has 7 frames, both server IDs, visible Splunk
+  investigation frames, and visible recorder-flush frames.
+- PASS: Zed certification artifact reports `PASS`; the receipt reports
+  `READY`, score `100`, evidence refs `evt-102`, `evt-118`, `evt-141`, and
+  `mutation: false`.
+- PASS_WITH_LIMITATIONS: MCP category scorecard now reports score `98`,
+  `zedEvidenceTier: "VERIFIED_COMPACT_WITH_FLUSH"`, and one remaining warning:
+  `zed-frame-depth`.
+- NOTE: This is real third-party-client evidence with visible flush, but it is
+  not a large external-client transcript.

@@ -165,6 +165,16 @@ const failures = checks.filter((check) => check.status === "FAIL");
 const warnings = checks.filter((check) => check.status === "WARN");
 const status = failures.length > 0 ? "FAIL" : warnings.length > 0 ? "PASS_WITH_LIMITATIONS" : "PASS";
 const score = Math.round(((checks.length - failures.length - warnings.length * 0.5) / checks.length) * 1000) / 10;
+const zedFrameDepthWarning = warnings.some((check) => check.id === "zed-frame-depth");
+const zedFlushWarning = warnings.some((check) => check.id === "zed-visible-recorder-flush-frame");
+const zedEvidenceTier = zedFlushWarning
+  ? "VERIFIED_COMPACT"
+  : zedFrameDepthWarning
+    ? "VERIFIED_COMPACT_WITH_FLUSH"
+    : "VERIFIED_STRONG";
+const zedClaimBoundaryNote = zedHasFlushFrame
+  ? "The current Zed evidence is real third-party-client evidence with a visible recorder-flush JSONL frame, but compact. Do not claim a large external-client transcript until a future session captures one."
+  : "The current Zed evidence is real third-party-client evidence, but compact. Do not claim a large external-client transcript or a visible recorder-flush JSONL frame until a future session captures one.";
 
 const scorecard = {
   source: "splunkready-mcp-category-evidence",
@@ -178,9 +188,7 @@ const scorecard = {
     resourceTemplates: templateUris.length,
     prompts: promptNames.length,
     zedFrames: zedFrames.length,
-    zedEvidenceTier: warnings.some((check) => check.id === "zed-frame-depth" || check.id === "zed-visible-recorder-flush-frame")
-      ? "VERIFIED_COMPACT"
-      : "VERIFIED_STRONG"
+    zedEvidenceTier
   },
   evidence: {
     mcpProofSummary: mcpSummaryPath,
@@ -199,8 +207,7 @@ const scorecard = {
       "splunk_run_saved_search"
     ]),
     certificationProvenByAdjacentArtifacts: zedCertification.status === "PASS" && zedReceipt.verdict === "READY",
-    note:
-      "The current Zed evidence is real third-party-client evidence, but compact. Do not claim a large external-client transcript or a visible recorder-flush JSONL frame until a future session captures one."
+    note: zedClaimBoundaryNote
   },
   checks,
   failures,

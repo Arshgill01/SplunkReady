@@ -45,7 +45,11 @@ const writeBaseTree = async (root: string, zedJsonl: string): Promise<void> => {
           artifactPath: "submission-evidence/mcp-proof/dual-server-session.jsonl",
           frameCount: 9,
           serverIds: ["splunk", "splunkready"],
-          splunkReadyToolNames: ["splunkready_certify_mcp_transcript", "splunkready_certify_mcp_transcript_content"]
+          splunkReadyToolNames: [
+            "splunkready_certify_mcp_transcript",
+            "splunkready_certify_mcp_transcript_content",
+            "splunkready_recorder_flush"
+          ]
         },
         appInspectComposition: {
           status: "PASS",
@@ -123,6 +127,34 @@ describe("MCP category evidence audit", () => {
     expect(parsed.status).toBe("PASS_WITH_LIMITATIONS");
     expect(parsed.summary.zedEvidenceTier).toBe("VERIFIED_COMPACT");
     expect(parsed.claimBoundary.zedJsonlContainsSplunkReadyFlushFrame).toBe(false);
+  });
+
+  it("distinguishes compact Zed evidence that contains a visible recorder flush", async () => {
+    const root = await tempRoot();
+    const compactWithFlush = [
+      ...compactZedJsonl.split("\n").filter(Boolean).map((line) => JSON.parse(line)),
+      {
+        serverId: "splunkready",
+        message: { params: { name: "splunkready_recorder_flush" } }
+      },
+      {
+        serverId: "splunkready",
+        message: { result: { structuredContent: { evidenceRefs: ["evt-102", "evt-118", "evt-141"] } } }
+      }
+    ]
+      .map((frame) => JSON.stringify(frame))
+      .join("\n");
+    await writeBaseTree(root, `${compactWithFlush}\n`);
+
+    const result = await execFileAsync(process.execPath, [scriptPath, "--out", "submission-evidence/mcp-proof"], {
+      cwd: root
+    });
+    const parsed = JSON.parse(result.stdout);
+
+    expect(parsed.status).toBe("PASS_WITH_LIMITATIONS");
+    expect(parsed.summary.zedEvidenceTier).toBe("VERIFIED_COMPACT_WITH_FLUSH");
+    expect(parsed.claimBoundary.zedJsonlContainsSplunkReadyFlushFrame).toBe(true);
+    expect(parsed.claimBoundary.note).toContain("visible recorder-flush JSONL frame");
   });
 
   it("fails when Zed evidence is missing saved-search execution", async () => {

@@ -1333,3 +1333,13 @@ package metadata is now `0.1.6` while npm latest remains `0.1.5`; public-facing
 submission copy intentionally continues to cite `0.1.5` until `0.1.6` is
 published, currentness-audited, mirrored to GitHub Packages, and released as
 standalone assets.
+
+Move 191 reduces the MCP category evidence gap left by Moves 188-189: a real
+Zed Agent desktop-client session now contains visible Splunk investigation
+frames plus a visible `splunkready_recorder_flush` frame, and the adjacent
+certification artifact reports `PASS`, receipt `READY`, score `100`, evidence
+refs `evt-102`, `evt-118`, `evt-141`, and `mutation: false`. Residual risk:
+the external-client evidence is still compact at 7 tracked frames. The MCP
+claim boundary may say "real Zed third-party-client evidence with visible
+flush," but must not claim a large external-client transcript until a future
+session captures one.

@@ -160,3 +160,36 @@ Findings from the failed attempts:
 - `splunkready_recorder_flush` must return both MCP text `content` and
   `structuredContent`; Zed treated structured-only output as a client-visible
   failure even while disk certification succeeded.
+
+## Move 191 Continuation
+
+Move 191 recaptured the Zed evidence after the recorder gateway began
+persisting `splunkready_recorder_flush` frames.
+
+What improved:
+
+- Zed Agent again ran in a disposable workspace with GPT-5.5 Low visible in the
+  UI.
+- Zed itself triggered `splunk__splunk_get_knowledge_objects`,
+  `splunk__splunk_run_saved_search`, and `splunkready_recorder_flush`.
+- The tracked redacted Zed JSONL now contains 7 frames, including the visible
+  recorder-flush request/response frame.
+- The certification artifact reports `PASS`, the receipt reports `READY`,
+  score `100`, `mutation: false`, and evidence refs `evt-102`, `evt-118`, and
+  `evt-141`.
+- The MCP category scorecard now reports score `98` and
+  `zedEvidenceTier: "VERIFIED_COMPACT_WITH_FLUSH"`.
+
+Remaining boundary:
+
+- This is real third-party-client evidence with visible flush, but it remains a
+  compact 7-frame session. Do not claim a large external-client transcript until
+  a future run captures one.
+
+Operational lesson:
+
+- A vague Zed prompt picked the wrong saved search (`search::Lateral Movement
+  Investigation`) and failed deterministic certification. The passing prompt
+  named the exact app, saved search, token, and evidence expectations:
+  `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`,
+  `host=win-finance-07`, and refs `evt-102`, `evt-118`, `evt-141`.

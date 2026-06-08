@@ -17307,3 +17307,53 @@ Result:
   files / 439 tests, secret-env ignore audit, reviewer audit with 0 failing
   latest verdicts, submission-copy audit with 391 required claims, and
   whitespace diff check.
+
+## 2026-06-08T14:54:42Z - Move 191 Zed MCP recorder flush evidence
+
+Commands:
+
+- Local recorder gateway sanity check with `node dist/src/cli.js mcp-recorder
+  --server splunk=mock-splunk-mcp --server splunkready=mcp --out
+  artifacts/zed-external-mcp-client-session-strong --fixture
+  fixtures/acme-soc-dev/adapter-fixture.json --mock-state ok`
+- Zed Agent driven through Computer Use in a disposable workspace with the
+  temporary `splunkready-recorder` context server.
+- `node scripts/audit-mcp-category-evidence.mjs --out submission-evidence/mcp-proof`
+- `npx vitest run tests/scripts/mcp-category-evidence.test.ts`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `rg -n 'VERIFIED_COMPACT"|zedJsonlContainsSplunkReadyFlushFrame: false|zedFrames: 5|zed-visible-recorder-flush-frame' submission-evidence/claim-ledger.md submission-evidence/README.md scripts/audit-submission-copy.mjs tests/scripts/submission-copy-audit.test.ts docs/execplans/mcp-zed-external-client-session.md moves/moves191.md`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `rg -n "Authorization: Bearer|Bearer [A-Za-z0-9._~+/=-]+|/Users/|/private/|/tmp/|\\.splunkready|https?://|SPLUNKREADY_.*TOKEN|SPLUNKREADY_.*URL|GEMINI_API_KEY|SAIA_.*URL|real-token|password|secret" submission-evidence/mcp-proof/zed-client-session submission-evidence/screenshots/zed-mcp-recorder-summary.png || true`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: local recorder sanity check listed 18 tools, including
+  `splunk__splunk_get_knowledge_objects`,
+  `splunk__splunk_run_saved_search`, and `splunkready_recorder_flush`.
+- PASS: Zed Agent visibly called the two Splunk investigation tools and
+  `splunkready_recorder_flush`.
+- PASS: tracked Zed JSONL has 7 frames, both server IDs, visible Splunk
+  investigation frames, and visible `splunkready_recorder_flush`.
+- PASS: tracked Zed certification reports `status: "PASS"`, `mutation:
+  false`; receipt reports `verdict: "READY"`, score `100`, evidence refs
+  `evt-102`, `evt-118`, `evt-141`, and `mutation: false`.
+- PASS_WITH_LIMITATIONS: MCP category scorecard reports score `98`,
+  `zedEvidenceTier: "VERIFIED_COMPACT_WITH_FLUSH"`, and only the
+  `zed-frame-depth` warning.
+- PASS: focused MCP category test passed: 1 file, 3 tests.
+- PASS: submission-copy audit passed with 393 required claims.
+- PASS: focused submission-copy audit test passed: 1 file, 3 tests.
+- PASS: stale public-claim scan found no old compact-without-flush wording in
+  public evidence, audit guards, tests, move file, or ExecPlan.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: leak scan on tracked Zed evidence and screenshot returned no matches.
+- PASS: whitespace diff check passed.
+- PASS: `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 76 Vitest files / 440 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts,
+  submission-copy audit with 393 required claims, and whitespace diff check.

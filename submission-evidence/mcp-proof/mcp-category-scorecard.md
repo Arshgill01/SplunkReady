@@ -2,7 +2,7 @@
 
 Status: PASS_WITH_LIMITATIONS
 
-Score: 96
+Score: 98
 
 Mutation: false
 
@@ -16,20 +16,19 @@ Deterministic authority: true
 - AppInspect MCP composition: PASS.
 - Fixture hosted-model MCP access: PASS.
 - Operator-live hosted-model boundary: BLOCKED (SAIA_REST_HANDLERS_PARTIALLY_REGISTERED).
-- Zed external-client evidence tier: VERIFIED_COMPACT; 5 tracked frame(s).
+- Zed external-client evidence tier: VERIFIED_COMPACT_WITH_FLUSH; 7 tracked frame(s).
 
 ## Claim Boundary
 
 - Zed JSONL contains Splunk investigation frames: yes.
-- Zed JSONL contains visible `splunkready_recorder_flush` frame: no.
+- Zed JSONL contains visible `splunkready_recorder_flush` frame: yes.
 - Zed certification is proven by adjacent artifacts: yes.
 
-The current Zed evidence is real third-party-client evidence, but compact. Do not claim a large external-client transcript or a visible recorder-flush JSONL frame until a future session captures one.
+The current Zed evidence is real third-party-client evidence with a visible recorder-flush JSONL frame, but compact. Do not claim a large external-client transcript until a future session captures one.
 
 ## Warnings
 
-- zed-frame-depth: 5 tracked Zed frame(s); current evidence is real but compact.
-- zed-visible-recorder-flush-frame: Tracked JSONL does not contain a visible splunkready_recorder_flush frame; certification is proven by adjacent artifacts and screenshot.
+- zed-frame-depth: 7 tracked Zed frame(s); current evidence is real but compact.
 
 ## Evidence
 

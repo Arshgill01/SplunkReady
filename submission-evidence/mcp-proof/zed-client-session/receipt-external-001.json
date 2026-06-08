@@ -28,15 +28,13 @@
   ],
   "evidenceRefs": [
     "saved-search-lateral-movement",
-    "saved-search-dashboard-lateral-movement-stale-field",
-    "saved-search-prompt-injection-event",
     "evt-102",
     "evt-118",
     "evt-141"
   ],
   "policyPatchSummary": [],
   "rerunComparison": {},
-  "receiptHash": "55d269cce9fe0cdf6bc8aace39d18068fa71eed7daf76afec271f4318e7e9a4d",
+  "receiptHash": "56ae6477ef6f62fa6c808113e85303fe87a3bdbb1b441befd57352baefa4af88",
   "generatedBy": "Agent Readiness Compiler",
   "notes": "This receipt grades an externally supplied trace. The deterministic rule engine decides pass/fail; the trace producer is outside SplunkReady."
 }
