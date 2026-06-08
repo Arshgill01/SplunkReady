@@ -44,7 +44,7 @@ The local fixture path requires no live Splunk credentials. The currently
 published clean-folder judge command is:
 
 ```bash
-npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.6 judge-proof --out ./judge-proof --json
 ```
 
 That clean-folder command is smoke-tested from a temp folder, returns `PASS`,
@@ -64,10 +64,10 @@ reports current target `macos-arm64`, smoke `PASS`, 67 generated artifacts, and
 `mutation: false`. The workflow-dispatch evidence at
 `submission-evidence/standalone-release/standalone-release-matrix.json` proves
 Linux, macOS, and Windows runners each built, smoked, and uploaded standalone
-artifacts. The public `v0.1.5` GitHub Release now publishes the Linux, macOS,
+artifacts. The public `v0.1.6` GitHub Release now publishes the Linux, macOS,
 and Windows standalone archives, SHA-256 checksum files, and per-platform
 manifests at
-https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.5. The tracked
+https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6. The tracked
 release evidence is
 `submission-evidence/standalone-release/standalone-release-github-release.json`.
 
@@ -205,7 +205,7 @@ The tracked evidence pack does not claim live hosted-model entitlement. The work
 - Zod
 - Vitest
 - Vite
-- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.5 judge-proof`
+- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.6 judge-proof`
 - Splunk MCP adapter boundary
 - Deterministic trace grader rules
 - Local workbench API and UI

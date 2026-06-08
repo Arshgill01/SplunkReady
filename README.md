@@ -34,10 +34,10 @@ npm run judge-proof
 The currently published no-clone judge path is:
 
 ```bash
-npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.6 judge-proof --out ./judge-proof --json
 ```
 
-The repo-linked GitHub Packages mirror is `@arshgill01/splunkready@0.1.5`;
+The repo-linked GitHub Packages mirror is `@arshgill01/splunkready@0.1.6`;
 that registry path requires GitHub package authentication, so the npmjs command
 above remains the unauthenticated judge path.
 
@@ -64,9 +64,9 @@ It reports `status: "PASS"`, target `macos-arm64`, smoke `PASS`, stdout command
 workflow dispatch evidence at
 `submission-evidence/standalone-release/standalone-release-matrix.json` shows
 Linux, macOS, and Windows runners each built, smoked, and uploaded standalone
-artifacts. The public `v0.1.5` GitHub Release publishes those standalone
+artifacts. The public `v0.1.6` GitHub Release publishes those standalone
 archives, SHA-256 checksum files, and per-platform manifests at
-https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.5; tracked evidence
+https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6; tracked evidence
 is in
 `submission-evidence/standalone-release/standalone-release-github-release.json`.
 
