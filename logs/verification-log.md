@@ -16395,3 +16395,36 @@ Result:
   standalone-release evidence artifact.
 - PASS: whitespace diff check passed.
 - PASS: final `npm run check` passed with 73 test files and 428 tests.
+
+## 2026-06-08T09:25:13Z - Move 171 Standalone release matrix proof
+
+Commands:
+
+- `gh run watch 27127985050 --exit-status`
+- `gh workflow run release-artifacts.yml --ref splunkready-build`
+- `gh run watch 27128107569 --exit-status`
+- `gh run view 27128107569 --job 80061869745 --log`
+- `npx vitest run tests/scripts/standalone-release.test.ts`
+- `npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `git diff --check`
+
+Result:
+
+- PASS: remote CI run `27127985050` passed for commit `8b328e0`, including the
+  canonical gate, credential-free live mock proof, Docker mock build, and Docker
+  mock smoke.
+- PARTIAL: release-artifacts workflow dispatch `27128107569` proved Ubuntu and
+  macOS standalone build/smoke/upload jobs.
+- FAIL: release-artifacts workflow dispatch `27128107569` failed on Windows in
+  the build/smoke step with `spawnSync ... postject.cmd EINVAL`.
+- PASS: Windows failure root cause was isolated from job logs.
+- PASS: focused standalone-release tests passed with 1 file and 3 tests after
+  changing Windows to invoke the postject JavaScript CLI through Node.
+- PASS: current macOS standalone build/smoke still returned `PASS`, generated
+  67 artifacts, and recorded `mutation: false`.
+- PASS: evidence pack SHA-256 verification passed after refreshing current-OS
+  standalone release evidence.
+- PASS: submission-copy audit passed with 286 required claims.
+- PASS: whitespace diff check passed.

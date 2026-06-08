@@ -1132,3 +1132,11 @@ GitHub Release. Linux, macOS, and Windows release assets must be built and
 smoked by `.github/workflows/release-artifacts.yml` on a tag before claiming
 cross-platform standalone binaries or replacing npm as the canonical public
 install path.
+
+Move 171 started closing the all-platform standalone release gap by dispatching
+the release-artifacts matrix. The first dispatch proved Ubuntu and macOS
+standalone build/smoke/upload jobs but exposed a Windows runner failure in the
+postject `.cmd` shim invocation. Residual risk: until a rerun from the fixed
+commit passes on Windows, SplunkReady still cannot claim all-platform standalone
+release artifacts. Even after a workflow-dispatch pass, public GitHub Release
+asset claims require a tagged release run.

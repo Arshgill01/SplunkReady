@@ -23,14 +23,14 @@
       "fixtures",
       "policies"
     ],
-    "archiveSha256": "78ce25533bb46821852418f659513aab99e227b1e8df7c018d34588422254173",
-    "archiveBytes": 36701635,
+    "archiveSha256": "4fcf24996beb14c7ee324257c0cadcab55ef0000f3a769b5b1471c82c3835bbc",
+    "archiveBytes": 36701618,
     "executableBytes": 112163936
   },
   "smoke": {
     "status": "PASS",
     "target": "macos-arm64",
-    "tempRoot": "/var/folders/bk/pd55wq653znfps37yvznw_t00000gn/T/splunkready-standalone-smoke-ZIc5UO",
+    "tempRoot": "/var/folders/bk/pd55wq653znfps37yvznw_t00000gn/T/splunkready-standalone-smoke-N2e3gR",
     "command": "splunkready judge-proof --out ./judge-proof --json",
     "exitCode": 0,
     "stdoutStatus": "PASS",

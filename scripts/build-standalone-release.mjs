@@ -77,8 +77,19 @@ const postjectArgs = (binaryPath, blobPath) => {
   return process.platform === "darwin" ? [...baseArgs, "--macho-segment-name", "NODE_SEA"] : baseArgs;
 };
 
-const postjectBin = () =>
-  process.platform === "win32" ? resolve(repoRoot, "node_modules/.bin/postject.cmd") : resolve(repoRoot, "node_modules/.bin/postject");
+export const postjectInvocation = (platform = process.platform) => {
+  if (platform === "win32") {
+    return {
+      command: process.execPath,
+      leadingArgs: [resolve(repoRoot, "node_modules/postject/dist/cli.js")]
+    };
+  }
+
+  return {
+    command: resolve(repoRoot, "node_modules/.bin/postject"),
+    leadingArgs: []
+  };
+};
 
 const writeJson = (path, value) => {
   mkdirSync(dirname(path), { recursive: true });
@@ -186,7 +197,8 @@ export const buildStandaloneRelease = async ({
     spawnSync("codesign", ["--remove-signature", executablePath], { stdio: "ignore" });
   }
 
-  run(postjectBin(), postjectArgs(executablePath, blobPath));
+  const postject = postjectInvocation();
+  run(postject.command, [...postject.leadingArgs, ...postjectArgs(executablePath, blobPath)]);
 
   if (process.platform === "darwin" && codesignAvailable()) {
     run("codesign", ["--sign", "-", executablePath]);

@@ -15516,3 +15516,34 @@ Result:
   returned `PASS`, produced 67 artifacts, and recorded `mutation: false`.
 - PASS: the tracked claim explicitly limits evidence to current OS and requires
   the GitHub Release matrix before claiming all-platform release assets.
+
+## 2026-06-08T09:25:13Z - Move 171 Standalone release matrix proof
+
+Intent:
+
+- Prove the standalone release artifact workflow across GitHub-hosted Linux,
+  macOS, and Windows runners before claiming multi-platform no-Node release
+  assets.
+
+Actions:
+
+- Confirmed pushed Move 170 CI run `27127985050` passed on commit `8b328e0`,
+  including canonical gate, credential-free live mock proof, Docker mock build,
+  and Docker mock smoke.
+- Dispatched `.github/workflows/release-artifacts.yml` manually as run
+  `27128107569`.
+- Observed the first matrix result: Ubuntu and macOS built and smoked
+  standalone artifacts successfully; Windows failed in the release-builder
+  postject step with `spawnSync ... postject.cmd EINVAL`.
+- Updated `scripts/build-standalone-release.mjs` so Windows invokes
+  `node node_modules/postject/dist/cli.js` directly instead of executing the
+  `.cmd` shim.
+- Added focused test coverage for the Windows postject invocation path.
+
+Result:
+
+- PARTIAL: Linux and macOS standalone artifacts are remotely proven by the first
+  workflow dispatch.
+- FAIL: Windows artifact was not proven on the first dispatch.
+- IN PROGRESS: Windows remediation passes focused local tests and the current
+  macOS standalone smoke; the matrix needs rerun from a pushed commit.
