@@ -2,8 +2,8 @@
 
 ## Status
 
-Implemented and locally verified on 2026-06-08. Remote CI verification is
-pending until the Move 200 commit is pushed.
+Implemented and verified on 2026-06-08. CI run `27152216215` passed both
+`setup-splunkready action smoke` and `npm run check`.
 
 ## Objective
 

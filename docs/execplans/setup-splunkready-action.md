@@ -64,5 +64,5 @@ zero-to-verdict installer for non-Node CI jobs.
 
 ## Current Status
 
-Implemented and locally verified. Remote CI verification is pending until the
-Move 200 commit is pushed.
+Implemented and verified locally plus remotely. CI run `27152216215` passed both
+`setup-splunkready action smoke` and `npm run check`.

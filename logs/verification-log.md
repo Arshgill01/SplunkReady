@@ -3267,6 +3267,7 @@ Commands:
 - `npm run ui:build`
 - `git diff --check`
 - `npm run check`
+- `gh run watch 27152216215 --exit-status`
 - `gh run watch 27151770736 --exit-status`
 - `gh run view 27151770736 --job 80144311473 --log`
 - `tmp=$(mktemp -d /tmp/splunkready-setup-action-wrapper-XXXXXX); curl -fsSL https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz -o "$tmp/splunkready-macos-arm64.tar.gz"; curl -fsSL https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz.sha256 -o "$tmp/splunkready-macos-arm64.tar.gz.sha256"; (cd "$tmp" && shasum -a 256 -c splunkready-macos-arm64.tar.gz.sha256); mkdir -p "$tmp/install" "$tmp/install/bin"; tar -xzf "$tmp/splunkready-macos-arm64.tar.gz" -C "$tmp/install"; printf '#!/usr/bin/env bash\nexec "%s" "$@"\n' "$tmp/install/splunkready" > "$tmp/install/bin/splunkready"; chmod +x "$tmp/install/splunkready" "$tmp/install/bin/splunkready"; PATH="$tmp/install/bin:$PATH" splunkready judge-proof --out "$tmp/proof" --json > "$tmp/proof.json"; grep -q '"status": "PASS"' "$tmp/proof.json"; grep -q '"mutation": false' "$tmp/proof/judge-proof-summary.json"`
@@ -17491,8 +17492,11 @@ Result:
   readiness/installability audits, 76 Vitest files / 443 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
   audit with 442 required claims, and whitespace diff check.
-- PENDING: remote CI must be re-run after the wrapper fix is committed and
-  pushed.
+- PASS: remote CI run `27152216215` passed. Job
+  `setup-splunkready action smoke` installed the public standalone binary,
+  ran standalone judge proof, and completed successfully. Job `npm run check`
+  also passed, including canonical gate, credential-free live mock proof, Docker
+  mock Splunk MCP image build, and Docker mock Splunk MCP smoke.
 
 ## 2026-06-08T15:50:00Z - Move 193 current Splunk app package and Splunkbase evidence
 
