@@ -17437,16 +17437,35 @@ Result:
   readiness/installability audits, 76 Vitest files / 441 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
   audit with 416 required claims, and whitespace diff check.
+
+## 2026-06-08T16:55:02Z - Move 200 setup-splunkready standalone action
+
+Commands:
+
+- `npm view splunkready version dist-tags.latest gitHead time.modified --json`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/examples/repository-ci-workflow.test.ts tests/ci/github-action.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- STALE: npmjs still reports latest `splunkready@0.1.5`, dist-tag latest
+  `0.1.5`, gitHead `a79ee9e9de60b709d2110703004bbe9b1fedc373`.
+- PASS: submission-copy audit passed with 440 required claims.
+- PASS: focused workflow/action/submission-copy tests passed: 3 files, 15
+  tests.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: whitespace diff check passed.
 - PASS: `npm run check` passed: scaffold verification, runtime-contract
   verification, TypeScript build, UI build, public-demo export audit, package
-  readiness/installability audits, 76 Vitest files / 440 tests, secret-env
-  ignore audit, reviewer audit with 0 failing latest verdicts,
-  submission-copy audit with 397 required claims, and whitespace diff check.
-- PASS: `npm run check` passed: scaffold verification, runtime-contract
-  verification, TypeScript build, UI build, public-demo export audit, package
-  readiness/installability audits, 76 Vitest files / 440 tests, secret-env
-  ignore audit, reviewer audit with 0 failing latest verdicts,
-  submission-copy audit with 396 required claims, and whitespace diff check.
+  readiness/installability audits, 76 Vitest files / 443 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
+  audit with 440 required claims, and whitespace diff check.
+- PENDING: remote CI setup-action smoke will run after the Move 200 commit is
+  pushed.
 
 ## 2026-06-08T15:50:00Z - Move 193 current Splunk app package and Splunkbase evidence
 

@@ -73,3 +73,24 @@ jobs:
             throw new Error("mock MCP saved-search smoke returned unexpected payload");
           }
           NODE
+
+  setup-action-smoke:
+    name: setup-splunkready action smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup SplunkReady standalone binary
+        uses: ./setup-splunkready
+        with:
+          version: v0.1.6
+
+      - name: Run standalone judge proof
+        run: |
+          splunkready judge-proof --out "$RUNNER_TEMP/splunkready-setup-proof" --json > "$RUNNER_TEMP/splunkready-setup-proof.json"
+          grep -q '"status": "PASS"' "$RUNNER_TEMP/splunkready-setup-proof.json"
+          test -f "$RUNNER_TEMP/splunkready-setup-proof/judge-proof-summary.json"
+          grep -q '"mutation": false' "$RUNNER_TEMP/splunkready-setup-proof/judge-proof-summary.json"

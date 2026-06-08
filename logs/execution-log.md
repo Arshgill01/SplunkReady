@@ -16672,3 +16672,37 @@ Result:
 - HONEST BOUNDARY: only the macOS arm64 public archive was locally downloaded
   and smoked in this move; all-platform public release existence remains backed
   by Move 198 release evidence.
+
+## 2026-06-08T16:55:02Z - Move 200 setup-splunkready standalone action
+
+Context:
+
+- The root `action.yml` is a source-build certification gate and still requires
+  Node plus `npm ci` inside the action checkout.
+- Move 198/199 proved the public standalone GitHub Release assets. The missing
+  DevX primitive was a GitHub Action setup path for non-Node CI jobs.
+- Public npmjs still reports latest `splunkready@0.1.5`; this move must not
+  advance npm claims.
+
+Actions:
+
+- Added `docs/execplans/setup-splunkready-action.md` and `moves/moves200.md`.
+- Added `setup-splunkready/action.yml`, a composite action that maps GitHub
+  runner OS/arch to public standalone targets, downloads the archive and
+  `.sha256` file, verifies the checksum, extracts the binary, and adds it to
+  `PATH`.
+- Added CI job `setup-splunkready action smoke` that uses the local sub-action,
+  does not call `actions/setup-node` or `npm ci`, and runs
+  `splunkready judge-proof --out "$RUNNER_TEMP/splunkready-setup-proof" --json`.
+- Added workflow/action metadata tests plus submission-copy guardrails.
+- Added `submission-evidence/setup-splunkready-action/setup-splunkready-action.json`.
+- Updated README, Devpost copy, submission README, and claim ledger.
+
+Result:
+
+- IMPLEMENTED: non-Node setup action path is present and tested at the workflow
+  and metadata level.
+- HONEST BOUNDARY: docs use
+  `Arshgill01/SplunkReady/setup-splunkready@splunkready-build` because tag
+  `v0.1.6` predates the new action path; `v0.1.6` remains only the downloaded
+  standalone binary release tag for this move.

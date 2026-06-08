@@ -1,0 +1,35 @@
+{
+  "source": "splunkready-setup-action",
+  "status": "IMPLEMENTED",
+  "actionPath": "setup-splunkready/action.yml",
+  "workflowPath": ".github/workflows/ci.yml",
+  "actionRefBoundary": "The setup-splunkready action is available on splunkready-build after Move 200; tag v0.1.6 is only the standalone binary release asset tag and does not contain this action path.",
+  "releaseTag": "v0.1.6",
+  "releaseUrl": "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6",
+  "supportedTargets": [
+    "linux-x64",
+    "macos-arm64",
+    "windows-x64"
+  ],
+  "downloadsPublicReleaseAsset": true,
+  "verifiesSha256Checksum": true,
+  "addsBinaryToPath": true,
+  "consumerJobRequiresSetupNode": false,
+  "consumerJobRequiresNpmCi": false,
+  "consumerJobSmokeCommand": "splunkready judge-proof --out \"$RUNNER_TEMP/splunkready-setup-proof\" --json",
+  "consumerJobSmokeExpectedStatus": "PASS",
+  "consumerJobSmokeExpectedMutation": false,
+  "deterministicAuthority": true,
+  "hostedModelAuthority": "advisory-only",
+  "requiresSplunkCredentials": false,
+  "mutation": false,
+  "claimBoundary": {
+    "rootGateActionStillExists": true,
+    "setupActionInstallsStandaloneBinaryOnly": true,
+    "currentPublicActionRef": "Arshgill01/SplunkReady/setup-splunkready@splunkready-build",
+    "tagV016ContainsSetupAction": false,
+    "homebrewSupportClaimed": false,
+    "npmjsVersionAdvanced": false,
+    "npmjsNoAuthJudgePath": "splunkready@0.1.5"
+  }
+}

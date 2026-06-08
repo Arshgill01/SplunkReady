@@ -1419,3 +1419,10 @@ and `mutation: false` without Node/npm/npx, a repo checkout, Splunk
 credentials, or live mutation. Residual risk: this move locally smoked only the
 current operator platform asset; Linux and Windows public asset existence and
 pre-upload smoke remain backed by the Move 198 release workflow evidence.
+
+Move 200 adds a `setup-splunkready` GitHub Action subpath that installs the
+public standalone release binary, verifies the checksum, and adds the binary to
+PATH for non-Node CI jobs. Residual risk: until a later tag is cut after this
+move, the public setup-action ref must use `splunkready-build` or a commit SHA;
+tag `v0.1.6` predates `setup-splunkready/action.yml` and must not be cited as
+containing the action path. Public npmjs remains `splunkready@0.1.5`.

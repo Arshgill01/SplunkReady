@@ -1,0 +1,103 @@
+name: Setup SplunkReady
+author: SplunkReady
+description: Download a checksum-verified standalone SplunkReady binary from GitHub Releases and add it to PATH.
+
+inputs:
+  version:
+    description: "GitHub Release tag to install."
+    required: false
+    default: v0.1.6
+  repository:
+    description: "Repository that publishes SplunkReady release assets."
+    required: false
+    default: Arshgill01/SplunkReady
+  install-dir:
+    description: "Directory where the standalone binary should be extracted. Defaults to RUNNER_TEMP/splunkready-bin."
+    required: false
+    default: ""
+  add-to-path:
+    description: "When true, add the install directory to PATH for following steps."
+    required: false
+    default: "true"
+
+outputs:
+  install-dir:
+    description: "Directory containing the installed SplunkReady binary."
+    value: ${{ steps.install.outputs.install-dir }}
+  binary-path:
+    description: "Full path to the installed SplunkReady binary."
+    value: ${{ steps.install.outputs.binary-path }}
+  target:
+    description: "Standalone release target selected for this runner."
+    value: ${{ steps.install.outputs.target }}
+
+runs:
+  using: composite
+  steps:
+    - name: Download and verify SplunkReady standalone binary
+      id: install
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        case "${RUNNER_OS}-${RUNNER_ARCH}" in
+          Linux-X64)
+            target="linux-x64"
+            executable="splunkready"
+            ;;
+          macOS-ARM64)
+            target="macos-arm64"
+            executable="splunkready"
+            ;;
+          Windows-X64)
+            target="windows-x64"
+            executable="splunkready.exe"
+            ;;
+          *)
+            printf 'Unsupported SplunkReady standalone target: RUNNER_OS=%s RUNNER_ARCH=%s\n' "${RUNNER_OS}" "${RUNNER_ARCH}" >&2
+            exit 1
+            ;;
+        esac
+
+        version="${{ inputs.version }}"
+        repository="${{ inputs.repository }}"
+        archive="splunkready-${target}.tar.gz"
+        base_url="https://github.com/${repository}/releases/download/${version}"
+        download_dir="${RUNNER_TEMP}/splunkready-download-${target}"
+        install_dir="${{ inputs.install-dir }}"
+
+        if [ -z "${install_dir}" ]; then
+          install_dir="${RUNNER_TEMP}/splunkready-bin"
+        fi
+
+        rm -rf "${download_dir}" "${install_dir}"
+        mkdir -p "${download_dir}" "${install_dir}"
+
+        curl -fsSL "${base_url}/${archive}" -o "${download_dir}/${archive}"
+        curl -fsSL "${base_url}/${archive}.sha256" -o "${download_dir}/${archive}.sha256"
+
+        (
+          cd "${download_dir}"
+          if command -v shasum >/dev/null 2>&1; then
+            shasum -a 256 -c "${archive}.sha256"
+          elif command -v sha256sum >/dev/null 2>&1; then
+            sha256sum -c "${archive}.sha256"
+          else
+            printf 'Neither shasum nor sha256sum is available for checksum verification.\n' >&2
+            exit 1
+          fi
+        )
+
+        tar -xzf "${download_dir}/${archive}" -C "${install_dir}"
+        chmod +x "${install_dir}/${executable}" 2>/dev/null || true
+
+        if [ "${{ inputs.add-to-path }}" = "true" ]; then
+          printf '%s\n' "${install_dir}" >> "${GITHUB_PATH}"
+        elif [ "${{ inputs.add-to-path }}" != "false" ]; then
+          printf 'add-to-path must be "true" or "false".\n' >&2
+          exit 1
+        fi
+
+        printf 'install-dir=%s\n' "${install_dir}" >> "${GITHUB_OUTPUT}"
+        printf 'binary-path=%s\n' "${install_dir}/${executable}" >> "${GITHUB_OUTPUT}"
+        printf 'target=%s\n' "${target}" >> "${GITHUB_OUTPUT}"

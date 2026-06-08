@@ -85,6 +85,26 @@ That public-download smoke is tracked at
 and reports `PASS`, 67 generated artifacts, and `mutation: false` without
 Node, npm, `npx`, a repo checkout, Splunk credentials, or live mutation.
 
+CI users who do not want a Node setup step can install the standalone binary
+through the repository sub-action:
+
+```yaml
+- uses: Arshgill01/SplunkReady/setup-splunkready@splunkready-build
+  with:
+    version: v0.1.6
+
+- run: splunkready judge-proof --out "$RUNNER_TEMP/splunkready-proof" --json
+```
+
+The setup action downloads the public release archive for the runner, verifies
+the SHA-256 checksum, and adds the binary directory to `PATH`. The tracked
+evidence at
+`submission-evidence/setup-splunkready-action/setup-splunkready-action.json`
+records the supported release targets, checksum boundary, no-Node/no-npm
+consumer job, and credential-free mutation boundary. Use the branch ref for the
+current source; pin to a later tag or commit once that ref includes
+`setup-splunkready/action.yml`.
+
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, writes `compiler-diagnostics.json` / `.md` showing deterministic rule activation and resolution from readiness profiles and receipts, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 
 ### Credential-Free Mock Splunk MCP

@@ -163,6 +163,29 @@ describe("GitHub Action runner", () => {
     expect(metadata).not.toContain("live-security-proof");
   });
 
+  it("keeps the setup action checksum-verified and credential-free", async () => {
+    const metadata = await readFile("setup-splunkready/action.yml", "utf8");
+
+    expect(metadata).toContain("name: Setup SplunkReady");
+    expect(metadata).toContain("using: composite");
+    expect(metadata).toContain("default: v0.1.6");
+    expect(metadata).toContain("Arshgill01/SplunkReady");
+    expect(metadata).toContain("Linux-X64");
+    expect(metadata).toContain("macOS-ARM64");
+    expect(metadata).toContain("Windows-X64");
+    expect(metadata).toContain("curl -fsSL");
+    expect(metadata).toContain("shasum -a 256 -c");
+    expect(metadata).toContain("sha256sum -c");
+    expect(metadata).toContain("tar -xzf");
+    expect(metadata).toContain("GITHUB_PATH");
+    expect(metadata).toContain("binary-path=");
+    expect(metadata).not.toContain("npm ci");
+    expect(metadata).not.toContain("actions/setup-node");
+    expect(metadata).not.toContain("GEMINI_API_KEY");
+    expect(metadata).not.toContain("SPLUNKREADY_SPLUNK_MCP_TOKEN");
+    expect(metadata).not.toContain("SPLUNKREADY_SPLUNK_MCP_URL");
+  });
+
   it("renders a concise deterministic GitHub step summary", () => {
     const plan = buildGitHubActionPlan(
       readGitHubActionInputs({

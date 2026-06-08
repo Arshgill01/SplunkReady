@@ -73,10 +73,17 @@ release evidence is
 The macOS arm64 archive was also downloaded from that public release URL,
 checksum-verified with its published `.sha256` file, extracted into a clean temp
 folder, and run as `./splunkready judge-proof --out ./judge-proof --json`
-without Node, npm, `npx`, a repo checkout, Splunk credentials, or live mutation.
+without Node, npm, `npx`, a repo checkout, Splunk credentials, or live
+mutation.
 The tracked public-download smoke at
 `submission-evidence/standalone-release/standalone-release-public-download-smoke.json`
 reports `PASS`, 67 generated artifacts, and `mutation: false`.
+The repository also ships `setup-splunkready`, a GitHub Action subpath for
+non-Node CI jobs. On the current branch it downloads the public standalone release asset from `v0.1.6`, verifies the SHA-256 checksum, adds the binary to
+`PATH`, and lets the next step run
+`splunkready judge-proof --out "$RUNNER_TEMP/splunkready-proof" --json`
+without `actions/setup-node` or `npm ci`. The tracked evidence is
+`submission-evidence/setup-splunkready-action/setup-splunkready-action.json`.
 
 The credential-free hosted workbench is available at:
 

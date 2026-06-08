@@ -95,4 +95,19 @@ describe("repository CI workflow", () => {
     expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_TOKEN");
     expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_URL");
   });
+
+  it("smokes the setup-splunkready action without a consumer Node setup", async () => {
+    const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+
+    expect(workflow).toContain("setup-action-smoke:");
+    expect(workflow).toContain("name: setup-splunkready action smoke");
+    expect(workflow).toContain("uses: ./setup-splunkready");
+    expect(workflow).toContain("version: v0.1.6");
+    expect(workflow).toContain('splunkready judge-proof --out "$RUNNER_TEMP/splunkready-setup-proof" --json');
+    expect(workflow).toContain('grep -q \'"status": "PASS"\' "$RUNNER_TEMP/splunkready-setup-proof.json"');
+    expect(workflow).toContain('grep -q \'"mutation": false\' "$RUNNER_TEMP/splunkready-setup-proof/judge-proof-summary.json"');
+    expect(workflow).not.toContain("GEMINI_API_KEY");
+    expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_TOKEN");
+    expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_URL");
+  });
 });
