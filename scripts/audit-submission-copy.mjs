@@ -104,7 +104,7 @@ const checks = [
   ],
   ["Claim ledger public GitHub release evidence", files.claimLedger, "submission-evidence/standalone-release/standalone-release-github-release.json"],
   ["Claim ledger public GitHub release URL", files.claimLedger, "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.5"],
-  ["Claim ledger public GitHub release run", files.claimLedger, "27129153682"],
+  ["Claim ledger public GitHub release run", files.claimLedger, "27143381484"],
   ["Claim ledger public GitHub release linux asset", files.claimLedger, "splunkready-linux-x64.tar.gz"],
   ["Claim ledger public GitHub release macOS asset", files.claimLedger, "splunkready-macos-arm64.tar.gz"],
   ["Claim ledger public GitHub release Windows asset", files.claimLedger, "splunkready-windows-x64.tar.gz"],

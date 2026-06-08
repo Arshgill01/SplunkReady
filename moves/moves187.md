@@ -2,7 +2,7 @@
 
 ## Status
 
-In progress on 2026-06-08.
+Implemented on 2026-06-08.
 
 ## Objective
 
@@ -61,3 +61,15 @@ commit and version.
   remains the no-auth install path.
 - Do not edit package-input files after publishing without doing another npm
   publish/currentness pass.
+
+## Result
+
+- Bumped source and public distribution copy to `0.1.5`.
+- Published `splunkready@0.1.5` to npm; npm latest and local package input
+  commit both point at `a79ee9e9de60b709d2110703004bbe9b1fedc373`.
+- Pushed `v0.1.5`; the release-artifacts workflow published Linux, macOS, and
+  Windows no-Node archives, checksum files, and per-platform manifests.
+- Published and verified the GitHub Packages mirror
+  `@arshgill01/splunkready@0.1.5`.
+- Refreshed public-package, GitHub Packages, GitHub Release, claim-ledger, and
+  evidence-pack artifacts.

@@ -1296,3 +1296,11 @@ commit, and the hardened currentness audit reports `CURRENT` with published
 `mcp-recorder`, judge-proof, MCP, live-mock, and policy-registry checks passing.
 Residual risk: any later source/package-input change must be followed by another
 publish or the currentness audit will correctly return `STALE`.
+
+Move 187 aligns the public distribution surfaces at `0.1.5`: npm latest,
+GitHub Packages mirror, and the public GitHub Release standalone archives all
+point at the same package-input commit. Residual risk: the `.spl` Splunk app
+package evidence remains at its separately built `0.1.3` artifact and should
+not be described as updated by this move. Any future package-input edit must be
+followed by another npm publish and currentness pass before the no-clone judge
+path is called current.

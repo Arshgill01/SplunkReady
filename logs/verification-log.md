@@ -17137,3 +17137,55 @@ Result:
   `status: "CURRENT"`, published judge proof `PASS`, published MCP `PASS`,
   published live-mock proof `PASS`, published policy registry `PASS`,
   published recorder `PASS`, and `registry.gitHeadMatchesPackageInputs: true`.
+
+## 2026-06-08T14:12:05Z - Move 187 version-aligned public distribution
+
+Commands:
+
+- `npm version 0.1.5 --no-git-tag-version`
+- `npm run build`
+- `npm run audit:package-readiness`
+- `npm run audit:package-installability`
+- `npm run audit:npm-release-preflight -- --require-ready`
+- `git commit -m "Move 187 align distribution version"`
+- `npm publish --access public`
+- `npm view splunkready version dist-tags.latest gitHead --json`
+- `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
+- `git push origin splunkready-build`
+- `git tag -a v0.1.5 -m "SplunkReady v0.1.5" a79ee9e9de60b709d2110703004bbe9b1fedc373`
+- `git push origin v0.1.5`
+- `gh workflow run github-packages.yml --ref splunkready-build`
+- `gh run watch 27143383600 --exit-status`
+- `gh run watch 27143381484 --exit-status`
+- `gh release view v0.1.5 --json tagName,name,url,isDraft,isPrerelease,publishedAt,assets`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts tests/scripts/public-package-currentness.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run check`
+
+Result:
+
+- PASS: package readiness and installability passed for
+  `splunkready-0.1.5.tgz`.
+- PASS: npm release preflight reported `status: "READY"` for `0.1.5`.
+- PASS: npm published `splunkready@0.1.5`; registry metadata reports latest
+  `0.1.5` and `gitHead`
+  `a79ee9e9de60b709d2110703004bbe9b1fedc373`.
+- PASS: public-package currentness reports `status: "CURRENT"` with judge
+  proof, MCP, live-mock, policy registry, recorder, and package-input gitHead
+  checks passing.
+- PASS: GitHub Packages run `27143383600` published and verified
+  `@arshgill01/splunkready@0.1.5`.
+- PASS: Release Artifacts run `27143381484` published public `v0.1.5` release
+  assets: 3 archives, 3 SHA-256 files, and 3 manifests.
+- PASS: `audit:submission-copy` passed with 378 required claims after updating
+  the release run guard.
+- PASS: focused public-package/submission-copy tests passed: 2 files, 6 tests.
+- PASS: evidence-pack SHA-256 verification passed after refreshing current
+  distribution artifacts.
+- PASS: final `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 75 Vitest files / 437 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts,
+  submission-copy audit with 378 required claims, and whitespace diff check.

@@ -3,31 +3,31 @@
   "status": "CURRENT",
   "registry": "https://npm.pkg.github.com",
   "packageName": "@arshgill01/splunkready",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "repositoryUrl": "git+https://github.com/Arshgill01/SplunkReady.git",
   "packageUrl": "https://github.com/users/Arshgill01/packages/npm/package/splunkready",
   "publicNpmPackageName": "splunkready",
   "publicNpmRegistry": "https://registry.npmjs.org",
-  "primaryNoAuthInstallPath": "npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json",
+  "primaryNoAuthInstallPath": "npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json",
   "githubPackageInstallNote": "GitHub Packages npm installs require GitHub package-registry authentication; npmjs remains the unauthenticated judge install path.",
   "bin": {
     "splunkready": "dist/src/cli.js"
   },
   "publishWorkflow": {
-    "runId": 27102265257,
+    "runId": 27143383600,
     "status": "success",
-    "headSha": "14aa16f4252b44a4319235389af2434ab7959588",
-    "url": "https://github.com/Arshgill01/SplunkReady/actions/runs/27102265257",
-    "result": "Published @arshgill01/splunkready@0.1.3 to GitHub Packages."
+    "headSha": "a79ee9e9de60b709d2110703004bbe9b1fedc373",
+    "url": "https://github.com/Arshgill01/SplunkReady/actions/runs/27143383600",
+    "result": "Published @arshgill01/splunkready@0.1.5 to GitHub Packages."
   },
   "verificationWorkflow": {
-    "runId": 27102292369,
+    "runId": 27143383600,
     "status": "success",
-    "headSha": "bdab8545bc14c8fd98a07344c5ed1213dc9b9f47",
-    "url": "https://github.com/Arshgill01/SplunkReady/actions/runs/27102292369",
+    "headSha": "a79ee9e9de60b709d2110703004bbe9b1fedc373",
+    "url": "https://github.com/Arshgill01/SplunkReady/actions/runs/27143383600",
     "npmView": {
       "name": "@arshgill01/splunkready",
-      "version": "0.1.3",
+      "version": "0.1.5",
       "repository.url": "git+https://github.com/Arshgill01/SplunkReady.git",
       "bin": {
         "splunkready": "dist/src/cli.js"

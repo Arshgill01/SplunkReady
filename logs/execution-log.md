@@ -16212,3 +16212,43 @@ Result:
 - PASS: published `splunkready@0.1.4` judge proof, MCP tools, live-mock proof,
   policy registry, and `mcp-recorder` gateway all pass from clean temp folders.
 - PASS: npm `gitHead` matches the latest commit touching package input paths.
+
+## 2026-06-08T14:12:05Z - Move 187 version-aligned public distribution
+
+Context:
+
+- The public npm package was current at `0.1.4`, but the GitHub Packages mirror
+  and public no-Node GitHub Release assets still reflected older versions.
+- This kept the judge-facing distribution story split across multiple public
+  artifacts.
+
+Actions:
+
+- Added `moves/moves187.md`.
+- Bumped package version and public distribution copy to `0.1.5`.
+- Ran package build, readiness, installability, and npm release preflight before
+  publishing.
+- Committed package-input release state at
+  `a79ee9e9de60b709d2110703004bbe9b1fedc373`.
+- Published `splunkready@0.1.5` to npm after browser-backed npm auth.
+- Verified npm latest/version/gitHead and reran public-package currentness with
+  `--require-current`.
+- Pushed `splunkready-build` and annotated tag `v0.1.5`.
+- Ran the GitHub Packages workflow; it published and verified
+  `@arshgill01/splunkready@0.1.5`.
+- Let the tag-triggered Release Artifacts workflow build, smoke, upload, and
+  publish Linux, macOS, and Windows standalone archives with SHA-256 files and
+  manifests.
+- Refreshed GitHub Packages, GitHub Release, public-package currentness, claim
+  ledger, submission evidence README, and evidence hash artifacts.
+
+Result:
+
+- PASS: unauthenticated npm install path is current at
+  `npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json`.
+- PASS: GitHub Packages mirror is current at
+  `@arshgill01/splunkready@0.1.5`.
+- PASS: public `v0.1.5` GitHub Release has 9 assets across Linux, macOS, and
+  Windows.
+- PASS: submission-copy audit now requires and finds the current `0.1.5`
+  distribution claims.
