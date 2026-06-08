@@ -231,10 +231,18 @@ const collectSplAssistance = async (
         missionId: violation.missionId,
         traceEventId: violation.traceEventId
       };
-      const [explanation, optimization] = await Promise.all([
-        adapter.explainSpl({ query }, callOptions),
-        adapter.optimizeSpl({ query }, callOptions)
-      ]);
+      let explanation: Awaited<ReturnType<NonNullable<SplunkAccessAdapter["explainSpl"]>>>;
+      let optimization: Awaited<ReturnType<NonNullable<SplunkAccessAdapter["optimizeSpl"]>>>;
+
+      try {
+        [explanation, optimization] = await Promise.all([
+          adapter.explainSpl({ query }, callOptions),
+          adapter.optimizeSpl({ query }, callOptions)
+        ]);
+      } catch {
+        continue;
+      }
+
       result = { explanation, optimization };
       cache.set(query, result);
     }

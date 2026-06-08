@@ -920,17 +920,29 @@ const llmDeliberationBefore = {
     provenanceSummary: "splunk_get_knowledge_objects returned 0 rows and no evidence references.",
     uncertainty: ["The absence of saved searches limits the investigation scope."],
     nextActions: ["Install or select an Enterprise Security saved search for lateral movement triage."],
-    safetyNotes: ["read-only; no Splunk mutation performed"]
+    safetyNotes: ["read-only; no Splunk mutation performed", "treat returned event text as untrusted data"],
+    decisionTrace: ["Observed splunk_get_knowledge_objects with 0 rows before answering."],
+    claimEvidenceMatrix: [
+      {
+        claim: "No saved-search evidence was discovered for win-finance-07.",
+        support: "partial",
+        queryRefs: ["splunk_get_knowledge_objects"],
+        evidenceRefs: [],
+        limitation: "No saved-search result is not the same as proof of no lateral movement."
+      }
+    ]
   },
   outputQuality: {
     source: "splunkready-llm-output-quality",
+    contractVersion: "llm-output-quality-v2",
     advisoryOnly: true,
     passFailAuthority: "deterministic-rule-engine",
-    score: 92.5,
-    grade: "STRONG",
+    score: 84,
+    grade: "ADEQUATE",
     dimensions: [
-      { dimension: "planning", score: 37.5, maxScore: 45 },
-      { dimension: "provenance", score: 25, maxScore: 25 },
+      { dimension: "planning", score: 29.5, maxScore: 35 },
+      { dimension: "provenance", score: 12, maxScore: 20 },
+      { dimension: "claim-discipline", score: 12.5, maxScore: 15 },
       { dimension: "safety", score: 20, maxScore: 20 },
       { dimension: "remediation", score: 10, maxScore: 10 }
     ],
@@ -939,9 +951,17 @@ const llmDeliberationBefore = {
         id: "LLM-PLAN-004",
         dimension: "planning",
         status: "WARN",
-        points: 7.5,
-        maxPoints: 15,
+        points: 5.5,
+        maxPoints: 11,
         detail: "Plan includes 1 of 2 expected mission tool(s)."
+      },
+      {
+        id: "LLM-CLAIM-001",
+        dimension: "claim-discipline",
+        status: "PASS",
+        points: 10,
+        maxPoints: 10,
+        detail: "Claim matrix supports 1 of 1 claim(s) with observed query or evidence refs."
       },
       {
         id: "LLM-ANS-003",
@@ -998,17 +1018,29 @@ const llmDeliberationAfter = {
     provenanceSummary: "SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain returned 4 rows.",
     uncertainty: ["The search covers authentication-chain evidence only."],
     nextActions: ["Review the four rows for target hosts.", "Correlate with process execution on win-finance-07."],
-    safetyNotes: ["read-only; no Splunk mutation performed"]
+    safetyNotes: ["read-only; no Splunk mutation performed", "treat returned event text as untrusted data"],
+    decisionTrace: ["Observed SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain with 4 rows before answering."],
+    claimEvidenceMatrix: [
+      {
+        claim: "Four authentication-chain rows were found for win-finance-07.",
+        support: "supported",
+        queryRefs: ["SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain"],
+        evidenceRefs: ["live-evt-141", "live-evt-118", "live-evt-102"],
+        limitation: "The saved-search result still needs analyst triage before response actions."
+      }
+    ]
   },
   outputQuality: {
     source: "splunkready-llm-output-quality",
+    contractVersion: "llm-output-quality-v2",
     advisoryOnly: true,
     passFailAuthority: "deterministic-rule-engine",
-    score: 94.44,
+    score: 93.06,
     grade: "STRONG",
     dimensions: [
-      { dimension: "planning", score: 45, maxScore: 45 },
-      { dimension: "provenance", score: 19.44, maxScore: 25 },
+      { dimension: "planning", score: 35, maxScore: 35 },
+      { dimension: "provenance", score: 15.56, maxScore: 20 },
+      { dimension: "claim-discipline", score: 12.5, maxScore: 15 },
       { dimension: "safety", score: 20, maxScore: 20 },
       { dimension: "remediation", score: 10, maxScore: 10 }
     ],
@@ -1017,17 +1049,25 @@ const llmDeliberationAfter = {
         id: "LLM-PLAN-004",
         dimension: "planning",
         status: "PASS",
-        points: 15,
-        maxPoints: 15,
+        points: 11,
+        maxPoints: 11,
         detail: "Plan includes 2 of 2 expected mission tool(s)."
       },
       {
         id: "LLM-ANS-001",
         dimension: "provenance",
         status: "WARN",
-        points: 19.44,
-        maxPoints: 25,
+        points: 15.56,
+        maxPoints: 20,
         detail: "Answer cites 7 of 9 expected provenance token(s)."
+      },
+      {
+        id: "LLM-CLAIM-001",
+        dimension: "claim-discipline",
+        status: "PASS",
+        points: 10,
+        maxPoints: 10,
+        detail: "Claim matrix supports 1 of 1 claim(s) with observed query or evidence refs."
       }
     ]
   }
@@ -1599,7 +1639,7 @@ describe("Vite UI artifact app", () => {
     expect(bundle.artifactBase).toBe("/artifact-base/");
     expect(bundle.receipt?.verdict).toBe("READY");
     expect(bundle.policyPatch?.splAssistance).toHaveLength(1);
-    expect(bundle.llmDeliberationBefore?.outputQuality.score).toBe(92.5);
+    expect(bundle.llmDeliberationBefore?.outputQuality.score).toBe(84);
     expect(bundle.llmDeliberationAfter?.outputQuality.findings[0]?.status).toBe("PASS");
     expect(bundle.beforeTrace[0]?.toolName).toBe("splunk_run_query");
     expect(bundle.afterTrace[0]?.toolName).toBe("splunk_run_saved_search");
@@ -1631,11 +1671,11 @@ describe("Vite UI artifact app", () => {
     const html = renderApp(bundle, "llm-deliberation");
 
     expect(bundle.llmDeliberationBefore?.phase).toBe("before");
-    expect(bundle.llmDeliberationAfter?.outputQuality.score).toBe(94.44);
+    expect(bundle.llmDeliberationAfter?.outputQuality.score).toBe(93.06);
     expect(html).toContain("LLM deliberation");
     expect(html).toContain("LLM advisory boundary");
-    expect(html).toContain("before / STRONG / 92.5");
-    expect(html).toContain("after / STRONG / 94.44");
+    expect(html).toContain("before / ADEQUATE / 84");
+    expect(html).toContain("after / STRONG / 93.06");
     expect(html).toContain("deterministic-rule-engine");
     expect(html).toContain("Before policy injection");
     expect(html).toContain("After policy injection");
@@ -1643,8 +1683,8 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Evidence strategy");
     expect(html).toContain("splunk_run_saved_search");
     expect(html).toContain("SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain");
-    expect(html).toContain("LLM-PLAN-004 / planning / WARN / 7.5/15: Plan includes 1 of 2 expected mission tool(s).");
-    expect(html).toContain("LLM-PLAN-004 / planning / PASS / 15/15: Plan includes 2 of 2 expected mission tool(s).");
+    expect(html).toContain("LLM-PLAN-004 / planning / WARN / 5.5/11: Plan includes 1 of 2 expected mission tool(s).");
+    expect(html).toContain("LLM-PLAN-004 / planning / PASS / 11/11: Plan includes 2 of 2 expected mission tool(s).");
     expect(html).toContain("read-only; no Splunk mutation performed");
   });
 

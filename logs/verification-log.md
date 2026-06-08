@@ -16696,3 +16696,52 @@ Result:
   capture.
 - NOTE: the Playwright wrapper was not executable, so it was invoked with
   `bash` rather than changing script permissions.
+
+## 2026-06-08T11:55:00Z - Move 177 LLM evidence matrix and harder before phase
+
+Commands:
+
+- `npx vitest run tests/agents/llm-specimen.test.ts tests/ui/app.test.ts tests/scripts/submission-copy-audit.test.ts` (failed during iteration because the workbench schema rejected `decisionTrace` and `claimEvidenceMatrix`)
+- `npx vitest run tests/agents/llm-specimen.test.ts tests/ui/app.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `rm -rf artifacts/llm-proof-move177 && set -a; source .splunkready-live.env; set +a; SPLUNKREADY_LLM_ENABLED=true npm run splunkready -- llm-proof --out artifacts/llm-proof-move177 --require-pass true --json`
+- `npx vitest run tests/cli/flow.test.ts --testNamePattern "LLM specimen proof|one-command LLM specimen proof"`
+- `docker info --format '{{.ServerVersion}}'`
+- `rm -rf artifacts/real-splunk-stress-move177 submission-evidence/real-splunk-stress-llm-layer && set -a; source .splunkready-live.env; set +a; SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1 node scripts/run-real-splunk-stress-proof.mjs --skip-build --out artifacts/real-splunk-stress-move177 --evidence-out submission-evidence/real-splunk-stress-llm-layer --json` (failed during iteration on optional SAIA explain assistance)
+- `npm run build`
+- `rm -rf artifacts/real-splunk-stress-move177 submission-evidence/real-splunk-stress-llm-layer && set -a; source .splunkready-live.env; set +a; SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1 node scripts/run-real-splunk-stress-proof.mjs --skip-build --out artifacts/real-splunk-stress-move177 --evidence-out submission-evidence/real-splunk-stress-llm-layer --json`
+- `command -v npx >/dev/null 2>&1 && echo npx-present`
+- `SPLUNKREADY_UI_ARTIFACT_DIR=submission-evidence/real-splunk-stress-llm-layer npm run ui:dev -- --host 127.0.0.1 --port 5191 --strictPort true`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open 'http://127.0.0.1:5191/#llm-deliberation' --headed`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot --filename submission-evidence/screenshots/workbench-llm-deliberation.png --full-page`
+- `lsof -ti tcp:5191 | xargs -r kill`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `npm run ui:build`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: focused LLM/UI/submission-copy tests passed with 3 files and 46 tests.
+- PASS: real Gemini-backed `llm-proof` returned `status: "PASS"` with before
+  `NOT READY` score `0`, after `READY` score `100`, and deterministic
+  rule-engine verdict authority.
+- PASS: Docker daemon was available (`28.5.1`) before real Splunk replay.
+- PASS: guarded real Splunk replay first failed on
+  `LIVE_ADAPTER_CAPABILITY_UNAVAILABLE` for optional `saia_explain_spl`,
+  confirming the hosted-model helper path was still not available in the
+  disposable deployment.
+- PASS: after the optional-SAIA fix, guarded real Splunk replay returned
+  `status: "PASS"`, mutation false, fail-to-pass true, ready-after-patch true,
+  and 78 MCP bridge frames.
+- PASS: Playwright opened the LLM view and snapshot-confirmed the v2 replay,
+  before `ADEQUATE / 84`, after `STRONG / 93.06`, deterministic authority,
+  receipt `READY / 100`, and mutation `no`.
+- PASS: Playwright refreshed
+  `submission-evidence/screenshots/workbench-llm-deliberation.png`.
+- PASS: evidence-pack SHA-256 verification passed.
+- PASS: submission-copy audit passed with 332 required claims.
+- PASS: production UI build passed.
+- PASS: whitespace diff check passed.
+- PASS: full `npm run check` passed with 74 test files and 434 tests.

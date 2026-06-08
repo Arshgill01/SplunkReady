@@ -15785,3 +15785,60 @@ Result:
 - PASS: Playwright snapshot confirmed the `LLM` tab rendered before score
   `92.5`, after score `94.44`, advisory-only status, deterministic rule-engine
   authority, saved-search provenance, `READY / 100`, and mutation `no`.
+
+## 2026-06-08T11:55:00Z - Move 177 LLM evidence matrix and harder before phase
+
+Intent:
+
+- Make the LLM layer more substantial without making it the readiness judge.
+- Force a sharper before/after contrast by hiding compiled policy hints before
+  policy injection and requiring the answer to carry claim-level evidence.
+
+Actions:
+
+- Added `moves/moves177.md` and updated
+  `docs/execplans/llm-layer-expansion.md` with the second LLM slice.
+- Extended the LLM answer contract with `decisionTrace` and
+  `claimEvidenceMatrix`.
+- Added a deterministic advisory `claim-discipline` dimension to
+  `src/agents/llm-output-quality.ts` and bumped the report contract to
+  `llm-output-quality-v2`.
+- Reweighted advisory LLM output quality across planning, provenance,
+  claim-discipline, safety, and remediation while keeping receipt verdicts and
+  scores under deterministic rule-engine authority.
+- Updated the Gemini planner so the pre-policy phase receives mission/runtime
+  boundaries but not policy-only hints such as forbidden patterns, preferred
+  saved-search refs, authorized indexes, or deterministic check IDs.
+- Changed the no-policy example shape so a real model may take a naive broad
+  `index=*` custom-SPL path before compilation. The post-policy phase still
+  uses the preferred saved-search path.
+- Updated the workbench artifact schema and UI tests to accept and render the
+  v2 LLM answer/report contract.
+- Fixed `collectSplAssistance` so optional SAIA explain/optimize assistance
+  failures do not abort deterministic policy-patch generation. Hosted-model
+  availability remains recorded separately and is not claimed as passing.
+- Reran the guarded disposable Splunk stress replay and refreshed
+  `submission-evidence/real-splunk-stress-llm-layer/`.
+- Restored `ui-artifacts.json`, refreshed the LLM workbench screenshot through
+  Playwright, updated claim-ledger/submission evidence copy, and regenerated
+  evidence-pack SHA-256 hashes.
+
+Result:
+
+- PASS: focused LLM/UI/submission-copy tests passed after schema and fixture
+  updates.
+- PASS: real Gemini-backed `llm-proof` passed after rebuilding, with before
+  `NOT READY` score `0` and after `READY` score `100` on the harder naive
+  before-phase prompt.
+- PASS: first guarded real Splunk replay correctly exposed a policy-patch
+  abort when optional SAIA explain/optimize helpers were unavailable.
+- PASS: after treating SAIA assistance as optional advisory context, guarded
+  real Splunk replay returned `status: "PASS"`, mutation false, fail-to-pass
+  true, ready-after-patch true, and 78 MCP bridge frames.
+- PASS: refreshed real-Splunk LLM evidence reports before advisory score `84`
+  (`ADEQUATE`) and after advisory score `93.06` (`STRONG`) with
+  `claim-discipline`, `decisionTrace`, and untrusted event-text checks.
+- PASS: Playwright snapshot confirmed the workbench shows the v2 replay, before
+  `ADEQUATE / 84`, after `STRONG / 93.06`, deterministic rule-engine authority,
+  receipt `READY / 100`, mutation `no`, and the broad before-policy `index=*`
+  query.

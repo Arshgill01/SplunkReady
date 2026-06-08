@@ -41,9 +41,19 @@ export interface LlmAgentAnswer {
   uncertainty?: string[];
   nextActions?: string[];
   safetyNotes?: string[];
+  decisionTrace?: string[];
+  claimEvidenceMatrix?: LlmAgentClaimEvidence[];
 }
 
 export type LlmAgentAnswerResult = string | LlmAgentAnswer;
+
+export interface LlmAgentClaimEvidence {
+  claim: string;
+  support: "supported" | "partial" | "unsupported";
+  queryRefs?: string[];
+  evidenceRefs?: string[];
+  limitation?: string;
+}
 
 export interface LlmAgentModel {
   plan(input: {

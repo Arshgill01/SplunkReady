@@ -6,8 +6,8 @@
   "readinessStatus": "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF",
   "before": {
     "verdict": "NOT READY",
-    "score": 60,
-    "violations": 2
+    "score": 0,
+    "violations": 9
   },
   "after": {
     "verdict": "READY",

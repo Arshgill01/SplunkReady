@@ -36,15 +36,22 @@
   ],
   "policyPatchSummary": [],
   "rerunComparison": {
-    "beforeScore": 60,
+    "beforeScore": 0,
     "afterScore": 100,
     "beforeVerdict": "NOT READY",
     "afterVerdict": "READY",
     "resolvedViolations": [
+      "violation-mission-security-lateral-movement-readiness-spl-001-mission-security-lateral-movement-readiness-trace-003",
+      "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-003",
+      "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-003",
+      "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-003",
+      "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-003",
+      "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-003",
       "violation-mission-security-lateral-movement-readiness-ko-001-mission-security-lateral-movement-readiness-trace-001",
-      "violation-mission-security-lateral-movement-readiness-evd-001-mission-security-lateral-movement-readiness-trace-003"
+      "violation-mission-security-lateral-movement-readiness-evd-001-mission-security-lateral-movement-readiness-trace-005",
+      "violation-mission-security-lateral-movement-readiness-ans-001-mission-security-lateral-movement-readiness-trace-005"
     ]
   },
-  "receiptHash": "1c1ea57b0e37010fe1cc094d5b994cbd36a346180d7c259a7ae199e57c2a6b13",
+  "receiptHash": "1e806582b4f7f7da0966dadc9c7cf6dc54c40816ecd9eeb8021b9c00d2159774",
   "generatedBy": "Agent Readiness Compiler"
 }

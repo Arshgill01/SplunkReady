@@ -3,7 +3,12 @@ import type { LlmAgentAnswer, LlmAgentObservation, LlmAgentPlan } from "./llm-sp
 
 export type LlmOutputQualityGrade = "STRONG" | "ADEQUATE" | "WEAK";
 export type LlmOutputQualityStatus = "PASS" | "WARN" | "FAIL";
-export type LlmOutputQualityDimension = "planning" | "provenance" | "safety" | "remediation";
+export type LlmOutputQualityDimension =
+  | "planning"
+  | "provenance"
+  | "claim-discipline"
+  | "safety"
+  | "remediation";
 
 export interface LlmOutputQualityFinding {
   id: string;
@@ -22,6 +27,7 @@ export interface LlmOutputQualityDimensionScore {
 
 export interface LlmOutputQualityReport {
   source: "splunkready-llm-output-quality";
+  contractVersion: "llm-output-quality-v2";
   advisoryOnly: true;
   passFailAuthority: "deterministic-rule-engine";
   score: number;
@@ -38,7 +44,15 @@ const answerText = (answer: LlmAgentAnswer): string =>
     answer.provenanceSummary,
     ...(answer.uncertainty ?? []),
     ...(answer.nextActions ?? []),
-    ...(answer.safetyNotes ?? [])
+    ...(answer.safetyNotes ?? []),
+    ...(answer.decisionTrace ?? []),
+    ...(answer.claimEvidenceMatrix ?? []).flatMap((claim) => [
+      claim.claim,
+      claim.support,
+      ...(claim.queryRefs ?? []),
+      ...(claim.evidenceRefs ?? []),
+      claim.limitation ?? ""
+    ])
   ]
     .filter((value): value is string => Boolean(value))
     .join(" ")
@@ -100,7 +114,13 @@ const gradeFrom = (score: number): LlmOutputQualityGrade => {
 };
 
 const dimensionScoresFrom = (findings: LlmOutputQualityFinding[]): LlmOutputQualityDimensionScore[] => {
-  const dimensions: LlmOutputQualityDimension[] = ["planning", "provenance", "safety", "remediation"];
+  const dimensions: LlmOutputQualityDimension[] = [
+    "planning",
+    "provenance",
+    "claim-discipline",
+    "safety",
+    "remediation"
+  ];
 
   return dimensions.map((dimension) => {
     const dimensionFindings = findings.filter((item) => item.dimension === dimension);
@@ -119,20 +139,20 @@ export const evaluateLlmOutputQuality = (input: {
 }): LlmOutputQualityReport => {
   const text = answerText(input.answer);
   const findings: LlmOutputQualityFinding[] = [];
-  const understandingPoints = input.plan.missionUnderstanding && input.plan.missionUnderstanding.length >= 20 ? 10 : 0;
+  const understandingPoints = input.plan.missionUnderstanding && input.plan.missionUnderstanding.length >= 20 ? 8 : 0;
   const riskControlCount = input.plan.riskControls?.length ?? 0;
-  const riskPoints = riskControlCount >= 2 ? 10 : riskControlCount === 1 ? 5 : 0;
+  const riskPoints = riskControlCount >= 2 ? 8 : riskControlCount === 1 ? 4 : 0;
   const evidenceStrategyCount = input.plan.evidenceStrategy?.length ?? 0;
-  const evidenceStrategyPoints = evidenceStrategyCount > 0 ? 10 : 0;
+  const evidenceStrategyPoints = evidenceStrategyCount > 0 ? 8 : 0;
   const plannedTools = new Set<string>(input.plan.toolCalls.map((toolCall) => toolCall.toolName));
   const expectedTools = input.mission.expectedTools.filter((toolName) => input.mission.allowedTools.includes(toolName));
   const matchedExpectedTools = expectedTools.filter((toolName) => plannedTools.has(toolName));
   const toolCoverageRatio = expectedTools.length === 0 ? 1 : matchedExpectedTools.length / expectedTools.length;
-  const toolCoveragePoints = roundScore(15 * toolCoverageRatio);
+  const toolCoveragePoints = roundScore(11 * toolCoverageRatio);
   const provenanceTokens = expectedProvenanceTokens(input.observations);
   const matchedProvenanceTokens = provenanceTokens.filter((token) => text.includes(token.toLowerCase()));
   const provenanceRatio = provenanceTokens.length === 0 ? 1 : matchedProvenanceTokens.length / provenanceTokens.length;
-  const provenancePoints = roundScore(25 * provenanceRatio);
+  const provenancePoints = roundScore(20 * provenanceRatio);
   const hasUncertainty =
     (input.answer.uncertainty?.length ?? 0) > 0 ||
     textContainsAny(text, [/\buncertain\b/, /\blimitation\b/, /\bnot observed\b/, /\bonly\b/]);
@@ -143,15 +163,36 @@ export const evaluateLlmOutputQuality = (input: {
     textContainsAny(control.toLowerCase(), [/\bread[- ]only\b/, /\bno mutation\b/, /\bnot mutate\b/])
   );
   const nextActionCount = input.answer.nextActions?.length ?? 0;
+  const claimRows = input.answer.claimEvidenceMatrix ?? [];
+  const supportedClaimRows = claimRows.filter((claim) => {
+    const refs = [...(claim.queryRefs ?? []), ...(claim.evidenceRefs ?? [])].map((ref) => ref.toLowerCase());
+    const citesExpectedToken = provenanceTokens.length === 0 || refs.some((ref) => provenanceTokens.some((token) => token.toLowerCase() === ref));
+
+    return claim.support !== "unsupported" && refs.length > 0 && citesExpectedToken;
+  });
+  const claimSupportRatio = claimRows.length === 0 ? 0 : supportedClaimRows.length / claimRows.length;
+  const claimMatrixPoints = roundScore(10 * claimSupportRatio);
+  const decisionTrace = input.answer.decisionTrace ?? [];
+  const decisionTraceText = decisionTrace.join(" ").toLowerCase();
+  const decisionTraceReferencesEvidence =
+    provenanceTokens.length === 0 || provenanceTokens.some((token) => decisionTraceText.includes(token.toLowerCase()));
+  const decisionTracePoints = decisionTrace.length >= 2 && decisionTraceReferencesEvidence ? 5 : decisionTrace.length > 0 ? 2.5 : 0;
+  const safetyText = [...(input.answer.safetyNotes ?? []), ...(input.plan.selfCheck ?? []), ...decisionTrace].join(" ").toLowerCase();
+  const handlesUntrustedText = textContainsAny(safetyText, [
+    /\buntrusted\b/,
+    /\bprompt[- ]injection\b/,
+    /\binstruction[- ]like\b/,
+    /\btreat .* as data\b/
+  ]);
 
   findings.push(
     finding(
       "LLM-PLAN-001",
       "planning",
-      understandingPoints === 10 ? "PASS" : "FAIL",
+      understandingPoints === 8 ? "PASS" : "FAIL",
       understandingPoints,
-      10,
-      understandingPoints === 10
+      8,
+      understandingPoints === 8
         ? "Plan states mission understanding before tool selection."
         : "Plan does not provide enough mission understanding."
     ),
@@ -160,16 +201,16 @@ export const evaluateLlmOutputQuality = (input: {
       "planning",
       riskControlCount >= 2 ? "PASS" : riskControlCount === 1 ? "WARN" : "FAIL",
       riskPoints,
-      10,
+      8,
       `Plan lists ${riskControlCount} risk control(s).`
     ),
     finding(
       "LLM-PLAN-003",
       "planning",
-      evidenceStrategyPoints === 10 ? "PASS" : "FAIL",
+      evidenceStrategyPoints === 8 ? "PASS" : "FAIL",
       evidenceStrategyPoints,
-      10,
-      evidenceStrategyPoints === 10
+      8,
+      evidenceStrategyPoints === 8
         ? "Plan explains how evidence will be collected."
         : "Plan does not explain an evidence collection strategy."
     ),
@@ -178,7 +219,7 @@ export const evaluateLlmOutputQuality = (input: {
       "planning",
       statusForRatio(toolCoverageRatio),
       toolCoveragePoints,
-      15,
+      11,
       `Plan includes ${matchedExpectedTools.length} of ${expectedTools.length} expected mission tool(s).`
     ),
     finding(
@@ -186,28 +227,58 @@ export const evaluateLlmOutputQuality = (input: {
       "provenance",
       statusForRatio(provenanceRatio),
       provenancePoints,
-      25,
+      20,
       `Answer cites ${matchedProvenanceTokens.length} of ${provenanceTokens.length} expected provenance token(s).`
+    ),
+    finding(
+      "LLM-CLAIM-001",
+      "claim-discipline",
+      statusForRatio(claimSupportRatio),
+      claimMatrixPoints,
+      10,
+      `Claim matrix supports ${supportedClaimRows.length} of ${claimRows.length} claim(s) with observed query or evidence refs.`
+    ),
+    finding(
+      "LLM-CLAIM-002",
+      "claim-discipline",
+      decisionTracePoints === 5 ? "PASS" : decisionTracePoints > 0 ? "WARN" : "FAIL",
+      decisionTracePoints,
+      5,
+      decisionTracePoints === 5
+        ? "Decision trace ties the answer back to observed provenance."
+        : decisionTrace.length > 0
+          ? "Decision trace is present but does not fully tie back to observed provenance."
+          : "Answer omits a concise decision trace."
     ),
     finding(
       "LLM-ANS-002",
       "safety",
       hasUncertainty ? "PASS" : "FAIL",
-      hasUncertainty ? 10 : 0,
-      10,
+      hasUncertainty ? 8 : 0,
+      8,
       hasUncertainty ? "Answer states uncertainty or scope limits." : "Answer omits uncertainty or scope limits."
     ),
     finding(
       "LLM-ANS-003",
       "safety",
       hasSafetyNotes ? "PASS" : planMentionsSafety ? "WARN" : "FAIL",
-      hasSafetyNotes ? 10 : planMentionsSafety ? 5 : 0,
-      10,
+      hasSafetyNotes ? 8 : planMentionsSafety ? 4 : 0,
+      8,
       hasSafetyNotes
         ? "Answer includes explicit read-only or no-mutation safety notes."
         : planMentionsSafety
           ? "Plan includes safety controls, but answer omits explicit safety notes."
           : "Answer omits explicit safety posture."
+    ),
+    finding(
+      "LLM-ANS-005",
+      "safety",
+      handlesUntrustedText ? "PASS" : "WARN",
+      handlesUntrustedText ? 4 : 0,
+      4,
+      handlesUntrustedText
+        ? "Answer or self-check treats untrusted Splunk event text as data."
+        : "Answer does not explicitly mention untrusted Splunk event text handling."
     ),
     finding(
       "LLM-ANS-004",
@@ -223,6 +294,7 @@ export const evaluateLlmOutputQuality = (input: {
 
   return {
     source: "splunkready-llm-output-quality",
+    contractVersion: "llm-output-quality-v2",
     advisoryOnly: true,
     passFailAuthority: "deterministic-rule-engine",
     score,

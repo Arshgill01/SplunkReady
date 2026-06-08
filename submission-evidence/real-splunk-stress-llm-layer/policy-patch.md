@@ -6,12 +6,15 @@ Status: exported
 
 ## Summary
 
-Policy patch for receipt-before-001: addresses 2 observed violation(s) from verdict NOT READY.
+Policy patch for receipt-before-001: addresses 9 observed violation(s) from verdict NOT READY.
 
 ## Violation Refs
 
+- `violation-mission-security-lateral-movement-readiness-spl-001-mission-security-lateral-movement-readiness-trace-003`
+- `violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-003`
 - `violation-mission-security-lateral-movement-readiness-ko-001-mission-security-lateral-movement-readiness-trace-001`
-- `violation-mission-security-lateral-movement-readiness-evd-001-mission-security-lateral-movement-readiness-trace-003`
+- `violation-mission-security-lateral-movement-readiness-evd-001-mission-security-lateral-movement-readiness-trace-005`
+- `violation-mission-security-lateral-movement-readiness-ans-001-mission-security-lateral-movement-readiness-trace-005`
 
 ## Rules
 

@@ -1,11 +1,11 @@
 {
   "source": "splunkready-ui-artifacts",
-  "generatedAt": "2026-06-08T11:20:00.000Z",
-  "defaultArtifact": "/__splunkready_artifacts/",
+  "generatedAt": "2026-06-08T11:46:02.017Z",
+  "defaultArtifact": "submission-evidence/real-splunk-stress-llm-layer",
   "artifacts": [
     {
-      "label": "Real Splunk LLM stress proof",
-      "path": "/__splunkready_artifacts/"
+      "label": "Real Splunk LLM stress replay - v2 claim discipline / PASS",
+      "path": "submission-evidence/real-splunk-stress-llm-layer"
     }
   ]
 }

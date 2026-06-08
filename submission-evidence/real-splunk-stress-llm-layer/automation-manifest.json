@@ -1,8 +1,8 @@
 {
   "source": "splunkready-real-splunk-stress-replay",
   "status": "PASS",
-  "generatedAt": "2026-06-08T11:05:48.071Z",
-  "outDir": "artifacts/real-splunk-stress-move175",
+  "generatedAt": "2026-06-08T11:46:02.017Z",
+  "outDir": "artifacts/real-splunk-stress-move177",
   "evidenceOut": "submission-evidence/real-splunk-stress-llm-layer",
   "containerName": "splunkready-real-stress-replay",
   "keptContainer": false,
@@ -10,5 +10,5 @@
   "mutation": false,
   "failToPass": true,
   "readyAfterPatch": true,
-  "mcpBridgeFrames": 76
+  "mcpBridgeFrames": 78
 }

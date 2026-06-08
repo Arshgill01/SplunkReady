@@ -1,7 +1,7 @@
 {
   "status": "PASS",
-  "proofName": "Move 175 real Splunk stress replay with LLM deliberation evidence",
-  "generatedAt": "2026-06-08T11:05:48.070Z",
+  "proofName": "Move 174 real Splunk stress replay proof",
+  "generatedAt": "2026-06-08T11:46:02.016Z",
   "deployment": {
     "kind": "Docker Splunk Enterprise container",
     "image": "splunk/splunk:latest",
@@ -66,8 +66,8 @@
     "proofLoop": "fail-to-pass",
     "before": {
       "verdict": "NOT READY",
-      "score": 60,
-      "violations": 2
+      "score": 0,
+      "violations": 9
     },
     "after": {
       "verdict": "READY",
@@ -95,17 +95,39 @@
       "notes": "Hosted-model tools were advertised but could not be invoked with the current MCP credentials or entitlement."
     }
   },
+  "llmOutputQuality": {
+    "advisoryOnly": true,
+    "passFailAuthority": "deterministic-rule-engine",
+    "before": {
+      "score": 84,
+      "grade": "ADEQUATE"
+    },
+    "after": {
+      "score": 93.06,
+      "grade": "STRONG"
+    }
+  },
   "receipts": {
     "before": {
       "id": "receipt-before-001",
       "verdict": "NOT READY",
-      "score": 60,
+      "score": 0,
       "violations": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
         null,
         null
       ],
-      "evidenceRefs": [],
-      "receiptHash": "ec67d522b8ea4d4d0b519d7f575b903be5c8149a9ca5e8159f1dbcd2e0383e9e"
+      "evidenceRefs": [
+        "saved_searches:search:ES - Lateral Movement Auth Chain",
+        "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain"
+      ],
+      "receiptHash": "88aaa8e8de7e454bf3ee53bfaa18760ad3a7464d8e833b6dcd62078b3920a9a1"
     },
     "after": {
       "id": "receipt-after-001",
@@ -120,14 +142,14 @@
         "live-evt-118",
         "live-evt-102"
       ],
-      "receiptHash": "1c1ea57b0e37010fe1cc094d5b994cbd36a346180d7c259a7ae199e57c2a6b13"
+      "receiptHash": "1e806582b4f7f7da0966dadc9c7cf6dc54c40816ecd9eeb8021b9c00d2159774"
     }
   },
   "mcpBridgeSession": {
     "status": "PASS",
-    "frames": 76,
-    "requests": 38,
-    "responses": 38,
+    "frames": 78,
+    "requests": 39,
+    "responses": 39,
     "errors": 0,
     "tools": [
       "splunk_get_indexes",
@@ -135,6 +157,7 @@
       "splunk_get_knowledge_objects",
       "splunk_get_metadata",
       "splunk_get_user_info",
+      "splunk_run_query",
       "splunk_run_saved_search"
     ]
   },
@@ -142,17 +165,5 @@
     "This replay uses a local MCP compatibility bridge backed by real Splunk REST because a fresh Splunk Enterprise container does not expose the Splunk MCP Server app by default.",
     "Hosted-model/SAIA tools are advisory and are not claimed as available unless the proof summary reports them as available.",
     "The local Splunk management endpoint uses self-signed TLS; NODE_TLS_REJECT_UNAUTHORIZED=0 is scoped to this local replay."
-  ],
-  "llmOutputQuality": {
-    "advisoryOnly": true,
-    "passFailAuthority": "deterministic-rule-engine",
-    "before": {
-      "score": 92.5,
-      "grade": "STRONG"
-    },
-    "after": {
-      "score": 94.44,
-      "grade": "STRONG"
-    }
-  }
+  ]
 }

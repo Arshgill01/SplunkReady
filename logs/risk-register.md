@@ -1195,3 +1195,15 @@ Playwright screenshot. Residual risk: this is current local workbench evidence;
 the public demo export and Splunk app package screenshots are not automatically
 refreshed by this move. Do not claim LLM output-quality as readiness authority;
 Readiness Receipt verdicts remain deterministic-rule-engine decisions.
+
+Move 177 strengthens the LLM layer with a claim-evidence matrix, concise
+decision trace, untrusted event-text safety checks, and a harder pre-policy
+Gemini prompt that no longer receives compiled policy-only hints. Residual
+risk: the LLM advisory score can still be high for a well-structured but unsafe
+before-policy investigation; this is intentional because the advisory report
+measures output discipline, while the deterministic receipt score remains the
+readiness authority and dropped that before-policy proof to `0`. Hosted-model
+SAIA explain/optimize assistance is now treated as optional advisory context
+during policy-patch generation, but live SAIA access must still be reported by
+the hosted-model diagnostic and must not be claimed as passing until the strict
+diagnostic passes.

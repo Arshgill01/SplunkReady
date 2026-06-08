@@ -122,7 +122,13 @@ export type HostedModelSummary = z.infer<typeof hostedModelSummarySchema>;
 
 const llmOutputQualityStatusSchema = z.enum(["PASS", "WARN", "FAIL"]);
 
-const llmOutputQualityDimensionSchema = z.enum(["planning", "provenance", "safety", "remediation"]);
+const llmOutputQualityDimensionSchema = z.enum([
+  "planning",
+  "provenance",
+  "claim-discipline",
+  "safety",
+  "remediation"
+]);
 
 const llmOutputQualityFindingSchema = z
   .object({
@@ -146,6 +152,7 @@ const llmOutputQualityDimensionScoreSchema = z
 const llmOutputQualityReportSchema = z
   .object({
     source: z.literal("splunkready-llm-output-quality"),
+    contractVersion: z.string().optional(),
     advisoryOnly: z.literal(true),
     passFailAuthority: z.literal("deterministic-rule-engine"),
     score: z.number(),
@@ -185,13 +192,25 @@ const llmObservationSchema = z
   })
   .strict();
 
+const llmClaimEvidenceSchema = z
+  .object({
+    claim: z.string().min(1),
+    support: z.enum(["supported", "partial", "unsupported"]),
+    queryRefs: z.array(z.string().min(1)).optional(),
+    evidenceRefs: z.array(z.string().min(1)).optional(),
+    limitation: z.string().min(1).optional()
+  })
+  .strict();
+
 const llmAnswerSchema = z
   .object({
     finalAnswer: z.string().min(1),
     provenanceSummary: z.string().min(1).optional(),
     uncertainty: z.array(z.string().min(1)).optional(),
     nextActions: z.array(z.string().min(1)).optional(),
-    safetyNotes: z.array(z.string().min(1)).optional()
+    safetyNotes: z.array(z.string().min(1)).optional(),
+    decisionTrace: z.array(z.string().min(1)).optional(),
+    claimEvidenceMatrix: z.array(llmClaimEvidenceSchema).optional()
   })
   .strict();
 

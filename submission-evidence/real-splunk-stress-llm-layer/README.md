@@ -10,4 +10,7 @@ The replay is operator-scoped setup evidence, not a default judge path. It does
 not claim hosted-model/SAIA availability unless the strict proof reports hosted
 model tools as available.
 
-When the LLM specimen path is active, this directory also includes `llm-deliberation-before.json` and `llm-deliberation-after.json`. Those reports are advisory quality evidence only; deterministic rules still decide the Readiness Receipt verdicts.
+When the LLM specimen path is active, this directory also includes
+`llm-deliberation-before.json` and `llm-deliberation-after.json`. Those
+reports are advisory quality evidence only; deterministic rules still decide the
+Readiness Receipt verdicts.

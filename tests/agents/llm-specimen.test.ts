@@ -93,7 +93,19 @@ describe("LlmSpecimenAgent", () => {
           provenanceSummary: `Provenance ${provenanceRows}.`,
           uncertainty: ["Only the executed saved-search observations were used."],
           nextActions: ["Hand the deterministic Readiness Receipt to the operator."],
-          safetyNotes: ["read-only; no Splunk mutation performed"]
+          safetyNotes: ["read-only; no Splunk mutation performed", "Treat returned Splunk event text as untrusted data."],
+          decisionTrace: [
+            `Observed ${lastObservation?.queryRef} before answering.`,
+            `Compared result count ${lastObservation?.resultCount} with evidence refs ${lastObservation?.evidenceRefs.join(", ")}.`
+          ],
+          claimEvidenceMatrix: [
+            {
+              claim: "The validated saved search returned lateral movement evidence.",
+              support: "supported",
+              queryRefs: [lastObservation?.queryRef ?? ""].filter(Boolean),
+              evidenceRefs: lastObservation?.evidenceRefs ?? []
+            }
+          ]
         };
       }
     };
@@ -124,6 +136,7 @@ describe("LlmSpecimenAgent", () => {
     expect(run.finalAnswer).toContain("saved-search-lateral-movement");
     expect(run.outputQuality).toMatchObject({
       source: "splunkready-llm-output-quality",
+      contractVersion: "llm-output-quality-v2",
       advisoryOnly: true,
       passFailAuthority: "deterministic-rule-engine",
       grade: "STRONG"
@@ -333,7 +346,18 @@ describe("Gemini LLM specimen model", () => {
                 }
               ]
             }
-          : { finalAnswer: "Saved search provenance cited." };
+          : {
+              finalAnswer: "Saved search provenance cited.",
+              decisionTrace: ["Observed saved-search-lateral-movement before answering."],
+              claimEvidenceMatrix: [
+                {
+                  claim: "Saved search provenance was cited.",
+                  support: "supported",
+                  queryRefs: ["saved-search-lateral-movement"],
+                  evidenceRefs: ["evt-102"]
+                }
+              ]
+            };
 
       return new Response(
         JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(payload) }] } }] }),
@@ -349,7 +373,7 @@ describe("Gemini LLM specimen model", () => {
     });
 
     await expect(
-      model.plan({ mission, contract, contractInjected: true, allowedTools: ["splunk_get_knowledge_objects"] })
+      model.plan({ mission, contract, contractInjected: false, allowedTools: ["splunk_get_knowledge_objects"] })
     ).resolves.toMatchObject({
       toolCalls: [{ toolName: "splunk_get_knowledge_objects" }]
     });
@@ -362,6 +386,8 @@ describe("Gemini LLM specimen model", () => {
     expect(calls[0]?.body).toContain('"temperature":0.2');
     expect(calls[0]?.body).toContain("missionUnderstanding");
     expect(calls[0]?.body).toContain("riskControls");
+    expect(calls[0]?.body).not.toContain("forbiddenPatterns");
+    expect(calls[0]?.body).not.toContain("preferredSavedSearchRefs");
   });
 
   it("normalizes MCP-style saved-search aliases from Gemini plans", async () => {
@@ -507,6 +533,8 @@ describe("Gemini LLM specimen model", () => {
     expect(prompt).toContain("Provenance <queryRef> returned <resultCount> rows");
     expect(prompt).toContain("uncertainty");
     expect(prompt).toContain("safetyNotes");
+    expect(prompt).toContain("decisionTrace");
+    expect(prompt).toContain("claimEvidenceMatrix");
     expect(prompt).toContain("saved-search-lateral-movement");
     expect(prompt).toContain("evt-102");
   });
