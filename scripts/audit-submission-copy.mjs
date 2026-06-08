@@ -40,7 +40,7 @@ const checks = [
   ["Devpost no mutation", files.devpost, "does not mutate Splunk"],
   ["README npm package link", files.readme, "https://www.npmjs.com/package/splunkready"],
   ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json"],
-  ["README GitHub Packages mirror", files.readme, "@arshgill01/splunkready@0.1.6"],
+  ["README GitHub Packages mirror", files.readme, "@arshgill01/splunkready@0.1.7"],
   ["README public package currentness audit", files.readme, "npm run audit:public-package-currentness"],
   ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json"],
   ["Devpost public package currentness evidence", files.devpost, "submission-evidence/public-package-currentness/"],
@@ -70,24 +70,24 @@ const checks = [
   ["Claim ledger npm package page", files.claimLedger, "https://www.npmjs.com/package/splunkready"],
   ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json"],
   ["Claim ledger published package current version", files.claimLedger, "latest `0.1.5`"],
-  ["Claim ledger source release OTP blocker", files.claimLedger, "The `0.1.6` source release is prepared but not published because npm requires operator OTP."],
+  ["Claim ledger source release OTP blocker", files.claimLedger, "The `0.1.7` source release is prepared but not published because npm requires operator OTP."],
   ["Claim ledger source release blocker status", files.claimLedger, "| Blocked |"],
   ["Claim ledger source release blocker command", files.claimLedger, "npm publish --access public --otp=<code>"],
   [
     "Claim ledger public package currentness",
     files.claimLedger,
-    "The public registry currentness proof verifies the published judge-proof, MCP tools, live-mock proof, policy-registry path, source `gitHead`, and `mcp-recorder` gateway before any package is called current, and now reports the release gap honestly after Move 193."
+    "The public registry currentness proof verifies the published judge-proof, MCP tools, live-mock proof, policy-registry path, source `gitHead`, and `mcp-recorder` gateway before any package is called current, and now reports the release gap honestly after Move 201."
   ],
   ["Claim ledger public package currentness artifact", files.claimLedger, "submission-evidence/public-package-currentness/public-package-currentness.json"],
   ["Claim ledger public package live mock proof", files.claimLedger, "publishedLiveMockProof"],
   ["Claim ledger public package policy registry proof", files.claimLedger, "publishedPolicyRegistry"],
   ["Claim ledger public package recorder proof", files.claimLedger, "publishedRecorder"],
   ["Claim ledger public package stale status", files.claimLedger, 'status: "STALE"'],
-  ["Claim ledger public package stale latest local", files.claimLedger, "local source `0.1.6`"],
-  ["Claim ledger public package current source head", files.claimLedger, "package-input head `8311db4`"],
+  ["Claim ledger public package stale latest local", files.claimLedger, "local source `0.1.7`"],
+  ["Claim ledger public package current source head", files.claimLedger, "package-input head"],
   ["Claim ledger public package latest mismatch", files.claimLedger, "registry.latestMatchesLocal: false"],
   ["Claim ledger public package gitHead mismatch", files.claimLedger, "registry.gitHeadMatchesPackageInputs: false"],
-  ["Claim ledger public package recommended action", files.claimLedger, "recommended action to publish `0.1.6`"],
+  ["Claim ledger public package recommended action", files.claimLedger, "recommended action to publish `0.1.7`"],
   [
     "Claim ledger standalone release current OS",
     files.claimLedger,
@@ -109,10 +109,10 @@ const checks = [
   [
     "Claim ledger public GitHub release assets",
     files.claimLedger,
-    "The public `v0.1.6` GitHub Release publishes no-Node standalone assets for Linux, macOS, and Windows with checksums and per-platform manifests."
+    "The public `v0.1.7` GitHub Release publishes no-Node standalone assets for Linux, macOS, and Windows with checksums and per-platform manifests."
   ],
   ["Claim ledger public GitHub release evidence", files.claimLedger, "submission-evidence/standalone-release/standalone-release-github-release.json"],
-  ["Claim ledger public GitHub release URL", files.claimLedger, "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6"],
+  ["Claim ledger public GitHub release URL", files.claimLedger, "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.7"],
   ["Claim ledger public GitHub release run", files.claimLedger, "27150182301"],
   ["Claim ledger public GitHub release linux asset", files.claimLedger, "splunkready-linux-x64.tar.gz"],
   ["Claim ledger public GitHub release macOS asset", files.claimLedger, "splunkready-macos-arm64.tar.gz"],
@@ -121,7 +121,7 @@ const checks = [
   [
     "Claim ledger public standalone download smoke",
     files.claimLedger,
-    "The public `v0.1.6` macOS standalone archive downloads from GitHub Releases, verifies its checksum, and runs judge proof without Node/npm/npx."
+    "The public `v0.1.7` macOS standalone archive downloads from GitHub Releases, verifies its checksum, and runs judge proof without Node/npm/npx."
   ],
   [
     "Claim ledger public standalone download evidence",
@@ -143,11 +143,12 @@ const checks = [
   ["Claim ledger setup action evidence", files.claimLedger, "submission-evidence/setup-splunkready-action/setup-splunkready-action.json"],
   ["Claim ledger setup action path", files.claimLedger, "setup-splunkready/action.yml"],
   ["Claim ledger setup action status", files.claimLedger, 'source: "splunkready-setup-action"'],
-  ["Claim ledger setup action branch ref", files.claimLedger, 'currentPublicActionRef: "Arshgill01/SplunkReady/setup-splunkready@splunkready-build"'],
-  ["Claim ledger setup action tag boundary", files.claimLedger, "tagV016ContainsSetupAction: false"],
+  ["Claim ledger setup action release ref", files.claimLedger, 'currentPublicActionRef: "Arshgill01/SplunkReady/setup-splunkready@v0.1.7"'],
+  ["Claim ledger setup action v017 tag boundary", files.claimLedger, "tagV017ContainsSetupAction: true"],
+  ["Claim ledger setup action v016 tag boundary", files.claimLedger, "tagV016ContainsSetupAction: false"],
   ["Claim ledger setup action launcher", files.claimLedger, "addsLauncherToPath: true"],
   ["Claim ledger setup action absolute launcher", files.claimLedger, "pathLauncherUsesAbsoluteStandaloneBinary: true"],
-  ["Claim ledger setup action release tag", files.claimLedger, "release tag `v0.1.6`"],
+  ["Claim ledger setup action release tag", files.claimLedger, "release tag `v0.1.7`"],
   ["Claim ledger setup action linux target", files.claimLedger, "`linux-x64`"],
   ["Claim ledger setup action mac target", files.claimLedger, "`macos-arm64`"],
   ["Claim ledger setup action windows target", files.claimLedger, "`windows-x64`"],
@@ -156,8 +157,7 @@ const checks = [
   ["Claim ledger setup action no npm ci", files.claimLedger, "consumerJobRequiresNpmCi: false"],
   ["Claim ledger setup action smoke command", files.claimLedger, 'splunkready judge-proof --out "$RUNNER_TEMP/splunkready-setup-proof" --json'],
   ["Claim ledger GitHub Packages row", files.claimLedger, "The repository has a GitHub Packages npm mirror linked to the GitHub package sidebar."],
-  ["Claim ledger GitHub Packages version", files.claimLedger, "@arshgill01/splunkready@0.1.6"],
-  ["Claim ledger GitHub Packages run", files.claimLedger, "27149553852"],
+  ["Claim ledger GitHub Packages version", files.claimLedger, "@arshgill01/splunkready@0.1.7"],
   [
     "Claim ledger real Splunk stress proof",
     files.claimLedger,
@@ -214,7 +214,7 @@ const checks = [
   ["README standalone release artifact", files.readme, "Standalone Release Artifact"],
   ["README standalone release evidence", files.readme, "submission-evidence/standalone-release/standalone-release-current-os.json"],
   ["README standalone release matrix evidence", files.readme, "submission-evidence/standalone-release/standalone-release-matrix.json"],
-  ["README standalone release public URL", files.readme, "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6"],
+  ["README standalone release public URL", files.readme, "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.7"],
   ["README standalone release public evidence", files.readme, "submission-evidence/standalone-release/standalone-release-github-release.json"],
   [
     "README standalone release public download evidence",
@@ -222,15 +222,15 @@ const checks = [
     "submission-evidence/standalone-release/standalone-release-public-download-smoke.json"
   ],
   ["README standalone release public download command", files.readme, "./splunkready judge-proof --out ./judge-proof --json"],
-  ["README setup action usage", files.readme, "Arshgill01/SplunkReady/setup-splunkready@splunkready-build"],
-  ["README setup action version input", files.readme, "version: v0.1.6"],
-  ["README setup action tag boundary", files.readme, "pin to a later tag or commit"],
+  ["README setup action usage", files.readme, "Arshgill01/SplunkReady/setup-splunkready@v0.1.7"],
+  ["README setup action version input", files.readme, "version: v0.1.7"],
+  ["README setup action tag boundary", files.readme, "The `v0.1.7` tag includes"],
   ["README setup action evidence", files.readme, "submission-evidence/setup-splunkready-action/setup-splunkready-action.json"],
   ["README setup action checksum", files.readme, "verifies"],
   ["README setup action no node", files.readme, "no-Node/no-npm"],
   ["Devpost standalone release evidence", files.devpost, "submission-evidence/standalone-release/standalone-release-current-os.json"],
   ["Devpost standalone release matrix evidence", files.devpost, "submission-evidence/standalone-release/standalone-release-matrix.json"],
-  ["Devpost standalone release public URL", files.devpost, "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6"],
+  ["Devpost standalone release public URL", files.devpost, "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.7"],
   ["Devpost standalone release public evidence", files.devpost, "submission-evidence/standalone-release/standalone-release-github-release.json"],
   [
     "Devpost standalone release public download evidence",
@@ -240,7 +240,7 @@ const checks = [
   ["Devpost standalone release public download command", files.devpost, "./splunkready judge-proof --out ./judge-proof --json"],
   ["Devpost setup action name", files.devpost, "setup-splunkready"],
   ["Devpost setup action evidence", files.devpost, "submission-evidence/setup-splunkready-action/setup-splunkready-action.json"],
-  ["Devpost setup action release tag", files.devpost, "public standalone release asset from `v0.1.6`"],
+  ["Devpost setup action release tag", files.devpost, "public standalone release asset from `v0.1.7`"],
   ["Devpost setup action no node", files.devpost, "without `actions/setup-node` or `npm ci`"],
   [
     "Claim ledger hosted demo currentness",

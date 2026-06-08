@@ -1426,3 +1426,13 @@ PATH for non-Node CI jobs. Residual risk: until a later tag is cut after this
 move, the public setup-action ref must use `splunkready-build` or a commit SHA;
 tag `v0.1.6` predates `setup-splunkready/action.yml` and must not be cited as
 containing the action path. Public npmjs remains `splunkready@0.1.5`.
+
+Move 201 prepares source, docs, tests, and evidence for a stable
+`setup-splunkready@v0.1.7` action ref. Residual risk: the `v0.1.7` public
+GitHub Release assets and GitHub Packages mirror are not claimable until the
+branch commit is pushed, tag `v0.1.7` is pushed, Release Artifacts succeeds,
+the public standalone download smoke passes, and the GitHub Packages workflow
+publishes `@arshgill01/splunkready@0.1.7`. The first source push intentionally
+keeps branch CI's setup-action smoke downloading `v0.1.6` to avoid a release
+asset race; update it to `v0.1.7` only after assets exist. Public npmjs remains
+stale at `splunkready@0.1.5` until an OTP-backed publish succeeds.

@@ -17,7 +17,7 @@ This directory is the judge-facing evidence pack. It is tracked in git so it can
 - `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, records the raw JSON-RPC client session, discovers tools/resources/resource templates/prompts, reads a templated Readiness Receipt resource, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript through both path-based and inline-content MCP tools, checks hosted-model SAIA access through the MCP server in fixture mode, writes a client walkthrough showing existing Splunk MCP investigation followed by SplunkReady certification, runs the MCP recorder gateway against mock Splunk MCP plus SplunkReady MCP, writes a redacted dual-server recorder session with preserved server IDs, records an advisory Splunk AppInspect MCP composition proof for the current `.spl` package, and verifies the nested transcript proof manifests.
 - `mcp-proof/mcp-category-scorecard.json`: MCP category scorecard. It reports the SplunkReady MCP tool/resource/prompt surface, mock Splunk MCP composition, AppInspect MCP composition, hosted-model MCP boundary, Zed external-client evidence, and the current compact-session limitation while requiring a visible Zed `splunkready_recorder_flush` JSONL frame.
 - `policy-registry/`: signed default, SOC2, and PCI DSS policy bundles. Each installed policy includes `policy.json` and an Ed25519-backed `policy-manifest.json` with `deterministicAuthority: true` and `mutation: false`.
-- `standalone-release/`: no-Node release artifact smoke evidence. It records a macOS arm64 Node SEA archive that was extracted into a clean temp folder and ran `judge-proof` with `PASS`, 67 artifacts, and `mutation: false`. It also records a GitHub Actions workflow-dispatch matrix where Linux, macOS, and Windows runners each built, smoked, and uploaded standalone artifacts, the public `v0.1.6` GitHub Release with Linux, macOS, and Windows archives, SHA-256 checksum files, and per-platform manifests, plus a public-download smoke proving the macOS arm64 archive was downloaded back from GitHub Releases, checksum-verified, extracted, and run without Node, npm, `npx`, a repo checkout, Splunk credentials, or live mutation.
+- `standalone-release/`: no-Node release artifact smoke evidence. It records a macOS arm64 Node SEA archive that was extracted into a clean temp folder and ran `judge-proof` with `PASS`, 67 artifacts, and `mutation: false`. It also records a GitHub Actions workflow-dispatch matrix where Linux, macOS, and Windows runners each built, smoked, and uploaded standalone artifacts, the public `v0.1.7` GitHub Release with Linux, macOS, and Windows archives, SHA-256 checksum files, and per-platform manifests, plus a public-download smoke proving the macOS arm64 archive was downloaded back from GitHub Releases, checksum-verified, extracted, and run without Node, npm, `npx`, a repo checkout, Splunk credentials, or live mutation.
 - `setup-splunkready-action/`: standalone GitHub Action install evidence. It records the `setup-splunkready` sub-action, supported public release targets, checksum verification, absolute-path launcher installation, and a CI smoke job that runs `splunkready judge-proof` without `actions/setup-node` or `npm ci` in the consumer job.
 - `splunk-app-package/`: credential-free `.spl` package proof that embeds the public artifact workbench in a static Splunk app shell. It includes the package archive and manifest with hash, file list, official packaging references, Splunkbase listing assets, `mutation: false`, `noCredentialFiles: true`, `noPythonHandlers: true`, and `noScriptedInputs: true`.
 - `splunk-app-install/`: redacted operator-approved proof that the `.spl` package was installed/upgraded and probed on the local operator-owned Splunk server.
@@ -136,7 +136,7 @@ Expected proof status:
 - standalone release matrix status: `success`
 - standalone release matrix jobs: `standalone ubuntu-latest`, `standalone macos-latest`, `standalone windows-latest`
 - standalone release matrix artifact count: `3`
-- standalone release public GitHub Release: `https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6`
+- standalone release public GitHub Release: `https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.7`
 - standalone release public GitHub Release assets: `9`
 - standalone release public download smoke: `PASS`
 - standalone release public download checksum: `PASS`
@@ -144,7 +144,7 @@ Expected proof status:
 - standalone release public download smoke artifacts: `67`
 - standalone release public download mutation: `false`
 - setup-splunkready action status: `IMPLEMENTED`
-- setup-splunkready action release tag: `v0.1.6`
+- setup-splunkready action release tag: `v0.1.7`
 - setup-splunkready action supported targets: `linux-x64`, `macos-arm64`, `windows-x64`
 - setup-splunkready action consumer Node setup: `false`
 - setup-splunkready action consumer npm install: `false`

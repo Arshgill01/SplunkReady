@@ -3,7 +3,7 @@
   "status": "PASS",
   "package": {
     "name": "splunkready",
-    "version": "0.1.3"
+    "version": "0.1.7"
   },
   "target": "macos-arm64",
   "currentRunnerTarget": "macos-arm64",
@@ -23,14 +23,14 @@
       "fixtures",
       "policies"
     ],
-    "archiveSha256": "4fcf24996beb14c7ee324257c0cadcab55ef0000f3a769b5b1471c82c3835bbc",
-    "archiveBytes": 36701618,
-    "executableBytes": 112163936
+    "archiveSha256": "3947befce27b742ca20ae46bf60f2fef2dd66c5f2917ccdbf7b22a18d30bc29d",
+    "archiveBytes": 36706135,
+    "executableBytes": 112196960
   },
   "smoke": {
     "status": "PASS",
     "target": "macos-arm64",
-    "tempRoot": "/var/folders/bk/pd55wq653znfps37yvznw_t00000gn/T/splunkready-standalone-smoke-N2e3gR",
+    "tempRoot": "/var/folders/bk/pd55wq653znfps37yvznw_t00000gn/T/splunkready-standalone-smoke-xV52jp",
     "command": "splunkready judge-proof --out ./judge-proof --json",
     "exitCode": 0,
     "stdoutStatus": "PASS",

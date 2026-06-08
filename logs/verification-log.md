@@ -17708,3 +17708,37 @@ Result:
   readiness/installability audits, 76 Vitest files / 441 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
   audit with 403 required claims, and whitespace diff check.
+
+## 2026-06-08T16:46:15Z - Move 201 tagged setup-action release prep
+
+Commands:
+
+- `npm version 0.1.7 --no-git-tag-version`
+- `npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/examples/repository-ci-workflow.test.ts tests/ci/github-action.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:npm-release-preflight -- --require-ready`
+- `npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json`
+- `npm run check`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS: package metadata bumped to `0.1.7` without creating an npm/git tag.
+- PASS: public package currentness audit completed and wrote evidence.
+- STALE: public npm latest remains `splunkready@0.1.5`; local source is
+  `0.1.7`; published `0.1.5` judge-proof, MCP, live-mock, recorder, and
+  policy-registry probes passed.
+- PASS: submission-copy audit passed with 442 required claims.
+- PASS: focused Vitest suite passed: 3 files, 15 tests.
+- PASS: npm release preflight reports `splunkready@0.1.7` is available and
+  authenticated as `brightybrainiac`; no npm publish was run in this move.
+- PASS: current-OS standalone release build/smoke passed for package version
+  `0.1.7`, macOS arm64, 67 smoke artifacts, and `mutation: false`.
+- PASS: `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 76 Vitest files / 443 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
+  audit with 442 required claims, and whitespace diff check.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.

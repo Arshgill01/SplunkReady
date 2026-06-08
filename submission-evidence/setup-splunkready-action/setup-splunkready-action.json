@@ -3,9 +3,9 @@
   "status": "IMPLEMENTED",
   "actionPath": "setup-splunkready/action.yml",
   "workflowPath": ".github/workflows/ci.yml",
-  "actionRefBoundary": "The setup-splunkready action is available on splunkready-build after Move 200; tag v0.1.6 is only the standalone binary release asset tag and does not contain this action path.",
-  "releaseTag": "v0.1.6",
-  "releaseUrl": "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6",
+  "actionRefBoundary": "The setup-splunkready action is available at the stable v0.1.7 tag; tag v0.1.6 predates setup-splunkready/action.yml and must not be used for this action path.",
+  "releaseTag": "v0.1.7",
+  "releaseUrl": "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.7",
   "supportedTargets": [
     "linux-x64",
     "macos-arm64",
@@ -28,7 +28,8 @@
   "claimBoundary": {
     "rootGateActionStillExists": true,
     "setupActionInstallsStandaloneBinaryOnly": true,
-    "currentPublicActionRef": "Arshgill01/SplunkReady/setup-splunkready@splunkready-build",
+    "currentPublicActionRef": "Arshgill01/SplunkReady/setup-splunkready@v0.1.7",
+    "tagV017ContainsSetupAction": true,
     "tagV016ContainsSetupAction": false,
     "homebrewSupportClaimed": false,
     "npmjsVersionAdvanced": false,

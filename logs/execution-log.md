@@ -16713,3 +16713,43 @@ Result:
   wrapper on PATH.
 - Updated setup-action evidence and claim ledger to distinguish PATH launcher
   installation from the raw standalone payload.
+
+## 2026-06-08T16:46:15Z - Move 201 tagged setup-action release prep
+
+Context:
+
+- Move 200 added and remotely proved the `setup-splunkready` sub-action, but
+  the only public standalone release tag was `v0.1.6`, which predates
+  `setup-splunkready/action.yml`.
+- Judge-facing copy needs a stable action ref instead of
+  `Arshgill01/SplunkReady/setup-splunkready@splunkready-build`.
+- Public npmjs is still stale and must not be advanced without OTP-backed
+  publish evidence.
+
+Actions:
+
+- Added `docs/execplans/tagged-setup-action-release.md` and
+  `moves/moves201.md`.
+- Bumped source package metadata to `0.1.7`.
+- Updated the setup action default standalone release tag to `v0.1.7`.
+- Updated README, Devpost copy, submission README, claim ledger, setup-action
+  evidence, and submission-copy guardrails to use the future stable action ref
+  `Arshgill01/SplunkReady/setup-splunkready@v0.1.7`.
+- Refreshed public package currentness evidence. It honestly reports
+  `STALE`: npm latest is `0.1.5`, local source is `0.1.7`, and published
+  `0.1.5` smoke probes still pass.
+- Refreshed current-OS standalone release evidence for local source `0.1.7`.
+- Kept branch CI's standalone binary smoke pinned to `v0.1.6` for the first
+  source push, so CI does not race a `v0.1.7` asset download before the release
+  workflow publishes the new assets.
+
+Result:
+
+- LOCAL READY: package preflight is ready for `splunkready@0.1.7`; no npmjs
+  publish claim was made.
+- LOCAL READY: current-OS standalone artifact build/smoke passed for
+  package version `0.1.7`.
+- HONEST BOUNDARY: the public `v0.1.7` GitHub Release assets and GitHub
+  Packages mirror are not real until the branch is pushed, the tag is pushed,
+  the Release Artifacts workflow passes, and the GitHub Packages workflow
+  publishes `@arshgill01/splunkready@0.1.7`.

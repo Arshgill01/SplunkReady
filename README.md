@@ -37,7 +37,7 @@ The currently published no-clone judge path is:
 npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json
 ```
 
-The repo-linked GitHub Packages mirror is `@arshgill01/splunkready@0.1.6`;
+The repo-linked GitHub Packages mirror is `@arshgill01/splunkready@0.1.7`;
 that registry path requires GitHub package authentication, so the npmjs command
 above remains the unauthenticated judge path.
 
@@ -64,17 +64,17 @@ It reports `status: "PASS"`, target `macos-arm64`, smoke `PASS`, stdout command
 workflow dispatch evidence at
 `submission-evidence/standalone-release/standalone-release-matrix.json` shows
 Linux, macOS, and Windows runners each built, smoked, and uploaded standalone
-artifacts. The public `v0.1.6` GitHub Release publishes those standalone
+artifacts. The public `v0.1.7` GitHub Release publishes those standalone
 archives, SHA-256 checksum files, and per-platform manifests at
-https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6; tracked evidence
+https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.7; tracked evidence
 is in
 `submission-evidence/standalone-release/standalone-release-github-release.json`.
 The macOS arm64 archive was also downloaded back from that public URL,
 checksum-verified, extracted in a clean temp folder, and run with:
 
 ```bash
-curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz
-curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz.sha256
+curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.7/splunkready-macos-arm64.tar.gz
+curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.7/splunkready-macos-arm64.tar.gz.sha256
 shasum -a 256 -c splunkready-macos-arm64.tar.gz.sha256
 tar -xzf splunkready-macos-arm64.tar.gz
 ./splunkready judge-proof --out ./judge-proof --json
@@ -89,9 +89,9 @@ CI users who do not want a Node setup step can install the standalone binary
 through the repository sub-action:
 
 ```yaml
-- uses: Arshgill01/SplunkReady/setup-splunkready@splunkready-build
+- uses: Arshgill01/SplunkReady/setup-splunkready@v0.1.7
   with:
-    version: v0.1.6
+    version: v0.1.7
 
 - run: splunkready judge-proof --out "$RUNNER_TEMP/splunkready-proof" --json
 ```
@@ -101,9 +101,8 @@ the SHA-256 checksum, and adds the binary directory to `PATH`. The tracked
 evidence at
 `submission-evidence/setup-splunkready-action/setup-splunkready-action.json`
 records the supported release targets, checksum boundary, no-Node/no-npm
-consumer job, and credential-free mutation boundary. Use the branch ref for the
-current source; pin to a later tag or commit once that ref includes
-`setup-splunkready/action.yml`.
+consumer job, and credential-free mutation boundary. The `v0.1.7` tag includes
+`setup-splunkready/action.yml`; older tag `v0.1.6` does not.
 
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, writes `compiler-diagnostics.json` / `.md` showing deterministic rule activation and resolution from readiness profiles and receipts, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 

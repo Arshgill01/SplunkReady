@@ -168,7 +168,7 @@ describe("GitHub Action runner", () => {
 
     expect(metadata).toContain("name: Setup SplunkReady");
     expect(metadata).toContain("using: composite");
-    expect(metadata).toContain("default: v0.1.6");
+    expect(metadata).toContain("default: v0.1.7");
     expect(metadata).toContain("Arshgill01/SplunkReady");
     expect(metadata).toContain("Linux-X64");
     expect(metadata).toContain("macOS-ARM64");

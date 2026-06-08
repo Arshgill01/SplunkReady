@@ -6,7 +6,7 @@ inputs:
   version:
     description: "GitHub Release tag to install."
     required: false
-    default: v0.1.6
+    default: v0.1.7
   repository:
     description: "Repository that publishes SplunkReady release assets."
     required: false

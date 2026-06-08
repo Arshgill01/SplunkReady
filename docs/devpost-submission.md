@@ -64,10 +64,10 @@ reports current target `macos-arm64`, smoke `PASS`, 67 generated artifacts, and
 `mutation: false`. The workflow-dispatch evidence at
 `submission-evidence/standalone-release/standalone-release-matrix.json` proves
 Linux, macOS, and Windows runners each built, smoked, and uploaded standalone
-artifacts. The public `v0.1.6` GitHub Release now publishes the Linux, macOS,
+artifacts. The public `v0.1.7` GitHub Release now publishes the Linux, macOS,
 and Windows standalone archives, SHA-256 checksum files, and per-platform
 manifests at
-https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6. The tracked
+https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.7. The tracked
 release evidence is
 `submission-evidence/standalone-release/standalone-release-github-release.json`.
 The macOS arm64 archive was also downloaded from that public release URL,
@@ -79,7 +79,7 @@ The tracked public-download smoke at
 `submission-evidence/standalone-release/standalone-release-public-download-smoke.json`
 reports `PASS`, 67 generated artifacts, and `mutation: false`.
 The repository also ships `setup-splunkready`, a GitHub Action subpath for
-non-Node CI jobs. On the current branch it downloads the public standalone release asset from `v0.1.6`, verifies the SHA-256 checksum, adds the binary to
+non-Node CI jobs. The `v0.1.7` tag downloads the public standalone release asset from `v0.1.7`, verifies the SHA-256 checksum, adds the binary to
 `PATH`, and lets the next step run
 `splunkready judge-proof --out "$RUNNER_TEMP/splunkready-proof" --json`
 without `actions/setup-node` or `npm ci`. The tracked evidence is
