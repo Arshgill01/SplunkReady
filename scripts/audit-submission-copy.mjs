@@ -99,6 +99,17 @@ const checks = [
   ["Claim ledger real Splunk stress fail-to-pass", files.claimLedger, "before `NOT READY` score `60`, after `READY` score `100`"],
   ["Claim ledger real Splunk stress bridge frames", files.claimLedger, "76 redacted MCP bridge frames"],
   ["Claim ledger real Splunk stress screenshot", files.claimLedger, "submission-evidence/real-splunk-stress/splunk-web-evidence-results.png"],
+  [
+    "Claim ledger real Splunk stress replay",
+    files.claimLedger,
+    "The real Splunk stress proof is replayable through a guarded operator command."
+  ],
+  ["Claim ledger real Splunk stress replay manifest", files.claimLedger, "submission-evidence/real-splunk-stress-replay/automation-manifest.json"],
+  ["Claim ledger real Splunk stress replay source", files.claimLedger, 'source: "splunkready-real-splunk-stress-replay"'],
+  ["Claim ledger real Splunk stress replay guard", files.claimLedger, "SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1"],
+  ["Claim ledger real Splunk stress replay summary", files.claimLedger, "submission-evidence/real-splunk-stress-replay/real-splunk-stress-replay-summary.json"],
+  ["Claim ledger real Splunk stress replay readiness", files.claimLedger, "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF"],
+  ["Claim ledger real Splunk stress replay frames", files.claimLedger, "mcpBridgeFrames: 76"],
   ["README standalone release artifact", files.readme, "Standalone Release Artifact"],
   ["README standalone release evidence", files.readme, "submission-evidence/standalone-release/standalone-release-current-os.json"],
   ["README standalone release matrix evidence", files.readme, "submission-evidence/standalone-release/standalone-release-matrix.json"],

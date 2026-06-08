@@ -79,6 +79,7 @@
     "pr-gate:sample": "npm run build && node -e \"require('node:fs').rmSync('submission-evidence/ci-pr-gate',{recursive:true,force:true})\" && node dist/src/cli.js live-proof --out submission-evidence/ci-pr-gate --live-mock --json && node dist/src/cli.js proof-audit --out submission-evidence/ci-pr-gate --json && node scripts/render-pr-gate-comment.mjs --proof-dir submission-evidence/ci-pr-gate --out submission-evidence/ci-pr-gate/pr-comment.md --json-out submission-evidence/ci-pr-gate/ci-pr-gate.json",
     "mcp": "npm run build && node dist/src/mcp/server.js",
     "splunk-app:package": "npm run public-demo:build && node scripts/build-splunk-app-package.mjs",
+    "real-splunk-stress-proof": "node scripts/run-real-splunk-stress-proof.mjs",
     "test:workbench": "vitest run tests/workbench tests/ui/app.test.ts",
     "workbench": "npm run build && npm run ui:build && node dist/src/workbench/server.js",
     "workbench:dev": "npm run build && node dist/src/workbench/server.js --dev-ui",

@@ -16576,3 +16576,40 @@ Result:
 - PASS: submission-copy audit passed with 311 required claims.
 - PASS: whitespace diff check passed.
 - PASS: full `npm run check` passed, including 73 test files and 430 tests.
+
+## 2026-06-08T16:17:50Z - Move 174 Real Splunk stress replay runner
+
+Commands:
+
+- `node --check scripts/run-real-splunk-stress-proof.mjs`
+- `node scripts/run-real-splunk-stress-proof.mjs --help`
+- `npx vitest run tests/scripts/real-splunk-stress-proof.test.ts`
+- `SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1 GEMINI_API_KEY= node scripts/run-real-splunk-stress-proof.mjs --out /tmp/splunkready-real-stress-preflight --skip-build` (expected failure)
+- `SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1 node scripts/run-real-splunk-stress-proof.mjs --out artifacts/real-splunk-stress-replay --evidence-out submission-evidence/real-splunk-stress-replay --json` (failed during iteration; no `GEMINI_API_KEY`)
+- `set -a; source .splunkready-live.env; set +a; SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1 node scripts/run-real-splunk-stress-proof.mjs --out artifacts/real-splunk-stress-replay --evidence-out submission-evidence/real-splunk-stress-replay --json` (failed during iteration; summary mapping bug)
+- `set -a; source .splunkready-live.env; set +a; SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1 node scripts/run-real-splunk-stress-proof.mjs --skip-build --out artifacts/real-splunk-stress-replay --evidence-out submission-evidence/real-splunk-stress-replay --json`
+- `npx vitest run tests/scripts/real-splunk-stress-proof.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `git diff --check`
+
+Result:
+
+- PASS: runner syntax check passed.
+- PASS: help output documents the operator guard, ports, image/platform, and
+  cleanup options.
+- PASS: focused tests passed with 1 file and 3 tests.
+- PASS: manual missing-Gemini preflight failed before Docker setup with the
+  expected message.
+- PASS: final guarded replay returned `status: "PASS"` in
+  `submission-evidence/real-splunk-stress-replay/automation-manifest.json`.
+- PASS: final guarded replay reports `mutation: false`, `failToPass: true`,
+  `readyAfterPatch: true`, and `mcpBridgeFrames: 76`.
+- PASS: focused script and submission-copy audit tests passed with 2 files and
+  6 tests.
+- PASS: evidence-pack SHA-256 verification passed after adding replay evidence.
+- PASS: submission-copy audit passed with 318 required claims.
+- PASS: whitespace diff check passed.
+- `npm run check`
+
+- PASS: full `npm run check` passed, including 74 test files and 433 tests.

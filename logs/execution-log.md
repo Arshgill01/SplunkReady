@@ -15650,3 +15650,45 @@ Result:
 - PASS: public-safe evidence includes summary JSON, redacted readiness/proof
   artifacts, redacted bridge frames, before/after receipts, policy patch, seed
   summary, README, and Splunk Web screenshot.
+
+## 2026-06-08T16:17:50Z - Move 174 Real Splunk stress replay runner
+
+Intent:
+
+- Turn the Move 173 real Splunk deployment stress proof into a guarded,
+  repeatable operator command instead of a one-off terminal session.
+
+Actions:
+
+- Added `moves/moves174.md`.
+- Added `scripts/run-real-splunk-stress-proof.mjs`, a guarded replay runner that
+  refuses to perform Docker/Splunk setup writes unless
+  `SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1` is set.
+- Added a package script `real-splunk-stress-proof` for the guarded runner.
+- Added focused tests for help output, the setup-write guard, and the
+  `GEMINI_API_KEY` preflight.
+- Iterated on the replay runner against a real Docker Splunk deployment:
+  - added the current Splunk Docker `SPLUNK_GENERAL_TERMS` acceptance env;
+  - extended startup wait time and captured ignored Docker diagnostics on
+    failure;
+  - fixed Docker-copied app/data ownership before restart;
+  - ran ingestion as the `splunk` user;
+  - fixed public summary mapping for exact saved-search results.
+- Ran the guarded replay with `.splunkready-live.env` sourced so the LLM specimen
+  could execute.
+- Added public-safe replay evidence under
+  `submission-evidence/real-splunk-stress-replay/`.
+- Updated submission evidence README, claim ledger, and submission-copy audit
+  guards for the replay claim.
+
+Result:
+
+- PASS: the guarded replay command completed end to end and removed its
+  disposable replay container.
+- PASS: replay summary reports Splunk Enterprise `10.4.0`,
+  `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`, exact saved-search result count 4,
+  mutation false, fail-to-pass true, and ready-after-patch true.
+- PASS: replay transcript reports 76 real Splunk-backed MCP bridge frames, 38
+  requests, 38 responses, and 0 errors.
+- PASS: missing operator opt-in and missing Gemini credentials fail before real
+  Splunk setup starts.

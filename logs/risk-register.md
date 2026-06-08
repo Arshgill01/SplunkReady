@@ -1176,3 +1176,11 @@ Docker Desktop emulation on this Apple Silicon host because no native
 from this disposable deployment and must not be claimed as passing from this
 proof. The run is strong real-Splunk evidence for the security readiness proof,
 not a hosted-model success.
+
+Move 174 makes the real Splunk stress proof replayable through a guarded
+operator command. Residual risk: the command still requires Docker,
+`splunk/splunk:latest`, amd64 emulation on this host, acceptance of current
+Splunk General Terms, and `GEMINI_API_KEY` because `live-security-proof`
+certifies the LLM specimen. It is intentionally excluded from the default
+credential-free judge path and `npm run check`; do not claim it as a
+zero-credential proof.

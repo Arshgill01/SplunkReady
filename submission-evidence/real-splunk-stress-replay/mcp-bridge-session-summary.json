@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "frames": 76,
+  "requests": 38,
+  "responses": 38,
+  "errors": 0,
+  "tools": [
+    "splunk_get_indexes",
+    "splunk_get_info",
+    "splunk_get_knowledge_objects",
+    "splunk_get_metadata",
+    "splunk_get_user_info",
+    "splunk_run_saved_search"
+  ]
+}

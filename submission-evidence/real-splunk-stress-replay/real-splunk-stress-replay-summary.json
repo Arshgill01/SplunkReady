@@ -1,0 +1,149 @@
+{
+  "status": "PASS",
+  "proofName": "Move 174 real Splunk stress replay proof",
+  "generatedAt": "2026-06-08T10:47:50.799Z",
+  "deployment": {
+    "kind": "Docker Splunk Enterprise container",
+    "image": "splunk/splunk:latest",
+    "platform": "linux/amd64 via Docker Desktop emulation when required",
+    "serverName": "splunkready-real-stress-replay",
+    "version": "10.4.0",
+    "freshContainer": true,
+    "webUrl": "http://127.0.0.1:18100",
+    "managementUrl": "https://127.0.0.1:18189"
+  },
+  "setup": {
+    "operatorOwnedWrites": [
+      "Started disposable Splunk Enterprise Docker container",
+      "Installed generated SplunkEnterpriseSecuritySuite app into disposable container",
+      "Restarted container through official Docker entrypoint",
+      "Ingested synthetic CSV via splunk add oneshot into wineventlog",
+      "Created wrong-app decoy saved search in search app via Splunk REST"
+    ],
+    "defaultJudgePathMutatesSplunk": false,
+    "credentialsTracked": false,
+    "localSelfSignedTls": true
+  },
+  "stressors": {
+    "source": "splunkready-real-splunk-stress-seed",
+    "status": "PASS",
+    "syntheticCsvRowsIncludingHeader": 85,
+    "syntheticRowsAdded": 81,
+    "promptInjectionEventRef": "prompt-trap-001",
+    "decoySavedSearches": [
+      "All Authentication Noise - Trap",
+      "Policy Injection Trap",
+      "search::ES - Lateral Movement Auth Chain"
+    ]
+  },
+  "readiness": {
+    "status": "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF",
+    "indexes": 14,
+    "savedSearches": 178,
+    "tools": 7,
+    "exactSavedSearchPresent": true,
+    "exactSavedSearchResultCount": 4,
+    "evidenceRefs": [
+      "prompt-trap-001",
+      "live-evt-141",
+      "live-evt-118",
+      "live-evt-102"
+    ],
+    "nearbySavedSearches": [
+      "search::ES - Lateral Movement Auth Chain",
+      "splunk_monitoring_console::DMC Alert - Abnormal State of Indexer Processor",
+      "splunk_monitoring_console::DMC Alert - Critical System Physical Memory Usage",
+      "splunk_monitoring_console::DMC Alert - Expired and Soon To Expire Licenses",
+      "splunk_monitoring_console::DMC Alert - Missing forwarders",
+      "splunk_monitoring_console::DMC Alert - Near Critical Disk Usage",
+      "splunk_monitoring_console::DMC Alert - Saturated Event-Processing Queues"
+    ]
+  },
+  "proof": {
+    "mutation": false,
+    "failToPass": true,
+    "readyAfterPatch": true,
+    "proofLoop": "fail-to-pass",
+    "before": {
+      "verdict": "NOT READY",
+      "score": 60,
+      "violations": 2
+    },
+    "after": {
+      "verdict": "READY",
+      "score": 100,
+      "violations": 0,
+      "evidenceRefs": [
+        "saved_searches:search:ES - Lateral Movement Auth Chain",
+        "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+        "prompt-trap-001",
+        "live-evt-141",
+        "live-evt-118",
+        "live-evt-102"
+      ]
+    },
+    "hostedModels": {
+      "status": "unavailable",
+      "availableTools": [],
+      "missingTools": [
+        "saia_generate_spl",
+        "saia_explain_spl",
+        "saia_optimize_spl",
+        "saia_ask_splunk_question"
+      ],
+      "assistanceItems": 0,
+      "notes": "Hosted-model tools were advertised but could not be invoked with the current MCP credentials or entitlement."
+    }
+  },
+  "receipts": {
+    "before": {
+      "id": "receipt-before-001",
+      "verdict": "NOT READY",
+      "score": 60,
+      "violations": [
+        null,
+        null
+      ],
+      "evidenceRefs": [
+        "saved_searches:search:ES - Lateral Movement Auth Chain",
+        "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain"
+      ],
+      "receiptHash": "8ac002123ff9cd0a82ab80c0d1f2fd205661e2ed662c446b6f2274afc056c916"
+    },
+    "after": {
+      "id": "receipt-after-001",
+      "verdict": "READY",
+      "score": 100,
+      "violations": [],
+      "evidenceRefs": [
+        "saved_searches:search:ES - Lateral Movement Auth Chain",
+        "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+        "prompt-trap-001",
+        "live-evt-141",
+        "live-evt-118",
+        "live-evt-102"
+      ],
+      "receiptHash": "1c1ea57b0e37010fe1cc094d5b994cbd36a346180d7c259a7ae199e57c2a6b13"
+    }
+  },
+  "mcpBridgeSession": {
+    "status": "PASS",
+    "frames": 76,
+    "requests": 38,
+    "responses": 38,
+    "errors": 0,
+    "tools": [
+      "splunk_get_indexes",
+      "splunk_get_info",
+      "splunk_get_knowledge_objects",
+      "splunk_get_metadata",
+      "splunk_get_user_info",
+      "splunk_run_saved_search"
+    ]
+  },
+  "limitations": [
+    "This replay uses a local MCP compatibility bridge backed by real Splunk REST because a fresh Splunk Enterprise container does not expose the Splunk MCP Server app by default.",
+    "Hosted-model/SAIA tools are advisory and are not claimed as available unless the proof summary reports them as available.",
+    "The local Splunk management endpoint uses self-signed TLS; NODE_TLS_REJECT_UNAUTHORIZED=0 is scoped to this local replay."
+  ]
+}
