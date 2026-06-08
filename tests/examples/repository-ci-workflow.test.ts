@@ -63,7 +63,7 @@ describe("repository CI workflow", () => {
     expect(workflow).toContain("node dist/src/cli.js live-proof --out artifacts/pr-gate --live-mock --json");
     expect(workflow).toContain("node dist/src/cli.js proof-audit --out artifacts/pr-gate --json");
     expect(workflow).toContain("node scripts/render-pr-gate-comment.mjs --proof-dir artifacts/pr-gate");
-    expect(workflow).toContain("uses: actions/upload-artifact@v4");
+    expect(workflow).toContain("uses: actions/upload-artifact@v6");
     expect(workflow).toContain("uses: actions/github-script@v8");
     expect(workflow).toContain("splunkready-live-readiness-pr-gate");
     expect(workflow).not.toContain("GEMINI_API_KEY");
@@ -84,11 +84,13 @@ describe("repository CI workflow", () => {
     expect(workflow).toContain("- macos-latest");
     expect(workflow).toContain("- windows-latest");
     expect(workflow).toContain("node scripts/build-standalone-release.mjs --smoke");
-    expect(workflow).toContain("uses: actions/upload-artifact@v4");
+    expect(workflow).toContain("uses: actions/upload-artifact@v6");
     expect(workflow).toContain("publish-release:");
     expect(workflow).toContain("needs: standalone");
     expect(workflow).toContain("uses: actions/checkout@v5");
-    expect(workflow).toContain("uses: actions/download-artifact@v4");
+    expect(workflow).toContain("uses: actions/download-artifact@v7");
+    expect(workflow).not.toMatch(/uses:\s*actions\/upload-artifact@v4\b/);
+    expect(workflow).not.toMatch(/uses:\s*actions\/download-artifact@v4\b/);
     expect(workflow).toContain("Expected 9 release assets");
     expect(workflow).toContain('gh release upload "${tag}" "${assets[@]}" --clobber');
     expect(workflow).not.toContain("GEMINI_API_KEY");

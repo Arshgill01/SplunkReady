@@ -1444,3 +1444,11 @@ the unauthenticated judge path must remain `npx -y splunkready@0.1.5 ...`
 until a fresh OTP is supplied, publish succeeds, and
 `npm run audit:public-package-currentness -- --require-current --out
 submission-evidence/public-package-currentness` passes.
+
+Move 203 removes the active Node 20 artifact-action pins from the repository
+workflows: release artifacts now use `actions/upload-artifact@v6` and
+`actions/download-artifact@v7`, and the live certification PR gate uses
+`actions/upload-artifact@v6`. Local checks pass. Residual risk: the changed
+workflow files still need branch-tip CI after push, and the release publishing
+job itself only re-runs on tag push or manual dispatch. Public npmjs remains
+blocked separately by Move 202's npm OTP requirement.

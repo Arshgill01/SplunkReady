@@ -41,7 +41,7 @@ jobs:
         run: node scripts/render-pr-gate-comment.mjs --proof-dir artifacts/pr-gate --out artifacts/pr-gate/pr-comment.md --json-out artifacts/pr-gate/ci-pr-gate.json
 
       - name: Upload PR gate artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: splunkready-live-readiness-pr-gate
           path: artifacts/pr-gate

@@ -17876,3 +17876,32 @@ Result:
   audit, 76 Vitest files / 443 tests, secret-env ignore audit, reviewer audit
   with 0 failing latest verdicts, submission-copy audit with 442 required
   claims, and whitespace diff check.
+
+## 2026-06-08T17:09:11Z - Move 203 Node 24 artifact workflow durability
+
+Commands:
+
+- `npx vitest run tests/examples/repository-ci-workflow.test.ts`
+- `rg -n "actions/(upload-artifact|download-artifact)@v4" .github tests`
+- `rg -n "actions/(upload-artifact|download-artifact)@v[0-9]+" .github tests`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: focused repository workflow test passed: 1 file, 5 tests.
+- PASS: old artifact action search returned no matches after the negative test
+  assertions were rewritten to regex literals.
+- PASS: current artifact action search shows
+  `.github/workflows/live-certification-gate.yml` using
+  `actions/upload-artifact@v6`, `.github/workflows/release-artifacts.yml`
+  using `actions/upload-artifact@v6`, and
+  `.github/workflows/release-artifacts.yml` using
+  `actions/download-artifact@v7`.
+- PASS: whitespace diff check passed.
+- PASS: `npm run check` passed with package version `0.1.7`: scaffold
+  verification, runtime-contract verification, TypeScript build, UI build,
+  public-demo export audit, package readiness audit, package installability
+  audit, 76 Vitest files / 443 tests, secret-env ignore audit, reviewer audit
+  with 0 failing latest verdicts, submission-copy audit with 442 required
+  claims, and whitespace diff check.

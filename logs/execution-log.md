@@ -16839,3 +16839,35 @@ Result:
 - STALE: public npm latest remains `splunkready@0.1.5`. The currentness audit
   keeps the no-auth judge path on `0.1.5` and verifies that published
   judge-proof, MCP, live-mock, recorder, and policy-registry probes still pass.
+
+## 2026-06-08T17:09:11Z - Move 203 Node 24 artifact workflow durability
+
+Context:
+
+- Move 201/202 left one unblocked release risk: GitHub Actions warned that
+  artifact upload/download actions were still running on Node 20.
+- Official action release notes show `actions/upload-artifact@v6` and
+  `actions/download-artifact@v7` run on Node 24.
+
+Actions:
+
+- Added `moves/moves203.md`.
+- Added `docs/execplans/node24-artifact-workflows.md`.
+- Updated `.github/workflows/release-artifacts.yml` from
+  `actions/upload-artifact@v4` to `actions/upload-artifact@v6`.
+- Updated `.github/workflows/release-artifacts.yml` from
+  `actions/download-artifact@v4` to `actions/download-artifact@v7`.
+- Updated `.github/workflows/live-certification-gate.yml` from
+  `actions/upload-artifact@v4` to `actions/upload-artifact@v6`.
+- Updated repository workflow tests to assert the Node-24 artifact action pins
+  and avoid false positives in the old-pin search.
+
+Result:
+
+- LOCAL PASS: focused repository workflow test passed.
+- LOCAL PASS: no `.github` or test files contain
+  `actions/upload-artifact@v4` or `actions/download-artifact@v4`.
+- LOCAL PASS: `npm run check` passed.
+- HONEST BOUNDARY: branch-tip CI still has to run the changed workflow files
+  after commit/push. Release-artifact publishing itself only runs on tag or
+  manual workflow dispatch.
