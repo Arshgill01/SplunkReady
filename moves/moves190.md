@@ -2,7 +2,7 @@
 
 ## Status
 
-In progress on 2026-06-08.
+Blocked on npm OTP on 2026-06-08.
 
 ## Objective
 
@@ -36,6 +36,7 @@ all point at the same source commit again.
 - `npm run audit:package-installability`
 - `npm run audit:npm-release-preflight -- --require-ready`
 - `npm publish --access public`
+- `npm publish --access public --otp=<code>`
 - `npm view splunkready version dist-tags.latest gitHead --json`
 - `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
 - `gh workflow run github-packages.yml --ref splunkready-build`
@@ -55,4 +56,26 @@ all point at the same source commit again.
 
 ## Result
 
-Pending verification.
+Local release preparation passed:
+
+- Source package version is `0.1.6`.
+- `npm run audit:package-readiness` passed.
+- `npm run audit:package-installability` passed for
+  `splunkready-0.1.6.tgz`, including clean tarball `judge-proof` and MCP
+  initialization.
+- `npm run audit:npm-release-preflight -- --require-ready` reported
+  `status: "READY"`, authenticated npm user `brightybrainiac`, and version
+  `0.1.6` available.
+
+Publish is blocked by npm two-factor authentication:
+
+- `npm publish --access public` failed with `EOTP`.
+- npm latest remains `splunkready@0.1.5`.
+- Public README, Devpost, claim-ledger, and submission-copy guardrails continue
+  to cite `0.1.5` until `0.1.6` is actually published and verified.
+
+Next action once the operator provides the current npm OTP:
+
+```bash
+npm publish --access public --otp=<code>
+```

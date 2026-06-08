@@ -16329,3 +16329,35 @@ Result:
 - NOTE: this touched package-input source, so the already-published
   `splunkready@0.1.5` package is no longer current for this exact source state
   until a future release.
+
+## 2026-06-08T14:36:54Z - Move 190 public package release blocked on npm OTP
+
+Context:
+
+- Move 189 touched package-input source after publishing `splunkready@0.1.5`.
+- The next distribution step is `splunkready@0.1.6`, but public package claims
+  must not move to `0.1.6` until the registry actually publishes and verifies
+  that version.
+
+Actions:
+
+- Added `moves/moves190.md`.
+- Bumped local package metadata to `0.1.6`.
+- Updated release copy to `0.1.6`, then restored public README, Devpost,
+  claim-ledger, and submission-copy guardrails back to `0.1.5` after npm
+  publish failed on the two-factor-authentication gate.
+- Ran package readiness, package installability, and npm release preflight.
+- Attempted `npm publish --access public`.
+
+Result:
+
+- PASS: local package readiness passed for `splunkready-0.1.6.tgz`.
+- PASS: local package installability passed for `splunkready-0.1.6.tgz`,
+  including clean tarball `judge-proof` and MCP initialization.
+- PASS: npm release preflight reported `status: "READY"`, authenticated npm
+  user `brightybrainiac`, and version `0.1.6` available.
+- BLOCKED: `npm publish --access public` failed with `EOTP`; npm requires a
+  current one-time password.
+- CURRENT PUBLIC STATE: npm latest remains `splunkready@0.1.5`, so public
+  submission copy continues to cite `0.1.5` until `0.1.6` is actually
+  published and verified.

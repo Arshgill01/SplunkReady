@@ -38,12 +38,12 @@ Not MCP telemetry.
 Not a detection-health dashboard.
 Not a generic eval harness.
 Not an LLM judging another LLM.
-npx -y splunkready@0.1.6 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json
 npm run audit:public-package-currentness
 Standalone Release Artifact
 submission-evidence/standalone-release/standalone-release-current-os.json
 submission-evidence/standalone-release/standalone-release-matrix.json
-https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6
+https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.5
 submission-evidence/standalone-release/standalone-release-github-release.json
 real-splunk-stress-llm-layer/
 llm-deliberation-before.json
@@ -120,11 +120,11 @@ Readiness Receipt
 security investigation readiness
 requires no live Splunk credentials
 does not mutate Splunk
-npx -y splunkready@0.1.6 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json
 submission-evidence/public-package-currentness/
 submission-evidence/standalone-release/standalone-release-current-os.json
 submission-evidence/standalone-release/standalone-release-matrix.json
-https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6
+https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.5
 submission-evidence/standalone-release/standalone-release-github-release.json
 submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
 submission-evidence/splunk-app-install/splunk-app-install-proof.json
@@ -165,12 +165,13 @@ const baseClaimLedger = `# Submission Claim Ledger
 
 | Claim | Status | Evidence | Verification |
 | --- | --- | --- | --- |
-| The package is published on npm and the current published no-clone judge proof is smoke-tested. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.6 judge-proof --out ./judge-proof --json |
+| The package is published on npm and the current published no-clone judge proof is smoke-tested. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json; latest \`0.1.5\` |
+| The \`0.1.6\` source release is prepared but not published because npm requires operator OTP. | Blocked | moves/moves190.md | npm publish --access public --otp=<code> |
 | The deterministic readiness score is severity-weighted and non-binary, not hardcoded to 0/100. | Supported | submission-evidence/readiness-score-calibration/readiness-score-calibration.json, contractVersion: "readiness-score-calibration-v1", status: "PASS", passFailAuthority: "deterministic-rule-engine", mutation: false, \`NEEDS REVIEW\`, intermediate scores \`88\` and \`59\`, provesNonBinaryScoring: true | npm run score-calibration |
 | The public registry currentness proof now verifies the published judge-proof, MCP tools, live-mock proof, policy-registry path, source \`gitHead\`, and \`mcp-recorder\` gateway before any package is called current. | Supported | submission-evidence/public-package-currentness/public-package-currentness.json, publishedLiveMockProof, publishedPolicyRegistry, publishedRecorder, registry.gitHeadMatchesPackageInputs, registry.gitHeadMatchesPackageInputs: true | status: "CURRENT"; npm run audit:public-package-currentness -- --require-current |
 | The current source can produce a current-OS no-Node standalone release archive that runs judge proof from a clean temp folder. | Supported | submission-evidence/standalone-release/standalone-release-current-os.json, target \`macos-arm64\`, smoke \`status: "PASS"\`, 67 generated artifacts, releaseClaimBoundary.allPlatformReleaseRequiresTagWorkflow: true | npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json |
 | The release-artifacts workflow builds, smokes, and uploads standalone archives on Linux, macOS, and Windows runners. | Supported | submission-evidence/standalone-release/standalone-release-matrix.json, run \`27128293723\`, splunkready-standalone-Linux-X64, splunkready-standalone-macOS-ARM64, splunkready-standalone-Windows-X64 | gh workflow run release-artifacts.yml --ref splunkready-build; gh run watch 27128293723 --exit-status |
-| The public \`v0.1.6\` GitHub Release publishes no-Node standalone assets for Linux, macOS, and Windows with checksums and per-platform manifests. | Supported | submission-evidence/standalone-release/standalone-release-github-release.json, https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6, 27143381484, splunkready-linux-x64.tar.gz, splunkready-macos-arm64.tar.gz, splunkready-windows-x64.tar.gz, standalone-release-windows-x64.json | gh run watch 27143381484 --exit-status |
+| The public \`v0.1.5\` GitHub Release publishes no-Node standalone assets for Linux, macOS, and Windows with checksums and per-platform manifests. | Supported | submission-evidence/standalone-release/standalone-release-github-release.json, https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.5, 27143381484, splunkready-linux-x64.tar.gz, splunkready-macos-arm64.tar.gz, splunkready-windows-x64.tar.gz, standalone-release-windows-x64.json | gh run watch 27143381484 --exit-status |
 | A fresh disposable Splunk Enterprise deployment can run the flagship security proof under stress data. | Supported | submission-evidence/real-splunk-stress/real-splunk-stress-summary.json, Splunk Enterprise \`10.4.0\`, SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain, search::ES - Lateral Movement Auth Chain, prompt-trap-001, before \`NOT READY\` score \`60\`, after \`READY\` score \`100\`, 76 redacted MCP bridge frames, submission-evidence/real-splunk-stress/splunk-web-evidence-results.png | live-security-proof |
 | The real Splunk stress proof is replayable through a guarded operator command. | Supported | submission-evidence/real-splunk-stress-replay/automation-manifest.json, source: "splunkready-real-splunk-stress-replay", SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1, submission-evidence/real-splunk-stress-replay/real-splunk-stress-replay-summary.json, READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF, mcpBridgeFrames: 76 | run-real-splunk-stress-proof |
 | The LLM-backed real Splunk stress proof now records structured deliberation, advisory output-quality evidence, and deterministic claim-provenance audits. | Supported | submission-evidence/real-splunk-stress-llm-layer/real-splunk-stress-replay-summary.json, llmOutputQuality.advisoryOnly: true, before advisory score \`92\`, after advisory score \`97.5\`, before receipt \`NOT READY\` score \`0\`, after receipt \`READY\` score \`100\`, claim-evidence matrix checks, submission-evidence/real-splunk-stress-llm-layer/llm-deliberation-before.json, submission-evidence/real-splunk-stress-llm-layer/llm-deliberation-after.json, submission-evidence/real-splunk-stress-llm-layer/llm-claim-audit-before.json, submission-evidence/real-splunk-stress-llm-layer/llm-claim-audit-after.json, contractVersion: "llm-claim-audit-v1", status: "PASS", no hallucinated refs, submission-evidence/real-splunk-stress-llm-layer/ui-artifacts.json, submission-evidence/screenshots/workbench-llm-deliberation.png | run-real-splunk-stress-proof |

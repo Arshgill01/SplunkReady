@@ -17264,3 +17264,46 @@ Result:
   Vitest files / 439 tests, secret-env ignore audit, reviewer audit with 0
   failing latest verdicts, submission-copy audit with 387 required claims, and
   whitespace diff check.
+
+## 2026-06-08T14:36:54Z - Move 190 release preparation and OTP blocker
+
+Commands:
+
+- `npm version 0.1.6 --no-git-tag-version`
+- `npm run audit:package-readiness`
+- `npm run audit:package-installability`
+- `npm run audit:npm-release-preflight -- --require-ready`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `npm publish --access public`
+- `npm view splunkready version dist-tags.latest gitHead --json`
+
+Result:
+
+- PASS: package readiness passed for `splunkready-0.1.6.tgz` with 194 packed
+  files checked.
+- PASS: package installability passed for `splunkready-0.1.6.tgz`;
+  `npx splunkready judge-proof` returned `PASS` and `npx splunkready mcp`
+  initialized.
+- PASS: npm release preflight reported `status: "READY"`, package version
+  `0.1.6`, authenticated user `brightybrainiac`, and no blockers.
+- PASS: submission-copy audit passed with 387 required claims after restoring
+  public package copy to the actually published `0.1.5`.
+- PASS: whitespace diff check passed.
+- BLOCKED: `npm publish --access public` failed with npm `EOTP`; the operation
+  requires a one-time password.
+- VERIFIED BLOCKER: `npm view splunkready version dist-tags.latest gitHead
+  --json` still reports version/latest `0.1.5` and gitHead
+  `a79ee9e9de60b709d2110703004bbe9b1fedc373`.
+- PASS: after restoring public-facing package claims to the actually published
+  `0.1.5` state and adding the explicit `0.1.6` OTP blocker row,
+  `npm run audit:submission-copy` passed with 391 required claims.
+- PASS: focused submission-copy audit test passed: 1 file, 3 tests.
+- PASS: evidence-pack SHA-256 verification passed after updating the claim
+  ledger.
+- PASS: `npm run check` passed for the blocked-release state: scaffold
+  verification, runtime-contract verification, TypeScript build, UI build,
+  public-demo export audit, package readiness/installability audits, 76 Vitest
+  files / 439 tests, secret-env ignore audit, reviewer audit with 0 failing
+  latest verdicts, submission-copy audit with 391 required claims, and
+  whitespace diff check.

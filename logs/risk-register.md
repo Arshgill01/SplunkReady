@@ -1324,3 +1324,12 @@ category scorecard correctly remains `PASS_WITH_LIMITATIONS` and
 `zedEvidenceTier: "VERIFIED_COMPACT"`. Because this move touched package-input
 source after publishing `splunkready@0.1.5`, public package currentness should
 be treated as stale until the next intentional release.
+
+Move 190 prepares `splunkready@0.1.6` but does not publish it yet. Local package
+readiness, installability, and npm release preflight passed, but
+`npm publish --access public` failed with npm `EOTP` because the operation
+requires a current one-time password from the operator. Residual risk: source
+package metadata is now `0.1.6` while npm latest remains `0.1.5`; public-facing
+submission copy intentionally continues to cite `0.1.5` until `0.1.6` is
+published, currentness-audited, mirrored to GitHub Packages, and released as
+standalone assets.
