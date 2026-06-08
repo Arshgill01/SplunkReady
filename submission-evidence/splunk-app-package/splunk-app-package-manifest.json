@@ -1,12 +1,12 @@
 {
   "source": "splunkready-splunk-app-package",
   "status": "PASS",
-  "generatedAt": "2026-06-07T21:53:43.286Z",
+  "generatedAt": "2026-06-07T22:09:03.218Z",
   "appId": "SplunkReady",
   "version": "0.1.3",
   "mutation": false,
   "packagePath": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
-  "packageSha256": "fbb367cdd2166416d290da83e7ba069508bcbf5d675374f1bc9c8a8b9b4d3fbf",
+  "packageSha256": "f32e564b8ea5a741b3c3e178d9203b12389b47bb94a098062003ffd81ddfe4d8",
   "staticSource": "artifacts/public-demo",
   "launcherView": "SplunkReady/default/data/ui/views/splunkready.xml",
   "overviewView": "SplunkReady/default/data/ui/views/splunkready_overview.xml",
@@ -14,7 +14,13 @@
   "receiptLookup": "splunkready_receipts_lookup",
   "staticEntry": "SplunkReady/appserver/static/splunkready/index.html",
   "publicDemoManifest": "SplunkReady/appserver/static/splunkready/public-demo-manifest.json",
-  "fileCount": 284,
+  "splunkbaseListingAssets": {
+    "appIcon": "SplunkReady/static/appIcon.png",
+    "appIcon2x": "SplunkReady/static/appIcon_2x.png",
+    "screenshot": "SplunkReady/static/screenshot.png",
+    "source": "generated-deterministic-assets"
+  },
+  "fileCount": 287,
   "files": [
     "README.md",
     "appserver/static/splunkready/artifacts/interactive-demo/agent-policy.json",
@@ -299,7 +305,10 @@
     "default/data/ui/views/splunkready.xml",
     "default/data/ui/views/splunkready_overview.xml",
     "default/transforms.conf",
-    "metadata/default.meta"
+    "metadata/default.meta",
+    "static/appIcon.png",
+    "static/appIcon_2x.png",
+    "static/screenshot.png"
   ],
   "officialSplunkPackagingReferences": [
     "https://dev.splunk.com/enterprise/docs/developapps/createapps/appanatomy/",

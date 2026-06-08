@@ -7,12 +7,168 @@ import { chmod, copyFile, lstat, mkdir, readdir, readFile, rm, writeFile } from 
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
+import { deflateSync } from "node:zlib";
 
 const execFileAsync = promisify(execFile);
 
 const appId = "SplunkReady";
 const staticAppPath = "splunkready";
 const privateIpPattern = /\b(?:10(?:\.\d{1,3}){3}|127(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})\b/g;
+
+const pngSignature = Buffer.from("89504e470d0a1a0a", "hex");
+
+const crc32Table = Array.from({ length: 256 }, (_, index) => {
+  let value = index;
+  for (let bit = 0; bit < 8; bit += 1) {
+    value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;
+  }
+  return value >>> 0;
+});
+
+const crc32 = (buffer) => {
+  let crc = 0xffffffff;
+  for (const byte of buffer) {
+    crc = crc32Table[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+};
+
+const pngChunk = (type, data = Buffer.alloc(0)) => {
+  const typeBuffer = Buffer.from(type, "ascii");
+  const chunk = Buffer.alloc(12 + data.length);
+  chunk.writeUInt32BE(data.length, 0);
+  typeBuffer.copy(chunk, 4);
+  data.copy(chunk, 8);
+  chunk.writeUInt32BE(crc32(Buffer.concat([typeBuffer, data])), 8 + data.length);
+  return chunk;
+};
+
+const encodePng = (width, height, draw) => {
+  const pixels = Buffer.alloc(width * height * 4);
+
+  const setPixel = (x, y, color) => {
+    if (x < 0 || y < 0 || x >= width || y >= height) {
+      return;
+    }
+
+    const offset = (y * width + x) * 4;
+    pixels[offset] = color[0];
+    pixels[offset + 1] = color[1];
+    pixels[offset + 2] = color[2];
+    pixels[offset + 3] = color[3] ?? 255;
+  };
+
+  const fillRect = (x, y, rectWidth, rectHeight, color) => {
+    for (let row = y; row < y + rectHeight; row += 1) {
+      for (let column = x; column < x + rectWidth; column += 1) {
+        setPixel(column, row, color);
+      }
+    }
+  };
+
+  const strokeRect = (x, y, rectWidth, rectHeight, color) => {
+    fillRect(x, y, rectWidth, 1, color);
+    fillRect(x, y + rectHeight - 1, rectWidth, 1, color);
+    fillRect(x, y, 1, rectHeight, color);
+    fillRect(x + rectWidth - 1, y, 1, rectHeight, color);
+  };
+
+  const fillCircle = (centerX, centerY, radius, color) => {
+    const radiusSquared = radius * radius;
+    for (let row = centerY - radius; row <= centerY + radius; row += 1) {
+      for (let column = centerX - radius; column <= centerX + radius; column += 1) {
+        const deltaX = column - centerX;
+        const deltaY = row - centerY;
+        if (deltaX * deltaX + deltaY * deltaY <= radiusSquared) {
+          setPixel(column, row, color);
+        }
+      }
+    }
+  };
+
+  draw({ fillCircle, fillRect, height, setPixel, strokeRect, width });
+
+  const raw = Buffer.alloc((width * 4 + 1) * height);
+  for (let row = 0; row < height; row += 1) {
+    const rawOffset = row * (width * 4 + 1);
+    raw[rawOffset] = 0;
+    pixels.copy(raw, rawOffset + 1, row * width * 4, (row + 1) * width * 4);
+  }
+
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header[8] = 8;
+  header[9] = 6;
+  header[10] = 0;
+  header[11] = 0;
+  header[12] = 0;
+
+  return Buffer.concat([
+    pngSignature,
+    pngChunk("IHDR", header),
+    pngChunk("IDAT", deflateSync(raw)),
+    pngChunk("IEND")
+  ]);
+};
+
+const splunkReadyIcon = (size) => encodePng(size, size, ({ fillCircle, fillRect, height, strokeRect, width }) => {
+  const scale = size / 36;
+  const unit = (value) => Math.round(value * scale);
+
+  fillRect(0, 0, width, height, [15, 23, 42, 255]);
+  fillRect(unit(4), unit(5), unit(28), unit(26), [248, 250, 252, 255]);
+  strokeRect(unit(4), unit(5), unit(28), unit(26), [72, 86, 104, 255]);
+  fillRect(unit(8), unit(10), unit(20), unit(3), [14, 165, 233, 255]);
+  fillRect(unit(8), unit(16), unit(14), unit(2), [100, 116, 139, 255]);
+  fillRect(unit(8), unit(21), unit(18), unit(2), [100, 116, 139, 255]);
+  fillCircle(unit(27), unit(25), unit(6), [34, 197, 94, 255]);
+  fillRect(unit(24), unit(25), unit(2), unit(4), [15, 23, 42, 255]);
+  fillRect(unit(26), unit(27), unit(6), unit(2), [15, 23, 42, 255]);
+});
+
+const splunkReadyScreenshot = () => encodePng(623, 350, ({ fillCircle, fillRect, strokeRect }) => {
+  fillRect(0, 0, 623, 350, [248, 250, 252, 255]);
+  fillRect(0, 0, 623, 48, [15, 23, 42, 255]);
+  fillCircle(24, 24, 10, [34, 197, 94, 255]);
+  fillRect(45, 15, 132, 8, [226, 232, 240, 255]);
+  fillRect(45, 29, 86, 5, [148, 163, 184, 255]);
+  fillRect(508, 16, 68, 16, [14, 165, 233, 255]);
+
+  fillRect(24, 72, 176, 92, [255, 255, 255, 255]);
+  strokeRect(24, 72, 176, 92, [203, 213, 225, 255]);
+  fillRect(44, 94, 70, 7, [15, 23, 42, 255]);
+  fillRect(44, 116, 118, 5, [100, 116, 139, 255]);
+  fillRect(44, 132, 88, 5, [100, 116, 139, 255]);
+  fillRect(44, 146, 134, 7, [34, 197, 94, 255]);
+
+  fillRect(224, 72, 375, 206, [255, 255, 255, 255]);
+  strokeRect(224, 72, 375, 206, [203, 213, 225, 255]);
+  fillRect(248, 96, 110, 8, [15, 23, 42, 255]);
+  fillRect(248, 122, 305, 1, [226, 232, 240, 255]);
+  fillRect(248, 144, 276, 10, [239, 246, 255, 255]);
+  fillRect(248, 170, 312, 10, [240, 253, 244, 255]);
+  fillRect(248, 196, 256, 10, [254, 242, 242, 255]);
+  fillRect(248, 232, 92, 22, [14, 165, 233, 255]);
+
+  fillRect(24, 188, 176, 90, [255, 255, 255, 255]);
+  strokeRect(24, 188, 176, 90, [203, 213, 225, 255]);
+  fillRect(44, 210, 82, 7, [15, 23, 42, 255]);
+  fillRect(44, 232, 128, 5, [100, 116, 139, 255]);
+  fillRect(44, 249, 105, 5, [100, 116, 139, 255]);
+
+  fillRect(24, 302, 575, 1, [203, 213, 225, 255]);
+  fillRect(24, 322, 118, 7, [71, 85, 105, 255]);
+  fillRect(492, 318, 107, 16, [22, 163, 74, 255]);
+});
+
+const writeSplunkbaseAssets = async (appRoot) => {
+  const staticRoot = resolve(appRoot, "static");
+  await mkdir(staticRoot, { recursive: true });
+  await writeFile(resolve(staticRoot, "appIcon.png"), splunkReadyIcon(36));
+  await writeFile(resolve(staticRoot, "appIcon_2x.png"), splunkReadyIcon(72));
+  await writeFile(resolve(staticRoot, "screenshot.png"), splunkReadyScreenshot());
+};
 
 const isContained = (root, target) => {
   const relativePath = relative(resolve(root), resolve(target));
@@ -283,6 +439,7 @@ export const buildSplunkAppPackage = async ({
   await writeFile(resolve(appRoot, "default", "data", "ui", "nav", "default.xml"), navXml, "utf8");
   await writeFile(resolve(appRoot, "metadata", "default.meta"), defaultMeta, "utf8");
   await writeFile(resolve(appRoot, "README.md"), packageReadme({ version }), "utf8");
+  await writeSplunkbaseAssets(appRoot);
   await copyTree(sourceRoot, resolve(appRoot, "appserver", "static", staticAppPath), sourceRoot);
 
   const appFiles = await listRelativeFiles(appRoot);
@@ -325,6 +482,12 @@ export const buildSplunkAppPackage = async ({
     receiptLookup: "splunkready_receipts_lookup",
     staticEntry: `${appId}/appserver/static/${staticAppPath}/index.html`,
     publicDemoManifest: `${appId}/appserver/static/${staticAppPath}/public-demo-manifest.json`,
+    splunkbaseListingAssets: {
+      appIcon: `${appId}/static/appIcon.png`,
+      appIcon2x: `${appId}/static/appIcon_2x.png`,
+      screenshot: `${appId}/static/screenshot.png`,
+      source: "generated-deterministic-assets"
+    },
     fileCount: appFiles.length,
     files: appFiles,
     officialSplunkPackagingReferences: [

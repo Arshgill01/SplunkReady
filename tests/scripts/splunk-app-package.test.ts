@@ -17,6 +17,15 @@ const writeFixture = async (path: string, value: string): Promise<void> => {
   await writeFile(path, value, "utf8");
 };
 
+const pngDimensions = async (path: string): Promise<{ width: number; height: number }> => {
+  const buffer = await readFile(path);
+  expect(buffer.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20)
+  };
+};
+
 const createSourceTree = async (): Promise<string> => {
   const root = await tempRoot();
 
@@ -53,6 +62,12 @@ describe("Splunk app package builder", () => {
       overviewView: "SplunkReady/default/data/ui/views/splunkready_overview.xml",
       receiptCollection: "splunkready_receipts",
       receiptLookup: "splunkready_receipts_lookup",
+      splunkbaseListingAssets: {
+        appIcon: "SplunkReady/static/appIcon.png",
+        appIcon2x: "SplunkReady/static/appIcon_2x.png",
+        screenshot: "SplunkReady/static/screenshot.png",
+        source: "generated-deterministic-assets"
+      },
       noCredentialFiles: true,
       noPythonHandlers: true,
       noScriptedInputs: true,
@@ -68,6 +83,9 @@ describe("Splunk app package builder", () => {
         "default/data/ui/views/splunkready_overview.xml",
         "metadata/default.meta",
         "README.md",
+        "static/appIcon.png",
+        "static/appIcon_2x.png",
+        "static/screenshot.png",
         "appserver/static/splunkready/index.html",
         "appserver/static/splunkready/public-demo-manifest.json",
         "appserver/static/splunkready/assets/index.js"
@@ -81,6 +99,9 @@ describe("Splunk app package builder", () => {
     expect(stdout).toContain("SplunkReady/default/data/ui/views/splunkready.xml");
     expect(stdout).toContain("SplunkReady/default/data/ui/views/splunkready_overview.xml");
     expect(stdout).toContain("SplunkReady/appserver/static/splunkready/index.html");
+    expect(stdout).toContain("SplunkReady/static/appIcon.png");
+    expect(stdout).toContain("SplunkReady/static/appIcon_2x.png");
+    expect(stdout).toContain("SplunkReady/static/screenshot.png");
     expect(stdout).not.toContain("SplunkReady/local/");
     expect(stdout).not.toContain(".splunkready");
     expect(stdout).not.toContain("._");
@@ -121,6 +142,18 @@ describe("Splunk app package builder", () => {
     await expect(
       readFile(join(root, "extracted", "SplunkReady", "default", "data", "ui", "views", "splunkready_overview.xml"), "utf8")
     ).resolves.toContain("splunkready_receipts_lookup");
+    await expect(pngDimensions(join(root, "extracted", "SplunkReady", "static", "appIcon.png"))).resolves.toEqual({
+      width: 36,
+      height: 36
+    });
+    await expect(pngDimensions(join(root, "extracted", "SplunkReady", "static", "appIcon_2x.png"))).resolves.toEqual({
+      width: 72,
+      height: 72
+    });
+    await expect(pngDimensions(join(root, "extracted", "SplunkReady", "static", "screenshot.png"))).resolves.toEqual({
+      width: 623,
+      height: 350
+    });
   });
 
   it("refuses to package symbolic links from the static source", async () => {

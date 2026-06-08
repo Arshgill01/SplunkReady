@@ -16,6 +16,16 @@ const officialReferences = [
     url: "https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/submit-splunkbase-apps"
   },
   {
+    id: "splunkbase-file-standards",
+    title: "Splunkbase file standards",
+    url: "https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/approvalcriteria"
+  },
+  {
+    id: "splunk-app-icons",
+    title: "Create a Splunk app and set properties",
+    url: "https://dev.splunk.com/enterprise/docs/developapps/createapps"
+  },
+  {
     id: "splunk-app-packaging",
     title: "Package apps",
     url: "https://dev.splunk.com/enterprise/docs/releaseapps/packageapps"
@@ -84,8 +94,7 @@ const listFiles = async (dir, root = dir) => {
   return files.sort();
 };
 
-const pngDimensions = async (path) => {
-  const buffer = await readFile(path);
+const pngDimensionsFromBuffer = (buffer) => {
   const signature = buffer.subarray(0, 8).toString("hex");
 
   if (signature !== "89504e470d0a1a0a") {
@@ -98,6 +107,8 @@ const pngDimensions = async (path) => {
   };
 };
 
+const pngDimensions = async (path) => pngDimensionsFromBuffer(await readFile(path));
+
 const tarList = async (path) => {
   const { stdout } = await execFileAsync("tar", ["-tzf", path], { maxBuffer: 1024 * 1024 * 20 });
   return stdout.split("\n").map((line) => line.trim()).filter(Boolean);
@@ -107,6 +118,24 @@ const tarRead = async (path, entry) => {
   const { stdout } = await execFileAsync("tar", ["-xOzf", path, entry], { maxBuffer: 1024 * 1024 * 2 });
   return stdout;
 };
+
+const tarReadBuffer = async (path, entry) => {
+  const { stdout } = await execFileAsync("tar", ["-xOzf", path, entry], {
+    encoding: "buffer",
+    maxBuffer: 1024 * 1024 * 5
+  });
+  return stdout;
+};
+
+const packagedPng = async (packagePath, entry) => {
+  try {
+    return pngDimensionsFromBuffer(await tarReadBuffer(packagePath, entry));
+  } catch {
+    return null;
+  }
+};
+
+const dimensionsMatch = (actual, expected) => actual?.width === expected.width && actual?.height === expected.height;
 
 const flattenAppInspectChecks = (appinspect) => {
   const checks = [];
@@ -183,10 +212,35 @@ export const auditSplunkbaseReadiness = async ({ root = ".", outDir = defaultPat
     screenshots.push({ path: join(defaultPaths.screenshots, file), ...dimensions });
   }
 
-  const iconFiles = packageFiles.filter((file) => /(?:appIcon(?:_2x)?|logo)\.(?:png|jpg|jpeg|svg)$/i.test(file));
   const listedPackageSha = packageManifest.packageSha256;
   const actualPackageSha = await sha256File(packagePath);
   const installProbeFailures = (liveInstall.probes ?? []).filter((probe) => probe.status !== "PASS");
+  const listingAssetEntries = {
+    appIcon: packageManifest.splunkbaseListingAssets?.appIcon ?? `${packageManifest.appId}/static/appIcon.png`,
+    appIcon2x: packageManifest.splunkbaseListingAssets?.appIcon2x ?? `${packageManifest.appId}/static/appIcon_2x.png`,
+    screenshot: packageManifest.splunkbaseListingAssets?.screenshot ?? `${packageManifest.appId}/static/screenshot.png`
+  };
+  const listingAssets = {
+    appIcon: {
+      path: listingAssetEntries.appIcon,
+      dimensions: await packagedPng(packagePath, listingAssetEntries.appIcon),
+      expected: { width: 36, height: 36 }
+    },
+    appIcon2x: {
+      path: listingAssetEntries.appIcon2x,
+      dimensions: await packagedPng(packagePath, listingAssetEntries.appIcon2x),
+      expected: { width: 72, height: 72 }
+    },
+    screenshot: {
+      path: listingAssetEntries.screenshot,
+      dimensions: await packagedPng(packagePath, listingAssetEntries.screenshot),
+      expected: { width: 623, height: 350 }
+    }
+  };
+  const iconAssetsReady =
+    dimensionsMatch(listingAssets.appIcon.dimensions, listingAssets.appIcon.expected) &&
+    dimensionsMatch(listingAssets.appIcon2x.dimensions, listingAssets.appIcon2x.expected);
+  const screenshotAssetReady = dimensionsMatch(listingAssets.screenshot.dimensions, listingAssets.screenshot.expected);
 
   const checks = [
     check(
@@ -277,10 +331,17 @@ export const auditSplunkbaseReadiness = async ({ root = ".", outDir = defaultPat
     ),
     check(
       "app-icon",
-      "Splunkbase-ready app icon/logo asset is packaged",
-      iconFiles.length > 0 ? "PASS" : "BLOCKED_REPO",
+      "Splunkbase app icon assets are packaged with exact dimensions",
+      iconAssetsReady ? "PASS" : "BLOCKED_REPO",
       packageManifest.packagePath,
-      iconFiles.length > 0 ? iconFiles.join(", ") : "No appIcon/logo asset found in package"
+      `${listingAssets.appIcon.path}=${listingAssets.appIcon.dimensions?.width ?? "missing"}x${listingAssets.appIcon.dimensions?.height ?? "missing"}; ${listingAssets.appIcon2x.path}=${listingAssets.appIcon2x.dimensions?.width ?? "missing"}x${listingAssets.appIcon2x.dimensions?.height ?? "missing"}`
+    ),
+    check(
+      "splunkbase-screenshot",
+      "Splunkbase listing screenshot is packaged with exact dimensions",
+      screenshotAssetReady ? "PASS" : "BLOCKED_REPO",
+      packageManifest.packagePath,
+      `${listingAssets.screenshot.path}=${listingAssets.screenshot.dimensions?.width ?? "missing"}x${listingAssets.screenshot.dimensions?.height ?? "missing"}`
     ),
     check(
       "publisher-account",
@@ -316,7 +377,7 @@ export const auditSplunkbaseReadiness = async ({ root = ".", outDir = defaultPat
       version: packageManifest.version,
       appId: packageManifest.appId,
       fileCount: packageFiles.length,
-      iconFiles
+      listingAssets
     },
     appinspect: {
       path: defaultPaths.appinspect,
@@ -336,7 +397,6 @@ export const auditSplunkbaseReadiness = async ({ root = ".", outDir = defaultPat
     screenshots,
     checks,
     nextActions: [
-      "Add a packaged app icon/logo asset before Splunkbase upload.",
       "Prepare Splunkbase listing metadata, support contact, release notes, and public-safe screenshots in the publisher portal.",
       "Upload submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl through an operator-owned Splunkbase publisher account.",
       "Claim the Splunkbase badge only after the public Splunkbase listing is visible."
@@ -363,6 +423,13 @@ const renderMarkdown = (report) => {
     .map((reference) => `- [${reference.title}](${reference.url})`)
     .join("\n");
   const nextActions = report.nextActions.map((item) => `- ${item}`).join("\n");
+  const listingAssetRows = Object.entries(report.package.listingAssets)
+    .map(([name, asset]) => {
+      const actual = asset.dimensions ? `${asset.dimensions.width}x${asset.dimensions.height}` : "missing";
+      const expected = `${asset.expected.width}x${asset.expected.height}`;
+      return `| ${name} | \`${asset.path}\` | ${actual} | ${expected} |`;
+    })
+    .join("\n");
 
   return `# Splunkbase Readiness
 
@@ -379,6 +446,12 @@ Generated: \`${report.generatedAt}\`
 - Package: \`${report.package.path}\`
 - SHA256: \`${report.package.sha256}\`
 - Files: \`${report.package.fileCount}\`
+
+## Splunkbase Listing Assets
+
+| Asset | Path | Actual | Expected |
+| --- | --- | --- | --- |
+${listingAssetRows}
 
 ## AppInspect
 

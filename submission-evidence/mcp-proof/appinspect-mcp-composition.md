@@ -16,9 +16,9 @@ Validation summary:
 - error: 0
 - failure: 0
 - future_failure: 0
-- not_applicable: 145
+- not_applicable: 144
 - skipped: 1
-- success: 102
+- success: 103
 - warning: 1
 
 Static validation counts:

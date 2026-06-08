@@ -350,11 +350,12 @@ endpoints, usernames, passwords, or tokens.
 The Splunkbase readiness report is
 `submission-evidence/splunkbase-readiness/splunkbase-readiness.json`. It records
 the current `.spl` package SHA, AppInspect precertification result, live install
-proof, receipt-store proof, official Splunk submission references, and remaining
-external blockers. Current local evidence is AppInspect-clean with 0 errors, 0
-failures, and one expected KV Store warning, but SplunkReady does not claim an
-"Available on Splunkbase" badge until the package is submitted through a
-publisher account and publicly listed.
+proof, receipt-store proof, official Splunk submission references, exact
+packaged listing assets (`appIcon.png` 36x36, `appIcon_2x.png` 72x72, and
+`screenshot.png` 623x350), and remaining external blockers. Current local
+evidence is AppInspect-clean with 0 errors, 0 failures, and one expected KV Store
+warning, but SplunkReady does not claim an "Available on Splunkbase" badge until
+the package is submitted through a publisher account and publicly listed.
 
 ## Grade a Captured Agent Trace
 

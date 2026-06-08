@@ -15403,3 +15403,38 @@ Result:
 - PASS: redaction scan found no private IP, bearer/basic auth, password, token,
   or live endpoint values in `submission-evidence/splunkbase-readiness` or the
   packaged app evidence.
+
+## 2026-06-07T22:12:16Z - Move 168 Splunkbase listing assets
+
+Intent:
+
+- Remove the repo-owned Splunkbase readiness blocker by packaging the required
+  Splunk app icon and listing screenshot assets, while keeping publisher
+  account, upload, and Splunk Cloud review as external blockers.
+
+Actions:
+
+- Added deterministic PNG generation to `scripts/build-splunk-app-package.mjs`
+  without adding image dependencies.
+- Packaged `SplunkReady/static/appIcon.png`,
+  `SplunkReady/static/appIcon_2x.png`, and `SplunkReady/static/screenshot.png`.
+- Added `splunkbaseListingAssets` to
+  `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`.
+- Updated `scripts/audit-splunkbase-readiness.mjs` to extract the packaged PNG
+  assets from the `.spl` archive and validate exact dimensions.
+- Added `splunkbase-screenshot` as its own readiness check.
+- Refreshed the `.spl` package, AppInspect precertification output,
+  Splunkbase readiness report, and MCP AppInspect composition evidence.
+- Updated README, Devpost copy, evidence README, claim ledger, submission-copy
+  guards, and focused tests.
+
+Result:
+
+- PASS: local Splunkbase readiness now records the packaged app icon pair as
+  `PASS` with dimensions 36x36 and 72x72.
+- PASS: local Splunkbase readiness now records the packaged listing screenshot
+  as `PASS` with dimensions 623x350.
+- PASS: readiness still reports `ACTION_REQUIRED` because Splunkbase publisher
+  account, upload/review, and Splunk Cloud review remain external.
+- PASS: AppInspect precertification remains at 0 errors, 0 failures, 0 future
+  failures, and 1 expected `collections.conf` warning.

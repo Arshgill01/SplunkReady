@@ -73,6 +73,9 @@ id = SplunkReady
   );
   await writeFixture(join(appRoot, "metadata", "default.meta"), "[]\naccess = read : [ * ], write : [ admin, sc_admin ]\n");
   await writeFixture(join(appRoot, "default", "collections.conf"), "[splunkready_receipts]\n");
+  await writeFixture(join(appRoot, "static", "appIcon.png"), pngFixture(36, 36));
+  await writeFixture(join(appRoot, "static", "appIcon_2x.png"), pngFixture(72, 72));
+  await writeFixture(join(appRoot, "static", "screenshot.png"), pngFixture(623, 350));
   await execFileAsync("tar", ["-czf", join(root, "submission-evidence", "splunk-app-package", "SplunkReady-0.1.3.spl"), "-C", join(root, "tmp-package"), "SplunkReady"]);
 };
 
@@ -94,6 +97,11 @@ const createFixtureTree = async (): Promise<string> => {
         packageSha256: await execFileAsync("shasum", ["-a", "256", join(root, "submission-evidence", "splunk-app-package", "SplunkReady-0.1.3.spl")]).then(
           ({ stdout }) => stdout.split(/\s+/)[0]
         ),
+        splunkbaseListingAssets: {
+          appIcon: "SplunkReady/static/appIcon.png",
+          appIcon2x: "SplunkReady/static/appIcon_2x.png",
+          screenshot: "SplunkReady/static/screenshot.png"
+        },
         noCredentialFiles: true,
         noPythonHandlers: true,
         noScriptedInputs: true
@@ -160,10 +168,16 @@ describe("Splunkbase readiness audit", () => {
         expect.objectContaining({ id: "appinspect-precert", status: "PASS" }),
         expect.objectContaining({ id: "live-install-proof", status: "PASS" }),
         expect.objectContaining({ id: "receipt-kv-proof", status: "PASS" }),
-        expect.objectContaining({ id: "app-icon", status: "BLOCKED_REPO" }),
+        expect.objectContaining({ id: "app-icon", status: "PASS" }),
+        expect.objectContaining({ id: "splunkbase-screenshot", status: "PASS" }),
         expect.objectContaining({ id: "splunkbase-upload", status: "BLOCKED_EXTERNAL" })
       ])
     );
+    expect(report.package.listingAssets).toMatchObject({
+      appIcon: { dimensions: { width: 36, height: 36 } },
+      appIcon2x: { dimensions: { width: 72, height: 72 } },
+      screenshot: { dimensions: { width: 623, height: 350 } }
+    });
     expect(report.appinspect.warnings).toEqual([expect.objectContaining({ name: "check_collections_conf" })]);
 
     await expect(readFile(join(root, "submission-evidence", "splunkbase-readiness", "splunkbase-readiness.json"), "utf8")).resolves.toContain(

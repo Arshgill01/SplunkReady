@@ -118,9 +118,9 @@ passwords, or tokens. This is not a Splunkbase approval claim.
 `submission-evidence/splunkbase-readiness/splunkbase-readiness.json` is the
 current Splunkbase readiness checklist: it ties the package, AppInspect
 precertification, live install proof, receipt-store proof, official Splunk
-submission references, and remaining publisher-account/listing blockers into one
-artifact. The package is not claimed as publicly listed on Splunkbase until the
-external Splunkbase review has actually completed.
+submission references, exact packaged listing assets (`appIcon.png` 36x36,
+`appIcon_2x.png` 72x72, `screenshot.png` 623x350), and remaining
+publisher-account/listing blockers into one artifact. The package is not claimed as publicly listed on Splunkbase until the external Splunkbase review has actually completed.
 
 For a strict CLI evidence gate:
 

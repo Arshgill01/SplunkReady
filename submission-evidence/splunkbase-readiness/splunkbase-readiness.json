@@ -1,12 +1,22 @@
 {
   "source": "splunkready-splunkbase-readiness",
-  "generatedAt": "2026-06-07T21:58:07.337Z",
+  "generatedAt": "2026-06-07T22:09:16.429Z",
   "status": "ACTION_REQUIRED",
   "officialReferences": [
     {
       "id": "splunkbase-submission",
       "title": "Submit Splunkbase apps",
       "url": "https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/submit-splunkbase-apps"
+    },
+    {
+      "id": "splunkbase-file-standards",
+      "title": "Splunkbase file standards",
+      "url": "https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/approvalcriteria"
+    },
+    {
+      "id": "splunk-app-icons",
+      "title": "Create a Splunk app and set properties",
+      "url": "https://dev.splunk.com/enterprise/docs/developapps/createapps"
     },
     {
       "id": "splunk-app-packaging",
@@ -26,11 +36,45 @@
   ],
   "package": {
     "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
-    "sha256": "fbb367cdd2166416d290da83e7ba069508bcbf5d675374f1bc9c8a8b9b4d3fbf",
+    "sha256": "f32e564b8ea5a741b3c3e178d9203b12389b47bb94a098062003ffd81ddfe4d8",
     "version": "0.1.3",
     "appId": "SplunkReady",
-    "fileCount": 316,
-    "iconFiles": []
+    "fileCount": 320,
+    "listingAssets": {
+      "appIcon": {
+        "path": "SplunkReady/static/appIcon.png",
+        "dimensions": {
+          "width": 36,
+          "height": 36
+        },
+        "expected": {
+          "width": 36,
+          "height": 36
+        }
+      },
+      "appIcon2x": {
+        "path": "SplunkReady/static/appIcon_2x.png",
+        "dimensions": {
+          "width": 72,
+          "height": 72
+        },
+        "expected": {
+          "width": 72,
+          "height": 72
+        }
+      },
+      "screenshot": {
+        "path": "SplunkReady/static/screenshot.png",
+        "dimensions": {
+          "width": 623,
+          "height": 350
+        },
+        "expected": {
+          "width": 623,
+          "height": 350
+        }
+      }
+    }
   },
   "appinspect": {
     "path": "submission-evidence/splunkbase-readiness/appinspect-precert.json",
@@ -39,9 +83,9 @@
       "failure": 0,
       "future_failure": 0,
       "skipped": 1,
-      "not_applicable": 145,
+      "not_applicable": 144,
       "warning": 1,
-      "success": 102
+      "success": 103
     },
     "warnings": [
       {
@@ -106,14 +150,14 @@
       "label": "Splunk app package exists and checksum matches manifest",
       "status": "PASS",
       "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
-      "detail": "sha256=fbb367cdd2166416d290da83e7ba069508bcbf5d675374f1bc9c8a8b9b4d3fbf"
+      "detail": "sha256=f32e564b8ea5a741b3c3e178d9203b12389b47bb94a098062003ffd81ddfe4d8"
     },
     {
       "id": "package-single-app-root",
       "label": "Package extracts to one app root",
       "status": "PASS",
       "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
-      "detail": "316 packaged files"
+      "detail": "320 packaged files"
     },
     {
       "id": "app-conf-identity",
@@ -134,7 +178,7 @@
       "label": "AppInspect precertification has zero errors, failures, and future failures",
       "status": "PASS",
       "evidence": "submission-evidence/splunkbase-readiness/appinspect-precert.json",
-      "detail": "success=102; warnings=1"
+      "detail": "success=103; warnings=1"
     },
     {
       "id": "expected-kv-warning",
@@ -194,10 +238,17 @@
     },
     {
       "id": "app-icon",
-      "label": "Splunkbase-ready app icon/logo asset is packaged",
-      "status": "BLOCKED_REPO",
+      "label": "Splunkbase app icon assets are packaged with exact dimensions",
+      "status": "PASS",
       "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
-      "detail": "No appIcon/logo asset found in package"
+      "detail": "SplunkReady/static/appIcon.png=36x36; SplunkReady/static/appIcon_2x.png=72x72"
+    },
+    {
+      "id": "splunkbase-screenshot",
+      "label": "Splunkbase listing screenshot is packaged with exact dimensions",
+      "status": "PASS",
+      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+      "detail": "SplunkReady/static/screenshot.png=623x350"
     },
     {
       "id": "publisher-account",
@@ -222,7 +273,6 @@
     }
   ],
   "nextActions": [
-    "Add a packaged app icon/logo asset before Splunkbase upload.",
     "Prepare Splunkbase listing metadata, support contact, release notes, and public-safe screenshots in the publisher portal.",
     "Upload submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl through an operator-owned Splunkbase publisher account.",
     "Claim the Splunkbase badge only after the public Splunkbase listing is visible."

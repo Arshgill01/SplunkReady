@@ -16281,3 +16281,41 @@ Result:
 - PASS: evidence pack SHA-256 verification passed, including the new
   `splunkbase-readiness/` artifacts.
 - PASS: final `npm run check` passed with 72 test files and 426 tests.
+
+## 2026-06-07T22:12:16Z - Move 168 Splunkbase listing assets
+
+Commands:
+
+- `npx vitest run tests/scripts/splunk-app-package.test.ts tests/scripts/splunkbase-readiness.test.ts`
+- `npm run splunk-app:package`
+- `uvx splunk-appinspect inspect submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl --mode precert --data-format json --output-file submission-evidence/splunkbase-readiness/appinspect-precert.json`
+- `node scripts/audit-splunkbase-readiness.mjs --json`
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/splunk-app-package.test.ts tests/scripts/splunkbase-readiness.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `rg -n '10\\.44\\.12\\.18|Bearer|Basic|password=|token=|SPLUNK_PASSWORD|SPLUNK_TOKEN|SAIA_TOKEN|https?://(10\\.|127\\.|192\\.168|172\\.)' submission-evidence/splunkbase-readiness submission-evidence/splunk-app-package || true`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: package/readiness focused tests passed with 2 files and 3 tests.
+- PASS: package/readiness/submission-copy focused tests passed with 3 files and
+  6 tests after fixing a test-fixture backtick escaping issue.
+- PASS: rebuilt package SHA is
+  `f32e564b8ea5a741b3c3e178d9203b12389b47bb94a098062003ffd81ddfe4d8`.
+- PASS: AppInspect precertification reports 0 errors, 0 failures, 0 future
+  failures, 1 expected warning, and 103 successes.
+- PASS: Splunkbase readiness report generated `status: "ACTION_REQUIRED"`;
+  `app-icon` and `splunkbase-screenshot` are `PASS`, while
+  `publisher-account`, `splunkbase-upload`, and `splunk-cloud-review` remain
+  `BLOCKED_EXTERNAL`.
+- PASS: refreshed MCP proof returned `PASS` and AppInspect MCP composition
+  reports `warningCount: 1`.
+- PASS: submission-copy audit passed with 275 required claims.
+- PASS: redaction scan returned no private IP, auth, password, token, or live
+  endpoint matches in Splunkbase readiness and app package evidence.
+- PASS: evidence pack SHA-256 verification passed, including the refreshed
+  Splunkbase readiness, package, and MCP AppInspect composition artifacts.
+- PASS: final `npm run check` passed with 72 test files and 426 tests.

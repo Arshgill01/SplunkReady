@@ -1,6 +1,6 @@
 # SplunkReady Submission Evidence
 
-Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, Move 148 signed receipt-chain plus deterministic replay evidence, Move 150 signed policy-registry evidence, Move 157 Splunk app package evidence, Move 158 PR-gate evidence, Move 159 MCP composition-recorder evidence, Move 163 MCP recorder-gateway evidence, Move 164 AppInspect MCP composition evidence, Move 165 live Splunk app install evidence, Move 166 operator receipt-store evidence, and Move 167 Splunkbase readiness evidence.
+Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, Move 148 signed receipt-chain plus deterministic replay evidence, Move 150 signed policy-registry evidence, Move 157 Splunk app package evidence, Move 158 PR-gate evidence, Move 159 MCP composition-recorder evidence, Move 163 MCP recorder-gateway evidence, Move 164 AppInspect MCP composition evidence, Move 165 live Splunk app install evidence, Move 166 operator receipt-store evidence, Move 167 Splunkbase readiness evidence, and Move 168 Splunkbase listing asset evidence.
 
 This directory is the judge-facing evidence pack. It is tracked in git so it can be inspected from a clean clone without access to ignored local `artifacts/`, `.splunkready*` env files, live credentials, or private deployment details.
 
@@ -12,10 +12,10 @@ This directory is the judge-facing evidence pack. It is tracked in git so it can
 - `ci-pr-gate/`: credential-free live readiness PR-gate sample. It contains the same live-mock proof shape plus `pr-comment.md` and `ci-pr-gate.json`, the deterministic artifacts used by `.github/workflows/live-certification-gate.yml`.
 - `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, records the raw JSON-RPC client session, discovers tools/resources/resource templates/prompts, reads a templated Readiness Receipt resource, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript through both path-based and inline-content MCP tools, checks hosted-model SAIA access through the MCP server in fixture mode, writes a client walkthrough showing existing Splunk MCP investigation followed by SplunkReady certification, runs the MCP recorder gateway against mock Splunk MCP plus SplunkReady MCP, writes a redacted dual-server recorder session with preserved server IDs, records an advisory Splunk AppInspect MCP composition proof for the current `.spl` package, and verifies the nested transcript proof manifests.
 - `policy-registry/`: signed default, SOC2, and PCI DSS policy bundles. Each installed policy includes `policy.json` and an Ed25519-backed `policy-manifest.json` with `deterministicAuthority: true` and `mutation: false`.
-- `splunk-app-package/`: credential-free `.spl` package proof that embeds the public artifact workbench in a static Splunk app shell. It includes the package archive and manifest with hash, file list, official packaging references, `mutation: false`, `noCredentialFiles: true`, `noPythonHandlers: true`, and `noScriptedInputs: true`.
+- `splunk-app-package/`: credential-free `.spl` package proof that embeds the public artifact workbench in a static Splunk app shell. It includes the package archive and manifest with hash, file list, official packaging references, Splunkbase listing assets, `mutation: false`, `noCredentialFiles: true`, `noPythonHandlers: true`, and `noScriptedInputs: true`.
 - `splunk-app-install/`: redacted operator-approved proof that the `.spl` package was installed/upgraded and probed on the local operator-owned Splunk server.
 - `splunk-receipt-store/`: redacted operator-approved proof that six public-safe signed receipt summaries were written into the installed Splunk app KV Store and read back through `splunkready_receipts_lookup`.
-- `splunkbase-readiness/`: AppInspect precertification output plus a Splunkbase/Splunk Cloud readiness checklist. It records 0 AppInspect errors, 0 failures, the expected KV Store warning, live install proof, receipt-store proof, and the remaining external blockers. It is not a public Splunkbase listing claim.
+- `splunkbase-readiness/`: AppInspect precertification output plus a Splunkbase/Splunk Cloud readiness checklist. It records 0 AppInspect errors, 0 failures, the expected KV Store warning, exact packaged icon/screenshot dimensions, live install proof, receipt-store proof, and the remaining external blockers. It is not a public Splunkbase listing claim.
 - `public-proof-export/`: redacted derivative export generated from a managed workbench run. It includes the public export manifest, summary, audit, receipts, traces, redacted source proof manifest, and manifest verification. It is intentionally not the unredacted source proof.
 - `screenshots/`: Playwright screenshots for the packaged workbench fixture run, trace timeline, MCP proof view, verified public proof export UI, hosted public judge-proof view, and interactive hosted certification route. The earlier Vite-backed fixture screenshot is retained as historical evidence but is not the primary refreshed screenshot.
 - `claim-ledger.md`: public claim to evidence mapping.
@@ -80,7 +80,7 @@ Expected proof status:
 - MCP composition recorder: `PASS`, `9` pass-through gateway frames, servers `splunk`, `splunkready`
 - MCP composition recorder redaction: `PASS`
 - MCP composition recorder certification: `PASS`, strict import skipped records `0`
-- AppInspect MCP composition: `PASS`, server `AppInspect MCP Server 2.14.7`, tool `inspect_app`, validation `SUCCESS`, failures `0`, errors `0`, warnings `5`
+- AppInspect MCP composition: `PASS`, server `AppInspect MCP Server 2.14.7`, tool `inspect_app`, validation `SUCCESS`, failures `0`, errors `0`, warnings `1`
 - MCP live-mock session: `PASS`
 - MCP template receipt read: `splunkready://receipts/pass`
 - MCP inline transcript certification: `PASS`
@@ -97,6 +97,7 @@ Expected proof status:
 - Splunk app package overview view: `SplunkReady/default/data/ui/views/splunkready_overview.xml`
 - Splunk app package receipt collection: `splunkready_receipts`
 - Splunk app package receipt lookup: `splunkready_receipts_lookup`
+- Splunk app package listing assets: `appIcon.png` 36x36, `appIcon_2x.png` 72x72, `screenshot.png` 623x350
 - Splunk app package credential files: none
 - Splunk app package Python handlers: none
 - Splunk app package scripted inputs: none
@@ -106,7 +107,7 @@ Expected proof status:
 - Operator live Splunk app install redaction: no endpoint, username, password, or token values written
 - Splunkbase readiness status: `ACTION_REQUIRED`
 - Splunkbase readiness AppInspect result: 0 errors, 0 failures, 1 expected KV Store warning
-- Splunkbase readiness local evidence: package, live install, and receipt-store checks pass
+- Splunkbase readiness local evidence: package, AppInspect, icon/screenshot assets, live install, and receipt-store checks pass
 - Splunkbase listing claim: not made until external Splunkbase review is complete
 
 ## Redaction Boundary
