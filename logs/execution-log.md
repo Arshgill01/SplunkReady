@@ -16753,3 +16753,44 @@ Result:
   Packages mirror are not real until the branch is pushed, the tag is pushed,
   the Release Artifacts workflow passes, and the GitHub Packages workflow
   publishes `@arshgill01/splunkready@0.1.7`.
+
+## 2026-06-08T16:52:49Z - Move 201 tagged release and package evidence
+
+Actions:
+
+- Pushed branch commit `4ad68159b65f3920c323cacda6ffcbd563e54b60`.
+- Created and pushed tag `v0.1.7` at that commit.
+- Watched CI run `27152925973`.
+- Watched Release Artifacts run `27152934324`.
+- Wrote `submission-evidence/standalone-release/standalone-release-github-release.json`
+  from `gh release view v0.1.7`.
+- Downloaded the public `v0.1.7` macOS arm64 standalone archive and checksum
+  into a clean temp folder, verified the checksum, extracted the archive, and
+  ran `./splunkready judge-proof --out ./judge-proof --json`.
+- Updated
+  `submission-evidence/standalone-release/standalone-release-public-download-smoke.json`.
+- Triggered and watched GitHub Packages workflow run `27153132025`.
+- Updated
+  `submission-evidence/github-package-currentness/github-package-currentness.json`
+  to `@arshgill01/splunkready@0.1.7`.
+- Updated `.github/workflows/ci.yml` and its repository workflow test so the
+  setup-action smoke now downloads `v0.1.7` instead of the temporary `v0.1.6`
+  release pin.
+- Updated the submission evidence README to include Move 201.
+
+Result:
+
+- PASS: branch CI run `27152925973` passed before the workflow pin update,
+  including setup-action smoke, canonical gate, credential-free live-mock proof,
+  Docker mock Splunk MCP build, and Docker smoke test.
+- PASS: Release Artifacts run `27152934324` published public `v0.1.7` release
+  assets for Linux x64, macOS arm64, and Windows x64 with checksums and
+  per-platform manifests.
+- PASS: public macOS arm64 standalone archive checksum verified and
+  `judge-proof` returned `PASS`, 67 artifacts, 3 suite missions, and
+  `mutation: false` without Node/npm/npx or a repo checkout.
+- PASS: GitHub Packages run `27153132025` published and verified
+  `@arshgill01/splunkready@0.1.7`.
+- HONEST BOUNDARY: public npmjs remains stale at `splunkready@0.1.5`; GitHub
+  Packages requires package-registry authentication and is not a replacement
+  for the unauthenticated judge path.

@@ -73,12 +73,13 @@ Move 200 proved the action works, but `v0.1.6` predates
 
 ## Current Status
 
-Implemented locally. Source metadata, docs, tests, setup-action defaults,
-current-OS standalone release evidence, public npm currentness evidence, and
-submission-copy guardrails are updated for `0.1.7`.
+Implemented. Source metadata, docs, tests, setup-action defaults, current-OS
+standalone release evidence, public npm currentness evidence, public GitHub
+Release metadata, public macOS arm64 download smoke, GitHub Packages evidence,
+and submission-copy guardrails are updated for `0.1.7`.
 
-Release-order boundary: `.github/workflows/ci.yml` remains pinned to standalone
-binary `v0.1.6` for the first source push so branch CI does not try to download
-`v0.1.7` assets before the tag workflow has published them. After the
-`v0.1.7` release assets exist, update branch CI and the repository workflow
-test to use `v0.1.7`.
+Release-order boundary: the first source push kept `.github/workflows/ci.yml`
+pinned to standalone binary `v0.1.6` so branch CI did not try to download
+`v0.1.7` assets before the tag workflow had published them. After Release
+Artifacts run `27152934324` published `v0.1.7`, branch CI and the repository
+workflow test were updated to use `v0.1.7`.

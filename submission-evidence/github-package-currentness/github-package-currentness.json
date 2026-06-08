@@ -3,7 +3,7 @@
   "status": "CURRENT",
   "registry": "https://npm.pkg.github.com",
   "packageName": "@arshgill01/splunkready",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "repositoryUrl": "git+https://github.com/Arshgill01/SplunkReady.git",
   "packageUrl": "https://github.com/users/Arshgill01/packages/npm/package/splunkready",
   "publicNpmPackageName": "splunkready",
@@ -15,20 +15,20 @@
     "splunkready": "dist/src/cli.js"
   },
   "publishWorkflow": {
-    "runId": 27149553852,
+    "runId": 27153132025,
     "status": "success",
-    "headSha": "57a8b01782649d092446eb9c34474552e02a216d",
-    "url": "https://github.com/Arshgill01/SplunkReady/actions/runs/27149553852",
-    "result": "Published @arshgill01/splunkready@0.1.6 to GitHub Packages."
+    "headSha": "4ad68159b65f3920c323cacda6ffcbd563e54b60",
+    "url": "https://github.com/Arshgill01/SplunkReady/actions/runs/27153132025",
+    "result": "Published @arshgill01/splunkready@0.1.7 to GitHub Packages."
   },
   "verificationWorkflow": {
-    "runId": 27149553852,
+    "runId": 27153132025,
     "status": "success",
-    "headSha": "57a8b01782649d092446eb9c34474552e02a216d",
-    "url": "https://github.com/Arshgill01/SplunkReady/actions/runs/27149553852",
+    "headSha": "4ad68159b65f3920c323cacda6ffcbd563e54b60",
+    "url": "https://github.com/Arshgill01/SplunkReady/actions/runs/27153132025",
     "npmView": {
       "name": "@arshgill01/splunkready",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "repository.url": "git+https://github.com/Arshgill01/SplunkReady.git",
       "bin": {
         "splunkready": "dist/src/cli.js"

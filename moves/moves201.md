@@ -2,9 +2,10 @@
 
 ## Status
 
-Implemented locally on 2026-06-08. Awaiting branch push, `v0.1.7` tag
-publication, Release Artifacts workflow, GitHub Packages refresh, and final
-branch-tip CI.
+Implemented on 2026-06-08. Source prep, `v0.1.7` tag publication, Release
+Artifacts workflow, public macOS arm64 download smoke, GitHub Packages refresh,
+and local/focused checks are complete. Awaiting final branch-tip CI after the
+workflow pin update to `v0.1.7`.
 
 ## Objective
 

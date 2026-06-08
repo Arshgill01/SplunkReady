@@ -17742,3 +17742,70 @@ Result:
   ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
   audit with 442 required claims, and whitespace diff check.
 - PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+
+## 2026-06-08T16:52:49Z - Move 201 tagged release and package evidence
+
+Commands:
+
+- `git push origin splunkready-build`
+- `git tag v0.1.7 && git push origin v0.1.7`
+- `gh run watch 27152925973 --exit-status`
+- `gh run watch 27152934324 --exit-status`
+- `gh release view v0.1.7 --json tagName,name,url,isDraft,isPrerelease,publishedAt,assets`
+- `gh release view v0.1.7 --json assets --jq '.assets[].name'`
+- `gh run view 27152934324 --json status,conclusion,headSha,url,createdAt,updatedAt,event,workflowName,jobs`
+- `gh run view 27152925973 --json status,conclusion,headSha,url,createdAt,updatedAt,event,workflowName,jobs`
+- `curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.7/splunkready-macos-arm64.tar.gz`
+- `curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.7/splunkready-macos-arm64.tar.gz.sha256`
+- `shasum -a 256 -c splunkready-macos-arm64.tar.gz.sha256`
+- `tar -xzf splunkready-macos-arm64.tar.gz`
+- `./splunkready judge-proof --out ./judge-proof --json`
+- `gh workflow run github-packages.yml --ref splunkready-build`
+- `gh run watch 27153132025 --exit-status`
+- `gh run view 27153132025 --json status,conclusion,headSha,url,createdAt,updatedAt,event,workflowName,jobs`
+- `gh run view 27153132025 --log`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/examples/repository-ci-workflow.test.ts tests/ci/github-action.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `git diff --check`
+
+Result:
+
+- PASS: branch commit `4ad68159b65f3920c323cacda6ffcbd563e54b60` pushed.
+- PASS: tag `v0.1.7` pushed at
+  `4ad68159b65f3920c323cacda6ffcbd563e54b60`.
+- PASS: CI run `27152925973` concluded `success`; its `npm run check` job also
+  built and smoked the mock Splunk MCP Docker image.
+- PASS: Release Artifacts run `27152934324` concluded `success`; all three
+  standalone matrix jobs and the release publishing job passed.
+- PASS: public `v0.1.7` GitHub Release is not draft/prerelease and has 9 assets:
+  3 archives, 3 SHA-256 files, and 3 per-platform manifests.
+- PASS: public macOS arm64 standalone checksum verified.
+- PASS: public macOS arm64 standalone `judge-proof` returned `PASS`, 67
+  artifacts, suite status `PASS`, 3 suite missions, and `mutation: false`.
+- PASS: GitHub Packages run `27153132025` concluded `success`; logs show
+  `+ @arshgill01/splunkready@0.1.7` and `npm view` returned version `0.1.7`.
+- PASS: submission-copy audit passed with 442 required claims.
+- PASS: focused Vitest suite passed: 3 files, 15 tests.
+- PASS: whitespace diff check passed.
+- WARN: Release Artifacts still emits GitHub Node 20 deprecation warnings for
+  `actions/upload-artifact@v4` and `actions/download-artifact@v4`; the workflow
+  passed, but this remains a maintenance risk before GitHub's forced Node 24
+  migration.
+
+## 2026-06-08T16:54:22Z - Move 201 final local gate
+
+Commands:
+
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run check`
+
+Result:
+
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: `npm run check` passed with package version `0.1.7`: scaffold
+  verification, runtime-contract verification, TypeScript build, UI build,
+  public-demo export audit, package readiness audit, package installability
+  audit, 76 Vitest files / 443 tests, secret-env ignore audit, reviewer audit
+  with 0 failing latest verdicts, submission-copy audit with 442 required
+  claims, and whitespace diff check.

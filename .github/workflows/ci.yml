@@ -86,7 +86,7 @@ jobs:
       - name: Setup SplunkReady standalone binary
         uses: ./setup-splunkready
         with:
-          version: v0.1.6
+          version: v0.1.7
 
       - name: Run standalone judge proof
         run: |
