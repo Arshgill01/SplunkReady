@@ -391,6 +391,11 @@ packaged listing assets (`appIcon.png` 36x36, `appIcon_2x.png` 72x72, and
 evidence is AppInspect-clean with 0 errors, 0 failures, and one expected KV Store
 warning, but SplunkReady does not claim an "Available on Splunkbase" badge until
 the package is submitted through a publisher account and publicly listed.
+The operator-ready portal copy is tracked in
+`submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json` and
+`docs/splunkbase-listing-dossier.md`; it binds the listing text, release notes,
+support-contact blocker, package SHA, AppInspect result, and the no-badge
+guardrail into a verifier-backed dossier.
 
 ## Grade a Captured Agent Trace
 

@@ -137,6 +137,11 @@ precertification, live install proof, receipt-store proof, official Splunk
 submission references, exact packaged listing assets (`appIcon.png` 36x36,
 `appIcon_2x.png` 72x72, `screenshot.png` 623x350), and remaining
 publisher-account/listing blockers into one artifact. The package is not claimed as publicly listed on Splunkbase until the external Splunkbase review has actually completed.
+The operator-ready listing dossier is tracked at
+`submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json` and
+`docs/splunkbase-listing-dossier.md`; it gives the publisher portal copy,
+release notes, support-contact blocker, package checksum, and no-badge
+guardrails without claiming Splunkbase approval.
 
 For a strict CLI evidence gate:
 

@@ -4,7 +4,7 @@ Source: `splunkready-splunkbase-readiness`
 
 Status: `ACTION_REQUIRED`
 
-Generated: `2026-06-07T22:09:16.429Z`
+Generated: `2026-06-08T13:32:05.502Z`
 
 ## Package
 
@@ -50,7 +50,7 @@ Generated: `2026-06-07T22:09:16.429Z`
 | license | PASS | LICENSE |  |
 | support-metadata | PASS | package.json | https://github.com/Arshgill01/SplunkReady/issues |
 | splunkbase-doc-copy | PASS | README.md |  |
-| listing-screenshots | PASS | submission-evidence/screenshots | 7 PNG screenshots |
+| listing-screenshots | PASS | submission-evidence/screenshots | 11 PNG screenshots |
 | app-icon | PASS | submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl | SplunkReady/static/appIcon.png=36x36; SplunkReady/static/appIcon_2x.png=72x72 |
 | splunkbase-screenshot | PASS | submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl | SplunkReady/static/screenshot.png=623x350 |
 | publisher-account | BLOCKED_EXTERNAL | Splunkbase publisher portal | Requires operator account access; no credentials are stored in this repository. |

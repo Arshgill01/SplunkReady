@@ -1269,3 +1269,11 @@ the same source commit with matching asset names and `mutation: false`.
 Residual risk remains operational: any later commit touching public-demo input
 paths must repeat this push, Pages deploy, and currentness audit sequence before
 the live hosted URL is cited as current.
+
+Move 185 reduces the Splunkbase submission-friction risk by adding a verified
+listing dossier with portal copy, release notes, package SHA, AppInspect facts,
+support-contact blocker, and no-badge guardrails. Residual risk remains
+external: only an operator-owned Splunkbase publisher account can accept the
+Developer Agreement, upload the `.spl`, enter monitored support contact
+details, and receive public Splunkbase/Splunk Cloud review. Do not claim
+"Available on Splunkbase" until that public listing exists.

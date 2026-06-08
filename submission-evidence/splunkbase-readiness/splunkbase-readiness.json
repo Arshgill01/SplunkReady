@@ -1,6 +1,6 @@
 {
   "source": "splunkready-splunkbase-readiness",
-  "generatedAt": "2026-06-07T22:09:16.429Z",
+  "generatedAt": "2026-06-08T13:32:05.502Z",
   "status": "ACTION_REQUIRED",
   "officialReferences": [
     {
@@ -109,9 +109,19 @@
   },
   "screenshots": [
     {
+      "path": "submission-evidence/screenshots/hosted-demo-llm-deliberation.png",
+      "width": 1660,
+      "height": 917
+    },
+    {
       "path": "submission-evidence/screenshots/interactive-demo.png",
       "width": 1280,
       "height": 720
+    },
+    {
+      "path": "submission-evidence/screenshots/public-demo-llm-deliberation.png",
+      "width": 1660,
+      "height": 917
     },
     {
       "path": "submission-evidence/screenshots/public-judge-proof-proof-browser.png",
@@ -129,6 +139,11 @@
       "height": 720
     },
     {
+      "path": "submission-evidence/screenshots/workbench-llm-deliberation.png",
+      "width": 825,
+      "height": 8161
+    },
+    {
       "path": "submission-evidence/screenshots/workbench-mcp-proof.png",
       "width": 1280,
       "height": 720
@@ -142,6 +157,11 @@
       "path": "submission-evidence/screenshots/workbench-trace-timeline.png",
       "width": 1280,
       "height": 720
+    },
+    {
+      "path": "submission-evidence/screenshots/zed-mcp-recorder-summary.png",
+      "width": 1200,
+      "height": 850
     }
   ],
   "checks": [
@@ -234,7 +254,7 @@
       "label": "Submission evidence includes public-safe product screenshots",
       "status": "PASS",
       "evidence": "submission-evidence/screenshots",
-      "detail": "7 PNG screenshots"
+      "detail": "11 PNG screenshots"
     },
     {
       "id": "app-icon",

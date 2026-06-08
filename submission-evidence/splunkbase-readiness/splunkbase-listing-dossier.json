@@ -1,0 +1,138 @@
+{
+  "source": "splunkready-splunkbase-listing-dossier",
+  "status": "READY_FOR_OPERATOR_SUBMISSION",
+  "generatedAt": "2026-06-08T13:32:27Z",
+  "doNotClaim": [
+    "Do not claim Available on Splunkbase until Splunkbase returns a public listing.",
+    "Do not claim Splunk Cloud approval until Splunkbase/Splunk Cloud review confirms it.",
+    "Do not enter repository credentials, Splunk credentials, SAIA tokens, or private endpoint values into listing copy."
+  ],
+  "officialReferences": [
+    {
+      "id": "submit-splunkbase-apps",
+      "title": "Submit Splunkbase apps",
+      "url": "https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/submit-splunkbase-apps"
+    },
+    {
+      "id": "splunkbase-file-standards",
+      "title": "Reference for Splunkbase file standards",
+      "url": "https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/approvalcriteria"
+    },
+    {
+      "id": "upload-validate-app-package",
+      "title": "Upload and validate app package",
+      "url": "https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/submit-splunkbase-apps/upload-validate-app-package"
+    },
+    {
+      "id": "publish-app",
+      "title": "Publish app",
+      "url": "https://dev.splunk.com/enterprise/docs/releaseapps/splunkbase/submit-splunkbase-apps/publish-app"
+    }
+  ],
+  "package": {
+    "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+    "sha256": "f32e564b8ea5a741b3c3e178d9203b12389b47bb94a098062003ffd81ddfe4d8",
+    "appId": "SplunkReady",
+    "version": "0.1.3",
+    "appInspect": {
+      "source": "submission-evidence/splunkbase-readiness/appinspect-precert.json",
+      "errors": 0,
+      "failures": 0,
+      "futureFailures": 0,
+      "warnings": 1,
+      "expectedWarning": "check_collections_conf"
+    },
+    "listingAssets": {
+      "icon": {
+        "path": "SplunkReady/static/appIcon.png",
+        "dimensions": "36x36"
+      },
+      "icon2x": {
+        "path": "SplunkReady/static/appIcon_2x.png",
+        "dimensions": "72x72"
+      },
+      "screenshot": {
+        "path": "SplunkReady/static/screenshot.png",
+        "dimensions": "623x350"
+      }
+    },
+    "testedSplunkVersions": [
+      "Splunk Enterprise 10.4.0"
+    ],
+    "cloudReviewStatus": "EXTERNAL_REVIEW_REQUIRED"
+  },
+  "portalFields": {
+    "appInformation": {
+      "name": "SplunkReady",
+      "appId": "SplunkReady",
+      "tagline": "Certify AI agents before they touch production Splunk.",
+      "hosting": "Splunkbase-hosted app package",
+      "access": "Public after Splunkbase approval",
+      "recommendedCategories": [
+        "Developer Tools",
+        "Security",
+        "Artificial Intelligence"
+      ]
+    },
+    "metadata": {
+      "shortDescription": "SplunkReady is a Splunk-native certification harness that grades AI-agent Splunk tool traces with deterministic rules and emits a Readiness Receipt before the agent reaches production.",
+      "longDescription": [
+        "SplunkReady answers one operational question: is this AI agent ready for this Splunk deployment?",
+        "The Agent Readiness Compiler turns fixture or live Splunk environment facts into a deployment-specific contract, records agent behavior as MCP/tool traces, grades those traces with deterministic rules, and emits a Readiness Receipt with verdict, score, evidence refs, policy patch summary, and mutation status.",
+        "The Splunk app package embeds the credential-free artifact workbench inside Splunk Web, includes public-safe proof bundles and screenshots, and defines an optional operator-owned KV Store receipt collection. It ships no Splunk credentials, Python REST handlers, scripted inputs, modular inputs, saved searches, or default-path write operations."
+      ],
+      "license": "MIT",
+      "repository": "https://github.com/Arshgill01/SplunkReady",
+      "publicDemo": "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof",
+      "support": {
+        "status": "OPERATOR_REQUIRED",
+        "recommendedPublicSupportUrl": "https://github.com/Arshgill01/SplunkReady/issues",
+        "requiredBeforeSubmission": "Add a monitored support email or ticket URL controlled by the publisher account."
+      },
+      "externalDataSources": "The packaged Splunk app is static and credential-free. Optional live proofs and hosted-model diagnostics are operator-run outside the package and require explicit credentials; they are not invoked by the installed app by default.",
+      "exportControl": "No encrypted code is intentionally included in the packaged Splunk app. Operator must confirm final export-control answers in the Splunkbase portal."
+    },
+    "releaseInformation": {
+      "version": "0.1.3",
+      "releaseNotes": [
+        "Initial Splunk app package for SplunkReady.",
+        "Embeds the credential-free public artifact workbench in Splunk Web.",
+        "Includes deterministic Readiness Receipt evidence, MCP proof artifacts, public-safe screenshots, and optional KV Store receipt schema.",
+        "AppInspect precertification has zero errors, zero failures, zero future failures, and one expected KV Store collection warning.",
+        "No credentials, Python REST handlers, scripted inputs, modular inputs, saved searches, or default-path Splunk write operations are packaged."
+      ],
+      "upgradeInstructions": "Fresh install for v0.1.3. If upgrading from a manually installed earlier package, install this package over the previous SplunkReady app and restart/reload Splunk Web if required by the deployment.",
+      "compatibilityNote": "Tested with Splunk Enterprise 10.4.0 in the tracked live install proof. Splunk Cloud compatibility remains subject to Splunkbase/Splunk Cloud review."
+    }
+  },
+  "operatorSubmissionChecklist": [
+    {
+      "step": "Accept Splunk Developer Agreement in the Splunkbase publisher portal.",
+      "status": "OPERATOR_REQUIRED"
+    },
+    {
+      "step": "Create the SplunkReady app listing with the dossier app information and metadata fields.",
+      "status": "READY"
+    },
+    {
+      "step": "Upload submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl.",
+      "status": "READY"
+    },
+    {
+      "step": "Confirm Splunkbase package validation, antivirus/security check, and AppInspect validation.",
+      "status": "OPERATOR_REQUIRED"
+    },
+    {
+      "step": "Enter monitored support contact details controlled by the publisher account.",
+      "status": "OPERATOR_REQUIRED"
+    },
+    {
+      "step": "Select release as soon as approved, unless the publisher intentionally schedules a later release.",
+      "status": "OPERATOR_REQUIRED"
+    },
+    {
+      "step": "Do not add an Available on Splunkbase badge to README or Devpost until the public listing is visible.",
+      "status": "REQUIRED_GUARDRAIL"
+    }
+  ]
+}

@@ -57,6 +57,9 @@ splunk-app-install-proof
 submission-evidence/splunk-app-install/splunk-app-install-proof.json
 submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json
 submission-evidence/splunkbase-readiness/splunkbase-readiness.json
+submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json
+docs/splunkbase-listing-dossier.md
+support-contact blocker
 \`appIcon.png\` 36x36
 \`appIcon_2x.png\` 72x72
 \`screenshot.png\` 623x350
@@ -127,6 +130,9 @@ submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
 submission-evidence/splunk-app-install/splunk-app-install-proof.json
 submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json
 submission-evidence/splunkbase-readiness/splunkbase-readiness.json
+submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json
+docs/splunkbase-listing-dossier.md
+no-badge
 \`appIcon.png\` 36x36
 \`appIcon_2x.png\` 72x72
 \`screenshot.png\` 623x350
@@ -178,6 +184,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | The Splunk app package has been installed and probed on the operator-owned live Splunk server. | Supported | submission-evidence/splunk-app-install/splunk-app-install-proof.json, splunkready-operator-live-splunk-app-install-proof, status: "PASS", splunkMutation: "operator-approved-app-install", operatorApproved: true, install.status: "PASS", app-metadata, launcher-view, overview-view, default-nav, receipt-collection, receipt-lookup, secretValuesWritten: false, endpointValueWritten: false, usernameValueWritten: false | splunk-app-install-proof --env-file ./.splunkready-live.env --confirm-install true |
 | The installed Splunk app stores signed Readiness Receipt summaries in operator-owned KV Store rows. | Supported | submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json, splunkready-operator-receipt-kv-ingestion-proof, status: "PASS", splunkMutation: "operator-approved-receipt-store-write", operatorApproved: true, receiptSource.chainValid: true, write.requestedRows: 6, write.writtenRows: 6, lookup.status: "PASS", lookup.missingHashes: [], rawTraceValuesWritten: false | splunk-receipt-store-proof --env-file ./.splunkready-live.env --confirm-write true |
 | The current \`.spl\` package is Splunkbase/Splunk Cloud submission-ready at the local evidence layer, with external listing blockers called out explicitly. | Conditional | submission-evidence/splunkbase-readiness/splunkbase-readiness.json, splunkready-splunkbase-readiness, status: "ACTION_REQUIRED", AppInspect \`error: 0\`, \`failure: 0\`, expected warning \`check_collections_conf\`, \`package-archive\`, \`live-install-proof\`, \`receipt-kv-proof\`, \`app-icon\`, \`splunkbase-screenshot\`, SplunkReady/static/appIcon.png=36x36, SplunkReady/static/appIcon_2x.png=72x72, SplunkReady/static/screenshot.png=623x350, \`publisher-account: BLOCKED_EXTERNAL\`, \`splunkbase-upload: BLOCKED_EXTERNAL\`, \`splunk-cloud-review: BLOCKED_EXTERNAL\` | npm run audit:splunkbase-readiness; do not claim Available on Splunkbase until public listing exists |
+| Splunkbase portal submission now has a copy-paste listing dossier tied to package evidence and external-review guardrails. | Conditional | submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json, splunkready-splunkbase-listing-dossier, status: "READY_FOR_OPERATOR_SUBMISSION", support \`status: "OPERATOR_REQUIRED"\`, prohibit claiming Available on Splunkbase or Splunk Cloud approval before external review | npm run audit:splunkbase-listing-dossier |
 | The MCP proof includes the raw JSON-RPC client session behind the SplunkReady MCP proof. | Supported | submission-evidence/mcp-proof/mcp-client-session.jsonl, resources/templates/list, splunkready://receipts/{receiptId}, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access, splunkready_review_mcp_composition, splunkready://workflows/hosted-model-diagnostic, splunkready_hosted_model_diagnostic, splunkready://client-config/claude-desktop, splunkready://client-config/cursor, splunkready://client-config/antigravity, splunkready://client-config/zed, ~/.gemini/antigravity/mcp_config.json, context_servers, splunkready mcp | npm run mcp-proof |
 | The MCP proof exposes deterministic composition review as a first-class MCP tool. | Supported | mcpCompositionReview, splunkready_review_mcp_composition, composition-review-tool, splunk_get_knowledge_objects, splunk_run_saved_search, evt-102, evt-118, evt-141, deterministicAuthority, mutation: false | npm run mcp-proof |
 | The self-hostable mock Splunk MCP path produces a credential-free live-mode proof without Splunk credentials. | Supported | submission-evidence/live-mock/live-proof-summary.json, proofLoop: "fail-to-pass", derivedMission.strategy: "saved-search-with-evidence" | npm run live-mock-proof |

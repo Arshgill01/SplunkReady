@@ -16106,3 +16106,33 @@ Result:
 - PASS: hosted-demo currentness now reports `CURRENT` for commit `b23a309`.
 - PASS: hosted and local asset names match.
 - PASS: hosted manifest reports `mutation: false`.
+
+## 2026-06-08T13:34:00Z - Move 185 Splunkbase listing dossier
+
+Context:
+
+- The Splunk app package, AppInspect, live install, receipt-store, and listing
+  asset evidence already existed, but the Splunkbase readiness report still
+  listed "prepare listing metadata" as an external next action.
+- The remaining useful non-MCP work was to turn that into a concrete
+  operator-ready publisher portal dossier without claiming external approval.
+
+Actions:
+
+- Reviewed current Splunkbase readiness evidence, packaged app manifest, README
+  copy, Devpost draft, and official Splunkbase submission/file-standard pages.
+- Added `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`
+  with portal fields, release notes, support-contact blocker, package checksum,
+  AppInspect result, and no-badge guardrails.
+- Added `docs/splunkbase-listing-dossier.md` for copy-paste portal entry.
+- Added `scripts/audit-splunkbase-listing-dossier.mjs` and wired
+  `npm run audit:splunkbase-listing-dossier`.
+- Extended submission-copy auditing, README, Devpost draft, evidence README,
+  and claim ledger to cover the new dossier.
+
+Result:
+
+- PASS: local Splunkbase submission preparation moved from generic next action
+  to verified listing dossier.
+- External approval remains unclaimed and blocked on operator-owned publisher
+  portal submission.

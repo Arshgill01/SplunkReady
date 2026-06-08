@@ -17034,3 +17034,41 @@ Result:
   currentness report.
 - PASS: submission-copy audit passed with 362 required claims.
 - PASS: whitespace diff check passed.
+
+## 2026-06-08T13:34:30Z - Move 185 Splunkbase listing dossier
+
+Commands:
+
+- `npm run audit:splunkbase-listing-dossier`
+- `npm run audit:splunkbase-readiness`
+- `npm run audit:submission-copy`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run check` (first run)
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:splunkbase-listing-dossier`
+- `npm run audit:submission-copy`
+- `npm run check` (final run)
+
+Result:
+
+- PASS: `audit:splunkbase-listing-dossier` verified dossier source,
+  `READY_FOR_OPERATOR_SUBMISSION` status, package SHA, AppInspect zero
+  error/failure evidence, required official references, support-contact
+  operator blocker, release notes, and no-Splunkbase-approval guardrail.
+- PASS: `audit:splunkbase-readiness` rewrote the readiness report and preserved
+  status `ACTION_REQUIRED`.
+- PASS: `audit:submission-copy` passed with 375 required claims after adding
+  dossier coverage.
+- PASS: evidence-pack SHA-256 verification passed, including
+  `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`.
+- PARTIAL: the first `npm run check` caught that
+  `tests/scripts/submission-copy-audit.test.ts` generated a temporary
+  minimal copy fixture without the new Splunkbase listing dossier strings. The
+  production audit passed, but the test fixture needed to be updated.
+- PASS: focused `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+  passed after adding the new dossier strings to the fixture.
+- PASS: final `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 75 Vitest files / 437 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
+  audit with 375 required claims, and whitespace diff check.

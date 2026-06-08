@@ -1,6 +1,6 @@
 # SplunkReady Submission Evidence
 
-Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, Move 148 signed receipt-chain plus deterministic replay evidence, Move 150 signed policy-registry evidence, Move 157 Splunk app package evidence, Move 158 PR-gate evidence, Move 159 MCP composition-recorder evidence, Move 163 MCP recorder-gateway evidence, Move 164 AppInspect MCP composition evidence, Move 165 live Splunk app install evidence, Move 166 operator receipt-store evidence, Move 167 Splunkbase readiness evidence, Move 168 Splunkbase listing asset evidence, Move 170 standalone release artifact evidence, Move 171 standalone release matrix evidence, Move 172 public GitHub Release asset evidence, Move 173 real Splunk deployment stress-proof evidence, Move 174 guarded real Splunk stress replay evidence, Move 175 LLM deliberation evidence, Move 176 LLM workbench rendering evidence, Move 177 richer LLM evidence-matrix proof, Move 178 deterministic LLM claim-audit evidence, Move 179 deterministic score-calibration evidence, Move 180 public-demo LLM artifact-route evidence, and Move 181 hosted public-demo LLM currentness evidence.
+Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, Move 148 signed receipt-chain plus deterministic replay evidence, Move 150 signed policy-registry evidence, Move 157 Splunk app package evidence, Move 158 PR-gate evidence, Move 159 MCP composition-recorder evidence, Move 163 MCP recorder-gateway evidence, Move 164 AppInspect MCP composition evidence, Move 165 live Splunk app install evidence, Move 166 operator receipt-store evidence, Move 167 Splunkbase readiness evidence, Move 168 Splunkbase listing asset evidence, Move 170 standalone release artifact evidence, Move 171 standalone release matrix evidence, Move 172 public GitHub Release asset evidence, Move 173 real Splunk deployment stress-proof evidence, Move 174 guarded real Splunk stress replay evidence, Move 175 LLM deliberation evidence, Move 176 LLM workbench rendering evidence, Move 177 richer LLM evidence-matrix proof, Move 178 deterministic LLM claim-audit evidence, Move 179 deterministic score-calibration evidence, Move 180 public-demo LLM artifact-route evidence, Move 181 hosted public-demo LLM currentness evidence, and Move 185 Splunkbase listing dossier evidence.
 
 This directory is the judge-facing evidence pack. It is tracked in git so it can be inspected from a clean clone without access to ignored local `artifacts/`, `.splunkready*` env files, live credentials, or private deployment details.
 
@@ -20,7 +20,7 @@ This directory is the judge-facing evidence pack. It is tracked in git so it can
 - `splunk-app-package/`: credential-free `.spl` package proof that embeds the public artifact workbench in a static Splunk app shell. It includes the package archive and manifest with hash, file list, official packaging references, Splunkbase listing assets, `mutation: false`, `noCredentialFiles: true`, `noPythonHandlers: true`, and `noScriptedInputs: true`.
 - `splunk-app-install/`: redacted operator-approved proof that the `.spl` package was installed/upgraded and probed on the local operator-owned Splunk server.
 - `splunk-receipt-store/`: redacted operator-approved proof that six public-safe signed receipt summaries were written into the installed Splunk app KV Store and read back through `splunkready_receipts_lookup`.
-- `splunkbase-readiness/`: AppInspect precertification output plus a Splunkbase/Splunk Cloud readiness checklist. It records 0 AppInspect errors, 0 failures, the expected KV Store warning, exact packaged icon/screenshot dimensions, live install proof, receipt-store proof, and the remaining external blockers. It is not a public Splunkbase listing claim.
+- `splunkbase-readiness/`: AppInspect precertification output, a Splunkbase/Splunk Cloud readiness checklist, and a copy-paste listing dossier. It records 0 AppInspect errors, 0 failures, the expected KV Store warning, exact packaged icon/screenshot dimensions, live install proof, receipt-store proof, portal copy, release notes, support-contact blocker, and the remaining external blockers. It is not a public Splunkbase listing claim.
 - `public-proof-export/`: redacted derivative export generated from a managed workbench run. It includes the public export manifest, summary, audit, receipts, traces, redacted source proof manifest, and manifest verification. It is intentionally not the unredacted source proof.
 - `screenshots/`: Playwright screenshots for the packaged workbench fixture run, trace timeline, MCP proof view, LLM deliberation view, verified public proof export UI, hosted public judge-proof view, hosted public LLM deliberation route, and interactive hosted certification route. The earlier Vite-backed fixture screenshot is retained as historical evidence but is not the primary refreshed screenshot.
 - `claim-ledger.md`: public claim to evidence mapping.
@@ -44,6 +44,7 @@ npm run splunkready -- evaluate --out artifacts/policy-eval --policy pci-dss-rea
 npm run score-calibration
 npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json
 npm run splunk-app:package
+npm run audit:splunkbase-listing-dossier
 npm run splunkready -- verify-manifest --out submission-evidence/public-proof-export --json
 shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt
 npm run audit:submission-copy
@@ -151,6 +152,10 @@ Expected proof status:
 - Splunkbase readiness status: `ACTION_REQUIRED`
 - Splunkbase readiness AppInspect result: 0 errors, 0 failures, 1 expected KV Store warning
 - Splunkbase readiness local evidence: package, AppInspect, icon/screenshot assets, live install, and receipt-store checks pass
+- Splunkbase listing dossier status: `READY_FOR_OPERATOR_SUBMISSION`
+- Splunkbase listing dossier package SHA:
+  `f32e564b8ea5a741b3c3e178d9203b12389b47bb94a098062003ffd81ddfe4d8`
+- Splunkbase listing dossier support contact: `OPERATOR_REQUIRED`
 - Splunkbase listing claim: not made until external Splunkbase review is complete
 
 ## Redaction Boundary
