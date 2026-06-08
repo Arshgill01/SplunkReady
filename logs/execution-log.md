@@ -16871,3 +16871,20 @@ Result:
 - HONEST BOUNDARY: branch-tip CI still has to run the changed workflow files
   after commit/push. Release-artifact publishing itself only runs on tag or
   manual workflow dispatch.
+
+## 2026-06-08T17:12:22Z - Move 203 branch-tip CI
+
+Actions:
+
+- Committed Move 203 as `b7cf294b3f6264ed9bc1d0badc453820659a997b`.
+- Pushed `splunkready-build`.
+- Watched CI run `27154236000`.
+
+Result:
+
+- PASS: setup-splunkready action smoke completed in 8s.
+- PASS: `npm run check` job completed in 1m34s.
+- PASS: CI also ran credential-free live-mock proof, Docker mock Splunk MCP
+  image build, and Docker mock Splunk MCP smoke test.
+- HONEST BOUNDARY: the release publishing job uses the updated artifact
+  actions, but it only runs on tag push or manual workflow dispatch.

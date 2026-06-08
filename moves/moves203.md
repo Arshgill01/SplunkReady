@@ -2,7 +2,8 @@
 
 ## Status
 
-Implemented locally on 2026-06-08; branch-tip CI pending.
+Completed on 2026-06-08. Branch-tip CI passed on commit
+`b7cf294b3f6264ed9bc1d0badc453820659a997b`.
 
 ## Objective
 
