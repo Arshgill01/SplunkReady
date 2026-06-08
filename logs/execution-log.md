@@ -16577,3 +16577,34 @@ Result:
   and published `0.1.5` judge-proof/MCP/live-mock/recorder/policy probes
   passing.
 - No public copy was updated to claim `0.1.6`.
+
+## 2026-06-08T15:49:12Z - Move 197 GitHub Packages mirror refresh
+
+Context:
+
+- npmjs publish remains blocked by OTP, but the repo-linked GitHub Packages
+  mirror can be updated through the existing `github-packages.yml` workflow.
+- GitHub Packages is not the unauthenticated judge path; it exists to populate
+  the repository package sidebar and provide an authenticated package mirror.
+
+Actions:
+
+- Triggered `.github/workflows/github-packages.yml` from `splunkready-build`.
+- Watched GitHub Packages run `27149553852` to success.
+- Pulled workflow metadata and logs to verify the package name, version,
+  repository URL, and bin entry.
+- Updated `submission-evidence/github-package-currentness/` to cite
+  `@arshgill01/splunkready@0.1.6`.
+- Updated README, claim ledger, submission README, and submission-copy
+  guardrails while keeping the unauthenticated npmjs command pinned to
+  `splunkready@0.1.5`.
+
+Result:
+
+- PASS: GitHub Packages run `27149553852` completed successfully.
+- PASS: workflow log shows `+ @arshgill01/splunkready@0.1.6`.
+- PASS: workflow `npm view` verification returned version `0.1.6`, repository
+  URL `git+https://github.com/Arshgill01/SplunkReady.git`, and `splunkready`
+  bin.
+- HONEST BOUNDARY: public npmjs latest remains `splunkready@0.1.5`; GitHub
+  Packages requires authentication and does not replace the no-auth judge path.

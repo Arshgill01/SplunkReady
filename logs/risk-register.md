@@ -1395,3 +1395,12 @@ succeeds and
 `npm run audit:public-package-currentness -- --require-current --out
 submission-evidence/public-package-currentness` passes. The operator has been
 notified through `cmux notify`.
+
+Move 197 refreshes the repo-linked GitHub Packages mirror to
+`@arshgill01/splunkready@0.1.6` through workflow run `27149553852`. This reduces
+the GitHub sidebar/package-currentness gap but does not resolve npmjs
+currentness: GitHub Packages requires package-registry authentication, while the
+judge-facing no-auth command remains `npx -y splunkready@0.1.5 judge-proof`.
+Residual risk: do not present GitHub Packages as a replacement for public npm,
+and do not update the public GitHub Release or no-auth npm copy to `0.1.6`
+until npm OTP publish succeeds.

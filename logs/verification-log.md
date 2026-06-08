@@ -9704,6 +9704,7 @@ Commands:
 - `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
 - `git diff --check`
 - `npm run check`
+- `npm run check`
 - `npx vitest run tests/scripts/submission-copy-audit.test.ts`
 - `npm run audit:submission-copy`
 - `git diff --check`
@@ -17396,6 +17397,11 @@ Result:
 - PASS: whitespace diff check passed.
 - PASS: `npm run check` passed: scaffold verification, runtime-contract
   verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 76 Vitest files / 441 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
+  audit with 403 required claims, and whitespace diff check.
+- PASS: `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
   readiness/installability audits, 76 Vitest files / 440 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts,
   submission-copy audit with 397 required claims, and whitespace diff check.
@@ -17542,3 +17548,31 @@ Result:
   published judge-proof `PASS`, MCP `PASS`, live-mock proof `PASS`, recorder
   `PASS`, policy-registry `PASS`, and `mutation: false`.
 - PASS: `cmux notify` returned `OK`.
+
+## 2026-06-08T15:49:12Z - Move 197 GitHub Packages mirror refresh
+
+Commands:
+
+- `gh workflow run github-packages.yml --ref splunkready-build`
+- `gh run watch 27149553852 --exit-status`
+- `gh run view 27149553852 --json status,conclusion,headSha,url,createdAt,updatedAt,event,workflowName,jobs`
+- `gh run view 27149553852 --log`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `git diff --check`
+
+Result:
+
+- PASS: GitHub Packages workflow run `27149553852` concluded `success`.
+- PASS: run head SHA is `57a8b01782649d092446eb9c34474552e02a216d`.
+- PASS: publish step log shows package `@arshgill01/splunkready@0.1.6` and
+  publish result `+ @arshgill01/splunkready@0.1.6`.
+- PASS: verify step log shows `npm view` returned name
+  `@arshgill01/splunkready`, version `0.1.6`, repository URL
+  `git+https://github.com/Arshgill01/SplunkReady.git`, and the package `bin`.
+- PASS: submission-copy audit passed with 403 required claims.
+- PASS: focused submission-copy audit test passed: 1 file, 3 tests.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: whitespace diff check passed.

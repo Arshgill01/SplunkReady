@@ -40,6 +40,7 @@ const checks = [
   ["Devpost no mutation", files.devpost, "does not mutate Splunk"],
   ["README npm package link", files.readme, "https://www.npmjs.com/package/splunkready"],
   ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json"],
+  ["README GitHub Packages mirror", files.readme, "@arshgill01/splunkready@0.1.6"],
   ["README public package currentness audit", files.readme, "npm run audit:public-package-currentness"],
   ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json"],
   ["Devpost public package currentness evidence", files.devpost, "submission-evidence/public-package-currentness/"],
@@ -117,6 +118,9 @@ const checks = [
   ["Claim ledger public GitHub release macOS asset", files.claimLedger, "splunkready-macos-arm64.tar.gz"],
   ["Claim ledger public GitHub release Windows asset", files.claimLedger, "splunkready-windows-x64.tar.gz"],
   ["Claim ledger public GitHub release manifest", files.claimLedger, "standalone-release-windows-x64.json"],
+  ["Claim ledger GitHub Packages row", files.claimLedger, "The repository has a GitHub Packages npm mirror linked to the GitHub package sidebar."],
+  ["Claim ledger GitHub Packages version", files.claimLedger, "@arshgill01/splunkready@0.1.6"],
+  ["Claim ledger GitHub Packages run", files.claimLedger, "27149553852"],
   [
     "Claim ledger real Splunk stress proof",
     files.claimLedger,
