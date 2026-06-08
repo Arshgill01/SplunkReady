@@ -84,6 +84,8 @@ const createFixtureTree = async (): Promise<string> => {
 
   await mkdir(join(root, "submission-evidence", "splunk-app-package"), { recursive: true });
   await createSplunkAppPackage(root);
+  const packagePath = join(root, "submission-evidence", "splunk-app-package", "SplunkReady-0.1.3.spl");
+  const packageSha256 = await execFileAsync("shasum", ["-a", "256", packagePath]).then(({ stdout }) => stdout.split(/\s+/)[0]);
 
   await writeFixture(
     join(root, "submission-evidence", "splunk-app-package", "splunk-app-package-manifest.json"),
@@ -94,9 +96,7 @@ const createFixtureTree = async (): Promise<string> => {
         appId: "SplunkReady",
         version: "0.1.3",
         packagePath: "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
-        packageSha256: await execFileAsync("shasum", ["-a", "256", join(root, "submission-evidence", "splunk-app-package", "SplunkReady-0.1.3.spl")]).then(
-          ({ stdout }) => stdout.split(/\s+/)[0]
-        ),
+        packageSha256,
         splunkbaseListingAssets: {
           appIcon: "SplunkReady/static/appIcon.png",
           appIcon2x: "SplunkReady/static/appIcon_2x.png",
@@ -120,6 +120,11 @@ const createFixtureTree = async (): Promise<string> => {
       {
         status: "PASS",
         splunkMutation: "operator-approved-app-install",
+        appPackage: {
+          path: "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+          fileName: "SplunkReady-0.1.3.spl",
+          sha256: packageSha256
+        },
         install: { status: "PASS" },
         probes: [{ id: "app-metadata", status: "PASS" }]
       },

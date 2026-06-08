@@ -110,7 +110,7 @@ export const defaultCliOptions = (overrides: Partial<CliOptions> = {}): CliOptio
   securityKitDir: "artifacts/live-security-kit",
   hostedModelProofDir: "artifacts/hosted-model-proof",
   envFile: "",
-  appPackage: "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+  appPackage: "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl",
   confirmWrite: false,
   phase: "before",
   requireLive: false,

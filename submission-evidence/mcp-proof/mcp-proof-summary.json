@@ -878,7 +878,7 @@
     "generatedAt": "2026-06-01T06:45:00.000Z",
     "artifactPath": "submission-evidence/mcp-proof/appinspect-mcp-composition.json",
     "markdownPath": "submission-evidence/mcp-proof/appinspect-mcp-composition.md",
-    "appPackagePath": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+    "appPackagePath": "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl",
     "appPackagePresent": true,
     "command": "uvx splunk-appinspect[mcp] mcp-server",
     "server": {

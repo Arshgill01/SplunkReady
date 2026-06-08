@@ -16443,3 +16443,46 @@ Result:
   is required.
 - CURRENT PUBLIC STATE: npm latest remains `splunkready@0.1.5`; current source
   is `0.1.6`; public package currentness evidence reports `status: "STALE"`.
+
+## 2026-06-08T15:50:00Z - Move 193 current Splunk app package and Splunkbase evidence
+
+Context:
+
+- The tracked Splunk app package and Splunkbase readiness dossier still pointed
+  at `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl` even
+  though current source metadata is `0.1.6`.
+- AppInspect MCP composition evidence also referenced the stale `.spl`.
+- The public npm package remains separately blocked at `0.1.5` until the
+  operator completes OTP-backed publish; this move only refreshes local
+  Splunk app/Splunkbase evidence.
+
+Actions:
+
+- Added `moves/moves193.md` and
+  `docs/execplans/splunk-app-currentness-refresh.md`.
+- Rebuilt the Splunk app package into
+  `submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl`.
+- Re-ran AppInspect precertification for the new package.
+- Updated README, Devpost copy, Splunkbase dossier, claim ledger, submission
+  README, and submission-copy audit guardrails to cite the `0.1.6` `.spl`.
+- Regenerated MCP proof evidence so AppInspect MCP composition also points at
+  `SplunkReady-0.1.6.spl`.
+- Hardened `scripts/audit-splunkbase-readiness.mjs` so the live install proof
+  must match the current package path and SHA, then refreshed the
+  operator-approved live Splunk app install proof with `--confirm-install true`.
+- Regenerated Splunkbase readiness/listing outputs and the evidence-pack
+  SHA-256 ledger.
+
+Result:
+
+- PASS: package SHA is
+  `d89aabc7f1b72335886cab88dab67fe8a14e1a88fa855050fcdd5d75bf3ba831`.
+- PASS: `tar -tzf` reports 349 archive entries.
+- PASS: package manifest reports version `0.1.6`, mutation `false`, no
+  credential files, no Python handlers, and no scripted inputs.
+- PASS: AppInspect reports 0 errors, 0 failures, 0 future failures, and 1
+  expected KV Store warning.
+- PASS: live Splunk install proof now references `SplunkReady-0.1.6.spl`,
+  matching SHA, 6 passing probes, and no secret values written.
+- PASS: Splunkbase readiness reports `ACTION_REQUIRED` with all local checks
+  passing and only external publisher/upload/cloud-review blockers remaining.

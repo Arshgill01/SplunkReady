@@ -11,11 +11,11 @@ account and Splunkbase returns a public listing.
 
 - App name: `SplunkReady`
 - App ID: `SplunkReady`
-- Version: `0.1.3`
+- Version: `0.1.6`
 - Package:
-  `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`
+  `submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl`
 - SHA-256:
-  `f32e564b8ea5a741b3c3e178d9203b12389b47bb94a098062003ffd81ddfe4d8`
+  `d89aabc7f1b72335886cab88dab67fe8a14e1a88fa855050fcdd5d75bf3ba831`
 - Tested Splunk version: `Splunk Enterprise 10.4.0`
 - Splunk Cloud status: external review required
 
@@ -74,7 +74,7 @@ searches, or default-path write operations.
 
 ### Release Notes
 
-- Initial Splunk app package for SplunkReady.
+- Current-source Splunk app package for SplunkReady v0.1.6.
 - Embeds the credential-free public artifact workbench in Splunk Web.
 - Includes deterministic Readiness Receipt evidence, MCP proof artifacts,
   public-safe screenshots, and optional KV Store receipt schema.
@@ -85,7 +85,7 @@ searches, or default-path write operations.
 
 ### Upgrade Instructions
 
-Fresh install for v0.1.3. If upgrading from a manually installed earlier
+Fresh install for v0.1.6. If upgrading from a manually installed earlier
 package, install this package over the previous SplunkReady app and
 restart/reload Splunk Web if required by the deployment.
 
@@ -110,7 +110,7 @@ publisher account.
 
 - Accept the Splunk Developer Agreement in the Splunkbase publisher portal.
 - Create the SplunkReady app listing with the app information above.
-- Upload `submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`.
+- Upload `submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl`.
 - Confirm Splunkbase package validation, security check, and AppInspect
   validation.
 - Enter monitored support contact details controlled by the publisher account.

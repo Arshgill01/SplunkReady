@@ -1,6 +1,6 @@
 {
   "source": "splunkready-splunkbase-readiness",
-  "generatedAt": "2026-06-08T13:32:05.502Z",
+  "generatedAt": "2026-06-08T15:20:13.851Z",
   "status": "ACTION_REQUIRED",
   "officialReferences": [
     {
@@ -35,11 +35,11 @@
     }
   ],
   "package": {
-    "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
-    "sha256": "f32e564b8ea5a741b3c3e178d9203b12389b47bb94a098062003ffd81ddfe4d8",
-    "version": "0.1.3",
+    "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl",
+    "sha256": "d89aabc7f1b72335886cab88dab67fe8a14e1a88fa855050fcdd5d75bf3ba831",
+    "version": "0.1.6",
     "appId": "SplunkReady",
-    "fileCount": 320,
+    "fileCount": 349,
     "listingAssets": {
       "appIcon": {
         "path": "SplunkReady/static/appIcon.png",
@@ -160,8 +160,8 @@
     },
     {
       "path": "submission-evidence/screenshots/zed-mcp-recorder-summary.png",
-      "width": 1200,
-      "height": 850
+      "width": 3544,
+      "height": 2232
     }
   ],
   "checks": [
@@ -169,22 +169,22 @@
       "id": "package-archive",
       "label": "Splunk app package exists and checksum matches manifest",
       "status": "PASS",
-      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
-      "detail": "sha256=f32e564b8ea5a741b3c3e178d9203b12389b47bb94a098062003ffd81ddfe4d8"
+      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl",
+      "detail": "sha256=d89aabc7f1b72335886cab88dab67fe8a14e1a88fa855050fcdd5d75bf3ba831"
     },
     {
       "id": "package-single-app-root",
       "label": "Package extracts to one app root",
       "status": "PASS",
-      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
-      "detail": "320 packaged files"
+      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl",
+      "detail": "349 packaged files"
     },
     {
       "id": "app-conf-identity",
       "label": "default/app.conf carries id, version, label, and package metadata",
       "status": "PASS",
       "evidence": "SplunkReady/default/app.conf",
-      "detail": "version=0.1.3"
+      "detail": "version=0.1.6"
     },
     {
       "id": "cloud-metadata-role",
@@ -216,10 +216,10 @@
     },
     {
       "id": "live-install-proof",
-      "label": "Operator-owned live Splunk install proof passes",
+      "label": "Operator-owned live Splunk install proof passes for the current package",
       "status": "PASS",
       "evidence": "submission-evidence/splunk-app-install/splunk-app-install-proof.json",
-      "detail": "6 probes; 0 failed"
+      "detail": "6 probes; 0 failed; packageMatch=true"
     },
     {
       "id": "receipt-kv-proof",
@@ -260,14 +260,14 @@
       "id": "app-icon",
       "label": "Splunkbase app icon assets are packaged with exact dimensions",
       "status": "PASS",
-      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl",
       "detail": "SplunkReady/static/appIcon.png=36x36; SplunkReady/static/appIcon_2x.png=72x72"
     },
     {
       "id": "splunkbase-screenshot",
       "label": "Splunkbase listing screenshot is packaged with exact dimensions",
       "status": "PASS",
-      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl",
+      "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl",
       "detail": "SplunkReady/static/screenshot.png=623x350"
     },
     {
@@ -294,7 +294,7 @@
   ],
   "nextActions": [
     "Prepare Splunkbase listing metadata, support contact, release notes, and public-safe screenshots in the publisher portal.",
-    "Upload submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl through an operator-owned Splunkbase publisher account.",
+    "Upload submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl through an operator-owned Splunkbase publisher account.",
     "Claim the Splunkbase badge only after the public Splunkbase listing is visible."
   ]
 }

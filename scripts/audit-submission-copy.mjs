@@ -226,7 +226,7 @@ const checks = [
     files.claimLedger,
     "SplunkReady ships a credential-free Splunk app package proof for the public artifact workbench."
   ],
-  ["Claim ledger Splunk app package archive", files.claimLedger, "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl"],
+  ["Claim ledger Splunk app package archive", files.claimLedger, "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl"],
   [
     "Claim ledger Splunk app package manifest",
     files.claimLedger,
@@ -246,7 +246,7 @@ const checks = [
   ["Claim ledger Splunk app package no handlers", files.claimLedger, "noPythonHandlers: true"],
   ["Claim ledger Splunk app package no scripted inputs", files.claimLedger, "noScriptedInputs: true"],
   ["Claim ledger Splunk app package command", files.claimLedger, "npm run splunk-app:package"],
-  ["Claim ledger Splunk app package tar command", files.claimLedger, "tar -tzf submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl"],
+  ["Claim ledger Splunk app package tar command", files.claimLedger, "tar -tzf submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl"],
   [
     "Claim ledger operator live Splunk app install",
     files.claimLedger,
@@ -347,9 +347,9 @@ const checks = [
   ["README operator live install lookup", files.readme, "splunkready_receipts_lookup"],
   ["Devpost operator live install artifact", files.devpost, "submission-evidence/splunk-app-install/splunk-app-install-proof.json"],
   ["README Splunk app package command", files.readme, "npm run splunk-app:package"],
-  ["README Splunk app package archive", files.readme, "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl"],
+  ["README Splunk app package archive", files.readme, "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl"],
   ["README Splunk app package manifest", files.readme, "submission-evidence/splunk-app-package/splunk-app-package-manifest.json"],
-  ["Devpost Splunk app package archive", files.devpost, "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl"],
+  ["Devpost Splunk app package archive", files.devpost, "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl"],
   ["Claim ledger hosted demo currentness artifact", files.claimLedger, "submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json"],
   ["Claim ledger hosted demo currentness command", files.claimLedger, "npm run audit:hosted-demo-currentness"],
   ["README hosted demo currentness artifact", files.readme, "submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json"],

@@ -1354,3 +1354,15 @@ Packages, tag GitHub Release assets, or update README/Devpost install snippets
 to `0.1.6` until an operator supplies OTP, the publish succeeds, and
 `npm run audit:public-package-currentness -- --require-current --out
 submission-evidence/public-package-currentness` passes.
+
+Move 193 closes the stale local `.spl` evidence gap: the tracked Splunk app
+package, AppInspect precertification, MCP AppInspect composition, Splunkbase
+readiness report, listing dossier, claim ledger, and operator-approved live app
+install proof now all reference `SplunkReady-0.1.6.spl` with SHA
+`d89aabc7f1b72335886cab88dab67fe8a14e1a88fa855050fcdd5d75bf3ba831`.
+The readiness audit now fails if the live install proof package path/SHA does
+not match the current package manifest. Residual risk: Splunkbase publisher
+account submission, public Splunkbase listing, and Splunk Cloud review remain
+external operator/Splunk-controlled steps; do not claim "Available on
+Splunkbase" until the public listing exists. Public npm currentness remains the
+separate Move 192 OTP blocker.

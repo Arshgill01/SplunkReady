@@ -11116,6 +11116,8 @@ Commands:
 - `npm run audit:submission-copy`
 - `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
 - `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `git diff --check`
+- `npm run check`
 - `npx vitest run tests/scripts/submission-copy-audit.test.ts`
 - `git diff --check`
 - `test ! -d .playwright-cli`
@@ -17389,6 +17391,55 @@ Result:
 - PASS: updated submission-copy audit passed with 396 required claims.
 - PASS: focused submission-copy audit test passed: 1 file, 3 tests.
 - PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 76 Vitest files / 440 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts,
+  submission-copy audit with 396 required claims, and whitespace diff check.
+
+## 2026-06-08T15:50:00Z - Move 193 current Splunk app package and Splunkbase evidence
+
+Commands:
+
+- `npm run splunk-app:package`
+- `tar -tzf submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl | wc -l`
+- `shasum -a 256 submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl`
+- `uvx splunk-appinspect inspect submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl --mode precert --data-format json --output-file submission-evidence/splunkbase-readiness/appinspect-precert.json`
+- `npm run build && node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js splunk-app-install-proof --out submission-evidence/splunk-app-install --env-file ./.splunkready-live.env --confirm-install true --json`
+- `rg -n "Bearer|Basic|password|token|127\\.0\\.0\\.1|localhost|https?://|admin" submission-evidence/splunk-app-install || true`
+- `npm run audit:splunkbase-readiness`
+- `npm run audit:splunkbase-listing-dossier`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/splunk-app-package.test.ts tests/scripts/splunkbase-readiness.test.ts tests/scripts/submission-copy-audit.test.ts tests/workflows/appinspect-composition.test.ts`
+- `npx vitest run tests/ui/app.test.ts -t "MCP proof summary"`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS: Splunk app package rebuilt at
+  `submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl`.
+- PASS: archive list count is 349 entries.
+- PASS: package SHA-256 is
+  `d89aabc7f1b72335886cab88dab67fe8a14e1a88fa855050fcdd5d75bf3ba831`.
+- PASS: AppInspect precertification reports 0 errors, 0 failures, 0 future
+  failures, 1 expected `check_collections_conf` warning, and 103 successes.
+- PASS: regenerated MCP proof reports AppInspect composition `PASS` against
+  `submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl`.
+- PASS: operator-approved live Splunk app install proof reports `PASS`, 6
+  probes, matching package path/SHA, and no endpoint, username, password, token,
+  or deployment inventory values written.
+- PASS: tracked install-proof leak scan returned only redaction/config booleans
+  and no secret values.
+- PASS: Splunkbase readiness audit wrote `ACTION_REQUIRED` with
+  `live-install-proof` detail `packageMatch=true`.
+- PASS: Splunkbase listing dossier audit passed.
+- PASS: submission-copy audit passed with 396 required claims.
+- PASS: focused script/workflow tests passed: 4 files, 8 tests.
+- PASS: focused UI MCP summary test passed: 1 file, 1 test.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: whitespace diff check passed.
 - PASS: `npm run check` passed: scaffold verification, runtime-contract
   verification, TypeScript build, UI build, public-demo export audit, package
   readiness/installability audits, 76 Vitest files / 440 tests, secret-env

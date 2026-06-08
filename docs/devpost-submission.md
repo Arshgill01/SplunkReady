@@ -116,7 +116,7 @@ reports validation `SUCCESS` with 0 package failures, 0 errors, and 1 warning;
 it does not claim Splunkbase approval.
 
 The tracked Splunk app package evidence is
-`submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl`. It embeds the
+`submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl`. It embeds the
 public artifact workbench as static Splunk app content, defines an optional
 operator-owned `splunkready_receipts` KV Store collection plus
 `splunkready_receipts_lookup`, ships `splunkready_overview.xml` for bundled

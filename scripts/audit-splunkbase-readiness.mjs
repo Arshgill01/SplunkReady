@@ -215,6 +215,8 @@ export const auditSplunkbaseReadiness = async ({ root = ".", outDir = defaultPat
   const listedPackageSha = packageManifest.packageSha256;
   const actualPackageSha = await sha256File(packagePath);
   const installProbeFailures = (liveInstall.probes ?? []).filter((probe) => probe.status !== "PASS");
+  const liveInstallPackageMatches =
+    liveInstall.appPackage?.path === packageManifest.packagePath && liveInstall.appPackage?.sha256 === actualPackageSha;
   const listingAssetEntries = {
     appIcon: packageManifest.splunkbaseListingAssets?.appIcon ?? `${packageManifest.appId}/static/appIcon.png`,
     appIcon2x: packageManifest.splunkbaseListingAssets?.appIcon2x ?? `${packageManifest.appId}/static/appIcon_2x.png`,
@@ -296,10 +298,12 @@ export const auditSplunkbaseReadiness = async ({ root = ".", outDir = defaultPat
     ),
     check(
       "live-install-proof",
-      "Operator-owned live Splunk install proof passes",
-      liveInstall.status === "PASS" && liveInstall.install?.status === "PASS" && installProbeFailures.length === 0 ? "PASS" : "FAIL",
+      "Operator-owned live Splunk install proof passes for the current package",
+      liveInstall.status === "PASS" && liveInstall.install?.status === "PASS" && installProbeFailures.length === 0 && liveInstallPackageMatches
+        ? "PASS"
+        : "FAIL",
       defaultPaths.liveInstall,
-      `${liveInstall.probes?.length ?? 0} probes; ${installProbeFailures.length} failed`
+      `${liveInstall.probes?.length ?? 0} probes; ${installProbeFailures.length} failed; packageMatch=${liveInstallPackageMatches}`
     ),
     check(
       "receipt-kv-proof",
@@ -398,7 +402,7 @@ export const auditSplunkbaseReadiness = async ({ root = ".", outDir = defaultPat
     checks,
     nextActions: [
       "Prepare Splunkbase listing metadata, support contact, release notes, and public-safe screenshots in the publisher portal.",
-      "Upload submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl through an operator-owned Splunkbase publisher account.",
+      `Upload ${packageManifest.packagePath} through an operator-owned Splunkbase publisher account.`,
       "Claim the Splunkbase badge only after the public Splunkbase listing is visible."
     ]
   };

@@ -4,7 +4,7 @@ Status: PASS
 
 Command: uvx splunk-appinspect[mcp] mcp-server
 
-App package: submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
+App package: submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl
 
 AppInspect server: AVAILABLE (AppInspect MCP Server 2.14.7)
 
