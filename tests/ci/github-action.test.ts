@@ -178,6 +178,8 @@ describe("GitHub Action runner", () => {
     expect(metadata).toContain("sha256sum -c");
     expect(metadata).toContain("tar -xzf");
     expect(metadata).toContain("GITHUB_PATH");
+    expect(metadata).toContain("launcher_dir");
+    expect(metadata).toContain('exec "%s" "$@"');
     expect(metadata).toContain("binary-path=");
     expect(metadata).not.toContain("npm ci");
     expect(metadata).not.toContain("actions/setup-node");

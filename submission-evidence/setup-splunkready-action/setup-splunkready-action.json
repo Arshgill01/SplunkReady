@@ -14,6 +14,8 @@
   "downloadsPublicReleaseAsset": true,
   "verifiesSha256Checksum": true,
   "addsBinaryToPath": true,
+  "addsLauncherToPath": true,
+  "pathLauncherUsesAbsoluteStandaloneBinary": true,
   "consumerJobRequiresSetupNode": false,
   "consumerJobRequiresNpmCi": false,
   "consumerJobSmokeCommand": "splunkready judge-proof --out \"$RUNNER_TEMP/splunkready-setup-proof\" --json",

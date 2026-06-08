@@ -16706,3 +16706,10 @@ Result:
   `Arshgill01/SplunkReady/setup-splunkready@splunkready-build` because tag
   `v0.1.6` predates the new action path; `v0.1.6` remains only the downloaded
   standalone binary release tag for this move.
+- REMOTE FIX: first remote setup-action smoke run installed and checksum-verified
+  the Linux x64 standalone asset, but failed when invoking `splunkready` from
+  PATH because the packaged launcher resolved a relative `./splunkready` path in
+  the repository checkout. Updated the setup action to place an absolute-path
+  wrapper on PATH.
+- Updated setup-action evidence and claim ledger to distinguish PATH launcher
+  installation from the raw standalone payload.

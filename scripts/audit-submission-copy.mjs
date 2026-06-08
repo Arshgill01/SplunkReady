@@ -145,6 +145,8 @@ const checks = [
   ["Claim ledger setup action status", files.claimLedger, 'source: "splunkready-setup-action"'],
   ["Claim ledger setup action branch ref", files.claimLedger, 'currentPublicActionRef: "Arshgill01/SplunkReady/setup-splunkready@splunkready-build"'],
   ["Claim ledger setup action tag boundary", files.claimLedger, "tagV016ContainsSetupAction: false"],
+  ["Claim ledger setup action launcher", files.claimLedger, "addsLauncherToPath: true"],
+  ["Claim ledger setup action absolute launcher", files.claimLedger, "pathLauncherUsesAbsoluteStandaloneBinary: true"],
   ["Claim ledger setup action release tag", files.claimLedger, "release tag `v0.1.6`"],
   ["Claim ledger setup action linux target", files.claimLedger, "`linux-x64`"],
   ["Claim ledger setup action mac target", files.claimLedger, "`macos-arm64`"],

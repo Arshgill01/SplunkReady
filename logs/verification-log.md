@@ -3267,6 +3267,15 @@ Commands:
 - `npm run ui:build`
 - `git diff --check`
 - `npm run check`
+- `gh run watch 27151770736 --exit-status`
+- `gh run view 27151770736 --job 80144311473 --log`
+- `tmp=$(mktemp -d /tmp/splunkready-setup-action-wrapper-XXXXXX); curl -fsSL https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz -o "$tmp/splunkready-macos-arm64.tar.gz"; curl -fsSL https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz.sha256 -o "$tmp/splunkready-macos-arm64.tar.gz.sha256"; (cd "$tmp" && shasum -a 256 -c splunkready-macos-arm64.tar.gz.sha256); mkdir -p "$tmp/install" "$tmp/install/bin"; tar -xzf "$tmp/splunkready-macos-arm64.tar.gz" -C "$tmp/install"; printf '#!/usr/bin/env bash\nexec "%s" "$@"\n' "$tmp/install/splunkready" > "$tmp/install/bin/splunkready"; chmod +x "$tmp/install/splunkready" "$tmp/install/bin/splunkready"; PATH="$tmp/install/bin:$PATH" splunkready judge-proof --out "$tmp/proof" --json > "$tmp/proof.json"; grep -q '"status": "PASS"' "$tmp/proof.json"; grep -q '"mutation": false' "$tmp/proof/judge-proof-summary.json"`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/examples/repository-ci-workflow.test.ts tests/ci/github-action.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `git diff --check`
+- `npm run check`
 
 Result:
 
@@ -17464,7 +17473,25 @@ Result:
   readiness/installability audits, 76 Vitest files / 443 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
   audit with 440 required claims, and whitespace diff check.
-- PENDING: remote CI setup-action smoke will run after the Move 200 commit is
+- FAIL: remote CI run `27151770736` completed `npm run check` successfully, but
+  the new `setup-splunkready action smoke` job failed after install/checksum
+  verification because invoking `splunkready` from PATH made the packaged
+  standalone launcher resolve `/home/runner/work/SplunkReady/SplunkReady/splunkready`.
+- PASS: local public-asset wrapper smoke downloaded the public macOS arm64
+  `v0.1.6` archive, verified checksum, installed an absolute-path PATH launcher,
+  ran `splunkready judge-proof`, returned `status: "PASS"`, and reported
+  `mutation: false`.
+- PASS: submission-copy audit passed with 442 required claims.
+- PASS: focused workflow/action/submission-copy tests passed: 3 files, 15
+  tests.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: whitespace diff check passed.
+- PASS: `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 76 Vitest files / 443 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
+  audit with 442 required claims, and whitespace diff check.
+- PENDING: remote CI must be re-run after the wrapper fix is committed and
   pushed.
 
 ## 2026-06-08T15:50:00Z - Move 193 current Splunk app package and Splunkbase evidence
