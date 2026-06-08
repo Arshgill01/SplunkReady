@@ -16910,3 +16910,29 @@ Result:
   hosted currentness report and hosted LLM screenshot.
 - PASS: focused submission-copy audit test passed with 1 file and 3 tests.
 - PASS: submission-copy audit passed with 362 required claims.
+
+## 2026-06-08T12:39:40Z - Move 182 stable hosted currentness evidence
+
+Commands:
+
+- `node -e "import('./scripts/export-public-demo.js').then(m=>console.log(JSON.stringify(m.publicDemoInputPaths,null,2)))" && npm run audit:hosted-demo-currentness -- --require-current`
+- `gh workflow run public-demo-pages.yml --ref splunkready-build`
+- `gh run watch 27138145639 --exit-status`
+- `npm run audit:hosted-demo-currentness -- --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json --require-current`
+
+Result:
+
+- PASS: inspected `publicDemoInputPaths` and confirmed
+  `submission-evidence/screenshots` is a public-demo input while
+  `submission-evidence/hosted-demo-currentness`, `submission-evidence/README.md`,
+  `submission-evidence/claim-ledger.md`, logs, tests, and move files are not.
+- PASS: the pre-deploy audit failed as expected with `status: "STALE"` because
+  expected public-demo input commit `06c0146` did not match hosted source commit
+  `807d047`.
+- PASS: `Public Demo Pages` run `27138145639` completed successfully for commit
+  `06c0146`; build ran `npm run public-demo:build` and
+  `npm run audit:public-demo-export`, then deploy completed.
+- PASS: refreshed hosted currentness audit returned `status: "CURRENT"`,
+  hosted source commit `06c014660b9186feece1966a0db3ef4fcd59bf00`, matching
+  hosted/local asset names, `artifactBases` including
+  `artifacts/real-splunk-stress-llm-layer`, and `mutation: false`.

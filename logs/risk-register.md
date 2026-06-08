@@ -1240,3 +1240,13 @@ Residual risk: any later public-demo input commit will make this evidence stale
 until the Pages workflow is rerun and the currentness audit is refreshed. The
 hosted LLM page remains an evidence viewer only; it does not make LLM advisory
 scores authoritative.
+
+Move 182 updates hosted-demo currentness for commit `06c0146` after Move 181's
+new hosted screenshot changed the public-demo input set. Residual risk remains
+the same operational rule: any future commit touching `fixtures`,
+`scripts/export-public-demo.js`, `scripts/audit-public-demo-export.mjs`, `src`,
+`submission-evidence/mcp-proof`, `submission-evidence/public-proof-export`,
+`submission-evidence/real-splunk-stress-llm-layer`,
+`submission-evidence/screenshots`, `submission-evidence/suite-proof`, `ui`, or
+`vite.config.ts` requires rerunning the Pages workflow and refreshing
+hosted-demo currentness before citing the live URL as current.

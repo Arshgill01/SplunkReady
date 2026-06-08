@@ -15998,3 +15998,33 @@ Result:
 - PASS: focused submission-copy audit test passed.
 - PASS: submission-copy audit passed with 362 required claims.
 - PASS: evidence-pack SHA-256 verification passed.
+
+## 2026-06-08T12:39:40Z - Move 182 stable hosted currentness evidence
+
+Intent:
+
+- Fix the recursive currentness gap introduced when Move 181 added a new
+  hosted screenshot under `submission-evidence/screenshots`, which is part of
+  the public-demo input set.
+- Deploy the Move 181 commit and refresh only non-public-demo-input evidence so
+  the hosted currentness report remains stable.
+
+Actions:
+
+- Confirmed hosted-demo currentness was stale after Move 181 because expected
+  public-demo input commit `06c0146` did not match hosted source commit
+  `807d047`.
+- Triggered `Public Demo Pages` again on `splunkready-build` and watched run
+  `27138145639` through build and deploy success.
+- Refreshed
+  `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+  with `status: "CURRENT"`, hosted source commit `06c0146`, matching hosted and
+  local asset names, `mutation: false`, and the
+  `artifacts/real-splunk-stress-llm-layer` artifact base.
+- Updated the hosted currentness claim, submission-copy audit guard, focused
+  test fixture, and evidence README to use `06c0146`.
+
+Result:
+
+- PASS: Pages build and deploy completed successfully for commit `06c0146`.
+- PASS: hosted-demo currentness audit reports `CURRENT` for `06c0146`.
