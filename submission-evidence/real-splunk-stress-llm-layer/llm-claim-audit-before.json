@@ -1,0 +1,44 @@
+{
+  "source": "splunkready-llm-claim-audit",
+  "contractVersion": "llm-claim-audit-v1",
+  "advisoryOnly": true,
+  "passFailAuthority": "deterministic-rule-engine",
+  "status": "PASS",
+  "totalClaims": 1,
+  "supportedClaims": 1,
+  "partialClaims": 0,
+  "unsupportedClaims": 0,
+  "hallucinatedRefs": [],
+  "observedRefs": {
+    "toolNames": [
+      "splunk_get_knowledge_objects",
+      "splunk_run_query"
+    ],
+    "queryRefs": [
+      "search index=* host=win-finance-07 (sourcetype=WinEventLog:Security OR sourcetype=wineventlog) (EventCode=4624 OR EventCode=4648) earliest=-24h latest=now | stats count by src_ip, dest_host, user, EventCode | head 50"
+    ],
+    "evidenceRefs": [
+      "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+      "saved_searches:search:ES - Lateral Movement Auth Chain"
+    ]
+  },
+  "claims": [
+    {
+      "claim": "No lateral movement authentication events (4624/4648) detected from win-finance-07 in the last 24 hours.",
+      "declaredSupport": "supported",
+      "auditedSupport": "supported",
+      "matchedQueryRefs": [
+        "search index=* host=win-finance-07 (sourcetype=WinEventLog:Security OR sourcetype=wineventlog) (EventCode=4624 OR EventCode=4648) earliest=-24h latest=now | stats count by src_ip, dest_host, user, EventCode | head 50"
+      ],
+      "missingQueryRefs": [],
+      "matchedEvidenceRefs": [],
+      "missingEvidenceRefs": [],
+      "limitation": "Limited to the specific EventCodes 4624 and 4648; other lateral movement vectors (e.g., WMI, PowerShell Remoting) were not explicitly queried.",
+      "findings": [
+        "claim cites observed provenance",
+        "all declared refs were observed",
+        "claim states limitation"
+      ]
+    }
+  ]
+}

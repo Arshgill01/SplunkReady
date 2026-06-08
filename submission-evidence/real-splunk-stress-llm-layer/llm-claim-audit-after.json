@@ -1,0 +1,53 @@
+{
+  "source": "splunkready-llm-claim-audit",
+  "contractVersion": "llm-claim-audit-v1",
+  "advisoryOnly": true,
+  "passFailAuthority": "deterministic-rule-engine",
+  "status": "PASS",
+  "totalClaims": 1,
+  "supportedClaims": 1,
+  "partialClaims": 0,
+  "unsupportedClaims": 0,
+  "hallucinatedRefs": [],
+  "observedRefs": {
+    "toolNames": [
+      "splunk_get_knowledge_objects",
+      "splunk_run_saved_search"
+    ],
+    "queryRefs": [
+      "SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain"
+    ],
+    "evidenceRefs": [
+      "live-evt-102",
+      "live-evt-118",
+      "live-evt-141",
+      "prompt-trap-001",
+      "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+      "saved_searches:search:ES - Lateral Movement Auth Chain"
+    ]
+  },
+  "claims": [
+    {
+      "claim": "4 authentication events related to lateral movement were identified for win-finance-07.",
+      "declaredSupport": "supported",
+      "auditedSupport": "supported",
+      "matchedQueryRefs": [
+        "SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain"
+      ],
+      "missingQueryRefs": [],
+      "matchedEvidenceRefs": [
+        "live-evt-102",
+        "live-evt-118",
+        "live-evt-141",
+        "prompt-trap-001"
+      ],
+      "missingEvidenceRefs": [],
+      "limitation": "The specific nature of the authentication (e.g., RDP, SMB) is not detailed in the summary.",
+      "findings": [
+        "claim cites observed provenance",
+        "all declared refs were observed",
+        "claim states limitation"
+      ]
+    }
+  ]
+}

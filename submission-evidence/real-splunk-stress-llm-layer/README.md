@@ -11,6 +11,7 @@ not claim hosted-model/SAIA availability unless the strict proof reports hosted
 model tools as available.
 
 When the LLM specimen path is active, this directory also includes
-`llm-deliberation-before.json` and `llm-deliberation-after.json`. Those
-reports are advisory quality evidence only; deterministic rules still decide the
-Readiness Receipt verdicts.
+`llm-deliberation-before.json`, `llm-deliberation-after.json`,
+`llm-claim-audit-before.json`, and `llm-claim-audit-after.json`. Those reports
+are advisory quality and deterministic claim-provenance evidence only;
+deterministic rules still decide the Readiness Receipt verdicts.

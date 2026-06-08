@@ -1,7 +1,7 @@
 {
   "status": "PASS",
   "proofName": "Move 174 real Splunk stress replay proof",
-  "generatedAt": "2026-06-08T11:46:02.016Z",
+  "generatedAt": "2026-06-08T12:03:29.141Z",
   "deployment": {
     "kind": "Docker Splunk Enterprise container",
     "image": "splunk/splunk:latest",
@@ -67,7 +67,7 @@
     "before": {
       "verdict": "NOT READY",
       "score": 0,
-      "violations": 9
+      "violations": 11
     },
     "after": {
       "verdict": "READY",
@@ -99,12 +99,32 @@
     "advisoryOnly": true,
     "passFailAuthority": "deterministic-rule-engine",
     "before": {
-      "score": 84,
-      "grade": "ADEQUATE"
+      "score": 92,
+      "grade": "STRONG"
     },
     "after": {
-      "score": 93.06,
+      "score": 97.5,
       "grade": "STRONG"
+    }
+  },
+  "llmClaimAudit": {
+    "advisoryOnly": true,
+    "passFailAuthority": "deterministic-rule-engine",
+    "before": {
+      "status": "PASS",
+      "totalClaims": 1,
+      "supportedClaims": 1,
+      "partialClaims": 0,
+      "unsupportedClaims": 0,
+      "hallucinatedRefs": []
+    },
+    "after": {
+      "status": "PASS",
+      "totalClaims": 1,
+      "supportedClaims": 1,
+      "partialClaims": 0,
+      "unsupportedClaims": 0,
+      "hallucinatedRefs": []
     }
   },
   "receipts": {
@@ -121,13 +141,15 @@
         null,
         null,
         null,
+        null,
+        null,
         null
       ],
       "evidenceRefs": [
         "saved_searches:search:ES - Lateral Movement Auth Chain",
         "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain"
       ],
-      "receiptHash": "88aaa8e8de7e454bf3ee53bfaa18760ad3a7464d8e833b6dcd62078b3920a9a1"
+      "receiptHash": "44991d9fc107724044ac13f9cc03acecfab4994faff44b83bdcbc8a7a2f594d4"
     },
     "after": {
       "id": "receipt-after-001",
@@ -142,7 +164,7 @@
         "live-evt-118",
         "live-evt-102"
       ],
-      "receiptHash": "1e806582b4f7f7da0966dadc9c7cf6dc54c40816ecd9eeb8021b9c00d2159774"
+      "receiptHash": "f45f7362d473bacb4af233ea9fe351af1078cc3d0e27f51c6a669fb0ab067101"
     }
   },
   "mcpBridgeSession": {

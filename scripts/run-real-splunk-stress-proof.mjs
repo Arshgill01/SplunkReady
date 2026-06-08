@@ -365,6 +365,8 @@ const writeEvidence = async ({ evidenceOut, outDir, kitDir, checkDir, proofDir, 
   await copyIfPresent(join(proofDir, "policy-patch.md"), join(evidenceOut, "policy-patch.md"));
   await copyIfPresent(join(proofDir, "llm-deliberation-before.json"), join(evidenceOut, "llm-deliberation-before.json"));
   await copyIfPresent(join(proofDir, "llm-deliberation-after.json"), join(evidenceOut, "llm-deliberation-after.json"));
+  await copyIfPresent(join(proofDir, "llm-claim-audit-before.json"), join(evidenceOut, "llm-claim-audit-before.json"));
+  await copyIfPresent(join(proofDir, "llm-claim-audit-after.json"), join(evidenceOut, "llm-claim-audit-after.json"));
   await copyIfPresent(join(kitDir, "stress-seed-summary.json"), join(evidenceOut, "stress-seed-summary.json"));
   await copyIfPresent(join(outDir, "mcp-bridge-recording.jsonl"), join(evidenceOut, "mcp-bridge-session.redacted.jsonl"));
 
@@ -374,6 +376,8 @@ const writeEvidence = async ({ evidenceOut, outDir, kitDir, checkDir, proofDir, 
   const after = await readJson(join(proofDir, "receipt-after-001.json"));
   const llmBefore = await readOptionalJson(join(proofDir, "llm-deliberation-before.json"));
   const llmAfter = await readOptionalJson(join(proofDir, "llm-deliberation-after.json"));
+  const claimAuditBefore = await readOptionalJson(join(proofDir, "llm-claim-audit-before.json"));
+  const claimAuditAfter = await readOptionalJson(join(proofDir, "llm-claim-audit-after.json"));
   const bridge = await bridgeSummaryFrom(join(outDir, "mcp-bridge-recording.jsonl"));
 
   const summary = {
@@ -410,6 +414,30 @@ const writeEvidence = async ({ evidenceOut, outDir, kitDir, checkDir, proofDir, 
         ? { score: llmBefore.outputQuality.score, grade: llmBefore.outputQuality.grade }
         : undefined,
       after: llmAfter?.outputQuality ? { score: llmAfter.outputQuality.score, grade: llmAfter.outputQuality.grade } : undefined
+    },
+    llmClaimAudit: {
+      advisoryOnly: true,
+      passFailAuthority: "deterministic-rule-engine",
+      before: claimAuditBefore
+        ? {
+            status: claimAuditBefore.status,
+            totalClaims: claimAuditBefore.totalClaims,
+            supportedClaims: claimAuditBefore.supportedClaims,
+            partialClaims: claimAuditBefore.partialClaims,
+            unsupportedClaims: claimAuditBefore.unsupportedClaims,
+            hallucinatedRefs: claimAuditBefore.hallucinatedRefs
+          }
+        : undefined,
+      after: claimAuditAfter
+        ? {
+            status: claimAuditAfter.status,
+            totalClaims: claimAuditAfter.totalClaims,
+            supportedClaims: claimAuditAfter.supportedClaims,
+            partialClaims: claimAuditAfter.partialClaims,
+            unsupportedClaims: claimAuditAfter.unsupportedClaims,
+            hallucinatedRefs: claimAuditAfter.hallucinatedRefs
+          }
+        : undefined
     },
     receipts: {
       before: {

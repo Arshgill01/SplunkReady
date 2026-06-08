@@ -15842,3 +15842,42 @@ Result:
   `ADEQUATE / 84`, after `STRONG / 93.06`, deterministic rule-engine authority,
   receipt `READY / 100`, mutation `no`, and the broad before-policy `index=*`
   query.
+
+## 2026-06-08T12:08:00Z - Move 178 deterministic LLM claim audit
+
+Intent:
+
+- Add a hard output layer for LLM claims without making the LLM a readiness
+  judge.
+- Independently audit each structured LLM claim against observed tool names,
+  query refs, and evidence refs so unsupported or hallucinated refs are visible
+  in the evidence bundle and workbench.
+
+Actions:
+
+- Added `moves/moves178.md` and extended
+  `docs/execplans/llm-layer-expansion.md` with the third LLM slice.
+- Added `src/agents/llm-claim-audit.ts` with the
+  `llm-claim-audit-v1` deterministic advisory report contract.
+- Embedded `claimAudit` in every `LlmSpecimenAgentRun` and LLM deliberation
+  artifact.
+- Wrote separate `llm-claim-audit-before.json` and
+  `llm-claim-audit-after.json` artifacts during certification actions.
+- Extended the guarded real Splunk stress replay summary with
+  `llmClaimAudit` counts and hallucinated-ref status.
+- Rendered claim-audit summary and claim-evidence rows in the Vite workbench
+  LLM view.
+- Refreshed the real Splunk LLM evidence bundle, restored `ui-artifacts.json`,
+  refreshed the Playwright screenshot, updated the claim ledger and submission
+  copy audit, and regenerated evidence-pack SHA-256 hashes.
+
+Result:
+
+- PASS: real Gemini-backed `llm-proof` produced claim audits before and after.
+- PASS: guarded disposable Splunk replay returned `status: "PASS"`,
+  mutation false, fail-to-pass true, ready-after-patch true, and 78 MCP bridge
+  frames.
+- PASS: tracked claim audits both report `status: "PASS"` with one supported
+  claim and no hallucinated refs.
+- PASS: Playwright snapshot confirmed the workbench renders claim-audit status,
+  claim counts, observed refs, and per-claim matched/missing refs.

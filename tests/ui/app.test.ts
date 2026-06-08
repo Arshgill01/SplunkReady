@@ -972,6 +972,36 @@ const llmDeliberationBefore = {
         detail: "Answer includes explicit read-only or no-mutation safety notes."
       }
     ]
+  },
+  claimAudit: {
+    source: "splunkready-llm-claim-audit",
+    contractVersion: "llm-claim-audit-v1",
+    advisoryOnly: true,
+    passFailAuthority: "deterministic-rule-engine",
+    status: "WARN",
+    totalClaims: 1,
+    supportedClaims: 0,
+    partialClaims: 1,
+    unsupportedClaims: 0,
+    hallucinatedRefs: [],
+    observedRefs: {
+      toolNames: ["splunk_get_knowledge_objects"],
+      queryRefs: [],
+      evidenceRefs: []
+    },
+    claims: [
+      {
+        claim: "No saved-search evidence was discovered for win-finance-07.",
+        declaredSupport: "partial",
+        auditedSupport: "partial",
+        matchedQueryRefs: ["splunk_get_knowledge_objects"],
+        missingQueryRefs: [],
+        matchedEvidenceRefs: [],
+        missingEvidenceRefs: [],
+        limitation: "No saved-search result is not the same as proof of no lateral movement.",
+        findings: ["claim cites observed provenance", "all declared refs were observed", "claim states limitation"]
+      }
+    ]
   }
 } as const;
 
@@ -1068,6 +1098,36 @@ const llmDeliberationAfter = {
         points: 10,
         maxPoints: 10,
         detail: "Claim matrix supports 1 of 1 claim(s) with observed query or evidence refs."
+      }
+    ]
+  },
+  claimAudit: {
+    source: "splunkready-llm-claim-audit",
+    contractVersion: "llm-claim-audit-v1",
+    advisoryOnly: true,
+    passFailAuthority: "deterministic-rule-engine",
+    status: "PASS",
+    totalClaims: 1,
+    supportedClaims: 1,
+    partialClaims: 0,
+    unsupportedClaims: 0,
+    hallucinatedRefs: [],
+    observedRefs: {
+      toolNames: ["splunk_get_knowledge_objects", "splunk_run_saved_search"],
+      queryRefs: ["SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain"],
+      evidenceRefs: ["live-evt-141", "live-evt-118", "live-evt-102"]
+    },
+    claims: [
+      {
+        claim: "Four authentication-chain rows were found for win-finance-07.",
+        declaredSupport: "supported",
+        auditedSupport: "supported",
+        matchedQueryRefs: ["SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain"],
+        missingQueryRefs: [],
+        matchedEvidenceRefs: ["live-evt-141", "live-evt-118", "live-evt-102"],
+        missingEvidenceRefs: [],
+        limitation: "The saved-search result still needs analyst triage before response actions.",
+        findings: ["claim cites observed provenance", "all declared refs were observed", "claim states limitation"]
       }
     ]
   }
@@ -1685,6 +1745,12 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain");
     expect(html).toContain("LLM-PLAN-004 / planning / WARN / 5.5/11: Plan includes 1 of 2 expected mission tool(s).");
     expect(html).toContain("LLM-PLAN-004 / planning / PASS / 11/11: Plan includes 2 of 2 expected mission tool(s).");
+    expect(html).toContain("Claim audit");
+    expect(html).toContain("Claims");
+    expect(html).toContain("0 supported / 1 partial / 0 unsupported");
+    expect(html).toContain("1 supported / 0 partial / 0 unsupported");
+    expect(html).toContain("SUPPORTED / declared supported");
+    expect(html).toContain("matched SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain, live-evt-141, live-evt-118, live-evt-102");
     expect(html).toContain("read-only; no Splunk mutation performed");
   });
 

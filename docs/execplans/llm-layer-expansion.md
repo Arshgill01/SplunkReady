@@ -112,3 +112,36 @@ Verification:
 - real Gemini-backed `llm-proof`
 - guarded real Splunk stress replay when Docker and credentials are available
 - `npm run check`
+
+## Third Slice
+
+Move 178 adds a hard output layer around the model-produced
+`claimEvidenceMatrix`:
+
+- The model still drafts claims, limitations, decision traces, and references.
+- SplunkReady independently audits those references against observed tool names,
+  query refs, and evidence refs from the recorded observations.
+- The audit is advisory and visible in evidence/UI, but it never overrides the
+  deterministic Readiness Receipt verdict.
+- Separate `llm-claim-audit-before.json` and `llm-claim-audit-after.json`
+  artifacts make the claim audit inspectable without reading the full
+  deliberation report.
+
+Expected files:
+
+- `moves/moves178.md`
+- `src/agents/llm-claim-audit.ts`
+- `src/agents/llm-specimen.ts`
+- `src/workflows/certification-actions.ts`
+- `scripts/run-real-splunk-stress-proof.mjs`
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- focused tests and evidence/log updates
+
+Verification:
+
+- focused LLM/UI tests
+- real Gemini-backed `llm-proof`
+- guarded real Splunk stress replay
+- Playwright screenshot of the refreshed LLM workbench
+- `npm run check`

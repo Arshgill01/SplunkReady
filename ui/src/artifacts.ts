@@ -164,6 +164,47 @@ const llmOutputQualityReportSchema = z
 
 export type LlmOutputQualityReport = z.infer<typeof llmOutputQualityReportSchema>;
 
+const llmClaimAuditSupportSchema = z.enum(["supported", "partial", "unsupported"]);
+
+const llmClaimAuditRowSchema = z
+  .object({
+    claim: z.string().min(1),
+    declaredSupport: llmClaimAuditSupportSchema,
+    auditedSupport: llmClaimAuditSupportSchema,
+    matchedQueryRefs: z.array(z.string().min(1)),
+    missingQueryRefs: z.array(z.string().min(1)),
+    matchedEvidenceRefs: z.array(z.string().min(1)),
+    missingEvidenceRefs: z.array(z.string().min(1)),
+    limitation: z.string().min(1).optional(),
+    findings: z.array(z.string().min(1))
+  })
+  .strict();
+
+const llmClaimAuditReportSchema = z
+  .object({
+    source: z.literal("splunkready-llm-claim-audit"),
+    contractVersion: z.literal("llm-claim-audit-v1"),
+    advisoryOnly: z.literal(true),
+    passFailAuthority: z.literal("deterministic-rule-engine"),
+    status: z.enum(["PASS", "WARN", "FAIL"]),
+    totalClaims: z.number().int().nonnegative(),
+    supportedClaims: z.number().int().nonnegative(),
+    partialClaims: z.number().int().nonnegative(),
+    unsupportedClaims: z.number().int().nonnegative(),
+    hallucinatedRefs: z.array(z.string().min(1)),
+    observedRefs: z
+      .object({
+        toolNames: z.array(z.string().min(1)),
+        queryRefs: z.array(z.string().min(1)),
+        evidenceRefs: z.array(z.string().min(1))
+      })
+      .strict(),
+    claims: z.array(llmClaimAuditRowSchema)
+  })
+  .strict();
+
+export type LlmClaimAuditReport = z.infer<typeof llmClaimAuditReportSchema>;
+
 const llmToolCallSchema = z
   .object({
     toolName: z.string().min(1),
@@ -223,7 +264,8 @@ const llmDeliberationArtifactSchema = z
     plan: llmDeliberationPlanSchema,
     observations: z.array(llmObservationSchema),
     answer: llmAnswerSchema,
-    outputQuality: llmOutputQualityReportSchema
+    outputQuality: llmOutputQualityReportSchema,
+    claimAudit: llmClaimAuditReportSchema.optional()
   })
   .strict();
 

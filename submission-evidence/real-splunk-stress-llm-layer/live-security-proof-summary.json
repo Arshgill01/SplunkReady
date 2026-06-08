@@ -7,7 +7,7 @@
   "before": {
     "verdict": "NOT READY",
     "score": 0,
-    "violations": 9
+    "violations": 11
   },
   "after": {
     "verdict": "READY",

@@ -705,6 +705,44 @@ const renderLlmDimensionRows = (artifact: LlmDeliberationArtifact): Array<[strin
     `${dimension.score}/${dimension.maxScore}`
   ]);
 
+const renderLlmClaimAuditRows = (artifact: LlmDeliberationArtifact): Array<[string, unknown]> => {
+  const audit = artifact.claimAudit;
+
+  if (!audit) {
+    return [["Claim audit", "not recorded"]];
+  }
+
+  return [
+    ["Claim audit", audit.status],
+    ["Claims", `${audit.supportedClaims} supported / ${audit.partialClaims} partial / ${audit.unsupportedClaims} unsupported`],
+    ["Hallucinated refs", audit.hallucinatedRefs.length > 0 ? audit.hallucinatedRefs.join(", ") : "none"],
+    ["Observed tools", audit.observedRefs.toolNames.join(" / ") || "none"],
+    ["Observed query refs", audit.observedRefs.queryRefs.join(" / ") || "none"],
+    ["Observed evidence refs", audit.observedRefs.evidenceRefs.join(" / ") || "none"]
+  ];
+};
+
+const renderLlmClaimAuditList = (artifact: LlmDeliberationArtifact): string => {
+  const audit = artifact.claimAudit;
+
+  if (!audit || audit.claims.length === 0) {
+    return renderMcpProofList(["No claim audit rows recorded."], "stage-list");
+  }
+
+  return renderMcpProofList(
+    audit.claims.map((claim) => {
+      const matchedRefs = [...claim.matchedQueryRefs, ...claim.matchedEvidenceRefs];
+      const missingRefs = [...claim.missingQueryRefs, ...claim.missingEvidenceRefs];
+      return `${claim.auditedSupport.toUpperCase()} / declared ${claim.declaredSupport}: ${claim.claim}; matched ${
+        matchedRefs.length > 0 ? matchedRefs.join(", ") : "none"
+      }; missing ${missingRefs.length > 0 ? missingRefs.join(", ") : "none"}; limitation ${
+        claim.limitation ?? "not recorded"
+      }`;
+    }),
+    "stage-list"
+  );
+};
+
 const renderLlmDeliberationSummary = (bundle: UiArtifactBundle): string => {
   const before = bundle.llmDeliberationBefore;
   const after = bundle.llmDeliberationAfter;
@@ -774,6 +812,7 @@ const renderLlmPhase = (artifact: LlmDeliberationArtifact | undefined, title: st
       ["Self-check", artifact.plan.selfCheck?.join(" / ") ?? "not recorded"],
       ["Tool calls", planToolCalls.length > 0 ? planToolCalls.join(" / ") : "none"],
       ["Observations", observations.length > 0 ? observations.join(" / ") : "none"],
+      ["Decision trace", artifact.answer.decisionTrace?.join(" / ") ?? "not recorded"],
       ["Provenance summary", artifact.answer.provenanceSummary ?? "not recorded"],
       ["Uncertainty", artifact.answer.uncertainty?.join(" / ") ?? "not recorded"],
       ["Safety notes", artifact.answer.safetyNotes?.join(" / ") ?? "not recorded"],
@@ -788,6 +827,14 @@ const renderLlmPhase = (artifact: LlmDeliberationArtifact | undefined, title: st
       <section>
         <h3>Output-quality findings</h3>
         ${renderMcpProofList(findings, "stage-list")}
+      </section>
+      <section>
+        <h3>Claim audit</h3>
+        ${renderFactTable(renderLlmClaimAuditRows(artifact))}
+      </section>
+      <section>
+        <h3>Claim evidence</h3>
+        ${renderLlmClaimAuditList(artifact)}
       </section>
     </div>
   </section>`;

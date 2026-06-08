@@ -6,7 +6,7 @@ Status: exported
 
 ## Summary
 
-Policy patch for receipt-before-001: addresses 9 observed violation(s) from verdict NOT READY.
+Policy patch for receipt-before-001: addresses 11 observed violation(s) from verdict NOT READY.
 
 ## Violation Refs
 

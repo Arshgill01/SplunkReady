@@ -47,11 +47,13 @@
       "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-003",
       "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-003",
       "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-003",
+      "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-003",
+      "violation-mission-security-lateral-movement-readiness-spl-003-mission-security-lateral-movement-readiness-trace-003",
       "violation-mission-security-lateral-movement-readiness-ko-001-mission-security-lateral-movement-readiness-trace-001",
       "violation-mission-security-lateral-movement-readiness-evd-001-mission-security-lateral-movement-readiness-trace-005",
       "violation-mission-security-lateral-movement-readiness-ans-001-mission-security-lateral-movement-readiness-trace-005"
     ]
   },
-  "receiptHash": "1e806582b4f7f7da0966dadc9c7cf6dc54c40816ecd9eeb8021b9c00d2159774",
+  "receiptHash": "f45f7362d473bacb4af233ea9fe351af1078cc3d0e27f51c6a669fb0ab067101",
   "generatedBy": "Agent Readiness Compiler"
 }

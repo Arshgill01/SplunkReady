@@ -133,10 +133,14 @@ const writeLlmDeliberationArtifact = async (
     plan: run.plan,
     observations: run.observations,
     answer: run.answer,
-    outputQuality: run.outputQuality
+    outputQuality: run.outputQuality,
+    claimAudit: run.claimAudit
   });
 
-  return [artifactPath];
+  const claimAuditPath = join(outDir, `llm-claim-audit-${phase}.json`);
+  await writeJson(claimAuditPath, run.claimAudit);
+
+  return [artifactPath, claimAuditPath];
 };
 
 export const readOptionalPolicyPatch = async (outDir: string): Promise<PolicyPatch | undefined> => {

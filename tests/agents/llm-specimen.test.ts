@@ -141,6 +141,16 @@ describe("LlmSpecimenAgent", () => {
       passFailAuthority: "deterministic-rule-engine",
       grade: "STRONG"
     });
+    expect(run.claimAudit).toMatchObject({
+      source: "splunkready-llm-claim-audit",
+      contractVersion: "llm-claim-audit-v1",
+      advisoryOnly: true,
+      passFailAuthority: "deterministic-rule-engine",
+      status: "PASS",
+      totalClaims: 1,
+      supportedClaims: 1,
+      hallucinatedRefs: []
+    });
     expect(run.outputQuality.score).toBeGreaterThanOrEqual(85);
     expect(violations).toEqual([]);
   });

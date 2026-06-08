@@ -1207,3 +1207,12 @@ SAIA explain/optimize assistance is now treated as optional advisory context
 during policy-patch generation, but live SAIA access must still be reported by
 the hosted-model diagnostic and must not be claimed as passing until the strict
 diagnostic passes.
+
+Move 178 adds deterministic LLM claim-provenance auditing and renders it in the
+workbench. Residual risk: the claim audit verifies that declared query/evidence
+refs were observed and flags missing or hallucinated refs; it does not prove
+that a supported claim is semantically sufficient for mission readiness. That
+boundary is deliberate. The deterministic Readiness Receipt remains the
+readiness authority, which is why the current replay can show a strong
+before-policy LLM advisory score while the before receipt remains `NOT READY`
+with score `0`.

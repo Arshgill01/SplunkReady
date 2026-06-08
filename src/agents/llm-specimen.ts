@@ -10,6 +10,7 @@ import type { MissionDefinition } from "../missions/dsl.js";
 import type { AgentPolicy } from "../policy/compiler.js";
 import type { EnvironmentContract, ReadOnlySplunkToolName, TraceEvent } from "../schemas/core.js";
 import { TraceRecorder } from "../traces/recorder.js";
+import { auditLlmClaims, type LlmClaimAuditReport } from "./llm-claim-audit.js";
 import { evaluateLlmOutputQuality, type LlmOutputQualityReport } from "./llm-output-quality.js";
 import type { SpecimenAgentInput, SpecimenAgentRun } from "./specimen.js";
 
@@ -84,6 +85,7 @@ export interface LlmSpecimenAgentRun extends SpecimenAgentRun {
   plan: LlmAgentPlan;
   answer: LlmAgentAnswer;
   outputQuality: LlmOutputQualityReport;
+  claimAudit: LlmClaimAuditReport;
 }
 
 const defaultNow = "2026-06-01T07:05:00.000Z";
@@ -305,10 +307,11 @@ export class LlmSpecimenAgent {
         observations
       })
     );
-    const outputQuality = evaluateLlmOutputQuality({ mission: input.mission, plan, answer: modelAnswer, observations });
     const modelFinalAnswer = modelAnswer.finalAnswer;
     const finalAnswer = appendEvidenceLedger(modelFinalAnswer, observations);
     const answer: LlmAgentAnswer = { ...modelAnswer, finalAnswer };
+    const outputQuality = evaluateLlmOutputQuality({ mission: input.mission, plan, answer, observations });
+    const claimAudit = auditLlmClaims({ answer, observations });
     const lastObservation = observations.at(-1);
     const finalAnswerParent = recorder.events().at(-1)?.id;
     recorder.recordFinalAnswer({
@@ -319,6 +322,6 @@ export class LlmSpecimenAgent {
       parentId: finalAnswerParent
     });
 
-    return { finalAnswer, traceEvents: recorder.events(), observations, plan, answer, outputQuality };
+    return { finalAnswer, traceEvents: recorder.events(), observations, plan, answer, outputQuality, claimAudit };
   }
 }
