@@ -1289,3 +1289,10 @@ risk: do not claim the Zed recorder workflow is available through public npm
 until `splunkready@0.1.4` is published and
 `npm run audit:public-package-currentness -- --require-current --out
 submission-evidence/public-package-currentness` reports `CURRENT`.
+
+Move 186 release closure resolves the public npm recorder gap:
+`splunkready@0.1.4` is published, npm `gitHead` matches the latest package-input
+commit, and the hardened currentness audit reports `CURRENT` with published
+`mcp-recorder`, judge-proof, MCP, live-mock, and policy-registry checks passing.
+Residual risk: any later source/package-input change must be followed by another
+publish or the currentness audit will correctly return `STALE`.

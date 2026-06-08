@@ -77,7 +77,8 @@ const checks = [
   ["Claim ledger public package live mock proof", files.claimLedger, "publishedLiveMockProof"],
   ["Claim ledger public package policy registry proof", files.claimLedger, "publishedPolicyRegistry"],
   ["Claim ledger public package recorder proof", files.claimLedger, "publishedRecorder"],
-  ["Claim ledger public package stale status", files.claimLedger, 'status: "STALE"'],
+  ["Claim ledger public package current status", files.claimLedger, 'status: "CURRENT"'],
+  ["Claim ledger public package current gitHead", files.claimLedger, "registry.gitHeadMatchesPackageInputs: true"],
   [
     "Claim ledger standalone release current OS",
     files.claimLedger,

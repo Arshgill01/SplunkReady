@@ -16187,3 +16187,28 @@ Result:
 - BLOCKED: published `0.1.3` lacks `mcp-recorder --server ...`.
 - NEXT: commit the `0.1.4` release state, publish `splunkready@0.1.4`, and
   rerun the hardened currentness audit with `--require-current`.
+
+## 2026-06-08T14:22:10Z - Move 186 public package recorder release closure
+
+Context:
+
+- The Move 186 source commit `2856947` was ready for npm publication and npm
+  web auth had been completed as `brightybrainiac`.
+- The remaining blocker was proving the public package, not local source, could
+  run the `mcp-recorder` gateway used by the Zed external-client evidence path.
+
+Actions:
+
+- Published `splunkready@0.1.4` to npm with `npm publish --access public`.
+- Verified registry metadata: npm latest is `0.1.4` and npm `gitHead` is
+  `2856947ff46da7fa0a60eef02150dfb3b9edfedc`.
+- Reran the hardened public-package currentness audit with `--require-current`.
+- Updated the claim ledger and submission-copy guard from stale/conditional to
+  current/supported for the public `mcp-recorder` gateway.
+
+Result:
+
+- PASS: public npm currentness is now `CURRENT`.
+- PASS: published `splunkready@0.1.4` judge proof, MCP tools, live-mock proof,
+  policy registry, and `mcp-recorder` gateway all pass from clean temp folders.
+- PASS: npm `gitHead` matches the latest commit touching package input paths.

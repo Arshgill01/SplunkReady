@@ -17119,3 +17119,21 @@ Result:
 - PASS: npm release preflight returned `status: "READY"`, auth user
   `brightybrainiac`, registry `EXISTS_VERSION_AVAILABLE`, file
   `splunkready-0.1.4.tgz`, and release command `npm publish --access public`.
+
+## 2026-06-08T14:22:10Z - Move 186 public package recorder release closure
+
+Commands:
+
+- `npm publish --access public`
+- `npm view splunkready version dist-tags.latest gitHead --json`
+- `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
+
+Result:
+
+- PASS: `npm publish --access public` published `splunkready@0.1.4`.
+- PASS: registry metadata reports version/latest `0.1.4` and `gitHead`
+  `2856947ff46da7fa0a60eef02150dfb3b9edfedc`.
+- PASS: `audit:public-package-currentness --require-current` reports
+  `status: "CURRENT"`, published judge proof `PASS`, published MCP `PASS`,
+  published live-mock proof `PASS`, published policy registry `PASS`,
+  published recorder `PASS`, and `registry.gitHeadMatchesPackageInputs: true`.
