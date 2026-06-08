@@ -32,7 +32,7 @@ const zedJsonlPath = "submission-evidence/mcp-proof/zed-client-session/zed-mcp-r
 const zedMarkdownPath = "submission-evidence/mcp-proof/zed-client-session/zed-mcp-recorder-session.md";
 const zedCertificationPath = "submission-evidence/mcp-proof/zed-client-session/mcp-transcript-certification.json";
 const zedReceiptPath = "submission-evidence/mcp-proof/zed-client-session/receipt-external-001.json";
-const zedScreenshotPath = "submission-evidence/screenshots/zed-mcp-recorder-summary.png";
+const zedScreenshotPath = "submission-evidence/screenshots/zed-mcp-strong-receipt.png";
 
 const summary = readJson(mcpSummaryPath);
 const zedFrames = parseJsonl(zedJsonlPath);
@@ -126,7 +126,13 @@ const zedHasFlushFrame = zedToolNames.includes("splunkready_recorder_flush");
 addCheck("zed-artifacts-present", [zedJsonlPath, zedMarkdownPath, zedCertificationPath, zedReceiptPath].every(exists) ? "PASS" : "FAIL", "Zed JSONL, markdown, certification, and receipt artifacts exist.");
 addCheck("zed-screenshot-present", exists(zedScreenshotPath) && statSync(join(root, zedScreenshotPath)).size > 0 ? "PASS" : "FAIL", zedScreenshotPath);
 addCheck("zed-frame-count", zedFrames.length >= 5 ? "PASS" : "FAIL", `${zedFrames.length} tracked Zed frame(s)`);
-addCheck("zed-frame-depth", zedFrames.length >= 12 ? "PASS" : "WARN", `${zedFrames.length} tracked Zed frame(s); current evidence is real but compact.`);
+addCheck(
+  "zed-frame-depth",
+  zedFrames.length >= 12 ? "PASS" : "WARN",
+  zedFrames.length >= 12
+    ? `${zedFrames.length} tracked Zed frame(s); current evidence meets the strong external-client bar.`
+    : `${zedFrames.length} tracked Zed frame(s); current evidence is real but compact.`
+);
 addCheck("zed-server-ids", includesAll(zedServerIds, ["splunk", "splunkready"]) ? "PASS" : "FAIL", zedServerIds.join(", "));
 addCheck(
   "zed-splunk-investigation-tools",
@@ -173,7 +179,9 @@ const zedEvidenceTier = zedFlushWarning
     ? "VERIFIED_COMPACT_WITH_FLUSH"
     : "VERIFIED_STRONG";
 const zedClaimBoundaryNote = zedHasFlushFrame
-  ? "The current Zed evidence is real third-party-client evidence with a visible recorder-flush JSONL frame, but compact. Do not claim a large external-client transcript until a future session captures one."
+  ? zedFrameDepthWarning
+    ? "The current Zed evidence is real third-party-client evidence with a visible recorder-flush JSONL frame, but compact. Do not claim a large external-client transcript until a future session captures one."
+    : "The current Zed evidence is real third-party-client evidence with a visible recorder-flush JSONL frame and a strong multi-step transcript."
   : "The current Zed evidence is real third-party-client evidence, but compact. Do not claim a large external-client transcript or a visible recorder-flush JSONL frame until a future session captures one.";
 
 const scorecard = {

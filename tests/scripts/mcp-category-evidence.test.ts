@@ -86,7 +86,7 @@ const writeBaseTree = async (root: string, zedJsonl: string): Promise<void> => {
     join(root, "submission-evidence/mcp-proof/zed-client-session/receipt-external-001.json"),
     `${JSON.stringify({ verdict: "READY", score: 100, mutation: false }, null, 2)}\n`
   );
-  await writeFixture(join(root, "submission-evidence/screenshots/zed-mcp-recorder-summary.png"), "fake-png");
+  await writeFixture(join(root, "submission-evidence/screenshots/zed-mcp-strong-receipt.png"), "fake-png");
 };
 
 const compactZedJsonl = [
@@ -155,6 +155,83 @@ describe("MCP category evidence audit", () => {
     expect(parsed.summary.zedEvidenceTier).toBe("VERIFIED_COMPACT_WITH_FLUSH");
     expect(parsed.claimBoundary.zedJsonlContainsSplunkReadyFlushFrame).toBe(true);
     expect(parsed.claimBoundary.note).toContain("visible recorder-flush JSONL frame");
+  });
+
+  it("passes the strong Zed evidence gate when the external-client transcript has enough depth", async () => {
+    const root = await tempRoot();
+    const strongJsonl = [
+      {
+        serverId: "splunk",
+        message: { params: { name: "splunk_get_knowledge_objects" } }
+      },
+      {
+        serverId: "splunk",
+        message: { result: { structuredContent: { evidenceRefs: [] } } }
+      },
+      {
+        serverId: "splunk",
+        message: { params: { name: "splunk_get_knowledge_objects" } }
+      },
+      {
+        serverId: "splunk",
+        message: { result: { structuredContent: { evidenceRefs: [] } } }
+      },
+      {
+        serverId: "splunk",
+        message: { params: { name: "splunk_get_knowledge_objects" } }
+      },
+      {
+        serverId: "splunk",
+        message: { result: { structuredContent: { evidenceRefs: [] } } }
+      },
+      {
+        serverId: "splunk",
+        message: { params: { name: "splunk_run_query" } }
+      },
+      {
+        serverId: "splunk",
+        message: { result: { structuredContent: { evidenceRefs: [] } } }
+      },
+      {
+        serverId: "splunk",
+        message: { params: { name: "splunk_run_saved_search" } }
+      },
+      {
+        serverId: "splunk",
+        message: { result: { structuredContent: { evidenceRefs: ["evt-102", "evt-118", "evt-141"] } } }
+      },
+      {
+        serverId: "splunkready",
+        message: { params: { name: "splunkready_describe_certification" } }
+      },
+      {
+        serverId: "splunkready",
+        message: { result: { structuredContent: { mutation: false } } }
+      },
+      {
+        serverId: "splunkready",
+        message: { params: { name: "splunkready_recorder_flush" } }
+      },
+      {
+        serverId: "splunkready",
+        message: { result: { structuredContent: { evidenceRefs: ["evt-102", "evt-118", "evt-141"] } } }
+      }
+    ]
+      .map((frame) => JSON.stringify(frame))
+      .join("\n");
+    await writeBaseTree(root, `${strongJsonl}\n`);
+
+    const result = await execFileAsync(
+      process.execPath,
+      [scriptPath, "--out", "submission-evidence/mcp-proof", "--require-strong"],
+      { cwd: root }
+    );
+    const parsed = JSON.parse(result.stdout);
+
+    expect(parsed.status).toBe("PASS");
+    expect(parsed.summary.zedEvidenceTier).toBe("VERIFIED_STRONG");
+    expect(parsed.claimBoundary.note).toContain("strong multi-step transcript");
+    expect(parsed.warnings).toEqual([]);
   });
 
   it("fails when Zed evidence is missing saved-search execution", async () => {

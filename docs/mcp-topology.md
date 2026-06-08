@@ -37,12 +37,11 @@ flowchart LR
 
 ## Current Boundary
 
-The tracked Zed JSONL is real third-party-client evidence, but it is a compact
-session. It contains the Splunk investigation frames and final answer, while the
-recorder flush/certification result is represented by adjacent certification
-artifacts and the Zed screenshot. Do not describe the Zed JSONL as a large
-multi-turn transcript or as containing a visible `splunkready_recorder_flush`
-tool frame unless a future captured session includes that frame directly.
+The tracked Zed JSONL is real third-party-client evidence from a Zed Agent
+session. It contains 15 frames, Splunk investigation frames, a visible
+`splunkready_recorder_flush` frame, adjacent certification artifacts, and a
+`READY` receipt with score 100. The proof remains credential-free and uses the
+mock Splunk MCP path, so do not describe it as an operator-live Splunk session.
 
 ## Evidence
 
@@ -53,4 +52,5 @@ tool frame unless a future captured session includes that frame directly.
 - `submission-evidence/mcp-proof/zed-client-session/zed-mcp-recorder-session.jsonl`
 - `submission-evidence/mcp-proof/zed-client-session/mcp-transcript-certification.json`
 - `submission-evidence/mcp-proof/zed-client-session/receipt-external-001.json`
-- `submission-evidence/screenshots/zed-mcp-recorder-summary.png`
+- `submission-evidence/screenshots/zed-mcp-strong-session.png`
+- `submission-evidence/screenshots/zed-mcp-strong-receipt.png`

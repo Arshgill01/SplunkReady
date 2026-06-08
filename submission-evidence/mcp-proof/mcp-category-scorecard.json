@@ -1,7 +1,7 @@
 {
   "source": "splunkready-mcp-category-evidence",
-  "status": "PASS_WITH_LIMITATIONS",
-  "score": 98,
+  "status": "PASS",
+  "score": 100,
   "mutation": false,
   "deterministicAuthority": true,
   "summary": {
@@ -9,8 +9,8 @@
     "resources": 13,
     "resourceTemplates": 1,
     "prompts": 6,
-    "zedFrames": 7,
-    "zedEvidenceTier": "VERIFIED_COMPACT_WITH_FLUSH"
+    "zedFrames": 15,
+    "zedEvidenceTier": "VERIFIED_STRONG"
   },
   "evidence": {
     "mcpProofSummary": "submission-evidence/mcp-proof/mcp-proof-summary.json",
@@ -20,13 +20,13 @@
     "appInspectComposition": "submission-evidence/mcp-proof/appinspect-mcp-composition.json",
     "zedSession": "submission-evidence/mcp-proof/zed-client-session/zed-mcp-recorder-session.jsonl",
     "zedReceipt": "submission-evidence/mcp-proof/zed-client-session/receipt-external-001.json",
-    "zedScreenshot": "submission-evidence/screenshots/zed-mcp-recorder-summary.png"
+    "zedScreenshot": "submission-evidence/screenshots/zed-mcp-strong-receipt.png"
   },
   "claimBoundary": {
     "zedJsonlContainsSplunkReadyFlushFrame": true,
     "zedJsonlContainsSplunkInvestigationFrames": true,
     "certificationProvenByAdjacentArtifacts": true,
-    "note": "The current Zed evidence is real third-party-client evidence with a visible recorder-flush JSONL frame, but compact. Do not claim a large external-client transcript until a future session captures one."
+    "note": "The current Zed evidence is real third-party-client evidence with a visible recorder-flush JSONL frame and a strong multi-step transcript."
   },
   "checks": [
     {
@@ -123,19 +123,19 @@
       "id": "zed-screenshot-present",
       "status": "PASS",
       "severity": "required",
-      "evidence": "submission-evidence/screenshots/zed-mcp-recorder-summary.png"
+      "evidence": "submission-evidence/screenshots/zed-mcp-strong-receipt.png"
     },
     {
       "id": "zed-frame-count",
       "status": "PASS",
       "severity": "required",
-      "evidence": "7 tracked Zed frame(s)"
+      "evidence": "15 tracked Zed frame(s)"
     },
     {
       "id": "zed-frame-depth",
-      "status": "WARN",
-      "severity": "warning",
-      "evidence": "7 tracked Zed frame(s); current evidence is real but compact."
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "15 tracked Zed frame(s); current evidence meets the strong external-client bar."
     },
     {
       "id": "zed-server-ids",
@@ -147,7 +147,7 @@
       "id": "zed-splunk-investigation-tools",
       "status": "PASS",
       "severity": "required",
-      "evidence": "splunk_get_knowledge_objects, splunk_run_saved_search, splunkready_recorder_flush"
+      "evidence": "splunk_get_knowledge_objects, splunk_run_query, splunk_run_saved_search, splunkready_describe_certification, splunkready_recorder_flush"
     },
     {
       "id": "zed-visible-recorder-flush-frame",
@@ -181,12 +181,5 @@
     }
   ],
   "failures": [],
-  "warnings": [
-    {
-      "id": "zed-frame-depth",
-      "status": "WARN",
-      "severity": "warning",
-      "evidence": "7 tracked Zed frame(s); current evidence is real but compact."
-    }
-  ]
+  "warnings": []
 }

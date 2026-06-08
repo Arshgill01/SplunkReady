@@ -24,17 +24,25 @@
     "mission-security-lateral-movement-readiness-imported-trace-002",
     "mission-security-lateral-movement-readiness-imported-trace-003",
     "mission-security-lateral-movement-readiness-imported-trace-004",
-    "mission-security-lateral-movement-readiness-imported-trace-005"
+    "mission-security-lateral-movement-readiness-imported-trace-005",
+    "mission-security-lateral-movement-readiness-imported-trace-006",
+    "mission-security-lateral-movement-readiness-imported-trace-007",
+    "mission-security-lateral-movement-readiness-imported-trace-008",
+    "mission-security-lateral-movement-readiness-imported-trace-009",
+    "mission-security-lateral-movement-readiness-imported-trace-010",
+    "mission-security-lateral-movement-readiness-imported-trace-011"
   ],
   "evidenceRefs": [
     "saved-search-lateral-movement",
+    "macro-security-content-ctime",
+    "lookup-asset-lookup",
     "evt-102",
     "evt-118",
     "evt-141"
   ],
   "policyPatchSummary": [],
   "rerunComparison": {},
-  "receiptHash": "56ae6477ef6f62fa6c808113e85303fe87a3bdbb1b441befd57352baefa4af88",
+  "receiptHash": "c0da57f9c96deb1cf00d0285eca13d722ba01b9303f122d8b30ddcf36dbd2828",
   "generatedBy": "Agent Readiness Compiler",
   "notes": "This receipt grades an externally supplied trace. The deterministic rule engine decides pass/fail; the trace producer is outside SplunkReady."
 }

@@ -18115,3 +18115,52 @@ Result:
 - PASS: `npm run check` passed remotely.
 - PASS: remote CI ran credential-free live-mock proof.
 - PASS: remote CI built and smoked the mock Splunk MCP Docker image.
+
+## 2026-06-08T18:30:22Z - Move 207 strong Zed MCP external-client evidence
+
+Commands:
+
+- `npm run build`
+- `node --input-type=module -e "...spawn node dist/src/cli.js mcp-recorder --server splunk=mock-splunk-mcp --server splunkready=mcp --fixture fixtures/acme-soc-dev/adapter-fixture.json --out artifacts/zed-external-mcp-client-session-strong; initialize; tools/list..."`
+- Computer Use against Zed: command palette `agent: new thread`, Zed Agent
+  prompt, and mouse click on the send button.
+- `screencapture -x submission-evidence/screenshots/zed-mcp-strong-session.png`
+- `screencapture -x submission-evidence/screenshots/zed-mcp-strong-receipt.png`
+- `node -e 'const fs=require("fs"); const lines=fs.readFileSync("submission-evidence/mcp-proof/zed-client-session/zed-mcp-recorder-session.jsonl","utf8").trim().split(/\n+/).map(JSON.parse); const toolNames=[...new Set(lines.map(f=>f.message?.params?.name).filter(Boolean))]; const serverIds=[...new Set(lines.map(f=>f.serverId).filter(Boolean))]; const evidence=[...new Set(lines.flatMap(f=>f.message?.result?.structuredContent?.evidenceRefs??f.message?.evidenceRefs??[]))]; const receipt=JSON.parse(fs.readFileSync("submission-evidence/mcp-proof/zed-client-session/receipt-external-001.json","utf8")); console.log(JSON.stringify({frames:lines.length,serverIds,toolNames,evidence,receipt:{verdict:receipt.verdict,score:receipt.score,mutation:receipt.mutation??false}},null,2));'`
+- `rg -n "Authorization: Bearer|Bearer [A-Za-z0-9._~+/=-]+|/Users/|/private/|/tmp/|\\.splunkready|https?://|SPLUNKREADY_.*TOKEN|SPLUNKREADY_.*URL|GEMINI_API_KEY|SAIA_.*URL|real-token|password|secret" submission-evidence/mcp-proof/zed-client-session submission-evidence/screenshots/zed-mcp-strong-session.png submission-evidence/screenshots/zed-mcp-strong-receipt.png docs/mcp-topology.md || true`
+- `node scripts/audit-mcp-category-evidence.mjs --out submission-evidence/mcp-proof --require-strong`
+- `npx vitest run tests/scripts/mcp-category-evidence.test.ts tests/scripts/submission-copy-audit.test.ts`
+
+Result:
+
+- PASS: `npm run build` completed before Zed was configured.
+- PASS: local recorder handshake reported server
+  `splunkready-mcp-recorder`, 18 tools, and required tool names including
+  `splunk__splunk_get_knowledge_objects`,
+  `splunk__splunk_run_saved_search`,
+  `splunkready__splunkready_certify_mcp_transcript_content`, and
+  `splunkready_recorder_flush`.
+- PASS: Zed produced a 15-frame recorder session with server IDs `splunk` and
+  `splunkready`.
+- PASS: tracked tool names include `splunk_get_knowledge_objects`,
+  `splunk_run_query`, `splunk_run_saved_search`,
+  `splunkready_describe_certification`, and `splunkready_recorder_flush`.
+- PASS: tracked evidence refs include `evt-102`, `evt-118`, and `evt-141`.
+- PASS: tracked receipt reports `verdict: "READY"`, `score: 100`, and
+  `mutation: false`.
+- PASS: leak scan over tracked Zed artifacts and screenshots printed no
+  matches.
+- PASS: MCP category audit with `--require-strong` reported `status: "PASS"`,
+  score `100`, `zedFrames: 15`, `zedEvidenceTier: "VERIFIED_STRONG"`, and no
+  warnings.
+- PASS: focused Vitest command passed: 2 files, 7 tests.
+- PASS: evidence-pack SHA-256 regeneration and verification passed for all
+  tracked `submission-evidence/` files.
+- PASS: `git diff --check && npm run check` passed. The check included
+  scaffold verification, runtime-contract verification, TypeScript build, UI
+  build, public-demo export audit with 308 files and `mutation=false`, package
+  readiness audit, package installability audit, 77 Vitest files / 448 tests,
+  secret-env ignore audit, reviewer inbox audit with 0 failing latest verdicts,
+  submission-copy audit with 463 required claims, and final whitespace diff
+  check.
+- PARTIAL: branch-tip CI is still pending for this move.

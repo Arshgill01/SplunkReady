@@ -557,19 +557,19 @@ const checks = [
   ["Claim ledger MCP recorder gateway test", files.claimLedger, "tests/cli/flow.test.ts -t \"MCP recorder gateway\""],
   ["Claim ledger MCP composition recorder test", files.claimLedger, "tests/mcp/composition-recorder.test.ts"],
   [
-    "Claim ledger Zed compact MCP evidence",
+    "Claim ledger Zed strong MCP evidence",
     files.claimLedger,
-    "A real Zed Agent session consumed the SplunkReady MCP recorder gateway and certified the captured Splunk MCP investigation, with compact-session boundaries documented."
+    "A real Zed Agent session consumed the SplunkReady MCP recorder gateway and certified the captured Splunk MCP investigation with strong external-client evidence."
   ],
   ["Claim ledger Zed MCP scorecard", files.claimLedger, "submission-evidence/mcp-proof/mcp-category-scorecard.json"],
-  ["Claim ledger Zed compact tier", files.claimLedger, 'zedEvidenceTier: "VERIFIED_COMPACT_WITH_FLUSH"'],
+  ["Claim ledger Zed strong tier", files.claimLedger, 'zedEvidenceTier: "VERIFIED_STRONG"'],
   ["Claim ledger Zed flush boundary", files.claimLedger, "zedJsonlContainsSplunkReadyFlushFrame: true"],
-  ["Claim ledger Zed compact frame count", files.claimLedger, "zedFrames: 7"],
-  ["Claim ledger Zed scorecard score", files.claimLedger, "score `98`"],
+  ["Claim ledger Zed strong frame count", files.claimLedger, "zedFrames: 15"],
+  ["Claim ledger Zed scorecard score", files.claimLedger, "score `100`"],
   ["Claim ledger Zed investigation boundary", files.claimLedger, "zedJsonlContainsSplunkInvestigationFrames: true"],
-  ["Claim ledger MCP category scorecard claim", files.claimLedger, "The MCP category scorecard summarizes SplunkReady MCP, mock Splunk MCP, AppInspect MCP, hosted-model MCP, and Zed evidence without overclaiming the current Zed transcript depth."],
-  ["Claim ledger MCP category scorecard status", files.claimLedger, 'status `PASS_WITH_LIMITATIONS`'],
-  ["Claim ledger MCP category scorecard command", files.claimLedger, "node scripts/audit-mcp-category-evidence.mjs --out submission-evidence/mcp-proof"],
+  ["Claim ledger MCP category scorecard claim", files.claimLedger, "The MCP category scorecard summarizes SplunkReady MCP, mock Splunk MCP, AppInspect MCP, hosted-model MCP, and strong Zed external-client evidence without overclaiming live-operator Splunk usage."],
+  ["Claim ledger MCP category scorecard status", files.claimLedger, 'status `PASS`'],
+  ["Claim ledger MCP category scorecard command", files.claimLedger, "node scripts/audit-mcp-category-evidence.mjs --out submission-evidence/mcp-proof --require-strong"],
   ["Claim ledger MCP topology doc", files.claimLedger, "docs/mcp-topology.md"],
   [
     "Claim ledger AppInspect MCP composition",

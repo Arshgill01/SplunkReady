@@ -1,8 +1,8 @@
 # MCP Category Scorecard
 
-Status: PASS_WITH_LIMITATIONS
+Status: PASS
 
-Score: 98
+Score: 100
 
 Mutation: false
 
@@ -16,7 +16,7 @@ Deterministic authority: true
 - AppInspect MCP composition: PASS.
 - Fixture hosted-model MCP access: PASS.
 - Operator-live hosted-model boundary: BLOCKED (SAIA_REST_HANDLERS_PARTIALLY_REGISTERED).
-- Zed external-client evidence tier: VERIFIED_COMPACT_WITH_FLUSH; 7 tracked frame(s).
+- Zed external-client evidence tier: VERIFIED_STRONG; 15 tracked frame(s).
 
 ## Claim Boundary
 
@@ -24,11 +24,11 @@ Deterministic authority: true
 - Zed JSONL contains visible `splunkready_recorder_flush` frame: yes.
 - Zed certification is proven by adjacent artifacts: yes.
 
-The current Zed evidence is real third-party-client evidence with a visible recorder-flush JSONL frame, but compact. Do not claim a large external-client transcript until a future session captures one.
+The current Zed evidence is real third-party-client evidence with a visible recorder-flush JSONL frame and a strong multi-step transcript.
 
 ## Warnings
 
-- zed-frame-depth: 7 tracked Zed frame(s); current evidence is real but compact.
+- None.
 
 ## Evidence
 
@@ -40,4 +40,4 @@ The current Zed evidence is real third-party-client evidence with a visible reco
 - submission-evidence/mcp-proof/zed-client-session/zed-mcp-recorder-session.jsonl
 - submission-evidence/mcp-proof/zed-client-session/mcp-transcript-certification.json
 - submission-evidence/mcp-proof/zed-client-session/receipt-external-001.json
-- submission-evidence/screenshots/zed-mcp-recorder-summary.png
+- submission-evidence/screenshots/zed-mcp-strong-receipt.png

@@ -13,8 +13,8 @@
     "verdict": "READY",
     "score": 100,
     "violations": 0,
-    "traceRefs": 5,
-    "evidenceRefs": 4
+    "traceRefs": 11,
+    "evidenceRefs": 6
   },
   "audit": {
     "status": "PASS",

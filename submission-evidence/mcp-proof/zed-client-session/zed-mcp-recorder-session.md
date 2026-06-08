@@ -8,19 +8,21 @@ Deterministic authority: yes
 
 Artifact: artifacts/zed-external-mcp-client-session-strong/mcp-recorder-session.jsonl
 
-Frames: 7
+Frames: 15
 
 Servers: splunk, splunkready
 
-Requests: 3
+Requests: 7
 
-Responses: 3
+Responses: 7
 
 Splunk tools:
 - splunk_get_knowledge_objects
+- splunk_run_query
 - splunk_run_saved_search
 
 SplunkReady tools:
+- splunkready_describe_certification
 - splunkready_recorder_flush
 
 Evidence refs:

@@ -17098,3 +17098,63 @@ Result:
 - PASS: remote CI ran the credential-free live mock proof.
 - PASS: remote CI built and smoke-tested the mock Splunk MCP Docker image.
 - RESULT: Move 206 is locally and remotely verified at the branch tip.
+
+## 2026-06-08T18:30:22Z - Move 207 strong Zed MCP external-client evidence
+
+Context:
+
+- The MCP category scorecard had been `PASS_WITH_LIMITATIONS` because the real
+  Zed Agent evidence was compact at 7 tracked frames.
+- The user explicitly asked to revisit the MCP external-client path and use Zed
+  if it added value, with screenshots/logging rather than another script-only
+  proof.
+
+Actions:
+
+- Added `moves/moves207.md`.
+- Added `docs/execplans/mcp-zed-strong-session.md`.
+- Backed up the Zed settings file to a timestamped file outside the repository.
+- Added a reversible Zed context server named `splunkready-recorder` that runs
+  `node dist/src/cli.js mcp-recorder --server splunk=mock-splunk-mcp --server
+  splunkready=mcp --fixture fixtures/acme-soc-dev/adapter-fixture.json --out
+  artifacts/zed-external-mcp-client-session-strong`.
+- Verified the recorder handshake locally before using Zed.
+- Opened Zed in a disposable empty workspace outside the repository and drove
+  the Agent UI through Computer Use with GPT-5.5 Low visible in the Zed
+  controls.
+- Discarded the first 14-frame attempt because Zed called `splunk_get_info`;
+  the deterministic receipt correctly failed with SAF-003 since
+  `splunk_get_info` is not allowed by the selected security mission.
+- Re-ran the session with mission-allowed Splunk tools only:
+  `splunk_get_knowledge_objects`, `splunk_run_query`, and
+  `splunk_run_saved_search`, followed by
+  `splunkready_describe_certification` and `splunkready_recorder_flush`.
+- Captured screenshots:
+  `submission-evidence/screenshots/zed-mcp-strong-session.png` before sending
+  the clean prompt and
+  `submission-evidence/screenshots/zed-mcp-strong-receipt.png` after Zed
+  reported PASS.
+- Promoted sanitized Zed recorder artifacts into
+  `submission-evidence/mcp-proof/zed-client-session/`.
+- Updated `scripts/audit-mcp-category-evidence.mjs` and focused tests so the
+  MCP category scorecard requires the new strong Zed screenshot and no longer
+  describes strong evidence as compact.
+- Regenerated `submission-evidence/mcp-proof/mcp-category-scorecard.json` and
+  `.md`; the scorecard now reports `PASS`, score `100`, `zedFrames: 15`, and
+  `zedEvidenceTier: "VERIFIED_STRONG"`.
+- Updated `docs/mcp-topology.md`, `submission-evidence/README.md`, and
+  `submission-evidence/claim-ledger.md` to reflect the strong Zed proof and the
+  remaining boundary: this is credential-free mock Splunk MCP evidence, not an
+  operator-live Splunk session.
+
+Result so far:
+
+- PASS: real Zed Agent initiated the MCP calls.
+- PASS: tracked Zed JSONL has 15 frames, server IDs `splunk` and
+  `splunkready`, investigation tools, visible `splunkready_recorder_flush`,
+  evidence refs `evt-102`, `evt-118`, `evt-141`, and no mutation.
+- PASS: tracked receipt reports `READY`, score `100`, and `mutation: false`.
+- PASS: MCP category scorecard is `PASS` with no warnings.
+- HONEST BOUNDARY: the first failed run showed the deterministic grader still
+  blocks mission-disallowed tools even when they are read-only; the promoted
+  proof uses mission-allowed tools only.

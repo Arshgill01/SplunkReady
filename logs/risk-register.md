@@ -1492,3 +1492,12 @@ panel, and adding a regression test that loads the tracked
 proves the static/workbench presentation of current MCP evidence, not a new
 closed desktop-client MCP session; keep the external-client limitation language
 in the MCP category evidence until a deeper third-party session exists.
+
+Move 207 closes the compact Zed external-client limitation by capturing a real
+Zed Agent session through the credential-free `mcp-recorder` gateway with 15
+tracked frames, visible `splunkready_recorder_flush`, a deterministic READY
+receipt, score 100, redaction PASS, and no mutation. Residual risk: this proof
+uses the mock Splunk MCP path to stay public-safe and credential-free; do not
+describe it as an operator-live Splunk session. The discarded first attempt is
+also a useful guardrail: read-only `splunk_get_info` is still blocked by the
+mission contract when it is not mission-allowed.
