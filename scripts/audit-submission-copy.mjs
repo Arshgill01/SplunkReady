@@ -66,11 +66,21 @@ const checks = [
   ["Claim ledger standalone release smoke", files.claimLedger, "smoke `status: \"PASS\"`"],
   ["Claim ledger standalone release artifacts", files.claimLedger, "67 generated artifacts"],
   ["Claim ledger standalone release boundary", files.claimLedger, "releaseClaimBoundary.allPlatformReleaseRequiresTagWorkflow: true"],
+  [
+    "Claim ledger standalone release matrix",
+    files.claimLedger,
+    "The release-artifacts workflow builds, smokes, and uploads standalone archives on Linux, macOS, and Windows runners."
+  ],
+  ["Claim ledger standalone release matrix artifact", files.claimLedger, "submission-evidence/standalone-release/standalone-release-matrix.json"],
+  ["Claim ledger standalone release matrix run", files.claimLedger, "run `27128293723`"],
+  ["Claim ledger standalone release matrix platforms", files.claimLedger, "splunkready-standalone-Windows-X64"],
   ["README standalone release artifact", files.readme, "Standalone Release Artifact"],
   ["README standalone release evidence", files.readme, "submission-evidence/standalone-release/standalone-release-current-os.json"],
-  ["README standalone release boundary", files.readme, "release assets are intentionally not claimed"],
+  ["README standalone release matrix evidence", files.readme, "submission-evidence/standalone-release/standalone-release-matrix.json"],
+  ["README standalone release boundary", files.readme, "Public GitHub Release assets are intentionally not claimed"],
   ["Devpost standalone release evidence", files.devpost, "submission-evidence/standalone-release/standalone-release-current-os.json"],
-  ["Devpost standalone release boundary", files.devpost, "Linux/Windows/macOS release assets are not claimed"],
+  ["Devpost standalone release matrix evidence", files.devpost, "submission-evidence/standalone-release/standalone-release-matrix.json"],
+  ["Devpost standalone release boundary", files.devpost, "Public GitHub Release assets are not claimed"],
   [
     "Claim ledger hosted demo currentness",
     files.claimLedger,

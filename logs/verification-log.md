@@ -16172,6 +16172,15 @@ Evidence and focused gates:
 - `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
 - `npm run audit:submission-copy`
 - `git diff --check`
+- `gh workflow run release-artifacts.yml --ref splunkready-build`
+- `gh run watch 27128293723 --exit-status`
+- `gh run view 27128293723 --json status,conclusion,headSha,url,event,createdAt,updatedAt,jobs`
+- `gh api repos/Arshgill01/SplunkReady/actions/runs/27128293723/artifacts --jq '{total_count, artifacts: [.artifacts[] | {name, size_in_bytes, expired, created_at, updated_at}]}'`
+- `npm run check` (failed once before fixture update)
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts tests/scripts/standalone-release.test.ts`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `npm run check`
 - `npx vitest run tests/scripts/splunk-app-package.test.ts tests/workflows/appinspect-composition.test.ts tests/scripts/submission-copy-audit.test.ts`
 - `npx vitest run tests/ui/app.test.ts -t "MCP proof summary"`
 
@@ -16428,3 +16437,18 @@ Result:
   standalone release evidence.
 - PASS: submission-copy audit passed with 286 required claims.
 - PASS: whitespace diff check passed.
+- PASS: release-artifacts workflow-dispatch run `27128293723` passed on commit
+  `300cb2f` with successful standalone build/smoke/upload jobs for
+  `standalone ubuntu-latest`, `standalone macos-latest`, and
+  `standalone windows-latest`.
+- PASS: artifact metadata reports 3 uploaded workflow artifacts:
+  `splunkready-standalone-Linux-X64`, `splunkready-standalone-macOS-ARM64`,
+  and `splunkready-standalone-Windows-X64`.
+- FAIL expected during iteration: first `npm run check` after adding matrix copy
+  failed because `tests/scripts/submission-copy-audit.test.ts` still used the
+  old synthetic fixture strings for standalone release claims.
+- PASS: focused submission-copy and standalone-release tests passed with 2 files
+  and 6 tests after updating the fixture.
+- PASS: submission-copy audit passed with 292 required claims.
+- PASS: whitespace diff check passed.
+- PASS: final `npm run check` passed with 73 test files and 429 tests.

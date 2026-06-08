@@ -1140,3 +1140,10 @@ postject `.cmd` shim invocation. Residual risk: until a rerun from the fixed
 commit passes on Windows, SplunkReady still cannot claim all-platform standalone
 release artifacts. Even after a workflow-dispatch pass, public GitHub Release
 asset claims require a tagged release run.
+
+Move 171 follow-up closes the workflow-dispatch matrix risk: run `27128293723`
+on commit `300cb2f` passed standalone build/smoke/upload jobs on Ubuntu, macOS,
+and Windows, and uploaded three workflow artifacts. Residual risk narrows to
+publication: these are GitHub Actions workflow artifacts, not public GitHub
+Release assets. Public release-asset claims still require a tag-triggered
+workflow run that publishes the archives to a versioned GitHub Release.

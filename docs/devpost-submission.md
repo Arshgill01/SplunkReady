@@ -61,8 +61,11 @@ into the archive, extracts that archive into a clean temp folder, and smokes
 `splunkready judge-proof --out ./judge-proof --json`. The tracked evidence at
 `submission-evidence/standalone-release/standalone-release-current-os.json`
 reports current target `macos-arm64`, smoke `PASS`, 67 generated artifacts, and
-`mutation: false`. Linux/Windows/macOS release assets are not claimed until the
-tag-triggered release workflow builds and smokes each matrix job.
+`mutation: false`. The workflow-dispatch evidence at
+`submission-evidence/standalone-release/standalone-release-matrix.json` proves
+Linux, macOS, and Windows runners each built, smoked, and uploaded standalone
+artifacts. Public GitHub Release assets are not claimed until the tag-triggered
+release workflow publishes them.
 
 The credential-free hosted workbench is available at:
 

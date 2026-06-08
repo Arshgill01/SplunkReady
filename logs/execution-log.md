@@ -15547,3 +15547,9 @@ Result:
 - FAIL: Windows artifact was not proven on the first dispatch.
 - IN PROGRESS: Windows remediation passes focused local tests and the current
   macOS standalone smoke; the matrix needs rerun from a pushed commit.
+- PASS: after pushing commit `300cb2f`, workflow-dispatch run `27128293723`
+  proved Linux, macOS, and Windows standalone build/smoke/upload jobs.
+- Added matrix run and artifact metadata under
+  `submission-evidence/standalone-release/` and updated public copy so it can
+  claim workflow-dispatch matrix proof while still withholding public GitHub
+  Release asset claims until a tag-triggered run publishes them.

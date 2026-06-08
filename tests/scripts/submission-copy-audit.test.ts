@@ -40,7 +40,8 @@ npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
 npm run audit:public-package-currentness
 Standalone Release Artifact
 submission-evidence/standalone-release/standalone-release-current-os.json
-release assets are intentionally not claimed
+submission-evidence/standalone-release/standalone-release-matrix.json
+Public GitHub Release assets are intentionally not claimed
 npm run splunk-app:package
 splunk-app-install-proof
 submission-evidence/splunk-app-install/splunk-app-install-proof.json
@@ -109,7 +110,8 @@ does not mutate Splunk
 npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
 submission-evidence/public-package-currentness/
 submission-evidence/standalone-release/standalone-release-current-os.json
-Linux/Windows/macOS release assets are not claimed
+submission-evidence/standalone-release/standalone-release-matrix.json
+Public GitHub Release assets are not claimed
 submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl
 submission-evidence/splunk-app-install/splunk-app-install-proof.json
 submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json
@@ -149,6 +151,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | The package is published on npm and the current published no-clone judge proof is smoke-tested. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json |
 | The public registry currentness proof verifies the current published judge-proof, MCP tools, live-mock proof, and policy-registry paths. | Supported | submission-evidence/public-package-currentness/public-package-currentness.json, publishedLiveMockProof, publishedPolicyRegistry | npm run audit:public-package-currentness |
 | The current source can produce a current-OS no-Node standalone release archive that runs judge proof from a clean temp folder. | Supported | submission-evidence/standalone-release/standalone-release-current-os.json, target \`macos-arm64\`, smoke \`status: "PASS"\`, 67 generated artifacts, releaseClaimBoundary.allPlatformReleaseRequiresTagWorkflow: true | npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json |
+| The release-artifacts workflow builds, smokes, and uploads standalone archives on Linux, macOS, and Windows runners. | Supported | submission-evidence/standalone-release/standalone-release-matrix.json, run \`27128293723\`, splunkready-standalone-Linux-X64, splunkready-standalone-macOS-ARM64, splunkready-standalone-Windows-X64 | gh workflow run release-artifacts.yml --ref splunkready-build; gh run watch 27128293723 --exit-status |
 | The hosted public demo is source-current against the latest public-demo input commit. | Supported | submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json | npm run audit:hosted-demo-currentness |
 | The tracked suite proof has deterministic signed receipt-chain lineage and replay. | Supported | submission-evidence/suite-proof/receipt-chain.json, splunkready-receipt-chain, submission-evidence/suite-proof/receipt-replay.json, splunkready-receipt-replay, submission-evidence/receipt-public-key.pem, signature.status: "VERIFIED", signature.algorithm: "ed25519", replayedReceiptCount: 6 | verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json; receipt-replay --dir submission-evidence/suite-proof --json |
 | The hosted public demo exposes the credential-free judge proof and LLM evidence boundary. | Supported | submission-evidence/screenshots/public-judge-proof-proof-browser.png | ${hostedJudgeProofUrl} |

@@ -60,9 +60,12 @@ splunkready judge-proof --out ./judge-proof --json
 The tracked current-OS evidence is
 `submission-evidence/standalone-release/standalone-release-current-os.json`.
 It reports `status: "PASS"`, target `macos-arm64`, smoke `PASS`, stdout command
-`judge-proof`, 67 generated artifacts, and `mutation: false`. All-platform
-release assets are intentionally not claimed until `.github/workflows/release-artifacts.yml`
-builds and smokes the Linux, macOS, and Windows matrix on a tag.
+`judge-proof`, 67 generated artifacts, and `mutation: false`. The release
+workflow dispatch evidence at
+`submission-evidence/standalone-release/standalone-release-matrix.json` shows
+Linux, macOS, and Windows runners each built, smoked, and uploaded standalone
+artifacts. Public GitHub Release assets are intentionally not claimed until the
+same workflow runs from a version tag.
 
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, writes `compiler-diagnostics.json` / `.md` showing deterministic rule activation and resolution from readiness profiles and receipts, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 
