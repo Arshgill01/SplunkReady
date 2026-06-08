@@ -410,6 +410,14 @@ install proof is `submission-evidence/splunk-app-install/splunk-app-install-proo
 it installed/upgraded the same `.spl`, verified app metadata, views, nav,
 `splunkready_receipts`, and `splunkready_receipts_lookup`, and redacts endpoint,
 username, password, and token values. This is not a Splunkbase approval claim.
+The browser-render proof at
+`submission-evidence/splunk-app-web-proof/splunk-app-web-proof.json` logs into
+operator-owned Splunk Web, verifies the installed launcher route, opens the
+static workbench receipt route
+`/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt`,
+detects the overview dashboard panels, and captures
+`submission-evidence/screenshots/splunk-app-web-proof.png` without writing
+endpoint, username, secret, or cookie values.
 The receipt store proof is
 `submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json`; it
 uses an explicit `--confirm-write true` operator gate to write six public-safe

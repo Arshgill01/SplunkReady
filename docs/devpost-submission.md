@@ -145,6 +145,14 @@ then uses an explicit operator-approved write to populate six public-safe
 receipt summary rows and verify readback through `splunkready_receipts_lookup`.
 It does not upload raw traces, raw Splunk events, endpoints, usernames,
 passwords, or tokens. This is not a Splunkbase approval claim.
+`submission-evidence/splunk-app-web-proof/splunk-app-web-proof.json` adds a
+real Splunk Web browser-render proof: Playwright logs into the operator-owned
+server, verifies the installed SplunkReady launcher, opens the static receipt
+route
+`/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt`,
+checks the overview dashboard panels, and saves
+`submission-evidence/screenshots/splunk-app-web-proof.png` without storing
+endpoint, username, secret, or cookie values.
 `submission-evidence/splunkbase-readiness/splunkbase-readiness.json` is the
 current Splunkbase readiness checklist: it ties the package, AppInspect
 precertification, live install proof, receipt-store proof, official Splunk

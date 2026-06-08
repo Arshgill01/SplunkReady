@@ -1,6 +1,6 @@
 {
   "source": "splunkready-splunkbase-readiness",
-  "generatedAt": "2026-06-08T17:19:50.944Z",
+  "generatedAt": "2026-06-08T17:52:40.622Z",
   "status": "ACTION_REQUIRED",
   "officialReferences": [
     {
@@ -36,10 +36,10 @@
   ],
   "package": {
     "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl",
-    "sha256": "282aa79b1bfa003ca7373b3588aeedb964f31c7d2636d7550af40e70d1fd70be",
+    "sha256": "2828e8feb36a25fc546a3831f263339bfd07241491aad1b1f3fd0c31aefd351e",
     "version": "0.1.7",
     "appId": "SplunkReady",
-    "fileCount": 349,
+    "fileCount": 350,
     "listingAssets": {
       "appIcon": {
         "path": "SplunkReady/static/appIcon.png",
@@ -134,6 +134,11 @@
       "height": 720
     },
     {
+      "path": "submission-evidence/screenshots/splunk-app-web-proof.png",
+      "width": 1440,
+      "height": 1000
+    },
+    {
       "path": "submission-evidence/screenshots/workbench-dev-fixture.png",
       "width": 1280,
       "height": 720
@@ -170,14 +175,14 @@
       "label": "Splunk app package exists and checksum matches manifest",
       "status": "PASS",
       "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl",
-      "detail": "sha256=282aa79b1bfa003ca7373b3588aeedb964f31c7d2636d7550af40e70d1fd70be"
+      "detail": "sha256=2828e8feb36a25fc546a3831f263339bfd07241491aad1b1f3fd0c31aefd351e"
     },
     {
       "id": "package-single-app-root",
       "label": "Package extracts to one app root",
       "status": "PASS",
       "evidence": "submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl",
-      "detail": "349 packaged files"
+      "detail": "350 packaged files"
     },
     {
       "id": "app-conf-identity",
@@ -254,7 +259,7 @@
       "label": "Submission evidence includes public-safe product screenshots",
       "status": "PASS",
       "evidence": "submission-evidence/screenshots",
-      "detail": "11 PNG screenshots"
+      "detail": "12 PNG screenshots"
     },
     {
       "id": "app-icon",

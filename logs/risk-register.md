@@ -1463,3 +1463,24 @@ submission-copy audit, evidence-pack SHA-256 verification, and `npm run check`
 all pass locally. Residual risk: Splunkbase approval, Splunk Cloud review, and
 publisher support-contact setup remain external operator actions; do not claim
 an "Available on Splunkbase" badge until a public listing exists.
+
+Move 205 adds installed Splunk Web browser-render evidence for the packaged
+Splunk app. The final proof is public-safe and passes through the native
+launcher route, static workbench receipt route, and overview dashboard route.
+Residual risks and boundaries:
+
+- Splunk Web stripped an iframe launcher under default embeddable-content
+  protections. The package now uses a Simple XML launcher plus a static
+  workbench route instead of weakening Splunk Web protections.
+- Same-version package upgrades did not refresh static app assets until the
+  operator explicitly restarted Splunk. This is documented as an
+  operator-scoped live action and is not part of the credential-free judge
+  path.
+- The browser-proof command logs in to an operator-owned Splunk Web instance,
+  but tracked artifacts only store redacted route paths and public-safe
+  screenshots. Endpoint, username, secret, and cookie values must remain
+  untracked.
+- During route exploration, the packaged `mcp-proof` artifact route exposed a
+  UI schema drift around `liveMockSplunkMcp`. Move 205 uses the
+  `public-proof-export` receipt route for installed-app render proof; the MCP
+  artifact route should be fixed in the next high-value MCP evidence pass.

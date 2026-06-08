@@ -30,7 +30,10 @@ const createSourceTree = async (): Promise<string> => {
   const root = await tempRoot();
 
   await writeFixture(join(root, "package.json"), JSON.stringify({ name: "splunkready", version: "0.1.3" }, null, 2));
-  await writeFixture(join(root, "artifacts", "public-demo", "index.html"), "<!doctype html><div id=\"app\"></div>");
+  await writeFixture(
+    join(root, "artifacts", "public-demo", "index.html"),
+    '<!doctype html><div id="app"></div><script type="module" src="./assets/index.js"></script>'
+  );
   await writeFixture(join(root, "artifacts", "public-demo", "assets", "index.js"), "window.__splunkready = true;");
   await writeFixture(join(root, "artifacts", "public-demo", "artifacts", "suite-proof", "missions.json"), JSON.stringify({ prompt: "Investigate 10.44.12.18" }));
   await writeFixture(
@@ -128,6 +131,9 @@ describe("Splunk app package builder", () => {
       readFile(join(root, "extracted", "SplunkReady", "appserver", "static", "splunkready", "artifacts", "suite-proof", "missions.json"), "utf8")
     ).resolves.toContain("[REDACTED-IP]");
     await expect(
+      readFile(join(root, "extracted", "SplunkReady", "appserver", "static", "splunkready", "index.html"), "utf8")
+    ).resolves.toContain("globalThis.i18n_register=globalThis.i18n_register||function(){}");
+    await expect(
       readFile(join(root, "extracted", "SplunkReady", "default", "collections.conf"), "utf8")
     ).resolves.toContain("[splunkready_receipts]");
     await expect(
@@ -139,6 +145,18 @@ describe("Splunk app package builder", () => {
     await expect(
       readFile(join(root, "extracted", "SplunkReady", "default", "data", "ui", "views", "splunkready.xml"), "utf8")
     ).resolves.toContain("/static/app/SplunkReady/splunkready/index.html");
+    await expect(
+      readFile(join(root, "extracted", "SplunkReady", "default", "data", "ui", "views", "splunkready.xml"), "utf8")
+    ).resolves.toContain("Open SplunkReady artifact workbench");
+    await expect(
+      readFile(join(root, "extracted", "SplunkReady", "default", "data", "ui", "views", "splunkready.xml"), "utf8")
+    ).resolves.toContain('<form version="1.1" theme="light">');
+    await expect(
+      readFile(join(root, "extracted", "SplunkReady", "default", "data", "ui", "views", "splunkready.xml"), "utf8")
+    ).resolves.not.toContain('type="html"');
+    await expect(
+      readFile(join(root, "extracted", "SplunkReady", "default", "data", "ui", "views", "splunkready.xml"), "utf8")
+    ).resolves.not.toContain("<iframe");
     await expect(
       readFile(join(root, "extracted", "SplunkReady", "default", "data", "ui", "views", "splunkready_overview.xml"), "utf8")
     ).resolves.toContain("splunkready_receipts_lookup");

@@ -16954,3 +16954,65 @@ Result:
 - PASS: CI ran the credential-free live mock proof.
 - PASS: CI built and smoke-tested the mock Splunk MCP Docker image.
 - RESULT: Move 204 is locally and remotely verified at the branch tip.
+
+## 2026-06-08T23:28:00Z - Move 205 installed Splunk Web app render proof
+
+Context:
+
+- Move 204 proved the `.spl` package could be built, AppInspect-checked,
+  installed, and probed through Splunk REST.
+- It still lacked public-safe proof that the installed app actually rendered in
+  Splunk Web.
+
+Actions:
+
+- Added `moves/moves205.md`.
+- Added `docs/execplans/splunk-web-app-render-proof.md`.
+- Added `scripts/capture-splunk-app-web-proof.mjs` and a TypeScript
+  declaration shim for focused tests importing the `.mjs` helper.
+- Added `tests/scripts/splunk-app-web-proof.test.ts`.
+- Updated the Splunk app package generator to use a Simple XML launcher view
+  instead of an iframe. Splunk Web stripped the iframe under default content
+  protections, so the package now keeps the native launcher separate from the
+  static artifact workbench route.
+- Added a package-only `globalThis.i18n_register` compatibility shim to the
+  packaged static `index.html`; this prevents Splunk Web static hosting from
+  breaking the Vite artifact workbench bundle.
+- Rebuilt `submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl`.
+- Installed the rebuilt package with explicit operator approval through
+  `splunk-app-install-proof --confirm-install true`.
+- Restarted the local operator-owned Splunk instance with
+  `/Applications/Splunk/bin/splunk restart` after install proof reported
+  `restartRequired: true`; same-version static app assets were not refreshed
+  until Splunk restarted.
+- Captured public-safe browser proof at
+  `submission-evidence/splunk-app-web-proof/splunk-app-web-proof.json`,
+  `submission-evidence/splunk-app-web-proof/splunk-app-web-proof.md`, and
+  `submission-evidence/screenshots/splunk-app-web-proof.png`.
+- Updated README, Devpost copy, submission evidence README, claim ledger, and
+  submission-copy audit guardrails for the installed Splunk Web proof.
+- Refreshed AppInspect precertification, Splunkbase readiness, and Splunkbase
+  listing dossier package SHA evidence after the rebuilt package hash changed.
+- Regenerated `submission-evidence/evidence-pack-sha256.txt`.
+
+Result so far:
+
+- PASS: installed Splunk Web proof reports
+  `source: "splunkready-installed-splunk-web-app-render-proof"`,
+  `status: "PASS"`, `splunkMutation: "none"`, app launcher rendered, static
+  receipt workbench proof signal detected, overview dashboard panels detected,
+  and no endpoint, username, secret, or cookie values written.
+- PASS: screenshot shows the installed Splunk Web static workbench route
+  rendering the public proof export Readiness Receipt with `READY / 100/100`.
+- PASS: AppInspect precertification still reports 0 errors, 0 failures,
+  0 future failures, and 1 expected `check_collections_conf` warning.
+- PASS: Splunkbase readiness remains `ACTION_REQUIRED` with package SHA
+  `2828e8feb36a25fc546a3831f263339bfd07241491aad1b1f3fd0c31aefd351e`.
+- PASS: Splunkbase listing dossier audits as
+  `READY_FOR_OPERATOR_SUBMISSION` against the same package SHA.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: full `npm run check` passed locally with 77 Vitest files / 446 tests
+  and 463 submission-copy claims.
+- HONEST BOUNDARY: this move used explicit operator-scoped install/restart and
+  browser login actions. The default judge path remains credential-free and
+  does not write to Splunk.

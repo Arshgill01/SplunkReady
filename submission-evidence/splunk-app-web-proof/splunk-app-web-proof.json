@@ -1,0 +1,57 @@
+{
+  "source": "splunkready-installed-splunk-web-app-render-proof",
+  "status": "PASS",
+  "generatedAt": "2026-06-08T17:48:11.055Z",
+  "appId": "SplunkReady",
+  "mutation": false,
+  "splunkMutation": "none",
+  "operatorApproved": true,
+  "config": {
+    "envFileUsed": true,
+    "browserConfirmation": true,
+    "allowEnvSet": true,
+    "webUrlSource": "derived-from-mcp-url",
+    "webUrlConfigured": true,
+    "usernameConfigured": true,
+    "passwordConfigured": true,
+    "missing": []
+  },
+  "routes": {
+    "app": "/en-US/app/SplunkReady/splunkready",
+    "overview": "/en-US/app/SplunkReady/splunkready_overview",
+    "staticWorkbench": "/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt"
+  },
+  "screenshot": {
+    "path": "submission-evidence/screenshots/splunk-app-web-proof.png",
+    "captured": true
+  },
+  "redaction": {
+    "endpointValueWritten": false,
+    "usernameValueWritten": false,
+    "secretValuesWritten": false,
+    "cookieValuesWritten": false
+  },
+  "browser": {
+    "loginStatus": "submitted-login-form",
+    "appRoute": {
+      "path": "/en-US/app/SplunkReady/splunkready",
+      "rendered": true,
+      "workbenchLauncherTextDetected": true
+    },
+    "staticWorkbenchRoute": {
+      "path": "/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt",
+      "rendered": true,
+      "containsProofSignal": true,
+      "artifactLoadFailed": false
+    },
+    "overviewRoute": {
+      "path": "/en-US/app/SplunkReady/splunkready_overview",
+      "rendered": true,
+      "containsBundledEvidencePanel": true,
+      "containsReceiptStorePanel": true
+    }
+  },
+  "messages": [
+    "PASS splunk-app-web-proof: installed SplunkReady app routes rendered in Splunk Web."
+  ]
+}

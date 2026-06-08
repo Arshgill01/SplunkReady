@@ -1,12 +1,12 @@
 {
   "source": "splunkready-splunk-app-package",
   "status": "PASS",
-  "generatedAt": "2026-06-08T17:16:11.297Z",
+  "generatedAt": "2026-06-08T17:48:09.569Z",
   "appId": "SplunkReady",
   "version": "0.1.7",
   "mutation": false,
   "packagePath": "submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl",
-  "packageSha256": "282aa79b1bfa003ca7373b3588aeedb964f31c7d2636d7550af40e70d1fd70be",
+  "packageSha256": "2828e8feb36a25fc546a3831f263339bfd07241491aad1b1f3fd0c31aefd351e",
   "staticSource": "artifacts/public-demo",
   "launcherView": "SplunkReady/default/data/ui/views/splunkready.xml",
   "overviewView": "SplunkReady/default/data/ui/views/splunkready_overview.xml",
@@ -20,7 +20,7 @@
     "screenshot": "SplunkReady/static/screenshot.png",
     "source": "generated-deterministic-assets"
   },
-  "fileCount": 314,
+  "fileCount": 315,
   "files": [
     "README.md",
     "appserver/static/splunkready/artifacts/interactive-demo/agent-policy.json",
@@ -320,6 +320,7 @@
     "appserver/static/splunkready/screenshots/public-demo-llm-deliberation.png",
     "appserver/static/splunkready/screenshots/public-judge-proof-proof-browser.png",
     "appserver/static/splunkready/screenshots/public-proof-export-proof-browser.png",
+    "appserver/static/splunkready/screenshots/splunk-app-web-proof.png",
     "appserver/static/splunkready/screenshots/workbench-dev-fixture.png",
     "appserver/static/splunkready/screenshots/workbench-llm-deliberation.png",
     "appserver/static/splunkready/screenshots/workbench-mcp-proof.png",

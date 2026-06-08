@@ -337,6 +337,44 @@ const checks = [
   ["Claim ledger operator live install endpoint redaction", files.claimLedger, "endpointValueWritten: false"],
   ["Claim ledger operator live install username redaction", files.claimLedger, "usernameValueWritten: false"],
   [
+    "Claim ledger installed Splunk Web render proof",
+    files.claimLedger,
+    "The installed Splunk app renders the launcher, static artifact workbench receipt, and overview dashboard in real Splunk Web."
+  ],
+  [
+    "Claim ledger installed Splunk Web proof artifact",
+    files.claimLedger,
+    "submission-evidence/splunk-app-web-proof/splunk-app-web-proof.json"
+  ],
+  [
+    "Claim ledger installed Splunk Web proof source",
+    files.claimLedger,
+    "splunkready-installed-splunk-web-app-render-proof"
+  ],
+  ["Claim ledger installed Splunk Web proof status", files.claimLedger, "status: \"PASS\""],
+  ["Claim ledger installed Splunk Web no mutation", files.claimLedger, "splunkMutation: \"none\""],
+  ["Claim ledger installed Splunk Web launcher path", files.claimLedger, "/en-US/app/SplunkReady/splunkready"],
+  ["Claim ledger installed Splunk Web launcher signal", files.claimLedger, "workbenchLauncherTextDetected: true"],
+  [
+    "Claim ledger installed Splunk Web static path",
+    files.claimLedger,
+    "/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt"
+  ],
+  ["Claim ledger installed Splunk Web proof signal", files.claimLedger, "containsProofSignal: true"],
+  ["Claim ledger installed Splunk Web artifact guard", files.claimLedger, "artifactLoadFailed: false"],
+  ["Claim ledger installed Splunk Web overview path", files.claimLedger, "/en-US/app/SplunkReady/splunkready_overview"],
+  [
+    "Claim ledger installed Splunk Web screenshot",
+    files.claimLedger,
+    "submission-evidence/screenshots/splunk-app-web-proof.png"
+  ],
+  ["Claim ledger installed Splunk Web secret redaction", files.claimLedger, "secret, or cookie values written"],
+  [
+    "Claim ledger installed Splunk Web proof command",
+    files.claimLedger,
+    "scripts/capture-splunk-app-web-proof.mjs"
+  ],
+  [
     "Claim ledger operator receipt store",
     files.claimLedger,
     "The installed Splunk app stores signed Readiness Receipt summaries in operator-owned KV Store rows."
@@ -411,6 +449,21 @@ const checks = [
   ["README operator live install collection", files.readme, "splunkready_receipts"],
   ["README operator live install lookup", files.readme, "splunkready_receipts_lookup"],
   ["Devpost operator live install artifact", files.devpost, "submission-evidence/splunk-app-install/splunk-app-install-proof.json"],
+  ["README installed Splunk Web proof artifact", files.readme, "submission-evidence/splunk-app-web-proof/splunk-app-web-proof.json"],
+  [
+    "README installed Splunk Web static route",
+    files.readme,
+    "/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt"
+  ],
+  ["README installed Splunk Web screenshot", files.readme, "submission-evidence/screenshots/splunk-app-web-proof.png"],
+  ["README installed Splunk Web redaction", files.readme, "endpoint, username, secret, or cookie values"],
+  ["Devpost installed Splunk Web proof artifact", files.devpost, "submission-evidence/splunk-app-web-proof/splunk-app-web-proof.json"],
+  [
+    "Devpost installed Splunk Web static route",
+    files.devpost,
+    "/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt"
+  ],
+  ["Devpost installed Splunk Web screenshot", files.devpost, "submission-evidence/screenshots/splunk-app-web-proof.png"],
   ["README Splunk app package command", files.readme, "npm run splunk-app:package"],
   ["README Splunk app package archive", files.readme, "submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl"],
   ["README Splunk app package manifest", files.readme, "submission-evidence/splunk-app-package/splunk-app-package-manifest.json"],

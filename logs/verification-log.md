@@ -17990,3 +17990,50 @@ Result:
 - PASS: `npm run check` passed remotely.
 - PASS: remote CI ran credential-free live-mock proof.
 - PASS: remote CI built and smoked the mock Splunk MCP Docker image.
+
+## 2026-06-08T23:28:00Z - Move 205 installed Splunk Web app render proof
+
+Commands:
+
+- `command -v npx >/dev/null 2>&1`
+- `npx vitest run tests/scripts/splunk-app-web-proof.test.ts`
+- `npx vitest run tests/scripts/splunk-app-package.test.ts tests/scripts/splunk-app-web-proof.test.ts`
+- `npm run splunk-app:package`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js splunk-app-install-proof --out submission-evidence/splunk-app-install --app-package submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl --env-file ./.splunkready-live.env --confirm-install true --json`
+- `/Applications/Splunk/bin/splunk restart`
+- `npm run splunk-app:package && NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js splunk-app-install-proof --out submission-evidence/splunk-app-install --app-package submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl --env-file ./.splunkready-live.env --confirm-install true --json && SPLUNKREADY_ALLOW_SPLUNK_WEB_PROOF=1 npx --yes --package playwright node scripts/capture-splunk-app-web-proof.mjs --env-file ./.splunkready-live.env --out submission-evidence/splunk-app-web-proof --screenshot submission-evidence/screenshots/splunk-app-web-proof.png --confirm-browser true --json`
+- `uvx splunk-appinspect inspect submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl --mode precert --data-format json --output-file submission-evidence/splunkbase-readiness/appinspect-precert.json`
+- `npm run audit:splunkbase-readiness`
+- `npm run audit:splunkbase-listing-dossier`
+- `npx vitest run tests/scripts/splunk-app-package.test.ts tests/scripts/splunk-app-web-proof.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS: `command -v npx` confirmed the browser-proof dependency path is
+  available without adding Playwright as a repo dependency.
+- PASS: focused browser-proof and package tests passed.
+- PASS: explicit package/install/browser chain returned exit code 0.
+- PASS: `submission-evidence/splunk-app-web-proof/splunk-app-web-proof.json`
+  reports `status: "PASS"`, app route rendered, static workbench route
+  rendered, proof signal detected, `artifactLoadFailed: false`, overview route
+  rendered, and all redaction booleans false.
+- PASS: AppInspect precertification reports `error: 0`, `failure: 0`,
+  `future_failure: 0`, `warning: 1`, with expected warning
+  `check_collections_conf`.
+- PASS: `npm run audit:splunkbase-readiness` wrote status `ACTION_REQUIRED`.
+- PASS: `npm run audit:splunkbase-listing-dossier` passed after package SHA
+  references were refreshed to
+  `2828e8feb36a25fc546a3831f263339bfd07241491aad1b1f3fd0c31aefd351e`.
+- PASS: focused tests passed: 3 files, 8 tests.
+- PASS: `npm run audit:submission-copy` passed with 463 required claims.
+- PASS: evidence-pack SHA-256 verification passed for all tracked
+  `submission-evidence/` files.
+- PASS: `git diff --check` passed with no whitespace findings.
+- PASS: `npm run check` passed with package version `0.1.7`: scaffold
+  verification, runtime-contract verification, TypeScript build, UI build,
+  public-demo export audit, package readiness audit, package installability
+  audit, 77 Vitest files / 446 tests, secret-env ignore audit, reviewer audit
+  with 0 failing latest verdicts, submission-copy audit with 463 required
+  claims, and whitespace diff check.

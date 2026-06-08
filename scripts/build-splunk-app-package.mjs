@@ -14,6 +14,8 @@ const execFileAsync = promisify(execFile);
 const appId = "SplunkReady";
 const staticAppPath = "splunkready";
 const privateIpPattern = /\b(?:10(?:\.\d{1,3}){3}|127(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})\b/g;
+const splunkWebStaticShim =
+  '<script>globalThis.i18n_register=globalThis.i18n_register||function(){}</script>';
 
 const pngSignature = Buffer.from("89504e470d0a1a0a", "hex");
 
@@ -213,7 +215,11 @@ const copyTree = async (source, target, root = source) => {
 
   if (/\.(?:html|json|md|txt|xml)$/i.test(sourcePath)) {
     const content = await readFile(sourcePath, "utf8");
-    await writeFile(targetPath, content.replace(privateIpPattern, "[REDACTED-IP]"), "utf8");
+    const splunkSafeContent =
+      basename(sourcePath) === "index.html" && content.includes("<script type=\"module\"")
+        ? content.replace("<script type=\"module\"", `${splunkWebStaticShim}\n    <script type=\"module\"`)
+        : content;
+    await writeFile(targetPath, splunkSafeContent.replace(privateIpPattern, "[REDACTED-IP]"), "utf8");
     return;
   }
 
@@ -314,16 +320,37 @@ const navXml = `<nav search_view="search">
 </nav>
 `;
 
-const viewXml = `<view version="1.1" type="html">
+const viewXml = `<form version="1.1" theme="light">
   <label>SplunkReady</label>
-  <html><![CDATA[
-    <iframe
-      title="SplunkReady artifact workbench"
-      src="/static/app/${appId}/${staticAppPath}/index.html?artifacts=artifacts%2Fmcp-proof#mcp-proof"
-      style="border:0;width:100%;min-height:calc(100vh - 120px);background:#ffffff;"
-    ></iframe>
-  ]]></html>
-</view>
+  <fieldset submitButton="false"></fieldset>
+  <row>
+    <panel>
+      <html><![CDATA[
+        <div class="splunkready-launcher">
+          <h2>SplunkReady Agent Readiness Compiler</h2>
+          <p>
+            This installed Splunk app serves the credential-free artifact
+            workbench and receipt evidence from appserver/static without
+            Splunk credentials or automatic mutation.
+          </p>
+          <p>
+            <a
+              href="/en-US/static/app/${appId}/${staticAppPath}/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt"
+              target="_blank"
+              rel="noopener noreferrer"
+            >Open SplunkReady artifact workbench</a>
+          </p>
+          <ul>
+            <li>Product: SplunkReady</li>
+            <li>Engine: Agent Readiness Compiler</li>
+            <li>Output: Readiness Receipt</li>
+            <li>Mutation: false</li>
+          </ul>
+        </div>
+      ]]></html>
+    </panel>
+  </row>
+</form>
 `;
 
 const overviewViewXml = `<form version="1.1" theme="light">

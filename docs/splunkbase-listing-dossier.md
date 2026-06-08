@@ -15,7 +15,7 @@ account and Splunkbase returns a public listing.
 - Package:
   `submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl`
 - SHA-256:
-  `282aa79b1bfa003ca7373b3588aeedb964f31c7d2636d7550af40e70d1fd70be`
+  `2828e8feb36a25fc546a3831f263339bfd07241491aad1b1f3fd0c31aefd351e`
 - Tested Splunk version: `Splunk Enterprise 10.4.0`
 - Splunk Cloud status: external review required
 

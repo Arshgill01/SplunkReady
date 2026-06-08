@@ -9,7 +9,7 @@
   "appPackage": {
     "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl",
     "fileName": "SplunkReady-0.1.7.spl",
-    "sha256": "282aa79b1bfa003ca7373b3588aeedb964f31c7d2636d7550af40e70d1fd70be"
+    "sha256": "2828e8feb36a25fc546a3831f263339bfd07241491aad1b1f3fd0c31aefd351e"
   },
   "config": {
     "envFileUsed": true,
