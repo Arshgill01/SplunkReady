@@ -15960,3 +15960,41 @@ Result:
 - PASS: Playwright captured the public-demo LLM deliberation screenshot.
 - PASS: evidence-pack SHA-256 verification passed.
 - PASS: full `npm run check` passed with 75 test files and 436 tests.
+
+## 2026-06-08T12:32:05Z - Move 181 hosted public demo LLM currentness
+
+Intent:
+
+- Close the Move 180 deployment residual risk by proving the live GitHub Pages
+  demo is current for the public-demo LLM artifact route.
+- Verify the actual hosted route with Playwright, not only the local static
+  export or manifest.
+
+Actions:
+
+- Ran hosted-demo currentness audit before deployment; it correctly reported
+  stale hosted source commit `fefd727` against expected public-demo input commit
+  `807d047`.
+- Triggered the `Public Demo Pages` workflow on `splunkready-build` and watched
+  run `27137764000` through build and deploy success.
+- Re-ran hosted-demo currentness audit and refreshed
+  `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+  with `status: "CURRENT"`, hosted source commit `807d047`, matching hosted and
+  local asset names, `mutation: false`, and the
+  `artifacts/real-splunk-stress-llm-layer` artifact base.
+- Opened the live GitHub Pages LLM route with Playwright and captured
+  `submission-evidence/screenshots/hosted-demo-llm-deliberation.png`.
+- Updated README, evidence README, claim ledger, submission-copy audit checks,
+  focused test fixture, and the evidence-pack SHA-256 manifest.
+
+Result:
+
+- PASS: Pages build and deploy completed successfully.
+- PASS: hosted-demo currentness audit reports `CURRENT`.
+- PASS: Playwright snapshot confirmed the live hosted LLM route renders the
+  real-Splunk LLM bundle with before `STRONG / 92`, after `STRONG / 97.5`,
+  advisory-only `yes`, deterministic rule-engine authority, receipt
+  `READY / 100`, mutation `no`, claim audit `PASS`, and no hallucinated refs.
+- PASS: focused submission-copy audit test passed.
+- PASS: submission-copy audit passed with 362 required claims.
+- PASS: evidence-pack SHA-256 verification passed.

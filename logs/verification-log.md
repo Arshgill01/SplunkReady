@@ -16870,3 +16870,43 @@ Result:
   path. The public GitHub Pages deployment still needs a current branch push and
   successful Pages workflow before the live hosted URL should be claimed current
   for Move 180.
+
+## 2026-06-08T12:32:05Z - Move 181 hosted public demo LLM currentness
+
+Commands:
+
+- `npm run audit:hosted-demo-currentness -- --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json --require-current`
+- `gh workflow run public-demo-pages.yml --ref splunkready-build`
+- `gh run list --workflow public-demo-pages.yml --limit 5 --json databaseId,headSha,status,conclusion,workflowName,displayTitle,createdAt,url`
+- `gh run watch 27137764000 --exit-status`
+- `npm run audit:hosted-demo-currentness -- --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json --require-current`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open 'https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Freal-splunk-stress-llm-layer#llm-deliberation' --headed`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot --filename submission-evidence/screenshots/hosted-demo-llm-deliberation.png --full-page`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+
+Result:
+
+- PASS: the first hosted currentness audit failed as expected with
+  `status: "STALE"` because hosted source commit `fefd727` did not match
+  expected public-demo input commit `807d047` and hosted asset names differed
+  from local `dist-ui`.
+- PASS: `Public Demo Pages` run `27137764000` completed successfully. The build
+  job ran `npm run public-demo:build` and `npm run audit:public-demo-export`,
+  uploaded the Pages artifact, and the deploy job completed.
+- PASS: the second hosted currentness audit returned `status: "CURRENT"`,
+  hosted source commit `807d047075570e875849da7d68a1a4eda99f7f84`, matching
+  asset names, `artifactBases` including
+  `artifacts/real-splunk-stress-llm-layer`, and `mutation: false`.
+- PASS: Playwright opened the live hosted LLM route and snapshot-confirmed
+  before `STRONG / 92`, after `STRONG / 97.5`, advisory-only `yes`,
+  deterministic-rule-engine authority, receipt `READY / 100`, mutation `no`,
+  claim audit `PASS`, and no hallucinated refs.
+- PASS: Playwright wrote
+  `submission-evidence/screenshots/hosted-demo-llm-deliberation.png`.
+- PASS: evidence-pack SHA-256 verification passed, including the refreshed
+  hosted currentness report and hosted LLM screenshot.
+- PASS: focused submission-copy audit test passed with 1 file and 3 tests.
+- PASS: submission-copy audit passed with 362 required claims.

@@ -1232,3 +1232,11 @@ branch state. Do not cite the live public URL as current for Move 180 until the
 branch is pushed and the Pages/deployment workflow has completed successfully.
 The rendered LLM evidence remains advisory-only; deterministic receipts remain
 the readiness authority.
+
+Move 181 closes the Move 180 hosted-demo freshness risk for commit `807d047`:
+the `Public Demo Pages` workflow deployed successfully, hosted-demo currentness
+reports `CURRENT`, and Playwright opened the live hosted LLM deliberation route.
+Residual risk: any later public-demo input commit will make this evidence stale
+until the Pages workflow is rerun and the currentness audit is refreshed. The
+hosted LLM page remains an evidence viewer only; it does not make LLM advisory
+scores authoritative.

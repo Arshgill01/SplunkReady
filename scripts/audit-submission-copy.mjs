@@ -173,6 +173,10 @@ const checks = [
     files.claimLedger,
     "The hosted public demo is source-current against the latest public-demo input commit."
   ],
+  ["Claim ledger hosted demo current source", files.claimLedger, "hosted source commit `807d047`"],
+  ["Claim ledger hosted demo LLM artifact base", files.claimLedger, "`artifactBases` includes `artifacts/real-splunk-stress-llm-layer`"],
+  ["Claim ledger hosted demo LLM screenshot", files.claimLedger, "submission-evidence/screenshots/hosted-demo-llm-deliberation.png"],
+  ["Claim ledger hosted demo LLM route", files.claimLedger, "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Freal-splunk-stress-llm-layer#llm-deliberation"],
   [
     "Claim ledger interactive hosted certification",
     files.claimLedger,
@@ -325,6 +329,8 @@ const checks = [
   ["Devpost Splunk app package archive", files.devpost, "submission-evidence/splunk-app-package/SplunkReady-0.1.3.spl"],
   ["Claim ledger hosted demo currentness artifact", files.claimLedger, "submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json"],
   ["Claim ledger hosted demo currentness command", files.claimLedger, "npm run audit:hosted-demo-currentness"],
+  ["README hosted demo currentness artifact", files.readme, "submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json"],
+  ["README hosted demo LLM screenshot", files.readme, "submission-evidence/screenshots/hosted-demo-llm-deliberation.png"],
   [
     "Claim ledger receipt chain lineage",
     files.claimLedger,

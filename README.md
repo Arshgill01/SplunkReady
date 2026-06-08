@@ -347,11 +347,16 @@ Hosted judge-proof receipt view:
 https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser
 ```
 
-Hosted-style LLM deliberation view:
+Hosted LLM deliberation view:
 
 ```text
 https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Freal-splunk-stress-llm-layer#llm-deliberation
 ```
+
+The hosted currentness audit records the deployed source commit and asset names
+in `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`.
+The hosted LLM route screenshot is tracked at
+`submission-evidence/screenshots/hosted-demo-llm-deliberation.png`.
 
 ## Splunk App Package Proof
 

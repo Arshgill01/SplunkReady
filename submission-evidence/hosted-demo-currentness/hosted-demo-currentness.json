@@ -3,17 +3,17 @@
   "status": "CURRENT",
   "hostedUrl": "https://arshgill01.github.io/SplunkReady/",
   "manifestUrl": "https://arshgill01.github.io/SplunkReady/public-demo-manifest.json",
-  "expectedPublicDemoInputCommit": "fefd727196ea188961a53e189ad4e8e88e1efd9f",
-  "hostedSourceCommit": "fefd727196ea188961a53e189ad4e8e88e1efd9f",
-  "hostedSourceCommitShort": "fefd727",
+  "expectedPublicDemoInputCommit": "807d047075570e875849da7d68a1a4eda99f7f84",
+  "hostedSourceCommit": "807d047075570e875849da7d68a1a4eda99f7f84",
+  "hostedSourceCommitShort": "807d047",
   "assets": {
     "local": [
-      "index-Bdarwqdn.css",
-      "index-DpJj3Mh4.js"
+      "index-B_h2OEqS.js",
+      "index-Chr0v3CG.css"
     ],
     "hosted": [
-      "index-Bdarwqdn.css",
-      "index-DpJj3Mh4.js"
+      "index-B_h2OEqS.js",
+      "index-Chr0v3CG.css"
     ],
     "match": true
   },
@@ -25,6 +25,7 @@
       "artifacts/mcp-proof",
       "artifacts/suite-proof",
       "artifacts/public-proof-export",
+      "artifacts/real-splunk-stress-llm-layer",
       "artifacts/judge-proof",
       "artifacts/interactive-demo"
     ]
