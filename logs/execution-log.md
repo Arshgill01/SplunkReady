@@ -17016,3 +17016,20 @@ Result so far:
 - HONEST BOUNDARY: this move used explicit operator-scoped install/restart and
   browser login actions. The default judge path remains credential-free and
   does not write to Splunk.
+
+## 2026-06-08T17:59:20Z - Move 205 branch-tip CI
+
+Actions:
+
+- Committed Move 205 as `e78210e149ece803d5235108bfe64e364be19a1c`.
+- Pushed `splunkready-build`.
+- Watched CI run `27156759973`.
+
+Result:
+
+- PASS: setup-splunkready action smoke completed in 8s.
+- PASS: `npm run check` job completed in 1m31s.
+- PASS: CI ran the credential-free live mock proof.
+- PASS: CI built and smoke-tested the mock Splunk MCP Docker image, covering
+  the Docker validation gap that was not available on the local machine.
+- RESULT: Move 205 is locally and remotely verified at the branch tip.
