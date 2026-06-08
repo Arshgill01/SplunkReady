@@ -16319,3 +16319,47 @@ Result:
 - PASS: evidence pack SHA-256 verification passed, including the refreshed
   Splunkbase readiness, package, and MCP AppInspect composition artifacts.
 - PASS: final `npm run check` passed with 72 test files and 426 tests.
+
+## 2026-06-08T08:59:01Z - Move 169 Developer license hosted-model remediation
+
+Commands:
+
+- `rm -rf artifacts/live-hosted-model-diagnostic-before-license && NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic-before-license --require-pass true --json`
+- `/Applications/Splunk/bin/splunk list licenses -auth <redacted>`
+- `/Applications/Splunk/bin/splunk add licenses <operator-license-file> -auth <redacted>`
+- `/Applications/Splunk/bin/splunk restart -auth <redacted>` (failed startup wait because `-auth` was forwarded into `splunkd` startup)
+- `/Applications/Splunk/bin/splunk start -auth <redacted>` (failed startup wait for the same reason)
+- `/Applications/Splunk/bin/splunk start`
+- `/Applications/Splunk/bin/splunk list licenses -auth <redacted>`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json`
+- `npm run audit:live-hosted-model-status -- --env-file ./.splunkready-live.env --out submission-evidence/live-hosted-model-status/live-hosted-model-status.json`
+- `git diff -- <move-169-files> | rg -n <secret-or-live-endpoint-pattern> || true`
+- `jq '.' submission-evidence/live-hosted-model-status/developer-license-remediation.json >/dev/null && jq '{status, license, hostedModelDiagnostic, redaction}' submission-evidence/live-hosted-model-status/developer-license-remediation.json`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/live-hosted-model-status.test.ts tests/workflows/hosted-model-actions.test.ts`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- FAIL expected: pre-license strict diagnostic exited 1 with
+  `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`.
+- PASS: developer license install returned success and required restart.
+- PASS: Splunk started successfully after rerunning `splunk start` without
+  `-auth`.
+- PASS: post-license license listing shows a valid Enterprise developer license
+  with 10GB quota.
+- FAIL expected: post-license strict diagnostic exited 1 with
+  `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`.
+- PASS: public-safe hosted-model status export completed and its redaction audit
+  passed.
+- PASS: diff-level redaction scan returned no secret, endpoint, tenant,
+  deployment, or local license filename matches.
+- PASS: developer-license remediation artifact parsed as valid JSON.
+- PASS: evidence pack SHA-256 verification passed, including the new
+  developer-license remediation artifact.
+- PASS: submission-copy audit passed with 275 required claims.
+- PASS: focused hosted-model status/workflow tests passed with 2 files and 6
+  tests.
+- PASS: final `npm run check` passed with 72 test files and 426 tests.

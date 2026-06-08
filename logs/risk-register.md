@@ -1106,3 +1106,19 @@ Splunkbase listing. The readiness report intentionally remains
 metadata is entered in Splunkbase, the `.spl` is uploaded, and Splunkbase/Splunk
 Cloud review completes. Do not claim "Available on Splunkbase" before that
 external listing exists.
+
+Move 168 removes the repo-owned Splunkbase listing asset blocker by packaging
+deterministic 36x36/72x72 app icons and a 623x350 listing screenshot into the
+`.spl` artifact. Residual risk: publisher account setup, Splunkbase upload,
+Splunkbase review, and Splunk Cloud review remain external and must not be
+claimed as complete until the public listing exists.
+
+Move 169 tests the live SAIA Trial-license hypothesis by installing the
+operator-provided Splunk Developer Personal License and restarting the
+operator-owned local Splunk instance. The instance now reports a valid
+Enterprise developer license, but strict hosted-model proof remains blocked by
+`SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`. Residual risk: the blocker is now
+outside SplunkReady's deterministic grading path and points to Splunk AI
+Assistant/MCP route metadata alignment plus downstream SAIA cloud-service
+provisioning. Do not claim live hosted-model PASS until
+`hosted-model-diagnostic --require-pass true` exits successfully.

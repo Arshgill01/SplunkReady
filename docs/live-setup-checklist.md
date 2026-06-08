@@ -458,6 +458,17 @@ blocked at invocation time:
   Splunk AI Assistant is not compatible with Splunk Trial stacks. If the current
   deployment is a Trial stack, hosted-model 404s may be an entitlement or
   provisioning boundary rather than a SplunkReady bug.
+- refined 2026-06-08 operator remediation: the operator-provided Splunk
+  Developer Personal License was installed, Splunk was restarted, and the
+  instance now reports a valid Enterprise developer license. The strict
+  hosted-model diagnostic still reports `BLOCKED` with
+  `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`. The Trial-license hypothesis was
+  tested and is no longer the primary blocker. The remaining evidence points to
+  Splunk AI Assistant/MCP route metadata alignment and downstream hosted SAIA
+  cloud-service provisioning: local `generatespl`, `explainspl`, and
+  `optimizespl` handlers are served by splunkd, the local `ask` route remains
+  missing for the route shape advertised through MCP, and the handlers that do
+  run still receive hosted SAIA cloud 404s.
 - redaction check: hosted-model proof and diagnostic errors contain
   `[REDACTED_URL]` and no raw `https://` endpoint URL.
 - follow-up support: SplunkReady now accepts `SPLUNKREADY_SAIA_ENDPOINT` and

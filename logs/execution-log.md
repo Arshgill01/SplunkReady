@@ -15438,3 +15438,45 @@ Result:
   account, upload/review, and Splunk Cloud review remain external.
 - PASS: AppInspect precertification remains at 0 errors, 0 failures, 0 future
   failures, and 1 expected `collections.conf` warning.
+
+## 2026-06-08T08:59:01Z - Move 169 Developer license hosted-model remediation
+
+Intent:
+
+- Test whether the live SAIA hosted-model blocker was caused by the previous
+  Splunk Trial license state, using the operator-provided Splunk Developer
+  Personal License without committing license contents, credentials, endpoint
+  values, usernames, passwords, or tokens.
+
+Actions:
+
+- Added `moves/moves169.md` to scope the operator-approved license remediation
+  and evidence boundary.
+- Confirmed the ignored live env file and local license file existed without
+  printing their secret contents.
+- Ran the strict hosted-model diagnostic before license installation; it
+  remained blocked with `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`.
+- Installed the developer license through the local Splunk CLI.
+- Restarted Splunk. The first restart/start attempts incorrectly passed
+  `-auth` to `splunk start/restart`, which forwarded an invalid `-a` option to
+  `splunkd`. Splunk started cleanly once run without `-auth`.
+- Verified Splunk now lists a valid Enterprise developer license with 10GB quota
+  and the management API responds successfully.
+- Re-ran the strict hosted-model diagnostic after license installation and
+  restart; it still failed with `SAIA_REST_HANDLERS_PARTIALLY_REGISTERED`.
+- Inspected installed Splunk AI Assistant route metadata and local SAIA logs.
+  Local `generatespl`, `explainspl`, and `optimizespl` handlers are served by
+  splunkd, the advertised local `ask` route remains missing, and handlers that
+  do execute still receive downstream hosted SAIA cloud 404s.
+- Refreshed public-safe hosted-model status evidence and added a
+  developer-license remediation artifact.
+
+Result:
+
+- PARTIAL: the Trial-license hypothesis was tested and removed as the primary
+  blocker.
+- PASS: Splunk is running again under the valid developer license.
+- FAIL: strict live hosted-model diagnostic still blocks; do not claim live SAIA
+  hosted-model PASS.
+- PASS: tracked evidence records the blocker without raw license contents,
+  endpoint values, usernames, passwords, or tokens.

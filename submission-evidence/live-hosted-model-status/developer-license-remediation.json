@@ -1,0 +1,61 @@
+{
+  "source": "splunkready-developer-license-hosted-model-remediation",
+  "generatedAt": "2026-06-08T08:59:01Z",
+  "status": "BLOCKED",
+  "safeForPublicExport": true,
+  "rawOperatorArtifactTracked": false,
+  "operatorApprovedMutation": "splunk-developer-license-install",
+  "defaultProofMutation": false,
+  "mutation": false,
+  "license": {
+    "installed": true,
+    "activeProduct": "Splunk Developer Personal License",
+    "activeGroup": "Enterprise",
+    "quotaBytes": 10737418240,
+    "expiresAt": "2026-12-04T23:59:59Z",
+    "licenseFileTracked": false,
+    "licenseContentsTracked": false
+  },
+  "splunkRestart": {
+    "requiredByLicenseInstall": true,
+    "completed": true,
+    "managementApiStatus": "PASS",
+    "webStatus": "PASS",
+    "startupNote": "Local splunk start/restart commands must not include -auth; passing -auth to start forwarded an invalid -a option to splunkd."
+  },
+  "hostedModelDiagnostic": {
+    "command": "NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic --require-pass true --json",
+    "exitStatus": "FAIL",
+    "artifact": "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json",
+    "trackedStatusArtifact": "submission-evidence/live-hosted-model-status/live-hosted-model-status.json",
+    "blockerClass": "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED",
+    "requiredTools": [
+      "saia_generate_spl",
+      "saia_explain_spl",
+      "saia_optimize_spl",
+      "saia_ask_splunk_question"
+    ],
+    "passedTools": [],
+    "blockedTools": [
+      "saia_generate_spl",
+      "saia_explain_spl",
+      "saia_optimize_spl",
+      "saia_ask_splunk_question"
+    ]
+  },
+  "operatorFindings": [
+    "The previous Trial license hypothesis was tested and is no longer the primary blocker: the instance now has a valid Enterprise developer license.",
+    "The local Splunk AI Assistant app namespace is served by splunkd.",
+    "The generatespl, explainspl, and optimizespl local REST handler routes are served by splunkd.",
+    "The local ask route remains missing from Splunk_AI_Assistant_Cloud restmap/web exposure for the route shape advertised through MCP.",
+    "The local SAIA handlers that do run still receive 404 responses from the downstream Splunk-hosted SAIA v2 SPL API.",
+    "The remaining blocker is tenant/cloud-service provisioning or Splunk AI Assistant/MCP app route metadata alignment, not SplunkReady grading logic."
+  ],
+  "redaction": {
+    "endpointValuesWritten": false,
+    "usernameValuesWritten": false,
+    "tokenValuesWritten": false,
+    "passwordValuesWritten": false,
+    "licenseContentsWritten": false
+  }
+}
