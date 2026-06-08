@@ -1158,3 +1158,11 @@ Move 172 first tag run exposed a publisher-job setup gap: matrix jobs passed,
 but `gh release create` failed outside a git checkout. Residual risk remains
 until the fixed tag workflow is rerun from a commit with publisher checkout and
 the GitHub Release contains all 9 expected assets.
+
+Move 172 follow-up closes the public GitHub Release publication gap for
+`v0.1.3`: tag-triggered run `27129153682` passed Linux/macOS/Windows
+build-smoke-upload jobs and published exactly 9 assets to the public GitHub
+Release. Residual risk: the workflow emits GitHub's Node 20 action deprecation
+warning for `actions/upload-artifact@v4` and `actions/download-artifact@v4`.
+This is not blocking today, but the workflow may need a future action/runtime
+refresh before GitHub's scheduled Node 20 removal window.

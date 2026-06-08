@@ -15581,3 +15581,24 @@ Result:
   failed because it did not check out the repository before `gh release create`.
 - Added checkout to the `publish-release` job and extended workflow tests to
   preserve that requirement.
+- PASS: moved tag `v0.1.3` to fixed commit `269b028` after the first
+  tag-triggered publisher failed before creating a GitHub Release.
+- PASS: tag-triggered release run `27129153682` built, smoked, and uploaded
+  Linux/macOS/Windows workflow artifacts, then published a public GitHub Release
+  with exactly 9 assets.
+- Captured public release metadata in
+  `submission-evidence/standalone-release/standalone-release-github-release.json`.
+- Updated README, Devpost copy, evidence README, claim ledger, submission-copy
+  audit guards, and audit test fixtures to claim the public `v0.1.3` GitHub
+  Release only with concrete release evidence.
+- Refreshed the evidence-pack checksum after adding the GitHub Release evidence.
+
+Result:
+
+- PASS: `v0.1.3` GitHub Release exists at
+  `https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.3`.
+- PASS: release evidence reports non-draft, non-prerelease, tag `v0.1.3`, and
+  9 uploaded assets: Linux, macOS, and Windows archives, checksums, and
+  per-platform manifests.
+- PASS: public release asset claims are now enforced by
+  `npm run audit:submission-copy`.

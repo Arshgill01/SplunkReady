@@ -16492,3 +16492,44 @@ Result:
 - PASS: whitespace diff check passed.
 - PASS: full `npm run check` passed with 73 test files and 430 tests after the
   publisher checkout fix.
+- `git tag -f -a v0.1.3 -m "SplunkReady v0.1.3"`
+- `git push --force origin v0.1.3`
+- `gh run watch 27129153682 --exit-status`
+- `gh release view v0.1.3 --json tagName,name,url,isDraft,isPrerelease,publishedAt,assets`
+- `gh release view v0.1.3 --json assets --jq '.assets[].name'`
+- `gh release view v0.1.3 --json tagName,name,url,isDraft,isPrerelease,publishedAt,assets > submission-evidence/standalone-release/standalone-release-github-release.json`
+- `jq -e '.tagName == "v0.1.3" and .isDraft == false and .isPrerelease == false and (.assets | length == 9) and ([.assets[].name] | index("splunkready-linux-x64.tar.gz") and index("splunkready-macos-arm64.tar.gz") and index("splunkready-windows-x64.tar.gz") and index("splunkready-linux-x64.tar.gz.sha256") and index("splunkready-macos-arm64.tar.gz.sha256") and index("splunkready-windows-x64.tar.gz.sha256") and index("standalone-release-linux-x64.json") and index("standalone-release-macos-arm64.json") and index("standalone-release-windows-x64.json"))' submission-evidence/standalone-release/standalone-release-github-release.json`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts tests/examples/repository-ci-workflow.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: tag-triggered Release Artifacts run `27129153682` passed from tag
+  `v0.1.3` on commit `269b028d7b154da86b48024548900245edeed621`.
+- PASS: run `27129153682` completed standalone build/smoke/upload jobs for
+  macOS in 25s, Ubuntu in 23s, and Windows in 1m24s.
+- PASS: run `27129153682` completed the single `publish GitHub Release` job in
+  11s.
+- PASS: `gh release view v0.1.3` reports a non-draft, non-prerelease release
+  named `SplunkReady v0.1.3`, published at `2026-06-08T09:43:59Z`.
+- PASS: public release contains exactly 9 assets:
+  `splunkready-linux-x64.tar.gz`,
+  `splunkready-linux-x64.tar.gz.sha256`,
+  `standalone-release-linux-x64.json`,
+  `splunkready-macos-arm64.tar.gz`,
+  `splunkready-macos-arm64.tar.gz.sha256`,
+  `standalone-release-macos-arm64.json`,
+  `splunkready-windows-x64.tar.gz`,
+  `splunkready-windows-x64.tar.gz.sha256`, and
+  `standalone-release-windows-x64.json`.
+- PASS: release evidence `jq` assertion returned `true`.
+- PASS: focused submission-copy and workflow tests passed with 2 files and 7
+  tests.
+- PASS: evidence-pack SHA-256 verification passed after adding
+  `standalone-release-github-release.json`.
+- PASS: submission-copy audit passed with 302 required claims.
+- PASS: whitespace diff check passed.
+- PASS: final `npm run check` passed with 73 test files and 430 tests.

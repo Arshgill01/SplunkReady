@@ -64,8 +64,11 @@ It reports `status: "PASS"`, target `macos-arm64`, smoke `PASS`, stdout command
 workflow dispatch evidence at
 `submission-evidence/standalone-release/standalone-release-matrix.json` shows
 Linux, macOS, and Windows runners each built, smoked, and uploaded standalone
-artifacts. Public GitHub Release assets are intentionally not claimed until the
-same workflow runs from a version tag.
+artifacts. The public `v0.1.3` GitHub Release publishes those standalone
+archives, SHA-256 checksum files, and per-platform manifests at
+https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.3; tracked evidence
+is in
+`submission-evidence/standalone-release/standalone-release-github-release.json`.
 
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, writes `compiler-diagnostics.json` / `.md` showing deterministic rule activation and resolution from readiness profiles and receipts, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 
