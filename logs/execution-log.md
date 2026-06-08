@@ -16081,3 +16081,28 @@ Result:
 - PASS: tracked Zed session text evidence has no local paths, bearer headers,
   token strings, secret strings, password strings, or endpoint values.
 - PASS: screenshot was cropped to show only repository-relative paths.
+
+## 2026-06-08T13:29:30Z - Move 184 hosted demo currentness after Zed MCP evidence
+
+Context:
+
+- Move 183 added `submission-evidence/screenshots/zed-mcp-recorder-summary.png`,
+  and `submission-evidence/screenshots` is a public-demo input path.
+- Per the Move 182 risk rule, the live GitHub Pages URL could not be cited as
+  current until the branch was pushed, Pages redeployed, and hosted currentness
+  was refreshed.
+
+Actions:
+
+- Pushed `b23a309` to `origin/splunkready-build`.
+- Triggered `public-demo-pages.yml`.
+- Watched Pages run `27140813335` through successful build and deploy.
+- Refreshed
+  `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`.
+- Recomputed `submission-evidence/evidence-pack-sha256.txt`.
+
+Result:
+
+- PASS: hosted-demo currentness now reports `CURRENT` for commit `b23a309`.
+- PASS: hosted and local asset names match.
+- PASS: hosted manifest reports `mutation: false`.

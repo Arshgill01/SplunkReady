@@ -1261,3 +1261,11 @@ strict inline MCP transcript remains fragile and failed during this move because
 Zed summarized structured Splunk responses. This is now documented as a product
 lesson, not claimed as a passing inline-certifier client path. The tracked Zed
 evidence is fixture/mock-Splunk MCP evidence, not a live operator Splunk proof.
+
+Move 184 closes the hosted-demo freshness risk introduced by Move 183's new
+tracked screenshot: commit `b23a309` was pushed, the GitHub Pages workflow
+completed successfully, and hosted-demo currentness now reports `CURRENT` for
+the same source commit with matching asset names and `mutation: false`.
+Residual risk remains operational: any later commit touching public-demo input
+paths must repeat this push, Pages deploy, and currentness audit sequence before
+the live hosted URL is cited as current.

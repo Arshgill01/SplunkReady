@@ -17004,3 +17004,33 @@ Additional result:
   readiness/installability audits, 75 Vitest files / 437 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
   audit, and whitespace diff check.
+
+## 2026-06-08T13:31:08Z - Move 184 hosted demo currentness after Zed MCP evidence
+
+Commands:
+
+- `git push origin splunkready-build`
+- `gh workflow run public-demo-pages.yml --ref splunkready-build`
+- `gh run list --workflow public-demo-pages.yml --limit 5 --json databaseId,headSha,status,conclusion,workflowName,displayTitle,createdAt,url`
+- `gh run watch 27140813335 --exit-status`
+- `npm run audit:hosted-demo-currentness -- --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json --require-current`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `git diff --check`
+
+Result:
+
+- PASS: pushed `b23a309` to `origin/splunkready-build`.
+- PASS: `Public Demo Pages` run `27140813335` completed successfully. The build
+  job ran `npm run public-demo:build` and `npm run audit:public-demo-export`,
+  uploaded the Pages artifact, and the deploy job completed.
+- PASS: hosted-demo currentness returned `status: "CURRENT"`,
+  `expectedPublicDemoInputCommit:
+  "b23a3093f34f9859f54a0568e84ac1ee2d62415e"`,
+  `hostedSourceCommit:
+  "b23a3093f34f9859f54a0568e84ac1ee2d62415e"`, matching asset names, and
+  `mutation: false`.
+- PASS: evidence-pack SHA-256 verification passed after refreshing the hosted
+  currentness report.
+- PASS: submission-copy audit passed with 362 required claims.
+- PASS: whitespace diff check passed.
