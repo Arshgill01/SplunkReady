@@ -16608,3 +16608,35 @@ Result:
   bin.
 - HONEST BOUNDARY: public npmjs latest remains `splunkready@0.1.5`; GitHub
   Packages requires authentication and does not replace the no-auth judge path.
+
+## 2026-06-08T16:00:35Z - Move 198 public GitHub Release currentness
+
+Context:
+
+- Source and GitHub Packages are at `0.1.6`, but public npmjs remains blocked
+  on OTP.
+- The public GitHub Release standalone assets were still at `v0.1.5`, leaving a
+  no-Node distribution currentness gap that does not require npm OTP to close.
+
+Actions:
+
+- Added `docs/execplans/release-currentness-0.1.6.md` and `moves/moves198.md`.
+- Created and pushed tag `v0.1.6` at commit
+  `63e1092761c89604a10c7d0e0ceab714e111dfeb`.
+- Watched Release Artifacts workflow run `27150182301` through Linux, macOS,
+  Windows, and publish jobs.
+- Refreshed
+  `submission-evidence/standalone-release/standalone-release-github-release.json`
+  from `gh release view v0.1.6`.
+- Updated README, Devpost copy, claim ledger, submission README, and
+  submission-copy guardrails so only the public GitHub Release standalone path
+  moved to `v0.1.6`.
+
+Result:
+
+- PASS: `v0.1.6` public GitHub Release exists and is not draft/prerelease.
+- PASS: all three platform standalone jobs built and smoked `judge-proof` with
+  package version `0.1.6`, `PASS`, 67 smoke artifacts, and `mutation: false`.
+- PASS: publish job uploaded 9 standalone assets.
+- HONEST BOUNDARY: public npmjs remains `splunkready@0.1.5`; no npm claim was
+  advanced.

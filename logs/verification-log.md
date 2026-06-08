@@ -17576,3 +17576,48 @@ Result:
 - PASS: focused submission-copy audit test passed: 1 file, 3 tests.
 - PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
 - PASS: whitespace diff check passed.
+
+## 2026-06-08T16:00:35Z - Move 198 public GitHub Release currentness
+
+Commands:
+
+- `git tag v0.1.6 63e1092761c89604a10c7d0e0ceab714e111dfeb`
+- `git push origin v0.1.6`
+- `gh run watch 27150182301 --exit-status`
+- `gh release view v0.1.6 --json tagName,name,url,isDraft,isPrerelease,publishedAt,assets`
+- `gh release view v0.1.6 --json assets --jq '.assets[].name'`
+- `gh run view 27150182301 --json status,conclusion,headSha,url,createdAt,updatedAt,event,workflowName,jobs`
+- `gh run view 27150182301 --log`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: tag `v0.1.6` was pushed at
+  `63e1092761c89604a10c7d0e0ceab714e111dfeb`.
+- PASS: Release Artifacts workflow run `27150182301` concluded `success`.
+- PASS: Linux, macOS, and Windows standalone jobs each completed
+  `Build and smoke standalone artifact` successfully.
+- PASS: workflow logs show package version `0.1.6`, smoke `status: "PASS"`,
+  `stdoutCommand: "judge-proof"`, 67 artifacts, and `mutation: false` for each
+  platform.
+- PASS: publish job created
+  `https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6`.
+- PASS: `gh release view v0.1.6` reports `isDraft: false`,
+  `isPrerelease: false`, and 9 uploaded assets.
+- WARN: GitHub emitted Node 20 deprecation annotations for
+  `actions/upload-artifact@v4` and `actions/download-artifact@v4`; release
+  build and publish still passed.
+- PASS: submission-copy audit passed with 403 required claims.
+- PASS: focused submission-copy audit test passed: 1 file, 3 tests.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: whitespace diff check passed.
+- PASS: `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 76 Vitest files / 441 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
+  audit with 403 required claims, and whitespace diff check.

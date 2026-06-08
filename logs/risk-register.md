@@ -1402,5 +1402,12 @@ the GitHub sidebar/package-currentness gap but does not resolve npmjs
 currentness: GitHub Packages requires package-registry authentication, while the
 judge-facing no-auth command remains `npx -y splunkready@0.1.5 judge-proof`.
 Residual risk: do not present GitHub Packages as a replacement for public npm,
-and do not update the public GitHub Release or no-auth npm copy to `0.1.6`
-until npm OTP publish succeeds.
+and do not update no-auth npm copy to `0.1.6` until npm OTP publish succeeds.
+
+Move 198 closes the separate public GitHub Release currentness gap by publishing
+`v0.1.6` no-Node standalone assets through Release Artifacts run
+`27150182301`. This does not resolve npmjs currentness and must not be cited as
+evidence that `splunkready@0.1.6` is public on npm. Residual risk: the release
+workflow emitted Node 20 deprecation warnings for `actions/upload-artifact@v4`
+and `actions/download-artifact@v4`; the release passed, but the workflow should
+be moved to Node 24-compatible action behavior in a future maintenance move.

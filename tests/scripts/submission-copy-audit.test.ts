@@ -44,7 +44,7 @@ npm run audit:public-package-currentness
 Standalone Release Artifact
 submission-evidence/standalone-release/standalone-release-current-os.json
 submission-evidence/standalone-release/standalone-release-matrix.json
-https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.5
+https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6
 submission-evidence/standalone-release/standalone-release-github-release.json
 real-splunk-stress-llm-layer/
 llm-deliberation-before.json
@@ -125,7 +125,7 @@ npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json
 submission-evidence/public-package-currentness/
 submission-evidence/standalone-release/standalone-release-current-os.json
 submission-evidence/standalone-release/standalone-release-matrix.json
-https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.5
+https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6
 submission-evidence/standalone-release/standalone-release-github-release.json
 submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl
 submission-evidence/splunk-app-install/splunk-app-install-proof.json
@@ -172,7 +172,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | The public registry currentness proof verifies the published judge-proof, MCP tools, live-mock proof, policy-registry path, source \`gitHead\`, and \`mcp-recorder\` gateway before any package is called current, and now reports the release gap honestly after Move 193. | Blocked | submission-evidence/public-package-currentness/public-package-currentness.json, publishedLiveMockProof, publishedPolicyRegistry, publishedRecorder, registry.latestMatchesLocal: false, registry.gitHeadMatchesPackageInputs: false, local source \`0.1.6\`, package-input head \`8311db4\`, recommended action to publish \`0.1.6\` | status: "STALE"; npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness |
 | The current source can produce a current-OS no-Node standalone release archive that runs judge proof from a clean temp folder. | Supported | submission-evidence/standalone-release/standalone-release-current-os.json, target \`macos-arm64\`, smoke \`status: "PASS"\`, 67 generated artifacts, releaseClaimBoundary.allPlatformReleaseRequiresTagWorkflow: true | npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json |
 | The release-artifacts workflow builds, smokes, and uploads standalone archives on Linux, macOS, and Windows runners. | Supported | submission-evidence/standalone-release/standalone-release-matrix.json, run \`27128293723\`, splunkready-standalone-Linux-X64, splunkready-standalone-macOS-ARM64, splunkready-standalone-Windows-X64 | gh workflow run release-artifacts.yml --ref splunkready-build; gh run watch 27128293723 --exit-status |
-| The public \`v0.1.5\` GitHub Release publishes no-Node standalone assets for Linux, macOS, and Windows with checksums and per-platform manifests. | Supported | submission-evidence/standalone-release/standalone-release-github-release.json, https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.5, 27143381484, splunkready-linux-x64.tar.gz, splunkready-macos-arm64.tar.gz, splunkready-windows-x64.tar.gz, standalone-release-windows-x64.json | gh run watch 27143381484 --exit-status |
+| The public \`v0.1.6\` GitHub Release publishes no-Node standalone assets for Linux, macOS, and Windows with checksums and per-platform manifests. | Supported | submission-evidence/standalone-release/standalone-release-github-release.json, https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6, 27150182301, splunkready-linux-x64.tar.gz, splunkready-macos-arm64.tar.gz, splunkready-windows-x64.tar.gz, standalone-release-windows-x64.json | gh run watch 27150182301 --exit-status |
 | The repository has a GitHub Packages npm mirror linked to the GitHub package sidebar. | Supported | submission-evidence/github-package-currentness/github-package-currentness.json, @arshgill01/splunkready@0.1.6, package URL https://github.com/users/Arshgill01/packages/npm/package/splunkready, unauthenticated npmjs judge path remains splunkready@0.1.5 | GitHub Packages run 27149553852 published and verified the scoped package with npm view |
 | A fresh disposable Splunk Enterprise deployment can run the flagship security proof under stress data. | Supported | submission-evidence/real-splunk-stress/real-splunk-stress-summary.json, Splunk Enterprise \`10.4.0\`, SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain, search::ES - Lateral Movement Auth Chain, prompt-trap-001, before \`NOT READY\` score \`60\`, after \`READY\` score \`100\`, 76 redacted MCP bridge frames, submission-evidence/real-splunk-stress/splunk-web-evidence-results.png | live-security-proof |
 | The real Splunk stress proof is replayable through a guarded operator command. | Supported | submission-evidence/real-splunk-stress-replay/automation-manifest.json, source: "splunkready-real-splunk-stress-replay", SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1, submission-evidence/real-splunk-stress-replay/real-splunk-stress-replay-summary.json, READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF, mcpBridgeFrames: 76 | run-real-splunk-stress-proof |

@@ -64,10 +64,10 @@ reports current target `macos-arm64`, smoke `PASS`, 67 generated artifacts, and
 `mutation: false`. The workflow-dispatch evidence at
 `submission-evidence/standalone-release/standalone-release-matrix.json` proves
 Linux, macOS, and Windows runners each built, smoked, and uploaded standalone
-artifacts. The public `v0.1.5` GitHub Release now publishes the Linux, macOS,
+artifacts. The public `v0.1.6` GitHub Release now publishes the Linux, macOS,
 and Windows standalone archives, SHA-256 checksum files, and per-platform
 manifests at
-https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.5. The tracked
+https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6. The tracked
 release evidence is
 `submission-evidence/standalone-release/standalone-release-github-release.json`.
 
