@@ -16411,3 +16411,35 @@ Result:
   `zed-frame-depth`.
 - NOTE: This is real third-party-client evidence with visible flush, but it is
   not a large external-client transcript.
+
+## 2026-06-08T15:07:17Z - Move 192 public package currentness OTP blocker
+
+Context:
+
+- Move 191 pushed stronger tracked Zed MCP evidence after the prepared
+  `splunkready@0.1.6` source release.
+- Public package claims needed a fresh currentness check so the submission pack
+  does not imply that `0.1.6` is public before npm actually publishes it.
+
+Actions:
+
+- Added `moves/moves192.md`.
+- Queried npm for the current public `splunkready` version and `gitHead`.
+- Re-ran public package currentness against npm latest.
+- Re-ran npm release preflight for local `0.1.6`.
+- Attempted `npm publish --access public`.
+- Updated `submission-evidence/claim-ledger.md`,
+  `scripts/audit-submission-copy.mjs`, and the focused submission-copy audit
+  fixture so the public evidence explicitly records the stale/currentness
+  blocker instead of claiming `CURRENT`.
+
+Result:
+
+- PASS: public `splunkready@0.1.5` judge-proof, MCP, live-mock proof,
+  `mcp-recorder`, and policy-registry checks still pass.
+- PASS: npm release preflight reports `status: "READY"` for `0.1.6` and npm
+  auth user `brightybrainiac`.
+- BLOCKED: `npm publish --access public` failed with npm `EOTP`; operator OTP
+  is required.
+- CURRENT PUBLIC STATE: npm latest remains `splunkready@0.1.5`; current source
+  is `0.1.6`; public package currentness evidence reports `status: "STALE"`.

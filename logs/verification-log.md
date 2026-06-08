@@ -17357,3 +17357,40 @@ Result:
   readiness/installability audits, 76 Vitest files / 440 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts,
   submission-copy audit with 393 required claims, and whitespace diff check.
+
+## 2026-06-08T15:07:17Z - Move 192 public package currentness OTP blocker
+
+Commands:
+
+- `npm view splunkready version dist-tags.latest gitHead --json`
+- `npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness`
+- `npm run audit:npm-release-preflight -- --require-ready`
+- `npm publish --access public`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run check`
+
+Result:
+
+- PASS: npm view reports version/latest `0.1.5` and gitHead
+  `a79ee9e9de60b709d2110703004bbe9b1fedc373`.
+- PASS_WITH_STALE: public package currentness wrote
+  `submission-evidence/public-package-currentness/public-package-currentness.json`
+  with `status: "STALE"`, npm latest `0.1.5`, local source `0.1.6`,
+  `localVersionPublished: false`, `latestMatchesLocal: false`, and
+  `gitHeadMatchesPackageInputs: false`; published `0.1.5` judge-proof, MCP,
+  live-mock proof, recorder, and policy-registry checks all report `PASS`.
+- PASS: npm release preflight reports `status: "READY"` for `splunkready@0.1.6`
+  and authenticated npm user `brightybrainiac`.
+- BLOCKED: `npm publish --access public` failed with npm `EOTP`; publish
+  requires an operator one-time password.
+- PASS: updated submission-copy audit passed with 396 required claims.
+- PASS: focused submission-copy audit test passed: 1 file, 3 tests.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 76 Vitest files / 440 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts,
+  submission-copy audit with 396 required claims, and whitespace diff check.

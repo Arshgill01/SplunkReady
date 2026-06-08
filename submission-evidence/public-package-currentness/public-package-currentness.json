@@ -1,6 +1,6 @@
 {
   "source": "splunkready-public-package-currentness",
-  "status": "CURRENT",
+  "status": "STALE",
   "registry": {
     "packageName": "splunkready",
     "versions": [
@@ -12,11 +12,11 @@
       "0.1.5"
     ],
     "latestVersion": "0.1.5",
-    "localVersion": "0.1.5",
-    "localVersionPublished": true,
-    "latestMatchesLocal": true,
+    "localVersion": "0.1.6",
+    "localVersionPublished": false,
+    "latestMatchesLocal": false,
     "latestGitHead": "a79ee9e9de60b709d2110703004bbe9b1fedc373",
-    "packageInputGitHead": "a79ee9e9de60b709d2110703004bbe9b1fedc373",
+    "packageInputGitHead": "55bdd897e7006cd53f742bdb8a3c03877ab73bb8",
     "packageInputPaths": [
       "package.json",
       "package-lock.json",
@@ -29,7 +29,7 @@
       "scripts/run-readiness-score-calibration.mjs"
     ],
     "dirtyPackageInputs": [],
-    "gitHeadMatchesPackageInputs": true
+    "gitHeadMatchesPackageInputs": false
   },
   "publishedJudgeProof": {
     "packageSpec": "splunkready@0.1.5",
@@ -122,7 +122,7 @@
     ],
     "error": null
   },
-  "recommendedAction": "No registry action required.",
+  "recommendedAction": "Publish splunkready@0.1.6 after npm-authenticated release preflight passes, then rerun this audit.",
   "mutation": false,
   "failures": []
 }

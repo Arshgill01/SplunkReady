@@ -1343,3 +1343,14 @@ the external-client evidence is still compact at 7 tracked frames. The MCP
 claim boundary may say "real Zed third-party-client evidence with visible
 flush," but must not claim a large external-client transcript until a future
 session captures one.
+
+Move 192 preserves public package claim honesty after the Zed evidence pass:
+public `splunkready@0.1.5` still passes judge-proof, MCP initialization,
+credential-free live-mock proof, recorder, and policy-registry checks, but
+source package metadata is `0.1.6` and npm latest remains `0.1.5`. npm release
+preflight is `READY`, but `npm publish --access public` is blocked by `EOTP`.
+Residual risk: do not call the public npm package current, mirror it to GitHub
+Packages, tag GitHub Release assets, or update README/Devpost install snippets
+to `0.1.6` until an operator supplies OTP, the publish succeeds, and
+`npm run audit:public-package-currentness -- --require-current --out
+submission-evidence/public-package-currentness` passes.

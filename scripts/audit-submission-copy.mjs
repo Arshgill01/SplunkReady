@@ -75,14 +75,17 @@ const checks = [
   [
     "Claim ledger public package currentness",
     files.claimLedger,
-    "The public registry currentness proof now verifies the published judge-proof, MCP tools, live-mock proof, policy-registry path, source `gitHead`, and `mcp-recorder` gateway before any package is called current."
+    "The public registry currentness proof verifies the published judge-proof, MCP tools, live-mock proof, policy-registry path, source `gitHead`, and `mcp-recorder` gateway before any package is called current, and now reports the release gap honestly after Move 191."
   ],
   ["Claim ledger public package currentness artifact", files.claimLedger, "submission-evidence/public-package-currentness/public-package-currentness.json"],
   ["Claim ledger public package live mock proof", files.claimLedger, "publishedLiveMockProof"],
   ["Claim ledger public package policy registry proof", files.claimLedger, "publishedPolicyRegistry"],
   ["Claim ledger public package recorder proof", files.claimLedger, "publishedRecorder"],
-  ["Claim ledger public package current status", files.claimLedger, 'status: "CURRENT"'],
-  ["Claim ledger public package current gitHead", files.claimLedger, "registry.gitHeadMatchesPackageInputs: true"],
+  ["Claim ledger public package stale status", files.claimLedger, 'status: "STALE"'],
+  ["Claim ledger public package stale latest local", files.claimLedger, "local source `0.1.6`"],
+  ["Claim ledger public package latest mismatch", files.claimLedger, "registry.latestMatchesLocal: false"],
+  ["Claim ledger public package gitHead mismatch", files.claimLedger, "registry.gitHeadMatchesPackageInputs: false"],
+  ["Claim ledger public package recommended action", files.claimLedger, "recommended action to publish `0.1.6`"],
   [
     "Claim ledger standalone release current OS",
     files.claimLedger,
