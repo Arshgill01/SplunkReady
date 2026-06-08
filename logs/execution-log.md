@@ -16547,3 +16547,33 @@ Result:
   commit `8311db4`.
 - PASS: hosted and local asset names match.
 - PASS: hosted manifest remains credential-free and `mutation: false`.
+
+## 2026-06-08T15:45:31Z - Move 196 public npm publish boundary retry
+
+Context:
+
+- Public npm still reported latest `splunkready@0.1.5`.
+- Local package metadata remains `0.1.6`, and Move 195 did not change package
+  input paths.
+- Publishing `0.1.6` is the remaining no-clone public package currentness
+  blocker.
+
+Actions:
+
+- Checked npm registry state for `splunkready`.
+- Re-ran npm release preflight for `0.1.6`.
+- Attempted `npm publish --access public` with the authenticated npm session.
+- Re-ran public package currentness against npm latest.
+- Sent a `cmux notify` request for a fresh operator OTP.
+
+Result:
+
+- READY: npm release preflight reports authenticated user `brightybrainiac`,
+  `0.1.6` available, 194 packed files, and no blockers.
+- BLOCKED: `npm publish --access public` failed with npm `EOTP`; npm requires a
+  current one-time password from the operator.
+- STALE: public package currentness still reports npm latest
+  `splunkready@0.1.5`, local source `0.1.6`, package-input head `8311db4`,
+  and published `0.1.5` judge-proof/MCP/live-mock/recorder/policy probes
+  passing.
+- No public copy was updated to claim `0.1.6`.

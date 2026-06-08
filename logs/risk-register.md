@@ -1385,3 +1385,13 @@ the hosted source commit does not contain the expected input commit. Residual
 risk: future deployments from commits outside the public-demo input ancestry
 must still rerun `npm run audit:hosted-demo-currentness -- --require-current`
 before claiming the hosted URL is current.
+
+Move 196 confirms the public npm release blocker is still external/operator
+controlled: release preflight is ready for `splunkready@0.1.6`, but
+`npm publish --access public` fails with npm `EOTP` until the operator supplies
+a fresh one-time password. Public package currentness remains `STALE` and
+public copy must continue to cite `splunkready@0.1.5` until the publish
+succeeds and
+`npm run audit:public-package-currentness -- --require-current --out
+submission-evidence/public-package-currentness` passes. The operator has been
+notified through `cmux notify`.

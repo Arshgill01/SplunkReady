@@ -17517,3 +17517,28 @@ Result:
   readiness/installability audits, 76 Vitest files / 441 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
   audit with 399 required claims, and whitespace diff check.
+
+## 2026-06-08T15:45:31Z - Move 196 public npm publish boundary retry
+
+Commands:
+
+- `npm view splunkready version dist-tags.latest gitHead --json`
+- `npm run audit:npm-release-preflight -- --require-ready`
+- `npm publish --access public`
+- `npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness`
+- `cmux notify --title "SplunkReady npm OTP needed" --body "npm publish splunkready@0.1.6 is ready but blocked by EOTP. Send a fresh OTP if you want me to publish now."`
+
+Result:
+
+- STALE: `npm view` reports latest `splunkready@0.1.5` with gitHead
+  `a79ee9e9de60b709d2110703004bbe9b1fedc373`.
+- PASS: npm release preflight reports `status: "READY"`, authenticated npm user
+  `brightybrainiac`, package version `0.1.6`, 194 packed files, and no
+  blockers.
+- BLOCKED: `npm publish --access public` failed with npm `EOTP`; no public
+  `0.1.6` package was published.
+- STALE: public package currentness reports npm latest `0.1.5`, local source
+  `0.1.6`, package-input head `8311db4`, `localVersionPublished: false`,
+  published judge-proof `PASS`, MCP `PASS`, live-mock proof `PASS`, recorder
+  `PASS`, policy-registry `PASS`, and `mutation: false`.
+- PASS: `cmux notify` returned `OK`.
