@@ -17400,6 +17400,43 @@ Result:
   readiness/installability audits, 76 Vitest files / 441 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
   audit with 403 required claims, and whitespace diff check.
+
+## 2026-06-08T16:25:18Z - Move 199 public standalone download smoke
+
+Commands:
+
+- `curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz`
+- `curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz.sha256`
+- `shasum -a 256 -c splunkready-macos-arm64.tar.gz.sha256`
+- `tar -xzf splunkready-macos-arm64.tar.gz`
+- `./splunkready judge-proof --out ./judge-proof --json`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: `shasum -a 256 -c` returned
+  `splunkready-macos-arm64.tar.gz: OK`.
+- PASS: standalone `judge-proof` stdout reported `status: "PASS"` and
+  command `judge-proof`.
+- PASS: generated artifact count was 67.
+- PASS: `judge-proof-summary.json` reported `status: "PASS"` and
+  `mutation: false`.
+- PASS: `suite-proof-summary.json` reported `status: "PASS"`, mission count 3,
+  and `mutation: false`.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: submission-copy audit passed with 416 required claims.
+- PASS: focused submission-copy audit test passed: 1 file, 3 tests.
+- PASS: whitespace diff check passed.
+- PASS: `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 76 Vitest files / 441 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
+  audit with 416 required claims, and whitespace diff check.
 - PASS: `npm run check` passed: scaffold verification, runtime-contract
   verification, TypeScript build, UI build, public-demo export audit, package
   readiness/installability audits, 76 Vitest files / 440 tests, secret-env

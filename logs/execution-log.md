@@ -16640,3 +16640,35 @@ Result:
 - PASS: publish job uploaded 9 standalone assets.
 - HONEST BOUNDARY: public npmjs remains `splunkready@0.1.5`; no npm claim was
   advanced.
+
+## 2026-06-08T16:25:18Z - Move 199 public standalone download smoke
+
+Context:
+
+- Move 198 proved the release workflow built, smoked, and uploaded standalone
+  artifacts.
+- The remaining DevX proof was the public URL itself: download from GitHub
+  Releases, verify checksum, extract, and run the binary without Node/npm/npx
+  or a repo checkout.
+
+Actions:
+
+- Added `docs/execplans/public-standalone-download-smoke.md` and
+  `moves/moves199.md`.
+- Downloaded the public `v0.1.6` macOS arm64 archive and `.sha256` file into a
+  clean temp folder.
+- Verified checksum, extracted the archive, and ran
+  `./splunkready judge-proof --out ./judge-proof --json`.
+- Added
+  `submission-evidence/standalone-release/standalone-release-public-download-smoke.json`.
+- Updated README, Devpost copy, submission README, claim ledger, and
+  submission-copy guardrails.
+
+Result:
+
+- PASS: public archive checksum verified.
+- PASS: standalone binary returned `status: "PASS"` for `judge-proof`.
+- PASS: proof run produced 67 generated artifacts with `mutation: false`.
+- HONEST BOUNDARY: only the macOS arm64 public archive was locally downloaded
+  and smoked in this move; all-platform public release existence remains backed
+  by Move 198 release evidence.

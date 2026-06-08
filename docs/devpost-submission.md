@@ -70,6 +70,13 @@ manifests at
 https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6. The tracked
 release evidence is
 `submission-evidence/standalone-release/standalone-release-github-release.json`.
+The macOS arm64 archive was also downloaded from that public release URL,
+checksum-verified with its published `.sha256` file, extracted into a clean temp
+folder, and run as `./splunkready judge-proof --out ./judge-proof --json`
+without Node, npm, `npx`, a repo checkout, Splunk credentials, or live mutation.
+The tracked public-download smoke at
+`submission-evidence/standalone-release/standalone-release-public-download-smoke.json`
+reports `PASS`, 67 generated artifacts, and `mutation: false`.
 
 The credential-free hosted workbench is available at:
 

@@ -1,0 +1,32 @@
+{
+  "source": "splunkready-public-standalone-download-smoke",
+  "status": "PASS",
+  "releaseTag": "v0.1.6",
+  "releaseUrl": "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6",
+  "target": "macos-arm64",
+  "archiveUrl": "https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz",
+  "checksumUrl": "https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz.sha256",
+  "sha256": "d7d67aa433e42c48aea5c8777f9c6e410e8b12e404d98e3a1df24d739688265d",
+  "checksumStatus": "PASS",
+  "cleanFolder": true,
+  "requiresNode": false,
+  "requiresNpm": false,
+  "requiresNpx": false,
+  "requiresRepoCheckout": false,
+  "requiresSplunkCredentials": false,
+  "command": "./splunkready judge-proof --out ./judge-proof --json",
+  "stdoutStatus": "PASS",
+  "stdoutCommand": "judge-proof",
+  "stdoutArtifactCount": 67,
+  "summaryStatus": "PASS",
+  "suiteStatus": "PASS",
+  "suiteMissionCount": 3,
+  "mutation": false,
+  "claimBoundary": {
+    "verifiedAsset": "splunkready-macos-arm64.tar.gz",
+    "allPlatformAssetsExist": true,
+    "allPlatformPublicDownloadsLocallySmoked": false,
+    "npmjsVersionAdvanced": false,
+    "npmjsNoAuthJudgePath": "splunkready@0.1.5"
+  }
+}

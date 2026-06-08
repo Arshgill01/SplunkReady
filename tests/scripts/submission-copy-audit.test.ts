@@ -46,6 +46,8 @@ submission-evidence/standalone-release/standalone-release-current-os.json
 submission-evidence/standalone-release/standalone-release-matrix.json
 https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6
 submission-evidence/standalone-release/standalone-release-github-release.json
+submission-evidence/standalone-release/standalone-release-public-download-smoke.json
+./splunkready judge-proof --out ./judge-proof --json
 real-splunk-stress-llm-layer/
 llm-deliberation-before.json
 llm-claim-audit-before.json
@@ -127,6 +129,8 @@ submission-evidence/standalone-release/standalone-release-current-os.json
 submission-evidence/standalone-release/standalone-release-matrix.json
 https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6
 submission-evidence/standalone-release/standalone-release-github-release.json
+submission-evidence/standalone-release/standalone-release-public-download-smoke.json
+./splunkready judge-proof --out ./judge-proof --json
 submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl
 submission-evidence/splunk-app-install/splunk-app-install-proof.json
 submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json
@@ -173,6 +177,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | The current source can produce a current-OS no-Node standalone release archive that runs judge proof from a clean temp folder. | Supported | submission-evidence/standalone-release/standalone-release-current-os.json, target \`macos-arm64\`, smoke \`status: "PASS"\`, 67 generated artifacts, releaseClaimBoundary.allPlatformReleaseRequiresTagWorkflow: true | npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json |
 | The release-artifacts workflow builds, smokes, and uploads standalone archives on Linux, macOS, and Windows runners. | Supported | submission-evidence/standalone-release/standalone-release-matrix.json, run \`27128293723\`, splunkready-standalone-Linux-X64, splunkready-standalone-macOS-ARM64, splunkready-standalone-Windows-X64 | gh workflow run release-artifacts.yml --ref splunkready-build; gh run watch 27128293723 --exit-status |
 | The public \`v0.1.6\` GitHub Release publishes no-Node standalone assets for Linux, macOS, and Windows with checksums and per-platform manifests. | Supported | submission-evidence/standalone-release/standalone-release-github-release.json, https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6, 27150182301, splunkready-linux-x64.tar.gz, splunkready-macos-arm64.tar.gz, splunkready-windows-x64.tar.gz, standalone-release-windows-x64.json | gh run watch 27150182301 --exit-status |
+| The public \`v0.1.6\` macOS standalone archive downloads from GitHub Releases, verifies its checksum, and runs judge proof without Node/npm/npx. | Supported | submission-evidence/standalone-release/standalone-release-public-download-smoke.json, source: "splunkready-public-standalone-download-smoke", status: "PASS", target \`macos-arm64\`, checksumStatus: "PASS", command \`./splunkready judge-proof --out ./judge-proof --json\`, stdout command \`judge-proof\`, 67 generated artifacts, requiresNode: false, requiresNpm: false, requiresNpx: false, requiresRepoCheckout: false, requiresSplunkCredentials: false, mutation: false | curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz; curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz.sha256; shasum -a 256 -c splunkready-macos-arm64.tar.gz.sha256; tar -xzf splunkready-macos-arm64.tar.gz; ./splunkready judge-proof --out ./judge-proof --json |
 | The repository has a GitHub Packages npm mirror linked to the GitHub package sidebar. | Supported | submission-evidence/github-package-currentness/github-package-currentness.json, @arshgill01/splunkready@0.1.6, package URL https://github.com/users/Arshgill01/packages/npm/package/splunkready, unauthenticated npmjs judge path remains splunkready@0.1.5 | GitHub Packages run 27149553852 published and verified the scoped package with npm view |
 | A fresh disposable Splunk Enterprise deployment can run the flagship security proof under stress data. | Supported | submission-evidence/real-splunk-stress/real-splunk-stress-summary.json, Splunk Enterprise \`10.4.0\`, SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain, search::ES - Lateral Movement Auth Chain, prompt-trap-001, before \`NOT READY\` score \`60\`, after \`READY\` score \`100\`, 76 redacted MCP bridge frames, submission-evidence/real-splunk-stress/splunk-web-evidence-results.png | live-security-proof |
 | The real Splunk stress proof is replayable through a guarded operator command. | Supported | submission-evidence/real-splunk-stress-replay/automation-manifest.json, source: "splunkready-real-splunk-stress-replay", SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1, submission-evidence/real-splunk-stress-replay/real-splunk-stress-replay-summary.json, READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF, mcpBridgeFrames: 76 | run-real-splunk-stress-proof |

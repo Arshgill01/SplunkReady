@@ -118,6 +118,23 @@ const checks = [
   ["Claim ledger public GitHub release macOS asset", files.claimLedger, "splunkready-macos-arm64.tar.gz"],
   ["Claim ledger public GitHub release Windows asset", files.claimLedger, "splunkready-windows-x64.tar.gz"],
   ["Claim ledger public GitHub release manifest", files.claimLedger, "standalone-release-windows-x64.json"],
+  [
+    "Claim ledger public standalone download smoke",
+    files.claimLedger,
+    "The public `v0.1.6` macOS standalone archive downloads from GitHub Releases, verifies its checksum, and runs judge proof without Node/npm/npx."
+  ],
+  [
+    "Claim ledger public standalone download evidence",
+    files.claimLedger,
+    "submission-evidence/standalone-release/standalone-release-public-download-smoke.json"
+  ],
+  ["Claim ledger public standalone download status", files.claimLedger, 'source: "splunkready-public-standalone-download-smoke"'],
+  ["Claim ledger public standalone download checksum", files.claimLedger, 'checksumStatus: "PASS"'],
+  ["Claim ledger public standalone download command", files.claimLedger, "./splunkready judge-proof --out ./judge-proof --json"],
+  ["Claim ledger public standalone download no node", files.claimLedger, "requiresNode: false"],
+  ["Claim ledger public standalone download no npm", files.claimLedger, "requiresNpm: false"],
+  ["Claim ledger public standalone download no npx", files.claimLedger, "requiresNpx: false"],
+  ["Claim ledger public standalone download mutation", files.claimLedger, "mutation: false"],
   ["Claim ledger GitHub Packages row", files.claimLedger, "The repository has a GitHub Packages npm mirror linked to the GitHub package sidebar."],
   ["Claim ledger GitHub Packages version", files.claimLedger, "@arshgill01/splunkready@0.1.6"],
   ["Claim ledger GitHub Packages run", files.claimLedger, "27149553852"],
@@ -179,10 +196,22 @@ const checks = [
   ["README standalone release matrix evidence", files.readme, "submission-evidence/standalone-release/standalone-release-matrix.json"],
   ["README standalone release public URL", files.readme, "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6"],
   ["README standalone release public evidence", files.readme, "submission-evidence/standalone-release/standalone-release-github-release.json"],
+  [
+    "README standalone release public download evidence",
+    files.readme,
+    "submission-evidence/standalone-release/standalone-release-public-download-smoke.json"
+  ],
+  ["README standalone release public download command", files.readme, "./splunkready judge-proof --out ./judge-proof --json"],
   ["Devpost standalone release evidence", files.devpost, "submission-evidence/standalone-release/standalone-release-current-os.json"],
   ["Devpost standalone release matrix evidence", files.devpost, "submission-evidence/standalone-release/standalone-release-matrix.json"],
   ["Devpost standalone release public URL", files.devpost, "https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6"],
   ["Devpost standalone release public evidence", files.devpost, "submission-evidence/standalone-release/standalone-release-github-release.json"],
+  [
+    "Devpost standalone release public download evidence",
+    files.devpost,
+    "submission-evidence/standalone-release/standalone-release-public-download-smoke.json"
+  ],
+  ["Devpost standalone release public download command", files.devpost, "./splunkready judge-proof --out ./judge-proof --json"],
   [
     "Claim ledger hosted demo currentness",
     files.claimLedger,

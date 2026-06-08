@@ -69,6 +69,21 @@ archives, SHA-256 checksum files, and per-platform manifests at
 https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.6; tracked evidence
 is in
 `submission-evidence/standalone-release/standalone-release-github-release.json`.
+The macOS arm64 archive was also downloaded back from that public URL,
+checksum-verified, extracted in a clean temp folder, and run with:
+
+```bash
+curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz
+curl -fsSLO https://github.com/Arshgill01/SplunkReady/releases/download/v0.1.6/splunkready-macos-arm64.tar.gz.sha256
+shasum -a 256 -c splunkready-macos-arm64.tar.gz.sha256
+tar -xzf splunkready-macos-arm64.tar.gz
+./splunkready judge-proof --out ./judge-proof --json
+```
+
+That public-download smoke is tracked at
+`submission-evidence/standalone-release/standalone-release-public-download-smoke.json`
+and reports `PASS`, 67 generated artifacts, and `mutation: false` without
+Node, npm, `npx`, a repo checkout, Splunk credentials, or live mutation.
 
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, writes `compiler-diagnostics.json` / `.md` showing deterministic rule activation and resolution from readiness profiles and receipts, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 

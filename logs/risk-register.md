@@ -1411,3 +1411,11 @@ evidence that `splunkready@0.1.6` is public on npm. Residual risk: the release
 workflow emitted Node 20 deprecation warnings for `actions/upload-artifact@v4`
 and `actions/download-artifact@v4`; the release passed, but the workflow should
 be moved to Node 24-compatible action behavior in a future maintenance move.
+
+Move 199 proves the public `v0.1.6` macOS arm64 standalone archive downloads
+from GitHub Releases, verifies its published SHA-256 checksum, extracts in a
+clean temp folder, and runs `judge-proof` with `PASS`, 67 generated artifacts,
+and `mutation: false` without Node/npm/npx, a repo checkout, Splunk
+credentials, or live mutation. Residual risk: this move locally smoked only the
+current operator platform asset; Linux and Windows public asset existence and
+pre-upload smoke remain backed by the Move 198 release workflow evidence.
