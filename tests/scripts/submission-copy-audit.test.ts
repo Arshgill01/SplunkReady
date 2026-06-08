@@ -30,6 +30,8 @@ Readiness Receipt
 Fixture mode is the default path. It requires no Splunk credentials
 SplunkReady never auto-mutates Splunk
 deterministic grader rules decide pass/fail
+submission-evidence/readiness-score-calibration/
+READY \`100\`, NEEDS REVIEW \`88\`, and NOT READY \`59\`
 Not a Splunk chatbot.
 Not a SOC copilot.
 Not MCP telemetry.
@@ -155,6 +157,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | Claim | Status | Evidence | Verification |
 | --- | --- | --- | --- |
 | The package is published on npm and the current published no-clone judge proof is smoke-tested. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json |
+| The deterministic readiness score is severity-weighted and non-binary, not hardcoded to 0/100. | Supported | submission-evidence/readiness-score-calibration/readiness-score-calibration.json, contractVersion: "readiness-score-calibration-v1", status: "PASS", passFailAuthority: "deterministic-rule-engine", mutation: false, \`NEEDS REVIEW\`, intermediate scores \`88\` and \`59\`, provesNonBinaryScoring: true | npm run score-calibration |
 | The public registry currentness proof verifies the current published judge-proof, MCP tools, live-mock proof, and policy-registry paths. | Supported | submission-evidence/public-package-currentness/public-package-currentness.json, publishedLiveMockProof, publishedPolicyRegistry | npm run audit:public-package-currentness |
 | The current source can produce a current-OS no-Node standalone release archive that runs judge proof from a clean temp folder. | Supported | submission-evidence/standalone-release/standalone-release-current-os.json, target \`macos-arm64\`, smoke \`status: "PASS"\`, 67 generated artifacts, releaseClaimBoundary.allPlatformReleaseRequiresTagWorkflow: true | npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json |
 | The release-artifacts workflow builds, smokes, and uploads standalone archives on Linux, macOS, and Windows runners. | Supported | submission-evidence/standalone-release/standalone-release-matrix.json, run \`27128293723\`, splunkready-standalone-Linux-X64, splunkready-standalone-macOS-ARM64, splunkready-standalone-Windows-X64 | gh workflow run release-artifacts.yml --ref splunkready-build; gh run watch 27128293723 --exit-status |

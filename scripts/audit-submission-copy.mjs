@@ -22,6 +22,8 @@ const checks = [
   ["README fixture no credentials", files.readme, "Fixture mode is the default path. It requires no Splunk credentials"],
   ["README no auto mutation", files.readme, "SplunkReady never auto-mutates Splunk"],
   ["README deterministic pass/fail", files.readme, "deterministic grader rules decide pass/fail"],
+  ["README score calibration evidence", files.readme, "submission-evidence/readiness-score-calibration/"],
+  ["README score calibration examples", files.readme, "READY `100`, NEEDS REVIEW `88`, and NOT READY `59`"],
   ["README not chatbot", files.readme, "Not a Splunk chatbot."],
   ["README not copilot", files.readme, "Not a SOC copilot."],
   ["README not telemetry", files.readme, "Not MCP telemetry."],
@@ -46,6 +48,24 @@ const checks = [
     files.claimLedger,
     "The package is published on npm and the current published no-clone judge proof is smoke-tested."
   ],
+  [
+    "Claim ledger readiness score calibration",
+    files.claimLedger,
+    "The deterministic readiness score is severity-weighted and non-binary, not hardcoded to 0/100."
+  ],
+  [
+    "Claim ledger readiness score calibration artifact",
+    files.claimLedger,
+    "submission-evidence/readiness-score-calibration/readiness-score-calibration.json"
+  ],
+  ["Claim ledger readiness score calibration contract", files.claimLedger, 'contractVersion: "readiness-score-calibration-v1"'],
+  ["Claim ledger readiness score calibration status", files.claimLedger, 'status: "PASS"'],
+  ["Claim ledger readiness score calibration authority", files.claimLedger, 'passFailAuthority: "deterministic-rule-engine"'],
+  ["Claim ledger readiness score calibration mutation", files.claimLedger, "mutation: false"],
+  ["Claim ledger readiness score calibration needs review", files.claimLedger, "`NEEDS REVIEW`"],
+  ["Claim ledger readiness score calibration intermediate scores", files.claimLedger, "intermediate scores `88` and `59`"],
+  ["Claim ledger readiness score calibration proof", files.claimLedger, "provesNonBinaryScoring: true"],
+  ["Claim ledger readiness score calibration command", files.claimLedger, "npm run score-calibration"],
   ["Claim ledger npm package page", files.claimLedger, "https://www.npmjs.com/package/splunkready"],
   ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json"],
   [

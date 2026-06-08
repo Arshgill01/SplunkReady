@@ -15881,3 +15881,39 @@ Result:
   claim and no hallucinated refs.
 - PASS: Playwright snapshot confirmed the workbench renders claim-audit status,
   claim counts, observed refs, and per-claim matched/missing refs.
+
+## 2026-06-08T12:16:39Z - Move 179 readiness score calibration
+
+Intent:
+
+- Answer the static score concern with deterministic evidence that the
+  readiness score is severity-weighted and non-binary.
+- Keep the existing readiness authority intact: deterministic rules still
+  decide pass/fail, and this move does not make LLM scoring authoritative.
+
+Actions:
+
+- Added `moves/moves179.md` and
+  `src/workflows/readiness-score-calibration.ts`.
+- Added `scripts/run-readiness-score-calibration.mjs` and the
+  `npm run score-calibration` script.
+- Built three calibration scenarios through the existing
+  `scoreMissionReadiness` scorer: clean `READY` `100`, High blocker
+  `NEEDS REVIEW` `88`, and Critical+Medium `NOT READY` `59`.
+- Wrote tracked JSON and Markdown evidence under
+  `submission-evidence/readiness-score-calibration/`.
+- Updated README, evidence README, claim ledger, submission-copy audit checks,
+  and the evidence-pack SHA-256 manifest.
+- Added focused workflow and submission-copy audit tests.
+- Included the calibration runner in the package whitelist so the npm script is
+  not broken in packed installs.
+
+Result:
+
+- PASS: focused calibration and submission-copy tests passed.
+- PASS: `npm run score-calibration` wrote `PASS` evidence with verdicts
+  `READY`, `NEEDS REVIEW`, and `NOT READY`, intermediate scores `88` and `59`,
+  and `mutation: false`.
+- PASS: submission-copy audit passed with 350 required claims.
+- PASS: evidence-pack SHA-256 verification passed.
+- PASS: full `npm run check` passed with 75 test files and 436 tests.

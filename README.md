@@ -683,7 +683,7 @@ SplunkReady targets the Platform & Developer Experience track. The product story
 
 ## Primary Artifact
 
-The Readiness Receipt is the product artifact. It records the environment contract version, mission suite version, trace evidence, deterministic violations, score, verdict, and policy patch summary. The companion readiness profile records why the rule surface is active for this Splunk deployment.
+The Readiness Receipt is the product artifact. It records the environment contract version, mission suite version, trace evidence, deterministic violations, score, verdict, and policy patch summary. The score is severity-weighted and thresholded by deterministic blockers, not hardcoded to `0` or `100`; the calibration artifact under `submission-evidence/readiness-score-calibration/` shows READY `100`, NEEDS REVIEW `88`, and NOT READY `59` examples from the same scorer. The companion readiness profile records why the rule surface is active for this Splunk deployment.
 
 ## Architecture
 

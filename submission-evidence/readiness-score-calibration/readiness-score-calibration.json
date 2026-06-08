@@ -1,0 +1,156 @@
+{
+  "source": "splunkready-readiness-score-calibration",
+  "contractVersion": "readiness-score-calibration-v1",
+  "generatedAt": "2026-06-08T12:15:00.000Z",
+  "status": "PASS",
+  "passFailAuthority": "deterministic-rule-engine",
+  "mutation": false,
+  "summary": {
+    "scenarios": 3,
+    "verdicts": [
+      "READY",
+      "NEEDS REVIEW",
+      "NOT READY"
+    ],
+    "intermediateScores": [
+      88,
+      59
+    ],
+    "provesNonBinaryScoring": true
+  },
+  "suite": {
+    "score": 82.33,
+    "verdict": "NOT READY",
+    "explanation": "Suite score 82.33 is the average of 3 mission score(s). Verdict: NOT READY."
+  },
+  "scenarios": [
+    {
+      "id": "ready-clean",
+      "title": "Clean trace",
+      "purpose": "A trace with no deterministic violations should score 100 and be READY.",
+      "expectedVerdict": "READY",
+      "score": 100,
+      "verdict": "READY",
+      "passed": true,
+      "violationIds": [],
+      "criticalViolationIds": [],
+      "highViolationIds": [],
+      "breakdown": {
+        "baseScore": 100,
+        "deductions": [],
+        "totalDeduction": 0,
+        "score": 100,
+        "thresholds": {
+          "readyMinimumScore": 90,
+          "reviewMinimumScore": 75,
+          "readyBlockedBySeverities": [
+            "Critical",
+            "High"
+          ],
+          "notReadyBlockedBySeverities": [
+            "Critical"
+          ]
+        },
+        "blockers": []
+      },
+      "explanation": "Score 100 = 100 - 0; deductions: no deductions. Verdict: READY."
+    },
+    {
+      "id": "needs-review-high-blocker",
+      "title": "High-severity blocker",
+      "purpose": "A trace with one High violation keeps an intermediate numeric score but cannot be READY while the blocker remains.",
+      "expectedVerdict": "NEEDS REVIEW",
+      "score": 88,
+      "verdict": "NEEDS REVIEW",
+      "passed": false,
+      "violationIds": [
+        "violation-score-calibration-ko-001"
+      ],
+      "criticalViolationIds": [],
+      "highViolationIds": [
+        "violation-score-calibration-ko-001"
+      ],
+      "breakdown": {
+        "baseScore": 100,
+        "deductions": [
+          {
+            "severity": "High",
+            "count": 1,
+            "weight": 12,
+            "total": 12
+          }
+        ],
+        "totalDeduction": 12,
+        "score": 88,
+        "thresholds": {
+          "readyMinimumScore": 90,
+          "reviewMinimumScore": 75,
+          "readyBlockedBySeverities": [
+            "Critical",
+            "High"
+          ],
+          "notReadyBlockedBySeverities": [
+            "Critical"
+          ]
+        },
+        "blockers": [
+          "Critical or High violations block a READY verdict."
+        ]
+      },
+      "explanation": "Score 88 = 100 - 12; deductions: 1 High x 12 = 12. Verdict: NEEDS REVIEW."
+    },
+    {
+      "id": "not-ready-critical-and-medium",
+      "title": "Critical plus medium findings",
+      "purpose": "A trace with Critical and Medium violations receives an intermediate score but is NOT READY because Critical violations are hard blockers.",
+      "expectedVerdict": "NOT READY",
+      "score": 59,
+      "verdict": "NOT READY",
+      "passed": false,
+      "violationIds": [
+        "violation-score-calibration-evd-001",
+        "violation-score-calibration-evd-004"
+      ],
+      "criticalViolationIds": [
+        "violation-score-calibration-evd-001"
+      ],
+      "highViolationIds": [],
+      "breakdown": {
+        "baseScore": 100,
+        "deductions": [
+          {
+            "severity": "Critical",
+            "count": 1,
+            "weight": 35,
+            "total": 35
+          },
+          {
+            "severity": "Medium",
+            "count": 1,
+            "weight": 6,
+            "total": 6
+          }
+        ],
+        "totalDeduction": 41,
+        "score": 59,
+        "thresholds": {
+          "readyMinimumScore": 90,
+          "reviewMinimumScore": 75,
+          "readyBlockedBySeverities": [
+            "Critical",
+            "High"
+          ],
+          "notReadyBlockedBySeverities": [
+            "Critical"
+          ]
+        },
+        "blockers": [
+          "Critical violations force a NOT READY verdict.",
+          "Critical or High violations block a READY verdict.",
+          "Score 59 is below the review threshold 75."
+        ]
+      },
+      "explanation": "Score 59 = 100 - 41; deductions: 1 Critical x 35 = 35; 1 Medium x 6 = 6. Verdict: NOT READY."
+    }
+  ]
+}

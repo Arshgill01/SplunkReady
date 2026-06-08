@@ -16794,3 +16794,32 @@ Result:
 - PASS: full `npm run check` passed with 74 test files and 434 tests.
 - NOTE: the Playwright wrapper was invoked with `bash` because the wrapper file
   is not executable in this environment.
+
+## 2026-06-08T12:16:39Z - Move 179 readiness score calibration
+
+Commands:
+
+- `npm run build`
+- `npx vitest run tests/workflows/readiness-score-calibration.test.ts`
+- `npm run score-calibration`
+- `npx vitest run tests/workflows/readiness-score-calibration.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: TypeScript build completed before generating calibration evidence.
+- PASS: focused calibration test passed with 1 file and 2 tests.
+- PASS: `npm run score-calibration` wrote
+  `submission-evidence/readiness-score-calibration/readiness-score-calibration.json`
+  and `.md` with `status: "PASS"`, `mutation: false`, verdicts `READY`,
+  `NEEDS REVIEW`, and `NOT READY`, and intermediate scores `88` and `59`.
+- PASS: focused calibration plus submission-copy tests passed with 2 files and
+  5 tests.
+- PASS: submission-copy audit passed with 350 required claims.
+- PASS: evidence-pack SHA-256 verification passed.
+- PASS: whitespace diff check passed.
+- PASS: full `npm run check` passed with 75 test files and 436 tests, including
+  package readiness and package installability audits.

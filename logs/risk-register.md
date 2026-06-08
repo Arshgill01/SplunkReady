@@ -1216,3 +1216,10 @@ boundary is deliberate. The deterministic Readiness Receipt remains the
 readiness authority, which is why the current replay can show a strong
 before-policy LLM advisory score while the before receipt remains `NOT READY`
 with score `0`.
+
+Move 179 adds deterministic calibration evidence for the existing scorer and
+proves non-binary readiness scores (`100`, `88`, `59`) without changing the
+scoring formula. Residual risk: this is a synthetic credential-free calibration
+suite, not a new live Splunk stress proof. It should be cited only as scorer
+behavior evidence; the flagship real-Splunk proof still reports the scores
+produced by its own violations and blockers.
