@@ -11118,6 +11118,8 @@ Commands:
 - `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
 - `git diff --check`
 - `npm run check`
+- `git diff --check`
+- `npm run check`
 - `npx vitest run tests/scripts/submission-copy-audit.test.ts`
 - `git diff --check`
 - `test ! -d .playwright-cli`
@@ -17391,6 +17393,12 @@ Result:
 - PASS: updated submission-copy audit passed with 396 required claims.
 - PASS: focused submission-copy audit test passed: 1 file, 3 tests.
 - PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: whitespace diff check passed.
+- PASS: `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 76 Vitest files / 440 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts,
+  submission-copy audit with 397 required claims, and whitespace diff check.
 - PASS: `npm run check` passed: scaffold verification, runtime-contract
   verification, TypeScript build, UI build, public-demo export audit, package
   readiness/installability audits, 76 Vitest files / 440 tests, secret-env
@@ -17445,3 +17453,28 @@ Result:
   readiness/installability audits, 76 Vitest files / 440 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts,
   submission-copy audit with 396 required claims, and whitespace diff check.
+
+## 2026-06-08T16:00:00Z - Move 194 refreshed public package currentness blocker
+
+Commands:
+
+- `npm view splunkready version dist-tags.latest gitHead --json`
+- `npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness`
+- `npm run audit:npm-release-preflight -- --require-ready`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- STALE: npm latest is `splunkready@0.1.5` with gitHead
+  `a79ee9e9de60b709d2110703004bbe9b1fedc373`; local source is `0.1.6`;
+  `localVersionPublished: false`; package-input head is `8311db4`.
+- PASS: published `0.1.5` judge-proof, MCP initialization, live-mock proof,
+  `mcp-recorder`, and policy-registry probes all pass.
+- PASS: npm release preflight reports `status: "READY"`, authenticated npm user
+  `brightybrainiac`, and `0.1.6` available for publishing.
+- PASS: submission-copy audit passed with 397 required claims.
+- PASS: focused submission-copy audit test passed: 1 file, 3 tests.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.

@@ -16486,3 +16486,33 @@ Result:
   matching SHA, 6 passing probes, and no secret values written.
 - PASS: Splunkbase readiness reports `ACTION_REQUIRED` with all local checks
   passing and only external publisher/upload/cloud-review blockers remaining.
+
+## 2026-06-08T16:00:00Z - Move 194 refreshed public package currentness blocker
+
+Context:
+
+- Move 193 changed package-input files and pushed commit `8311db4`.
+- Public npm still reported latest `splunkready@0.1.5`, so public currentness
+  evidence needed to be refreshed to avoid pointing at the older Move 190
+  package-input commit.
+
+Actions:
+
+- Added `moves/moves194.md`.
+- Re-ran public package currentness against npm latest.
+- Re-ran npm release preflight without publishing.
+- Updated claim ledger, submission README, submission-copy guardrails, and the
+  focused submission-copy fixture so public package currentness says stale for
+  the current Move 193 package-input head.
+- Regenerated the submission evidence SHA-256 ledger.
+
+Result:
+
+- STALE: npm latest remains `splunkready@0.1.5`; local source remains `0.1.6`;
+  package-input head is now `8311db4`.
+- PASS: published `0.1.5` judge-proof, MCP initialization, live-mock proof,
+  recorder gateway, and policy-registry checks all still pass.
+- PASS: npm release preflight reports `status: "READY"` for `0.1.6` and npm
+  auth user `brightybrainiac`.
+- BLOCKED: publishing `0.1.6` still requires operator OTP; no blind publish was
+  attempted in this move.

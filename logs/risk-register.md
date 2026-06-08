@@ -1366,3 +1366,13 @@ account submission, public Splunkbase listing, and Splunk Cloud review remain
 external operator/Splunk-controlled steps; do not claim "Available on
 Splunkbase" until the public listing exists. Public npm currentness remains the
 separate Move 192 OTP blocker.
+
+Move 194 refreshes the public npm currentness blocker after Move 193 changed
+package-input files: the audit now records package-input head `8311db4`, npm
+latest `splunkready@0.1.5`, local source `0.1.6`, and published `0.1.5`
+judge-proof/MCP/live-mock/recorder/policy probes all passing. Residual risk:
+the no-clone npm path is intentionally stale until the operator publishes
+`splunkready@0.1.6` with OTP and reruns
+`npm run audit:public-package-currentness -- --require-current --out
+submission-evidence/public-package-currentness`; do not update GitHub Packages,
+GitHub Release, or README/Devpost no-clone snippets to `0.1.6` before that.
