@@ -17826,3 +17826,53 @@ Result:
   `version: v0.1.7`.
 - PASS: `npm run check` passed remotely.
 - PASS: remote CI built and smoked the mock Splunk MCP Docker image.
+
+## 2026-06-08T17:00:18Z - Move 202 public npm currentness attempt
+
+Commands:
+
+- `npm view splunkready version`
+- `npm view splunkready versions --json`
+- `npm run audit:npm-release-preflight -- --require-ready`
+- `npm publish --access public`
+- `cmux notify "SplunkReady npm publish needs OTP: npm publish --access public for splunkready@0.1.7 failed with EOTP. Send a fresh npm one-time password if you want me to retry immediately."`
+- `npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness`
+
+Result:
+
+- STALE: `npm view splunkready version` returned `0.1.5`.
+- STALE: `npm view splunkready versions --json` returned versions through
+  `0.1.5`; `0.1.7` is absent.
+- PASS: release preflight returned `READY`, authenticated as
+  `brightybrainiac`, with `splunkready@0.1.7` available and 194 packed files.
+- BLOCKED: `npm publish --access public` failed with npm `EOTP`; npm requires a
+  one-time password.
+- PASS: `cmux notify` returned `OK`.
+- STALE: public-package currentness evidence reports latest `0.1.5`, local
+  `0.1.7`, `localVersionPublished: false`, no dirty package inputs, and
+  published `0.1.5` judge-proof/MCP/live-mock/recorder/policy-registry probes
+  passing.
+
+## 2026-06-08T17:03:41Z - Move 202 blocker evidence gate
+
+Commands:
+
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `git diff --check`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run check`
+
+Result:
+
+- PASS: submission-copy audit passed with 442 required claims.
+- PASS: focused submission-copy audit test passed: 1 file, 3 tests.
+- PASS: whitespace diff check passed.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: `npm run check` passed with package version `0.1.7`: scaffold
+  verification, runtime-contract verification, TypeScript build, UI build,
+  public-demo export audit, package readiness audit, package installability
+  audit, 76 Vitest files / 443 tests, secret-env ignore audit, reviewer audit
+  with 0 failing latest verdicts, submission-copy audit with 442 required
+  claims, and whitespace diff check.

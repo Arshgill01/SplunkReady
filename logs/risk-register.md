@@ -1436,3 +1436,11 @@ is not the unauthenticated judge path. Release Artifacts still emits GitHub
 Node 20 deprecation warnings for `actions/upload-artifact@v4` and
 `actions/download-artifact@v4`; the workflow passes, but this should be cleaned
 up before GitHub's forced Node 24 migration.
+
+Move 202 confirms public npmjs remains externally blocked: release preflight is
+READY for `splunkready@0.1.7`, but `npm publish --access public` failed with
+npm `EOTP`. The operator was notified through `cmux notify`. Residual risk:
+the unauthenticated judge path must remain `npx -y splunkready@0.1.5 ...`
+until a fresh OTP is supplied, publish succeeds, and
+`npm run audit:public-package-currentness -- --require-current --out
+submission-evidence/public-package-currentness` passes.

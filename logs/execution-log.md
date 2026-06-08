@@ -16809,3 +16809,33 @@ Result:
 - PASS: `npm run check` job completed in 1m29s.
 - PASS: CI also ran credential-free live-mock proof, Docker mock Splunk MCP
   image build, and Docker mock Splunk MCP smoke test.
+
+## 2026-06-08T17:00:18Z - Move 202 public npm currentness attempt
+
+Context:
+
+- Move 201 made source, GitHub Release, setup action, and GitHub Packages
+  current at `0.1.7`.
+- Public npm remained the unauthenticated judge-path gap.
+
+Actions:
+
+- Added `docs/execplans/public-npm-017-currentness.md` and
+  `moves/moves202.md`.
+- Verified the public npm registry still reports latest `splunkready@0.1.5`
+  and no `0.1.7` version.
+- Ran npm release preflight for `splunkready@0.1.7`.
+- Attempted `npm publish --access public`.
+- Sent `cmux notify` asking the operator for a fresh npm OTP.
+- Refreshed
+  `submission-evidence/public-package-currentness/public-package-currentness.json`.
+
+Result:
+
+- READY: release preflight reports authenticated npm user `brightybrainiac`,
+  package `splunkready@0.1.7`, version available, and 194 packed files.
+- BLOCKED: `npm publish --access public` failed with npm `EOTP`; npm requires
+  a fresh one-time password.
+- STALE: public npm latest remains `splunkready@0.1.5`. The currentness audit
+  keeps the no-auth judge path on `0.1.5` and verifies that published
+  judge-proof, MCP, live-mock, recorder, and policy-registry probes still pass.

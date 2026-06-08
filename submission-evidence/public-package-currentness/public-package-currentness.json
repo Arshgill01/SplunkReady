@@ -16,7 +16,7 @@
     "localVersionPublished": false,
     "latestMatchesLocal": false,
     "latestGitHead": "a79ee9e9de60b709d2110703004bbe9b1fedc373",
-    "packageInputGitHead": "e71de1c4f61e4560e91ce6dc178cdeb5bb09a903",
+    "packageInputGitHead": "4ad68159b65f3920c323cacda6ffcbd563e54b60",
     "packageInputPaths": [
       "package.json",
       "package-lock.json",
@@ -28,10 +28,7 @@
       "policies",
       "scripts/run-readiness-score-calibration.mjs"
     ],
-    "dirtyPackageInputs": [
-      "package-lock.json",
-      "package.json"
-    ],
+    "dirtyPackageInputs": [],
     "gitHeadMatchesPackageInputs": false
   },
   "publishedJudgeProof": {
