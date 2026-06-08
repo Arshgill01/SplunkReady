@@ -1147,3 +1147,9 @@ and Windows, and uploaded three workflow artifacts. Residual risk narrows to
 publication: these are GitHub Actions workflow artifacts, not public GitHub
 Release assets. Public release-asset claims still require a tag-triggered
 workflow run that publishes the archives to a versioned GitHub Release.
+
+Move 172 targets the publication residual risk. The first local hardening pass
+removes a tag-workflow race by publishing GitHub Release assets from one
+post-matrix job instead of from each matrix runner. Residual risk: this remains
+unproven until the `v0.1.3` tag workflow builds, smokes, downloads, and uploads
+all 9 expected release files successfully.

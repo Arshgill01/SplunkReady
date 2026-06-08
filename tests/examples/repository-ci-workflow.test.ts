@@ -70,4 +70,28 @@ describe("repository CI workflow", () => {
     expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_TOKEN");
     expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_URL");
   });
+
+  it("builds standalone release artifacts in a matrix and publishes releases once", async () => {
+    const workflow = await readFile(new URL("../../.github/workflows/release-artifacts.yml", import.meta.url), "utf8");
+
+    expect(workflow).toContain("name: Release Artifacts");
+    expect(workflow).toContain("workflow_dispatch:");
+    expect(workflow).toContain("tags:");
+    expect(workflow).toContain('- "v*"');
+    expect(workflow).toContain("contents: write");
+    expect(workflow).toContain("matrix:");
+    expect(workflow).toContain("- ubuntu-latest");
+    expect(workflow).toContain("- macos-latest");
+    expect(workflow).toContain("- windows-latest");
+    expect(workflow).toContain("node scripts/build-standalone-release.mjs --smoke");
+    expect(workflow).toContain("uses: actions/upload-artifact@v4");
+    expect(workflow).toContain("publish-release:");
+    expect(workflow).toContain("needs: standalone");
+    expect(workflow).toContain("uses: actions/download-artifact@v4");
+    expect(workflow).toContain("Expected 9 release assets");
+    expect(workflow).toContain('gh release upload "${tag}" "${assets[@]}" --clobber');
+    expect(workflow).not.toContain("GEMINI_API_KEY");
+    expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_TOKEN");
+    expect(workflow).not.toContain("SPLUNKREADY_SPLUNK_MCP_URL");
+  });
 });

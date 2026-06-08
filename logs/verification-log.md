@@ -16452,3 +16452,20 @@ Result:
 - PASS: submission-copy audit passed with 292 required claims.
 - PASS: whitespace diff check passed.
 - PASS: final `npm run check` passed with 73 test files and 429 tests.
+
+## 2026-06-08T09:35:10Z - Move 172 Public GitHub Release assets
+
+Commands:
+
+- `npx vitest run tests/examples/repository-ci-workflow.test.ts`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: focused workflow tests passed with 1 file and 4 tests, including the
+  release-artifacts matrix and single post-matrix publisher job.
+- PASS: submission-copy audit passed with 292 required claims.
+- PASS: whitespace diff check passed.
+- PASS: full `npm run check` passed with 73 test files and 430 tests.

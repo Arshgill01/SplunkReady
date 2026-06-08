@@ -15553,3 +15553,26 @@ Result:
   `submission-evidence/standalone-release/` and updated public copy so it can
   claim workflow-dispatch matrix proof while still withholding public GitHub
   Release asset claims until a tag-triggered run publishes them.
+
+## 2026-06-08T09:35:10Z - Move 172 Public GitHub Release assets
+
+Intent:
+
+- Convert the proven standalone release matrix into public GitHub Release assets
+  for `v0.1.3`, matching the current published npm package version.
+
+Actions:
+
+- Added `moves/moves172.md`.
+- Hardened `.github/workflows/release-artifacts.yml` so the Linux/macOS/Windows
+  matrix only builds and uploads workflow artifacts; a single `publish-release`
+  job now runs after the matrix on tag pushes, downloads all artifacts, checks
+  for exactly 9 release files, and uploads them to the GitHub Release.
+- Added repository workflow test coverage for the release-artifacts matrix and
+  single-publisher release job.
+- Added `CHANGELOG.md` with the `v0.1.3` release summary.
+
+Result:
+
+- IN PROGRESS: release workflow race risk is addressed locally; validation and
+  tag-triggered publication are pending.
