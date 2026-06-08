@@ -1,0 +1,160 @@
+{
+  "status": "PASS",
+  "frames": 76,
+  "requests": 38,
+  "responses": 38,
+  "errors": 0,
+  "tools": [
+    "splunk_get_indexes",
+    "splunk_get_info",
+    "splunk_get_knowledge_objects",
+    "splunk_get_metadata",
+    "splunk_get_user_info",
+    "splunk_run_saved_search"
+  ],
+  "resultCounts": [
+    {
+      "toolName": "splunk_get_info"
+    },
+    {
+      "toolName": "splunk_get_user_info"
+    },
+    {
+      "toolName": "splunk_get_indexes"
+    },
+    {
+      "toolName": "splunk_get_metadata",
+      "resultCount": 1
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 178
+    },
+    {
+      "toolName": "splunk_run_saved_search",
+      "resultCount": 4
+    },
+    {
+      "toolName": "splunk_get_info"
+    },
+    {
+      "toolName": "splunk_get_user_info"
+    },
+    {
+      "toolName": "splunk_get_indexes"
+    },
+    {
+      "toolName": "splunk_get_metadata",
+      "resultCount": 1
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 178
+    },
+    {
+      "toolName": "splunk_run_saved_search",
+      "resultCount": 4
+    },
+    {
+      "toolName": "splunk_get_info"
+    },
+    {
+      "toolName": "splunk_get_user_info"
+    },
+    {
+      "toolName": "splunk_get_indexes"
+    },
+    {
+      "toolName": "splunk_get_metadata",
+      "resultCount": 1
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 0
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 178
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 178
+    },
+    {
+      "toolName": "splunk_get_knowledge_objects",
+      "resultCount": 178
+    },
+    {
+      "toolName": "splunk_run_saved_search",
+      "resultCount": 4
+    }
+  ]
+}

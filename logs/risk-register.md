@@ -1166,3 +1166,13 @@ Release. Residual risk: the workflow emits GitHub's Node 20 action deprecation
 warning for `actions/upload-artifact@v4` and `actions/download-artifact@v4`.
 This is not blocking today, but the workflow may need a future action/runtime
 refresh before GitHub's scheduled Node 20 removal window.
+
+Move 173 proves the flagship live security workflow against a disposable real
+Splunk Enterprise `10.4.0` Docker deployment with noisy auth rows, decoy saved
+searches, a wrong-app duplicate saved search, and a prompt-trap event. Residual
+risk: the official `splunk/splunk:latest` image was run as `linux/amd64` under
+Docker Desktop emulation on this Apple Silicon host because no native
+`linux/arm64` image was available. Hosted-model / SAIA tools were still absent
+from this disposable deployment and must not be claimed as passing from this
+proof. The run is strong real-Splunk evidence for the security readiness proof,
+not a hosted-model success.

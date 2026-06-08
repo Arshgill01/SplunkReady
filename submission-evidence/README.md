@@ -1,6 +1,6 @@
 # SplunkReady Submission Evidence
 
-Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, Move 148 signed receipt-chain plus deterministic replay evidence, Move 150 signed policy-registry evidence, Move 157 Splunk app package evidence, Move 158 PR-gate evidence, Move 159 MCP composition-recorder evidence, Move 163 MCP recorder-gateway evidence, Move 164 AppInspect MCP composition evidence, Move 165 live Splunk app install evidence, Move 166 operator receipt-store evidence, Move 167 Splunkbase readiness evidence, Move 168 Splunkbase listing asset evidence, Move 170 standalone release artifact evidence, Move 171 standalone release matrix evidence, and Move 172 public GitHub Release asset evidence.
+Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, Move 148 signed receipt-chain plus deterministic replay evidence, Move 150 signed policy-registry evidence, Move 157 Splunk app package evidence, Move 158 PR-gate evidence, Move 159 MCP composition-recorder evidence, Move 163 MCP recorder-gateway evidence, Move 164 AppInspect MCP composition evidence, Move 165 live Splunk app install evidence, Move 166 operator receipt-store evidence, Move 167 Splunkbase readiness evidence, Move 168 Splunkbase listing asset evidence, Move 170 standalone release artifact evidence, Move 171 standalone release matrix evidence, Move 172 public GitHub Release asset evidence, and Move 173 real Splunk deployment stress-proof evidence.
 
 This directory is the judge-facing evidence pack. It is tracked in git so it can be inspected from a clean clone without access to ignored local `artifacts/`, `.splunkready*` env files, live credentials, or private deployment details.
 
@@ -9,6 +9,7 @@ This directory is the judge-facing evidence pack. It is tracked in git so it can
 - `suite-proof/`: credential-free multi-mission fixture proof. It includes the full proof bundle, compiler diagnostics, strict `proof-audit.json`, `proof-manifest.json`, `proof-manifest-verification.json`, signed `receipt-chain.json`, and deterministic `receipt-replay.json`.
 - `receipt-public-key.pem`: public Ed25519 key for verifying the tracked suite proof receipt-chain signature. The private key is not tracked.
 - `live-mock/`: credential-free live-mode proof generated through `live-proof --live-mock`. It exercises the live adapter normalization boundary against the fixture-backed mock Splunk MCP transport and produces a saved-search fail-to-pass proof with `mode: live` and `mutation: false`.
+- `real-splunk-stress/`: redacted proof from a fresh disposable Splunk Enterprise 10.4.0 Docker deployment. It records operator-approved setup writes, seeded lateral-movement and trap data, a real Splunk Web screenshot, a real REST-backed MCP bridge session, `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`, and a live `NOT READY` score 60 to `READY` score 100 proof with `mutation: false`.
 - `ci-pr-gate/`: credential-free live readiness PR-gate sample. It contains the same live-mock proof shape plus `pr-comment.md` and `ci-pr-gate.json`, the deterministic artifacts used by `.github/workflows/live-certification-gate.yml`.
 - `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, records the raw JSON-RPC client session, discovers tools/resources/resource templates/prompts, reads a templated Readiness Receipt resource, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript through both path-based and inline-content MCP tools, checks hosted-model SAIA access through the MCP server in fixture mode, writes a client walkthrough showing existing Splunk MCP investigation followed by SplunkReady certification, runs the MCP recorder gateway against mock Splunk MCP plus SplunkReady MCP, writes a redacted dual-server recorder session with preserved server IDs, records an advisory Splunk AppInspect MCP composition proof for the current `.spl` package, and verifies the nested transcript proof manifests.
 - `policy-registry/`: signed default, SOC2, and PCI DSS policy bundles. Each installed policy includes `policy.json` and an Ed25519-backed `policy-manifest.json` with `deterministicAuthority: true` and `mutation: false`.
@@ -67,6 +68,17 @@ Expected proof status:
 - live-mock derived strategy: `saved-search-with-evidence`
 - live-mock before verdict: `NOT READY`
 - live-mock after verdict: `READY`
+- real Splunk stress status: `PASS`
+- real Splunk stress deployment: Splunk Enterprise `10.4.0`
+- real Splunk stress contract: 14 indexes, 178 saved searches, 7 MCP bridge tools
+- real Splunk stress exact saved search: `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain`
+- real Splunk stress decoys: `search::ES - Lateral Movement Auth Chain`, `All Authentication Noise - Trap`, `Policy Injection Trap`
+- real Splunk stress evidence refs: `prompt-trap-001`, `live-evt-141`, `live-evt-118`, `live-evt-102`
+- real Splunk stress proof loop: `fail-to-pass`
+- real Splunk stress before verdict: `NOT READY`, score `60`
+- real Splunk stress after verdict: `READY`, score `100`
+- real Splunk stress mutation: `false`
+- real Splunk stress MCP bridge transcript: 76 frames, 38 requests, 38 responses, 0 errors
 - PR gate status: `PASS`
 - PR gate mutation: `false`
 - PR gate proof loop: `fail-to-pass`
@@ -139,3 +151,4 @@ Included refreshed screenshots were captured with Playwright before tracking:
 - `screenshots/public-proof-export-proof-browser.png`: Runs view showing the redacted public proof export panel and manifest verification `PASS`.
 - `screenshots/public-judge-proof-proof-browser.png`: Hosted GitHub Pages proof browser view for the credential-free judge proof bundle, showing `PASS`, `Mutation no`, and advisory-only LLM evidence with deterministic rule-engine authority.
 - `screenshots/interactive-demo.png`: Hosted-style public demo route opened at `?demo=interactive`, then certified the bundled security trace in-browser and rendered `PASS`, `READY`, score `100`, `receipt-interactive-001`, a receipt hash, evidence refs, and `Mutation false`.
+- `real-splunk-stress/splunk-web-evidence-results.png`: Splunk Web screenshot from the disposable Splunk Enterprise deployment showing the 4-event `wineventlog` result table with the three lateral-movement refs and the prompt-injection trap.

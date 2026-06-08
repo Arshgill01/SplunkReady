@@ -1,0 +1,97 @@
+{
+  "status": "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF",
+  "mode": "live",
+  "mutation": false,
+  "proofMode": {
+    "type": "strict-flagship-security",
+    "fallbackAllowed": false,
+    "rationale": "The flagship lateral-movement proof requires the exact saved search and row-level evidence. It does not fall back to generic _internal proof."
+  },
+  "mission": {
+    "id": "mission-security-lateral-movement-readiness",
+    "story": "security investigation readiness"
+  },
+  "setupRequirements": [
+    {
+      "id": "saved-search",
+      "description": "Read-only saved search SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain exists in the live contract.",
+      "satisfied": true,
+      "operatorOwned": true
+    },
+    {
+      "id": "evidence-rows",
+      "description": "Saved search returns at least one row for win-finance-07 in the -24h to now mission window.",
+      "satisfied": true,
+      "operatorOwned": true
+    },
+    {
+      "id": "evidence-identifiers",
+      "description": "Returned rows expose stable evidence identifiers such as eventRef, _cd, _raw, or _time.",
+      "satisfied": true,
+      "operatorOwned": true
+    },
+    {
+      "id": "operator-owned-setup",
+      "description": "Any missing app, index, saved search, or sample event setup is performed by the operator, not SplunkReady.",
+      "satisfied": true,
+      "operatorOwned": true
+    }
+  ],
+  "fallbackPolicy": {
+    "genericLiveCommand": "live-proof",
+    "genericLiveDescription": "Use live-proof only as generic live MCP evidence when the target deployment lacks flagship security content.",
+    "flagshipProofCommand": "live-security-proof",
+    "flagshipDescription": "Use live-security-proof for the prize/demo lateral-movement story after operator-owned setup makes readiness green."
+  },
+  "contract": {
+    "id": "contract-real-docker-splunk",
+    "name": "real-docker-splunk",
+    "indexes": 14,
+    "savedSearches": 178,
+    "tools": 7
+  },
+  "requiredTools": {
+    "expected": [
+      "splunk_get_knowledge_objects",
+      "splunk_run_saved_search"
+    ],
+    "missing": []
+  },
+  "preferredIndex": {
+    "name": "wineventlog",
+    "present": true,
+    "sensitive": false
+  },
+  "requiredSavedSearch": {
+    "app": "SplunkEnterpriseSecuritySuite",
+    "name": "ES - Lateral Movement Auth Chain",
+    "ref": "SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain",
+    "present": true,
+    "nearbySavedSearches": [
+      "search::ES - Lateral Movement Auth Chain",
+      "splunk_monitoring_console::DMC Alert - Abnormal State of Indexer Processor",
+      "splunk_monitoring_console::DMC Alert - Critical System Physical Memory Usage",
+      "splunk_monitoring_console::DMC Alert - Expired and Soon To Expire Licenses",
+      "splunk_monitoring_console::DMC Alert - Missing forwarders",
+      "splunk_monitoring_console::DMC Alert - Near Critical Disk Usage",
+      "splunk_monitoring_console::DMC Alert - Saturated Event-Processing Queues"
+    ],
+    "run": {
+      "attempted": true,
+      "resultCount": 4,
+      "evidenceRefs": [
+        "prompt-trap-001",
+        "live-evt-141",
+        "live-evt-118",
+        "live-evt-102"
+      ],
+      "warnings": []
+    }
+  },
+  "blockers": [
+    "Run live-security-proof with LLM mode enabled; the deployment has the saved-search evidence needed for the flagship live security path."
+  ],
+  "nextActions": [
+    "Run live-security-proof with LLM mode enabled; the deployment has the saved-search evidence needed for the flagship live security path."
+  ]
+}

@@ -15602,3 +15602,51 @@ Result:
   per-platform manifests.
 - PASS: public release asset claims are now enforced by
   `npm run audit:submission-copy`.
+
+## 2026-06-08T13:58:12Z - Move 173 Real Splunk stress proof
+
+Intent:
+
+- Run the flagship SplunkReady live security proof against a disposable real
+  Splunk Enterprise deployment, not a fixture or mock, and record public-safe
+  evidence that shows SplunkReady handling noisy data, decoy saved searches, and
+  a prompt-trap event without mutating Splunk.
+
+Actions:
+
+- Added `moves/moves173.md` to scope the operator-approved real-Splunk stress
+  pass and its evidence contract.
+- Started a disposable Docker Splunk Enterprise container named
+  `splunkready-real-stress` with image `splunk/splunk:latest` on
+  `linux/amd64` under Docker Desktop emulation.
+- Generated the live security kit, then deliberately hardened it with 80 benign
+  authentication-noise rows, one prompt-injection-like evidence row, two decoy
+  saved searches, and one wrong-app duplicate saved search.
+- Installed the generated app into the disposable container, ingested the
+  generated CSV into `wineventlog`, and verified the exact
+  `SplunkEnterpriseSecuritySuite::ES - Lateral Movement Auth Chain` saved search
+  returned the four expected evidence refs.
+- Added `scripts/real-splunk-mcp-bridge.mjs`, a narrow read-only JSON-RPC bridge
+  that exposes real Splunk REST data through the Splunk MCP tool names
+  SplunkReady expects for live proofs.
+- Ran `live-security-check` and `live-security-proof` through the bridge against
+  the real container and captured the bridge JSON-RPC session.
+- Used Playwright against Splunk Web to capture a screenshot of the real saved
+  search result table.
+- Added public-safe evidence under `submission-evidence/real-splunk-stress/`,
+  updated the evidence README and claim ledger, and extended
+  `audit:submission-copy` plus its tests to guard the new claim.
+
+Result:
+
+- PASS: Splunk reports Enterprise version `10.4.0` in the disposable container.
+- PASS: readiness check reports `READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF`, 14
+  indexes, 178 saved searches, exact saved-search match, wrong-app nearby decoy,
+  and exact saved-search result count 4.
+- PASS: live proof reports `failToPass: true`, `readyAfterPatch: true`, mutation
+  false, before score 60 / `NOT READY`, and after score 100 / `READY`.
+- PASS: bridge recording contains 76 JSON-RPC frames, 38 requests, 38 responses,
+  and 0 errors across real Splunk-backed MCP tool calls.
+- PASS: public-safe evidence includes summary JSON, redacted readiness/proof
+  artifacts, redacted bridge frames, before/after receipts, policy patch, seed
+  summary, README, and Splunk Web screenshot.

@@ -16533,3 +16533,46 @@ Result:
 - PASS: submission-copy audit passed with 302 required claims.
 - PASS: whitespace diff check passed.
 - PASS: final `npm run check` passed with 73 test files and 430 tests.
+
+## 2026-06-08T13:58:12Z - Move 173 Real Splunk stress proof
+
+Commands:
+
+- `docker run -d --platform linux/amd64 --name splunkready-real-stress -p 18000:8000 -p 18089:8089 -e SPLUNK_START_ARGS=--accept-license -e SPLUNK_PASSWORD=... splunk/splunk:latest`
+- `node dist/src/cli.js live-security-kit --out artifacts/real-splunk-stress/live-security-kit --json`
+- `docker cp artifacts/real-splunk-stress/live-security-kit/SplunkEnterpriseSecuritySuite splunkready-real-stress:/opt/splunk/etc/apps/SplunkEnterpriseSecuritySuite`
+- `docker restart splunkready-real-stress`
+- `docker exec splunkready-real-stress /opt/splunk/bin/splunk add oneshot /tmp/lateral-movement-events.csv -index wineventlog -sourcetype XmlWinEventLog:Security -auth ...`
+- `curl -sk -u ... https://127.0.0.1:18089/servicesNS/admin/search/saved/searches -d name='ES - Lateral Movement Auth Chain' -d search='index=* | head 50 | eval eventRef="wrong-app-trap" | table eventRef,user,src,dest,score'`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 SPLUNKREADY_REAL_MCP_TOKEN=... SPLUNKREADY_REAL_MCP_RECORDING=artifacts/real-splunk-stress/mcp-bridge-recording.jsonl node scripts/real-splunk-mcp-bridge.mjs`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js live-security-check --out artifacts/real-splunk-stress/live-security-check --json`
+- `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js live-security-proof --out artifacts/real-splunk-stress/live-security-proof --json`
+- `bash ~/.codex/skills/playwright/scripts/playwright_cli.sh --browser chromium --output artifacts/real-splunk-stress/playwright-output --input-file /tmp/splunkready-real-splunk-screenshot.json`
+- `node --check scripts/real-splunk-mcp-bridge.mjs`
+- `jq -e '.status=="PASS" and .deployment.version=="10.4.0" and .readiness.status=="READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF" and .readiness.exactSavedSearchResultCount==4 and .proof.mutation==false and .proof.failToPass==true and .proof.readyAfterPatch==true and .proof.before.verdict=="NOT READY" and .proof.before.score==60 and .proof.after.verdict=="READY" and .proof.after.score==100 and .mcpBridgeSession.frames==76 and .mcpBridgeSession.errors==0' submission-evidence/real-splunk-stress/real-splunk-stress-summary.json`
+- `rg -n "$DISPOSABLE_SPLUNK_PASSWORD" moves scripts submission-evidence logs tests README.md docs package.json src ui .github`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: disposable real Splunk Enterprise container started and reported
+  version `10.4.0`.
+- PASS: exact flagship saved search returned 4 rows from the real `wineventlog`
+  index despite noise, decoy saved searches, and a prompt-trap row.
+- PASS: `live-security-check` and `live-security-proof` completed against the
+  read-only real-Splunk bridge with mutation false.
+- PASS: public summary assertion returned true for deployment version,
+  readiness, fail-to-pass proof, scores, mutation, and bridge frame counts.
+- PASS: Playwright captured the Splunk Web result screenshot at
+  `submission-evidence/real-splunk-stress/splunk-web-evidence-results.png`.
+- PASS: disposable Splunk password was absent from tracked evidence/code paths.
+- PASS: focused submission-copy audit tests passed with 1 file and 3 tests.
+- PASS: evidence-pack SHA-256 verification passed after adding the real-Splunk
+  stress evidence.
+- PASS: submission-copy audit passed with 311 required claims.
+- PASS: whitespace diff check passed.
+- PASS: full `npm run check` passed, including 73 test files and 430 tests.
