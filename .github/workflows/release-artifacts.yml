@@ -1,0 +1,62 @@
+name: Release Artifacts
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  standalone:
+    name: standalone ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build and smoke standalone artifact
+        run: node scripts/build-standalone-release.mjs --smoke
+
+      - name: Upload standalone artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: splunkready-standalone-${{ runner.os }}-${{ runner.arch }}
+          path: |
+            dist/release/splunkready-*.tar.gz
+            dist/release/splunkready-*.tar.gz.sha256
+            dist/release/standalone-release-*.json
+          if-no-files-found: error
+
+      - name: Publish GitHub Release assets
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          tag="${GITHUB_REF_NAME}"
+          gh release view "${tag}" >/dev/null 2>&1 || gh release create "${tag}" --title "SplunkReady ${tag}" --notes "Standalone SplunkReady release artifacts."
+          gh release upload "${tag}" dist/release/splunkready-*.tar.gz dist/release/splunkready-*.tar.gz.sha256 dist/release/standalone-release-*.json --clobber

@@ -16363,3 +16363,35 @@ Result:
 - PASS: focused hosted-model status/workflow tests passed with 2 files and 6
   tests.
 - PASS: final `npm run check` passed with 72 test files and 426 tests.
+
+## 2026-06-08T09:17:43Z - Move 170 Standalone release artifact smoke
+
+Commands:
+
+- `npm install --save-dev esbuild@0.27.7 postject`
+- `npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json`
+- `npx vitest run tests/scripts/standalone-release.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: dependency install added only dev dependencies needed for Node SEA
+  release artifact generation.
+- PASS: standalone release builder generated
+  `dist/release/splunkready-macos-arm64.tar.gz` and checksum output under
+  ignored `dist/`.
+- PASS: extracted standalone executable ran
+  `splunkready judge-proof --out ./judge-proof --json` from a clean temp folder,
+  returned `PASS`, generated 67 artifacts, and recorded `mutation: false`.
+- PASS: tracked current-OS evidence was written to
+  `submission-evidence/standalone-release/standalone-release-current-os.json`.
+- PASS: focused standalone-release and submission-copy tests passed with 2 files
+  and 5 tests.
+- PASS: submission-copy audit passed with 286 required claims.
+- PASS: evidence pack SHA-256 verification passed, including the new
+  standalone-release evidence artifact.
+- PASS: whitespace diff check passed.
+- PASS: final `npm run check` passed with 73 test files and 428 tests.

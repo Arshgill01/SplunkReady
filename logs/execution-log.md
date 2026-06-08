@@ -15480,3 +15480,39 @@ Result:
   hosted-model PASS.
 - PASS: tracked evidence records the blocker without raw license contents,
   endpoint values, usernames, passwords, or tokens.
+
+## 2026-06-08T09:17:43Z - Move 170 Standalone release artifact smoke
+
+Intent:
+
+- Reduce distribution friction beyond npm by making the postponed standalone
+  release artifact path real for the current OS without claiming all-platform
+  release coverage before the release workflow matrix passes.
+
+Actions:
+
+- Added `moves/moves170.md` to scope the no-Node release artifact slice.
+- Added `scripts/build-standalone-release.mjs`, which bundles the CLI with
+  `esbuild`, creates a Node SEA blob, injects it into the current Node runtime
+  with `postject`, signs the macOS binary when `codesign` is available, archives
+  the executable with `fixtures/` and `policies/`, writes SHA-256 checksums, and
+  optionally smokes the extracted archive.
+- Added `build:standalone-release` and direct dev dependencies on `esbuild` and
+  `postject`.
+- Added `.github/workflows/release-artifacts.yml` so tag releases build and
+  smoke standalone archives on Linux, macOS, and Windows before uploading
+  GitHub Release assets.
+- Added focused tests for release asset naming and current target detection.
+- Generated current-OS public evidence at
+  `submission-evidence/standalone-release/standalone-release-current-os.json`.
+- Updated README, Devpost copy, evidence README, claim ledger, and
+  submission-copy guards.
+
+Result:
+
+- PASS: current macOS arm64 standalone archive was generated and extracted into
+  a clean temp folder.
+- PASS: the extracted `splunkready` executable ran `judge-proof --json`,
+  returned `PASS`, produced 67 artifacts, and recorded `mutation: false`.
+- PASS: the tracked claim explicitly limits evidence to current OS and requires
+  the GitHub Release matrix before claiming all-platform release assets.

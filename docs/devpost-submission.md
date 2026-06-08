@@ -55,6 +55,15 @@ policy-registry commands before the package is called current. The tracked
 currentness audit in `submission-evidence/public-package-currentness/` records
 the public registry state for that claim.
 
+The current source also has a no-Node standalone release path. Move 170 builds a
+Node SEA executable for the current runner, bundles `fixtures/` and `policies/`
+into the archive, extracts that archive into a clean temp folder, and smokes
+`splunkready judge-proof --out ./judge-proof --json`. The tracked evidence at
+`submission-evidence/standalone-release/standalone-release-current-os.json`
+reports current target `macos-arm64`, smoke `PASS`, 67 generated artifacts, and
+`mutation: false`. Linux/Windows/macOS release assets are not claimed until the
+tag-triggered release workflow builds and smokes each matrix job.
+
 The credential-free hosted workbench is available at:
 
 ```text

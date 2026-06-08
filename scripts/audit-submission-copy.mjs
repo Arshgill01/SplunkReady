@@ -57,6 +57,21 @@ const checks = [
   ["Claim ledger public package live mock proof", files.claimLedger, "publishedLiveMockProof"],
   ["Claim ledger public package policy registry proof", files.claimLedger, "publishedPolicyRegistry"],
   [
+    "Claim ledger standalone release current OS",
+    files.claimLedger,
+    "The current source can produce a current-OS no-Node standalone release archive that runs judge proof from a clean temp folder."
+  ],
+  ["Claim ledger standalone release artifact", files.claimLedger, "submission-evidence/standalone-release/standalone-release-current-os.json"],
+  ["Claim ledger standalone release target", files.claimLedger, "target `macos-arm64`"],
+  ["Claim ledger standalone release smoke", files.claimLedger, "smoke `status: \"PASS\"`"],
+  ["Claim ledger standalone release artifacts", files.claimLedger, "67 generated artifacts"],
+  ["Claim ledger standalone release boundary", files.claimLedger, "releaseClaimBoundary.allPlatformReleaseRequiresTagWorkflow: true"],
+  ["README standalone release artifact", files.readme, "Standalone Release Artifact"],
+  ["README standalone release evidence", files.readme, "submission-evidence/standalone-release/standalone-release-current-os.json"],
+  ["README standalone release boundary", files.readme, "release assets are intentionally not claimed"],
+  ["Devpost standalone release evidence", files.devpost, "submission-evidence/standalone-release/standalone-release-current-os.json"],
+  ["Devpost standalone release boundary", files.devpost, "Linux/Windows/macOS release assets are not claimed"],
+  [
     "Claim ledger hosted demo currentness",
     files.claimLedger,
     "The hosted public demo is source-current against the latest public-demo input commit."

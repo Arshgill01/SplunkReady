@@ -1122,3 +1122,13 @@ outside SplunkReady's deterministic grading path and points to Splunk AI
 Assistant/MCP route metadata alignment plus downstream SAIA cloud-service
 provisioning. Do not claim live hosted-model PASS until
 `hosted-model-diagnostic --require-pass true` exits successfully.
+
+Move 170 reduces the no-Node distribution friction cap by producing a current-OS
+Node SEA standalone archive and smoking it from a clean temp folder. The archive
+bundles the executable with `fixtures/` and `policies/`, so default
+`judge-proof` no longer needs a repo clone or npm install on the current macOS
+arm64 evidence path. Residual risk: this is not yet an observed all-platform
+GitHub Release. Linux, macOS, and Windows release assets must be built and
+smoked by `.github/workflows/release-artifacts.yml` on a tag before claiming
+cross-platform standalone binaries or replacing npm as the canonical public
+install path.

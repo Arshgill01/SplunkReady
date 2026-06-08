@@ -46,6 +46,24 @@ with `mutation: false`. The public package currentness audit also proves the
 published MCP tool surface, credential-free `live-proof --live-mock`, and signed
 policy-registry flow before the package is called current.
 
+### Standalone Release Artifact
+
+Move 170 adds a no-Node release artifact path for GitHub Releases. On the
+current macOS arm64 runner, the standalone archive is built with Node SEA,
+includes the executable plus bundled `fixtures/` and `policies/`, then is
+extracted into a clean temp folder and smoked with:
+
+```bash
+splunkready judge-proof --out ./judge-proof --json
+```
+
+The tracked current-OS evidence is
+`submission-evidence/standalone-release/standalone-release-current-os.json`.
+It reports `status: "PASS"`, target `macos-arm64`, smoke `PASS`, stdout command
+`judge-proof`, 67 generated artifacts, and `mutation: false`. All-platform
+release assets are intentionally not claimed until `.github/workflows/release-artifacts.yml`
+builds and smokes the Linux, macOS, and Windows matrix on a tag.
+
 `npm run judge-proof` builds the TypeScript runtime and writes a credential-free proof bundle to `artifacts/judge-proof`. The bundle runs the multi-mission fixture fail -> patch -> rerun -> pass suite, writes `compiler-diagnostics.json` / `.md` showing deterministic rule activation and resolution from readiness profiles and receipts, audits the suite, verifies its manifest, runs the firewall pre-execution proof, verifies that manifest, and writes a strict `certification-index.json` plus `ui-artifacts.json` for the workbench artifact selector. It does not call live Splunk and does not mutate Splunk.
 
 ### Credential-Free Mock Splunk MCP

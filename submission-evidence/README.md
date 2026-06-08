@@ -1,6 +1,6 @@
 # SplunkReady Submission Evidence
 
-Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, Move 148 signed receipt-chain plus deterministic replay evidence, Move 150 signed policy-registry evidence, Move 157 Splunk app package evidence, Move 158 PR-gate evidence, Move 159 MCP composition-recorder evidence, Move 163 MCP recorder-gateway evidence, Move 164 AppInspect MCP composition evidence, Move 165 live Splunk app install evidence, Move 166 operator receipt-store evidence, Move 167 Splunkbase readiness evidence, and Move 168 Splunkbase listing asset evidence.
+Regenerated for Move 78 on 2026-06-06 and extended with Move 80/82/92 MCP workbench and client-walkthrough evidence, Move 100 published-package evidence, Move 103 public judge-proof evidence, Move 109 raw MCP client-session evidence, Move 111 MCP resource-template evidence, Move 112 inline MCP transcript certification evidence, Move 113 hosted-model MCP access evidence, Move 147 live-mock MCP evidence, Move 148 signed receipt-chain plus deterministic replay evidence, Move 150 signed policy-registry evidence, Move 157 Splunk app package evidence, Move 158 PR-gate evidence, Move 159 MCP composition-recorder evidence, Move 163 MCP recorder-gateway evidence, Move 164 AppInspect MCP composition evidence, Move 165 live Splunk app install evidence, Move 166 operator receipt-store evidence, Move 167 Splunkbase readiness evidence, Move 168 Splunkbase listing asset evidence, and Move 170 standalone release artifact evidence.
 
 This directory is the judge-facing evidence pack. It is tracked in git so it can be inspected from a clean clone without access to ignored local `artifacts/`, `.splunkready*` env files, live credentials, or private deployment details.
 
@@ -12,6 +12,7 @@ This directory is the judge-facing evidence pack. It is tracked in git so it can
 - `ci-pr-gate/`: credential-free live readiness PR-gate sample. It contains the same live-mock proof shape plus `pr-comment.md` and `ci-pr-gate.json`, the deterministic artifacts used by `.github/workflows/live-certification-gate.yml`.
 - `mcp-proof/`: credential-free MCP proof. It starts the local SplunkReady stdio MCP server, records the raw JSON-RPC client session, discovers tools/resources/resource templates/prompts, reads a templated Readiness Receipt resource, exposes a dual-server Splunk MCP + SplunkReady MCP client kit, certifies a captured Splunk MCP JSON-RPC transcript through both path-based and inline-content MCP tools, checks hosted-model SAIA access through the MCP server in fixture mode, writes a client walkthrough showing existing Splunk MCP investigation followed by SplunkReady certification, runs the MCP recorder gateway against mock Splunk MCP plus SplunkReady MCP, writes a redacted dual-server recorder session with preserved server IDs, records an advisory Splunk AppInspect MCP composition proof for the current `.spl` package, and verifies the nested transcript proof manifests.
 - `policy-registry/`: signed default, SOC2, and PCI DSS policy bundles. Each installed policy includes `policy.json` and an Ed25519-backed `policy-manifest.json` with `deterministicAuthority: true` and `mutation: false`.
+- `standalone-release/`: current-OS no-Node release artifact smoke evidence. It records a macOS arm64 Node SEA archive that was extracted into a clean temp folder and ran `judge-proof` with `PASS`, 67 artifacts, and `mutation: false`. It is not an all-platform release claim until the GitHub Release workflow matrix passes on Linux, macOS, and Windows.
 - `splunk-app-package/`: credential-free `.spl` package proof that embeds the public artifact workbench in a static Splunk app shell. It includes the package archive and manifest with hash, file list, official packaging references, Splunkbase listing assets, `mutation: false`, `noCredentialFiles: true`, `noPythonHandlers: true`, and `noScriptedInputs: true`.
 - `splunk-app-install/`: redacted operator-approved proof that the `.spl` package was installed/upgraded and probed on the local operator-owned Splunk server.
 - `splunk-receipt-store/`: redacted operator-approved proof that six public-safe signed receipt summaries were written into the installed Splunk app KV Store and read back through `splunkready_receipts_lookup`.
@@ -36,6 +37,7 @@ npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-t
 npm run splunkready -- verify-manifest --out submission-evidence/mcp-proof/mcp-inline-transcript-certification --json
 npm run splunkready -- policy-publish --policy policies/soc2-readiness.policy.json --json
 npm run splunkready -- evaluate --out artifacts/policy-eval --policy pci-dss-readiness --json
+npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json
 npm run splunk-app:package
 npm run splunkready -- verify-manifest --out submission-evidence/public-proof-export --json
 shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt
@@ -92,6 +94,13 @@ Expected proof status:
 - signed policy registry: default, SOC2, and PCI DSS policy manifests present
 - policy registry signatures: `ed25519`, `SIGNED`
 - policy evaluation receipt identity: `pci-dss-readiness`
+- standalone release current-OS status: `PASS`
+- standalone release current target: `macos-arm64`
+- standalone release smoke: `PASS`
+- standalone release smoke command: `splunkready judge-proof --out ./judge-proof --json`
+- standalone release smoke artifacts: `67`
+- standalone release mutation: `false`
+- standalone release all-platform claim: blocked until release workflow matrix passes
 - Splunk app package status: `PASS`
 - Splunk app package mutation: `false`
 - Splunk app package overview view: `SplunkReady/default/data/ui/views/splunkready_overview.xml`
