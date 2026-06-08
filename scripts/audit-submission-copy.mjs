@@ -39,9 +39,9 @@ const checks = [
   ["Devpost no credentials", files.devpost, "requires no live Splunk credentials"],
   ["Devpost no mutation", files.devpost, "does not mutate Splunk"],
   ["README npm package link", files.readme, "https://www.npmjs.com/package/splunkready"],
-  ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json"],
+  ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.4 judge-proof --out ./judge-proof --json"],
   ["README public package currentness audit", files.readme, "npm run audit:public-package-currentness"],
-  ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json"],
+  ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.4 judge-proof --out ./judge-proof --json"],
   ["Devpost public package currentness evidence", files.devpost, "submission-evidence/public-package-currentness/"],
   [
     "Claim ledger published npm package",
@@ -67,15 +67,17 @@ const checks = [
   ["Claim ledger readiness score calibration proof", files.claimLedger, "provesNonBinaryScoring: true"],
   ["Claim ledger readiness score calibration command", files.claimLedger, "npm run score-calibration"],
   ["Claim ledger npm package page", files.claimLedger, "https://www.npmjs.com/package/splunkready"],
-  ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json"],
+  ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.4 judge-proof --out ./judge-proof --json"],
   [
     "Claim ledger public package currentness",
     files.claimLedger,
-    "The public registry currentness proof verifies the current published judge-proof, MCP tools, live-mock proof, and policy-registry paths."
+    "The public registry currentness proof now verifies the published judge-proof, MCP tools, live-mock proof, policy-registry path, source `gitHead`, and `mcp-recorder` gateway before any package is called current."
   ],
   ["Claim ledger public package currentness artifact", files.claimLedger, "submission-evidence/public-package-currentness/public-package-currentness.json"],
   ["Claim ledger public package live mock proof", files.claimLedger, "publishedLiveMockProof"],
   ["Claim ledger public package policy registry proof", files.claimLedger, "publishedPolicyRegistry"],
+  ["Claim ledger public package recorder proof", files.claimLedger, "publishedRecorder"],
+  ["Claim ledger public package stale status", files.claimLedger, 'status: "STALE"'],
   [
     "Claim ledger standalone release current OS",
     files.claimLedger,

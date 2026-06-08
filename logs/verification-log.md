@@ -17072,3 +17072,50 @@ Result:
   readiness/installability audits, 75 Vitest files / 437 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
   audit with 375 required claims, and whitespace diff check.
+
+## 2026-06-08T13:45:58Z - Move 186 public package recorder currentness
+
+Commands:
+
+- `node --input-type=module <<'NODE' ... published recorder probe ... NODE`
+- `node --check scripts/audit-public-package-currentness.mjs`
+- `node --check tests/scripts/public-package-currentness.test.ts`
+- `npx vitest run tests/scripts/public-package-currentness.test.ts`
+- `npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness`
+- `npm whoami && npm ping`
+- `npm login --auth-type=web`
+- `npm version 0.1.4 --no-git-tag-version`
+- `npm run build`
+- `npx vitest run tests/scripts/public-package-currentness.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:package-readiness`
+- `npm run audit:package-installability`
+- `npm run audit:npm-release-preflight -- --require-ready`
+
+Result:
+
+- PASS: local published-recorder probe reproduced the package gap:
+  `splunkready@0.1.3 mcp-recorder --server ...` exits with
+  `Unknown option --server`.
+- PASS: syntax checks passed for the hardened audit script and focused test
+  file.
+- PASS: focused public-package currentness test passed: 1 file, 3 tests.
+- PASS/STALE: hardened `audit:public-package-currentness` wrote
+  `submission-evidence/public-package-currentness/public-package-currentness.json`
+  with `status: "STALE"`, npm latest `0.1.3`, `latestGitHead:
+  "cb2d543950de6a3a06614d3c400b114c03a74b02"`, local gitHead
+  `4d2557f2c22c29b2d49247fc4901600cb0046932`, published judge proof `PASS`,
+  published MCP tools `PASS`, published live-mock proof `PASS`, published
+  policy registry `PASS`, and published recorder `BLOCKED`.
+- BLOCKED: `npm whoami && npm ping` failed with `E401 Unauthorized`.
+- PASS: `npm login --auth-type=web` completed, then `npm whoami && npm ping`
+  passed as `brightybrainiac`.
+- PASS: `npm version 0.1.4 --no-git-tag-version` updated `package.json` and
+  `package-lock.json`.
+- PASS: `npm run build` completed.
+- PASS: focused public-package/submission-copy tests passed: 2 files, 6 tests.
+- PASS: package readiness audit passed with 194 packed files checked.
+- PASS: package installability audit installed `splunkready-0.1.4.tgz`; `npx
+  splunkready judge-proof` returned `PASS`; `npx splunkready mcp` initialized.
+- PASS: npm release preflight returned `status: "READY"`, auth user
+  `brightybrainiac`, registry `EXISTS_VERSION_AVAILABLE`, file
+  `splunkready-0.1.4.tgz`, and release command `npm publish --access public`.

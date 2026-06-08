@@ -34,7 +34,7 @@ npm run judge-proof
 The currently published no-clone judge path is:
 
 ```bash
-npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.4 judge-proof --out ./judge-proof --json
 ```
 
 The repo-linked GitHub Packages mirror is `@arshgill01/splunkready@0.1.3`;
@@ -260,9 +260,10 @@ placeholder for SplunkReady. Antigravity uses
 side uses an `npx -y mcp-remote` template with
 `${SPLUNKREADY_SPLUNK_MCP_URL}` and `${SPLUNKREADY_SPLUNK_MCP_TOKEN}`
 placeholders copied from the Splunk MCP Server app sample client configuration.
-The published `splunkready@0.1.3` package supports the no-clone `judge-proof`
-command, the `splunkready mcp` entrypoint, credential-free `live-proof
---live-mock`, and signed policy-registry commands.
+The published public npm package supports the no-clone `judge-proof` command,
+the `splunkready mcp` entrypoint, credential-free `live-proof --live-mock`,
+signed policy-registry commands, and the `mcp-recorder` gateway once the public
+package currentness audit reports `CURRENT`.
 
 The release gate also packs the current source into a clean temp project and
 requires the installed package to complete both `npx splunkready judge-proof`

@@ -128,6 +128,76 @@ if (command === "live-proof") {
   process.exit(1);
 }
 
+if (command === "mcp-recorder") {
+  if (process.env.FAKE_NPX_RECORDER_PASS !== "true") {
+    console.error("Unknown option --server.");
+    process.exit(1);
+  }
+
+  const requiredTools = [
+    "splunk__splunk_get_knowledge_objects",
+    "splunk__splunk_run_saved_search",
+    "splunkready_recorder_flush"
+  ];
+
+  process.stdin.setEncoding("utf8");
+  process.stdin.on("data", (chunk) => {
+    for (const line of chunk.split("\\n")) {
+      if (!line.trim()) {
+        continue;
+      }
+
+      const request = JSON.parse(line);
+
+      if (request.method === "initialize") {
+        console.log(JSON.stringify({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: {
+            protocolVersion: "2025-06-18",
+            capabilities: { tools: { listChanged: false } },
+            serverInfo: { name: "splunkready-mcp-recorder", version: "fixture" }
+          }
+        }));
+        continue;
+      }
+
+      if (request.method === "tools/list") {
+        console.log(JSON.stringify({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: {
+            tools: requiredTools.map((name) => ({ name }))
+          }
+        }));
+        continue;
+      }
+
+      if (request.method === "tools/call" && request.params?.name === "splunkready_recorder_flush") {
+        console.log(JSON.stringify({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: {
+            content: [{ type: "text", text: "{\\"status\\":\\"PASS\\"}" }],
+            structuredContent: { status: "PASS", certification: { status: "PASS" }, frameCount: 5 }
+          }
+        }));
+        continue;
+      }
+
+      if (request.method === "tools/call") {
+        console.log(JSON.stringify({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { content: [{ type: "text", text: "{}" }], structuredContent: { status: "PASS" } }
+        }));
+      }
+    }
+  });
+  setTimeout(() => {}, 10000);
+  return;
+}
+
 if (command === "policy-publish") {
   if (process.env.FAKE_NPX_POLICY_PASS !== "true") {
     console.error("Unknown option --policy");
@@ -208,6 +278,15 @@ const runCurrentness = async (
   publishedJudgeProof: { status: string; mutation: boolean };
   publishedMcp: { status: string; initialized: boolean; requiredToolsPresent: boolean; toolNames: string[] };
   publishedLiveMockProof: { status: string; mutation: boolean; mode: string; failToPass: boolean };
+  publishedRecorder: {
+    status: string;
+    initialized: boolean;
+    capabilitiesPresent: boolean;
+    requiredToolsPresent: boolean;
+    flushStatus: string;
+    flushContentPresent: boolean;
+    toolNames: string[];
+  };
   publishedPolicyRegistry: {
     status: string;
     signedPolicyManifest: boolean;
@@ -247,6 +326,7 @@ describe("public package currentness audit", () => {
       publishedJudgeProof: { status: "PASS", mutation: false },
       publishedMcp: { status: "BLOCKED", initialized: false },
       publishedLiveMockProof: { status: "BLOCKED" },
+      publishedRecorder: { status: "BLOCKED", initialized: false, requiredToolsPresent: false },
       publishedPolicyRegistry: { status: "BLOCKED" }
     });
     expect(report.recommendedAction).toContain("Publish splunkready@0.1.2");
@@ -261,6 +341,7 @@ describe("public package currentness audit", () => {
       FAKE_NPM_LATEST: "0.1.2",
       FAKE_NPX_MCP_PASS: "true",
       FAKE_NPX_LIVE_MOCK_PASS: "true",
+      FAKE_NPX_RECORDER_PASS: "true",
       FAKE_NPX_POLICY_PASS: "true"
     });
 
@@ -274,6 +355,14 @@ describe("public package currentness audit", () => {
       publishedJudgeProof: { status: "PASS", mutation: false },
       publishedMcp: { status: "PASS", initialized: true, requiredToolsPresent: true },
       publishedLiveMockProof: { status: "PASS", mutation: false, mode: "live", failToPass: true },
+      publishedRecorder: {
+        status: "PASS",
+        initialized: true,
+        capabilitiesPresent: true,
+        requiredToolsPresent: true,
+        flushStatus: "PASS",
+        flushContentPresent: true
+      },
       publishedPolicyRegistry: {
         status: "PASS",
         signedPolicyManifest: true,
@@ -284,6 +373,7 @@ describe("public package currentness audit", () => {
       mutation: false
     });
     expect(report.publishedMcp.toolNames).toContain("splunkready_review_mcp_composition");
+    expect(report.publishedRecorder.toolNames).toContain("splunkready_recorder_flush");
     expect(report.publishedPolicyRegistry.receiptPolicyHash).toMatch(/^[a-f0-9]{64}$/);
   });
 
@@ -299,6 +389,8 @@ describe("public package currentness audit", () => {
           FAKE_NPM_VERSIONS: JSON.stringify(["0.1.0", "0.1.1", "0.1.2"]),
           FAKE_NPM_LATEST: "0.1.2",
           FAKE_NPX_MCP_PASS: "true",
+          FAKE_NPX_LIVE_MOCK_PASS: "true",
+          FAKE_NPX_POLICY_PASS: "true",
           PATH: `${await createFakeNpmTools(root)}:${process.env.PATH ?? ""}`
         }
       })

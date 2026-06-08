@@ -16136,3 +16136,54 @@ Result:
   to verified listing dossier.
 - External approval remains unclaimed and blocked on operator-owned publisher
   portal submission.
+
+## 2026-06-08T13:45:58Z - Move 186 public package recorder currentness
+
+Context:
+
+- Move 183 made the external-client MCP story real through Zed consuming
+  `mcp-recorder`, but `audit:public-package-currentness` still only checked
+  older public package surfaces.
+- A clean temp-folder probe against `npx -y splunkready@0.1.3 mcp-recorder
+  --server splunk=mock-splunk-mcp --server splunkready=mcp` failed with
+  `Unknown option --server`, proving the published package does not yet contain
+  the recorder gateway needed for the Zed workflow.
+
+Actions:
+
+- Added `moves/moves186.md`.
+- Extended `scripts/audit-public-package-currentness.mjs` with a published
+  `mcp-recorder` probe that verifies recorder initialize capabilities, proxied
+  Splunk investigation tools, `splunkready_recorder_flush`, and displayable
+  flush content plus structured `PASS`.
+- Added npm registry `gitHead` comparison so a package can no longer be called
+  source-current when npm latest points at an older commit.
+- Updated `tests/scripts/public-package-currentness.test.ts` with a fake
+  published recorder path and stale-package fixture coverage.
+- Refreshed
+  `submission-evidence/public-package-currentness/public-package-currentness.json`
+  with the hardened audit result.
+- Attempted npm auth discovery with `npm whoami && npm ping`; the first attempt
+  returned `E401 Unauthorized`.
+- Started `npm login --auth-type=web`; browser login completed and `npm whoami
+  && npm ping` later passed as `brightybrainiac`.
+- Bumped the source package version to `0.1.4`.
+- Ran build, package readiness, package installability, and npm release
+  preflight for `0.1.4`.
+- Refreshed
+  `submission-evidence/public-package-currentness/public-package-currentness.json`
+  after the local version bump. It intentionally remains `STALE` until
+  `splunkready@0.1.4` is published.
+
+Result:
+
+- PASS: focused public-package currentness tests passed.
+- PASS: npm auth is active as `brightybrainiac`.
+- PASS: package readiness and installability audits passed for
+  `splunkready-0.1.4.tgz`.
+- PASS: npm release preflight reports `status: "READY"` for `0.1.4`.
+- STALE: npm latest remains `splunkready@0.1.3` from gitHead `cb2d543` until
+  the release commit is published.
+- BLOCKED: published `0.1.3` lacks `mcp-recorder --server ...`.
+- NEXT: commit the `0.1.4` release state, publish `splunkready@0.1.4`, and
+  rerun the hardened currentness audit with `--require-current`.

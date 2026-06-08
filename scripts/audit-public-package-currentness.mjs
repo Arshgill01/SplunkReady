@@ -11,6 +11,17 @@ const requireCurrent = process.argv.includes("--require-current");
 const outIndex = process.argv.indexOf("--out");
 const outDir = outIndex >= 0 ? process.argv[outIndex + 1] : undefined;
 const tempRoot = mkdtempSync(join(tmpdir(), "splunkready-public-package-currentness-"));
+const packageInputPaths = [
+  "package.json",
+  "package-lock.json",
+  "README.md",
+  "action.yml",
+  "src",
+  "examples",
+  "fixtures",
+  "policies",
+  "scripts/run-readiness-score-calibration.mjs"
+];
 
 const run = (command, args, options = {}) => {
   try {
@@ -190,6 +201,240 @@ const readPublishedMcpProbe = (packageSpec) =>
     );
   });
 
+const readPublishedRecorderProbe = (packageSpec) =>
+  new Promise((resolve) => {
+    const outDir = join(tempRoot, "mcp-recorder");
+    const child = spawn(
+      "npx",
+      [
+        "-y",
+        packageSpec,
+        "mcp-recorder",
+        "--server",
+        "splunk=mock-splunk-mcp",
+        "--server",
+        "splunkready=mcp",
+        "--out",
+        outDir
+      ],
+      {
+        cwd: tempRoot,
+        env: {
+          ...process.env,
+          NO_COLOR: "1"
+        },
+        stdio: ["pipe", "pipe", "pipe"]
+      }
+    );
+
+    let stdout = "";
+    let stderr = "";
+    let settled = false;
+    let nextId = 1;
+    const pending = new Map();
+    const requiredTools = [
+      "splunk__splunk_get_knowledge_objects",
+      "splunk__splunk_run_saved_search",
+      "splunkready_recorder_flush"
+    ];
+
+    const finish = (result) => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      clearTimeout(timeout);
+      child.kill("SIGTERM");
+      resolve(result);
+    };
+
+    const timeout = setTimeout(() => {
+      finish({
+        packageSpec,
+        status: "BLOCKED",
+        initialized: false,
+        capabilitiesPresent: false,
+        requiredTools,
+        requiredToolsPresent: false,
+        flushStatus: null,
+        flushContentPresent: false,
+        error: safeError(`published mcp-recorder probe timed out. stderr=${stderr}`)
+      });
+    }, 90_000);
+
+    const rejectPending = (message) => {
+      for (const waiter of pending.values()) {
+        waiter.reject(new Error(message));
+      }
+      pending.clear();
+    };
+
+    const consumeStdout = () => {
+      while (stdout.includes("\n")) {
+        const index = stdout.indexOf("\n");
+        const line = stdout.slice(0, index).trim();
+        stdout = stdout.slice(index + 1);
+
+        if (!line) {
+          continue;
+        }
+
+        const parsed = parseJson(line, null);
+        const waiter = parsed?.id ? pending.get(parsed.id) : null;
+
+        if (waiter) {
+          pending.delete(parsed.id);
+          waiter.resolve(parsed);
+        }
+      }
+    };
+
+    const sendRequest = (method, params = {}) => {
+      const id = `recorder-${nextId++}`;
+      return new Promise((requestResolve, requestReject) => {
+        pending.set(id, { resolve: requestResolve, reject: requestReject });
+        child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id, method, params })}\n`);
+      });
+    };
+
+    child.stdout.setEncoding("utf8");
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+      consumeStdout();
+    });
+
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+    });
+
+    child.on("error", (error) => {
+      rejectPending(error.message);
+      finish({
+        packageSpec,
+        status: "BLOCKED",
+        initialized: false,
+        capabilitiesPresent: false,
+        requiredTools,
+        requiredToolsPresent: false,
+        flushStatus: null,
+        flushContentPresent: false,
+        error: safeError(error.message)
+      });
+    });
+
+    child.on("exit", (code, signal) => {
+      if (!settled) {
+        const message = `published mcp-recorder exited before complete probe: code=${code} signal=${signal} stderr=${stderr}`;
+        rejectPending(message);
+        finish({
+          packageSpec,
+          status: "BLOCKED",
+          initialized: false,
+          capabilitiesPresent: false,
+          requiredTools,
+          requiredToolsPresent: false,
+          flushStatus: null,
+          flushContentPresent: false,
+          error: safeError(message)
+        });
+      }
+    });
+
+    (async () => {
+      try {
+        const initialize = await sendRequest("initialize", {
+          protocolVersion: "2025-06-18",
+          capabilities: {},
+          clientInfo: {
+            name: "public-package-currentness-recorder-audit",
+            version: "1.0.0"
+          }
+        });
+        const toolsList = await sendRequest("tools/list");
+        const toolNames = Array.isArray(toolsList?.result?.tools)
+          ? toolsList.result.tools.map((tool) => tool?.name).filter((name) => typeof name === "string")
+          : [];
+        const capabilitiesPresent = Boolean(initialize?.result?.capabilities?.tools);
+        const initialized = initialize?.result?.serverInfo?.name === "splunkready-mcp-recorder";
+        const requiredToolsPresent = requiredTools.every((tool) => toolNames.includes(tool));
+
+        if (!initialized || !capabilitiesPresent || !requiredToolsPresent) {
+          finish({
+            packageSpec,
+            status: "BLOCKED",
+            initialized,
+            capabilitiesPresent,
+            toolNames,
+            requiredTools,
+            requiredToolsPresent,
+            flushStatus: null,
+            flushContentPresent: false,
+            error: safeError(
+              `published mcp-recorder missing required handshake/tools: initialized=${initialized} capabilitiesPresent=${capabilitiesPresent} requiredToolsPresent=${requiredToolsPresent}`
+            )
+          });
+          return;
+        }
+
+        await sendRequest("tools/call", {
+          name: "splunk__splunk_get_knowledge_objects",
+          arguments: { types: ["saved_searches"], app: "SplunkEnterpriseSecuritySuite" }
+        });
+        await sendRequest("tools/call", {
+          name: "splunk__splunk_run_saved_search",
+          arguments: {
+            name: "ES - Lateral Movement Auth Chain",
+            app: "SplunkEnterpriseSecuritySuite",
+            tokens: { host: "win-finance-07", earliest: "-24h", latest: "now" },
+            maxRows: 10
+          }
+        });
+        const flush = await sendRequest("tools/call", {
+          name: "splunkready_recorder_flush",
+          arguments: {
+            finalAnswer:
+              "Evidence supports suspicious lateral movement from win-finance-07 through admin-login-02 to dc-01 and finance-sql-03.",
+            requirePass: true
+          }
+        });
+        const flushStatus = flush?.result?.structuredContent?.status ?? null;
+        const flushContentPresent = Array.isArray(flush?.result?.content) && flush.result.content.some((item) => item?.type === "text");
+        const passed = flushStatus === "PASS" && flushContentPresent;
+
+        finish({
+          packageSpec,
+          status: passed ? "PASS" : "BLOCKED",
+          initialized,
+          capabilitiesPresent,
+          toolNames,
+          requiredTools,
+          requiredToolsPresent,
+          flushStatus,
+          flushContentPresent,
+          error: passed
+            ? null
+            : safeError(
+                `published mcp-recorder flush did not return displayable PASS: flushStatus=${flushStatus} flushContentPresent=${flushContentPresent}`
+              )
+        });
+      } catch (error) {
+        finish({
+          packageSpec,
+          status: "BLOCKED",
+          initialized: false,
+          capabilitiesPresent: false,
+          requiredTools,
+          requiredToolsPresent: false,
+          flushStatus: null,
+          flushContentPresent: false,
+          error: safeError(error instanceof Error ? error.message : String(error))
+        });
+      }
+    })();
+  });
+
 const runPublishedLiveMockProof = (packageSpec) => {
   const outDir = join(tempRoot, "live-mock");
   const result = run("npx", ["-y", packageSpec, "live-proof", "--out", outDir, "--live-mock", "--json"], {
@@ -307,10 +552,18 @@ const runPublishedPolicyRegistryProof = (packageSpec) => {
 try {
   const versionsResult = run("npm", ["view", packageJson.name, "versions", "--json"], { timeoutMs: 30_000 });
   const latestResult = run("npm", ["view", packageJson.name, "version", "--json"], { timeoutMs: 30_000 });
+  const latestGitHeadResult = run("npm", ["view", `${packageJson.name}@latest`, "gitHead", "--json"], { timeoutMs: 30_000 });
+  const packageInputGitHeadResult = run("git", ["log", "-n", "1", "--format=%H", "--", ...packageInputPaths], {
+    timeoutMs: 5_000
+  });
+  const dirtyPackageInputsResult = run("git", ["diff", "--name-only", "--", ...packageInputPaths], { timeoutMs: 5_000 });
   const failures = [];
 
   let versions = [];
   let latestVersion = null;
+  let latestGitHead = null;
+  let packageInputGitHead = null;
+  let dirtyPackageInputs = [];
 
   if (versionsResult.ok) {
     const parsed = parseJson(versionsResult.stdout, []);
@@ -326,9 +579,29 @@ try {
     failures.push(`npm latest lookup failed: ${safeError(latestResult.stderr || latestResult.message)}`);
   }
 
+  if (latestGitHeadResult.ok) {
+    const parsed = parseJson(latestGitHeadResult.stdout, null);
+    latestGitHead = typeof parsed === "string" && parsed.length > 0 ? parsed : null;
+  }
+
+  if (packageInputGitHeadResult.ok) {
+    packageInputGitHead = packageInputGitHeadResult.stdout.trim() || null;
+  }
+
+  if (dirtyPackageInputsResult.ok) {
+    dirtyPackageInputs = dirtyPackageInputsResult.stdout
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+
   const localVersion = packageJson.version;
   const latestMatchesLocal = latestVersion === localVersion;
   const localVersionPublished = versions.includes(localVersion);
+  const gitHeadMatchesLocal =
+    typeof latestGitHead === "string" && typeof packageInputGitHead === "string"
+      ? latestGitHead === packageInputGitHead
+      : null;
   const packageSpec = latestVersion ? `${packageJson.name}@${latestVersion}` : `${packageJson.name}@latest`;
 
   const proofDir = join(tempRoot, "judge-proof");
@@ -352,6 +625,16 @@ try {
     mutation: null,
     mode: null,
     failToPass: null,
+    error: null
+  };
+  let publishedRecorder = {
+    packageSpec,
+    status: "BLOCKED",
+    initialized: false,
+    capabilitiesPresent: false,
+    requiredToolsPresent: false,
+    flushStatus: null,
+    flushContentPresent: false,
     error: null
   };
   let publishedPolicyRegistry = {
@@ -407,6 +690,7 @@ try {
       ...(await readPublishedMcpProbe(packageSpec))
     };
     publishedLiveMockProof = runPublishedLiveMockProof(packageSpec);
+    publishedRecorder = await readPublishedRecorderProbe(packageSpec);
     publishedPolicyRegistry = runPublishedPolicyRegistryProof(packageSpec);
   }
 
@@ -416,21 +700,37 @@ try {
     latestVersion,
     localVersion,
     localVersionPublished,
-    latestMatchesLocal
+    latestMatchesLocal,
+    latestGitHead,
+    packageInputGitHead,
+    packageInputPaths,
+    dirtyPackageInputs,
+    gitHeadMatchesPackageInputs: gitHeadMatchesLocal
   };
+  const sourceHeadMismatch = gitHeadMatchesLocal === false;
+  const packageInputsDirty = dirtyPackageInputs.length > 0;
   const publishedSmokePassed =
     publishedJudgeProof.status === "PASS" &&
     publishedMcp.status === "PASS" &&
     publishedLiveMockProof.status === "PASS" &&
+    publishedRecorder.status === "PASS" &&
     publishedPolicyRegistry.status === "PASS";
   const status =
     failures.length > 0
       ? "FAIL"
-      : latestMatchesLocal && !publishedSmokePassed
+      : !latestMatchesLocal || sourceHeadMismatch || packageInputsDirty
+        ? "STALE"
+        : !publishedSmokePassed
         ? "FAIL"
-        : latestMatchesLocal && publishedSmokePassed
+        : publishedSmokePassed
           ? "CURRENT"
           : "STALE";
+  const recommendedAction =
+    status === "CURRENT"
+      ? "No registry action required."
+      : localVersionPublished
+        ? `Bump ${packageJson.name} above ${localVersion}, run npm-authenticated release preflight, publish the new version, then rerun this audit.`
+        : `Publish ${packageJson.name}@${localVersion} after npm-authenticated release preflight passes, then rerun this audit.`;
   const report = {
     source: "splunkready-public-package-currentness",
     status,
@@ -438,11 +738,9 @@ try {
     publishedJudgeProof,
     publishedMcp,
     publishedLiveMockProof,
+    publishedRecorder,
     publishedPolicyRegistry,
-    recommendedAction:
-      status === "CURRENT"
-        ? "No registry action required."
-        : `Publish ${packageJson.name}@${localVersion} after npm-authenticated release preflight passes, then rerun this audit.`,
+    recommendedAction,
     mutation: false,
     failures
   };

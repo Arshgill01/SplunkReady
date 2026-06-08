@@ -1277,3 +1277,15 @@ external: only an operator-owned Splunkbase publisher account can accept the
 Developer Agreement, upload the `.spl`, enter monitored support contact
 details, and receive public Splunkbase/Splunk Cloud review. Do not claim
 "Available on Splunkbase" until that public listing exists.
+
+Move 186 hardens public package currentness after the Zed external-client proof:
+the audit now verifies `mcp-recorder` from the published npm package and compares
+npm `gitHead` to local HEAD. The hardened audit reports `STALE` while npm latest
+is still `splunkready@0.1.3`: old judge-proof, MCP, live-mock, and
+policy-registry surfaces still pass, but published `mcp-recorder --server ...`
+exits with `Unknown option --server`. Source is bumped to `0.1.4`, npm auth is
+active as `brightybrainiac`, and npm release preflight reports `READY`. Residual
+risk: do not claim the Zed recorder workflow is available through public npm
+until `splunkready@0.1.4` is published and
+`npm run audit:public-package-currentness -- --require-current --out
+submission-evidence/public-package-currentness` reports `CURRENT`.

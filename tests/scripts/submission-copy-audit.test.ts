@@ -38,7 +38,7 @@ Not MCP telemetry.
 Not a detection-health dashboard.
 Not a generic eval harness.
 Not an LLM judging another LLM.
-npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.4 judge-proof --out ./judge-proof --json
 npm run audit:public-package-currentness
 Standalone Release Artifact
 submission-evidence/standalone-release/standalone-release-current-os.json
@@ -120,7 +120,7 @@ Readiness Receipt
 security investigation readiness
 requires no live Splunk credentials
 does not mutate Splunk
-npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.4 judge-proof --out ./judge-proof --json
 submission-evidence/public-package-currentness/
 submission-evidence/standalone-release/standalone-release-current-os.json
 submission-evidence/standalone-release/standalone-release-matrix.json
@@ -165,9 +165,9 @@ const baseClaimLedger = `# Submission Claim Ledger
 
 | Claim | Status | Evidence | Verification |
 | --- | --- | --- | --- |
-| The package is published on npm and the current published no-clone judge proof is smoke-tested. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.3 judge-proof --out ./judge-proof --json |
+| The package is published on npm and the current published no-clone judge proof is smoke-tested. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.4 judge-proof --out ./judge-proof --json |
 | The deterministic readiness score is severity-weighted and non-binary, not hardcoded to 0/100. | Supported | submission-evidence/readiness-score-calibration/readiness-score-calibration.json, contractVersion: "readiness-score-calibration-v1", status: "PASS", passFailAuthority: "deterministic-rule-engine", mutation: false, \`NEEDS REVIEW\`, intermediate scores \`88\` and \`59\`, provesNonBinaryScoring: true | npm run score-calibration |
-| The public registry currentness proof verifies the current published judge-proof, MCP tools, live-mock proof, and policy-registry paths. | Supported | submission-evidence/public-package-currentness/public-package-currentness.json, publishedLiveMockProof, publishedPolicyRegistry | npm run audit:public-package-currentness |
+| The public registry currentness proof now verifies the published judge-proof, MCP tools, live-mock proof, policy-registry path, source \`gitHead\`, and \`mcp-recorder\` gateway before any package is called current. | Conditional | submission-evidence/public-package-currentness/public-package-currentness.json, publishedLiveMockProof, publishedPolicyRegistry, publishedRecorder, registry.gitHeadMatchesPackageInputs | status: "STALE"; npm run audit:public-package-currentness |
 | The current source can produce a current-OS no-Node standalone release archive that runs judge proof from a clean temp folder. | Supported | submission-evidence/standalone-release/standalone-release-current-os.json, target \`macos-arm64\`, smoke \`status: "PASS"\`, 67 generated artifacts, releaseClaimBoundary.allPlatformReleaseRequiresTagWorkflow: true | npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json |
 | The release-artifacts workflow builds, smokes, and uploads standalone archives on Linux, macOS, and Windows runners. | Supported | submission-evidence/standalone-release/standalone-release-matrix.json, run \`27128293723\`, splunkready-standalone-Linux-X64, splunkready-standalone-macOS-ARM64, splunkready-standalone-Windows-X64 | gh workflow run release-artifacts.yml --ref splunkready-build; gh run watch 27128293723 --exit-status |
 | The public \`v0.1.3\` GitHub Release publishes no-Node standalone assets for Linux, macOS, and Windows with checksums and per-platform manifests. | Supported | submission-evidence/standalone-release/standalone-release-github-release.json, https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.3, 27129153682, splunkready-linux-x64.tar.gz, splunkready-macos-arm64.tar.gz, splunkready-windows-x64.tar.gz, standalone-release-windows-x64.json | gh run watch 27129153682 --exit-status |
