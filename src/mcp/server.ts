@@ -16,6 +16,9 @@ import { runHostedModelDiagnosticWorkflow } from "../workflows/hosted-model-acti
 
 const protocolVersion = "2025-06-18";
 
+const mcpTranscriptJsonlShape =
+  'Use one JSON object per line. Request lines must look like {"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"splunk_run_saved_search","arguments":{...}}}. Response lines must look like {"jsonrpc":"2.0","id":1,"result":{"structuredContent":{...}}}. Use the same id on the request and response. Tool names should be the Splunk MCP names without client prefixes, for example splunk_get_knowledge_objects and splunk_run_saved_search.';
+
 type JsonRpcId = string | number | null;
 
 interface JsonRpcRequest {
@@ -227,7 +230,7 @@ export const splunkReadyMcpTools: McpTool[] = [
     name: "splunkready_certify_mcp_transcript",
     title: "Certify MCP Transcript",
     description:
-      "Import a local Splunk MCP JSON-RPC transcript, append the producer final answer, and grade it into a deterministic Readiness Receipt.",
+      `Import a local Splunk MCP JSON-RPC transcript, append the producer final answer, and grade it into a deterministic Readiness Receipt. ${mcpTranscriptJsonlShape}`,
     inputSchema: objectSchema(
       {
         transcriptPath: stringProperty("Local path to a Splunk MCP JSONL transcript."),
@@ -256,10 +259,12 @@ export const splunkReadyMcpTools: McpTool[] = [
     name: "splunkready_certify_mcp_transcript_content",
     title: "Certify Inline MCP Transcript",
     description:
-      "Certify Splunk MCP JSON-RPC transcript content supplied directly by an MCP client and write a deterministic Readiness Receipt.",
+      `Certify Splunk MCP JSON-RPC transcript content supplied directly by an MCP client and write a deterministic Readiness Receipt. ${mcpTranscriptJsonlShape}`,
     inputSchema: objectSchema(
       {
-        transcript: stringProperty("Splunk MCP JSONL transcript content. Do not include tokens or environment files."),
+        transcript: stringProperty(
+          `Splunk MCP JSONL transcript content. Do not include tokens or environment files. ${mcpTranscriptJsonlShape}`
+        ),
         finalAnswer: stringProperty("Producer-provided final answer to append before grading."),
         outDir: stringProperty("Local output directory for certification artifacts."),
         strictImport: booleanProperty("Reject transcripts with skipped records or unmatched tool calls.", true),

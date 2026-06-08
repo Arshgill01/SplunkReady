@@ -16028,3 +16028,56 @@ Result:
 
 - PASS: Pages build and deploy completed successfully for commit `06c0146`.
 - PASS: hosted-demo currentness audit reports `CURRENT` for `06c0146`.
+
+## 2026-06-08T13:19:49Z - Move 183 Zed external MCP-client session
+
+Intent:
+
+- Unpark the external MCP-client move with a real Zed Agent session, not a
+  local proof script.
+- Prove Zed can consume the SplunkReady MCP recorder gateway, call Splunk
+  investigation tools, and produce a deterministic Readiness Receipt from the
+  captured MCP frames.
+
+Actions:
+
+- Created `docs/execplans/mcp-zed-external-client-session.md` and
+  `moves/moves183.md` with explicit Tier 0/1/2 criteria and a claim rule that
+  forbids ledger updates unless Zed itself initiates MCP tool calls.
+- Configured a disposable Zed workspace at
+  `/tmp/splunkready-zed-mcp-session` with a project-local
+  `splunkready-recorder` context server pointing at
+  `dist/src/cli.js mcp-recorder --server splunk=mock-splunk-mcp --server splunkready=mcp`.
+- Used Computer Use mouse interactions to open Zed, trust the disposable
+  workspace, open Zed Agent, verify GPT-5.5 and Low reasoning in the visible
+  UI, type prompts, and click the visible send controls.
+- Fixed four external-client compatibility gaps found by Zed:
+  - recorder `initialize` response now includes MCP capabilities;
+  - built-in downstream server cwd/path resolution now uses the package root
+    instead of Zed's empty workspace;
+  - inline transcript certification tool descriptions now document the JSONL
+    request/response shape expected by strict import;
+  - `splunkready_recorder_flush` now returns both MCP text `content` and
+    `structuredContent`.
+- Preserved the important negative finding: asking Zed to reconstruct an inline
+  transcript from summarized tool outputs failed strict import; the correct
+  production-grade external-client path is to record actual frames and certify
+  them through `splunkready_recorder_flush`.
+- Ran the final Zed session with only MCP tools: Zed called
+  `splunk__splunk_get_knowledge_objects`,
+  `splunk__splunk_run_saved_search`, and `splunkready_recorder_flush`.
+- Copied sanitized evidence into
+  `submission-evidence/mcp-proof/zed-client-session/` and captured
+  `submission-evidence/screenshots/zed-mcp-recorder-summary.png`.
+- Updated the claim ledger and evidence README with the Zed external-client
+  session claim.
+
+Result:
+
+- PASS: final Zed-driven recorder session reports `Status: PASS`.
+- PASS: final Zed-driven certification reports `Certification: PASS`.
+- PASS: generated Readiness Receipt reports `verdict: "READY"`, `score: 100`,
+  and `mutation: false`.
+- PASS: tracked Zed session text evidence has no local paths, bearer headers,
+  token strings, secret strings, password strings, or endpoint values.
+- PASS: screenshot was cropped to show only repository-relative paths.

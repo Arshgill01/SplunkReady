@@ -1,6 +1,6 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { mkdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 import { createInterface } from "node:readline";
 
 import {
@@ -42,6 +42,7 @@ export interface RecorderServerConfig {
   id: "splunk" | "splunkready";
   command: string;
   args: string[];
+  cwd?: string;
 }
 
 interface DownstreamTool {
@@ -58,6 +59,7 @@ class RecorderStdioClient {
 
   constructor(private readonly config: RecorderServerConfig) {
     this.child = spawn(config.command, config.args, {
+      cwd: config.cwd,
       env: process.env,
       stdio: ["pipe", "pipe", "pipe"]
     });
@@ -150,11 +152,14 @@ const localServerConfig = (input: {
   fixturePath: string;
   mockState: string;
 }): RecorderServerConfig => {
+  const packageRoot = packageRootFromFixturePath(input.fixturePath, input.cliPath);
+
   if (input.value === "mock-splunk-mcp") {
     return {
       id: input.id,
       command: process.execPath,
-      args: [input.cliPath, "mock-splunk-mcp", "--fixture", input.fixturePath, "--mock-state", input.mockState]
+      args: [input.cliPath, "mock-splunk-mcp", "--fixture", input.fixturePath, "--mock-state", input.mockState],
+      cwd: packageRoot
     };
   }
 
@@ -162,7 +167,8 @@ const localServerConfig = (input: {
     return {
       id: input.id,
       command: process.execPath,
-      args: [input.cliPath, "mcp"]
+      args: [input.cliPath, "mcp"],
+      cwd: packageRoot
     };
   }
 
@@ -174,6 +180,21 @@ const localServerConfig = (input: {
 
   return { id: input.id, command, args };
 };
+
+const packageRootFromFixturePath = (fixturePath: string, cliPath: string): string => {
+  const absoluteFixturePath = resolve(fixturePath);
+  const marker = `${sep}fixtures${sep}`;
+  const markerIndex = absoluteFixturePath.indexOf(marker);
+
+  if (markerIndex >= 0) {
+    return absoluteFixturePath.slice(0, markerIndex);
+  }
+
+  return resolve(dirname(resolve(cliPath)), "../..");
+};
+
+const defaultMissionPathFromPackageRoot = (packageRoot: string): string =>
+  join(packageRoot, "fixtures/acme-soc-dev/missions/security-investigation-readiness.json");
 
 export const parseRecorderServerConfigs = (input: {
   serverSpecs: string[];
@@ -285,6 +306,8 @@ export class McpRecorderGateway {
       artifactPath: string;
       markdownPath: string;
       certificationOutDir: string;
+      fixturePath: string;
+      missionPath: string;
     }
   ) {}
 
@@ -330,6 +353,7 @@ export class McpRecorderGateway {
     if (request.method === "initialize") {
       return success(requestId(request), {
         protocolVersion: "2025-06-18",
+        capabilities: { tools: { listChanged: false } },
         serverInfo: { name: "splunkready-mcp-recorder", version: "1.0.0" },
         instructions:
           "SplunkReady MCP Recorder proxies named downstream MCP servers, records redacted frames, and certifies Splunk-side transcripts."
@@ -368,7 +392,10 @@ export class McpRecorderGateway {
 
       try {
         const summary = await this.flush({ finalAnswer, requirePass: args.requirePass !== false });
-        return success(requestId(request), { structuredContent: summary });
+        return success(requestId(request), {
+          content: [{ type: "text", text: JSON.stringify(summary, null, 2) }],
+          structuredContent: summary
+        });
       } catch (caught) {
         const message = caught instanceof Error ? caught.message : "MCP recorder flush failed.";
 
@@ -423,6 +450,8 @@ export class McpRecorderGateway {
     const certification = await runMcpTranscriptCertificationFromPathWorkflow({
       transcriptPath: this.paths.artifactPath,
       outDir: this.paths.certificationOutDir,
+      fixturePath: this.paths.fixturePath,
+      missionPath: this.paths.missionPath,
       strictImport: true,
       requirePass: input.requirePass,
       agentName: "MCP Recorder Gateway",
@@ -477,10 +506,13 @@ export const startStdioMcpRecorderGateway = async (input: {
   outDir: string;
 }): Promise<void> => {
   const configs = parseRecorderServerConfigs(input);
+  const packageRoot = packageRootFromFixturePath(input.fixturePath, input.cliPath);
   const gateway = new McpRecorderGateway(configs, {
     artifactPath: join(input.outDir, "mcp-recorder-session.jsonl"),
     markdownPath: join(input.outDir, "mcp-recorder-session.md"),
-    certificationOutDir: join(input.outDir, "mcp-recorder-certification")
+    certificationOutDir: join(input.outDir, "mcp-recorder-certification"),
+    fixturePath: input.fixturePath,
+    missionPath: defaultMissionPathFromPackageRoot(packageRoot)
   });
   await mkdir(input.outDir, { recursive: true });
   await gateway.start();
@@ -530,10 +562,13 @@ export const runMcpRecorderGatewayProofSession = async (input: {
     fixturePath: input.fixturePath,
     mockState: input.mockState
   });
+  const packageRoot = packageRootFromFixturePath(input.fixturePath, input.cliPath);
   const gateway = new McpRecorderGateway(configs, {
     artifactPath: input.artifactPath,
     markdownPath: input.markdownPath,
-    certificationOutDir: input.certificationOutDir
+    certificationOutDir: input.certificationOutDir,
+    fixturePath: input.fixturePath,
+    missionPath: defaultMissionPathFromPackageRoot(packageRoot)
   });
 
   await mkdir(input.downstreamCertificationOutDir, { recursive: true });

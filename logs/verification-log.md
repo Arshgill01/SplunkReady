@@ -16936,3 +16936,71 @@ Result:
   hosted source commit `06c014660b9186feece1966a0db3ef4fcd59bf00`, matching
   hosted/local asset names, `artifactBases` including
   `artifacts/real-splunk-stress-llm-layer`, and `mutation: false`.
+
+## 2026-06-08T13:19:49Z - Move 183 Zed external MCP-client session
+
+Commands:
+
+- `node dist/src/cli.js mcp-recorder --help`
+- local Node stdio probe against
+  `node dist/src/cli.js mcp-recorder --server splunk=mock-splunk-mcp --server splunkready=mcp --fixture /Users/arshdeepsingh/Developer/SplunkReady/fixtures/acme-soc-dev/adapter-fixture.json --out artifacts/zed-mcp-recorder-sanity`
+- `npx vitest run tests/mcp/server.test.ts -t "lists deterministic"`
+- `npx vitest run tests/mcp/composition-recorder.test.ts`
+- `npx vitest run tests/cli/flow.test.ts -t "MCP recorder gateway"`
+- `npm run build`
+- Computer Use Zed run with project-local `splunkready-recorder` context
+  server, GPT-5.5, Low reasoning, and mouse-clicked send controls.
+- `find artifacts/zed-external-mcp-client-session -maxdepth 3 -type f | sort`
+- `rg -n "/Users/|/private/|/tmp/|Bearer|Authorization|TOKEN|SECRET|PASSWORD|SPLUNKREADY_.*(TOKEN|SECRET|ENDPOINT|URL)" artifacts/zed-external-mcp-client-session || true`
+- `rg -n "/Users/|/private/|/tmp/|Bearer|Authorization|TOKEN|SECRET|PASSWORD|SPLUNKREADY_.*(TOKEN|SECRET|ENDPOINT|URL)" submission-evidence/mcp-proof/zed-client-session || true`
+- `screencapture -x /tmp/zed-full.png`
+- `sips -c 850 1200 --cropOffset 1070 1690 /tmp/zed-crop-test.png --out /tmp/zed-crop-test.png`
+
+Result:
+
+- PARTIAL: `node dist/src/cli.js mcp-recorder --help` currently falls through
+  to global help and reports `Invalid argument near --help`; the recorder
+  command still starts normally, but command-specific help remains an ergonomic
+  issue.
+- PASS: local recorder sanity listed required proxied tools and wrote a
+  certifiable session; this was treated as harness sanity only, not
+  third-party-client evidence.
+- PASS: focused MCP server test passed after adding transcript JSONL shape
+  guidance to tool descriptions.
+- PASS: focused composition-recorder test passed, including the new
+  recorder-gateway flush proof-surface case.
+- PASS: focused CLI recorder gateway test passed after fixing capabilities,
+  package-root path resolution, and flush response shape.
+- PASS: TypeScript build passed.
+- PASS: Zed itself initiated MCP calls through the recorder gateway:
+  `splunk__splunk_get_knowledge_objects`,
+  `splunk__splunk_run_saved_search`, and `splunkready_recorder_flush`.
+- PASS: final Zed recorder summary reports `Status: PASS`, Splunk tools
+  `splunk_get_knowledge_objects` and `splunk_run_saved_search`,
+  SplunkReady tool `splunkready_recorder_flush`, evidence refs `evt-102`,
+  `evt-118`, `evt-141`, `Redaction: PASS`, and `Certification: PASS`.
+- PASS: final Zed Readiness Receipt reports `verdict: "READY"`, `score: 100`,
+  and `mutation: false`.
+- PASS: tracked Zed text evidence scan found no local paths, bearer headers,
+  token strings, secret strings, password strings, or endpoint values.
+- PASS: screenshot crop was visually inspected and contains only the
+  repository-relative Zed summary.
+
+Additional final checks:
+
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run audit:submission-copy`
+- `npm run check`
+- `git diff --check`
+
+Additional result:
+
+- PASS: refreshed evidence-pack SHA-256 verification passed, including
+  `submission-evidence/mcp-proof/zed-client-session/*` and
+  `submission-evidence/screenshots/zed-mcp-recorder-summary.png`.
+- PASS: submission-copy audit passed with 362 required claims.
+- PASS: full repository check passed: scaffold verification, runtime-contract
+  verification, package build, UI build, public-demo export audit, package
+  readiness/installability audits, 75 Vitest files / 437 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
+  audit, and whitespace diff check.

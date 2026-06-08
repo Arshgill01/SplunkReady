@@ -1250,3 +1250,14 @@ the same operational rule: any future commit touching `fixtures`,
 `submission-evidence/screenshots`, `submission-evidence/suite-proof`, `ui`, or
 `vite.config.ts` requires rerunning the Pages workflow and refreshing
 hosted-demo currentness before citing the live URL as current.
+
+Move 183 closes the "no real external MCP client" gap for Zed: a real Zed
+Agent session consumed the `mcp-recorder` gateway, called Splunk investigation
+tools, and flushed the captured frames into a deterministic `READY / 100`
+Readiness Receipt with `mutation: false`. Residual risk: the successful
+external-client workflow is recorder-gateway capture plus
+`splunkready_recorder_flush`; asking an editor LLM to manually reconstruct a
+strict inline MCP transcript remains fragile and failed during this move because
+Zed summarized structured Splunk responses. This is now documented as a product
+lesson, not claimed as a passing inline-certifier client path. The tracked Zed
+evidence is fixture/mock-Splunk MCP evidence, not a live operator Splunk proof.

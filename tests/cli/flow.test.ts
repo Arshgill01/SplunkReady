@@ -364,6 +364,7 @@ describe("SplunkReady CLI flow", () => {
 
   it("starts the MCP recorder gateway and certifies a recorded dual-server session", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "splunkready-mcp-recorder-"));
+    const externalClientCwd = await mkdtemp(join(tmpdir(), "splunkready-external-client-cwd-"));
     const child = spawn(
       process.execPath,
       [
@@ -374,12 +375,12 @@ describe("SplunkReady CLI flow", () => {
         "--server",
         "splunkready=mcp",
         "--fixture",
-        "fixtures/acme-soc-dev/adapter-fixture.json",
+        join(process.cwd(), "fixtures/acme-soc-dev/adapter-fixture.json"),
         "--out",
         outDir
       ],
       {
-        cwd: process.cwd(),
+        cwd: externalClientCwd,
         env: { ...process.env },
         stdio: ["pipe", "pipe", "pipe"]
       }
@@ -391,7 +392,9 @@ describe("SplunkReady CLI flow", () => {
     };
 
     try {
-      const initialize = await sendRequest<{ result: { serverInfo: { name: string } } }>({
+      const initialize = await sendRequest<{
+        result: { capabilities: { tools: { listChanged: boolean } }; serverInfo: { name: string } };
+      }>({
         id: "recorder-initialize",
         method: "initialize",
         params: {
@@ -401,6 +404,7 @@ describe("SplunkReady CLI flow", () => {
         }
       });
       expect(initialize.result.serverInfo.name).toBe("splunkready-mcp-recorder");
+      expect(initialize.result.capabilities.tools.listChanged).toBe(false);
 
       const toolsList = await sendRequest<{ result: { tools: Array<{ name: string }> } }>({
         id: "recorder-tools",
@@ -481,7 +485,10 @@ describe("SplunkReady CLI flow", () => {
         60_000
       );
       const flush = await sendRequest<{
-        result: { structuredContent: { status: string; certification?: { status: string }; frameCount: number } };
+        result: {
+          content: Array<{ type: string; text: string }>;
+          structuredContent: { status: string; certification?: { status: string }; frameCount: number };
+        };
       }>(
         {
           id: "recorder-flush",
@@ -501,6 +508,8 @@ describe("SplunkReady CLI flow", () => {
       expect(flush.result.structuredContent.status).toBe("PASS");
       expect(flush.result.structuredContent.certification?.status).toBe("PASS");
       expect(flush.result.structuredContent.frameCount).toBeGreaterThanOrEqual(5);
+      expect(flush.result.content[0].type).toBe("text");
+      expect(flush.result.content[0].text).toContain("\"status\": \"PASS\"");
 
       const sessionText = await readFile(join(outDir, "mcp-recorder-session.jsonl"), "utf8");
       const sessionFrames = sessionText

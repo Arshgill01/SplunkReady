@@ -1,9 +1,16 @@
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
 import { reviewMcpComposition } from "../../src/mcp/composition-review.js";
-import { createMcpCompositionRecorderSession, type McpRecorderSessionRecord } from "../../src/mcp/composition-recorder.js";
+import {
+  createMcpCompositionRecorderSession,
+  type McpRecorderFrame,
+  type McpRecorderSessionRecord,
+  writeMcpCompositionRecorderFrames
+} from "../../src/mcp/composition-recorder.js";
 import { importMcpTranscript, parseMcpTranscriptRecords } from "../../src/traces/mcp-transcript.js";
 
 const sampleTranscriptPath = new URL("../../examples/sample-mcp-transcript-pass.jsonl", import.meta.url);
@@ -133,5 +140,42 @@ describe("MCP composition recorder", () => {
     expect(review.splunkToolNames).toEqual(["splunk_get_knowledge_objects", "splunk_run_saved_search"]);
     expect(review.evidenceRefs).toEqual(["evt-102", "evt-118", "evt-141"]);
     expect(review.mutation).toBe(false);
+  });
+
+  it("marks recorder-gateway flush certification as the SplunkReady proof surface", async () => {
+    const splunkTranscript = await readFile(sampleTranscriptPath, "utf8");
+    const { frames } = createMcpCompositionRecorderSession({
+      splunkTranscript,
+      splunkReadySession: [],
+      artifactPath: "artifacts/mcp-proof/zed-session.jsonl",
+      markdownPath: "artifacts/mcp-proof/zed-session.md"
+    });
+    const recorderFrames: McpRecorderFrame[] = [
+      ...frames,
+      {
+        source: "splunkready-mcp-composition-recorder",
+        serverId: "splunkready",
+        serverRole: "splunkready-certifier-mcp",
+        direction: "final_answer",
+        sequence: frames.length + 1,
+        message: {
+          type: "final_answer",
+          finalAnswer:
+            "Ran saved search saved-search-lateral-movement and found evidence refs evt-102, evt-118, and evt-141.",
+          evidenceRefs: ["evt-102", "evt-118", "evt-141"]
+        }
+      }
+    ];
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-recorder-summary-"));
+    const summary = await writeMcpCompositionRecorderFrames({
+      frames: recorderFrames,
+      artifactPath: join(outDir, "session.jsonl"),
+      markdownPath: join(outDir, "session.md"),
+      certification: { status: "PASS", outDir: join(outDir, "certification"), artifactCount: 12 }
+    });
+
+    expect(summary.status).toBe("PASS");
+    expect(summary.splunkReadyToolNames).toEqual(["splunkready_recorder_flush"]);
+    expect(summary.certification?.status).toBe("PASS");
   });
 });

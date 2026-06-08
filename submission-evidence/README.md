@@ -110,6 +110,8 @@ Expected proof status:
 - MCP composition recorder: `PASS`, `9` pass-through gateway frames, servers `splunk`, `splunkready`
 - MCP composition recorder redaction: `PASS`
 - MCP composition recorder certification: `PASS`, strict import skipped records `0`
+- Zed external MCP client session: `PASS`, Zed Agent called `splunk_get_knowledge_objects`, `splunk_run_saved_search`, and `splunkready_recorder_flush`
+- Zed external MCP client certification: `PASS`, receipt `READY`, score `100`, mutation `false`, evidence refs `evt-102`, `evt-118`, `evt-141`
 - AppInspect MCP composition: `PASS`, server `AppInspect MCP Server 2.14.7`, tool `inspect_app`, validation `SUCCESS`, failures `0`, errors `0`, warnings `1`
 - MCP live-mock session: `PASS`
 - MCP template receipt read: `splunkready://receipts/pass`
@@ -170,4 +172,5 @@ Included refreshed screenshots were captured with Playwright before tracking:
 - `screenshots/public-demo-llm-deliberation.png`: Hosted-style public demo route opened at `?artifacts=artifacts%2Freal-splunk-stress-llm-layer#llm-deliberation`, showing the real-Splunk LLM deliberation bundle from the static export with advisory-only status, deterministic rule-engine authority, claim-audit status, and `Mutation no`.
 - `screenshots/hosted-demo-llm-deliberation.png`: Live GitHub Pages route opened at `?artifacts=artifacts%2Freal-splunk-stress-llm-layer#llm-deliberation` after the hosted currentness audit passed for source commit `06c0146`, showing advisory-only status, deterministic rule-engine authority, claim-audit status, and `Mutation no`.
 - `screenshots/workbench-llm-deliberation.png`: Vite workbench LLM view loaded from `submission-evidence/real-splunk-stress-llm-layer`, showing before advisory score `92`, after advisory score `97.5`, advisory-only status, deterministic rule-engine authority, saved-search provenance, claim-audit status, and `Mutation no`.
+- `screenshots/zed-mcp-recorder-summary.png`: Cropped Zed Agent screenshot showing the real external MCP-client recorder result with `Status: PASS`, `Certification: PASS`, `Mutation: false`, evidence refs `evt-102`, `evt-118`, `evt-141`, and repository-relative artifact paths only.
 - `real-splunk-stress/splunk-web-evidence-results.png`: Splunk Web screenshot from the disposable Splunk Enterprise deployment showing the 4-event `wineventlog` result table with the three lateral-movement refs and the prompt-injection trap.

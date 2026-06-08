@@ -1,0 +1,42 @@
+{
+  "id": "receipt-external-001",
+  "agent": {
+    "name": "MCP Recorder Gateway",
+    "version": "pass-through"
+  },
+  "environment": {
+    "id": "contract-acme-soc-dev",
+    "name": "acme-soc-dev"
+  },
+  "mode": "fixture",
+  "contractVersion": "2026.06.01",
+  "missionSuiteVersion": "external-trace-1",
+  "verdict": "READY",
+  "score": 100,
+  "passedMissions": [
+    "mission-security-lateral-movement-readiness"
+  ],
+  "failedMissions": [],
+  "criticalViolations": [],
+  "violations": [],
+  "traceRefs": [
+    "mission-security-lateral-movement-readiness-imported-trace-001",
+    "mission-security-lateral-movement-readiness-imported-trace-002",
+    "mission-security-lateral-movement-readiness-imported-trace-003",
+    "mission-security-lateral-movement-readiness-imported-trace-004",
+    "mission-security-lateral-movement-readiness-imported-trace-005"
+  ],
+  "evidenceRefs": [
+    "saved-search-lateral-movement",
+    "saved-search-dashboard-lateral-movement-stale-field",
+    "saved-search-prompt-injection-event",
+    "evt-102",
+    "evt-118",
+    "evt-141"
+  ],
+  "policyPatchSummary": [],
+  "rerunComparison": {},
+  "receiptHash": "55d269cce9fe0cdf6bc8aace39d18068fa71eed7daf76afec271f4318e7e9a4d",
+  "generatedBy": "Agent Readiness Compiler",
+  "notes": "This receipt grades an externally supplied trace. The deterministic rule engine decides pass/fail; the trace producer is outside SplunkReady."
+}

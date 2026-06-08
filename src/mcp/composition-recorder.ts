@@ -220,8 +220,8 @@ const summarizeFrames = (
     serverIds.includes("splunkready") &&
     splunkToolNames.includes("splunk_get_knowledge_objects") &&
     splunkToolNames.includes("splunk_run_saved_search") &&
-    splunkReadyToolNames.includes("splunkready_certify_mcp_transcript") &&
-    splunkReadyToolNames.includes("splunkready_certify_mcp_transcript_content") &&
+    (splunkReadyToolNames.includes("splunkready_certify_mcp_transcript") ||
+      splunkReadyToolNames.includes("splunkready_certify_mcp_transcript_content")) &&
     evidenceRefs.length > 0 &&
     redaction.status === "PASS"
       ? "PASS"
@@ -251,8 +251,22 @@ export const writeMcpCompositionRecorderFrames = async (input: {
   markdownPath: string;
   certification?: McpCompositionRecorderSummary["certification"];
 }): Promise<McpCompositionRecorderSummary> => {
+  const frameSummary = summarizeFrames(input.frames, input.artifactPath, input.markdownPath);
+  const recorderCertificationPassed =
+    input.certification?.status === "PASS" &&
+    frameSummary.serverIds.includes("splunk") &&
+    frameSummary.serverIds.includes("splunkready") &&
+    frameSummary.splunkToolNames.includes("splunk_get_knowledge_objects") &&
+    frameSummary.splunkToolNames.includes("splunk_run_saved_search") &&
+    frameSummary.evidenceRefs.length > 0 &&
+    frameSummary.redaction.status === "PASS";
   const summary: McpCompositionRecorderSummary = {
-    ...summarizeFrames(input.frames, input.artifactPath, input.markdownPath),
+    ...frameSummary,
+    status: recorderCertificationPassed ? "PASS" : frameSummary.status,
+    splunkReadyToolNames:
+      recorderCertificationPassed && frameSummary.splunkReadyToolNames.length === 0
+        ? ["splunkready_recorder_flush"]
+        : frameSummary.splunkReadyToolNames,
     certification: input.certification
   };
 

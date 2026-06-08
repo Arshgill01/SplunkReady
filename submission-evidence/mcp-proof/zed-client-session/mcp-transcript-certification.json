@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "source": "mcp-jsonrpc-transcript-certification",
+  "mutation": false,
+  "transcriptPath": "artifacts/zed-external-mcp-client-session/mcp-recorder-session.jsonl",
+  "missionPath": "fixtures/acme-soc-dev/missions/security-investigation-readiness.json",
+  "agent": {
+    "name": "MCP Recorder Gateway",
+    "version": "pass-through"
+  },
+  "receipt": {
+    "id": "receipt-external-001",
+    "verdict": "READY",
+    "score": 100,
+    "violations": 0,
+    "traceRefs": 5,
+    "evidenceRefs": 6
+  },
+  "audit": {
+    "status": "PASS",
+    "proofType": "external-trace",
+    "checks": [
+      {
+        "id": "contract-loaded",
+        "status": "PASS"
+      },
+      {
+        "id": "external-receipt-loaded",
+        "status": "PASS"
+      },
+      {
+        "id": "external-trace-loaded",
+        "status": "PASS"
+      },
+      {
+        "id": "external-violations-loaded",
+        "status": "PASS"
+      },
+      {
+        "id": "external-receipt-trace-refs",
+        "status": "PASS"
+      },
+      {
+        "id": "external-verdict-ready",
+        "status": "PASS"
+      },
+      {
+        "id": "external-mutation-false",
+        "status": "PASS"
+      },
+      {
+        "id": "external-mcp-transcript-integrity",
+        "status": "PASS"
+      }
+    ]
+  },
+  "artifacts": {
+    "contract": "artifacts/zed-external-mcp-client-session/mcp-recorder-certification/environment-contract.json",
+    "importedTrace": "artifacts/zed-external-mcp-client-session/mcp-recorder-certification/trace-imported.json",
+    "externalTrace": "artifacts/zed-external-mcp-client-session/mcp-recorder-certification/trace-external.json",
+    "violations": "artifacts/zed-external-mcp-client-session/mcp-recorder-certification/violations-external.json",
+    "receipt": "artifacts/zed-external-mcp-client-session/mcp-recorder-certification/receipt-external-001.json",
+    "audit": "artifacts/zed-external-mcp-client-session/mcp-recorder-certification/proof-audit.json"
+  }
+}

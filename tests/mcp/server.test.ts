@@ -68,6 +68,13 @@ describe("SplunkReady MCP server", () => {
       "splunkready_review_mcp_composition",
       "splunkready_check_hosted_model_access"
     ]);
+    const inlineTranscriptTool = splunkReadyMcpTools.find(
+      (tool) => tool.name === "splunkready_certify_mcp_transcript_content"
+    );
+
+    expect(inlineTranscriptTool?.description).toContain("Use one JSON object per line");
+    expect(inlineTranscriptTool?.description).toContain("splunk_run_saved_search");
+    expect(JSON.stringify(inlineTranscriptTool?.inputSchema)).toContain("without client prefixes");
     expect(splunkReadyMcpTools.every((tool) => tool.annotations.destructiveHint === false)).toBe(true);
   });
 
