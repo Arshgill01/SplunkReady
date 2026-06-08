@@ -110,6 +110,23 @@ const checks = [
   ["Claim ledger real Splunk stress replay summary", files.claimLedger, "submission-evidence/real-splunk-stress-replay/real-splunk-stress-replay-summary.json"],
   ["Claim ledger real Splunk stress replay readiness", files.claimLedger, "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF"],
   ["Claim ledger real Splunk stress replay frames", files.claimLedger, "mcpBridgeFrames: 76"],
+  [
+    "Claim ledger real Splunk LLM deliberation proof",
+    files.claimLedger,
+    "The LLM-backed real Splunk stress proof now records structured deliberation and advisory output-quality evidence."
+  ],
+  [
+    "Claim ledger real Splunk LLM deliberation summary",
+    files.claimLedger,
+    "submission-evidence/real-splunk-stress-llm-layer/real-splunk-stress-replay-summary.json"
+  ],
+  ["Claim ledger real Splunk LLM before report", files.claimLedger, "submission-evidence/real-splunk-stress-llm-layer/llm-deliberation-before.json"],
+  ["Claim ledger real Splunk LLM after report", files.claimLedger, "submission-evidence/real-splunk-stress-llm-layer/llm-deliberation-after.json"],
+  ["Claim ledger real Splunk LLM advisory", files.claimLedger, "llmOutputQuality.advisoryOnly: true"],
+  ["Claim ledger real Splunk LLM before score", files.claimLedger, "before advisory score `92.5`"],
+  ["Claim ledger real Splunk LLM after score", files.claimLedger, "after advisory score `94.44`"],
+  ["README real Splunk LLM evidence", files.readme, "real-splunk-stress-llm-layer/"],
+  ["README real Splunk LLM reports", files.readme, "llm-deliberation-before.json"],
   ["README standalone release artifact", files.readme, "Standalone Release Artifact"],
   ["README standalone release evidence", files.readme, "submission-evidence/standalone-release/standalone-release-current-os.json"],
   ["README standalone release matrix evidence", files.readme, "submission-evidence/standalone-release/standalone-release-matrix.json"],

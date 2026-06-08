@@ -10,6 +10,7 @@ import type { MissionDefinition } from "../missions/dsl.js";
 import type { AgentPolicy } from "../policy/compiler.js";
 import type { EnvironmentContract, ReadOnlySplunkToolName, TraceEvent } from "../schemas/core.js";
 import { TraceRecorder } from "../traces/recorder.js";
+import { evaluateLlmOutputQuality, type LlmOutputQualityReport } from "./llm-output-quality.js";
 import type { SpecimenAgentInput, SpecimenAgentRun } from "./specimen.js";
 
 export type LlmAgentToolCall =
@@ -20,6 +21,10 @@ export type LlmAgentToolCall =
 export interface LlmAgentPlan {
   toolCalls: LlmAgentToolCall[];
   rationale: string;
+  missionUnderstanding?: string;
+  riskControls?: string[];
+  evidenceStrategy?: string[];
+  selfCheck?: string[];
 }
 
 export interface LlmAgentObservation {
@@ -29,6 +34,16 @@ export interface LlmAgentObservation {
   evidenceRefs: string[];
   queryRef: string | null;
 }
+
+export interface LlmAgentAnswer {
+  finalAnswer: string;
+  provenanceSummary?: string;
+  uncertainty?: string[];
+  nextActions?: string[];
+  safetyNotes?: string[];
+}
+
+export type LlmAgentAnswerResult = string | LlmAgentAnswer;
 
 export interface LlmAgentModel {
   plan(input: {
@@ -44,7 +59,7 @@ export interface LlmAgentModel {
     policy?: AgentPolicy;
     contractInjected: boolean;
     observations: LlmAgentObservation[];
-  }): Promise<string>;
+  }): Promise<LlmAgentAnswerResult>;
 }
 
 export interface LlmSpecimenAgentOptions {
@@ -56,6 +71,9 @@ export interface LlmSpecimenAgentRun extends SpecimenAgentRun {
   finalAnswer: string;
   traceEvents: TraceEvent[];
   observations: LlmAgentObservation[];
+  plan: LlmAgentPlan;
+  answer: LlmAgentAnswer;
+  outputQuality: LlmOutputQualityReport;
 }
 
 const defaultNow = "2026-06-01T07:05:00.000Z";
@@ -172,6 +190,9 @@ const appendEvidenceLedger = (answer: string, observations: LlmAgentObservation[
   return answer.includes(ledger) ? answer : `${answer}\n${ledger}`;
 };
 
+const normalizeAnswer = (answer: LlmAgentAnswerResult): LlmAgentAnswer =>
+  typeof answer === "string" ? { finalAnswer: answer } : answer;
+
 export class LlmSpecimenAgent {
   private readonly contract: EnvironmentContract;
   private readonly model: LlmAgentModel;
@@ -265,14 +286,19 @@ export class LlmSpecimenAgent {
       }
     }
 
-    const modelFinalAnswer = await this.model.answer({
-      mission: input.mission,
-      contract: this.contract,
-      policy: input.policy,
-      contractInjected,
-      observations
-    });
+    const modelAnswer = normalizeAnswer(
+      await this.model.answer({
+        mission: input.mission,
+        contract: this.contract,
+        policy: input.policy,
+        contractInjected,
+        observations
+      })
+    );
+    const outputQuality = evaluateLlmOutputQuality({ mission: input.mission, plan, answer: modelAnswer, observations });
+    const modelFinalAnswer = modelAnswer.finalAnswer;
     const finalAnswer = appendEvidenceLedger(modelFinalAnswer, observations);
+    const answer: LlmAgentAnswer = { ...modelAnswer, finalAnswer };
     const lastObservation = observations.at(-1);
     const finalAnswerParent = recorder.events().at(-1)?.id;
     recorder.recordFinalAnswer({
@@ -283,6 +309,6 @@ export class LlmSpecimenAgent {
       parentId: finalAnswerParent
     });
 
-    return { finalAnswer, traceEvents: recorder.events(), observations };
+    return { finalAnswer, traceEvents: recorder.events(), observations, plan, answer, outputQuality };
   }
 }

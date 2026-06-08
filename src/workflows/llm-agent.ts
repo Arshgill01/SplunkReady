@@ -60,6 +60,16 @@ export const runLlmAgentWorkflow = async (
 
   await writeJson(join(options.out, "trace-llm-agent.json"), run.traceEvents);
   await writeJson(join(options.out, "llm-agent-observations.json"), run.observations);
+  await writeJson(join(options.out, "llm-agent-deliberation.json"), {
+    source: "splunkready-llm-deliberation",
+    phase: "single-run",
+    advisoryOnly: true,
+    passFailAuthority: "deterministic-rule-engine",
+    plan: run.plan,
+    observations: run.observations,
+    answer: run.answer,
+    outputQuality: run.outputQuality
+  });
   await writeJson(join(options.out, "violations-llm-agent.json"), violations);
   await writeJson(join(options.out, "score-llm-agent.json"), score);
   await writeText(join(options.out, "receipt-llm-agent-001.json"), generated.json);
@@ -70,6 +80,7 @@ export const runLlmAgentWorkflow = async (
       ...compileArtifacts,
       join(options.out, "trace-llm-agent.json"),
       join(options.out, "llm-agent-observations.json"),
+      join(options.out, "llm-agent-deliberation.json"),
       join(options.out, "violations-llm-agent.json"),
       join(options.out, "score-llm-agent.json"),
       join(options.out, "receipt-llm-agent-001.json"),

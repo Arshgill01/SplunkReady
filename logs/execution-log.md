@@ -15692,3 +15692,61 @@ Result:
   requests, 38 responses, and 0 errors.
 - PASS: missing operator opt-in and missing Gemini credentials fail before real
   Splunk setup starts.
+
+## 2026-06-08T16:30:20Z - Move 175 LLM deliberation contract
+
+Intent:
+
+- Make the LLM layer a substantive proof surface without making it the
+  pass/fail authority.
+
+Actions:
+
+- Added `docs/execplans/llm-layer-expansion.md` and `moves/moves175.md`.
+- Updated `AGENTS.md` and `DECISIONS.md` so future agents can build substantive
+  LLM planning/reasoning artifacts while preserving deterministic verdict
+  authority.
+- Extended the LLM specimen contract with structured mission understanding,
+  risk controls, evidence strategy, self-checks, provenance summary,
+  uncertainty, next actions, and safety notes.
+- Added `src/agents/llm-output-quality.ts`, a deterministic advisory evaluator
+  that scores LLM planning, provenance, safety, remediation, and expected-tool
+  coverage.
+- Persisted `llm-deliberation-before.json`,
+  `llm-deliberation-after.json`, and `llm-agent-deliberation.json` artifacts
+  when the LLM specimen path is active.
+- Added LLM output-quality details to `llm-proof-summary.json`.
+- Ran a real Gemini-backed fixture proof, observed Gemini returning
+  `safetyNotes` as a string, and hardened the parser to normalize string or
+  array output fields.
+- Tightened the output-quality report after the first successful proof because
+  the before phase was too generous without expected-tool coverage.
+
+Result:
+
+- PASS: focused tests passed after the new LLM contract.
+- PASS: real Gemini-backed `llm-proof` passed and produced the new deliberation
+  artifacts.
+- PASS: the advisory report now differentiates the phases: before score `92.5`
+  with an expected-tool coverage warning; after score `96.43` with full
+  expected-tool coverage and a provenance warning.
+
+Follow-up real Splunk validation:
+
+- Reran the guarded disposable Splunk Enterprise stress replay after Move 175
+  with the new LLM layer active.
+- Added `llm-deliberation-before.json` and `llm-deliberation-after.json` to the
+  public-safe evidence copy under
+  `submission-evidence/real-splunk-stress-llm-layer/`.
+- Updated the replay runner so future evidence copies include LLM deliberation
+  reports and advisory score summaries.
+- Updated the submission evidence README, claim ledger, and submission-copy
+  audit guard for the Move 175 real-Splunk LLM evidence.
+
+Result:
+
+- PASS: real Splunk replay returned `status: "PASS"`, mutation false,
+  fail-to-pass true, ready-after-patch true, and 76 MCP bridge frames.
+- PASS: real Splunk LLM advisory output quality reported before score `92.5`
+  and after score `94.44`, both advisory-only with deterministic rule-engine
+  verdict authority.

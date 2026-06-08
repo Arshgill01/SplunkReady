@@ -325,6 +325,15 @@ const collectDockerDiagnostics = async ({ containerName, outDir }) => {
 
 const readJson = async (path) => JSON.parse(await readFile(path, "utf8"));
 
+const readOptionalJson = async (path) => {
+  try {
+    return await readJson(path);
+  } catch (error) {
+    if (error?.code === "ENOENT") return undefined;
+    throw error;
+  }
+};
+
 const copyIfPresent = async (from, to) => {
   try {
     await cp(from, to, { recursive: true, force: true });
@@ -354,6 +363,8 @@ const writeEvidence = async ({ evidenceOut, outDir, kitDir, checkDir, proofDir, 
   await copyIfPresent(join(proofDir, "receipt-before-001.json"), join(evidenceOut, "receipt-before-001.json"));
   await copyIfPresent(join(proofDir, "receipt-after-001.json"), join(evidenceOut, "receipt-after-001.json"));
   await copyIfPresent(join(proofDir, "policy-patch.md"), join(evidenceOut, "policy-patch.md"));
+  await copyIfPresent(join(proofDir, "llm-deliberation-before.json"), join(evidenceOut, "llm-deliberation-before.json"));
+  await copyIfPresent(join(proofDir, "llm-deliberation-after.json"), join(evidenceOut, "llm-deliberation-after.json"));
   await copyIfPresent(join(kitDir, "stress-seed-summary.json"), join(evidenceOut, "stress-seed-summary.json"));
   await copyIfPresent(join(outDir, "mcp-bridge-recording.jsonl"), join(evidenceOut, "mcp-bridge-session.redacted.jsonl"));
 
@@ -361,6 +372,8 @@ const writeEvidence = async ({ evidenceOut, outDir, kitDir, checkDir, proofDir, 
   const proof = await readJson(join(proofDir, "live-security-proof-summary.json"));
   const before = await readJson(join(proofDir, "receipt-before-001.json"));
   const after = await readJson(join(proofDir, "receipt-after-001.json"));
+  const llmBefore = await readOptionalJson(join(proofDir, "llm-deliberation-before.json"));
+  const llmAfter = await readOptionalJson(join(proofDir, "llm-deliberation-after.json"));
   const bridge = await bridgeSummaryFrom(join(outDir, "mcp-bridge-recording.jsonl"));
 
   const summary = {
@@ -389,6 +402,14 @@ const writeEvidence = async ({ evidenceOut, outDir, kitDir, checkDir, proofDir, 
       before: proof.before,
       after: proof.after,
       hostedModels: proof.hostedModels
+    },
+    llmOutputQuality: {
+      advisoryOnly: true,
+      passFailAuthority: "deterministic-rule-engine",
+      before: llmBefore?.outputQuality
+        ? { score: llmBefore.outputQuality.score, grade: llmBefore.outputQuality.grade }
+        : undefined,
+      after: llmAfter?.outputQuality ? { score: llmAfter.outputQuality.score, grade: llmAfter.outputQuality.grade } : undefined
     },
     receipts: {
       before: {
@@ -430,6 +451,11 @@ unless \`SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1\` is set.
 The replay is operator-scoped setup evidence, not a default judge path. It does
 not claim hosted-model/SAIA availability unless the strict proof reports hosted
 model tools as available.
+
+When the LLM specimen path is active, this directory also includes
+\`llm-deliberation-before.json\` and \`llm-deliberation-after.json\`. Those
+reports are advisory quality evidence only; deterministic rules still decide the
+Readiness Receipt verdicts.
 `,
     "utf8"
   );

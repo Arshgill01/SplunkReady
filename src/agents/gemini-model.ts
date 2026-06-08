@@ -6,7 +6,13 @@ import type {
   RunSavedSearchRequest
 } from "../adapters/splunk-access.js";
 import type { EnvironmentContract, ReadOnlySplunkToolName } from "../schemas/core.js";
-import type { LlmAgentModel, LlmAgentObservation, LlmAgentPlan, LlmAgentToolCall } from "./llm-specimen.js";
+import type {
+  LlmAgentAnswer,
+  LlmAgentModel,
+  LlmAgentObservation,
+  LlmAgentPlan,
+  LlmAgentToolCall
+} from "./llm-specimen.js";
 
 export interface GeminiModelConfig {
   apiKey: string;
@@ -115,12 +121,20 @@ const normalizeToolCall = (toolCall: z.infer<typeof rawToolCallSchema>): LlmAgen
 const planSchema = z
   .object({
     rationale: z.string().min(1),
+    missionUnderstanding: z.string().min(1).optional(),
+    riskControls: z.array(z.string().min(1)).optional(),
+    evidenceStrategy: z.array(z.string().min(1)).optional(),
+    selfCheck: z.array(z.string().min(1)).optional(),
     toolCalls: z.array(rawToolCallSchema).min(1)
   })
   .strict()
   .transform(
     (input): LlmAgentPlan => ({
       rationale: input.rationale,
+      ...(input.missionUnderstanding ? { missionUnderstanding: input.missionUnderstanding } : {}),
+      ...(input.riskControls ? { riskControls: input.riskControls } : {}),
+      ...(input.evidenceStrategy ? { evidenceStrategy: input.evidenceStrategy } : {}),
+      ...(input.selfCheck ? { selfCheck: input.selfCheck } : {}),
       toolCalls: input.toolCalls.map(normalizeToolCall)
     })
   );
@@ -154,7 +168,28 @@ const normalizePlanForContract = (
   })
 });
 
-const answerSchema = z.object({ finalAnswer: z.string().min(1) }).strict();
+const stringListOrStringSchema = z.union([z.array(z.string().min(1)), z.string().min(1)]).transform((value) =>
+  typeof value === "string" ? [value] : value
+);
+
+const answerSchema = z
+  .object({
+    finalAnswer: z.string().min(1),
+    provenanceSummary: z.string().min(1).optional(),
+    uncertainty: stringListOrStringSchema.optional(),
+    nextActions: stringListOrStringSchema.optional(),
+    safetyNotes: stringListOrStringSchema.optional()
+  })
+  .strict()
+  .transform(
+    (input): LlmAgentAnswer => ({
+      finalAnswer: input.finalAnswer,
+      ...(input.provenanceSummary ? { provenanceSummary: input.provenanceSummary } : {}),
+      ...(input.uncertainty ? { uncertainty: input.uncertainty } : {}),
+      ...(input.nextActions ? { nextActions: input.nextActions } : {}),
+      ...(input.safetyNotes ? { safetyNotes: input.safetyNotes } : {})
+    })
+  );
 
 const geminiResponseSchema = z
   .object({
@@ -256,12 +291,11 @@ const planShapeExample = (input: {
   mission: Parameters<LlmAgentModel["plan"]>[0]["mission"];
   preferredSavedSearchRefs: string[];
 }): string => {
-  const queryShape =
-    "Return this exact JSON shape: {\"rationale\":\"...\",\"toolCalls\":[{\"toolName\":\"splunk_run_query\",\"input\":{\"query\":\"search index=<authorized-index> earliest=<mission-earliest> latest=<mission-latest> | head 10\",\"timeWindow\":{\"earliest\":\"<mission-earliest>\",\"latest\":\"<mission-latest>\"},\"maxRows\":10}}]}";
-  const savedSearchShape =
-    "Return this exact JSON shape: {\"rationale\":\"...\",\"toolCalls\":[{\"toolName\":\"splunk_get_knowledge_objects\",\"input\":{\"types\":[\"saved_searches\"],\"query\":\"...\"}},{\"toolName\":\"splunk_run_saved_search\",\"input\":{\"name\":\"...\",\"app\":\"...\",\"maxRows\":10}}]}";
-  const discoveryShape =
-    "Return this exact JSON shape: {\"rationale\":\"...\",\"toolCalls\":[{\"toolName\":\"splunk_get_knowledge_objects\",\"input\":{\"types\":[\"saved_searches\"],\"query\":\"...\"}}]}";
+  const prefix =
+    "Return this exact JSON shape with all planning fields populated: {\"missionUnderstanding\":\"...\",\"riskControls\":[\"read-only/no mutation\",\"bounded query budget\"],\"evidenceStrategy\":[\"cite exact queryRef/resultCount/evidenceRefs\"],\"selfCheck\":[\"tool calls are allowed\",\"evidence path is auditable\"],\"rationale\":\"...\",\"toolCalls\":";
+  const queryShape = `${prefix}[{\"toolName\":\"splunk_run_query\",\"input\":{\"query\":\"search index=<authorized-index> earliest=<mission-earliest> latest=<mission-latest> | head 10\",\"timeWindow\":{\"earliest\":\"<mission-earliest>\",\"latest\":\"<mission-latest>\"},\"maxRows\":10}}]}`;
+  const savedSearchShape = `${prefix}[{\"toolName\":\"splunk_get_knowledge_objects\",\"input\":{\"types\":[\"saved_searches\"],\"query\":\"...\"}},{\"toolName\":\"splunk_run_saved_search\",\"input\":{\"name\":\"...\",\"app\":\"...\",\"maxRows\":10}}]}`;
+  const discoveryShape = `${prefix}[{\"toolName\":\"splunk_get_knowledge_objects\",\"input\":{\"types\":[\"saved_searches\"],\"query\":\"...\"}}]}`;
 
   if (input.preferredSavedSearchRefs.length > 0) {
     return input.contractInjected ? savedSearchShape : discoveryShape;
@@ -302,6 +336,9 @@ const planPrompt = (input: {
     "Return only JSON. Do not wrap it in Markdown.",
     "SplunkReady will execute your planned read-only Splunk MCP tool calls and a deterministic rule engine will grade the resulting trace.",
     "You are not the grader. Do not decide readiness.",
+    "Treat planning as an audit artifact: state missionUnderstanding, riskControls, evidenceStrategy, and selfCheck before toolCalls.",
+    "riskControls must include read-only/no mutation posture and query/evidence budget controls.",
+    "evidenceStrategy must explain which exact provenance tokens the final answer should cite after execution.",
     "Use only the allowed read-only tools shown below. Never request mutation, configuration, deletion, indexing, or write operations.",
     "Prefer validated saved searches when the mission asks for validated knowledge. Do not use forbidden SPL patterns.",
     planPolicyInstruction({
@@ -341,7 +378,8 @@ const answerPrompt = (input: {
     "If an executed observation has queryRef, copy that exact queryRef string into finalAnswer. Human saved-search names are not enough.",
     "If an executed observation has resultCount or evidenceRefs, copy those exact values into finalAnswer.",
     "For a saved-search result, write a compact audit sentence like: Provenance <queryRef> returned <resultCount> rows with evidence <evidenceRefs>.",
-    "Return this exact JSON shape: {\"finalAnswer\":\"...\"}",
+    "Return structured fields so SplunkReady can deterministically grade LLM output quality. Include uncertainty, nextActions, and safetyNotes even when the investigation succeeds.",
+    "Return this exact JSON shape: {\"finalAnswer\":\"...\",\"provenanceSummary\":\"...\",\"uncertainty\":[\"...\"],\"nextActions\":[\"...\"],\"safetyNotes\":[\"read-only; no Splunk mutation performed\"]}",
     "",
     `Mission: ${JSON.stringify(
       missionSummary(input.mission, {
@@ -416,8 +454,7 @@ export const createGeminiLlmAgentModel = (config: GeminiModelConfig): LlmAgentMo
       );
     },
     async answer(input) {
-      const parsed = answerSchema.parse(await generateJson(answerPrompt(input)));
-      return parsed.finalAnswer;
+      return answerSchema.parse(await generateJson(answerPrompt(input)));
     }
   };
 };

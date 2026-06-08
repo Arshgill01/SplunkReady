@@ -16613,3 +16613,42 @@ Result:
 - `npm run check`
 
 - PASS: full `npm run check` passed, including 74 test files and 433 tests.
+
+## 2026-06-08T16:30:20Z - Move 175 LLM deliberation contract
+
+Commands:
+
+- `npx vitest run tests/agents/llm-specimen.test.ts tests/workflows/llm-agent.test.ts`
+- `npm run check`
+- `set -a; source .splunkready-live.env; set +a; SPLUNKREADY_LLM_ENABLED=true npm run splunkready -- llm-proof --out artifacts/llm-proof-move175 --require-pass true --json` (failed during iteration; Gemini returned `safetyNotes` as a string)
+- `npx vitest run tests/agents/llm-specimen.test.ts`
+- `npm run build`
+- `rm -rf artifacts/llm-proof-move175 && set -a; source .splunkready-live.env; set +a; SPLUNKREADY_LLM_ENABLED=true npm run splunkready -- llm-proof --out artifacts/llm-proof-move175 --require-pass true --json`
+- `node -e 'const fs=require("fs"); const s=JSON.parse(fs.readFileSync("artifacts/llm-proof-move175/llm-proof-summary.json","utf8")); console.log(JSON.stringify({status:s.status,before:s.before,after:s.after,llmOutputQuality:s.llmOutputQuality}, null, 2));'`
+
+Result:
+
+- PASS: focused LLM tests passed with 2 files and 15 tests.
+- PASS: full `npm run check` passed before the live Gemini iteration with 74
+  test files and 433 tests.
+- PASS: parser hardening fixed the real Gemini `safetyNotes` shape drift.
+- PASS: final real Gemini-backed fixture proof returned `status: "PASS"`.
+- PASS: `llm-proof-summary.json` includes `llmOutputQuality.before.score:
+  92.5` and `llmOutputQuality.after.score: 96.43`.
+
+Real Splunk follow-up commands:
+
+- `rm -rf artifacts/real-splunk-stress-move175 submission-evidence/real-splunk-stress-llm-layer && set -a; source .splunkready-live.env; set +a; SPLUNKREADY_ALLOW_REAL_SPLUNK_SETUP=1 node scripts/run-real-splunk-stress-proof.mjs --skip-build --out artifacts/real-splunk-stress-move175 --evidence-out submission-evidence/real-splunk-stress-llm-layer --json`
+- `docker ps -a --filter name=splunkready-real-stress --format '{{.Names}} {{.Status}}'`
+
+Real Splunk follow-up result:
+
+- PASS: guarded replay returned `status: "PASS"`, mutation false,
+  fail-to-pass true, ready-after-patch true, and 76 MCP bridge frames.
+- PASS: replay cleanup removed the disposable `splunkready-real-stress-replay`
+  container.
+- PASS: generated LLM deliberation reports exist in
+  `artifacts/real-splunk-stress-move175/live-security-proof/`.
+- PASS: public-safe evidence includes `llm-deliberation-before.json`,
+  `llm-deliberation-after.json`, and summary scores before `92.5` / after
+  `94.44`.

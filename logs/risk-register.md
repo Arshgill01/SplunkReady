@@ -1184,3 +1184,12 @@ Splunk General Terms, and `GEMINI_API_KEY` because `live-security-proof`
 certifies the LLM specimen. It is intentionally excluded from the default
 credential-free judge path and `npm run check`; do not claim it as a
 zero-credential proof.
+
+Move 175 reduces the "deterministic-only / thin LLM" judging risk by making the
+Gemini specimen produce structured planning, safety, evidence, uncertainty, and
+remediation artifacts, then grading that output with a deterministic advisory
+quality report. Residual risk: the advisory report is not yet rendered in the
+Vite workbench. The flagship real-Splunk stress replay has now been rerun after
+Move 175 and tracked under `submission-evidence/real-splunk-stress-llm-layer/`.
+Do not claim LLM output-quality as readiness authority; Readiness Receipt
+verdicts remain deterministic-rule-engine decisions.

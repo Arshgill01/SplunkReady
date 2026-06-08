@@ -59,6 +59,10 @@ describe("LlmSpecimenAgent", () => {
           contractInjected: input.contractInjected
         });
         return {
+          missionUnderstanding: "Investigate lateral movement by using certified Splunk knowledge objects and saved-search evidence.",
+          riskControls: ["read-only/no mutation", "stay within the saved-search result budget"],
+          evidenceStrategy: ["Cite the saved-search queryRef, row count, and event evidence refs in the final answer."],
+          selfCheck: ["tool calls are allowed", "final answer must cite provenance"],
           rationale: "Discover validated searches, then run the preferred saved search.",
           toolCalls: [
             {
@@ -78,7 +82,19 @@ describe("LlmSpecimenAgent", () => {
       },
       async answer(input) {
         const lastObservation = input.observations.at(-1);
-        return `Validated saved search ${lastObservation?.queryRef} returned ${lastObservation?.resultCount} results with evidence ${lastObservation?.evidenceRefs.join(", ")}.`;
+        const provenanceRows = input.observations
+          .map(
+            (observation) =>
+              `${observation.toolName} ${observation.queryRef ?? "no-query-ref"} ${observation.resultCount ?? "n/a"} ${observation.evidenceRefs.join(", ")}`
+          )
+          .join("; ");
+        return {
+          finalAnswer: `Validated saved search ${lastObservation?.queryRef} returned ${lastObservation?.resultCount} results with evidence ${lastObservation?.evidenceRefs.join(", ")}. All observations: ${provenanceRows}.`,
+          provenanceSummary: `Provenance ${provenanceRows}.`,
+          uncertainty: ["Only the executed saved-search observations were used."],
+          nextActions: ["Hand the deterministic Readiness Receipt to the operator."],
+          safetyNotes: ["read-only; no Splunk mutation performed"]
+        };
       }
     };
 
@@ -106,6 +122,13 @@ describe("LlmSpecimenAgent", () => {
       evidenceRefs: ["evt-102", "evt-118", "evt-141"]
     });
     expect(run.finalAnswer).toContain("saved-search-lateral-movement");
+    expect(run.outputQuality).toMatchObject({
+      source: "splunkready-llm-output-quality",
+      advisoryOnly: true,
+      passFailAuthority: "deterministic-rule-engine",
+      grade: "STRONG"
+    });
+    expect(run.outputQuality.score).toBeGreaterThanOrEqual(85);
     expect(violations).toEqual([]);
   });
 
@@ -330,13 +353,15 @@ describe("Gemini LLM specimen model", () => {
     ).resolves.toMatchObject({
       toolCalls: [{ toolName: "splunk_get_knowledge_objects" }]
     });
-    await expect(model.answer({ mission, contract, contractInjected: true, observations: [] })).resolves.toBe(
-      "Saved search provenance cited."
-    );
+    await expect(model.answer({ mission, contract, contractInjected: true, observations: [] })).resolves.toMatchObject({
+      finalAnswer: "Saved search provenance cited."
+    });
     expect(calls).toHaveLength(2);
     expect(calls[0]?.url).toBe("https://gemini.test/v1beta/models/gemini-test:generateContent?key=test-api-key");
     expect(calls[0]?.body).toContain('"responseMimeType":"application/json"');
     expect(calls[0]?.body).toContain('"temperature":0.2');
+    expect(calls[0]?.body).toContain("missionUnderstanding");
+    expect(calls[0]?.body).toContain("riskControls");
   });
 
   it("normalizes MCP-style saved-search aliases from Gemini plans", async () => {
@@ -474,10 +499,14 @@ describe("Gemini LLM specimen model", () => {
           }
         ]
       })
-    ).resolves.toContain("saved-search-lateral-movement");
+    ).resolves.toMatchObject({
+      finalAnswer: expect.stringContaining("saved-search-lateral-movement")
+    });
 
     expect(prompt).toContain("copy that exact queryRef string");
     expect(prompt).toContain("Provenance <queryRef> returned <resultCount> rows");
+    expect(prompt).toContain("uncertainty");
+    expect(prompt).toContain("safetyNotes");
     expect(prompt).toContain("saved-search-lateral-movement");
     expect(prompt).toContain("evt-102");
   });

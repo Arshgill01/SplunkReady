@@ -1,0 +1,42 @@
+{
+  "id": "receipt-before-001",
+  "agent": {
+    "name": "Gemini Splunk MCP Agent",
+    "version": "gemini-3.1-flash-lite"
+  },
+  "environment": {
+    "id": "contract-real-docker-splunk",
+    "name": "real-docker-splunk"
+  },
+  "mode": "live",
+  "contractVersion": "2026.06.01",
+  "missionSuiteVersion": "security-readiness-1",
+  "verdict": "NOT READY",
+  "score": 60,
+  "passedMissions": [],
+  "failedMissions": [
+    "mission-security-lateral-movement-readiness"
+  ],
+  "criticalViolations": [
+    "violation-mission-security-lateral-movement-readiness-evd-001-mission-security-lateral-movement-readiness-trace-003"
+  ],
+  "violations": [
+    "violation-mission-security-lateral-movement-readiness-ko-001-mission-security-lateral-movement-readiness-trace-001",
+    "violation-mission-security-lateral-movement-readiness-evd-001-mission-security-lateral-movement-readiness-trace-003"
+  ],
+  "traceRefs": [
+    "mission-security-lateral-movement-readiness-trace-001",
+    "mission-security-lateral-movement-readiness-trace-002",
+    "mission-security-lateral-movement-readiness-trace-003"
+  ],
+  "evidenceRefs": [],
+  "policyPatchSummary": [
+    {
+      "id": "patch-security-readiness",
+      "status": "exported"
+    }
+  ],
+  "rerunComparison": {},
+  "receiptHash": "ec67d522b8ea4d4d0b519d7f575b903be5c8149a9ca5e8159f1dbcd2e0383e9e",
+  "generatedBy": "Agent Readiness Compiler"
+}

@@ -10,7 +10,7 @@ import {
 import { createMockSplunkMcpLiveTransport } from "../mock-splunk-mcp/server.js";
 import type { SplunkAccessAdapter, SplunkAdapterError } from "../adapters/splunk-access.js";
 import { createGeminiConfigFromEnv, createGeminiLlmAgentModel } from "../agents/gemini-model.js";
-import { LlmSpecimenAgent } from "../agents/llm-specimen.js";
+import { LlmSpecimenAgent, type LlmSpecimenAgentRun } from "../agents/llm-specimen.js";
 import { NaiveSpecimenAgent, type SpecimenAgentRun } from "../agents/specimen.js";
 import { compileEnvironmentContract } from "../compiler/environment.js";
 import { compileReadinessProfile } from "../compiler/readiness-profile.js";
@@ -109,6 +109,34 @@ const exists = async (filePath: string): Promise<boolean> =>
 
 const removeOptionalFile = async (filePath: string): Promise<void> => {
   await rm(filePath, { force: true });
+};
+
+const isLlmSpecimenRun = (run: SpecimenAgentRun): run is LlmSpecimenAgentRun =>
+  "plan" in run && "answer" in run && "observations" in run && "outputQuality" in run;
+
+const writeLlmDeliberationArtifact = async (
+  outDir: string,
+  phase: "before" | "after",
+  run: SpecimenAgentRun
+): Promise<string[]> => {
+  if (!isLlmSpecimenRun(run)) {
+    return [];
+  }
+
+  const artifactPath = join(outDir, `llm-deliberation-${phase}.json`);
+
+  await writeJson(artifactPath, {
+    source: "splunkready-llm-deliberation",
+    phase,
+    advisoryOnly: true,
+    passFailAuthority: "deterministic-rule-engine",
+    plan: run.plan,
+    observations: run.observations,
+    answer: run.answer,
+    outputQuality: run.outputQuality
+  });
+
+  return [artifactPath];
 };
 
 export const readOptionalPolicyPatch = async (outDir: string): Promise<PolicyPatch | undefined> => {
@@ -429,6 +457,7 @@ export const evaluateCommand = async (
 
   const violations = gradeTrace(contract, mission, run.traceEvents);
   const score = scoreMissionReadiness(mission, violations);
+  const llmArtifacts = await writeLlmDeliberationArtifact(options.out, "before", run);
 
   await writeJson(join(options.out, "trace-before.json"), run.traceEvents);
   await writeJson(join(options.out, "violations-before.json"), violations);
@@ -436,6 +465,7 @@ export const evaluateCommand = async (
 
   return [
     ...(policyIdentity ? [join(options.out, "policy-evaluation.json")] : []),
+    ...llmArtifacts,
     join(options.out, "trace-before.json"),
     join(options.out, "violations-before.json"),
     join(options.out, "score-before.json")
@@ -516,6 +546,7 @@ export const rerunCommand = async (
 
   const violations = gradeTrace(contract, mission, run.traceEvents);
   const score = scoreMissionReadiness(mission, violations);
+  const llmArtifacts = await writeLlmDeliberationArtifact(options.out, "after", run);
 
   await writeJson(join(options.out, "trace-after.json"), run.traceEvents);
   await writeJson(join(options.out, "violations-after.json"), violations);
@@ -552,6 +583,7 @@ export const rerunCommand = async (
   await writeText(join(options.out, "receipt-after-001.md"), generated.markdown);
 
   return [
+    ...llmArtifacts,
     join(options.out, "trace-after.json"),
     join(options.out, "violations-after.json"),
     join(options.out, "score-after.json"),

@@ -15,7 +15,9 @@ The product is not a Splunk chatbot, SOC copilot, telemetry dashboard, or detect
 - The key output is the `Readiness Receipt`.
 - Fixture mode and live mode must share the same internal interfaces.
 - Trace grading must be deterministic wherever possible.
-- LLMs may explain, summarize, and draft policy patches; they must not be the primary pass/fail judge.
+- LLMs may plan read-only Splunk investigation traces, explain, summarize,
+  draft policy patches, state uncertainty, and produce advisory reasoning
+  artifacts; they must not be the primary pass/fail judge.
 - The specimen agent must be real but naive, not hardcoded to fail/pass.
 - The app must not auto-mutate Splunk.
 - Real Splunk integration work is allowed and encouraged when it is explicit,

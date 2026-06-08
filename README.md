@@ -666,7 +666,7 @@ npm run splunkready -- receipt --out artifacts/llm-fixture-proof
 npm run splunkready -- rerun --out artifacts/llm-fixture-proof
 ```
 
-In LLM mode, `evaluate` prompts the model without compiled Splunk contract injection. `rerun` injects the compiled policy and contract. SplunkReady still executes tool calls through the adapter and the deterministic grader still decides pass/fail. See [docs/llm-specimen-agent.md](docs/llm-specimen-agent.md).
+In LLM mode, `evaluate` prompts the model without compiled Splunk contract injection. `rerun` injects the compiled policy and contract. SplunkReady still executes tool calls through the adapter and the deterministic grader still decides pass/fail. The current real-Splunk LLM evidence is tracked under `submission-evidence/real-splunk-stress-llm-layer/`, including `llm-deliberation-before.json` and `llm-deliberation-after.json` advisory quality reports. See [docs/llm-specimen-agent.md](docs/llm-specimen-agent.md).
 
 ## Submission Strategy
 

@@ -1,0 +1,12 @@
+{
+  "source": "splunkready-real-splunk-stress-seed",
+  "status": "PASS",
+  "syntheticCsvRowsIncludingHeader": 85,
+  "syntheticRowsAdded": 81,
+  "promptInjectionEventRef": "prompt-trap-001",
+  "decoySavedSearches": [
+    "All Authentication Noise - Trap",
+    "Policy Injection Trap",
+    "search::ES - Lateral Movement Auth Chain"
+  ]
+}

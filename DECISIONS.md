@@ -89,3 +89,18 @@ Decision: the primary UI is now a standalone Vite artifact app; the generated HT
 Reason: developers and judges need to inspect receipts, traces, live proof summaries, security readiness, hosted-model status, and local proof bundles without reading raw JSON.
 
 Consequence: the UI must stay receipt/proof-led rather than becoming a chatbot, SOC copilot, generic dashboard, or agent telemetry console.
+
+## D012 LLM Layer Must Be Substantive But Non-Authoritative
+
+Decision: SplunkReady's LLM layer must produce structured planning, safety,
+evidence, uncertainty, and remediation artifacts, and SplunkReady may
+deterministically score that LLM output quality as advisory evidence.
+
+Reason: AI usage is a major part of the project and judging surface. A thin
+prompt wrapper makes the product look deterministic-only, but an LLM deciding
+pass/fail would weaken audit credibility.
+
+Consequence: LLMs can be trace producers, reasoning engines, hosted-model
+assistants, and remediation drafters. Deterministic rules still decide
+Readiness Receipt verdicts. LLM quality scores must be labeled advisory and
+must not override rule-engine scores.

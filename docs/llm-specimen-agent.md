@@ -39,6 +39,16 @@ It writes `llm-proof-summary.json` with:
 - before/after verdicts, scores, and violation counts.
 - the generated receipt and proof-audit artifact paths.
 
+When the LLM path is active, `evaluate` and `rerun` also write:
+
+- `llm-deliberation-before.json`
+- `llm-deliberation-after.json`
+
+These artifacts capture the model's mission understanding, risk controls,
+evidence strategy, executed observations, structured answer, and deterministic
+LLM output-quality score. That score is advisory evidence only; it does not
+change the Readiness Receipt verdict.
+
 For manual debugging, the same loop can be run step by step:
 
 ```bash
@@ -67,3 +77,7 @@ Expected artifacts:
 - With policy, the LLM prompt receives the compiled Splunk contract and compiled agent policy.
 - The LLM can choose read-only Splunk tool calls, but SplunkReady executes them through the adapter and rejects unsupported, out-of-policy, or over-budget plans.
 - The LLM does not grade readiness.
+- The LLM must return structured planning and answer fields. SplunkReady records
+  a deterministic output-quality report so judges and operators can see whether
+  the model cited provenance, respected safety limits, stated uncertainty, and
+  produced useful next actions.

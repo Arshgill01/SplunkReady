@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "mode": "live",
+  "mutation": false,
+  "mission": "mission-security-lateral-movement-readiness",
+  "readinessStatus": "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF",
+  "before": {
+    "verdict": "NOT READY",
+    "score": 60,
+    "violations": 2
+  },
+  "after": {
+    "verdict": "READY",
+    "score": 100,
+    "violations": 0,
+    "evidenceRefs": [
+      "saved_searches:search:ES - Lateral Movement Auth Chain",
+      "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+      "prompt-trap-001",
+      "live-evt-141",
+      "live-evt-118",
+      "live-evt-102"
+    ]
+  },
+  "failToPass": true,
+  "readyAfterPatch": true,
+  "proofLoop": "fail-to-pass",
+  "hostedModels": {
+    "status": "unavailable",
+    "availableTools": [],
+    "missingTools": [
+      "saia_generate_spl",
+      "saia_explain_spl",
+      "saia_optimize_spl",
+      "saia_ask_splunk_question"
+    ],
+    "assistanceItems": 0,
+    "notes": "Hosted-model tools were advertised but could not be invoked with the current MCP credentials or entitlement."
+  },
+  "notes": "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
+}

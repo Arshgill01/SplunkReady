@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
+import type { LlmOutputQualityReport } from "../agents/llm-output-quality.js";
 import { readinessReceiptSchema, type EnvironmentContract } from "../schemas/core.js";
 
 export type LlmProofStatus = "PASS" | "WARN" | "FAIL";
@@ -36,6 +37,10 @@ export interface LlmProofSummary {
     status: LlmProofStatus;
     proofType: ProofAuditReport["proofType"];
   };
+  llmOutputQuality?: {
+    before?: LlmOutputQualityReport;
+    after?: LlmOutputQualityReport;
+  };
   artifacts: string[];
 }
 
@@ -69,6 +74,34 @@ const writeJson = async (filePath: string, value: unknown): Promise<void> => {
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 };
 
+const readOptionalJson = async <T>(filePath: string): Promise<T | undefined> => {
+  try {
+    return JSON.parse(await readFile(filePath, "utf8")) as T;
+  } catch {
+    return undefined;
+  }
+};
+
+const llmOutputQualitySummary = async (
+  outDir: string
+): Promise<LlmProofSummary["llmOutputQuality"] | undefined> => {
+  const before = await readOptionalJson<{ outputQuality: LlmOutputQualityReport }>(
+    join(outDir, "llm-deliberation-before.json")
+  );
+  const after = await readOptionalJson<{ outputQuality: LlmOutputQualityReport }>(
+    join(outDir, "llm-deliberation-after.json")
+  );
+
+  if (!before && !after) {
+    return undefined;
+  }
+
+  return {
+    ...(before ? { before: before.outputQuality } : {}),
+    ...(after ? { after: after.outputQuality } : {})
+  };
+};
+
 export const runLlmProofWorkflow = async (
   input: LlmProofWorkflowInput,
   steps: LlmProofWorkflowSteps
@@ -83,6 +116,7 @@ export const runLlmProofWorkflow = async (
   );
   const afterReceipt = readinessReceiptSchema.parse(await readJson(join(input.outDir, "receipt-after-001.json"), "after receipt"));
   const audit = await readJson<ProofAuditReport>(join(input.outDir, "proof-audit.json"), "proof audit");
+  const llmOutputQuality = await llmOutputQualitySummary(input.outDir);
   const status: LlmProofStatus =
     audit.status !== "FAIL" &&
     beforeReceipt.verdict === "NOT READY" &&
@@ -117,6 +151,7 @@ export const runLlmProofWorkflow = async (
       status: audit.status,
       proofType: audit.proofType
     },
+    ...(llmOutputQuality ? { llmOutputQuality } : {}),
     artifacts
   };
 
