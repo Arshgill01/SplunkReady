@@ -167,7 +167,7 @@ Expected proof status:
 - Splunkbase readiness local evidence: package, AppInspect, icon/screenshot assets, live install, and receipt-store checks pass
 - Splunkbase listing dossier status: `READY_FOR_OPERATOR_SUBMISSION`
 - Splunkbase listing dossier package SHA:
-  `d89aabc7f1b72335886cab88dab67fe8a14e1a88fa855050fcdd5d75bf3ba831`
+  `282aa79b1bfa003ca7373b3588aeedb964f31c7d2636d7550af40e70d1fd70be`
 - Splunkbase listing dossier support contact: `OPERATOR_REQUIRED`
 - Splunkbase listing claim: not made until external Splunkbase review is complete
 

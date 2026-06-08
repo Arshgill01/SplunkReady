@@ -16888,3 +16888,53 @@ Result:
   image build, and Docker mock Splunk MCP smoke test.
 - HONEST BOUNDARY: the release publishing job uses the updated artifact
   actions, but it only runs on tag push or manual workflow dispatch.
+
+## 2026-06-08T17:19:41Z - Move 204 current Splunk app package evidence
+
+Context:
+
+- Move 193/185 evidence still referenced the `SplunkReady-0.1.6.spl` archive.
+- Source, release, setup-action, and GitHub Packages evidence had moved to
+  `0.1.7`.
+- The Splunk-native capstone needed the same current-source evidence line.
+
+Actions:
+
+- Added `moves/moves204.md`.
+- Updated `docs/execplans/splunk-app-currentness-refresh.md`.
+- Rebuilt the Splunk app package as
+  `submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl`.
+- Removed the stale tracked `SplunkReady-0.1.6.spl` archive.
+- Patched `src/cli/options.ts` so `splunk-app-install-proof` defaults to the
+  current `0.1.7` app package.
+- Refreshed AppInspect precertification, Splunkbase readiness, Splunkbase
+  listing dossier, README/Devpost package copy, submission-copy audit
+  guardrails, claim-ledger package evidence, and submission-evidence README.
+- Re-ran explicit operator-approved live Splunk app install proof with
+  `--confirm-install true`, `.splunkready-live.env`, and the current
+  `--app-package` path.
+- Re-ran `mcp-proof --live-mock` so AppInspect MCP composition evidence also
+  points to `SplunkReady-0.1.7.spl`.
+- Regenerated `submission-evidence/evidence-pack-sha256.txt`.
+
+Result:
+
+- PASS: Splunk app package manifest reports version `0.1.7`, mutation `false`,
+  no packaged credentials, no Python handlers, no scripted inputs, and no
+  modular inputs.
+- PASS: AppInspect precertification reports 0 errors, 0 failures, 0 future
+  failures, and 1 expected `check_collections_conf` warning.
+- PASS: explicit live install proof reports app install/probe success and
+  keeps endpoint, username, password, and token values redacted.
+- PASS: Splunkbase readiness remains correctly `ACTION_REQUIRED` because
+  publisher account, Splunkbase upload, and Splunk Cloud review are external.
+- PASS: Splunkbase listing dossier audits as
+  `READY_FOR_OPERATOR_SUBMISSION`.
+- PASS: MCP proof AppInspect composition now validates
+  `submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl` with
+  validation `SUCCESS`, 0 failures, 0 errors, and 1 warning.
+- PASS: submission-copy audit, focused tests, evidence-pack SHA-256
+  verification, targeted UI proof-summary test, diff whitespace check, and
+  full `npm run check` all passed locally.
+- HONEST BOUNDARY: this move does not claim Splunkbase approval or public
+  Splunk Cloud vetting; external operator submission is still required.

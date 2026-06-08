@@ -1453,3 +1453,13 @@ pass. Residual risk: the release publishing job itself only re-runs on tag push
 or manual dispatch, so the exact release publish path will be revalidated on
 the next tag. Public npmjs remains blocked separately by Move 202's npm OTP
 requirement.
+
+Move 204 refreshes the Splunk app and Splunkbase evidence from stale
+`SplunkReady-0.1.6.spl` to `SplunkReady-0.1.7.spl` with package SHA
+`282aa79b1bfa003ca7373b3588aeedb964f31c7d2636d7550af40e70d1fd70be`.
+AppInspect precertification, explicit operator-approved live install proof,
+Splunkbase readiness, Splunkbase listing dossier, MCP AppInspect composition,
+submission-copy audit, evidence-pack SHA-256 verification, and `npm run check`
+all pass locally. Residual risk: Splunkbase approval, Splunk Cloud review, and
+publisher support-contact setup remain external operator actions; do not claim
+an "Available on Splunkbase" badge until a public listing exists.

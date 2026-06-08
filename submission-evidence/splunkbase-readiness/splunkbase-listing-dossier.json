@@ -1,7 +1,7 @@
 {
   "source": "splunkready-splunkbase-listing-dossier",
   "status": "READY_FOR_OPERATOR_SUBMISSION",
-  "generatedAt": "2026-06-08T15:13:35Z",
+  "generatedAt": "2026-06-08T17:19:41Z",
   "doNotClaim": [
     "Do not claim Available on Splunkbase until Splunkbase returns a public listing.",
     "Do not claim Splunk Cloud approval until Splunkbase/Splunk Cloud review confirms it.",
@@ -30,10 +30,10 @@
     }
   ],
   "package": {
-    "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl",
-    "sha256": "d89aabc7f1b72335886cab88dab67fe8a14e1a88fa855050fcdd5d75bf3ba831",
+    "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl",
+    "sha256": "282aa79b1bfa003ca7373b3588aeedb964f31c7d2636d7550af40e70d1fd70be",
     "appId": "SplunkReady",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "appInspect": {
       "source": "submission-evidence/splunkbase-readiness/appinspect-precert.json",
       "errors": 0,
@@ -93,15 +93,15 @@
       "exportControl": "No encrypted code is intentionally included in the packaged Splunk app. Operator must confirm final export-control answers in the Splunkbase portal."
     },
     "releaseInformation": {
-      "version": "0.1.6",
+      "version": "0.1.7",
       "releaseNotes": [
-        "Current-source Splunk app package for SplunkReady v0.1.6.",
+        "Current-source Splunk app package for SplunkReady v0.1.7.",
         "Embeds the credential-free public artifact workbench in Splunk Web.",
         "Includes deterministic Readiness Receipt evidence, MCP proof artifacts, public-safe screenshots, and optional KV Store receipt schema.",
         "AppInspect precertification has zero errors, zero failures, zero future failures, and one expected KV Store collection warning.",
         "No credentials, Python REST handlers, scripted inputs, modular inputs, saved searches, or default-path Splunk write operations are packaged."
       ],
-      "upgradeInstructions": "Fresh install for v0.1.6. If upgrading from a manually installed earlier package, install this package over the previous SplunkReady app and restart/reload Splunk Web if required by the deployment.",
+      "upgradeInstructions": "Fresh install for v0.1.7. If upgrading from a manually installed earlier package, install this package over the previous SplunkReady app and restart/reload Splunk Web if required by the deployment.",
       "compatibilityNote": "Tested with Splunk Enterprise 10.4.0 in the tracked live install proof. Splunk Cloud compatibility remains subject to Splunkbase/Splunk Cloud review."
     }
   },
@@ -115,7 +115,7 @@
       "status": "READY"
     },
     {
-      "step": "Upload submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl.",
+      "step": "Upload submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl.",
       "status": "READY"
     },
     {

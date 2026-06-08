@@ -17923,3 +17923,53 @@ Result:
 - PASS: `npm run check` passed remotely.
 - PASS: remote CI ran credential-free live-mock proof.
 - PASS: remote CI built and smoked the mock Splunk MCP Docker image.
+
+## 2026-06-08T17:19:41Z - Move 204 current Splunk app package evidence
+
+Commands:
+
+- `npm run splunk-app:package`
+- `tar -tzf submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl | sed -n '1,80p'`
+- `uvx splunk-appinspect inspect submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl --mode precert --data-format json --output-file submission-evidence/splunkbase-readiness/appinspect-precert.json`
+- `npm run audit:splunkbase-readiness`
+- `npm run audit:splunkbase-listing-dossier`
+- `npm run build && NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js splunk-app-install-proof --out submission-evidence/splunk-app-install --app-package submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl --env-file ./.splunkready-live.env --confirm-install true --json`
+- `node dist/src/cli.js mcp-proof --out submission-evidence/mcp-proof --live-mock --json`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts tests/scripts/splunk-app-package.test.ts tests/scripts/splunkbase-readiness.test.ts tests/workflows/appinspect-composition.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npx vitest run tests/ui/app.test.ts -t "MCP proof summary"`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: package generation wrote
+  `submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl` with SHA-256
+  `282aa79b1bfa003ca7373b3588aeedb964f31c7d2636d7550af40e70d1fd70be`.
+- PASS: package listing inspection showed the SplunkReady package root and
+  packaged app assets.
+- PASS: AppInspect precertification validated SplunkReady version `0.1.7` with
+  summary `error: 0`, `failure: 0`, `future_failure: 0`, `warning: 1`, and
+  expected warning `check_collections_conf`.
+- PASS: Splunkbase readiness audit wrote
+  `submission-evidence/splunkbase-readiness/splunkbase-readiness.json` with
+  status `ACTION_REQUIRED`.
+- PASS: Splunkbase listing dossier audit passed after refreshing the package
+  path, version, and SHA.
+- PASS: explicit operator-approved live install proof for the current package
+  returned `status: "PASS"`.
+- PASS: MCP proof regenerated AppInspect composition for the current package
+  and returned `status: "PASS"`.
+- PASS: submission-copy audit passed with 442 required claims.
+- PASS: focused tests passed: 4 files, 8 tests.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: targeted UI MCP proof summary test passed: 1 test, 29 skipped.
+- PASS: whitespace diff check passed.
+- PASS: `npm run check` passed with package version `0.1.7`: scaffold
+  verification, runtime-contract verification, TypeScript build, UI build,
+  public-demo export audit, package readiness audit, package installability
+  audit, 76 Vitest files / 443 tests, secret-env ignore audit, reviewer audit
+  with 0 failing latest verdicts, submission-copy audit with 442 required
+  claims, and whitespace diff check.

@@ -401,7 +401,7 @@ To build an inspectable Splunk app shell around the public artifact workbench:
 npm run splunk-app:package
 ```
 
-The command writes `submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl`
+The command writes `submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl`
 and `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`.
 The package is static and credential-free: it contains no `local/` directory,
 Python REST handlers, scripted inputs, modular inputs, saved searches, tokens,

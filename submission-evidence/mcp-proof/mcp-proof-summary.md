@@ -147,7 +147,7 @@ AppInspect MCP composition: PASS
 - Markdown: submission-evidence/mcp-proof/appinspect-mcp-composition.md
 - Server: AVAILABLE (AppInspect MCP Server 2.14.7)
 - Tools: inspect_app
-- App package: submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl
+- App package: submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl
 - Validation: SUCCESS
 - AppInspect failures: 0
 - AppInspect errors: 0

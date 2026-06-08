@@ -7,9 +7,9 @@
   "defaultProofMutation": false,
   "operatorApproved": true,
   "appPackage": {
-    "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.6.spl",
-    "fileName": "SplunkReady-0.1.6.spl",
-    "sha256": "d89aabc7f1b72335886cab88dab67fe8a14e1a88fa855050fcdd5d75bf3ba831"
+    "path": "submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl",
+    "fileName": "SplunkReady-0.1.7.spl",
+    "sha256": "282aa79b1bfa003ca7373b3588aeedb964f31c7d2636d7550af40e70d1fd70be"
   },
   "config": {
     "envFileUsed": true,
