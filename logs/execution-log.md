@@ -16794,3 +16794,18 @@ Result:
 - HONEST BOUNDARY: public npmjs remains stale at `splunkready@0.1.5`; GitHub
   Packages requires package-registry authentication and is not a replacement
   for the unauthenticated judge path.
+
+## 2026-06-08T16:56:54Z - Move 201 final branch-tip CI
+
+Actions:
+
+- Watched final branch-tip CI run `27153364808` for commit
+  `83fc5be84ebf59eb586301a30b953ec1cee4006e`.
+
+Result:
+
+- PASS: setup-action smoke completed in 7s using the stable `v0.1.7`
+  standalone release.
+- PASS: `npm run check` job completed in 1m29s.
+- PASS: CI also ran credential-free live-mock proof, Docker mock Splunk MCP
+  image build, and Docker mock Splunk MCP smoke test.

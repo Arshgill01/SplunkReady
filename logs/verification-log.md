@@ -17809,3 +17809,20 @@ Result:
   audit, 76 Vitest files / 443 tests, secret-env ignore audit, reviewer audit
   with 0 failing latest verdicts, submission-copy audit with 442 required
   claims, and whitespace diff check.
+
+## 2026-06-08T16:56:54Z - Move 201 final branch-tip CI
+
+Commands:
+
+- `git push origin splunkready-build`
+- `gh run list --limit 10 --json databaseId,workflowName,displayTitle,status,conclusion,headSha,event,createdAt,url`
+- `gh run watch 27153364808 --exit-status`
+
+Result:
+
+- PASS: final branch-tip CI run `27153364808` on commit
+  `83fc5be84ebf59eb586301a30b953ec1cee4006e` concluded `success`.
+- PASS: `setup-splunkready action smoke` passed with the workflow now pinned to
+  `version: v0.1.7`.
+- PASS: `npm run check` passed remotely.
+- PASS: remote CI built and smoked the mock Splunk MCP Docker image.

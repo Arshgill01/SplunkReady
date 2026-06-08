@@ -2,10 +2,10 @@
 
 ## Status
 
-Implemented on 2026-06-08. Source prep, `v0.1.7` tag publication, Release
+Completed on 2026-06-08. Source prep, `v0.1.7` tag publication, Release
 Artifacts workflow, public macOS arm64 download smoke, GitHub Packages refresh,
-and local/focused checks are complete. Awaiting final branch-tip CI after the
-workflow pin update to `v0.1.7`.
+local checks, and branch-tip CI after the workflow pin update to `v0.1.7` all
+passed.
 
 ## Objective
 
