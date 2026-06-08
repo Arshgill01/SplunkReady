@@ -25,6 +25,18 @@ const writeLocalDistUi = async (root: string): Promise<void> => {
   );
 };
 
+const git = async (root: string, args: string[]): Promise<string> => {
+  const { stdout } = await execFileAsync("git", args, { cwd: root, env: process.env });
+  return stdout.trim();
+};
+
+const createCommit = async (root: string, path: string, value: string): Promise<string> => {
+  await writeFixture(join(root, path), value);
+  await git(root, ["add", path]);
+  await git(root, ["commit", "-m", `commit ${path}`]);
+  return git(root, ["rev-parse", "HEAD"]);
+};
+
 const startHostedDemo = async (manifest: Record<string, unknown>, indexHtml: string): Promise<string> => {
   const server = createServer((request, response) => {
     if (request.url === "/public-demo-manifest.json") {
@@ -94,6 +106,36 @@ describe("hosted demo currentness audit", () => {
     });
   });
 
+  it("reports current when hosted manifest commit contains the latest public demo input commit", async () => {
+    const root = await tempRoot();
+    await writeLocalDistUi(root);
+    await git(root, ["init"]);
+    await git(root, ["config", "user.email", "splunkready@example.test"]);
+    await git(root, ["config", "user.name", "SplunkReady Test"]);
+    const expectedCommit = await createCommit(root, "public-input.txt", "input\n");
+    const hostedCommit = await createCommit(root, "non-public-input.txt", "deployment-only\n");
+
+    const url = await startHostedDemo(
+      {
+        source: "splunkready-public-demo-export",
+        sourceCommit: hostedCommit,
+        sourceCommitShort: hostedCommit.slice(0, 7),
+        mutation: false,
+        defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
+        artifactBases: ["artifacts/mcp-proof", "artifacts/suite-proof", "artifacts/public-proof-export", "artifacts/judge-proof"]
+      },
+      '<!doctype html><script type="module" src="./assets/index-test.js"></script><link rel="stylesheet" href="./assets/index-test.css">'
+    );
+
+    await expect(runAudit(root, url, expectedCommit)).resolves.toMatchObject({
+      status: "CURRENT",
+      expectedPublicDemoInputCommit: expectedCommit,
+      hostedSourceCommit: hostedCommit,
+      hostedSourceCommitCoversExpectedInput: true,
+      failures: []
+    });
+  });
+
   it("reports stale when hosted manifest commit is behind expected public demo inputs", async () => {
     const root = await tempRoot();
 
@@ -113,6 +155,6 @@ describe("hosted demo currentness audit", () => {
       status: "STALE",
       assets: { match: true }
     });
-    expect(report.failures.join("\n")).toContain("does not match expected public-demo input commit");
+    expect(report.failures.join("\n")).toContain("does not contain expected public-demo input commit");
   });
 });

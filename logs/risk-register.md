@@ -1376,3 +1376,12 @@ the no-clone npm path is intentionally stale until the operator publishes
 `npm run audit:public-package-currentness -- --require-current --out
 submission-evidence/public-package-currentness`; do not update GitHub Packages,
 GitHub Release, or README/Devpost no-clone snippets to `0.1.6` before that.
+
+Move 195 closes the hosted-demo currentness gap created by Move 193 package and
+public-demo input changes. GitHub Pages deployed from commit `a21cf3d`, which
+contains the latest public-demo input commit `8311db4`; the hosted-demo audit
+now records `hostedSourceCommitCoversExpectedInput: true` and fails only when
+the hosted source commit does not contain the expected input commit. Residual
+risk: future deployments from commits outside the public-demo input ancestry
+must still rerun `npm run audit:hosted-demo-currentness -- --require-current`
+before claiming the hosted URL is current.

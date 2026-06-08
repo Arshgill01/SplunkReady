@@ -17478,3 +17478,42 @@ Result:
 - PASS: submission-copy audit passed with 397 required claims.
 - PASS: focused submission-copy audit test passed: 1 file, 3 tests.
 - PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+
+## 2026-06-08T15:38:26Z - Move 195 hosted public-demo currentness refresh
+
+Commands:
+
+- `npm run audit:hosted-demo-currentness -- --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `gh workflow run public-demo-pages.yml --ref splunkready-build`
+- `gh run watch 27148574658 --exit-status`
+- `git merge-base --is-ancestor 8311db417dcb2c3c4f2d034b7113cb6788af1f25 a21cf3d9919074fe2302828d75e2b7a2e1c007f5`
+- `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `npx vitest run tests/scripts/hosted-demo-currentness.test.ts`
+
+Result:
+
+- STALE as expected before redeploy: hosted source did not contain the latest
+  public-demo input commit.
+- PASS: `Public Demo Pages` run `27148574658` completed successfully.
+- PASS: `git merge-base --is-ancestor` confirmed hosted source commit
+  `a21cf3d` contains public-demo input commit `8311db4`.
+- PASS: hosted-demo currentness audit reports `status: "CURRENT"`,
+  `hostedSourceCommitCoversExpectedInput: true`, matching asset names,
+  `artifactBases` including `artifacts/real-splunk-stress-llm-layer`, and
+  `mutation: false`.
+- PASS: focused hosted-demo currentness test passed: 1 file, 3 tests.
+- PASS: `npm run audit:submission-copy` passed with 399 required claims.
+- PASS: focused hosted-demo/submission-copy tests passed: 2 files, 6 tests.
+- FAIL then PASS: initial `npm run check` exposed a Vitest timeout in
+  `tests/scripts/public-package-currentness.test.ts` under full-suite load; the
+  public-package currentness assertions were kept intact and the file now uses
+  explicit 30s integration-test timeouts.
+- PASS: `npx vitest run tests/scripts/public-package-currentness.test.ts`
+  passed: 1 file, 3 tests.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: whitespace diff check passed.
+- PASS: `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 76 Vitest files / 441 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts, submission-copy
+  audit with 399 required claims, and whitespace diff check.

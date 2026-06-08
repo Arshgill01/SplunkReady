@@ -16516,3 +16516,34 @@ Result:
   auth user `brightybrainiac`.
 - BLOCKED: publishing `0.1.6` still requires operator OTP; no blind publish was
   attempted in this move.
+
+## 2026-06-08T15:38:26Z - Move 195 hosted public-demo currentness refresh
+
+Context:
+
+- Move 193 changed public-demo input evidence at commit `8311db4`.
+- The hosted GitHub Pages manifest was still served from an older source commit,
+  so the public demo currentness proof initially reported `STALE`.
+
+Actions:
+
+- Added `moves/moves195.md`.
+- Triggered the `Public Demo Pages` workflow from `splunkready-build` and
+  watched run `27148574658` through successful build/deploy.
+- Reran hosted-demo currentness and refreshed
+  `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`.
+- Fixed `scripts/audit-hosted-demo-currentness.mjs` so a hosted source commit is
+  accepted when it contains the latest public-demo input commit, not only when
+  it is exactly equal to that input commit.
+- Updated hosted-demo currentness tests, submission-copy guardrails, claim
+  ledger, and evidence README to cite expected input commit `8311db4`, hosted
+  source commit `a21cf3d`, and
+  `hostedSourceCommitCoversExpectedInput: true`.
+
+Result:
+
+- PASS: hosted demo currentness now reports `CURRENT`.
+- PASS: hosted source commit `a21cf3d` contains expected public-demo input
+  commit `8311db4`.
+- PASS: hosted and local asset names match.
+- PASS: hosted manifest remains credential-free and `mutation: false`.

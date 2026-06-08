@@ -79,6 +79,26 @@ const latestPublicDemoInputCommit = async () => {
   return stdout.trim();
 };
 
+const sourceCommitCoversExpectedInput = async (sourceCommit, expectedCommit) => {
+  if (!sourceCommit || sourceCommit === "UNKNOWN") {
+    return false;
+  }
+
+  if (sourceCommit === expectedCommit) {
+    return true;
+  }
+
+  try {
+    await execFileAsync("git", ["merge-base", "--is-ancestor", expectedCommit, sourceCommit], {
+      cwd: process.cwd(),
+      maxBuffer: 1024 * 1024
+    });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const writeJson = async (path, value) => {
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, `${JSON.stringify(value, null, 2)}\n`, "utf8");
@@ -93,6 +113,8 @@ const main = async () => {
   const hostedAssets = assetNamesFromHtml(hostedIndexHtml);
   const localAssets = await localAssetNames();
   const expectedCommit = args.expectedCommit || await latestPublicDemoInputCommit();
+  const hostedSourceCommit = typeof manifest.sourceCommit === "string" ? manifest.sourceCommit : null;
+  const hostedSourceCommitCoversExpectedInput = await sourceCommitCoversExpectedInput(hostedSourceCommit, expectedCommit);
   const failures = [];
 
   if (manifest.source !== "splunkready-public-demo-export") {
@@ -107,10 +129,10 @@ const main = async () => {
     failures.push("hosted manifest default route is not the MCP proof route");
   }
 
-  if (!manifest.sourceCommit || manifest.sourceCommit === "UNKNOWN") {
+  if (!hostedSourceCommit || hostedSourceCommit === "UNKNOWN") {
     failures.push("hosted manifest does not record sourceCommit");
-  } else if (manifest.sourceCommit !== expectedCommit) {
-    failures.push(`hosted sourceCommit ${manifest.sourceCommit} does not match expected public-demo input commit ${expectedCommit}`);
+  } else if (!hostedSourceCommitCoversExpectedInput) {
+    failures.push(`hosted sourceCommit ${hostedSourceCommit} does not contain expected public-demo input commit ${expectedCommit}`);
   }
 
   if (JSON.stringify(hostedAssets) !== JSON.stringify(localAssets)) {
@@ -123,8 +145,9 @@ const main = async () => {
     hostedUrl: baseUrl.toString(),
     manifestUrl: manifestUrl.toString(),
     expectedPublicDemoInputCommit: expectedCommit,
-    hostedSourceCommit: typeof manifest.sourceCommit === "string" ? manifest.sourceCommit : null,
+    hostedSourceCommit,
     hostedSourceCommitShort: typeof manifest.sourceCommitShort === "string" ? manifest.sourceCommitShort : null,
+    hostedSourceCommitCoversExpectedInput,
     assets: {
       local: localAssets,
       hosted: hostedAssets,

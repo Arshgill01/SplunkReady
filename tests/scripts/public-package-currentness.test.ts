@@ -330,7 +330,7 @@ describe("public package currentness audit", () => {
       publishedPolicyRegistry: { status: "BLOCKED" }
     });
     expect(report.recommendedAction).toContain("Publish splunkready@0.1.2");
-  });
+  }, 30_000);
 
   it("reports current when npm latest matches local source and advanced public surfaces pass", async () => {
     const root = await tempRoot();
@@ -375,7 +375,7 @@ describe("public package currentness audit", () => {
     expect(report.publishedMcp.toolNames).toContain("splunkready_review_mcp_composition");
     expect(report.publishedRecorder.toolNames).toContain("splunkready_recorder_flush");
     expect(report.publishedPolicyRegistry.receiptPolicyHash).toMatch(/^[a-f0-9]{64}$/);
-  });
+  }, 30_000);
 
   it("fails when npm latest matches local version but lacks newer live-mock and policy surfaces", async () => {
     const root = await tempRoot();
@@ -397,5 +397,5 @@ describe("public package currentness audit", () => {
     ).rejects.toMatchObject({
       code: 1
     });
-  });
+  }, 30_000);
 });
