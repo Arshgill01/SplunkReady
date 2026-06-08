@@ -8,13 +8,13 @@ Deterministic authority: yes
 
 Artifact: submission-evidence/mcp-proof/dual-server-session.jsonl
 
-Frames: 9
+Frames: 11
 
 Servers: splunk, splunkready
 
-Requests: 4
+Requests: 5
 
-Responses: 4
+Responses: 5
 
 Splunk tools:
 - splunk_get_knowledge_objects
@@ -23,6 +23,7 @@ Splunk tools:
 SplunkReady tools:
 - splunkready_certify_mcp_transcript_content
 - splunkready_certify_mcp_transcript
+- splunkready_recorder_flush
 
 Evidence refs:
 - evt-102

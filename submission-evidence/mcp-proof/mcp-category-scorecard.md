@@ -12,7 +12,7 @@ Deterministic authority: true
 
 - SplunkReady MCP server: 6 tools, 13 resources, 1 resource template(s), 6 prompts.
 - Mock Splunk MCP composition: PASS.
-- Dual-server recorder session: PASS with 9 frame(s).
+- Dual-server recorder session: PASS with 11 frame(s).
 - AppInspect MCP composition: PASS.
 - Fixture hosted-model MCP access: PASS.
 - Operator-live hosted-model boundary: BLOCKED (SAIA_REST_HANDLERS_PARTIALLY_REGISTERED).

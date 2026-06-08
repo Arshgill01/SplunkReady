@@ -385,17 +385,59 @@ export class McpRecorderGateway {
     if (name === "splunkready_recorder_flush") {
       const args = isRecord(params.arguments) ? params.arguments : {};
       const finalAnswer = typeof args.finalAnswer === "string" ? args.finalAnswer : "";
+      const requirePass = args.requirePass !== false;
 
       if (!finalAnswer.trim()) {
         return error(requestId(request), -32602, "splunkready_recorder_flush requires finalAnswer.");
       }
 
       try {
-        const summary = await this.flush({ finalAnswer, requirePass: args.requirePass !== false });
-        return success(requestId(request), {
-          content: [{ type: "text", text: JSON.stringify(summary, null, 2) }],
-          structuredContent: summary
+        this.recordFrame("splunkready", "request", {
+          jsonrpc: "2.0",
+          id: requestId(request),
+          method: "tools/call",
+          params: { name: "splunkready_recorder_flush", arguments: { finalAnswer, requirePass } }
         });
+
+        const summary = await this.flush({ finalAnswer, requirePass });
+        const responseSummary: McpCompositionRecorderSummary = {
+          ...summary,
+          frameCount: summary.frameCount + 1,
+          responseCount: summary.responseCount + 1
+        };
+        const response = success(requestId(request), {
+          content: [{ type: "text", text: JSON.stringify(responseSummary, null, 2) }],
+          structuredContent: responseSummary
+        });
+        this.recordFrame("splunkready", "response", response);
+        await writeMcpCompositionRecorderFrames({
+          frames: this.frames,
+          artifactPath: this.paths.artifactPath,
+          markdownPath: this.paths.markdownPath,
+          certification: summary.certification
+        });
+        const finalCertification = await runMcpTranscriptCertificationFromPathWorkflow({
+          transcriptPath: this.paths.artifactPath,
+          outDir: this.paths.certificationOutDir,
+          fixturePath: this.paths.fixturePath,
+          missionPath: this.paths.missionPath,
+          strictImport: true,
+          requirePass,
+          agentName: "MCP Recorder Gateway",
+          agentVersion: "pass-through"
+        });
+        await writeMcpCompositionRecorderFrames({
+          frames: this.frames,
+          artifactPath: this.paths.artifactPath,
+          markdownPath: this.paths.markdownPath,
+          certification: {
+            status: finalCertification.status,
+            outDir: this.paths.certificationOutDir,
+            artifactCount: finalCertification.artifacts.length
+          }
+        });
+
+        return response;
       } catch (caught) {
         const message = caught instanceof Error ? caught.message : "MCP recorder flush failed.";
 

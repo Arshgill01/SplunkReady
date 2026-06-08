@@ -81,13 +81,13 @@
       "id": "dual-server-recorder-session",
       "status": "PASS",
       "severity": "required",
-      "evidence": "status=PASS; serverIds=splunk,splunkready; frameCount=9"
+      "evidence": "status=PASS; serverIds=splunk,splunkready; frameCount=11"
     },
     {
       "id": "dual-server-certification-tools",
       "status": "PASS",
       "severity": "required",
-      "evidence": "splunkready_certify_mcp_transcript_content, splunkready_certify_mcp_transcript"
+      "evidence": "splunkready_certify_mcp_transcript_content, splunkready_certify_mcp_transcript, splunkready_recorder_flush"
     },
     {
       "id": "appinspect-mcp-composition",

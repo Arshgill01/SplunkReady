@@ -3,7 +3,7 @@
   "source": "mcp-jsonrpc-transcript",
   "mutation": false,
   "missionId": "mission-security-lateral-movement-readiness",
-  "recordCount": 9,
+  "recordCount": 11,
   "importedEvents": 5,
   "toolCalls": 2,
   "toolResults": 2,

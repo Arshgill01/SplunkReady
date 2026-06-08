@@ -1314,3 +1314,13 @@ Residual risk: the MCP track is stronger and more honest, but not fully
 maximized. A future external-client session with a longer transcript and visible
 flush/certifier tool frame would upgrade `zedEvidenceTier` from
 `VERIFIED_COMPACT` to `VERIFIED_STRONG`.
+
+Move 189 fixes the recorder-gateway artifact shape for future external-client
+sessions: `splunkready_recorder_flush` is now persisted as a redacted
+SplunkReady MCP request/response frame, and the final recorder certification
+is rerun against the persisted 11-frame session. Residual risk: the tracked Zed
+desktop evidence has not been recaptured with the improved recorder, so the MCP
+category scorecard correctly remains `PASS_WITH_LIMITATIONS` and
+`zedEvidenceTier: "VERIFIED_COMPACT"`. Because this move touched package-input
+source after publishing `splunkready@0.1.5`, public package currentness should
+be treated as stale until the next intentional release.

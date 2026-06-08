@@ -3,7 +3,7 @@
   "source": "mcp-jsonrpc-transcript-certification",
   "mutation": false,
   "transcriptPath": "submission-evidence/mcp-proof/dual-server-session.jsonl",
-  "missionPath": "fixtures/acme-soc-dev/missions/security-investigation-readiness.json",
+  "missionPath": "/Users/arshdeepsingh/Developer/SplunkReady/fixtures/acme-soc-dev/missions/security-investigation-readiness.json",
   "agent": {
     "name": "MCP Recorder Gateway",
     "version": "pass-through"

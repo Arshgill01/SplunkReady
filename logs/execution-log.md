@@ -16290,3 +16290,42 @@ Result:
 - PASS_WITH_LIMITATIONS: Zed evidence is real and redacted, but compact:
   `zedFrames: 5`, `zedEvidenceTier: "VERIFIED_COMPACT"`, and
   `zedJsonlContainsSplunkReadyFlushFrame: false`.
+
+## 2026-06-08T14:31:52Z - Move 189 MCP recorder flush frame capture
+
+Context:
+
+- Move 188 made the MCP evidence honest, but the recorder gateway persisted
+  Splunk investigation frames and the final answer without the visible
+  `splunkready_recorder_flush` request/response frame.
+- That artifact shape made a real external-client flush harder to audit from
+  JSONL alone.
+
+Actions:
+
+- Added `moves/moves189.md`.
+- Updated `src/mcp/recorder-gateway.ts` so
+  `splunkready_recorder_flush` records a redacted SplunkReady MCP request and
+  response around the certification workflow.
+- Rewrites and recertifies the final recorder artifact after the flush response
+  frame is added, keeping persisted frame count and certification import record
+  count aligned.
+- Updated the focused CLI flow test to require the visible
+  `splunkready_recorder_flush` frame.
+- Regenerated `submission-evidence/mcp-proof` through `npm run mcp-proof`.
+- Refreshed MCP category scorecard and evidence-pack hashes.
+
+Result:
+
+- PASS: first-party dual-server recorder evidence now has 11 frames, visible
+  flush request/response frames, 11 imported MCP records, 0 skipped records, 0
+  unmatched calls, 1 final answer, and `mutation: false`.
+- PASS: MCP category scorecard sees
+  `splunkready_certify_mcp_transcript_content`,
+  `splunkready_certify_mcp_transcript`, and `splunkready_recorder_flush` in
+  the dual-server recorder session.
+- PASS_WITH_LIMITATIONS: Zed evidence remains the older compact 5-frame
+  third-party-client session until a new Zed desktop run is captured.
+- NOTE: this touched package-input source, so the already-published
+  `splunkready@0.1.5` package is no longer current for this exact source state
+  until a future release.

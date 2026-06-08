@@ -2,7 +2,7 @@
   "source": "splunkready-proof-manifest",
   "generatedAt": "2026-06-01T06:45:00.000Z",
   "proofDir": "submission-evidence/mcp-proof/mcp-composition-recorder-certification",
-  "aggregateSha256": "c0fbac2d22787da3d3b985534306f7d2647e7c32e498669294775fb9c2cdfe4e",
+  "aggregateSha256": "8006e49288c89e8e29e6d74065e777d15cf17d061541336eabff1954fa36cd7e",
   "files": [
     {
       "path": "agent-policy.json",
@@ -16,13 +16,13 @@
     },
     {
       "path": "mcp-transcript-certification.json",
-      "sizeBytes": 1964,
-      "sha256": "0b36cc6f6dd735e3c60b0ee1971e8a6bc4d3377a15c05c3dbb6721fa50482f7b"
+      "sizeBytes": 2007,
+      "sha256": "60d1e5a4c667d571cf96a361caa64a0e1c3fc97cca578e4ba4ca52c50ca8d1da"
     },
     {
       "path": "mcp-transcript-import.json",
-      "sizeBytes": 913,
-      "sha256": "963b468d9e30a76117a7ec933cc7ca8e486b9fad6f14e32e1fee45f2cd9770ed"
+      "sizeBytes": 914,
+      "sha256": "a3688f5ab12851821510afe9750286e1a2ba805a18f64b850d76abab3fc8eb26"
     },
     {
       "path": "missions.json",

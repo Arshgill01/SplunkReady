@@ -17224,3 +17224,43 @@ Result:
   submission-copy audit with 387 required claims, and whitespace diff check.
 - PASS: public package currentness remained `CURRENT` for `splunkready@0.1.5`
   with no dirty package inputs and published MCP/recorder checks passing.
+
+## 2026-06-08T14:31:52Z - Move 189 MCP recorder flush frame capture
+
+Commands:
+
+- `npx vitest run tests/cli/flow.test.ts -t "MCP recorder gateway"`
+- `npm run mcp-proof -- --out submission-evidence/mcp-proof`
+- `node -e "const fs=require('fs'); const frames=fs.readFileSync('submission-evidence/mcp-proof/dual-server-session.jsonl','utf8').trim().split(/\\n/).map(JSON.parse); const imp=require('./submission-evidence/mcp-proof/mcp-composition-recorder-certification/mcp-transcript-import.json'); const s=require('./submission-evidence/mcp-proof/mcp-proof-summary.json').compositionRecorder; console.log({frames:frames.length, summaryFrameCount:s.frameCount, importRecordCount:imp.recordCount, flushFrames:frames.filter(f=>JSON.stringify(f).includes('splunkready_recorder_flush')).length, skipped:imp.skippedRecords, unmatched:imp.unmatchedToolCalls, finalAnswers:imp.finalAnswers})"`
+- `node scripts/audit-mcp-category-evidence.mjs --out submission-evidence/mcp-proof`
+- `npx vitest run tests/scripts/mcp-category-evidence.test.ts`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/cli/flow.test.ts -t "MCP recorder gateway" tests/scripts/mcp-category-evidence.test.ts`
+- `git diff --check`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+
+Result:
+
+- PASS: focused recorder-gateway CLI flow test passed after requiring the
+  visible `splunkready_recorder_flush` session frame.
+- PASS: regenerated MCP proof reported `status: "PASS"`.
+- PASS: recorder evidence alignment check reported `frames: 11`,
+  `summaryFrameCount: 11`, `importRecordCount: 11`, `flushFrames: 2`,
+  `skipped: 0`, `unmatched: 0`, and `finalAnswers: 1`.
+- PASS_WITH_LIMITATIONS: MCP category scorecard regenerated with score `96`;
+  dual-server recorder session now reports `frameCount=11` and includes
+  `splunkready_recorder_flush`, while Zed remains `VERIFIED_COMPACT`.
+- PASS: focused MCP category test passed: 1 file, 2 tests.
+- PASS: submission-copy audit passed with 387 required claims.
+- PASS: combined focused Vitest command passed the recorder test; the category
+  file was skipped by the `-t` filter and had already passed separately.
+- PASS: whitespace diff check passed.
+- PASS: evidence-pack SHA-256 verification passed after refreshing MCP proof
+  artifacts.
+- PASS: `npm run check` passed after the source and evidence changes:
+  scaffold verification, runtime-contract verification, TypeScript build, UI
+  build, public-demo export audit, package readiness/installability audits, 76
+  Vitest files / 439 tests, secret-env ignore audit, reviewer audit with 0
+  failing latest verdicts, submission-copy audit with 387 required claims, and
+  whitespace diff check.

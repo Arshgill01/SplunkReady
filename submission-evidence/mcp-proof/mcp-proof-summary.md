@@ -158,10 +158,10 @@ AppInspect MCP composition: PASS
 MCP composition recorder: PASS
 - Artifact: submission-evidence/mcp-proof/dual-server-session.jsonl
 - Markdown: submission-evidence/mcp-proof/dual-server-session.md
-- Frames: 9
+- Frames: 11
 - Servers: splunk, splunkready
 - Splunk tools: splunk_get_knowledge_objects, splunk_run_saved_search
-- SplunkReady tools: splunkready_certify_mcp_transcript_content, splunkready_certify_mcp_transcript
+- SplunkReady tools: splunkready_certify_mcp_transcript_content, splunkready_certify_mcp_transcript, splunkready_recorder_flush
 - Redaction: PASS
 - Certification: PASS
 

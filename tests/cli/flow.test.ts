@@ -507,7 +507,7 @@ describe("SplunkReady CLI flow", () => {
 
       expect(flush.result.structuredContent.status).toBe("PASS");
       expect(flush.result.structuredContent.certification?.status).toBe("PASS");
-      expect(flush.result.structuredContent.frameCount).toBeGreaterThanOrEqual(5);
+      expect(flush.result.structuredContent.frameCount).toBeGreaterThanOrEqual(7);
       expect(flush.result.content[0].type).toBe("text");
       expect(flush.result.content[0].text).toContain("\"status\": \"PASS\"");
 
@@ -523,6 +523,7 @@ describe("SplunkReady CLI flow", () => {
       expect(new Set(sessionFrames.map((frame) => frame.serverId))).toEqual(new Set(["splunk", "splunkready"]));
       expect(sessionText).toContain("splunk_run_saved_search");
       expect(sessionText).toContain("splunkready_certify_mcp_transcript_content");
+      expect(sessionText).toContain("splunkready_recorder_flush");
       expect(sessionText).not.toMatch(/Bearer\s+(?!<redacted-token>)[A-Za-z0-9._~+/=-]+/);
       expect(sessionText).not.toMatch(/\/Users\/|\/private\/|\/tmp\//);
       expect(importSummary.unmatchedToolCalls).toBe(0);

@@ -941,20 +941,21 @@
     "status": "PASS",
     "artifactPath": "submission-evidence/mcp-proof/dual-server-session.jsonl",
     "markdownPath": "submission-evidence/mcp-proof/dual-server-session.md",
-    "frameCount": 9,
+    "frameCount": 11,
     "serverIds": [
       "splunk",
       "splunkready"
     ],
-    "requestCount": 4,
-    "responseCount": 4,
+    "requestCount": 5,
+    "responseCount": 5,
     "splunkToolNames": [
       "splunk_get_knowledge_objects",
       "splunk_run_saved_search"
     ],
     "splunkReadyToolNames": [
       "splunkready_certify_mcp_transcript_content",
-      "splunkready_certify_mcp_transcript"
+      "splunkready_certify_mcp_transcript",
+      "splunkready_recorder_flush"
     ],
     "evidenceRefs": [
       "evt-102",
