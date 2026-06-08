@@ -18054,3 +18054,47 @@ Result:
 - PASS: `npm run check` passed remotely.
 - PASS: remote CI ran credential-free live-mock proof.
 - PASS: remote CI built and smoked the mock Splunk MCP Docker image.
+
+## 2026-06-08T18:08:03Z - Move 206 MCP proof route live mock schema fix
+
+Commands:
+
+- `npx vitest run tests/ui/app.test.ts --testNamePattern "tracked MCP proof|MCP proof summary"`
+- `npm run public-demo:build`
+- `python3 -m http.server 4175 --directory artifacts/public-demo`
+- `npx --yes --package playwright node --input-type=module -e "import { chromium } from 'playwright'; const browser = await chromium.launch({ headless: true }); const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } }); const url = 'http://127.0.0.1:4175/?artifacts=artifacts%2Fmcp-proof#mcp-proof'; await page.goto(url, { waitUntil: 'networkidle' }); const body = await page.locator('body').innerText(); const checks = { hasMcpView: await page.locator('[data-view=\"mcp-proof\"]').count() > 0, hasLiveMock: body.includes('Live mock Splunk MCP'), hasLiveMockTools: body.includes('splunk_get_info / splunk_get_knowledge_objects / splunk_run_saved_search'), hasTranscript: body.includes('submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl'), artifactFailed: body.includes('Artifact load failed'), bundleIncomplete: body.includes('Artifact bundle incomplete') }; await page.screenshot({ path: 'submission-evidence/screenshots/mcp-proof-route-live-mock.png', fullPage: true }); await browser.close(); console.log(JSON.stringify({ url, screenshot: 'submission-evidence/screenshots/mcp-proof-route-live-mock.png', checks }, null, 2)); if (!checks.hasMcpView || !checks.hasLiveMock || !checks.hasLiveMockTools || !checks.hasTranscript || checks.artifactFailed || checks.bundleIncomplete) process.exit(1);"`
+- `npx --yes --package playwright node --input-type=module -e "import { chromium } from 'playwright'; const browser = await chromium.launch({ headless: true }); const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } }); await page.goto('http://127.0.0.1:4175/?artifacts=artifacts%2Fmcp-proof#mcp-proof', { waitUntil: 'networkidle' }); const heading = page.getByRole('heading', { name: 'Live mock Splunk MCP' }); await heading.scrollIntoViewIfNeeded(); const panel = page.locator('section.mcp-proof-panel').filter({ has: heading }).first(); await panel.screenshot({ path: 'submission-evidence/screenshots/mcp-proof-live-mock-panel.png' }); const text = await panel.innerText(); await browser.close(); console.log(JSON.stringify({ screenshot: 'submission-evidence/screenshots/mcp-proof-live-mock-panel.png', containsStatus: text.includes('PASS'), containsTools: text.includes('splunk_get_info / splunk_get_knowledge_objects / splunk_run_saved_search'), containsMutation: text.includes('Mutation') && text.includes('no') }, null, 2)); if (!text.includes('PASS') || !text.includes('splunk_get_info / splunk_get_knowledge_objects / splunk_run_saved_search') || !text.includes('Mutation')) process.exit(1);"`
+- `lsof -ti tcp:4175 | xargs -r kill`
+- `npx vitest run tests/ui/app.test.ts`
+- `npm run audit:public-demo-export`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | LC_ALL=C sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `git diff --check`
+- `npm run check`
+
+Result:
+
+- PASS: focused UI regression passed: 1 file, 2 tests, 29 skipped.
+- PASS: `npm run public-demo:build` rebuilt TypeScript, Vite UI, and public
+  demo export.
+- PASS: Playwright route check loaded
+  `http://127.0.0.1:4175/?artifacts=artifacts%2Fmcp-proof#mcp-proof`,
+  found the MCP view, found the live mock panel, found the live mock tool list,
+  found the mock Splunk MCP transcript path, and confirmed both
+  `Artifact load failed` and `Artifact bundle incomplete` were absent.
+- PASS: Playwright captured
+  `submission-evidence/screenshots/mcp-proof-route-live-mock.png`.
+- PASS: Playwright captured the focused
+  `submission-evidence/screenshots/mcp-proof-live-mock-panel.png` panel and
+  verified `PASS`, live mock tools, and mutation boundary text.
+- PASS: full UI test file passed: 31 tests.
+- PASS: public-demo export audit passed with 306 files, `mutation=false`, and
+  default route `mcp-proof`.
+- PASS: evidence-pack SHA-256 verification passed for all tracked
+  `submission-evidence/` files.
+- PASS: whitespace diff check passed.
+- PASS: `npm run check` passed with package version `0.1.7`: scaffold
+  verification, runtime-contract verification, TypeScript build, UI build,
+  public-demo export audit, package readiness audit, package installability
+  audit, 77 Vitest files / 447 tests, secret-env ignore audit, reviewer audit
+  with 0 failing latest verdicts, submission-copy audit with 463 required
+  claims, and whitespace diff check.

@@ -261,6 +261,24 @@ const renderMcpCompositionRecorder = (summary: McpProofSummary): string => {
   ]);
 };
 
+const renderLiveMockSplunkMcp = (summary: McpProofSummary): string => {
+  const liveMock = summary.liveMockSplunkMcp;
+
+  return renderFactTable([
+    ["Status", liveMock.status],
+    ["Route state", liveMock.routeState],
+    ["Tools called", liveMock.toolNames.join(" / ") || "none"],
+    ["Evidence refs", liveMock.evidenceRefs.join(" / ") || "none"],
+    ["Saved-search execution", liveMock.includesSavedSearchExecution ? "yes" : "no"],
+    ["Requests", liveMock.requestCount],
+    ["Responses", liveMock.responseCount],
+    ["Transcript", liveMock.artifactPath],
+    ["Markdown", liveMock.markdownPath],
+    ["Deterministic authority", liveMock.deterministicAuthority ? "yes" : "no"],
+    ["Mutation", liveMock.mutation ? "yes" : "no"]
+  ]);
+};
+
 const renderAppInspectComposition = (summary: McpProofSummary): string => {
   const appInspect = summary.appInspectComposition;
 
@@ -351,6 +369,10 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
               <section class="panel mcp-proof-panel">
                 <h2>MCP composition recorder</h2>
                 ${renderMcpCompositionRecorder(summary)}
+              </section>
+              <section class="panel mcp-proof-panel">
+                <h2>Live mock Splunk MCP</h2>
+                ${renderLiveMockSplunkMcp(summary)}
               </section>
               <section class="panel mcp-proof-panel">
                 <h2>AppInspect MCP composition</h2>

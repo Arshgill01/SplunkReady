@@ -2051,6 +2051,7 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("Certification loop");
     expect(html).toContain("MCP composition scorecard");
     expect(html).toContain("MCP composition recorder");
+    expect(html).toContain("Live mock Splunk MCP");
     expect(html).toContain("AppInspect MCP composition");
     expect(html).toContain("Official Splunk MCP tool coverage");
     expect(html).toContain("MCP client session");
@@ -2106,6 +2107,24 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("mcp proof pass 5 tools");
     expect(html).toContain("<td>no</td>");
     expect(html).not.toContain("Artifact bundle incomplete");
+  });
+
+  it("loads and renders the tracked MCP proof artifact without schema drift", async () => {
+    const trackedMcpProofSummary = JSON.parse(await readFile("submission-evidence/mcp-proof/mcp-proof-summary.json", "utf8"));
+    const bundle = await loadUiArtifactBundle(
+      "artifacts/mcp-proof",
+      fetcherFor({
+        "mcp-proof-summary.json": trackedMcpProofSummary
+      })
+    );
+    const html = renderApp(bundle, "mcp-proof", { artifactOptions: defaultArtifactOptions });
+
+    expect(bundle.mcpProofSummary?.status).toBe("PASS");
+    expect(bundle.mcpProofSummary?.liveMockSplunkMcp.status).toBe("PASS");
+    expect(html).toContain("Live mock Splunk MCP");
+    expect(html).toContain("splunk_get_info / splunk_get_knowledge_objects / splunk_run_saved_search");
+    expect(html).toContain("submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl");
+    expect(html).not.toContain("Artifact load failed");
   });
 
   it("renders a multi-mission suite proof ledger from artifact data", async () => {

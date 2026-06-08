@@ -1484,3 +1484,11 @@ Residual risks and boundaries:
   UI schema drift around `liveMockSplunkMcp`. Move 205 uses the
   `public-proof-export` receipt route for installed-app render proof; the MCP
   artifact route should be fixed in the next high-value MCP evidence pass.
+
+Move 206 closes the `liveMockSplunkMcp` MCP proof route drift by accepting the
+workflow's typed live mock block in the UI schema, rendering it as a dedicated
+panel, and adding a regression test that loads the tracked
+`submission-evidence/mcp-proof/mcp-proof-summary.json`. Residual risk: this
+proves the static/workbench presentation of current MCP evidence, not a new
+closed desktop-client MCP session; keep the external-client limitation language
+in the MCP category evidence until a deeper third-party session exists.

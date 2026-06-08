@@ -17033,3 +17033,51 @@ Result:
 - PASS: CI built and smoke-tested the mock Splunk MCP Docker image, covering
   the Docker validation gap that was not available on the local machine.
 - RESULT: Move 205 is locally and remotely verified at the branch tip.
+
+## 2026-06-08T18:08:03Z - Move 206 MCP proof route live mock schema fix
+
+Context:
+
+- Move 205 route exploration exposed that the public/installed workbench
+  `?artifacts=artifacts%2Fmcp-proof#mcp-proof` route could fail artifact
+  loading on the current tracked MCP proof summary.
+- The tracked `submission-evidence/mcp-proof/mcp-proof-summary.json` includes
+  the workflow-generated `liveMockSplunkMcp` block, but the UI schema only
+  covered an older MCP proof shape.
+
+Actions:
+
+- Added `moves/moves206.md`.
+- Added `docs/execplans/mcp-proof-route-schema-drift.md`.
+- Updated `ui/src/artifacts.ts` to accept the typed `liveMockSplunkMcp`
+  contract and default older summaries to `NOT_REQUESTED`.
+- Updated `ui/src/render.ts` to render a dedicated `Live mock Splunk MCP`
+  panel with route state, called tools, evidence refs, saved-search execution,
+  request/response counts, deterministic authority, and mutation boundary.
+- Added a UI regression test that reads the tracked
+  `submission-evidence/mcp-proof/mcp-proof-summary.json` instead of relying
+  only on the synthetic test fixture.
+- Rebuilt the public demo and verified the static MCP proof route with
+  Playwright.
+- Captured public-safe screenshots:
+  `submission-evidence/screenshots/mcp-proof-route-live-mock.png` and
+  `submission-evidence/screenshots/mcp-proof-live-mock-panel.png`.
+- Updated the submission evidence README and claim ledger so the MCP workbench
+  route claim references the current live mock panel evidence.
+- Regenerated `submission-evidence/evidence-pack-sha256.txt`.
+
+Result so far:
+
+- PASS: focused MCP UI regression passed.
+- PASS: hosted-style static MCP route renders without `Artifact load failed`.
+- PASS: focused live mock panel screenshot shows `PASS`, `splunk_get_info`,
+  `splunk_get_knowledge_objects`, `splunk_run_saved_search`, evidence refs
+  `evt-102`, `evt-118`, `evt-141`, deterministic authority, and `Mutation no`.
+- PASS: full UI test file passed with 31 tests.
+- PASS: public-demo export audit passed with default route `mcp-proof`.
+- PASS: evidence-pack SHA-256 verification passed after regenerating hashes.
+- PASS: full `npm run check` passed locally with 77 Vitest files / 447 tests
+  and 463 submission-copy claims.
+- HONEST BOUNDARY: this move fixes the first-class public/workbench rendering
+  of current MCP evidence. It does not claim a new closed desktop-client MCP
+  session.

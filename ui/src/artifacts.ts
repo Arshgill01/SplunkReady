@@ -1260,6 +1260,37 @@ const mcpProofSummarySchema = z
         mutation: z.boolean()
       })
       .strict(),
+    liveMockSplunkMcp: z
+      .object({
+        source: z.literal("splunkready-live-mock-splunk-mcp"),
+        status: z.enum(["NOT_REQUESTED", "PASS", "FAIL"]),
+        artifactPath: z.string().min(1),
+        markdownPath: z.string().min(1),
+        routeState: z.enum(["ok", "degraded", "route-not-found"]),
+        toolNames: z.array(z.string().min(1)),
+        evidenceRefs: z.array(z.string().min(1)),
+        includesSavedSearchExecution: z.boolean(),
+        requestCount: z.number().int().nonnegative(),
+        responseCount: z.number().int().nonnegative(),
+        deterministicAuthority: z.boolean(),
+        mutation: z.boolean()
+      })
+      .strict()
+      .optional()
+      .default({
+        source: "splunkready-live-mock-splunk-mcp",
+        status: "NOT_REQUESTED",
+        artifactPath: "submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl",
+        markdownPath: "submission-evidence/mcp-proof/mock-splunk-mcp-session.md",
+        routeState: "ok",
+        toolNames: [],
+        evidenceRefs: [],
+        includesSavedSearchExecution: false,
+        requestCount: 0,
+        responseCount: 0,
+        deterministicAuthority: true,
+        mutation: false
+      }),
     artifacts: z.array(z.string().min(1)),
     nextCommands: z.array(z.string().min(1))
   })
