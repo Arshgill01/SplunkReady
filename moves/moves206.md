@@ -2,7 +2,8 @@
 
 ## Status
 
-Completed locally on 2026-06-08. Branch-tip CI pending after commit.
+Completed locally and remotely on 2026-06-08. Branch-tip CI run
+`27157422409` passed after commit `a9c3661`.
 
 ## Objective
 

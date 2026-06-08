@@ -17081,3 +17081,20 @@ Result so far:
 - HONEST BOUNDARY: this move fixes the first-class public/workbench rendering
   of current MCP evidence. It does not claim a new closed desktop-client MCP
   session.
+
+## 2026-06-08T18:10:46Z - Move 206 branch-tip CI
+
+Actions:
+
+- Committed Move 206 as `a9c3661f20525c013e5b9433106736ab65df2d86`.
+- Pushed `splunkready-build`.
+- Watched CI run `27157422409`.
+
+Result:
+
+- PASS: setup-splunkready action smoke completed in 6s.
+- PASS: `npm run check` job completed in 1m28s.
+- PASS: remote CI ran the canonical gate.
+- PASS: remote CI ran the credential-free live mock proof.
+- PASS: remote CI built and smoke-tested the mock Splunk MCP Docker image.
+- RESULT: Move 206 is locally and remotely verified at the branch tip.
