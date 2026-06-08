@@ -70,7 +70,16 @@ try {
     "artifacts/interactive-demo/trace-after.json",
     "artifacts/public-proof-export/artifact-manifest.json",
     "artifacts/public-proof-export/public-proof-summary.json",
-    "screenshots/workbench-mcp-proof.png"
+    "artifacts/real-splunk-stress-llm-layer/artifact-manifest.json",
+    "artifacts/real-splunk-stress-llm-layer/llm-deliberation-before.json",
+    "artifacts/real-splunk-stress-llm-layer/llm-deliberation-after.json",
+    "artifacts/real-splunk-stress-llm-layer/llm-claim-audit-before.json",
+    "artifacts/real-splunk-stress-llm-layer/llm-claim-audit-after.json",
+    "artifacts/real-splunk-stress-llm-layer/ui-artifacts.json",
+    "artifacts/real-splunk-stress-llm-layer/real-splunk-stress-replay-summary.json",
+    "screenshots/workbench-mcp-proof.png",
+    "screenshots/workbench-llm-deliberation.png",
+    "screenshots/public-demo-llm-deliberation.png"
   ]) {
     if (!existsSync(join(outDir, requiredPath))) {
       fail(`public demo export missing required file: ${requiredPath}`);
@@ -100,6 +109,7 @@ try {
     "artifacts/mcp-proof",
     "artifacts/suite-proof",
     "artifacts/public-proof-export",
+    "artifacts/real-splunk-stress-llm-layer",
     "artifacts/judge-proof",
     "artifacts/interactive-demo"
   ];

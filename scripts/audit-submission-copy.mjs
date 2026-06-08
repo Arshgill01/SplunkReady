@@ -158,6 +158,7 @@ const checks = [
   ["README real Splunk LLM reports", files.readme, "llm-deliberation-before.json"],
   ["README real Splunk LLM claim audit report", files.readme, "llm-claim-audit-before.json"],
   ["README real Splunk LLM workbench screenshot", files.readme, "screenshots/workbench-llm-deliberation.png"],
+  ["README public demo LLM route", files.readme, "?artifacts=artifacts%2Freal-splunk-stress-llm-layer#llm-deliberation"],
   ["README standalone release artifact", files.readme, "Standalone Release Artifact"],
   ["README standalone release evidence", files.readme, "submission-evidence/standalone-release/standalone-release-current-os.json"],
   ["README standalone release matrix evidence", files.readme, "submission-evidence/standalone-release/standalone-release-matrix.json"],
@@ -177,6 +178,15 @@ const checks = [
     files.claimLedger,
     "The hosted public demo accepts a trace and runs real in-browser certification without Splunk credentials."
   ],
+  [
+    "Claim ledger public demo LLM route",
+    files.claimLedger,
+    "The public demo export exposes the real-Splunk LLM deliberation artifact route without live credentials."
+  ],
+  ["Claim ledger public demo LLM artifact base", files.claimLedger, "artifacts/public-demo/artifacts/real-splunk-stress-llm-layer"],
+  ["Claim ledger public demo LLM route URL", files.claimLedger, "?artifacts=artifacts%2Freal-splunk-stress-llm-layer#llm-deliberation"],
+  ["Claim ledger public demo LLM screenshot", files.claimLedger, "screenshots/public-demo-llm-deliberation.png"],
+  ["Claim ledger public demo LLM audit command", files.claimLedger, "npm run audit:public-demo-export"],
   ["Claim ledger interactive screenshot", files.claimLedger, "submission-evidence/screenshots/interactive-demo.png"],
   ["Claim ledger interactive public artifact", files.claimLedger, "artifacts/public-demo/artifacts/interactive-demo/artifact-manifest.json"],
   ["Claim ledger interactive certifier source", files.claimLedger, "ui/src/interactiveCertifier.ts"],

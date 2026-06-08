@@ -4,7 +4,7 @@ import { copyFile, lstat, mkdir, readdir, rm, writeFile } from "node:fs/promises
 import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const requiredArtifactDirs = ["mcp-proof", "suite-proof", "public-proof-export"];
+const requiredArtifactDirs = ["mcp-proof", "suite-proof", "public-proof-export", "real-splunk-stress-llm-layer"];
 const generatedArtifactDirs = ["judge-proof"];
 const interactiveSourceDir = "judge-proof/suite-proof/mission-security-lateral-movement-readiness";
 const interactiveArtifactDir = "interactive-demo";
@@ -16,6 +16,7 @@ export const publicDemoInputPaths = [
   "src",
   "submission-evidence/mcp-proof",
   "submission-evidence/public-proof-export",
+  "submission-evidence/real-splunk-stress-llm-layer",
   "submission-evidence/screenshots",
   "submission-evidence/suite-proof",
   "ui",

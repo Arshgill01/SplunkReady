@@ -16823,3 +16823,50 @@ Result:
 - PASS: whitespace diff check passed.
 - PASS: full `npm run check` passed with 75 test files and 436 tests, including
   package readiness and package installability audits.
+
+## 2026-06-08T12:26:35Z - Move 180 public demo LLM evidence route
+
+Commands:
+
+- `npx vitest run tests/scripts/public-demo-export.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `npm run public-demo:build`
+- `npm run audit:public-demo-export`
+- `command -v npx >/dev/null 2>&1 && echo npx-ok || echo npx-missing`
+- `python3 -m http.server 4179 --bind 127.0.0.1 --directory artifacts/public-demo`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open 'http://127.0.0.1:4179/?artifacts=artifacts%2Freal-splunk-stress-llm-layer#llm-deliberation' --headed`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot --filename submission-evidence/screenshots/public-demo-llm-deliberation.png --full-page`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS: focused public-demo export and submission-copy audit tests passed with
+  2 files and 5 tests.
+- PASS: submission-copy audit passed with 356 required claims after the public
+  LLM route and screenshot claims were added.
+- PASS: `npm run public-demo:build` generated `artifacts/public-demo` with the
+  copied `artifacts/real-splunk-stress-llm-layer` base.
+- PASS: public-demo export audit passed with 295 files, mutation false, and
+  default route `mcp-proof`.
+- PASS: `npx` was available for the Playwright wrapper.
+- PASS: Playwright opened the hosted-style static route, and the HTTP server
+  served the LLM manifest, before/after receipts, live-security summary,
+  before/after deliberation reports, and UI artifacts from the copied public
+  demo bundle.
+- PASS: Playwright snapshot confirmed before `STRONG / 92`, after
+  `STRONG / 97.5`, advisory-only `yes`, deterministic-rule-engine authority,
+  receipt `READY / 100`, mutation `no`, claim audit `PASS`, and no hallucinated
+  refs.
+- PASS: Playwright wrote
+  `submission-evidence/screenshots/public-demo-llm-deliberation.png`.
+- PASS: evidence-pack SHA-256 verification passed, including the new public-demo
+  LLM screenshot.
+- PASS: full `npm run check` passed with 75 test files and 436 tests.
+- PASS: whitespace diff check passed.
+- NOTE: this verifies the local static public-demo export and hosted-style URL
+  path. The public GitHub Pages deployment still needs a current branch push and
+  successful Pages workflow before the live hosted URL should be claimed current
+  for Move 180.

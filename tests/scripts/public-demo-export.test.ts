@@ -26,7 +26,33 @@ const createSourceTree = async (): Promise<string> => {
     join(root, "submission-evidence", "public-proof-export", "public-proof-summary.json"),
     "{\"status\":\"REDACTED\"}\n"
   );
+  await writeFixture(
+    join(root, "submission-evidence", "real-splunk-stress-llm-layer", "llm-deliberation-before.json"),
+    "{\"source\":\"splunkready-llm-deliberation\",\"phase\":\"before\"}\n"
+  );
+  await writeFixture(
+    join(root, "submission-evidence", "real-splunk-stress-llm-layer", "llm-deliberation-after.json"),
+    "{\"source\":\"splunkready-llm-deliberation\",\"phase\":\"after\"}\n"
+  );
+  await writeFixture(
+    join(root, "submission-evidence", "real-splunk-stress-llm-layer", "llm-claim-audit-before.json"),
+    "{\"source\":\"splunkready-llm-claim-audit\",\"status\":\"PASS\"}\n"
+  );
+  await writeFixture(
+    join(root, "submission-evidence", "real-splunk-stress-llm-layer", "llm-claim-audit-after.json"),
+    "{\"source\":\"splunkready-llm-claim-audit\",\"status\":\"PASS\"}\n"
+  );
+  await writeFixture(
+    join(root, "submission-evidence", "real-splunk-stress-llm-layer", "real-splunk-stress-replay-summary.json"),
+    "{\"status\":\"PASS\",\"mutation\":false}\n"
+  );
+  await writeFixture(
+    join(root, "submission-evidence", "real-splunk-stress-llm-layer", "ui-artifacts.json"),
+    "{\"source\":\"splunkready-ui-artifacts\",\"version\":1,\"artifacts\":[{\"label\":\"Real Splunk LLM stress proof\",\"path\":\"artifacts/real-splunk-stress-llm-layer\"}]}\n"
+  );
   await writeFixture(join(root, "submission-evidence", "screenshots", "workbench-mcp-proof.png"), "png-bytes");
+  await writeFixture(join(root, "submission-evidence", "screenshots", "workbench-llm-deliberation.png"), "llm-png-bytes");
+  await writeFixture(join(root, "submission-evidence", "screenshots", "public-demo-llm-deliberation.png"), "public-llm-png-bytes");
 
   return root;
 };
@@ -99,6 +125,18 @@ describe("public demo export", () => {
       "initialize"
     );
     await expect(readFile(join(root, "out/public-demo/screenshots/workbench-mcp-proof.png"), "utf8")).resolves.toBe("png-bytes");
+    await expect(readFile(join(root, "out/public-demo/screenshots/workbench-llm-deliberation.png"), "utf8")).resolves.toBe(
+      "llm-png-bytes"
+    );
+    await expect(readFile(join(root, "out/public-demo/screenshots/public-demo-llm-deliberation.png"), "utf8")).resolves.toBe(
+      "public-llm-png-bytes"
+    );
+    await expect(
+      readFile(join(root, "out/public-demo/artifacts/real-splunk-stress-llm-layer/llm-deliberation-before.json"), "utf8")
+    ).resolves.toContain("splunkready-llm-deliberation");
+    await expect(
+      readFile(join(root, "out/public-demo/artifacts/real-splunk-stress-llm-layer/artifact-manifest.json"), "utf8")
+    ).resolves.toContain("llm-claim-audit-after.json");
     await expect(readFile(join(root, "out/public-demo/artifacts/judge-proof/judge-proof-summary.json"), "utf8")).resolves.toContain(
       "deterministic-rule-engine"
     );
@@ -118,6 +156,7 @@ describe("public demo export", () => {
       "artifacts/mcp-proof",
       "artifacts/suite-proof",
       "artifacts/public-proof-export",
+      "artifacts/real-splunk-stress-llm-layer",
       "artifacts/judge-proof",
       "artifacts/interactive-demo"
     ]);

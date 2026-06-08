@@ -15917,3 +15917,46 @@ Result:
 - PASS: submission-copy audit passed with 350 required claims.
 - PASS: evidence-pack SHA-256 verification passed.
 - PASS: full `npm run check` passed with 75 test files and 436 tests.
+
+## 2026-06-08T12:26:35Z - Move 180 public demo LLM evidence route
+
+Intent:
+
+- Make the richer real-Splunk LLM deliberation evidence visible from the static
+  public demo export without live credentials.
+- Keep the public route honest: the LLM remains advisory-only and the rendered
+  view still names the deterministic rule engine as the pass/fail authority.
+
+Actions:
+
+- Added `moves/moves180.md` for the public-demo LLM evidence export slice.
+- Extended `scripts/export-public-demo.js` so the public demo copies
+  `submission-evidence/real-splunk-stress-llm-layer/` into
+  `artifacts/public-demo/artifacts/real-splunk-stress-llm-layer`.
+- Hardened `scripts/audit-public-demo-export.mjs` to require the copied LLM
+  deliberation, claim-audit, replay-summary, UI-artifact, and screenshot files.
+- Updated focused public-demo export tests and submission-copy audit tests.
+- Added README, evidence README, and claim-ledger references for the hosted-style
+  route:
+  `?artifacts=artifacts%2Freal-splunk-stress-llm-layer#llm-deliberation`.
+- Captured
+  `submission-evidence/screenshots/public-demo-llm-deliberation.png` from the
+  static export with Playwright and regenerated the evidence-pack SHA-256
+  manifest.
+- Applied the Taste frontend skill only as a quality lens for this dense
+  developer-evidence UI: restrained hierarchy, no decorative bloat, and
+  browser-verified artifact rendering.
+
+Result:
+
+- PASS: focused public-demo and submission-copy tests passed.
+- PASS: public-demo build copied the real-Splunk LLM evidence bundle into the
+  static export.
+- PASS: public-demo export audit passed with 295 files and mutation false.
+- PASS: Playwright opened the hosted-style static route and snapshot-confirmed
+  before `STRONG / 92`, after `STRONG / 97.5`, advisory-only `yes`,
+  deterministic rule-engine authority, receipt `READY / 100`, mutation `no`,
+  claim audit `PASS`, and no hallucinated refs.
+- PASS: Playwright captured the public-demo LLM deliberation screenshot.
+- PASS: evidence-pack SHA-256 verification passed.
+- PASS: full `npm run check` passed with 75 test files and 436 tests.

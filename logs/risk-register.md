@@ -1223,3 +1223,12 @@ scoring formula. Residual risk: this is a synthetic credential-free calibration
 suite, not a new live Splunk stress proof. It should be cited only as scorer
 behavior evidence; the flagship real-Splunk proof still reports the scores
 produced by its own violations and blockers.
+
+Move 180 exposes the tracked real-Splunk LLM deliberation bundle through the
+static public demo export and verifies the hosted-style artifact route with
+Playwright. Residual risk: this proves the local static export and the copied
+redacted artifact route, not that GitHub Pages has already redeployed the same
+branch state. Do not cite the live public URL as current for Move 180 until the
+branch is pushed and the Pages/deployment workflow has completed successfully.
+The rendered LLM evidence remains advisory-only; deterministic receipts remain
+the readiness authority.

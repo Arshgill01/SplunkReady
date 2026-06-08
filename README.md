@@ -331,7 +331,7 @@ npm run public-demo:build
 npm run audit:public-demo-export
 ```
 
-The export writes `artifacts/public-demo` from the built Vite workbench plus tracked submission evidence. The audit checks required proof bundles, the default MCP proof route, no secret-named files, no symlinks, and `mutation=false`.
+The export writes `artifacts/public-demo` from the built Vite workbench plus tracked submission evidence. The audit checks required proof bundles, the default MCP proof route, the public LLM deliberation artifact route, no secret-named files, no symlinks, and `mutation=false`.
 
 To deploy that export through GitHub Pages, enable Pages for the repository and run the `Public Demo Pages` workflow manually. The workflow builds `artifacts/public-demo`, runs `audit:public-demo-export`, uploads the Pages artifact, and deploys without live Splunk or Gemini secrets. Do not claim a public URL until that workflow has completed and the Pages URL has been opened successfully.
 
@@ -345,6 +345,12 @@ Hosted judge-proof receipt view:
 
 ```text
 https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser
+```
+
+Hosted-style LLM deliberation view:
+
+```text
+https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Freal-splunk-stress-llm-layer#llm-deliberation
 ```
 
 ## Splunk App Package Proof
