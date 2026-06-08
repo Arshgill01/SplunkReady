@@ -16938,3 +16938,19 @@ Result:
   full `npm run check` all passed locally.
 - HONEST BOUNDARY: this move does not claim Splunkbase approval or public
   Splunk Cloud vetting; external operator submission is still required.
+
+## 2026-06-08T17:24:25Z - Move 204 branch-tip CI
+
+Actions:
+
+- Committed Move 204 as `0fc8ad6d720b047ced5332e7617a493387cae5c7`.
+- Pushed `splunkready-build`.
+- Watched CI run `27154900720`.
+
+Result:
+
+- PASS: setup-splunkready action smoke completed in 8s.
+- PASS: `npm run check` job completed in 1m25s.
+- PASS: CI ran the credential-free live mock proof.
+- PASS: CI built and smoke-tested the mock Splunk MCP Docker image.
+- RESULT: Move 204 is locally and remotely verified at the branch tip.
