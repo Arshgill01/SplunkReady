@@ -17189,3 +17189,38 @@ Result:
   readiness/installability audits, 75 Vitest files / 437 tests, secret-env
   ignore audit, reviewer audit with 0 failing latest verdicts,
   submission-copy audit with 378 required claims, and whitespace diff check.
+
+## 2026-06-08T14:21:06Z - Move 188 MCP category evidence boundaries
+
+Commands:
+
+- `node --check scripts/audit-mcp-category-evidence.mjs`
+- `node scripts/audit-mcp-category-evidence.mjs --out submission-evidence/mcp-proof`
+- `npx vitest run tests/scripts/mcp-category-evidence.test.ts`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts tests/scripts/mcp-category-evidence.test.ts`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt`
+- `shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npm run check`
+- `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
+
+Result:
+
+- PASS: script syntax check completed.
+- PASS_WITH_LIMITATIONS: MCP category scorecard generated
+  `submission-evidence/mcp-proof/mcp-category-scorecard.json` and `.md` with
+  score `96`, deterministic authority, and `mutation: false`.
+- PASS: focused MCP category evidence tests passed: 1 file, 2 tests.
+- PASS: submission-copy audit passed with 387 required claims after adding the
+  MCP category scorecard and compact Zed evidence boundary.
+- PASS: focused submission-copy and MCP category tests passed: 2 files, 5
+  tests.
+- PASS: evidence-pack SHA-256 verification passed after adding
+  `mcp-category-scorecard.json` and `.md`.
+- PASS: final `npm run check` passed: scaffold verification, runtime-contract
+  verification, TypeScript build, UI build, public-demo export audit, package
+  readiness/installability audits, 76 Vitest files / 439 tests, secret-env
+  ignore audit, reviewer audit with 0 failing latest verdicts,
+  submission-copy audit with 387 required claims, and whitespace diff check.
+- PASS: public package currentness remained `CURRENT` for `splunkready@0.1.5`
+  with no dirty package inputs and published MCP/recorder checks passing.

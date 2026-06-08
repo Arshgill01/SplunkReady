@@ -1,0 +1,198 @@
+{
+  "source": "splunkready-mcp-category-evidence",
+  "status": "PASS_WITH_LIMITATIONS",
+  "score": 96,
+  "mutation": false,
+  "deterministicAuthority": true,
+  "summary": {
+    "tools": 6,
+    "resources": 13,
+    "resourceTemplates": 1,
+    "prompts": 6,
+    "zedFrames": 5,
+    "zedEvidenceTier": "VERIFIED_COMPACT"
+  },
+  "evidence": {
+    "mcpProofSummary": "submission-evidence/mcp-proof/mcp-proof-summary.json",
+    "topology": "docs/mcp-topology.md",
+    "dualServerSession": "submission-evidence/mcp-proof/dual-server-session.jsonl",
+    "mockSplunkMcpSession": "submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl",
+    "appInspectComposition": "submission-evidence/mcp-proof/appinspect-mcp-composition.json",
+    "zedSession": "submission-evidence/mcp-proof/zed-client-session/zed-mcp-recorder-session.jsonl",
+    "zedReceipt": "submission-evidence/mcp-proof/zed-client-session/receipt-external-001.json",
+    "zedScreenshot": "submission-evidence/screenshots/zed-mcp-recorder-summary.png"
+  },
+  "claimBoundary": {
+    "zedJsonlContainsSplunkReadyFlushFrame": false,
+    "zedJsonlContainsSplunkInvestigationFrames": true,
+    "certificationProvenByAdjacentArtifacts": true,
+    "note": "The current Zed evidence is real third-party-client evidence, but compact. Do not claim a large external-client transcript or a visible recorder-flush JSONL frame until a future session captures one."
+  },
+  "checks": [
+    {
+      "id": "mcp-proof-pass",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "summary.status=PASS"
+    },
+    {
+      "id": "mcp-proof-no-mutation",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "summary.mutation=false"
+    },
+    {
+      "id": "mcp-tool-surface",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "6 tool(s): splunkready_describe_certification, splunkready_certify_external_trace, splunkready_certify_mcp_transcript, splunkready_certify_mcp_transcript_content, splunkready_review_mcp_composition, splunkready_check_hosted_model_access"
+    },
+    {
+      "id": "mcp-required-tools",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "splunkready_describe_certification, splunkready_certify_external_trace, splunkready_certify_mcp_transcript, splunkready_certify_mcp_transcript_content, splunkready_review_mcp_composition, splunkready_check_hosted_model_access"
+    },
+    {
+      "id": "mcp-resource-surface",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "13 resource(s)"
+    },
+    {
+      "id": "mcp-receipt-template",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "splunkready://receipts/{receiptId}"
+    },
+    {
+      "id": "mcp-prompt-surface",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "6 prompt(s)"
+    },
+    {
+      "id": "mock-splunk-mcp-session",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "status=PASS; includesSavedSearchExecution=true"
+    },
+    {
+      "id": "dual-server-recorder-session",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "status=PASS; serverIds=splunk,splunkready; frameCount=9"
+    },
+    {
+      "id": "dual-server-certification-tools",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "splunkready_certify_mcp_transcript_content, splunkready_certify_mcp_transcript"
+    },
+    {
+      "id": "appinspect-mcp-composition",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "status=PASS; failures=0; errors=0"
+    },
+    {
+      "id": "fixture-hosted-model-mcp-access",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "status=PASS; mutation=false"
+    },
+    {
+      "id": "operator-live-hosted-model-boundary",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "status=BLOCKED; blockerClass=SAIA_REST_HANDLERS_PARTIALLY_REGISTERED; safeForPublicExport=true"
+    },
+    {
+      "id": "official-splunk-mcp-tool-coverage",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "status=PASS; tools=splunk_get_knowledge_objects, splunk_run_saved_search"
+    },
+    {
+      "id": "zed-artifacts-present",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "Zed JSONL, markdown, certification, and receipt artifacts exist."
+    },
+    {
+      "id": "zed-screenshot-present",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "submission-evidence/screenshots/zed-mcp-recorder-summary.png"
+    },
+    {
+      "id": "zed-frame-count",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "5 tracked Zed frame(s)"
+    },
+    {
+      "id": "zed-frame-depth",
+      "status": "WARN",
+      "severity": "warning",
+      "evidence": "5 tracked Zed frame(s); current evidence is real but compact."
+    },
+    {
+      "id": "zed-server-ids",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "splunk, splunkready"
+    },
+    {
+      "id": "zed-splunk-investigation-tools",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "splunk_get_knowledge_objects, splunk_run_saved_search"
+    },
+    {
+      "id": "zed-visible-recorder-flush-frame",
+      "status": "WARN",
+      "severity": "warning",
+      "evidence": "Tracked JSONL does not contain a visible splunkready_recorder_flush frame; certification is proven by adjacent artifacts and screenshot."
+    },
+    {
+      "id": "zed-evidence-refs",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "evt-102, evt-118, evt-141"
+    },
+    {
+      "id": "zed-certification-pass",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "status=PASS; mutation=false"
+    },
+    {
+      "id": "zed-receipt-ready",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "verdict=READY; score=100; mutation=false"
+    },
+    {
+      "id": "zed-redaction",
+      "status": "PASS",
+      "severity": "required",
+      "evidence": "No endpoint, token, local path, or env-secret material found."
+    }
+  ],
+  "failures": [],
+  "warnings": [
+    {
+      "id": "zed-frame-depth",
+      "status": "WARN",
+      "severity": "warning",
+      "evidence": "5 tracked Zed frame(s); current evidence is real but compact."
+    },
+    {
+      "id": "zed-visible-recorder-flush-frame",
+      "status": "WARN",
+      "severity": "warning",
+      "evidence": "Tracked JSONL does not contain a visible splunkready_recorder_flush frame; certification is proven by adjacent artifacts and screenshot."
+    }
+  ]
+}

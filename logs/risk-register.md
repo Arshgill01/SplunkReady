@@ -1304,3 +1304,13 @@ package evidence remains at its separately built `0.1.3` artifact and should
 not be described as updated by this move. Any future package-input edit must be
 followed by another npm publish and currentness pass before the no-clone judge
 path is called current.
+
+Move 188 resolves an MCP claim-discipline risk: the Zed external-client evidence
+is real, but compact, and the tracked JSONL does not contain a visible
+`splunkready_recorder_flush` frame. The new scorecard reports
+`PASS_WITH_LIMITATIONS` and explicitly separates Zed-triggered Splunk
+investigation frames from adjacent SplunkReady certification artifacts.
+Residual risk: the MCP track is stronger and more honest, but not fully
+maximized. A future external-client session with a longer transcript and visible
+flush/certifier tool frame would upgrade `zedEvidenceTier` from
+`VERIFIED_COMPACT` to `VERIFIED_STRONG`.

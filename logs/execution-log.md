@@ -16252,3 +16252,41 @@ Result:
   Windows.
 - PASS: submission-copy audit now requires and finds the current `0.1.5`
   distribution claims.
+
+## 2026-06-08T14:21:06Z - Move 188 MCP category evidence boundaries
+
+Context:
+
+- Move 183 proved real Zed Agent consumption of the MCP recorder gateway, but
+  the tracked Zed JSONL contains only 5 compact frames.
+- The claim ledger previously implied the tracked Zed evidence contained a
+  visible `splunkready_recorder_flush` tool frame. The certification exists in
+  adjacent artifacts and screenshot, but the JSONL itself preserves the Splunk
+  investigation frames and final answer.
+
+Actions:
+
+- Added `moves/moves188.md`.
+- Added `docs/execplans/mcp-category-evidence-boundaries.md`.
+- Added `docs/mcp-topology.md` with the Splunk MCP / AppInspect MCP /
+  SplunkReady MCP / Zed topology and current evidence boundary.
+- Added `scripts/audit-mcp-category-evidence.mjs`.
+- Added `tests/scripts/mcp-category-evidence.test.ts`.
+- Generated `submission-evidence/mcp-proof/mcp-category-scorecard.json` and
+  `.md`.
+- Updated `submission-evidence/claim-ledger.md` to mark the Zed evidence as
+  `Supported with limitations`, and to state that the Zed JSONL contains Splunk
+  investigation frames while certification is proven by adjacent artifacts.
+- Extended `scripts/audit-submission-copy.mjs` and its focused test fixture so
+  the compact-session boundary is required claim copy.
+
+Result:
+
+- PASS_WITH_LIMITATIONS: MCP category scorecard score is `96`.
+- PASS: SplunkReady MCP server surface remains 6 tools, 13 resources, 1 receipt
+  resource template, and 6 prompts.
+- PASS: mock Splunk MCP, dual-server recorder, AppInspect MCP, fixture hosted
+  model MCP, and operator-live hosted-model boundary checks pass.
+- PASS_WITH_LIMITATIONS: Zed evidence is real and redacted, but compact:
+  `zedFrames: 5`, `zedEvidenceTier: "VERIFIED_COMPACT"`, and
+  `zedJsonlContainsSplunkReadyFlushFrame: false`.
