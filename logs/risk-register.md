@@ -1188,8 +1188,10 @@ zero-credential proof.
 Move 175 reduces the "deterministic-only / thin LLM" judging risk by making the
 Gemini specimen produce structured planning, safety, evidence, uncertainty, and
 remediation artifacts, then grading that output with a deterministic advisory
-quality report. Residual risk: the advisory report is not yet rendered in the
-Vite workbench. The flagship real-Splunk stress replay has now been rerun after
+quality report. The flagship real-Splunk stress replay has now been rerun after
 Move 175 and tracked under `submission-evidence/real-splunk-stress-llm-layer/`.
-Do not claim LLM output-quality as readiness authority; Readiness Receipt
-verdicts remain deterministic-rule-engine decisions.
+Move 176 renders those deliberation reports in the Vite workbench and tracks a
+Playwright screenshot. Residual risk: this is current local workbench evidence;
+the public demo export and Splunk app package screenshots are not automatically
+refreshed by this move. Do not claim LLM output-quality as readiness authority;
+Readiness Receipt verdicts remain deterministic-rule-engine decisions.

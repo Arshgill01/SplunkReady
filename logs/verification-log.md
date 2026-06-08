@@ -16652,3 +16652,47 @@ Real Splunk follow-up result:
 - PASS: public-safe evidence includes `llm-deliberation-before.json`,
   `llm-deliberation-after.json`, and summary scores before `92.5` / after
   `94.44`.
+
+## 2026-06-08T16:52:00Z - Move 176 LLM deliberation workbench view
+
+Commands:
+
+- `command -v npx >/dev/null 2>&1 && echo npx-ok || echo npx-missing`
+- `npx vitest run tests/ui/app.test.ts`
+- `npm run ui:build`
+- `SPLUNKREADY_UI_ARTIFACT_DIR=submission-evidence/real-splunk-stress-llm-layer npm run ui:dev -- --port 5191 --strictPort true`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" open 'http://127.0.0.1:5191/#llm-deliberation' --headed`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" snapshot`
+- `bash "$HOME/.codex/skills/playwright/scripts/playwright_cli.sh" screenshot --filename submission-evidence/screenshots/workbench-llm-deliberation.png --full-page`
+- `find submission-evidence -type f ! -name evidence-pack-sha256.txt -print | sort | xargs shasum -a 256 > submission-evidence/evidence-pack-sha256.txt && shasum -a 256 -c submission-evidence/evidence-pack-sha256.txt`
+- `npx vitest run tests/ui/app.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `npx vitest run tests/scripts/submission-copy-audit.test.ts`
+- `git diff --check`
+- `npm run check`
+- `lsof -ti tcp:5191 || true`
+- `kill 52716 54018 || true`
+
+Result:
+
+- PASS: `npx` is available for the Playwright wrapper.
+- PASS: focused UI tests passed with 1 file and 30 tests.
+- PASS: production UI build passed.
+- PASS: Vite dev server mounted
+  `submission-evidence/real-splunk-stress-llm-layer` as the artifact root.
+- PASS: Playwright opened the `LLM` tab and snapshot-confirmed
+  `Real Splunk LLM stress proof`, before score `92.5`, after score `94.44`,
+  advisory-only status, deterministic rule-engine authority, saved-search
+  provenance, `READY / 100`, and mutation `no`.
+- PASS: Playwright captured
+  `submission-evidence/screenshots/workbench-llm-deliberation.png`.
+- PASS: evidence-pack SHA-256 verification passed after adding the screenshot
+  and real Splunk LLM `ui-artifacts.json`.
+- PASS: focused UI/submission-copy tests passed with 2 files and 33 tests.
+- PASS: submission-copy audit passed with 330 required claims.
+- PASS: whitespace diff check passed.
+- PASS: full `npm run check` passed, including 74 test files and 434 tests.
+- PASS: the temporary Vite server on port `5191` was stopped after Playwright
+  capture.
+- NOTE: the Playwright wrapper was not executable, so it was invoked with
+  `bash` rather than changing script permissions.

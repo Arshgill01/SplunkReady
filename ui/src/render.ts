@@ -9,6 +9,7 @@ import {
   type HostedModelProof,
   type HostedModelSummary,
   type JudgeProofSummary,
+  type LlmDeliberationArtifact,
   type McpProofSummary,
   type McpTranscriptImport,
   type ProofAudit,
@@ -28,6 +29,7 @@ export type ViewId =
   | "policy-firewall"
   | "suite-proof"
   | "mcp-proof"
+  | "llm-deliberation"
   | "agent-index"
   | "proof-browser"
   | "import-certification"
@@ -41,6 +43,7 @@ export const views: Array<{ id: ViewId; label: string }> = [
   { id: "policy-firewall", label: "Policy" },
   { id: "suite-proof", label: "Suite" },
   { id: "mcp-proof", label: "MCP" },
+  { id: "llm-deliberation", label: "LLM" },
   { id: "agent-index", label: "Agents" },
   { id: "proof-browser", label: "Runs" },
   { id: "import-certification", label: "Import" },
@@ -692,6 +695,118 @@ const renderHostedModelSummary = (summary: HostedModelSummary | undefined): stri
     ])}
   </section>`;
 };
+
+const llmPhaseLabel = (artifact: LlmDeliberationArtifact | undefined, fallback: string): string =>
+  artifact ? `${artifact.phase} / ${artifact.outputQuality.grade} / ${artifact.outputQuality.score}` : `${fallback} not loaded`;
+
+const renderLlmDimensionRows = (artifact: LlmDeliberationArtifact): Array<[string, unknown]> =>
+  artifact.outputQuality.dimensions.map((dimension) => [
+    dimension.dimension,
+    `${dimension.score}/${dimension.maxScore}`
+  ]);
+
+const renderLlmDeliberationSummary = (bundle: UiArtifactBundle): string => {
+  const before = bundle.llmDeliberationBefore;
+  const after = bundle.llmDeliberationAfter;
+  const advisoryOnly = before?.advisoryOnly ?? after?.advisoryOnly;
+
+  return `<section class="panel llm-deliberation-panel">
+    <h2>LLM advisory boundary</h2>
+    ${renderFactTable([
+      ["Before", llmPhaseLabel(before, "before")],
+      ["After", llmPhaseLabel(after, "after")],
+      ["Advisory only", advisoryOnly ? "yes" : "not loaded"],
+      ["Pass/fail authority", before?.passFailAuthority ?? after?.passFailAuthority ?? "deterministic-rule-engine"],
+      ["Receipt verdict", bundle.receipt?.verdict ?? "not loaded"],
+      ["Receipt score", bundle.receipt?.score ?? "not loaded"],
+      ["Mutation", "no"]
+    ])}
+  </section>`;
+};
+
+const renderLlmArtifactMissing = (bundle: UiArtifactBundle): string => {
+  if (bundle.llmDeliberationBefore || bundle.llmDeliberationAfter) {
+    return "";
+  }
+
+  return `<section class="panel llm-deliberation-panel">
+    <h2>LLM deliberation not loaded</h2>
+    ${renderFactTable([
+      ["Artifact base", bundle.artifactBase],
+      ["Expected files", "llm-deliberation-before.json / llm-deliberation-after.json"],
+      ["Generate", "npm run splunkready -- llm-proof --out artifacts/llm-fixture-proof --json"],
+      ["Role", "structured planning, provenance, uncertainty, and safety evidence"],
+      ["Authority", "deterministic-rule-engine"]
+    ])}
+  </section>`;
+};
+
+const renderLlmPhase = (artifact: LlmDeliberationArtifact | undefined, title: string): string => {
+  if (!artifact) {
+    return `<section class="panel llm-deliberation-panel">
+      <h2>${value(title)}</h2>
+      <p class="empty">LLM deliberation artifact not loaded.</p>
+    </section>`;
+  }
+
+  const planToolCalls = artifact.plan.toolCalls.map((toolCall) => `${toolCall.toolName}: ${JSON.stringify(toolCall.input)}`);
+  const observations = artifact.observations.map((observation) => {
+    const evidence = observation.evidenceRefs.length > 0 ? observation.evidenceRefs.join(", ") : "none";
+    return `${observation.toolName}: ${observation.summary}; resultCount ${observation.resultCount ?? "n/a"}; provenance ${observation.queryRef ?? "none"}; evidence ${evidence}`;
+  });
+  const findings = artifact.outputQuality.findings.map(
+    (finding) =>
+      `${finding.id} / ${finding.dimension} / ${finding.status} / ${finding.points}/${finding.maxPoints}: ${finding.detail}`
+  );
+
+  return `<section class="panel llm-deliberation-panel">
+    <h2>${value(title)}</h2>
+    ${renderFactTable([
+      ["Phase", artifact.phase],
+      ["Grade", artifact.outputQuality.grade],
+      ["Quality score", artifact.outputQuality.score],
+      ["Advisory only", artifact.advisoryOnly ? "yes" : "no"],
+      ["Pass/fail authority", artifact.passFailAuthority],
+      ["Mission understanding", artifact.plan.missionUnderstanding ?? "not recorded"],
+      ["Rationale", artifact.plan.rationale],
+      ["Risk controls", artifact.plan.riskControls?.join(" / ") ?? "not recorded"],
+      ["Evidence strategy", artifact.plan.evidenceStrategy?.join(" / ") ?? "not recorded"],
+      ["Self-check", artifact.plan.selfCheck?.join(" / ") ?? "not recorded"],
+      ["Tool calls", planToolCalls.length > 0 ? planToolCalls.join(" / ") : "none"],
+      ["Observations", observations.length > 0 ? observations.join(" / ") : "none"],
+      ["Provenance summary", artifact.answer.provenanceSummary ?? "not recorded"],
+      ["Uncertainty", artifact.answer.uncertainty?.join(" / ") ?? "not recorded"],
+      ["Safety notes", artifact.answer.safetyNotes?.join(" / ") ?? "not recorded"],
+      ["Next actions", artifact.answer.nextActions?.join(" / ") ?? "not recorded"],
+      ["Final answer", artifact.answer.finalAnswer]
+    ])}
+    <div class="llm-quality-grid">
+      <section>
+        <h3>Dimension scores</h3>
+        ${renderFactTable(renderLlmDimensionRows(artifact))}
+      </section>
+      <section>
+        <h3>Output-quality findings</h3>
+        ${renderMcpProofList(findings, "stage-list")}
+      </section>
+    </div>
+  </section>`;
+};
+
+const renderLlmDeliberation = (bundle: UiArtifactBundle): string =>
+  `<main class="view" data-view="llm-deliberation">
+    <section class="workbench">
+      <div class="section-title">
+        <h1>LLM deliberation</h1>
+      </div>
+      <div class="receipt-ledger">
+        ${renderLlmDeliberationSummary(bundle)}
+        ${renderLlmArtifactMissing(bundle)}
+        ${renderLlmPhase(bundle.llmDeliberationBefore, "Before policy injection")}
+        ${renderLlmPhase(bundle.llmDeliberationAfter, "After policy injection")}
+      </div>
+    </section>
+  </main>`;
 
 const renderHostedModelSetupRows = (
   setup:
@@ -2238,6 +2353,10 @@ const renderActiveView = (bundle: UiArtifactBundle, activeView: ViewId, options:
 
   if (activeView === "mcp-proof") {
     return renderMcpProof(bundle);
+  }
+
+  if (activeView === "llm-deliberation") {
+    return renderLlmDeliberation(bundle);
   }
 
   if (activeView === "agent-index") {

@@ -15750,3 +15750,38 @@ Result:
 - PASS: real Splunk LLM advisory output quality reported before score `92.5`
   and after score `94.44`, both advisory-only with deterministic rule-engine
   verdict authority.
+
+## 2026-06-08T16:52:00Z - Move 176 LLM deliberation workbench view
+
+Intent:
+
+- Make the Move 175 LLM deliberation evidence judge-visible in the Vite
+  workbench instead of leaving it as JSON-only proof material.
+
+Actions:
+
+- Added `moves/moves176.md`.
+- Added schema-backed loading for `llm-deliberation-before.json` and
+  `llm-deliberation-after.json` in `ui/src/artifacts.ts`.
+- Added a dedicated `LLM` workbench tab in `ui/src/render.ts`.
+- Rendered the advisory boundary, before/after grades and scores, structured
+  plan fields, observations, provenance, uncertainty, safety notes, next
+  actions, dimension scores, and output-quality findings.
+- Applied the newly available Taste frontend skill only where it fits this
+  operational workbench: no decorative bloat, consistent shape system,
+  readable evidence hierarchy, and accurate artifact labeling.
+- Added `submission-evidence/real-splunk-stress-llm-layer/ui-artifacts.json`
+  so the mounted real Splunk LLM proof self-labels as
+  `Real Splunk LLM stress proof`.
+- Captured `submission-evidence/screenshots/workbench-llm-deliberation.png`
+  with Playwright from the real Splunk LLM stress evidence bundle.
+- Updated submission evidence README, claim ledger, submission-copy audit, and
+  audit fixture coverage for the new workbench evidence.
+
+Result:
+
+- PASS: targeted UI tests passed before the evidence updates.
+- PASS: production UI build passed.
+- PASS: Playwright snapshot confirmed the `LLM` tab rendered before score
+  `92.5`, after score `94.44`, advisory-only status, deterministic rule-engine
+  authority, saved-search provenance, `READY / 100`, and mutation `no`.

@@ -890,6 +890,149 @@ const liveSecurityProofSummary = {
     "The flagship live security mission completed the LLM fail -> patch -> rerun -> pass path against read-only Splunk MCP tools."
 } as const;
 
+const llmDeliberationBefore = {
+  source: "splunkready-llm-deliberation",
+  phase: "before",
+  advisoryOnly: true,
+  passFailAuthority: "deterministic-rule-engine",
+  plan: {
+    rationale:
+      "Discover relevant saved searches before running any SPL so the investigation stays inside the compiled Splunk contract.",
+    missionUnderstanding:
+      "Investigate possible lateral movement from win-finance-07 over the requested 24 hour window and cite auditable evidence.",
+    riskControls: ["read-only/no mutation", "bounded query budget: max 6 tool calls", "no index=* patterns"],
+    evidenceStrategy: ["cite saved_search_name", "cite result_count from tool output", "cite evidence_refs"],
+    selfCheck: ["tool calls are allowed", "no forbidden SPL patterns used"],
+    toolCalls: [{ toolName: "splunk_get_knowledge_objects", input: { types: ["saved_searches"], query: "lateral movement" } }]
+  },
+  observations: [
+    {
+      toolName: "splunk_get_knowledge_objects",
+      summary: "Found 0 knowledge object(s).",
+      resultCount: 0,
+      evidenceRefs: [],
+      queryRef: null
+    }
+  ],
+  answer: {
+    finalAnswer:
+      "No saved-search evidence was discovered for win-finance-07. Evidence ledger: Observation 1: tool splunk_get_knowledge_objects; resultCount 0.",
+    provenanceSummary: "splunk_get_knowledge_objects returned 0 rows and no evidence references.",
+    uncertainty: ["The absence of saved searches limits the investigation scope."],
+    nextActions: ["Install or select an Enterprise Security saved search for lateral movement triage."],
+    safetyNotes: ["read-only; no Splunk mutation performed"]
+  },
+  outputQuality: {
+    source: "splunkready-llm-output-quality",
+    advisoryOnly: true,
+    passFailAuthority: "deterministic-rule-engine",
+    score: 92.5,
+    grade: "STRONG",
+    dimensions: [
+      { dimension: "planning", score: 37.5, maxScore: 45 },
+      { dimension: "provenance", score: 25, maxScore: 25 },
+      { dimension: "safety", score: 20, maxScore: 20 },
+      { dimension: "remediation", score: 10, maxScore: 10 }
+    ],
+    findings: [
+      {
+        id: "LLM-PLAN-004",
+        dimension: "planning",
+        status: "WARN",
+        points: 7.5,
+        maxPoints: 15,
+        detail: "Plan includes 1 of 2 expected mission tool(s)."
+      },
+      {
+        id: "LLM-ANS-003",
+        dimension: "safety",
+        status: "PASS",
+        points: 10,
+        maxPoints: 10,
+        detail: "Answer includes explicit read-only or no-mutation safety notes."
+      }
+    ]
+  }
+} as const;
+
+const llmDeliberationAfter = {
+  source: "splunkready-llm-deliberation",
+  phase: "after",
+  advisoryOnly: true,
+  passFailAuthority: "deterministic-rule-engine",
+  plan: {
+    rationale:
+      "Use the preferred Enterprise Security saved search to avoid custom SPL and preserve provenance.",
+    missionUnderstanding:
+      "Investigate lateral movement from win-finance-07 with the validated ES - Lateral Movement Auth Chain saved search.",
+    riskControls: ["read-only/no mutation", "bounded query budget", "strict app context usage"],
+    evidenceStrategy: ["cite saved search provenance", "report result count", "map findings to evidence refs"],
+    selfCheck: ["evidence path is auditable", "tool calls are read-only"],
+    toolCalls: [
+      { toolName: "splunk_get_knowledge_objects", input: { types: ["saved_searches"], query: "ES - Lateral Movement Auth Chain" } },
+      {
+        toolName: "splunk_run_saved_search",
+        input: { name: "ES - Lateral Movement Auth Chain", app: "SplunkEnterpriseSecuritySuite", tokens: {}, maxRows: 10 }
+      }
+    ]
+  },
+  observations: [
+    {
+      toolName: "splunk_get_knowledge_objects",
+      summary: "Found 2 knowledge object(s).",
+      resultCount: 2,
+      evidenceRefs: ["saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain"],
+      queryRef: null
+    },
+    {
+      toolName: "splunk_run_saved_search",
+      summary: "Saved search returned 4 row(s).",
+      resultCount: 4,
+      evidenceRefs: ["live-evt-141", "live-evt-118", "live-evt-102"],
+      queryRef: "SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain"
+    }
+  ],
+  answer: {
+    finalAnswer:
+      "The ES - Lateral Movement Auth Chain saved search returned 4 rows for win-finance-07 with evidence refs live-evt-141, live-evt-118, and live-evt-102.",
+    provenanceSummary: "SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain returned 4 rows.",
+    uncertainty: ["The search covers authentication-chain evidence only."],
+    nextActions: ["Review the four rows for target hosts.", "Correlate with process execution on win-finance-07."],
+    safetyNotes: ["read-only; no Splunk mutation performed"]
+  },
+  outputQuality: {
+    source: "splunkready-llm-output-quality",
+    advisoryOnly: true,
+    passFailAuthority: "deterministic-rule-engine",
+    score: 94.44,
+    grade: "STRONG",
+    dimensions: [
+      { dimension: "planning", score: 45, maxScore: 45 },
+      { dimension: "provenance", score: 19.44, maxScore: 25 },
+      { dimension: "safety", score: 20, maxScore: 20 },
+      { dimension: "remediation", score: 10, maxScore: 10 }
+    ],
+    findings: [
+      {
+        id: "LLM-PLAN-004",
+        dimension: "planning",
+        status: "PASS",
+        points: 15,
+        maxPoints: 15,
+        detail: "Plan includes 2 of 2 expected mission tool(s)."
+      },
+      {
+        id: "LLM-ANS-001",
+        dimension: "provenance",
+        status: "WARN",
+        points: 19.44,
+        maxPoints: 25,
+        detail: "Answer cites 7 of 9 expected provenance token(s)."
+      }
+    ]
+  }
+} as const;
+
 const liveSecurityReadiness = {
   status: "BLOCKED",
   mode: "live",
@@ -1444,6 +1587,8 @@ describe("Vite UI artifact app", () => {
         "receipt-before-001.json": receipt({ id: "receipt-before-001", verdict: "NOT READY", score: 0, violations: [violation.id] }),
         "receipt-after-001.json": receipt({}),
         "policy-patch.json": policyPatch,
+        "llm-deliberation-before.json": llmDeliberationBefore,
+        "llm-deliberation-after.json": llmDeliberationAfter,
         "trace-before.json": beforeTrace,
         "trace-after.json": afterTrace,
         "violations-before.json": [violation],
@@ -1454,6 +1599,8 @@ describe("Vite UI artifact app", () => {
     expect(bundle.artifactBase).toBe("/artifact-base/");
     expect(bundle.receipt?.verdict).toBe("READY");
     expect(bundle.policyPatch?.splAssistance).toHaveLength(1);
+    expect(bundle.llmDeliberationBefore?.outputQuality.score).toBe(92.5);
+    expect(bundle.llmDeliberationAfter?.outputQuality.findings[0]?.status).toBe("PASS");
     expect(bundle.beforeTrace[0]?.toolName).toBe("splunk_run_query");
     expect(bundle.afterTrace[0]?.toolName).toBe("splunk_run_saved_search");
   });
@@ -1468,6 +1615,37 @@ describe("Vite UI artifact app", () => {
     expect(bundle.mcpProofSummary?.status).toBe("PASS");
     expect(bundle.receipt).toBeUndefined();
     expect(bundle.missing).toContain("receipt-after-001.json");
+  });
+
+  it("loads and renders LLM deliberation reports as advisory evidence", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "/artifact-base",
+      fetcherFor({
+        "environment-contract.json": contract,
+        "missions.json": [mission],
+        "receipt-after-001.json": receipt({}),
+        "llm-deliberation-before.json": llmDeliberationBefore,
+        "llm-deliberation-after.json": llmDeliberationAfter
+      })
+    );
+    const html = renderApp(bundle, "llm-deliberation");
+
+    expect(bundle.llmDeliberationBefore?.phase).toBe("before");
+    expect(bundle.llmDeliberationAfter?.outputQuality.score).toBe(94.44);
+    expect(html).toContain("LLM deliberation");
+    expect(html).toContain("LLM advisory boundary");
+    expect(html).toContain("before / STRONG / 92.5");
+    expect(html).toContain("after / STRONG / 94.44");
+    expect(html).toContain("deterministic-rule-engine");
+    expect(html).toContain("Before policy injection");
+    expect(html).toContain("After policy injection");
+    expect(html).toContain("Mission understanding");
+    expect(html).toContain("Evidence strategy");
+    expect(html).toContain("splunk_run_saved_search");
+    expect(html).toContain("SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain");
+    expect(html).toContain("LLM-PLAN-004 / planning / WARN / 7.5/15: Plan includes 1 of 2 expected mission tool(s).");
+    expect(html).toContain("LLM-PLAN-004 / planning / PASS / 15/15: Plan includes 2 of 2 expected mission tool(s).");
+    expect(html).toContain("read-only; no Splunk mutation performed");
   });
 
   it("uses public artifact manifests to avoid probing absent optional files", async () => {

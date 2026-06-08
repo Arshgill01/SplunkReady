@@ -120,6 +120,96 @@ const hostedModelSummarySchema = z
 
 export type HostedModelSummary = z.infer<typeof hostedModelSummarySchema>;
 
+const llmOutputQualityStatusSchema = z.enum(["PASS", "WARN", "FAIL"]);
+
+const llmOutputQualityDimensionSchema = z.enum(["planning", "provenance", "safety", "remediation"]);
+
+const llmOutputQualityFindingSchema = z
+  .object({
+    id: z.string().min(1),
+    dimension: llmOutputQualityDimensionSchema,
+    status: llmOutputQualityStatusSchema,
+    points: z.number(),
+    maxPoints: z.number(),
+    detail: z.string().min(1)
+  })
+  .strict();
+
+const llmOutputQualityDimensionScoreSchema = z
+  .object({
+    dimension: llmOutputQualityDimensionSchema,
+    score: z.number(),
+    maxScore: z.number()
+  })
+  .strict();
+
+const llmOutputQualityReportSchema = z
+  .object({
+    source: z.literal("splunkready-llm-output-quality"),
+    advisoryOnly: z.literal(true),
+    passFailAuthority: z.literal("deterministic-rule-engine"),
+    score: z.number(),
+    grade: z.enum(["STRONG", "ADEQUATE", "WEAK"]),
+    dimensions: z.array(llmOutputQualityDimensionScoreSchema),
+    findings: z.array(llmOutputQualityFindingSchema)
+  })
+  .strict();
+
+export type LlmOutputQualityReport = z.infer<typeof llmOutputQualityReportSchema>;
+
+const llmToolCallSchema = z
+  .object({
+    toolName: z.string().min(1),
+    input: z.record(z.string(), z.unknown())
+  })
+  .strict();
+
+const llmDeliberationPlanSchema = z
+  .object({
+    rationale: z.string().min(1),
+    missionUnderstanding: z.string().min(1).optional(),
+    riskControls: z.array(z.string().min(1)).optional(),
+    evidenceStrategy: z.array(z.string().min(1)).optional(),
+    selfCheck: z.array(z.string().min(1)).optional(),
+    toolCalls: z.array(llmToolCallSchema)
+  })
+  .strict();
+
+const llmObservationSchema = z
+  .object({
+    toolName: z.string().min(1),
+    summary: z.string().min(1),
+    resultCount: z.number().nullable(),
+    evidenceRefs: z.array(z.string().min(1)),
+    queryRef: z.string().min(1).nullable()
+  })
+  .strict();
+
+const llmAnswerSchema = z
+  .object({
+    finalAnswer: z.string().min(1),
+    provenanceSummary: z.string().min(1).optional(),
+    uncertainty: z.array(z.string().min(1)).optional(),
+    nextActions: z.array(z.string().min(1)).optional(),
+    safetyNotes: z.array(z.string().min(1)).optional()
+  })
+  .strict();
+
+const llmDeliberationArtifactSchema = z
+  .object({
+    source: z.literal("splunkready-llm-deliberation"),
+    phase: z.enum(["before", "after"]),
+    advisoryOnly: z.literal(true),
+    passFailAuthority: z.literal("deterministic-rule-engine"),
+    plan: llmDeliberationPlanSchema,
+    observations: z.array(llmObservationSchema),
+    answer: llmAnswerSchema,
+    outputQuality: llmOutputQualityReportSchema
+  })
+  .strict();
+
+export type LlmDeliberationArtifact = z.infer<typeof llmDeliberationArtifactSchema>;
+
 const hostedModelSetupVariableSchema = z
   .object({
     name: z.string().min(1),
@@ -1218,6 +1308,8 @@ export interface UiArtifactBundle {
   liveSecurityKit?: LiveSecurityKit;
   hostedModelProof?: HostedModelProof;
   hostedModelDiagnostic?: HostedModelDiagnostic;
+  llmDeliberationBefore?: LlmDeliberationArtifact;
+  llmDeliberationAfter?: LlmDeliberationArtifact;
   proofAudit?: ProofAudit;
   proofManifestVerification?: ProofManifestVerification;
   certificationIndex?: CertificationIndex;
@@ -1253,6 +1345,8 @@ const optionalFiles = [
   "live-security-kit.json",
   "hosted-model-proof.json",
   "hosted-model-diagnostic.json",
+  "llm-deliberation-before.json",
+  "llm-deliberation-after.json",
   "proof-audit.json",
   "proof-manifest-verification.json",
   "certification-index.json",
@@ -1417,6 +1511,12 @@ export const loadUiArtifactBundle = async (
     liveSecurityKit: liveSecurityKitSchema.optional().parse(loaded.get("live-security-kit.json")),
     hostedModelProof: hostedModelProofSchema.optional().parse(loaded.get("hosted-model-proof.json")),
     hostedModelDiagnostic: hostedModelDiagnosticSchema.optional().parse(loaded.get("hosted-model-diagnostic.json")),
+    llmDeliberationBefore: llmDeliberationArtifactSchema
+      .optional()
+      .parse(loaded.get("llm-deliberation-before.json")),
+    llmDeliberationAfter: llmDeliberationArtifactSchema
+      .optional()
+      .parse(loaded.get("llm-deliberation-after.json")),
     proofAudit: proofAuditSchema.optional().parse(loaded.get("proof-audit.json")),
     proofManifestVerification: proofManifestVerificationSchema
       .optional()

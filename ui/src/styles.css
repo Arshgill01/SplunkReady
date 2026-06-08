@@ -1159,6 +1159,29 @@ code {
   overflow-wrap: anywhere;
 }
 
+.llm-quality-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.42fr) minmax(0, 0.58fr);
+  gap: 12px;
+  padding: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.llm-quality-grid section {
+  min-width: 0;
+  border: 1px solid var(--line-soft);
+  background: #201c10;
+}
+
+.llm-quality-grid h3 {
+  margin: 0;
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.2;
+  border-bottom: 1px solid var(--line-soft);
+}
+
 .patch-panel,
 .artifact-warning,
 .live-proof-panel,
@@ -1434,7 +1457,8 @@ code {
   .run-filters,
   .patch-grid,
   .kit-detail-grid,
-  .live-action-list {
+  .live-action-list,
+  .llm-quality-grid {
     grid-template-columns: 1fr;
   }
 
