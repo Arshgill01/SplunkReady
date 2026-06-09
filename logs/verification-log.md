@@ -18186,3 +18186,52 @@ Result:
 - PASS: remote CI ran `Run credential-free live mock proof`.
 - PASS: remote CI ran `Build mock Splunk MCP Docker image`.
 - PASS: remote CI ran `Smoke test mock Splunk MCP Docker image`.
+
+## 2026-06-09T09:20:00Z - Move 208 public npm 0.1.7 post-publish boundary
+
+Commands:
+
+- `npm view splunkready version dist-tags.latest time --json`
+- `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
+
+Result:
+
+- PASS: `npm view` reports `version: "0.1.7"` and
+  `dist-tags.latest: "0.1.7"`.
+- PASS: public-package currentness artifact was refreshed with
+  `latestVersion: "0.1.7"`, `localVersion: "0.1.7"`,
+  `localVersionPublished: true`, and `latestMatchesLocal: true`.
+- PASS: published `splunkready@0.1.7` judge-proof returned `PASS` with
+  `mutation: false`.
+- PASS: published `splunkready@0.1.7` MCP probe initialized and exposed the
+  required certification, hosted-model access, and composition-review tools.
+- PASS: published `splunkready@0.1.7 live-proof --live-mock` returned `PASS`,
+  `mode: "live"`, `mutation: false`, and `failToPass: true`.
+- PASS: published `splunkready@0.1.7 mcp-recorder` initialized with tool
+  capabilities, exposed required Splunk and flush tools, and returned flush
+  `PASS`.
+- PASS: published `splunkready@0.1.7` policy-registry probes produced a signed
+  `ed25519` policy manifest and a `pci-dss-readiness` receipt policy hash.
+- EXPECTED FAIL-CLOSED: the audit command exited non-zero under
+  `--require-current` because status is `STALE`; published gitHead
+  `634969b40df4d3aac75382df5306e6a1b5ba7ea9` does not match the current
+  package-input gitHead.
+- PASS: `npm run audit:submission-copy` passed with 464 required claims.
+- PASS: `npx vitest run tests/scripts/public-package-currentness.test.ts tests/scripts/submission-copy-audit.test.ts`
+  passed: 2 files, 6 tests.
+- INITIAL FULL-GATE FAILURE: `git diff --check && npm run check` failed with
+  three Vitest default-timeout failures in hosted-demo currentness and npm
+  release-preflight tests. No TypeScript, build, package-readiness, or
+  package-installability failure occurred.
+- PASS: after adding explicit 15s timeouts to those child-process-heavy script
+  tests, `npx vitest run tests/scripts/hosted-demo-currentness.test.ts tests/scripts/npm-release-preflight.test.ts tests/scripts/public-package-currentness.test.ts tests/scripts/submission-copy-audit.test.ts`
+  passed: 4 files, 11 tests.
+- PASS: evidence-pack SHA-256 regeneration and verification passed for all
+  tracked `submission-evidence/` files.
+- PASS: final `git diff --check && npm run check` passed. The check included
+  scaffold verification, runtime-contract verification, TypeScript build, UI
+  build, public-demo export audit with 308 files and `mutation=false`, package
+  readiness audit, package installability audit for `splunkready-0.1.7.tgz`, 77
+  Vitest files / 448 tests, secret-env ignore audit, reviewer inbox audit with
+  0 failing latest verdicts, submission-copy audit with 464 required claims,
+  and final whitespace diff check.

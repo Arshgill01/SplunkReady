@@ -44,16 +44,17 @@ The local fixture path requires no live Splunk credentials. The currently
 published clean-folder judge command is:
 
 ```bash
-npx -y splunkready@0.1.5 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json
 ```
 
 That clean-folder command is smoke-tested from a temp folder, returns `PASS`,
 records `mutation: false`, and writes the judge proof bundle without requiring a
 repository clone. The public-package currentness audit also verifies the
 published MCP tool surface, credential-free `live-proof --live-mock`, and signed
-policy-registry commands before the package is called current. The tracked
-currentness audit in `submission-evidence/public-package-currentness/` records
-the public registry state for that claim.
+policy-registry commands. The tracked currentness audit in
+`submission-evidence/public-package-currentness/` records that npm latest is
+`0.1.7` and the smoke probes pass, while current source has later package-input
+commits that need the next npm release before the package is source-current.
 
 The current source also has a no-Node standalone release path. Move 170 builds a
 Node SEA executable for the current runner, bundles `fixtures/` and `policies/`
@@ -227,7 +228,7 @@ The tracked evidence pack does not claim live hosted-model entitlement. The work
 - Zod
 - Vitest
 - Vite
-- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.5 judge-proof`
+- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.7 judge-proof`
 - Splunk MCP adapter boundary
 - Deterministic trace grader rules
 - Local workbench API and UI

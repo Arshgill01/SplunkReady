@@ -134,7 +134,7 @@ describe("hosted demo currentness audit", () => {
       hostedSourceCommitCoversExpectedInput: true,
       failures: []
     });
-  });
+  }, 15_000);
 
   it("reports stale when hosted manifest commit is behind expected public demo inputs", async () => {
     const root = await tempRoot();

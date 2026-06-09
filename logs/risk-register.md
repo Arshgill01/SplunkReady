@@ -1501,3 +1501,12 @@ uses the mock Splunk MCP path to stay public-safe and credential-free; do not
 describe it as an operator-live Splunk session. The discarded first attempt is
 also a useful guardrail: read-only `splunk_get_info` is still blocked by the
 mission contract when it is not mission-allowed.
+
+Move 208 resolves the stale public npm `0.1.5` and `EOTP` story: public npm now
+reports `splunkready@0.1.7` as latest, and the published package passes
+judge-proof, MCP, live-mock proof, recorder, and policy-registry probes.
+Residual risk remains source currentness: the audit intentionally reports
+`STALE` because the published package gitHead predates current package-input
+commits. Do not claim public npm source-current until the package is bumped
+above `0.1.7`, published, and the currentness audit passes with
+`--require-current`.

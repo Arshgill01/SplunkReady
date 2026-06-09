@@ -18,8 +18,8 @@ Move 201 verified:
 - GitHub Packages `@arshgill01/splunkready@0.1.7`;
 - final branch-tip CI.
 
-The remaining distribution risk is public npm: `npm view splunkready version`
-still reports `0.1.5`, so the unauthenticated judge command is stale.
+The remaining distribution risk was public npm: `npm view splunkready version`
+previously reported `0.1.5`, so the unauthenticated judge command was stale.
 
 ## Success Criteria
 
@@ -69,6 +69,10 @@ still reports `0.1.5`, so the unauthenticated judge command is stale.
 
 ## Current Status
 
-Blocked by npm `EOTP`. Preflight reports `READY`, npm registry still reports
-latest `splunkready@0.1.5`, and the real publish attempt for
-`splunkready@0.1.7` failed because npm requires a fresh one-time password.
+Superseded by Move 208. The operator published `splunkready@0.1.7`; the public
+registry now reports latest `0.1.7`, and the published package passes
+judge-proof, MCP, live-mock, recorder, and policy-registry probes. The
+currentness audit still reports `STALE` because the published package gitHead is
+`634969b40df4d3aac75382df5306e6a1b5ba7ea9`, while the current package-input
+tree has later commits. The next release action is to bump above `0.1.7`,
+publish, and rerun the currentness audit.

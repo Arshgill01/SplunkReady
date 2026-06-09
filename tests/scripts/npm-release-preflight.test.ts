@@ -98,7 +98,7 @@ describe("npm release preflight", () => {
     expect(report.publishedPackage).toBe("https://www.npmjs.com/package/splunkready/v/0.1.0");
     expect(report.releaseCommand).toBe("npm version patch && npm publish --access public");
     expect(report.failures).toEqual([]);
-  });
+  }, 15_000);
 
   it("reports a bumped unpublished version as ready to publish", async () => {
     const root = await tempRoot();
@@ -111,5 +111,5 @@ describe("npm release preflight", () => {
     expect(report.registry.currentVersionAvailable).toBe(true);
     expect(report.publishedPackage).toBeNull();
     expect(report.releaseCommand).toBe("npm publish --access public");
-  });
+  }, 15_000);
 });

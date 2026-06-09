@@ -17176,3 +17176,42 @@ Result:
 - PASS: remote CI ran the credential-free live mock proof.
 - PASS: remote CI built and smoke-tested the mock Splunk MCP Docker image.
 - RESULT: Move 207 is locally and remotely verified at the branch tip.
+
+## 2026-06-09T09:20:00Z - Move 208 public npm 0.1.7 post-publish boundary
+
+Context:
+
+- The operator published `splunkready@0.1.7` after earlier npm OTP blockers.
+- Public copy still cited `splunkready@0.1.5` and described `0.1.7` as
+  unpublished.
+
+Actions:
+
+- Queried the public npm registry for `splunkready`.
+- Ran the public package currentness audit with `--require-current`.
+- Added `moves/moves208.md`.
+- Updated `README.md` and `docs/devpost-submission.md` to cite the current
+  unauthenticated judge command:
+  `npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json`.
+- Updated Move 202 and the public npm currentness ExecPlan to mark the old
+  `EOTP` blocker as superseded by Move 208.
+- Updated `submission-evidence/claim-ledger.md` and
+  `submission-evidence/README.md` with the post-publish boundary.
+- Updated `scripts/audit-submission-copy.mjs` and the focused submission-copy
+  test fixture so stale `0.1.5`/OTP language cannot pass current public copy
+  guards.
+- Increased explicit Vitest timeouts for the hosted-demo currentness and npm
+  release-preflight script tests from the default 5s to 15s. The assertions are
+  unchanged; this prevents full-suite child-process/git/HTTP-server work from
+  failing under load.
+
+Result so far:
+
+- PASS: public npm latest is `0.1.7`.
+- PASS: published `splunkready@0.1.7` judge-proof, MCP, live-mock proof,
+  recorder, and policy-registry probes all pass.
+- FAIL-CLOSED: public package currentness remains `STALE`, not `CURRENT`,
+  because published gitHead `634969b40df4d3aac75382df5306e6a1b5ba7ea9` does
+  not match the current package-input gitHead.
+- NEXT RELEASE ACTION: bump above `0.1.7`, run release preflight, publish, and
+  rerun the currentness audit before claiming npm source-current.

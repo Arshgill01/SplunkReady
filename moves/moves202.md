@@ -2,15 +2,16 @@
 
 ## Status
 
-Blocked on 2026-06-08 by npm `EOTP`. Release preflight is ready, but
-`npm publish --access public` requires a fresh one-time password from the
-operator.
+Superseded by Move 208. The 2026-06-08 `EOTP` blocker was resolved by the
+operator publishing `splunkready@0.1.7`; public npm now reports latest `0.1.7`.
+The package remains source-stale because current package-input commits landed
+after that publish.
 
 ## Objective
 
 Close or precisely re-document the public npm distribution gap after Move 201.
 The source, GitHub Release, setup action, and GitHub Packages mirror are at
-`0.1.7`; public npm currently reports latest `splunkready@0.1.5`.
+`0.1.7`; public npm originally reported latest `splunkready@0.1.5`.
 
 ## Expected touched files
 
