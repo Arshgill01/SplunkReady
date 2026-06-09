@@ -17158,3 +17158,21 @@ Result so far:
 - HONEST BOUNDARY: the first failed run showed the deterministic grader still
   blocks mission-disallowed tools even when they are read-only; the promoted
   proof uses mission-allowed tools only.
+
+## 2026-06-08T18:37:10Z - Move 207 branch-tip CI
+
+Actions:
+
+- Committed Move 207 as `2fdd96e611ffdaaa70c32a0aa292d94f88cb5867`.
+- Pushed `splunkready-build`.
+- Checked GitHub Actions run `27158856593`.
+
+Result:
+
+- PASS: CI run `27158856593` completed with conclusion `success`.
+- PASS: `setup-splunkready action smoke` completed successfully.
+- PASS: `npm run check` completed successfully.
+- PASS: remote CI ran the canonical gate.
+- PASS: remote CI ran the credential-free live mock proof.
+- PASS: remote CI built and smoke-tested the mock Splunk MCP Docker image.
+- RESULT: Move 207 is locally and remotely verified at the branch tip.

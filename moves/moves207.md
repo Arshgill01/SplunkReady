@@ -2,7 +2,8 @@
 
 ## Status
 
-Implemented on 2026-06-08.
+Implemented on 2026-06-08. Branch-tip CI passed on commit
+`2fdd96e611ffdaaa70c32a0aa292d94f88cb5867`.
 
 ## Objective
 

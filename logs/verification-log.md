@@ -18163,4 +18163,26 @@ Result:
   secret-env ignore audit, reviewer inbox audit with 0 failing latest verdicts,
   submission-copy audit with 463 required claims, and final whitespace diff
   check.
-- PARTIAL: branch-tip CI is still pending for this move.
+- PASS: branch-tip CI run `27158856593` on commit
+  `2fdd96e611ffdaaa70c32a0aa292d94f88cb5867` completed with conclusion
+  `success`.
+
+## 2026-06-08T18:37:10Z - Move 207 branch-tip CI
+
+Commands:
+
+- `git push origin splunkready-build`
+- `gh run list --branch splunkready-build --limit 5`
+- `gh run view 27158856593 --json status,conclusion,databaseId,displayTitle,headSha,event,createdAt,updatedAt,jobs`
+
+Result:
+
+- PASS: GitHub Actions run `27158856593` for `Move 207 strengthen Zed MCP
+  evidence` on commit `2fdd96e611ffdaaa70c32a0aa292d94f88cb5867` completed
+  with conclusion `success`.
+- PASS: `setup-splunkready action smoke` passed.
+- PASS: `npm run check` passed remotely.
+- PASS: remote CI ran `Run canonical gate`.
+- PASS: remote CI ran `Run credential-free live mock proof`.
+- PASS: remote CI ran `Build mock Splunk MCP Docker image`.
+- PASS: remote CI ran `Smoke test mock Splunk MCP Docker image`.
