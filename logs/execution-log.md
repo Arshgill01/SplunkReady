@@ -17233,3 +17233,23 @@ Result:
 - PASS: remote CI ran the credential-free live mock proof.
 - PASS: remote CI built and smoke-tested the mock Splunk MCP Docker image.
 - RESULT: Move 208 is locally and remotely verified at the branch tip.
+
+## 2026-06-11T19:24:40Z - Move 208 CI-record branch-tip CI
+
+Actions:
+
+- Committed the Move 208 CI record as
+  `b83764cb1ce728cae3f8b259b1bc36e427978615`.
+- Pushed `splunkready-build`.
+- Watched GitHub Actions run `27371788007`.
+
+Result:
+
+- PASS: CI run `27371788007` completed with conclusion `success`.
+- PASS: `setup-splunkready action smoke` completed successfully.
+- PASS: `npm run check` completed successfully.
+- PASS: remote CI ran the canonical gate.
+- PASS: remote CI ran the credential-free live mock proof.
+- PASS: remote CI built and smoke-tested the mock Splunk MCP Docker image.
+- RESULT: branch tip remains clean and remotely verified after recording Move
+  208 CI.

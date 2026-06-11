@@ -18259,3 +18259,23 @@ Result:
 - PASS: remote CI ran `Run credential-free live mock proof`.
 - PASS: remote CI ran `Build mock Splunk MCP Docker image`.
 - PASS: remote CI ran `Smoke test mock Splunk MCP Docker image`.
+
+## 2026-06-11T19:24:40Z - Move 208 CI-record branch-tip CI
+
+Commands:
+
+- `git push origin splunkready-build`
+- `gh run list --branch splunkready-build --limit 3`
+- `gh run watch 27371788007 --exit-status`
+
+Result:
+
+- PASS: GitHub Actions run `27371788007` for `Record Move 208 CI pass` on
+  commit `b83764cb1ce728cae3f8b259b1bc36e427978615` completed with conclusion
+  `success`.
+- PASS: `setup-splunkready action smoke` passed.
+- PASS: `npm run check` passed remotely.
+- PASS: remote CI ran `Run canonical gate`.
+- PASS: remote CI ran `Run credential-free live mock proof`.
+- PASS: remote CI ran `Build mock Splunk MCP Docker image`.
+- PASS: remote CI ran `Smoke test mock Splunk MCP Docker image`.
