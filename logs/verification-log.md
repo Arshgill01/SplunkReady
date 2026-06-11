@@ -18235,3 +18235,27 @@ Result:
   Vitest files / 448 tests, secret-env ignore audit, reviewer inbox audit with
   0 failing latest verdicts, submission-copy audit with 464 required claims,
   and final whitespace diff check.
+- PASS: branch-tip CI run `27196422349` on commit
+  `099c0fc96472c3fdadc751aa171ab8ddb1c59187` completed with conclusion
+  `success`.
+
+## 2026-06-09T09:21:00Z - Move 208 branch-tip CI
+
+Commands:
+
+- `git push origin splunkready-build`
+- `gh run list --branch splunkready-build --limit 5`
+- `gh run view 27196422349 --json status,conclusion,databaseId,displayTitle,headSha,event,createdAt,updatedAt,jobs`
+
+Result:
+
+- PASS: GitHub Actions run `27196422349` for `Move 208 verify public npm
+  post-publish boundary` on commit
+  `099c0fc96472c3fdadc751aa171ab8ddb1c59187` completed with conclusion
+  `success`.
+- PASS: `setup-splunkready action smoke` passed.
+- PASS: `npm run check` passed remotely.
+- PASS: remote CI ran `Run canonical gate`.
+- PASS: remote CI ran `Run credential-free live mock proof`.
+- PASS: remote CI ran `Build mock Splunk MCP Docker image`.
+- PASS: remote CI ran `Smoke test mock Splunk MCP Docker image`.

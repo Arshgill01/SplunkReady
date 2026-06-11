@@ -17215,3 +17215,21 @@ Result so far:
   not match the current package-input gitHead.
 - NEXT RELEASE ACTION: bump above `0.1.7`, run release preflight, publish, and
   rerun the currentness audit before claiming npm source-current.
+
+## 2026-06-09T09:21:00Z - Move 208 branch-tip CI
+
+Actions:
+
+- Committed Move 208 as `099c0fc96472c3fdadc751aa171ab8ddb1c59187`.
+- Pushed `splunkready-build`.
+- Checked GitHub Actions run `27196422349`.
+
+Result:
+
+- PASS: CI run `27196422349` completed with conclusion `success`.
+- PASS: `setup-splunkready action smoke` completed successfully.
+- PASS: `npm run check` completed successfully.
+- PASS: remote CI ran the canonical gate.
+- PASS: remote CI ran the credential-free live mock proof.
+- PASS: remote CI built and smoke-tested the mock Splunk MCP Docker image.
+- RESULT: Move 208 is locally and remotely verified at the branch tip.
