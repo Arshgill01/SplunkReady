@@ -259,6 +259,23 @@ Splunk MCP JSON-RPC transcript containing `splunk_get_knowledge_objects` and
 `splunk_run_saved_search`, evidence refs, a generated Readiness Receipt,
 deterministic authority, and `mutation: false`.
 
+## Deadline Cleanup Update - 2026-06-12
+
+### R020 Judge Signal Dilution
+
+Risk: the product is implemented, but the repo exposes too much historical
+build diary at once: move files, wave files, reviewer inbox entries, many proof
+variants, release currentness notes, Splunkbase blockers, and hosted-model
+blockers. Under deadline judging, that can make a strong certification harness
+look unresolved or hard to run.
+
+Mitigation: use `docs/deadline-cleanup-final-lap-plan.md` as the final-lap
+cleanup plan. Lead with the no-clone judge proof, local judge proof, MCP proof,
+Readiness Receipt, deterministic authority, and mutation boundary. Compress
+README/submission-evidence onboarding, mark historical directories as build
+history, and stop adding broad proof variants unless they directly improve the
+Platform & Developer Experience or MCP story.
+
 Move 71 reduces the LLM-visibility gap without weakening deterministic
 authority. `judge-proof-summary.json` now includes an `llmEvidence` slot. The
 default credential-free judge proof records `NOT_REQUESTED`; the explicit

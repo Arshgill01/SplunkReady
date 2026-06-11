@@ -7316,6 +7316,7 @@ Commands:
 - `npm run splunkready -- verify-manifest --out submission-evidence/suite-proof --json`
 - `if rg -n "(Bearer\\s+[A-Za-z0-9._~+/=-]{8,}|TOKEN=|SECRET=|PASSWORD=|splunk\\.local|10\\.1\\.2\\.3|/Users/[A-Za-z0-9._-]+|https?://(?:localhost|127\\.|10\\.|192\\.168|172\\.))" submission-evidence; then exit 1; else exit 0; fi`
 - `npm run audit:submission-copy`
+- `npm run audit:reviewers`
 - `git diff --check`
 - `npm run check`
 
@@ -18279,3 +18280,43 @@ Result:
 - PASS: remote CI ran `Run credential-free live mock proof`.
 - PASS: remote CI ran `Build mock Splunk MCP Docker image`.
 - PASS: remote CI ran `Smoke test mock Splunk MCP Docker image`.
+# 2026-06-12 - Deadline Cleanup Analysis
+
+Commands:
+
+- `npm run check`
+- `NPM_CONFIG_CACHE=/private/tmp/splunkready-npm-cache npm run check`
+- `NPM_CONFIG_CACHE=/private/tmp/splunkready-npm-cache npm run audit:package-installability`
+- `npm test -- tests/workbench/server.test.ts --reporter verbose`
+- `npm test`
+- `npm run verify:scaffold`
+- `npm run audit:submission-copy`
+- `git diff --check`
+
+Result:
+
+- PARTIAL for initial `npm run check`: scaffold, runtime contracts, build,
+  UI build, public-demo audit, and package-readiness startup ran, but
+  `npm pack --dry-run --json` failed because `/Users/arshdeepsingh/.npm`
+  contains root-owned cache files.
+- PARTIAL for temp-cache `npm run check`: package readiness passed, then
+  package installability failed under sandboxed network with `ENOTFOUND`
+  resolving `registry.npmjs.org`.
+- PASS for `NPM_CONFIG_CACHE=/private/tmp/splunkready-npm-cache npm run audit:package-installability`
+  with approved network access.
+- FAIL for sandboxed focused workbench HTTP server tests because local loopback
+  bind failed with `listen EPERM: operation not permitted 127.0.0.1`.
+- PASS for focused workbench HTTP server tests with approved loopback binding:
+  1 test file passed, 8 tests passed.
+- PASS for full `npm test` with approved loopback binding: 77 test files
+  passed, 448 tests passed.
+- PASS for post-edit scaffold verification: 85 waves and 2,972 project files.
+- PASS for post-edit submission-copy audit: 464 required claims.
+- PASS for post-edit reviewer inbox audit: 85 groups, 5 pass-with-concerns
+  files, 0 failing latest verdicts.
+- PASS for post-edit whitespace check: `git diff --check` produced no output.
+
+Open validation gap:
+
+- Rerun full `npm run check` in an environment with writable npm cache, npm
+  registry access, and local loopback bind permission before final submission.

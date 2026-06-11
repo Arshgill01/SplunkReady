@@ -17253,3 +17253,26 @@ Result:
 - PASS: remote CI built and smoke-tested the mock Splunk MCP Docker image.
 - RESULT: branch tip remains clean and remotely verified after recording Move
   208 CI.
+# 2026-06-12 - Deadline Cleanup Analysis
+
+Files expected to touch:
+
+- `docs/deadline-cleanup-final-lap-plan.md`
+- `MANIFEST.md`
+- `PLAN.md`
+- `logs/risk-register.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Read root operating docs, project docs, current last wave, risk register,
+  verification log, README, demo script, package scripts, and code/evidence
+  inventory.
+- Mapped repo volume across source, tests, docs, logs, moves, submission
+  evidence, generated local artifacts, and package outputs.
+- Added a deadline cleanup and final-lap plan with strict award positioning,
+  noise-cut priorities, architecture deepening opportunities, and validation
+  snapshot.
+- Updated stale Move 106 root status language to Move 208.
+- Added R020 for judge signal dilution.

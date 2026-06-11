@@ -1,6 +1,6 @@
 # SplunkReady Scaffold Manifest
 
-Status: implemented through Phase Live and Move 106 on `splunkready-build`: live Splunk MCP proof, Gemini-backed LLM specimen, strict flagship `live-security-proof`, Vite artifact UI, expanded fixtures, external trace SDK example, CI JSON gate, firewall gateway, policy simulator, local proof-bundle selector, MCP resources/prompts/composition proof, published npm package, verified GitHub Pages demo, refreshed submission evidence, remote cleanroom proof, and live-security public-export redaction guard.
+Status: implemented through Move 208 on `splunkready-build`: live Splunk MCP proof, Gemini-backed LLM specimen, strict flagship `live-security-proof`, Vite artifact UI, expanded fixtures, external trace SDK example, CI JSON gate, firewall gateway, policy simulator, local proof-bundle selector, MCP resources/prompts/composition proof, Splunk app package evidence, standalone release evidence, tagged setup action, published npm package `splunkready@0.1.7`, verified public demo evidence, refreshed submission evidence, remote cleanroom proof, and live-security public-export redaction guard.
 
 This repository turns the locked SplunkReady idea into an implemented certification harness that can grade fixture traces, externally captured traces, and live Splunk MCP LLM-agent traces through the same contracts. The scaffold process remains in force for future continuation waves, but Phase Live decisions in `DECISIONS.md` supersede older fixture-first implementation assumptions where they conflict.
 
@@ -56,6 +56,7 @@ This repository turns the locked SplunkReady idea into an implemented certificat
 - `docs/follow-up-gap-closure-report.md`: current real/fixture/live truth table and consolidation evidence.
 - `docs/preflight-card-ui-implementation-plan.md`: Minimax-derived plan now implemented in the routed Pre-Flight Card replay UI.
 - `docs/demo-script.md`: 3-minute final demo script.
+- `docs/deadline-cleanup-final-lap-plan.md`: current deadline cleanup, award positioning, and final-lap focus plan.
 - `docs/prompts/`: copy-paste `/goal` prompts for the main executor and reviewer.
 - `references/source-grounding-matrix.md`: source evidence for major claims.
 - `logs/`: living logs for execution, review, risks, decisions, and verification.

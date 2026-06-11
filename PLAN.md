@@ -1,6 +1,6 @@
 # SplunkReady Execution Plan
 
-Status: implemented through Move 106 on `splunkready-build`; overall goal remains open until explicit user approval.
+Status: implemented through Move 208 on `splunkready-build`; overall goal remains open until explicit user approval.
 
 ## Objective
 
@@ -88,9 +88,11 @@ Do not build all features. Build the smallest real vertical slice:
 - one patch/rerun path;
 - fixture mode first, live mode second.
 
-Current highest-leverage continuation work after Move 106:
+Current highest-leverage continuation work after Move 208:
 
+- cut judge-facing noise before adding new surfaces;
 - preserve the published package, hosted demo, submission-copy guard, and remote cleanroom evidence as public judge paths;
-- keep strengthening MCP-category evidence around existing Splunk MCP plus SplunkReady certification composition;
-- if operator approval allows it, generate a redacted live-security proof export through the guarded public-proof-export path;
-- keep the user-owned video/submission upload out of repo claims until public URLs are actually provided.
+- keep the main award target as Platform & Developer Experience, with MCP as the bonus story;
+- avoid chasing Hosted Models unless live entitlement changes;
+- keep the user-owned video/submission upload out of repo claims until public URLs are actually provided;
+- use `docs/deadline-cleanup-final-lap-plan.md` as the current final-lap cleanup plan.
