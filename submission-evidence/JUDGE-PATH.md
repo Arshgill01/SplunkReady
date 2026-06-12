@@ -46,11 +46,21 @@ Expected result: `PASS`, deterministic rule-engine authority, and
 - Readiness Receipts cite contract, trace, violation, and evidence data.
 - Fixture and live-style paths share internal interfaces.
 - SplunkReady can certify captured Splunk MCP behavior into a receipt.
+- Developers can use the same proof shape from a local command, npm package,
+  GitHub Action, external trace import, or MCP transcript import.
 - The default judge path does not mutate Splunk and needs no credentials.
+
+## Developer Workflow Surface
+
+- Local proof: `npm run judge-proof`
+- No-clone proof: `npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json`
+- MCP proof: `npm run mcp-proof`
+- PR gate sample: `npm run pr-gate:sample`
+- Trace bridge examples: `examples/README.md`
+- GitHub Action: `action.yml`
 
 ## What To Ignore Unless Auditing
 
 - `moves/`: build history.
 - `logs/reviewer-inbox/`: reviewer-loop history.
 - Historical proof variants under this directory that are not listed above.
-

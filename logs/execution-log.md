@@ -17303,3 +17303,10 @@ Actions:
 - Added feedback-prize packet status and themes to the Splunk feedback log.
 - Added a draft feedback form answer bank grounded in the implementation
   friction log.
+- Started Gate 2 by making the MCP workbench view lead with the developer gate:
+  Splunk MCP trace, deterministic certification, Readiness Receipt, CI path, and
+  mutation boundary.
+- Rebuilt the public demo export and verified the default MCP proof route in
+  the in-app browser on desktop and 390px mobile width.
+- Updated the Gate 2 probability loop with a conservative partial re-score:
+  Platform 56%, MCP 43%, Developer Tools 31%.

@@ -180,6 +180,25 @@ const renderMcpTranscriptImport = (summary: McpTranscriptImport | undefined): st
 const renderMcpProofList = (items: readonly string[], className: string): string =>
   items.length > 0 ? renderPlainList(items, className) : `<p class="empty">None recorded.</p>`;
 
+const renderMcpDeveloperGate = (summary: McpProofSummary): string => {
+  const boundary = summary.splunkMcpBoundary;
+  const certifiedTools = boundary.certifiedToolNames.join(" / ") || "none";
+  const evidenceRefs = boundary.evidenceRefs.join(" / ") || "none";
+
+  return `<section class="panel mcp-proof-panel">
+    <h2>Developer gate</h2>
+    ${renderFactTable([
+      ["Workflow", "Splunk MCP trace -> SplunkReady certification -> Readiness Receipt"],
+      ["Splunk MCP tools", certifiedTools],
+      ["Receipt", boundary.receiptPath],
+      ["Evidence refs", evidenceRefs],
+      ["CI gate", "GitHub Action and npx judge-proof paths emit the same receipt artifacts"],
+      ["Authority", boundary.deterministicAuthority ? "deterministic rule engine" : "not recorded"],
+      ["Mutation", boundary.mutation ? "yes" : "no"]
+    ])}
+  </section>`;
+};
+
 const renderMcpProofTable = (summary: McpProofSummary): string => {
   const boundary = summary.splunkMcpBoundary;
 
@@ -347,7 +366,8 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
       <div class="receipt-ledger">
         ${
           summary
-            ? `<section class="panel mcp-proof-panel">
+            ? `${renderMcpDeveloperGate(summary)}
+              <section class="panel mcp-proof-panel">
                 <h2>Certification loop</h2>
                 ${renderMcpProofTable(summary)}
               </section>

@@ -18358,3 +18358,31 @@ Notes:
 
 - `NPM_CONFIG_CACHE=/private/tmp/splunkready-npm-cache` avoids the root-owned
   user npm cache problem recorded in the prior analysis pass.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 2 Partial
+
+Commands and checks:
+
+- `npm test -- tests/ui/app.test.ts -t "MCP proof summary"`
+- `npm run ui:build`
+- `npm run audit:submission-copy`
+- `npm run public-demo:build`
+- in-app browser check at `http://127.0.0.1:4173/?artifacts=artifacts%2Fmcp-proof#mcp-proof`
+- in-app browser mobile-width check at 390x844
+- `npm run audit:public-demo-export`
+- `git diff --check`
+
+Result:
+
+- PASS for focused MCP proof UI regression: 1 selected test passed.
+- PASS for production UI build.
+- PASS for submission-copy audit: 464 required claims.
+- PASS for public demo rebuild; manifest default URL remained
+  `?artifacts=artifacts%2Fmcp-proof#mcp-proof`.
+- PASS for desktop browser verification: active view `mcp-proof`, Developer
+  gate visible, CI gate text visible, no artifact-load failure.
+- PASS for mobile browser verification at 390px width: Developer gate visible,
+  no artifact-load failure, no horizontal overflow.
+- PASS for public-demo export audit: 308 files, mutation false, default route
+  `mcp-proof`.
+- PASS for whitespace check: `git diff --check` produced no output.

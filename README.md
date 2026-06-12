@@ -27,6 +27,12 @@ MCP proof:
 npm run mcp-proof
 ```
 
+Developer workflow surfaces:
+
+- PR gate sample: `npm run pr-gate:sample`
+- GitHub Action: `action.yml`
+- Trace bridge and external-trace examples: [examples/README.md](examples/README.md)
+
 Start with [submission-evidence/JUDGE-PATH.md](submission-evidence/JUDGE-PATH.md)
 for the short evidence trail. The rest of `submission-evidence/`, `moves/`, and
 `logs/reviewer-inbox/` preserve audit history; they are not the first-read

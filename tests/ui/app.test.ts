@@ -2048,6 +2048,9 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain('data-view="mcp-proof"');
     expect(html).toContain('class="active">MCP</a>');
     expect(html).toContain("MCP proof");
+    expect(html).toContain("Developer gate");
+    expect(html).toContain("Splunk MCP trace -&gt; SplunkReady certification -&gt; Readiness Receipt");
+    expect(html).toContain("GitHub Action and npx judge-proof paths emit the same receipt artifacts");
     expect(html).toContain("Certification loop");
     expect(html).toContain("MCP composition scorecard");
     expect(html).toContain("MCP composition recorder");

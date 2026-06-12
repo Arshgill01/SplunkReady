@@ -142,4 +142,26 @@ Verification:
 
 - `NPM_CONFIG_CACHE=/private/tmp/splunkready-npm-cache npm run check` passed.
 
-Next gate: Developer Workflow Proof.
+Gate 2 is partially implemented.
+
+Gate 2 progress:
+
+- MCP proof view now leads with a Developer gate panel that ties Splunk MCP
+  trace certification to Readiness Receipt, CI/npx proof paths, deterministic
+  authority, and mutation boundary.
+- README and `submission-evidence/JUDGE-PATH.md` now name PR gate, GitHub
+  Action, trace bridge, and external-trace examples as first-class developer
+  workflow surfaces.
+- Public demo export still defaults to `mcp-proof` and browser verification
+  passed on desktop and 390px mobile width.
+
+Current harsh re-score after partial Gate 2:
+
+| Surface | After Gate 1 | After partial Gate 2 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 50% | 56% | The default demo route now opens on a clearer developer gate, but CI/trace import still need stronger visual proof. |
+| Best Use of Splunk MCP Server | 36% | 43% | The first MCP screen now states the trust-layer workflow instead of burying it in lower panels. |
+| Best Use of Splunk Developer Tools | 28% | 31% | Developer workflow surfaces are more visible, but external publication blockers remain. |
+
+Next work: make CI/PR-gate and trace-import proof visible in the workbench or
+judge path without bloating the first screen.
