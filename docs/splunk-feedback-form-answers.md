@@ -2,9 +2,103 @@
 
 Date: 2026-06-12
 
-Status: draft answer bank. When the official feedback form is opened, map these
-answers to the exact questions before submitting. Do not claim the form has been
+Status: field-mapped draft packet. The public Devpost feedback page and rules
+confirm that the Most Valuable Feedback path uses an online feedback form and
+expects complete, actionable comments. The exact Google Form question labels
+were not exposed in the publicly fetched HTML, so this packet maps the likely
+fields without claiming exact form text. Do not claim the form has been
 submitted until a confirmation page or receipt exists.
+
+Official feedback form URL: `https://splunk.devpost.com/details/feedback`
+
+Public requirement mapping verified on 2026-06-12:
+
+- Entrant must be registered for the hackathon on Devpost.
+- Entrant must complete the online feedback form during the Feedback Period.
+- Feedback should be complete and actionable, such as bug reports, UI
+  improvements, suggested integrations, or SDK/documentation improvements.
+- One feedback submission per entrant.
+
+## Paste-Ready Field Mapping
+
+### Project / Entrant Context
+
+I built SplunkReady, a Splunk-native certification harness for AI agents. It
+uses fixture and live Splunk contracts, Splunk MCP traces, deterministic trace
+grading, AppInspect evidence, Splunk app packaging, and Readiness Receipts to
+answer one question: before an agent operates on a Splunk deployment, can it
+safely and correctly use that deployment's indexes, saved searches, fields, and
+evidence?
+
+### Primary Feedback Summary
+
+The biggest developer-experience gap is that Splunk MCP setup can prove "the
+server is reachable" before it proves "a developer has a known-good, read-only,
+evidence-preserving workflow." A fresh Splunk environment can expose MCP tools
+and still lack runnable saved searches, row-returning sample data, correct app
+context, field extraction, hosted-model entitlement, or a clear activation
+state. Those failures look similar from the client side, which makes developers
+debug the agent when the blocker is actually environment readiness.
+
+### Most Actionable Improvement
+
+Publish an official MCP readiness ladder for fresh Splunk trials:
+
+- validate Splunk server, KVStore, app, auth, and MCP endpoint readiness;
+- run a token-safe read-only JSON-RPC smoke call;
+- discover an app-qualified saved search;
+- execute that saved search with exact argument names;
+- return row-level evidence refs immediately from official sample data;
+- report hosted-model/SAIA tools as available, forbidden, not routed, or
+  pending activation.
+
+### Bug / Friction Report
+
+The saved-search discover-then-run path needs tighter schema alignment. MCP
+inventory naturally returns fields such as app and name, while the run tool
+expects `saved_search_name`. Passing inventory output directly into the run
+call is easy to get wrong. Either align the field names or document the exact
+translation in a canonical discover-then-run example.
+
+### Documentation Improvement
+
+Document MCP response envelopes with concrete examples. During the build,
+useful output appeared across `result.structuredContent`, `result.output`, and
+`result.content[].text`. Client authors can normalize this, but official
+examples would reduce trial-and-error and make integrations more consistent.
+
+### SDK / Integration Improvement
+
+Tool discovery should expose readiness, not just presence. Hosted-model tools
+can be visible but unavailable to the active user because of entitlement,
+routing, or activation state. A safe permission diagnostic should report each
+hosted-model tool as available, forbidden, not routed, or pending activation
+without executing a prompt or search.
+
+### Sample Data / Demo Improvement
+
+Official MCP demo data should be relative-time safe. Fixed timestamps silently
+age out of searches like `earliest=-24h`, making a correctly installed demo
+look broken. The sample pack should generate current timestamps at install time
+or include a row-count verification step, and saved searches should preserve the
+fields and row-level evidence refs required by agents and audit tools.
+
+### App Packaging / AppInspect Improvement
+
+AppInspect gives useful local readiness evidence, but hackathon projects need a
+clear distinction between "local package readiness" and "external
+Splunkbase/Splunk Cloud approval." A checklist separating credential-free local
+packaging, AppInspect precertification, install proof, Splunk Web proof,
+publisher-account setup, marketplace upload, and cloud review would help teams
+report status honestly.
+
+### Impact
+
+These changes would make Splunk's agentic developer path feel like a guided
+readiness ladder: connect MCP, validate auth, discover content, run a known-good
+read-only task, preserve evidence, then layer agents and hosted models on top.
+That would reduce setup ambiguity and help developers build agentic Splunk apps
+that are safer, easier to debug, and easier to trust.
 
 ## Short Project Context
 
@@ -130,4 +224,3 @@ guided readiness ladder: connect MCP, validate auth, discover content, run a
 known-good read-only task, preserve evidence, then layer agents and hosted
 models on top. That would reduce setup ambiguity and help developers build
 agentic Splunk apps that are safer, easier to debug, and easier to trust.
-

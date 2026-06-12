@@ -248,3 +248,32 @@ Current harsh re-score after Gate 5:
 
 Next work: tighten the feedback answer packet and, if possible without policy
 workarounds, map the official feedback form fields exactly.
+
+Gate 6 is implemented for feedback-prize packet hardening.
+
+Gate 6 progress:
+
+- Rechecked the public Devpost feedback and rules surfaces. The public pages
+  confirm an online feedback-form requirement and actionable-comment standard,
+  but do not expose exact Google Form question labels through fetched HTML.
+- Converted `docs/splunk-feedback-form-answers.md` from a loose answer bank
+  into a field-mapped, paste-ready packet covering project context, primary
+  feedback, bug/friction report, documentation improvement, SDK/integration
+  improvement, sample-data/demo improvement, AppInspect/package improvement,
+  and impact.
+- Updated `logs/splunk-feedback.md` so it no longer points at a nonexistent
+  next artifact and clearly records the remaining submission boundary:
+  authenticated form open, exact field paste, final confirmation capture.
+
+Current harsh re-score after Gate 6:
+
+| Surface | After Gate 5 | After Gate 6 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 73% | 73% | Feedback packet cleanup does not materially change the judged platform artifact path. |
+| Best Use of Splunk MCP Server | 54% | 55% | The feedback packet now crisply explains MCP readiness gaps and official improvement asks, but this is category-adjacent evidence, not product proof. |
+| Best Use of Splunk Developer Tools | 42% | 44% | The packet better frames SDK, docs, AppInspect, and packaging friction in actionable terms. It still needs actual form submission to count for the feedback prize. |
+| Feedback prize preparedness | 60% | 75% | The answer packet is now paste-ready against the public requirement, but exact form labels and confirmation are still missing, so it is not pushed to 80%+. |
+
+Next work: either open the authenticated feedback form and map exact fields, or
+return to product work by strengthening MCP-specific category proof beyond the
+Platform wrapper.

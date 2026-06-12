@@ -24,9 +24,14 @@ Strongest feedback themes so far:
 - AppInspect and Splunk app packaging feedback should distinguish local package
   readiness from external Splunkbase/Splunk Cloud review blockers.
 
-Next artifact to create: `docs/splunk-feedback-form-answers.md`. After the
-official form is opened in the browser, map its exact questions to the strongest
-answers from this log.
+Current packet: `docs/splunk-feedback-form-answers.md` now contains a
+field-mapped, paste-ready answer packet grounded in this log. Public Devpost
+rules confirm the need for a complete online feedback submission with
+actionable comments; the exact Google Form question labels were not exposed in
+public HTML, so the packet does not claim exact question mapping or submission.
+When the authenticated form is opened, paste from the mapped sections and keep
+the final confirmation page or receipt before claiming the feedback prize path
+is complete.
 
 ## Setup Friction Points
 

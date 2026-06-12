@@ -17335,3 +17335,26 @@ Actions:
 - Attempted in-app browser verification of the Platform proof hosted route; the
   browser policy blocked follow-up inspection, so validation continued through
   renderer tests and export audits rather than a browser workaround.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 6 Feedback Packet
+
+Files expected to touch:
+
+- `docs/splunk-feedback-form-answers.md`
+- `logs/splunk-feedback.md`
+- `docs/execplans/platform-devex-70-plus.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Rechecked the public Devpost feedback/rules surfaces and kept the boundary
+  explicit: public requirements are visible, exact Google Form labels and
+  submission confirmation are not.
+- Converted the feedback answer bank into a paste-ready field-mapped packet
+  covering project context, core MCP readiness feedback, bug/friction report,
+  documentation feedback, SDK/integration feedback, sample-data/demo feedback,
+  AppInspect/package feedback, and impact.
+- Updated the Splunk feedback log so it no longer says the answer bank still
+  needs to be created.
+- Updated the Platform 70% ExecPlan with the Gate 6 probability loop.
