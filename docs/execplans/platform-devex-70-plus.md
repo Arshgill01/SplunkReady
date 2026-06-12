@@ -307,3 +307,28 @@ Next work: push MCP from visible proof to stronger category fit by making the
 official Splunk MCP composition comparison and boundaries unavoidable in README,
 Devpost copy, and the default hosted route without overstating live-operator
 coverage.
+
+Gate 8 is implemented for MCP category positioning cleanup.
+
+Gate 8 progress:
+
+- Updated the README judge path to point MCP-category reviewers directly at the
+  hosted default route and `mcp-category-scorecard.json`.
+- Updated Devpost draft copy to describe the Splunk MCP/SplunkReady boundary
+  as data-plane plus readiness-gate composition, not replacement.
+- Updated `submission-evidence/JUDGE-PATH.md` from five to six first-read
+  evidence files so the MCP category scorecard is no longer hidden behind the
+  broader MCP proof summary.
+
+Current harsh re-score after Gate 8:
+
+| Surface | After Gate 7 | After Gate 8 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 74% | 75% | First-read docs now route judges toward the strongest proof path with less evidence sprawl. |
+| Best Use of Splunk MCP Server | 61% | 64% | The MCP category boundary is now explicit in README, Devpost copy, judge path, hosted route, and audit-required scorecard. Still below 70% because the category fit depends on judges valuing a certification layer around Splunk MCP as much as direct MCP server extension. |
+| Best Use of Splunk Developer Tools | 46% | 47% | Cleaner judge docs help, but the main Developer Tools blockers are still publication/currentness issues. |
+| Feedback prize preparedness | 75% | 75% | Unchanged. |
+
+Next work: the largest remaining ceiling move is either exact feedback-form
+submission mapping or reducing public-package/source-currentness friction so
+the no-clone path and repository proof are fully aligned.

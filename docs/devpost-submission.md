@@ -122,6 +122,16 @@ the recorder transcript with strict import and zero skipped records. In
 gateway against mock Splunk MCP plus SplunkReady MCP, not by a closed desktop
 client recording.
 
+For MCP-specific judging, the compact artifact is
+`submission-evidence/mcp-proof/mcp-category-scorecard.json`. It is now loaded
+by the hosted default MCP route and required by the public-demo export audit.
+The scorecard frames Splunk MCP as the investigation/data plane and SplunkReady
+as the deterministic readiness gate around captured Splunk MCP behavior. Current
+evidence reports `PASS`, score `100`, `VERIFIED_STRONG`, 15 Zed external-client
+frames, zero warnings, zero failures, deterministic authority, and
+`mutation: false`, while still preserving the live hosted-model entitlement
+boundary instead of overclaiming it.
+
 The same MCP proof records an AppInspect MCP composition artifact at
 `submission-evidence/mcp-proof/appinspect-mcp-composition.json`. It invokes
 `uvx splunk-appinspect[mcp] mcp-server`, calls `inspect_app` against the tracked
@@ -204,6 +214,12 @@ Teams adopting Splunk-connected agents need a gate between "the model can call a
 The Splunk MCP interface is the certification boundary for live mode. Fixture and live paths converge after the adapter, so the same compiler, mission runner, trace recorder, grader, policy patch, and receipt logic run regardless of whether the source is a local fixture or a live MCP endpoint.
 
 SplunkReady's MCP value is not that it replaces Splunk MCP. It uses Splunk MCP as the source of real agent/tool behavior, then exposes a local certification MCP server so other MCP clients can discover posture resources, reuse certification prompts, request deterministic Readiness Receipts for captured traces and transcripts, and call `splunkready_review_mcp_composition` to score the two-server Splunk MCP plus SplunkReady MCP workflow.
+
+The judge-visible MCP scorecard makes that boundary explicit: existing Splunk
+MCP tools perform discovery and saved-search execution, while SplunkReady grades
+the captured transcript, preserves evidence refs, and emits the receipt. The
+category claim is composition and certification, not replacement of Splunk MCP
+or hidden mutation of Splunk.
 
 Live mode is optional and disabled by default. The tracked evidence pack does not include raw live artifacts or credentials. Live claims should be treated as conditional unless the operator generates and sanitizes a separate live evidence export.
 

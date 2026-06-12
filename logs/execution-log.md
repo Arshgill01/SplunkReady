@@ -17381,3 +17381,24 @@ Actions:
   hosted default route cannot lose the key category proof artifact silently.
 - Updated focused UI and public-demo export tests for the new first-class MCP
   category proof.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 8 MCP Category Positioning
+
+Files expected to touch:
+
+- `README.md`
+- `docs/devpost-submission.md`
+- `submission-evidence/JUDGE-PATH.md`
+- `docs/execplans/platform-devex-70-plus.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Updated README judge-path copy so MCP-category reviewers see
+  `mcp-category-scorecard.json` as the compact proof artifact.
+- Updated Devpost draft copy to state the Splunk MCP/SplunkReady boundary as
+  investigation/data plane plus deterministic readiness gate.
+- Updated the judge path from five to six first-read evidence files, adding the
+  MCP category scorecard before the broader MCP proof summary.
+- Updated the Platform 70% ExecPlan with the Gate 8 probability loop.

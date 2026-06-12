@@ -18536,3 +18536,15 @@ Result:
   `mcp-proof`.
 - PASS for submission-copy audit: 464 required claims.
 - PASS for whitespace check: `git diff --check` produced no output.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 8 MCP Category Positioning
+
+Commands and checks:
+
+- `npm run audit:submission-copy`
+- `git diff --check`
+
+Result:
+
+- PASS for submission-copy audit: 464 required claims.
+- PASS for whitespace check: `git diff --check` produced no output.
