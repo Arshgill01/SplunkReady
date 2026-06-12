@@ -1,5 +1,9 @@
 # SplunkReady Development Moves
 
+This directory is build history, not judge onboarding. For final review, start
+with `README.md` and `submission-evidence/JUDGE-PATH.md`; use `moves/` only
+when auditing how a capability was built.
+
 Prepared: 2026-06-04
 
 This is the revised, code-focused execution plan for SplunkReady. It keeps the

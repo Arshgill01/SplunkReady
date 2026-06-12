@@ -2,6 +2,32 @@
 
 This log records Splunk-specific integration friction discovered while building SplunkReady. It is intentionally practical: each note should describe what happened, why it slowed development, and what would improve the Splunk developer experience.
 
+## Feedback Prize Packet Status
+
+Current aim: convert this implementation log into a concise official feedback
+submission that is specific, constructive, and grounded in observed MCP,
+Splunk Enterprise, Splunk AI Assistant, AppInspect, and Splunk app packaging
+friction.
+
+Strongest feedback themes so far:
+
+- MCP onboarding should include a known-good local smoke path from fresh Splunk
+  instance to read-only JSON-RPC tool call.
+- MCP inventory should expose readiness and entitlement diagnostics, not just
+  tool presence.
+- Saved-search discover-then-run examples need app-qualified object refs and
+  matching argument names.
+- Demo/sample data should include fresh timestamps, field extraction checks,
+  and row-level evidence preservation.
+- SAIA/Hosted Models onboarding needs clearer HTTPS activation, token wait
+  state, and per-tool permission diagnostics.
+- AppInspect and Splunk app packaging feedback should distinguish local package
+  readiness from external Splunkbase/Splunk Cloud review blockers.
+
+Next artifact to create: `docs/splunk-feedback-form-answers.md`. After the
+official form is opened in the browser, map its exact questions to the strongest
+answers from this log.
+
 ## Setup Friction Points
 
 ### KVStore and local app readiness are not obviously connected to MCP readiness

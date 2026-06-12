@@ -17,9 +17,9 @@ These probabilities are strict estimates from the current repo state, not guaran
 | Award surface | Current probability | Why |
 |---|---:|---|
 | Stage-one viability | 90% | The project fits the Agentic Ops theme, uses Splunk/MCP evidence, has runnable package paths, and avoids hidden mutation. Risk is judge confusion from too much repo surface. |
-| Platform & Developer Experience track | 38% | Strongest fit. The CI gate, package, action, trace bridge, workbench, and Readiness Receipt are developer infrastructure. The weakness is onboarding clarity: the README is long and the evidence matrix is hard to scan under time pressure. |
-| Best Use of Splunk MCP Server | 28% | The MCP story is credible because SplunkReady certifies Splunk MCP transcripts and exposes a local certification MCP server. It is not the flashiest agent-driven MCP app, so it must be framed as a trust gate for MCP agents. |
-| Best Use of Splunk Developer Tools | 22% | Package, action, Splunk app package, AppInspect evidence, and CI workflow help. Odds are capped by external Splunkbase blockers and the fact that this is not primarily a Splunk app UX. |
+| Platform & Developer Experience track | 50% after Gate 1 | Strongest fit. The CI gate, package, action, trace bridge, workbench, and Readiness Receipt are developer infrastructure. Gate 1 reduced onboarding noise; remaining gap is first-screen workflow clarity. |
+| Best Use of Splunk MCP Server | 36% after Gate 1 | The MCP story is credible because SplunkReady certifies Splunk MCP transcripts and exposes a local certification MCP server. Gate 1 made the proof easier to find; remaining gap is stronger first-screen MCP framing. |
+| Best Use of Splunk Developer Tools | 28% after Gate 1 | Package, action, Splunk app package, AppInspect evidence, and CI workflow help. Odds are capped by external Splunkbase blockers and the fact that this is not primarily a Splunk app UX. |
 | Best Use of Splunk Hosted Models | 8% | Hosted-model support is advisory and honest, but live hosted-model access remains blocked in evidence. Do not chase this unless entitlement is resolved quickly. |
 | Design criterion within Stage Two | 30% | The workbench is functional and evidence-led, but it is dense. Final polish should hide secondary routes and make the first five minutes obvious. |
 | Technological implementation criterion | 55% | This is the strongest judging criterion: deterministic grading, schemas, tests, package audits, receipt chains, and mutation controls are substantial. |

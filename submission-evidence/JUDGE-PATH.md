@@ -1,0 +1,56 @@
+# SplunkReady Judge Path
+
+Open this file first. The full `submission-evidence/` directory is intentionally
+large because it preserves proof history; judges do not need to read it all.
+
+## Fastest Proof
+
+No clone, no credentials:
+
+```bash
+npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json
+```
+
+From a clone:
+
+```bash
+npm install
+npm run judge-proof
+```
+
+Expected result: `PASS`, deterministic rule-engine authority, and
+`mutation: false`.
+
+## Five Evidence Files To Inspect
+
+1. `submission-evidence/suite-proof/suite-proof-summary.md`
+   Credential-free fail-to-pass certification suite.
+
+2. `submission-evidence/mcp-proof/mcp-proof-summary.md`
+   Splunk MCP transcript and two-server MCP certification proof.
+
+3. `submission-evidence/claim-ledger.md`
+   Public claim-to-evidence map.
+
+4. `submission-evidence/readiness-score-calibration/readiness-score-calibration.md`
+   Deterministic READY / NEEDS REVIEW / NOT READY score calibration.
+
+5. `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`
+   Developer-tools evidence for the packaged Splunk app path, including the
+   external blockers that are not claimed as complete.
+
+## What This Proves
+
+- SplunkReady is a certification harness, not a chatbot.
+- The Agent Readiness Compiler grades trace structure deterministically.
+- Readiness Receipts cite contract, trace, violation, and evidence data.
+- Fixture and live-style paths share internal interfaces.
+- SplunkReady can certify captured Splunk MCP behavior into a receipt.
+- The default judge path does not mutate Splunk and needs no credentials.
+
+## What To Ignore Unless Auditing
+
+- `moves/`: build history.
+- `logs/reviewer-inbox/`: reviewer-loop history.
+- Historical proof variants under this directory that are not listed above.
+

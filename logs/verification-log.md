@@ -18320,3 +18320,41 @@ Open validation gap:
 
 - Rerun full `npm run check` in an environment with writable npm cache, npm
   registry access, and local loopback bind permission before final submission.
+# 2026-06-12 - Platform DevEx 70% Push Gate 1
+
+Commands:
+
+- `npm run verify:scaffold`
+- `npm run audit:submission-copy`
+- `npm run audit:reviewers`
+- `git diff --check`
+- `NPM_CONFIG_CACHE=/private/tmp/splunkready-npm-cache npm run check`
+
+Result:
+
+- PASS for targeted scaffold verification: 85 waves, 2,974 project files before
+  the feedback answer draft was added.
+- PASS for targeted submission-copy audit: 464 required claims.
+- PASS for targeted reviewer inbox audit: 85 groups, 5 pass-with-concerns files,
+  0 failing latest verdicts.
+- PASS for targeted whitespace check: `git diff --check` produced no output.
+- PASS for the full canonical gate with a temp npm cache:
+  - scaffold verified;
+  - runtime contracts verified: 19 rules, 4 fixture missions, 20 evidence refs;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed;
+  - package readiness audit passed with 194 packed files checked;
+  - package installability audit passed: packed tarball installed,
+    `npx splunkready judge-proof` returned PASS, and `npx splunkready mcp`
+    initialized;
+  - Vitest passed: 77 files, 448 tests;
+  - secret env ignore audit passed;
+  - reviewer inbox audit passed;
+  - submission-copy audit passed;
+  - final `git diff --check` passed.
+
+Notes:
+
+- `NPM_CONFIG_CACHE=/private/tmp/splunkready-npm-cache` avoids the root-owned
+  user npm cache problem recorded in the prior analysis pass.

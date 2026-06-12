@@ -6,6 +6,32 @@ Certify AI agents before they touch production Splunk.
 
 SplunkReady is a Splunk-native certification harness and local workbench for teams shipping agents that can call Splunk. It does not answer alerts for the operator. It proves whether a specific agent can safely operate against a specific Splunk deployment.
 
+## Judge Path
+
+No clone, no credentials:
+
+```bash
+npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json
+```
+
+From a clone:
+
+```bash
+npm install
+npm run judge-proof
+```
+
+MCP proof:
+
+```bash
+npm run mcp-proof
+```
+
+Start with [submission-evidence/JUDGE-PATH.md](submission-evidence/JUDGE-PATH.md)
+for the short evidence trail. The rest of `submission-evidence/`, `moves/`, and
+`logs/reviewer-inbox/` preserve audit history; they are not the first-read
+onboarding path.
+
 ## One-Sentence Pitch
 
 Splunk is making operational data agent-ready. SplunkReady makes agents Splunk-ready.
