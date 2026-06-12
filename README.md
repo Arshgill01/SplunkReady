@@ -11,7 +11,7 @@ SplunkReady is a Splunk-native certification harness and local workbench for tea
 No clone, no credentials:
 
 ```bash
-npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.9 judge-proof --out ./judge-proof --json
 ```
 
 From a clone:
@@ -54,6 +54,11 @@ Developer workflow surfaces:
 - PR gate sample: `npm run pr-gate:sample`
 - GitHub Action: `action.yml`
 - Trace bridge and external-trace examples: [examples/README.md](examples/README.md)
+- Current-source typed policy SDK: `import { policy } from "splunkready/policy"`
+  (see [`src/policy-sdk/README.md`](src/policy-sdk/README.md) and
+  [`policies/README.md`](policies/README.md)). This subpath is not in the
+  already published `splunkready@0.1.9` package; it requires the next package
+  release before it is a public npm claim.
 
 Start with [submission-evidence/JUDGE-PATH.md](submission-evidence/JUDGE-PATH.md)
 for the short evidence trail. The rest of `submission-evidence/`, `moves/`, and
@@ -88,7 +93,7 @@ npm run judge-proof
 The currently published no-clone judge path is:
 
 ```bash
-npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.9 judge-proof --out ./judge-proof --json
 ```
 
 The repo-linked GitHub Packages mirror is `@arshgill01/splunkready@0.1.7`;
@@ -98,9 +103,11 @@ above is the unauthenticated judge path.
 That command is smoke-tested from a clean temp folder and must return `PASS`
 with `mutation: false`. The public package currentness audit also proves the
 published MCP tool surface, credential-free `live-proof --live-mock`, and signed
-policy-registry flow. The current audit reports the published `0.1.7` package
-passes those smoke tests, while the repository has newer package-input commits
-that require the next npm release before the package can be called source-current.
+policy-registry flow. The current audit reports the published `0.1.9` package
+passes those smoke tests. The repository now has newer package-input commits,
+including the current-source `splunkready/policy` SDK subpath, so the SDK is
+not a public npm claim until the next release is published and currentness
+passes.
 
 ### Standalone Release Artifact
 
@@ -268,10 +275,10 @@ package can initialize the SplunkReady MCP stdio server.
 The release-alignment audit converts source-currentness drift into the exact
 next publish action. Current evidence is
 `submission-evidence/release-alignment/release-alignment.json`; it reports
-`ACTION_REQUIRED`, recommends `0.1.8`, includes the current npm preflight
-artifact and auth blocker, and keeps the public `0.1.7` no-clone judge path
-valid without claiming that the published tarball includes every newer
-repo-side proof improvement.
+`ACTION_REQUIRED`, recommends the next patch release, includes the current npm
+preflight artifact and auth blocker, and keeps the public `0.1.9` no-clone
+judge path valid without claiming that the published tarball includes every
+newer repo-side proof improvement.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:
@@ -370,8 +377,10 @@ side uses an `npx -y mcp-remote` template with
 placeholders copied from the Splunk MCP Server app sample client configuration.
 The published public npm package supports the no-clone `judge-proof` command,
 the `splunkready mcp` entrypoint, credential-free `live-proof --live-mock`,
-signed policy-registry commands, and the `mcp-recorder` gateway once the public
-package currentness audit reports `CURRENT`.
+signed policy-registry commands, and the `mcp-recorder` gateway. Newer
+current-source subpaths, including `splunkready/policy`, require the next npm
+release and a clean public-package currentness audit before they are public npm
+claims.
 
 The release gate also packs the current source into a clean temp project and
 requires the installed package to complete both `npx splunkready judge-proof`

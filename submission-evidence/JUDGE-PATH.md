@@ -14,7 +14,7 @@ Hosted, no credentials:
 No clone, no credentials:
 
 ```bash
-npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.9 judge-proof --out ./judge-proof --json
 ```
 
 From a clone:
@@ -94,7 +94,7 @@ Supporting developer workflow proof:
 
 - Local proof: `npm run judge-proof`
 - Platform proof wrapper: `npm run platform-proof`
-- No-clone proof: `npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json`
+- No-clone proof: `npx -y splunkready@0.1.9 judge-proof --out ./judge-proof --json`
 - MCP proof: `npm run mcp-proof`
 - PR gate sample: `npm run pr-gate:sample`
 - Trace bridge examples: `examples/README.md`

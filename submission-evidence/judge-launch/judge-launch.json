@@ -15,7 +15,7 @@
     "currentnessArtifact": "submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json"
   },
   "commands": [
-    "npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json",
+    "npx -y splunkready@0.1.9 judge-proof --out ./judge-proof --json",
     "npm install",
     "npm run platform-proof",
     "npm run judge-proof",
@@ -68,7 +68,7 @@
     "SplunkReady is a certification harness, not a chatbot, SOC copilot, or telemetry dashboard.",
     "LLMs may explain, plan, and propose remediation, but deterministic rules decide pass/fail.",
     "The default judge path is credential-free and does not mutate Splunk.",
-    "Public npm source-currentness remains blocked until 0.1.8 is published and currentness passes.",
+    "Public npm `splunkready@0.1.9` is the no-clone judge path and its published probes pass. Current source has moved beyond `0.1.9` with the `splunkready/policy` SDK subpath, so SDK npm availability requires the next publish and currentness audit.",
     "Splunkbase/Splunk Cloud listing remains an external operator action until public approval exists."
   ]
 }

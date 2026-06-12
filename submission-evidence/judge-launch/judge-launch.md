@@ -6,7 +6,7 @@ the full evidence directory.
 ## Fastest No-Clone Proof
 
 ```bash
-npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.9 judge-proof --out ./judge-proof --json
 ```
 
 Expected result: `PASS`, deterministic rule-engine authority, and
@@ -34,5 +34,7 @@ Expected result: `PASS`, deterministic rule-engine authority, and
 - SplunkReady is a certification harness, not a chatbot or SOC copilot.
 - Deterministic rules decide pass/fail; LLM output is advisory.
 - The default judge path is credential-free and does not mutate Splunk.
-- Public npm source-currentness still requires the next publish after `0.1.7`.
+- Public npm `splunkready@0.1.9` is the no-clone judge path. Current source has
+  moved beyond it with the `splunkready/policy` SDK subpath, so SDK npm
+  availability requires the next publish and currentness audit.
 - Splunkbase/Splunk Cloud listing remains external until public approval exists.
