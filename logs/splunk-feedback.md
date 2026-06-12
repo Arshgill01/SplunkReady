@@ -293,6 +293,31 @@ Suggestion:
 - Include expected activation time ranges and escalation instructions in the onboarding UI.
 - Expose a read-only MCP diagnostic for "SAIA tenant active for this token/user" so tools can distinguish not-yet-activated from wrong-role or wrong-token states.
 
+### Hackathon proof paths need one canonical local command
+
+Observed while tightening the final Platform & Developer Experience path.
+SplunkReady already had credible pieces: fixture demo, no-clone judge proof,
+strict MCP transcript certification, PR-gate evidence, and hosted public demo
+export. The weak point was not missing capability; it was that a judge or
+developer had to stitch several commands and artifact directories together.
+
+Impact:
+- Strong developer tools can look weaker when the official path is scattered
+  across setup docs, examples, CI snippets, and generated evidence folders.
+- Judges need a single command that proves the product boundary, mutation
+  posture, deterministic authority, and MCP certification path without needing
+  live credentials.
+- This is especially important for MCP-adjacent tools because developers need
+  to understand which server owns which responsibility.
+
+Suggestion:
+- For Splunk hackathon templates and MCP examples, provide a canonical
+  "judge/dev proof" command shape that emits both JSON and markdown.
+- Encourage submissions to expose one local credential-free command plus one
+  live/operator-scoped command, with explicit mutation boundaries.
+- Include a small checklist in the feedback form or rubric asking entrants to
+  name the exact proof command judges should run first.
+
 ## Developer Experience Suggestions
 
 - Provide one local Splunk Enterprise plus MCP "happy path" with exact ports, URL shape, token instructions, and a known-good read-only smoke command.

@@ -18,8 +18,15 @@ From a clone:
 
 ```bash
 npm install
+npm run platform-proof
 npm run judge-proof
 ```
+
+`npm run platform-proof` builds the CLI, runs the fixture demo, runs
+`judge-proof`, certifies the sample Splunk MCP JSON-RPC transcript with
+`--strict-import true --require-pass true`, and writes
+`artifacts/platform-devex-proof/platform-devex-proof.json` plus a markdown
+summary.
 
 MCP proof:
 

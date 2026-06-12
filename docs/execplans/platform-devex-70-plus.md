@@ -194,3 +194,29 @@ Current harsh re-score after Gate 3:
 Next work: collapse the final judge path into one polished command/demo script
 and make the feedback-prize packet exact enough to paste once the official form
 is available.
+
+Gate 4 is implemented for the one-command Platform proof wrapper.
+
+Gate 4 progress:
+
+- Added `npm run platform-proof`, a credential-free wrapper that builds the CLI,
+  runs the fixture demo, runs `judge-proof`, certifies the sample Splunk MCP
+  transcript with strict import and require-pass gates, then writes a JSON and
+  markdown proof summary under `artifacts/platform-devex-proof`.
+- The wrapper reads the actual before/after fixture receipts and external MCP
+  transcript receipt, so the summary shows `NOT READY -> READY` plus transcript
+  `READY` instead of relying on prose.
+- README and `submission-evidence/JUDGE-PATH.md` now put this wrapper in the
+  clone path before lower-level commands.
+
+Current harsh re-score after Gate 4:
+
+| Surface | After Gate 3 | After Gate 4 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 65% | 70% | The core developer story now has a single local command that proves fixture demo, judge proof, and strict MCP transcript certification with machine-readable output. This reaches the lower bound of serious finalist contention, not a lock. |
+| Best Use of Splunk MCP Server | 50% | 52% | The wrapper includes strict MCP transcript certification, but MCP-specific judging still wants stronger live/official Splunk MCP framing. |
+| Best Use of Splunk Developer Tools | 38% | 40% | The command improves developer ergonomics, but the category ceiling remains limited by external Splunkbase/AppInspect publication blockers. |
+
+Next work: strengthen the public/hosted demonstration around this one-command
+proof and tighten the feedback-prize answer packet against the official form
+when accessible.

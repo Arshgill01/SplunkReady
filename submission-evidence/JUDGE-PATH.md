@@ -15,6 +15,7 @@ From a clone:
 
 ```bash
 npm install
+npm run platform-proof
 npm run judge-proof
 ```
 
@@ -41,6 +42,8 @@ Expected result: `PASS`, deterministic rule-engine authority, and
 
 Supporting developer workflow proof:
 
+- `artifacts/platform-devex-proof/platform-devex-proof.json` after
+  `npm run platform-proof`
 - `submission-evidence/ci-pr-gate/pr-comment.md`
 - `submission-evidence/ci-pr-gate/ci-pr-gate.json`
 - `submission-evidence/mcp-proof/mcp-transcript-certification/mcp-transcript-certification.json`
@@ -60,6 +63,7 @@ Supporting developer workflow proof:
 ## Developer Workflow Surface
 
 - Local proof: `npm run judge-proof`
+- Platform proof wrapper: `npm run platform-proof`
 - No-clone proof: `npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json`
 - MCP proof: `npm run mcp-proof`
 - PR gate sample: `npm run pr-gate:sample`

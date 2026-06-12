@@ -17323,3 +17323,8 @@ Actions:
 - Verified the rebuilt hosted demo can load the default MCP proof route with
   quickstart text and the direct MCP transcript route with receipt evidence in
   the in-app browser.
+- Added `npm run platform-proof` as the one-command Platform & Developer
+  Experience proof wrapper for fixture demo, judge proof, and strict MCP
+  transcript certification.
+- Updated the README and judge path so clone-based judges see the wrapper
+  before lower-level commands.
