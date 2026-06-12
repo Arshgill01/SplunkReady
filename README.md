@@ -75,6 +75,33 @@ The Agent Readiness Compiler compiles a fixture or live Splunk environment into 
 
 The flagship demo story is security investigation readiness: the bundled specimen confidently clears possible lateral movement after using `index=*`, a stale field, and no saved search provenance. SplunkReady catches the unsafe trace, exports a reviewable policy patch, reruns the same mission, and shows a bounded pass with evidence. The default specimen is deterministic for local reproducibility; set `SPLUNKREADY_LLM_ENABLED=true` to run the Gemini-backed specimen instead.
 
+### Policy SDK Quickstart (Current Source)
+
+This SDK subpath is present in current source and will become a public npm
+claim only after the next package release is published and clean-install
+verified. The already published `splunkready@0.1.9` package does not export
+`splunkready/policy`.
+
+```ts
+import { policy } from "splunkready/policy";
+
+const builtins = await policy.list();
+// [
+//   { id: "default-readiness", ... },
+//   { id: "pci-dss-readiness",  ... },
+//   { id: "soc2-readiness",      ... }
+// ]
+const bundle = await policy.load("pci-dss-readiness");
+const binding = policy.bindToMission(bundle, mission);
+if (!binding.compatible) {
+  throw new Error(`policy gaps: ${binding.missionRulesNotInPolicy.join(", ")}`);
+}
+```
+
+The SDK also exposes `signPolicy`, `verifyPolicyManifest`, `hashPolicy`,
+`requiredRuleIds`, `criticalRules`, and `checkCompatibility`. See
+[`src/policy-sdk/README.md`](src/policy-sdk/README.md) for the full API.
+
 The tracked evidence pack is in [submission-evidence/](submission-evidence/README.md). It includes a self-verifiable three-mission fixture proof, a redacted public proof export, a credential-free Splunk app package proof, manually inspected workbench screenshots, and a claim ledger that maps public claims to evidence paths.
 
 ## Judge-Runnable Fixture Demo

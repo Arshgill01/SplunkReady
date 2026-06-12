@@ -261,6 +261,13 @@ The tracked evidence pack does not claim live hosted-model entitlement. The work
 - Vitest
 - Vite
 - Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.9 judge-proof`
+- Current-source typed policy SDK subpath:
+  `import { policy } from "splunkready/policy"` (see
+  [`src/policy-sdk/README.md`](src/policy-sdk/README.md)) — loads,
+  validates, signs, and binds named policy bundles (`default-readiness`,
+  `soc2-readiness`, `pci-dss-readiness`) to missions. This becomes a public
+  npm claim only after the next package release is published and
+  clean-install verified; `splunkready@0.1.9` does not export the subpath.
 - Splunk MCP adapter boundary
 - Deterministic trace grader rules
 - Local workbench API and UI

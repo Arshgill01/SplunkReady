@@ -21,8 +21,8 @@ const baseCurrentness = {
   source: "splunkready-public-package-currentness",
   status: "STALE",
   registry: {
-    latestVersion: "0.1.7",
-    localVersion: "0.1.7",
+    latestVersion: "0.1.9",
+    localVersion: "0.1.9",
     localVersionPublished: true,
     latestMatchesLocal: true,
     latestGitHead: "published-head",
@@ -31,11 +31,11 @@ const baseCurrentness = {
     dirtyPackageInputs: [],
     gitHeadMatchesPackageInputs: false
   },
-  publishedJudgeProof: { packageSpec: "splunkready@0.1.7", status: "PASS", command: "judge-proof" },
-  publishedMcp: { packageSpec: "splunkready@0.1.7", status: "PASS", command: "mcp" },
-  publishedLiveMockProof: { packageSpec: "splunkready@0.1.7", status: "PASS", command: "live-proof" },
-  publishedRecorder: { packageSpec: "splunkready@0.1.7", status: "PASS", command: "mcp-recorder" },
-  publishedPolicyRegistry: { packageSpec: "splunkready@0.1.7", status: "PASS", command: "policy-publish" },
+  publishedJudgeProof: { packageSpec: "splunkready@0.1.9", status: "PASS", command: "judge-proof" },
+  publishedMcp: { packageSpec: "splunkready@0.1.9", status: "PASS", command: "mcp" },
+  publishedLiveMockProof: { packageSpec: "splunkready@0.1.9", status: "PASS", command: "live-proof" },
+  publishedRecorder: { packageSpec: "splunkready@0.1.9", status: "PASS", command: "mcp-recorder" },
+  publishedPolicyRegistry: { packageSpec: "splunkready@0.1.9", status: "PASS", command: "policy-publish" },
   mutation: false,
   failures: []
 };
@@ -43,7 +43,7 @@ const baseCurrentness = {
 describe("release alignment audit", () => {
   it("turns source-stale public package currentness into exact next release action", async () => {
     const root = await tempRoot();
-    await writeFixture(join(root, "package.json"), { name: "splunkready", version: "0.1.7" });
+    await writeFixture(join(root, "package.json"), { name: "splunkready", version: "0.1.9" });
     await writeFixture(
       join(root, "submission-evidence/public-package-currentness/public-package-currentness.json"),
       baseCurrentness
@@ -62,7 +62,7 @@ describe("release alignment audit", () => {
     const report = JSON.parse(result.stdout);
 
     expect(report.status).toBe("ACTION_REQUIRED");
-    expect(report.package.recommendedNextVersion).toBe("0.1.8");
+    expect(report.package.recommendedNextVersion).toBe("0.1.10");
     expect(report.currentness.gitHeadMatchesPackageInputs).toBe(false);
     expect(report.releasePreflight.status).toBe("BLOCKED");
     expect(report.releasePreflight.authenticated).toBe(false);
@@ -77,7 +77,7 @@ describe("release alignment audit", () => {
 
   it("fails require-aligned while the public package is not source-current", async () => {
     const root = await tempRoot();
-    await writeFixture(join(root, "package.json"), { name: "splunkready", version: "0.1.7" });
+    await writeFixture(join(root, "package.json"), { name: "splunkready", version: "0.1.9" });
     await writeFixture(
       join(root, "submission-evidence/public-package-currentness/public-package-currentness.json"),
       baseCurrentness
