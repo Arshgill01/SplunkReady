@@ -5,7 +5,7 @@ flowchart LR
   subgraph Splunk["Splunk deployment"]
     S1["Splunk MCP Server"]
     S2["Indexes, sourcetypes, saved searches, knowledge objects"]
-    S3["Optional hosted-model tools: saia_explain_spl, saia_optimize_spl"]
+    S3["Optional hosted-model tools: saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question"]
   end
 
   subgraph Agent["Agent under certification"]

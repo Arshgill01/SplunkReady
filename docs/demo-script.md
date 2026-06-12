@@ -133,12 +133,14 @@ Screen:
 
 - Certification replay on the `Pass` stage.
 - Before and after receipts remain available in the same shell.
+- Final one-liner: `npx -y splunkready@0.1.9 judge-proof --out ./judge-proof --json`
+  on screen for two seconds as the no-clone proof path.
 - Final line: `Certify AI agents before they touch production Splunk.`
 
 Voice:
 
 ```text
-SplunkReady is CI for Splunk agents: compile the environment, run missions, grade the trace, and produce a readiness receipt.
+SplunkReady is CI for Splunk agents: compile the environment, run missions, grade the trace, and produce a readiness receipt. The full judge path is one npm command, no clone, no credentials.
 ```
 
 ## Demo Killers
