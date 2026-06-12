@@ -1,6 +1,6 @@
-import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { spawn } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { join, relative } from "node:path";
+import { join } from "node:path";
 
 import {
   renderMcpCompositionRecorderMarkdown,
@@ -14,6 +14,27 @@ import {
   type AppInspectCompositionSummary
 } from "./appinspect-composition.js";
 import { runMcpTranscriptCertificationFromPathWorkflow } from "./external-certification.js";
+
+import {
+  type McpClientSessionRecord,
+  McpStdioClient
+} from "./mcp-proof/client.js";
+import {
+  asRecord,
+  collectEvidenceRefs,
+  displayPath,
+  safeRecord,
+  stringArray,
+  stringArrayFromRecord,
+  stringFromRecord,
+  textFromMcpResource
+} from "./mcp-proof/helpers.js";
+import {
+  liveMockSplunkMcpMarkdown,
+  mcpClientSessionMarkdown,
+  mcpClientWalkthroughMarkdown,
+  mcpProofMarkdown
+} from "./mcp-proof/markdown.js";
 
 export interface McpProofWorkflowInput {
   outDir: string;
@@ -34,35 +55,7 @@ export interface McpProofWorkflowResult {
   messages: string[];
 }
 
-interface JsonRpcSuccess {
-  jsonrpc: "2.0";
-  id: string | number | null;
-  result: Record<string, unknown>;
-}
-
-interface JsonRpcError {
-  jsonrpc: "2.0";
-  id: string | number | null;
-  error: {
-    code: number;
-    message: string;
-    data?: unknown;
-  };
-}
-
-type JsonRpcResponse = JsonRpcSuccess | JsonRpcError;
-
-interface McpClientSessionRecord {
-  direction: "request" | "notification" | "response";
-  sequence: number;
-  method?: string;
-  id?: string | number | null;
-  params?: unknown;
-  result?: unknown;
-  error?: unknown;
-}
-
-interface McpProofSummary {
+export interface McpProofSummary {
   source: "splunkready-mcp-proof";
   status: "PASS" | "FAIL";
   mutation: false;
@@ -262,139 +255,6 @@ const officialSplunkMcpToolsUrl = "https://help.splunk.com/en/splunk-enterprise/
 const officialSplunkMcpConfigurationUrl =
   "https://help.splunk.com/en/splunk-cloud-platform/mcp-server-for-splunk-platform/1.2/connecting-to-the-mcp-server-and-settings";
 
-const isJsonRpcError = (response: JsonRpcResponse): response is JsonRpcError => "error" in response;
-
-const asRecord = (value: unknown, label: string): Record<string, unknown> => {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new Error(`Invalid MCP proof response for ${label}.`);
-  }
-
-  return value as Record<string, unknown>;
-};
-
-const stringFromRecord = (record: Record<string, unknown>, key: string): string => {
-  const value = record[key];
-
-  return typeof value === "string" ? value : "";
-};
-
-const stringArrayFromRecord = (record: Record<string, unknown>, key: string): string[] => {
-  const value = record[key];
-
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
-};
-
-class McpStdioClient {
-  private readonly child: ChildProcessWithoutNullStreams;
-  private readonly pending: Array<(response: JsonRpcResponse) => void> = [];
-  private readonly sessionRecords: McpClientSessionRecord[] = [];
-  private stdoutBuffer = "";
-  private stderrBuffer = "";
-  private sequence = 0;
-
-  constructor(serverPath: string, serverArgs: string[] = []) {
-    this.child = spawn(process.execPath, [serverPath, ...serverArgs], {
-      env: process.env,
-      stdio: ["pipe", "pipe", "pipe"]
-    });
-    this.child.stdout.setEncoding("utf8");
-    this.child.stderr.setEncoding("utf8");
-    this.child.stdout.on("data", (chunk: string) => this.acceptStdout(chunk));
-    this.child.stderr.on("data", (chunk: string) => {
-      this.stderrBuffer += chunk;
-    });
-  }
-
-  async request(method: string, params?: unknown): Promise<Record<string, unknown>> {
-    const id = this.pending.length + 1;
-    const response = await this.send({ jsonrpc: "2.0", id, method, params });
-
-    if (isJsonRpcError(response)) {
-      throw new Error(`MCP ${method} failed: ${response.error.message}`);
-    }
-
-    return response.result;
-  }
-
-  notify(method: string, params?: unknown): void {
-    const message = { jsonrpc: "2.0", method, params };
-
-    this.sessionRecords.push({
-      direction: "notification",
-      sequence: ++this.sequence,
-      method,
-      params
-    });
-    this.child.stdin.write(`${JSON.stringify(message)}\n`);
-  }
-
-  close(): void {
-    this.child.stdin.end();
-    this.child.kill();
-  }
-
-  session(): McpClientSessionRecord[] {
-    return [...this.sessionRecords];
-  }
-
-  private async send(message: Record<string, unknown>): Promise<JsonRpcResponse> {
-    const id = typeof message.id === "string" || typeof message.id === "number" || message.id === null ? message.id : null;
-    const method = typeof message.method === "string" ? message.method : undefined;
-
-    this.sessionRecords.push({
-      direction: "request",
-      sequence: ++this.sequence,
-      id,
-      method,
-      params: message.params
-    });
-
-    const response = new Promise<JsonRpcResponse>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        reject(new Error(`Timed out waiting for MCP response. ${this.stderrBuffer.trim()}`.trim()));
-      }, 60_000);
-
-      this.pending.push((value) => {
-        clearTimeout(timer);
-        resolve(value);
-      });
-    });
-
-    this.child.stdin.write(`${JSON.stringify(message)}\n`);
-
-    return response;
-  }
-
-  private acceptStdout(chunk: string): void {
-    this.stdoutBuffer += chunk;
-
-    while (this.stdoutBuffer.includes("\n")) {
-      const newlineIndex = this.stdoutBuffer.indexOf("\n");
-      const line = this.stdoutBuffer.slice(0, newlineIndex).trim();
-      this.stdoutBuffer = this.stdoutBuffer.slice(newlineIndex + 1);
-
-      if (!line) {
-        continue;
-      }
-
-      const resolve = this.pending.shift();
-
-      if (resolve) {
-        const parsed = JSON.parse(line) as JsonRpcResponse;
-
-        this.sessionRecords.push({
-          direction: "response",
-          sequence: ++this.sequence,
-          id: parsed.id,
-          result: "result" in parsed ? parsed.result : undefined,
-          error: "error" in parsed ? parsed.error : undefined
-        });
-        resolve(parsed);
-      }
-    }
-  }
-}
-
 const extractStructuredContent = (toolCallResult: Record<string, unknown>, label: string): Record<string, unknown> => {
   const structured = asRecord(toolCallResult.structuredContent, label);
 
@@ -403,277 +263,6 @@ const extractStructuredContent = (toolCallResult: Record<string, unknown>, label
   }
 
   return structured;
-};
-
-const mcpProofMarkdown = (summary: McpProofSummary): string => `# SplunkReady MCP Proof
-
-Status: ${summary.status}
-
-Server: ${summary.handshake.serverName}
-
-Protocol: ${summary.handshake.protocolVersion}
-
-Mutation: ${summary.mutation ? "yes" : "no"}
-
-Tools:
-${summary.tools.map((tool) => `- ${tool.name} destructive=${String(tool.destructiveHint)} readOnly=${String(tool.readOnlyHint)}`).join("\n")}
-
-Resources:
-${summary.resources.map((resource) => `- ${resource.uri} (${resource.mimeType})`).join("\n")}
-
-Resource templates:
-${summary.resourceTemplates.map((template) => `- ${template.uriTemplate} (${template.mimeType})`).join("\n")}
-
-Templated receipt:
-- splunkready://receipts/pass
-
-Dual-server MCP client kit:
-- Resource: splunkready://client-config/splunk-and-splunkready
-- Existing Splunk MCP role: investigate with read-only Splunk tools
-- SplunkReady MCP role: certify the captured Splunk MCP transcript
-
-Prompts:
-${summary.prompts.map((prompt) => `- ${prompt.name} arguments=${prompt.argumentCount}`).join("\n")}
-
-Agent-driven workflow: ${summary.agentDrivenWorkflow.status}
-${summary.agentDrivenWorkflow.stages.map((stage) => `- ${stage}`).join("\n")}
-
-Transcript certification: ${stringFromRecord(summary.transcriptCertification, "status")}
-
-Inline transcript certification: ${stringFromRecord(summary.inlineTranscriptCertification, "status")}
-- Output: ${stringFromRecord(summary.inlineTranscriptCertification, "outDir")}
-
-MCP composition review: ${stringFromRecord(summary.mcpCompositionReview, "status")}
-- Score: ${String(summary.mcpCompositionReview.score ?? "")}
-- Splunk tools: ${stringArrayFromRecord(summary.mcpCompositionReview, "splunkToolNames").join(", ") || "none"}
-- Evidence refs: ${stringArrayFromRecord(summary.mcpCompositionReview, "evidenceRefs").join(", ") || "none"}
-
-Hosted-model access check: ${stringFromRecord(summary.hostedModelAccess, "status")}
-- Blocker: ${stringFromRecord(summary.hostedModelAccess, "blockerClass") ?? "NONE"}
-- Permission: ${stringFromRecord(summary.hostedModelAccess, "permissionStatus")}
-- Permission blocker: ${stringFromRecord(summary.hostedModelAccess, "permissionBlockerClass") ?? "NONE"}
-- Passed tools: ${stringArrayFromRecord(summary.hostedModelAccess, "passedTools").join(", ") || "none"}
-- Blocked tools: ${stringArrayFromRecord(summary.hostedModelAccess, "blockedTools").join(", ") || "none"}
-- Output: ${stringFromRecord(summary.hostedModelAccess, "outDir")}
-
-Operator live hosted-model status: ${summary.operatorLiveHostedModelStatus.status}
-- Artifact: ${summary.operatorLiveHostedModelStatus.artifactPath}
-- Blocker: ${summary.operatorLiveHostedModelStatus.blockerClass}
-- Permission: ${summary.operatorLiveHostedModelStatus.permissionStatus}
-- Permission blocker: ${summary.operatorLiveHostedModelStatus.permissionBlockerClass}
-- Route probe: ${summary.operatorLiveHostedModelStatus.restHandlerProbeStatus}
-- Passed tools: ${summary.operatorLiveHostedModelStatus.passedTools.join(", ") || "none"}
-- Blocked tools: ${summary.operatorLiveHostedModelStatus.blockedTools.join(", ") || "none"}
-- Summary: ${summary.operatorLiveHostedModelStatus.summary}
-
-Splunk MCP boundary: ${summary.splunkMcpBoundary.status}
-- Certified tool calls: ${summary.splunkMcpBoundary.certifiedToolNames.join(", ")}
-- Saved-search execution: ${summary.splunkMcpBoundary.includesSavedSearchExecution ? "yes" : "no"}
-- Evidence refs: ${summary.splunkMcpBoundary.evidenceRefs.join(", ")}
-- Receipt: ${summary.splunkMcpBoundary.receiptPath}
-
-MCP composition scorecard: ${summary.mcpComposition.status} (${summary.mcpComposition.score}/100)
-${summary.mcpComposition.checks.map((check) => `- ${check.id}: ${check.status} - ${check.evidence}`).join("\n")}
-
-Official Splunk MCP tool coverage: ${summary.officialSplunkMcpToolCoverage.status}
-- Captured core tools: ${summary.officialSplunkMcpToolCoverage.capturedCoreTools.join(", ") || "none"}
-- Investigation tools: ${summary.officialSplunkMcpToolCoverage.investigationTools.join(", ") || "none"}
-- Hosted-model tools: ${summary.officialSplunkMcpToolCoverage.hostedModelTools.join(", ") || "none"}
-- Mission-scoped out tools: ${summary.officialSplunkMcpToolCoverage.missionScopedOutTools.join(", ") || "none"}
-${summary.officialSplunkMcpToolCoverage.checks.map((check) => `- ${check.id}: ${check.status} - ${check.evidence}`).join("\n")}
-
-MCP client walkthrough: ${summary.clientWalkthrough.status}
-- Artifact: ${summary.clientWalkthrough.artifactPath}
-- Markdown: ${summary.clientWalkthrough.markdownPath}
-- Existing Splunk MCP server: ${summary.clientWalkthrough.servers.find((server) => server.name === "splunk")?.role ?? ""}
-- SplunkReady role: ${summary.clientWalkthrough.servers.find((server) => server.name === "splunkready")?.role ?? ""}
-${summary.clientWalkthrough.stages.map((stage) => `- ${stage.id}: ${stage.title} (${stage.server}) - ${stage.evidence}`).join("\n")}
-
-MCP client session: ${summary.clientSession.status}
-- Artifact: ${summary.clientSession.artifactPath}
-- Markdown: ${summary.clientSession.markdownPath}
-- Protocol: ${summary.clientSession.protocol}
-- Requests: ${summary.clientSession.requestCount}
-- Responses: ${summary.clientSession.responseCount}
-- Methods: ${summary.clientSession.methods.join(", ")}
-- Resources read: ${summary.clientSession.resourceUris.join(", ")}
-- Prompts fetched: ${summary.clientSession.promptNames.join(", ")}
-- Tools called: ${summary.clientSession.toolNames.join(", ")}
-
-Live mock Splunk MCP: ${summary.liveMockSplunkMcp.status}
-- Artifact: ${summary.liveMockSplunkMcp.artifactPath}
-- Markdown: ${summary.liveMockSplunkMcp.markdownPath}
-- Route state: ${summary.liveMockSplunkMcp.routeState}
-- Tools called: ${summary.liveMockSplunkMcp.toolNames.join(", ") || "none"}
-- Evidence refs: ${summary.liveMockSplunkMcp.evidenceRefs.join(", ") || "none"}
-- Saved-search execution: ${summary.liveMockSplunkMcp.includesSavedSearchExecution ? "yes" : "no"}
-
-AppInspect MCP composition: ${summary.appInspectComposition.status}
-- Artifact: ${summary.appInspectComposition.artifactPath}
-- Markdown: ${summary.appInspectComposition.markdownPath}
-- Server: ${summary.appInspectComposition.server.status}${summary.appInspectComposition.server.name ? ` (${summary.appInspectComposition.server.name} ${summary.appInspectComposition.server.version})` : ""}
-- Tools: ${summary.appInspectComposition.server.tools.join(", ") || "none"}
-- App package: ${summary.appInspectComposition.appPackagePath}
-- Validation: ${summary.appInspectComposition.validation.status}
-- AppInspect failures: ${summary.appInspectComposition.validation.failureCount}
-- AppInspect errors: ${summary.appInspectComposition.validation.errorCount}
-- AppInspect warnings: ${summary.appInspectComposition.validation.warningCount}
-- Receipt authority: ${summary.appInspectComposition.composition.deterministicReceiptAuthority}
-- AppInspect authority: ${summary.appInspectComposition.composition.appInspectAuthority}
-
-MCP composition recorder: ${summary.compositionRecorder.status}
-- Artifact: ${summary.compositionRecorder.artifactPath}
-- Markdown: ${summary.compositionRecorder.markdownPath}
-- Frames: ${summary.compositionRecorder.frameCount}
-- Servers: ${summary.compositionRecorder.serverIds.join(", ")}
-- Splunk tools: ${summary.compositionRecorder.splunkToolNames.join(", ") || "none"}
-- SplunkReady tools: ${summary.compositionRecorder.splunkReadyToolNames.join(", ") || "none"}
-- Redaction: ${summary.compositionRecorder.redaction.status}
-- Certification: ${summary.compositionRecorder.certification?.status ?? "NOT_RUN"}
-
-Receipt: ${stringFromRecord(summary.transcriptCertification, "outDir")}/receipt-external-001.json
-`;
-
-const mcpClientWalkthroughMarkdown = (walkthrough: McpProofSummary["clientWalkthrough"]): string => `# Splunk MCP Client Walkthrough
-
-Status: ${walkthrough.status}
-
-Mutation: ${walkthrough.mutation ? "yes" : "no"}
-
-Deterministic authority: ${walkthrough.deterministicAuthority ? "yes" : "no"}
-
-## Servers
-
-${walkthrough.servers.map((server) => `- ${server.name}: ${server.role} existingMcpServer=${server.existingMcpServer}`).join("\n")}
-
-## Stages
-
-${walkthrough.stages.map((stage) => `- ${stage.id}: ${stage.title}\n  - Server: ${stage.server}\n  - Evidence: ${stage.evidence}`).join("\n")}
-
-## Transcript
-
-- Path: ${walkthrough.transcript.path}
-- Splunk tools: ${walkthrough.transcript.splunkToolNames.join(", ")}
-- Splunk tool calls: ${walkthrough.transcript.splunkToolCallCount}
-- Saved-search execution: ${walkthrough.transcript.includesSavedSearchExecution ? "yes" : "no"}
-- Evidence refs: ${walkthrough.transcript.evidenceRefs.join(", ")}
-
-## Receipt
-
-- Path: ${walkthrough.receipt.path}
-- Status: ${walkthrough.receipt.status}
-- Authoritative: ${walkthrough.receipt.authoritative ? "yes" : "no"}
-`;
-
-const mcpClientSessionMarkdown = (session: McpProofSummary["clientSession"]): string => `# SplunkReady MCP Client Session
-
-Status: ${session.status}
-
-Protocol: ${session.protocol}
-
-Mutation: ${session.mutation ? "yes" : "no"}
-
-Deterministic authority: ${session.deterministicAuthority ? "yes" : "no"}
-
-Requests: ${session.requestCount}
-
-Responses: ${session.responseCount}
-
-Methods:
-${session.methods.map((method) => `- ${method}`).join("\n")}
-
-Resources:
-${session.resourceUris.map((uri) => `- ${uri}`).join("\n")}
-
-Prompts:
-${session.promptNames.map((name) => `- ${name}`).join("\n")}
-
-Tools:
-${session.toolNames.map((name) => `- ${name}`).join("\n")}
-`;
-
-const liveMockSplunkMcpMarkdown = (liveMock: McpProofSummary["liveMockSplunkMcp"]): string => `# Live Mock Splunk MCP Session
-
-Status: ${liveMock.status}
-
-Route state: ${liveMock.routeState}
-
-Mutation: ${liveMock.mutation ? "yes" : "no"}
-
-Deterministic authority: ${liveMock.deterministicAuthority ? "yes" : "no"}
-
-Requests: ${liveMock.requestCount}
-
-Responses: ${liveMock.responseCount}
-
-Tools:
-${liveMock.toolNames.map((name) => `- ${name}`).join("\n")}
-
-Evidence refs:
-${liveMock.evidenceRefs.map((ref) => `- ${ref}`).join("\n")}
-
-Saved-search execution: ${liveMock.includesSavedSearchExecution ? "yes" : "no"}
-`;
-
-const stringArray = (value: unknown): string[] =>
-  Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
-
-const safeRecord = (value: unknown): Record<string, unknown> =>
-  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
-
-const collectEvidenceRefs = (value: unknown): string[] => {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return [];
-  }
-
-  const record = value as Record<string, unknown>;
-  const directRefs = stringArray(record.evidenceRefs);
-  const results = Array.isArray(record.results) ? record.results : [];
-  const rows = Array.isArray(record.rows) ? record.rows : [];
-  const resultRefs = results.flatMap((result) => {
-    if (!result || typeof result !== "object" || Array.isArray(result)) {
-      return [];
-    }
-
-    const eventRef = (result as Record<string, unknown>).eventRef;
-    return typeof eventRef === "string" ? [eventRef] : [];
-  });
-  const rowRefs = rows.flatMap((row) => {
-    if (!row || typeof row !== "object" || Array.isArray(row)) {
-      return [];
-    }
-
-    const eventRef = (row as Record<string, unknown>).eventRef;
-    return typeof eventRef === "string" ? [eventRef] : [];
-  });
-
-  return [...new Set([...directRefs, ...resultRefs, ...rowRefs])];
-};
-
-const textFromMcpResource = (resource: Record<string, unknown>): string => {
-  const contents = Array.isArray(resource.contents) ? resource.contents : [];
-
-  return contents
-    .map((content) => {
-      if (!content || typeof content !== "object" || Array.isArray(content)) {
-        return "";
-      }
-
-      const text = (content as Record<string, unknown>).text;
-
-      return typeof text === "string" ? text : "";
-    })
-    .join("\n");
-};
-
-const displayPath = (path: string): string => {
-  const relativePath = relative(process.cwd(), path);
-
-  if (!relativePath || relativePath.startsWith("..")) {
-    return path;
-  }
-
-  return relativePath;
 };
 
 const readSplunkMcpBoundaryEvidence = async (
@@ -733,7 +322,7 @@ const readSplunkMcpBoundaryEvidence = async (
     splunkMcpServerRole:
       "The captured transcript is the Splunk MCP Server boundary: an agent invoked Splunk MCP tools, then SplunkReady certified the behavior.",
     certifiedToolNames: uniqueToolNames,
-    splunkToolCallCount: certifiedToolNames.filter((toolName) => toolName.startsWith("splunk_")).length,
+    splunkToolCallCount: uniqueToolNames.filter((toolName) => toolName.startsWith("splunk_")).length,
     includesSavedSearchExecution: uniqueToolNames.includes("splunk_run_saved_search"),
     evidenceRefs: uniqueEvidenceRefs,
     receiptPath,
@@ -1119,87 +708,6 @@ const buildMcpClientSession = (
   };
 };
 
-const readOperatorLiveHostedModelStatus = async (
-  artifactPath = "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json"
-): Promise<McpProofSummary["operatorLiveHostedModelStatus"]> => {
-  const notProvided: McpProofSummary["operatorLiveHostedModelStatus"] = {
-    source: "splunkready-operator-live-hosted-model-status",
-    status: "NOT_PROVIDED",
-    artifactPath,
-    blockerClass: "NOT_PROVIDED",
-    permissionStatus: "NOT_PROVIDED",
-    permissionBlockerClass: "NOT_PROVIDED",
-    requiredTools: [],
-    availableTools: [],
-    passedTools: [],
-    blockedTools: [],
-    restHandlerProbeStatus: "NOT_PROVIDED",
-    summary:
-      "No operator-owned live hosted-model diagnostic artifact was present when the credential-free MCP proof was generated.",
-    safeForPublicExport: true,
-    deterministicAuthority: true,
-    mutation: false
-  };
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(await readFile(artifactPath, "utf8")) as unknown;
-  } catch {
-    return notProvided;
-  }
-
-  const record = safeRecord(parsed);
-  const permission = safeRecord(record.permission);
-  const restHandlerProbe = safeRecord(record.restHandlerProbe);
-  const remediation = safeRecord(record.remediation);
-  const status = stringFromRecord(record, "status") === "PASS" ? "PASS" : "BLOCKED";
-  const blockerClass = stringFromRecord(record, "blockerClass") || "UNKNOWN";
-  const permissionStatus = stringFromRecord(permission, "status") || "UNKNOWN";
-  const permissionBlockerClass = stringFromRecord(permission, "blockerClass") || blockerClass;
-  const restHandlerProbeStatus = stringFromRecord(restHandlerProbe, "status") || "NOT_RUN";
-  const summary =
-    stringFromRecord(remediation, "summary") ||
-    stringFromRecord(permission, "message") ||
-    "Operator-owned live hosted-model diagnostic artifact was present, but no summary field was available.";
-
-  return {
-    source: "splunkready-operator-live-hosted-model-status",
-    status,
-    artifactPath,
-    blockerClass,
-    permissionStatus,
-    permissionBlockerClass,
-    requiredTools: stringArray(record.requiredTools),
-    availableTools: stringArray(record.availableTools),
-    passedTools: stringArray(record.passedTools),
-    blockedTools: stringArray(record.blockedTools),
-    restHandlerProbeStatus,
-    summary,
-    safeForPublicExport: true,
-    deterministicAuthority: true,
-    mutation: false
-  };
-};
-
-const notRequestedLiveMockSplunkMcp = (
-  artifactPath: string,
-  markdownPath: string,
-  routeState: "ok" | "degraded" | "route-not-found"
-): McpProofSummary["liveMockSplunkMcp"] => ({
-  source: "splunkready-live-mock-splunk-mcp",
-  status: "NOT_REQUESTED",
-  artifactPath,
-  markdownPath,
-  routeState,
-  toolNames: [],
-  evidenceRefs: [],
-  includesSavedSearchExecution: false,
-  requestCount: 0,
-  responseCount: 0,
-  deterministicAuthority: true,
-  mutation: false
-});
-
 const runLiveMockSplunkMcpSession = async (input: {
   enabled?: boolean;
   serverPath?: string;
@@ -1211,7 +719,20 @@ const runLiveMockSplunkMcpSession = async (input: {
   const routeState = input.routeState ?? "ok";
 
   if (!input.enabled) {
-    const summary = notRequestedLiveMockSplunkMcp(input.artifactPath, input.markdownPath, routeState);
+    const summary: McpProofSummary["liveMockSplunkMcp"] = {
+      source: "splunkready-live-mock-splunk-mcp",
+      status: "NOT_REQUESTED",
+      artifactPath: input.artifactPath,
+      markdownPath: input.markdownPath,
+      routeState,
+      toolNames: [],
+      evidenceRefs: [],
+      includesSavedSearchExecution: false,
+      requestCount: 0,
+      responseCount: 0,
+      deterministicAuthority: true,
+      mutation: false
+    };
     await writeFile(input.artifactPath, "");
     await writeFile(input.markdownPath, liveMockSplunkMcpMarkdown(summary), "utf8");
     return summary;
@@ -1356,124 +877,254 @@ const buildCompositionRecorderEvidence = async (input: {
         : "FAIL"
   };
   await writeFile(input.markdownPath, renderMcpCompositionRecorderMarkdown(compositionRecorder), "utf8");
-
   return compositionRecorder;
 };
 
-export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise<McpProofWorkflowResult> => {
-  const transcriptPath = input.transcriptPath ?? defaultTranscriptPath;
-  const transcriptOutDir = join(input.outDir, "mcp-transcript-certification");
-  const inlineTranscriptOutDir = join(input.outDir, "mcp-inline-transcript-certification");
-  const hostedModelAccessOutDir = join(input.outDir, "mcp-hosted-model-access");
-  const summaryPath = join(input.outDir, "mcp-proof-summary.json");
-  const markdownPath = join(input.outDir, "mcp-proof-summary.md");
-  const clientWalkthroughPath = join(input.outDir, "mcp-client-walkthrough.json");
-  const clientWalkthroughMarkdownPath = join(input.outDir, "mcp-client-walkthrough.md");
-  const clientSessionPath = join(input.outDir, "mcp-client-session.jsonl");
-  const clientSessionMarkdownPath = join(input.outDir, "mcp-client-session.md");
-  const liveMockSplunkMcpSessionPath = join(input.outDir, "mock-splunk-mcp-session.jsonl");
-  const liveMockSplunkMcpMarkdownPath = join(input.outDir, "mock-splunk-mcp-session.md");
-  const compositionRecorderSessionPath = join(input.outDir, "dual-server-session.jsonl");
-  const compositionRecorderMarkdownPath = join(input.outDir, "dual-server-session.md");
-  const compositionRecorderCertificationOutDir = join(input.outDir, "mcp-composition-recorder-certification");
-  const recorderGatewayDownstreamCertificationOutDir = join(input.outDir, "mcp-recorder-gateway-inline-certification");
-  const recorderGatewayDownstreamPathCertificationOutDir = join(input.outDir, "mcp-recorder-gateway-path-certification");
-  const appInspectCompositionPath = join(input.outDir, "appinspect-mcp-composition.json");
-  const appInspectCompositionMarkdownPath = join(input.outDir, "appinspect-mcp-composition.md");
+const readOperatorLiveHostedModelStatus = async (
+  artifactPath = "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json"
+): Promise<McpProofSummary["operatorLiveHostedModelStatus"]> => {
+  const notProvided: McpProofSummary["operatorLiveHostedModelStatus"] = {
+    source: "splunkready-operator-live-hosted-model-status",
+    status: "NOT_PROVIDED",
+    artifactPath,
+    blockerClass: "NOT_PROVIDED",
+    permissionStatus: "NOT_PROVIDED",
+    permissionBlockerClass: "NOT_PROVIDED",
+    requiredTools: [],
+    availableTools: [],
+    passedTools: [],
+    blockedTools: [],
+    restHandlerProbeStatus: "NOT_PROVIDED",
+    summary:
+      "No operator-owned live hosted-model diagnostic artifact was present when the credential-free MCP proof was generated.",
+    safeForPublicExport: true,
+    deterministicAuthority: true,
+    mutation: false
+  };
 
-  await mkdir(input.outDir, { recursive: true });
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(await readFile(artifactPath, "utf8")) as unknown;
+  } catch {
+    return notProvided;
+  }
+
+  const record = safeRecord(parsed);
+  const permission = safeRecord(record.permission);
+  const restHandlerProbe = safeRecord(record.restHandlerProbe);
+  const remediation = safeRecord(record.remediation);
+  const status = stringFromRecord(record, "status") === "PASS" ? "PASS" : "BLOCKED";
+  const blockerClass = stringFromRecord(record, "blockerClass") || "UNKNOWN";
+  const permissionStatus = stringFromRecord(permission, "status") || "UNKNOWN";
+  const permissionBlockerClass = stringFromRecord(permission, "blockerClass") || blockerClass;
+  const restHandlerProbeStatus = stringFromRecord(restHandlerProbe, "status") || "NOT_RUN";
+  const summary =
+    stringFromRecord(remediation, "summary") ||
+    stringFromRecord(permission, "message") ||
+    "Operator-owned live hosted-model diagnostic artifact was present, but no summary field was available.";
+
+  return {
+    source: "splunkready-operator-live-hosted-model-status",
+    status,
+    artifactPath,
+    blockerClass,
+    permissionStatus,
+    permissionBlockerClass,
+    requiredTools: stringArray(record.requiredTools),
+    availableTools: stringArray(record.availableTools),
+    passedTools: stringArray(record.passedTools),
+    blockedTools: stringArray(record.blockedTools),
+    restHandlerProbeStatus,
+    summary,
+    safeForPublicExport: true,
+    deterministicAuthority: true,
+    mutation: false
+  };
+};
+
+export const runMcpProofWorkflow = async (
+  input: McpProofWorkflowInput
+): Promise<McpProofWorkflowResult> => {
+  const outDir = input.outDir;
+  const transcriptPath = input.transcriptPath ?? defaultTranscriptPath;
+  const finalAnswer = input.finalAnswer ?? defaultFinalAnswer;
+  const summaryPath = join(outDir, "mcp-proof-summary.json");
+  const markdownPath = join(outDir, "mcp-proof-summary.md");
+  const clientWalkthroughPath = join(outDir, "mcp-client-walkthrough.json");
+  const clientWalkthroughMarkdownPath = join(outDir, "mcp-client-walkthrough.md");
+  const clientSessionPath = join(outDir, "mcp-client-session.jsonl");
+  const clientSessionMarkdownPath = join(outDir, "mcp-client-session.md");
+  const liveMockSplunkMcpSessionPath = join(outDir, "mock-splunk-mcp-session.jsonl");
+  const liveMockSplunkMcpMarkdownPath = join(outDir, "mock-splunk-mcp-session.md");
+  const appInspectCompositionPath = join(outDir, "appinspect-mcp-composition.json");
+  const appInspectCompositionMarkdownPath = join(outDir, "appinspect-mcp-composition.md");
+  const compositionRecorderSessionPath = join(outDir, "dual-server-session.jsonl");
+  const compositionRecorderMarkdownPath = join(outDir, "dual-server-session.md");
+  const recorderGatewayCertificationOutDir = join(outDir, "mcp-composition-recorder-certification");
+  const recorderGatewayDownstreamCertificationOutDir = join(outDir, "mcp-recorder-gateway-inline-certification");
+  const recorderGatewayDownstreamPathCertificationOutDir = join(outDir, "mcp-recorder-gateway-path-certification");
+  const transcriptOutDir = join(outDir, "mcp-transcript-certification");
+  const inlineTranscriptOutDir = join(outDir, "mcp-inline-transcript-certification");
+  const hostedModelAccessOutDir = join(outDir, "mcp-hosted-model-access");
+
+  await mkdir(outDir, { recursive: true });
   await mkdir(transcriptOutDir, { recursive: true });
   await mkdir(inlineTranscriptOutDir, { recursive: true });
   await mkdir(hostedModelAccessOutDir, { recursive: true });
-  await mkdir(compositionRecorderCertificationOutDir, { recursive: true });
+  await mkdir(recorderGatewayCertificationOutDir, { recursive: true });
 
   const client = new McpStdioClient(input.serverPath);
 
   try {
     const initialize = await client.request("initialize", {
-      protocolVersion: "2025-06-18",
+      protocolVersion: "2024-11-05",
       capabilities: {},
-      clientInfo: { name: "splunkready-mcp-proof", version: "0.0.0" }
+      clientInfo: { name: "splunkready-mcp-proof", version: "0.1.0" }
     });
     client.notify("notifications/initialized");
-    const toolsList = await client.request("tools/list");
-    const resourcesList = await client.request("resources/list");
-    const resourceTemplatesList = await client.request("resources/templates/list");
-    const postureResource = await client.request("resources/read", { uri: "splunkready://certification/posture" });
-    const clientConfigResource = await client.request("resources/read", { uri: "splunkready://client-config/stdio" });
-    const dualServerClientConfigResource = await client.request("resources/read", {
-      uri: "splunkready://client-config/splunk-and-splunkready"
-    });
-    const claudeDesktopClientConfigResource = await client.request("resources/read", {
-      uri: "splunkready://client-config/claude-desktop"
-    });
-    const cursorClientConfigResource = await client.request("resources/read", {
-      uri: "splunkready://client-config/cursor"
-    });
-    const antigravityClientConfigResource = await client.request("resources/read", {
-      uri: "splunkready://client-config/antigravity"
-    });
-    const zedClientConfigResource = await client.request("resources/read", {
-      uri: "splunkready://client-config/zed"
-    });
-    const certificationLoopResource = await client.request("resources/read", {
-      uri: "splunkready://workflows/splunk-mcp-certification-loop"
-    });
-    const compositionScorecardResource = await client.request("resources/read", {
-      uri: "splunkready://workflows/mcp-composition-scorecard"
-    });
-    const hostedModelDiagnosticResource = await client.request("resources/read", {
-      uri: "splunkready://workflows/hosted-model-diagnostic"
-    });
-    const receiptTemplateResource = await client.request("resources/read", { uri: "splunkready://receipts/pass" });
-    const promptsList = await client.request("prompts/list");
-    const transcriptPrompt = await client.request("prompts/get", {
-      name: "splunkready_certify_mcp_transcript",
-      arguments: {
-        transcriptPath,
-        outDir: transcriptOutDir,
-        finalAnswer: input.finalAnswer ?? defaultFinalAnswer
-      }
-    });
-    const certificationLoopPrompt = await client.request("prompts/get", {
-      name: "splunkready_splunk_mcp_certification_loop",
-      arguments: {
-        splunkMcpServerName: "splunk",
-        transcriptPath,
-        outDir: transcriptOutDir
-      }
-    });
-    const compositionReviewPrompt = await client.request("prompts/get", {
-      name: "splunkready_mcp_composition_review",
-      arguments: {
-        proofSummaryPath: summaryPath
-      }
-    });
-    const hostedModelDiagnosticPrompt = await client.request("prompts/get", {
-      name: "splunkready_hosted_model_diagnostic",
-      arguments: {
-        outDir: hostedModelAccessOutDir,
-        mode: "fixture"
-      }
-    });
+
+    const serverInfo = asRecord(initialize.serverInfo, "initialize.serverInfo");
     const describeResult = await client.request("tools/call", {
       name: "splunkready_describe_certification",
       arguments: {}
     });
+    const describe = extractStructuredContent(describeResult, "splunkready_describe_certification");
+    const postureResource = asRecord(
+      await client.request("resources/read", { uri: "splunkready://certification/posture" }),
+      "postureResource"
+    );
+    const clientConfigResource = asRecord(
+      await client.request("resources/read", { uri: "splunkready://client-config/stdio" }),
+      "clientConfigResource"
+    );
+    const dualServerClientConfigResource = asRecord(
+      await client.request("resources/read", { uri: "splunkready://client-config/splunk-and-splunkready" }),
+      "dualServerClientConfigResource"
+    );
+    const claudeDesktopClientConfigResource = asRecord(
+      await client.request("resources/read", { uri: "splunkready://client-config/claude-desktop" }),
+      "claudeDesktopClientConfigResource"
+    );
+    const cursorClientConfigResource = asRecord(
+      await client.request("resources/read", { uri: "splunkready://client-config/cursor" }),
+      "cursorClientConfigResource"
+    );
+    const antigravityClientConfigResource = asRecord(
+      await client.request("resources/read", { uri: "splunkready://client-config/antigravity" }),
+      "antigravityClientConfigResource"
+    );
+    const zedClientConfigResource = asRecord(
+      await client.request("resources/read", { uri: "splunkready://client-config/zed" }),
+      "zedClientConfigResource"
+    );
+    const certificationLoopResource = asRecord(
+      await client.request("resources/read", { uri: "splunkready://workflows/splunk-mcp-certification-loop" }),
+      "certificationLoopResource"
+    );
+    const compositionScorecardResource = asRecord(
+      await client.request("resources/read", { uri: "splunkready://workflows/mcp-composition-scorecard" }),
+      "compositionScorecardResource"
+    );
+    const hostedModelDiagnosticResource = asRecord(
+      await client.request("resources/read", { uri: "splunkready://workflows/hosted-model-diagnostic" }),
+      "hostedModelDiagnosticResource"
+    );
+    const receiptTemplateResource = asRecord(
+      await client.request("resources/read", { uri: "splunkready://receipts/pass" }),
+      "receiptTemplateResource"
+    );
+    const transcriptPrompt = asRecord(
+      await client.request("prompts/get", {
+        name: "splunkready_certify_mcp_transcript",
+        arguments: {
+          transcriptPath,
+          outDir: transcriptOutDir,
+          finalAnswer
+        }
+      }),
+      "transcriptPrompt"
+    );
+    const certificationLoopPrompt = asRecord(
+      await client.request("prompts/get", {
+        name: "splunkready_splunk_mcp_certification_loop",
+        arguments: {
+          splunkMcpServerName: "splunk",
+          transcriptPath,
+          outDir: transcriptOutDir
+        }
+      }),
+      "certificationLoopPrompt"
+    );
+    const compositionReviewPrompt = asRecord(
+      await client.request("prompts/get", {
+        name: "splunkready_mcp_composition_review",
+        arguments: {
+          proofSummaryPath: summaryPath
+        }
+      }),
+      "compositionReviewPrompt"
+    );
+    const hostedModelDiagnosticPrompt = asRecord(
+      await client.request("prompts/get", {
+        name: "splunkready_hosted_model_diagnostic",
+        arguments: {
+          outDir: hostedModelAccessOutDir,
+          mode: "fixture"
+        }
+      }),
+      "hostedModelDiagnosticPrompt"
+    );
+    const toolsList = await client.request("tools/list");
+    const tools = Array.isArray(toolsList.tools)
+      ? toolsList.tools.map((tool) => {
+          const record = safeRecord(tool);
+          const annotations = safeRecord(record.annotations);
+          return {
+            name: String(record.name),
+            destructiveHint: annotations.destructiveHint,
+            readOnlyHint: annotations.readOnlyHint
+          };
+        })
+      : [];
+    const resourcesList = await client.request("resources/list");
+    const resources = Array.isArray(resourcesList.resources)
+      ? resourcesList.resources.map((resource) => {
+          const record = safeRecord(resource);
+          return {
+            uri: String(record.uri),
+            name: String(record.name),
+            mimeType: String(record.mimeType)
+          };
+        })
+      : [];
+    const templatesList = await client.request("resources/templates/list");
+    const resourceTemplates = Array.isArray(templatesList.resourceTemplates)
+      ? templatesList.resourceTemplates.map((template) => {
+          const record = safeRecord(template);
+          return {
+            uriTemplate: String(record.uriTemplate),
+            name: String(record.name),
+            mimeType: String(record.mimeType)
+          };
+        })
+      : [];
+    const promptsList = await client.request("prompts/list");
+    const prompts = Array.isArray(promptsList.prompts)
+      ? promptsList.prompts.map((prompt) => {
+          const record = safeRecord(prompt);
+          const args = Array.isArray(record.arguments) ? record.arguments : [];
+          return {
+            name: String(record.name),
+            argumentCount: args.length
+          };
+        })
+      : [];
     const transcriptContent = await readFile(transcriptPath, "utf8");
-    const compositionReviewResult = await client.request("tools/call", {
-      name: "splunkready_review_mcp_composition",
-      arguments: {
-        transcript: transcriptContent,
-        clientConfig: textFromMcpResource(dualServerClientConfigResource),
-        requirePass: true
-      }
-    });
-    const transcriptResult = await client.request("tools/call", {
+    const transcriptCall = await client.request("tools/call", {
       name: "splunkready_certify_mcp_transcript",
       arguments: {
         transcriptPath,
-        finalAnswer: input.finalAnswer ?? defaultFinalAnswer,
+        finalAnswer,
         outDir: transcriptOutDir,
         strictImport: true,
         requirePass: true,
@@ -1481,11 +1132,13 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         agentVersion: "mcp-proof-jsonrpc-pass"
       }
     });
-    const inlineTranscriptResult = await client.request("tools/call", {
+    const transcriptCertification = extractStructuredContent(transcriptCall, "splunkready_certify_mcp_transcript");
+    const toolArtifacts = stringArrayFromRecord(transcriptCertification, "artifacts");
+    const inlineCall = await client.request("tools/call", {
       name: "splunkready_certify_mcp_transcript_content",
       arguments: {
         transcript: transcriptContent,
-        finalAnswer: input.finalAnswer ?? defaultFinalAnswer,
+        finalAnswer,
         outDir: inlineTranscriptOutDir,
         strictImport: true,
         requirePass: true,
@@ -1493,7 +1146,18 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         agentVersion: "mcp-proof-inline-jsonrpc-pass"
       }
     });
-    const hostedModelAccessResult = await client.request("tools/call", {
+    const inlineTranscriptCertification = extractStructuredContent(inlineCall, "splunkready_certify_mcp_transcript_content");
+    const inlineToolArtifacts = stringArrayFromRecord(inlineTranscriptCertification, "artifacts");
+    const compositionReviewCall = await client.request("tools/call", {
+      name: "splunkready_review_mcp_composition",
+      arguments: {
+        transcript: transcriptContent,
+        clientConfig: textFromMcpResource(dualServerClientConfigResource),
+        requirePass: true
+      }
+    });
+    const mcpCompositionReview = extractStructuredContent(compositionReviewCall, "splunkready_review_mcp_composition");
+    const hostedModelAccessCall = await client.request("tools/call", {
       name: "splunkready_check_hosted_model_access",
       arguments: {
         outDir: hostedModelAccessOutDir,
@@ -1501,80 +1165,16 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
         requirePass: true
       }
     });
-    const serverInfo = asRecord(initialize.serverInfo, "initialize.serverInfo");
-    const tools = (Array.isArray(toolsList.tools) ? toolsList.tools : []).map((tool) => {
-      const record = asRecord(tool, "tools/list tool");
-      const annotations = asRecord(record.annotations, "tools/list annotations");
-
-      return {
-        name: stringFromRecord(record, "name"),
-        destructiveHint: annotations.destructiveHint,
-        readOnlyHint: annotations.readOnlyHint
-      };
-    });
-    const resources = (Array.isArray(resourcesList.resources) ? resourcesList.resources : []).map((resource) => {
-      const record = asRecord(resource, "resources/list resource");
-
-      return {
-        uri: stringFromRecord(record, "uri"),
-        name: stringFromRecord(record, "name"),
-        mimeType: stringFromRecord(record, "mimeType")
-      };
-    });
-    const resourceTemplates = (
-      Array.isArray(resourceTemplatesList.resourceTemplates) ? resourceTemplatesList.resourceTemplates : []
-    ).map((template) => {
-      const record = asRecord(template, "resources/templates/list template");
-
-      return {
-        uriTemplate: stringFromRecord(record, "uriTemplate"),
-        name: stringFromRecord(record, "name"),
-        mimeType: stringFromRecord(record, "mimeType")
-      };
-    });
-    const prompts = (Array.isArray(promptsList.prompts) ? promptsList.prompts : []).map((prompt) => {
-      const record = asRecord(prompt, "prompts/list prompt");
-      const args = Array.isArray(record.arguments) ? record.arguments : [];
-
-      return {
-        name: stringFromRecord(record, "name"),
-        argumentCount: args.length
-      };
-    });
-    const describe = extractStructuredContent(describeResult, "splunkready_describe_certification");
-    const transcriptCertification = extractStructuredContent(
-      transcriptResult,
-      "splunkready_certify_mcp_transcript"
-    );
-    const inlineTranscriptCertification = extractStructuredContent(
-      inlineTranscriptResult,
-      "splunkready_certify_mcp_transcript_content"
-    );
-    const mcpCompositionReview = extractStructuredContent(
-      compositionReviewResult,
-      "splunkready_review_mcp_composition"
-    );
-    const hostedModelAccess = extractStructuredContent(
-      hostedModelAccessResult,
-      "splunkready_check_hosted_model_access"
-    );
+    const hostedModelAccess = extractStructuredContent(hostedModelAccessCall, "splunkready_check_hosted_model_access");
+    const hostedModelAccessArtifacts = stringArrayFromRecord(hostedModelAccess, "artifacts");
     const operatorLiveHostedModelStatus = await readOperatorLiveHostedModelStatus();
+
     const certificationStatus = stringFromRecord(transcriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
-    const inlineCertificationStatus =
-      stringFromRecord(inlineTranscriptCertification, "status") === "PASS" ? "PASS" : "FAIL";
-    const compositionReviewStatus = stringFromRecord(mcpCompositionReview, "status") === "PASS" ? "PASS" : "FAIL";
-    const hostedModelAccessStatus = stringFromRecord(hostedModelAccess, "status") === "PASS" ? "PASS" : "FAIL";
-    const toolArtifacts = Array.isArray(transcriptCertification.artifacts)
-      ? transcriptCertification.artifacts.filter((artifact): artifact is string => typeof artifact === "string")
-      : [];
-    const inlineToolArtifacts = Array.isArray(inlineTranscriptCertification.artifacts)
-      ? inlineTranscriptCertification.artifacts.filter((artifact): artifact is string => typeof artifact === "string")
-      : [];
-    const hostedModelAccessArtifacts = Array.isArray(hostedModelAccess.artifacts)
-      ? hostedModelAccess.artifacts.filter((artifact): artifact is string => typeof artifact === "string")
-      : [];
-    const receiptPath = join(transcriptOutDir, "receipt-external-001.json");
-    const splunkMcpBoundary = await readSplunkMcpBoundaryEvidence(transcriptPath, certificationStatus, receiptPath);
+    const splunkMcpBoundary = await readSplunkMcpBoundaryEvidence(
+      transcriptPath,
+      certificationStatus,
+      join(transcriptOutDir, "receipt-external-001.json")
+    );
     const agentDrivenWorkflow: McpProofSummary["agentDrivenWorkflow"] = {
       status:
         certificationStatus === "PASS" &&
@@ -1633,18 +1233,17 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       artifactPath: appInspectCompositionPath,
       markdownPath: appInspectCompositionMarkdownPath
     });
-    const clientSession = buildMcpClientSession(client.session(), clientSessionPath, clientSessionMarkdownPath);
     const compositionRecorder = await buildCompositionRecorderEvidence({
       liveMock: input.liveMock,
       cliPath: input.mockServerPath,
       fixturePath: input.mockFixturePath,
       mockState: input.mockState ?? "ok",
       transcriptPath,
-      finalAnswer: input.finalAnswer ?? defaultFinalAnswer,
+      finalAnswer,
       splunkReadySession: client.session(),
       artifactPath: compositionRecorderSessionPath,
       markdownPath: compositionRecorderMarkdownPath,
-      certificationOutDir: compositionRecorderCertificationOutDir,
+      certificationOutDir: recorderGatewayCertificationOutDir,
       downstreamCertificationOutDir: recorderGatewayDownstreamCertificationOutDir,
       downstreamPathCertificationOutDir: recorderGatewayDownstreamPathCertificationOutDir
     });
@@ -1652,9 +1251,9 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       source: "splunkready-mcp-proof",
       status:
         certificationStatus === "PASS" &&
-        inlineCertificationStatus === "PASS" &&
-        compositionReviewStatus === "PASS" &&
-        hostedModelAccessStatus === "PASS" &&
+        inlineTranscriptCertification.status === "PASS" &&
+        mcpCompositionReview.status === "PASS" &&
+        hostedModelAccess.status === "PASS" &&
         compositionRecorder.status === "PASS" &&
         (!input.liveMock || liveMockSplunkMcp.status === "PASS")
           ? "PASS"
@@ -1698,7 +1297,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
       mcpComposition,
       officialSplunkMcpToolCoverage,
       clientWalkthrough,
-      clientSession,
+      clientSession: buildMcpClientSession(client.session(), clientSessionPath, clientSessionMarkdownPath),
       liveMockSplunkMcp,
       appInspectComposition,
       compositionRecorder,
@@ -1733,7 +1332,7 @@ export const runMcpProofWorkflow = async (input: McpProofWorkflowInput): Promise
     await writeFile(clientWalkthroughPath, `${JSON.stringify(clientWalkthrough, null, 2)}\n`, "utf8");
     await writeFile(clientWalkthroughMarkdownPath, mcpClientWalkthroughMarkdown(clientWalkthrough), "utf8");
     await writeFile(clientSessionPath, `${client.session().map((record) => JSON.stringify(record)).join("\n")}\n`, "utf8");
-    await writeFile(clientSessionMarkdownPath, mcpClientSessionMarkdown(clientSession), "utf8");
+    await writeFile(clientSessionMarkdownPath, mcpClientSessionMarkdown(summary.clientSession), "utf8");
 
     return {
       status: summary.status,
