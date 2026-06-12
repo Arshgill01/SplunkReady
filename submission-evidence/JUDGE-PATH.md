@@ -28,30 +28,44 @@ npm run judge-proof
 Expected result: `PASS`, deterministic rule-engine authority, and
 `mutation: false`.
 
-## Seven Evidence Files To Inspect
+## First-Read Evidence Files
+
+The order below is intentional. Read top to bottom for the strongest
+Platform & Developer Experience and Security narrative; read the
+MCP-specific items in the same order to land on the Bonus prize
+story.
 
 1. `submission-evidence/judge-launch/judge-launch.md`
    Compact launch packet: hosted route, no-clone command, first-read evidence,
    and claim boundaries.
 
-2. `submission-evidence/suite-proof/suite-proof-summary.md`
+2. `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.md`
+   Strict 9-check audit of the real Splunk Enterprise 10.4.0 stress replay.
+   Fresh disposable container, operator-scoped setup, security stressors,
+   deployment-derived readiness, deterministic fail-to-pass receipts
+   (`NOT READY 60` -> `READY 100`), live evidence refs, MCP bridge session,
+   official Splunk MCP boundary language, and advisory-only LLM behavior.
+   This is the strongest product evidence in the pack and is the recommended
+   first-read for the Platform & Developer Experience track.
+
+3. `submission-evidence/suite-proof/suite-proof-summary.md`
    Credential-free fail-to-pass certification suite.
 
-3. `submission-evidence/mcp-proof/mcp-category-scorecard.json`
+4. `submission-evidence/mcp-proof/mcp-category-scorecard.json`
    Best Use of Splunk MCP Server scorecard: Splunk MCP as investigation/data
    plane, SplunkReady as deterministic readiness gate, strong external-client
    evidence, zero mutation.
 
-4. `submission-evidence/mcp-proof/mcp-proof-summary.md`
+5. `submission-evidence/mcp-proof/mcp-proof-summary.md`
    Splunk MCP transcript and two-server MCP certification proof.
 
-5. `submission-evidence/claim-ledger.md`
+6. `submission-evidence/claim-ledger.md`
    Public claim-to-evidence map.
 
-6. `submission-evidence/readiness-score-calibration/readiness-score-calibration.md`
+7. `submission-evidence/readiness-score-calibration/readiness-score-calibration.md`
    Deterministic READY / NEEDS REVIEW / NOT READY score calibration.
 
-7. `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`
+8. `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`
    Developer-tools evidence for the packaged Splunk app path, including the
    external blockers that are not claimed as complete.
 

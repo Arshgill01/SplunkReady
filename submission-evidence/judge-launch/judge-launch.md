@@ -20,12 +20,14 @@ Expected result: `PASS`, deterministic rule-engine authority, and
 
 ## First Evidence To Inspect
 
-1. `artifacts/platform-devex-proof/platform-devex-proof.json`
-2. `submission-evidence/mcp-proof/mcp-category-scorecard.json`
-3. `submission-evidence/suite-proof/suite-proof-summary.md`
-4. `submission-evidence/claim-ledger.md`
-5. `submission-evidence/readiness-score-calibration/readiness-score-calibration.md`
-6. `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`
+1. `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.md`
+   Strict 9-check audit of the real Splunk Enterprise 10.4.0 stress replay.
+2. `artifacts/platform-devex-proof/platform-devex-proof.json`
+3. `submission-evidence/mcp-proof/mcp-category-scorecard.json`
+4. `submission-evidence/suite-proof/suite-proof-summary.md`
+5. `submission-evidence/claim-ledger.md`
+6. `submission-evidence/readiness-score-calibration/readiness-score-calibration.md`
+7. `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`
 
 ## Boundaries
 

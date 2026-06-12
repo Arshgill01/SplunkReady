@@ -36,6 +36,10 @@
       "path": "submission-evidence/judge-launch/judge-launch.md"
     },
     {
+      "label": "Real Splunk proof audit (9-check strict)",
+      "path": "submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.md"
+    },
+    {
       "label": "Platform proof",
       "path": "artifacts/platform-devex-proof/platform-devex-proof.json"
     },

@@ -30,6 +30,13 @@ The workbench can run a reproducible fixture certification, inspect proof runs, 
 
 The tracked evidence pack is in `submission-evidence/`:
 
+- `real-splunk-proof-audit/` is the strict 9-check audit of the real Splunk
+  Enterprise 10.4.0 stress replay. Fresh disposable container, operator-scoped
+  setup, security stressors, deployment-derived readiness, deterministic
+  fail-to-pass receipts (`NOT READY 60` -> `READY 100`), live evidence refs,
+  MCP bridge session, official Splunk MCP boundary language, and
+  advisory-only LLM behavior. This is the recommended first-read for
+  Platform & Developer Experience.
 - `suite-proof/` proves three credential-free missions across security and observability.
 - `public-proof-export/` shows the redacted derivative export boundary.
 - `splunk-app-package/` contains an inspectable, credential-free Splunk app package shell for the public artifact workbench.
