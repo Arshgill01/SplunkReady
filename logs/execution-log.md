@@ -17635,3 +17635,5 @@ Actions:
   `0.1.12` as prepared but unpublished.
 - Updated the Platform 70% ExecPlan Gate 14 scorecard: Platform & Developer
   Experience 81%, MCP 64%, Developer Tools 62%, Security unchanged at 28%.
+- Rebuilt the public demo export from commit `1a1071f`, pushed the branch, ran
+  the `public-demo-pages.yml` workflow, and refreshed hosted currentness.

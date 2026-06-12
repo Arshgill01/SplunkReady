@@ -9719,6 +9719,12 @@ Commands:
 - `npx vitest run tests/scripts/submission-copy-audit.test.ts`
 - `npm run audit:submission-copy`
 - `git diff --check`
+- `git push origin splunkready-build`
+- `npm run public-demo:build && npm run audit:public-demo-export`
+- `gh workflow run public-demo-pages.yml --ref splunkready-build`
+- `gh run watch 27429587873 --exit-status`
+- `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `curl -fsSL https://arshgill01.github.io/SplunkReady/public-demo-manifest.json | rg -n "1a1071f|sourceCommit|deploymentCommit|judge-launch"`
 - `npm run check`
 - `npm run verify:scaffold`
 - `git diff --check`
@@ -18799,3 +18805,11 @@ Result:
 - PASS for submission-copy audit after updating guards to `0.1.12`: 464
   required claims.
 - PASS for whitespace check: `git diff --check` produced no output.
+- PASS for branch push: `splunkready-build` pushed to `origin` at `1a1071f`.
+- PASS for post-commit public demo rebuild and audit: manifest source/deploy
+  commit `1a1071f`, 456 files, mutation false.
+- PASS for Pages workflow: run `27429587873` completed successfully.
+- PASS for hosted currentness: status `CURRENT`, expected and hosted source
+  commit `1a1071f`, assets match, manifest includes `artifacts/judge-launch`.
+- PASS for hosted manifest spot-check: source/deployment commit `1a1071f` and
+  `artifacts/judge-launch` were present.
