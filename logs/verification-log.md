@@ -13883,6 +13883,12 @@ Commands:
 - `npm run audit:submission-copy`
 - `npm run check`
 - `npm publish --access public`
+- `npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness`
+- `npm run audit:release-alignment`
+- `npm test -- tests/scripts/real-splunk-proof-audit.test.ts tests/scripts/npm-release-preflight.test.ts tests/scripts/release-alignment.test.ts`
+- `npm run audit:real-splunk-proof -- --require-pass --out submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`
+- `npm run audit:submission-copy`
+- `git diff --check`
 - `npm view splunkready version dist-tags versions --json`
 - `tmp=$(mktemp -d /tmp/splunkready-publish-smoke-XXXXXX) && cd "$tmp" && npx -y splunkready@0.1.2 judge-proof --out ./judge-proof --json`
 - `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
@@ -18601,6 +18607,9 @@ Commands and checks:
 - `npm test -- tests/scripts/npm-release-preflight.test.ts tests/scripts/release-alignment.test.ts`
 - `npm run audit:npm-release-preflight -- --out submission-evidence/npm-release-preflight/npm-release-preflight.json`
 - `npm run audit:release-alignment`
+- `npm version 0.1.9 --no-git-tag-version`
+- `npm run audit:npm-release-preflight -- --require-ready --out submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `npm publish --access public`
 - `npm run audit:submission-copy`
 - `git diff --check`
 - `rg -n "Gate 11|npm-release-preflight|releasePreflight|Feedback prize preparedness|Platform & Developer Experience \\| 76% \\| 77%" docs/execplans/platform-devex-70-plus.md README.md submission-evidence/claim-ledger.md logs/execution-log.md logs/verification-log.md`
@@ -18695,3 +18704,18 @@ Result:
 - PARTIAL for release alignment before the package-input commit: status
   `BLOCKED` only because the currentness artifact still reports dirty local
   package inputs.
+- PASS for local `0.1.9` release preflight: authenticated, version available,
+  dry-run pack OK, mutation false.
+- PARTIAL for `0.1.9` publish: npm returned `EOTP`; publish requires a fresh
+  one-time password before source currentness can be audited as clean.
+- PARTIAL for regenerated currentness after the failed publish: public latest
+  remains `0.1.8`, local version is `0.1.9`, published `0.1.8` probes pass,
+  and recommended action is to publish `splunkready@0.1.9`.
+- PARTIAL for regenerated release alignment: status `BLOCKED`; release
+  preflight is `READY`, but public latest is still `0.1.8` until OTP publish
+  succeeds.
+- PASS for final focused release/audit tests: 3 files, 6 tests.
+- PASS for final real Splunk proof audit regeneration: status `PASS`, score
+  `100`.
+- PASS for final submission-copy audit: 464 required claims.
+- PASS for final whitespace check: `git diff --check` produced no output.

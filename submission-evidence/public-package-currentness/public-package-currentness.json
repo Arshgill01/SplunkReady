@@ -14,11 +14,11 @@
       "0.1.8"
     ],
     "latestVersion": "0.1.8",
-    "localVersion": "0.1.8",
-    "localVersionPublished": true,
-    "latestMatchesLocal": true,
+    "localVersion": "0.1.9",
+    "localVersionPublished": false,
+    "latestMatchesLocal": false,
     "latestGitHead": "a8a21e51198abefa2ec878cd6a33bd4645db43e0",
-    "packageInputGitHead": "a8a21e51198abefa2ec878cd6a33bd4645db43e0",
+    "packageInputGitHead": "fce7bd5091f1a3008844d888869028dd1bdd8242",
     "packageInputPaths": [
       "package.json",
       "package-lock.json",
@@ -34,7 +34,7 @@
       "package-lock.json",
       "package.json"
     ],
-    "gitHeadMatchesPackageInputs": true
+    "gitHeadMatchesPackageInputs": false
   },
   "publishedJudgeProof": {
     "packageSpec": "splunkready@0.1.8",
@@ -127,7 +127,7 @@
     ],
     "error": null
   },
-  "recommendedAction": "Bump splunkready above 0.1.8, run npm-authenticated release preflight, publish the new version, then rerun this audit.",
+  "recommendedAction": "Publish splunkready@0.1.9 after npm-authenticated release preflight passes, then rerun this audit.",
   "mutation": false,
   "failures": []
 }

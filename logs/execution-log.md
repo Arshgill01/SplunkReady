@@ -17541,6 +17541,9 @@ Actions:
   bump: Platform now stands at 78%, MCP at 63%, Developer Tools at 57%, and
   Security at 28% under the stricter real-proof rubric.
 - Confirmed public npm `splunkready@0.1.8` is published and regenerated the npm
-  release preflight as `PUBLISHED`; public package probes pass but source
-  currentness remains stale until the local 0.1.8 package inputs are committed
-  and re-audited.
+  release preflight as `PUBLISHED`; public package probes pass.
+- Bumped the local package to `0.1.9` after adding the audit command, because
+  the package metadata changed after `0.1.8` was published.
+- Ran authenticated `0.1.9` preflight successfully, then attempted
+  `npm publish --access public`; npm returned `EOTP`, so source-currentness is
+  still blocked on a fresh OTP-backed publish.
