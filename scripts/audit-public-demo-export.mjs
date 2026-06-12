@@ -50,6 +50,9 @@ try {
   for (const requiredPath of [
     "index.html",
     "public-demo-manifest.json",
+    "artifacts/judge-launch/artifact-manifest.json",
+    "artifacts/judge-launch/judge-launch.json",
+    "artifacts/judge-launch/judge-launch.md",
     "artifacts/mcp-proof/artifact-manifest.json",
     "artifacts/mcp-proof/mcp-proof-summary.json",
     "artifacts/mcp-proof/mcp-category-scorecard.json",
@@ -122,6 +125,7 @@ try {
   }
 
   const expectedArtifactBases = [
+    "artifacts/judge-launch",
     "artifacts/mcp-proof",
     "artifacts/suite-proof",
     "artifacts/ci-pr-gate",
@@ -154,6 +158,32 @@ try {
 
   const judgeProofPath = join(outDir, "artifacts/judge-proof/judge-proof-summary.json");
   const judgeProof = existsSync(judgeProofPath) ? JSON.parse(readFileSync(judgeProofPath, "utf8")) : {};
+  const judgeLaunchPath = join(outDir, "artifacts/judge-launch/judge-launch.json");
+  const judgeLaunch = existsSync(judgeLaunchPath) ? JSON.parse(readFileSync(judgeLaunchPath, "utf8")) : {};
+
+  if (judgeLaunch.source !== "splunkready-judge-launch") {
+    fail("public demo judge launch source must be splunkready-judge-launch");
+  }
+
+  if (judgeLaunch.status !== "READY_FOR_JUDGES") {
+    fail("public demo judge launch must be READY_FOR_JUDGES");
+  }
+
+  if (judgeLaunch.mutation !== false) {
+    fail("public demo judge launch must preserve mutation=false");
+  }
+
+  if (judgeLaunch.passFailAuthority !== "deterministic-rule-engine") {
+    fail("public demo judge launch must keep deterministic pass/fail authority");
+  }
+
+  if (judgeLaunch.credentialFree !== true) {
+    fail("public demo judge launch must be credential-free");
+  }
+
+  if (!Array.isArray(judgeLaunch.commands) || !judgeLaunch.commands.includes("npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json")) {
+    fail("public demo judge launch must include the published no-clone judge-proof command");
+  }
 
   if (judgeProof.source !== "splunkready-judge-proof") {
     fail("public demo judge proof source must be splunkready-judge-proof");

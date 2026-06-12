@@ -18,6 +18,11 @@ const createSourceTree = async (): Promise<string> => {
 
   await writeFixture(join(root, "dist-ui", "index.html"), "<!doctype html><div id=\"app\"></div>");
   await writeFixture(join(root, "dist-ui", "assets", "index.js"), "window.__splunkready = true;");
+  await writeFixture(
+    join(root, "submission-evidence", "judge-launch", "judge-launch.json"),
+    "{\"source\":\"splunkready-judge-launch\",\"status\":\"READY_FOR_JUDGES\",\"credentialFree\":true,\"mutation\":false,\"passFailAuthority\":\"deterministic-rule-engine\",\"commands\":[\"npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json\"]}\n"
+  );
+  await writeFixture(join(root, "submission-evidence", "judge-launch", "judge-launch.md"), "# Judge launch\n");
   await writeFixture(join(root, "submission-evidence", "mcp-proof", "mcp-proof-summary.json"), "{\"status\":\"PASS\"}\n");
   await writeFixture(
     join(root, "submission-evidence", "mcp-proof", "mcp-category-scorecard.json"),
@@ -156,6 +161,12 @@ describe("public demo export", () => {
 
     await expect(readFile(join(root, "out/public-demo/index.html"), "utf8")).resolves.toContain("app");
     await expect(readFile(join(root, "out/public-demo/assets/index.js"), "utf8")).resolves.toContain("splunkready");
+    await expect(readFile(join(root, "out/public-demo/artifacts/judge-launch/judge-launch.json"), "utf8")).resolves.toContain(
+      "READY_FOR_JUDGES"
+    );
+    await expect(readFile(join(root, "out/public-demo/artifacts/judge-launch/artifact-manifest.json"), "utf8")).resolves.toContain(
+      "judge-launch.md"
+    );
     await expect(readFile(join(root, "out/public-demo/artifacts/mcp-proof/mcp-proof-summary.json"), "utf8")).resolves.toContain(
       "PASS"
     );
@@ -200,6 +211,7 @@ describe("public demo export", () => {
       readFile(join(root, "out/public-demo/artifacts/interactive-demo/artifact-manifest.json"), "utf8")
     ).resolves.toContain("trace-after.json");
     expect(result.copiedArtifactBases).toEqual([
+      "artifacts/judge-launch",
       "artifacts/mcp-proof",
       "artifacts/suite-proof",
       "artifacts/ci-pr-gate",

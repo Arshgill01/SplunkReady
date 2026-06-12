@@ -418,3 +418,33 @@ Current harsh re-score after Gate 11:
 Next work: with npm auth unavailable, the largest remaining local product move
 is to strengthen the hosted/no-clone judge path or submit the mapped feedback
 form from an authenticated browser session.
+
+Gate 12 is in progress for a judge-launch packet and hosted no-clone path.
+
+Gate 12 progress:
+
+- Added a compact `submission-evidence/judge-launch/` packet with a
+  machine-readable `judge-launch.json` and human `judge-launch.md`.
+- The launch packet points judges to the hosted workbench, interactive fixture
+  route, no-clone `npx` command, first-read evidence, deterministic authority,
+  and explicit claim boundaries.
+- Public demo export now copies `judge-launch` as an audit-required artifact
+  base.
+- Public demo export audit now fails if the launch packet is missing, mutable,
+  non-credential-free, or missing the no-clone `splunkready@0.1.7` proof
+  command.
+- Local public-demo build and export audit pass with `artifacts/judge-launch`.
+- Hosted Pages currentness is now stale until the public-demo workflow is
+  rerun from the pushed branch, so this gate is not fully scored yet.
+
+Interim score stance after local Gate 12 work:
+
+| Surface | Gate 11 | Gate 12 local | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 77% | 78% | First-read judge friction is lower locally and audit-required in the public export, but hosted Pages must be refreshed before taking the full score bump. |
+| Best Use of Splunk MCP Server | 65% | 65% | Unchanged until hosted route/currentness is refreshed. |
+| Best Use of Splunk Developer Tools | 52% | 53% | The public export now has a typed launch artifact, but hosted currentness still needs closure. |
+| Feedback prize preparedness | 84% | 84% | Unchanged. |
+
+Next work: push the launch-packet change, rerun `public-demo-pages.yml`, and
+refresh hosted-demo currentness.

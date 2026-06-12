@@ -17478,3 +17478,29 @@ Actions:
   the `0.1.8` next-version action.
 - Updated README, claim ledger, and the Platform 70% ExecPlan to keep the
   no-clone `0.1.7` judge path honest while recording the blocker.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 12 Judge Launch Packet
+
+Files expected to touch:
+
+- `submission-evidence/judge-launch/judge-launch.json`
+- `submission-evidence/judge-launch/judge-launch.md`
+- `submission-evidence/JUDGE-PATH.md`
+- `scripts/export-public-demo.js`
+- `scripts/audit-public-demo-export.mjs`
+- `tests/scripts/public-demo-export.test.ts`
+- `docs/execplans/platform-devex-70-plus.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Added a compact judge-launch packet for the no-clone and hosted review path.
+- Added `judge-launch` to the public demo export input paths and artifact bases.
+- Made the public-demo export audit require the launch packet and verify
+  credential-free, deterministic-authority, mutation, and no-clone command
+  fields.
+- Updated `submission-evidence/JUDGE-PATH.md` so the launch packet is the first
+  evidence file.
+- Rebuilt the local public demo export and confirmed `artifacts/judge-launch`
+  is present.

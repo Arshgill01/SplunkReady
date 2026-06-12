@@ -5,6 +5,12 @@ large because it preserves proof history; judges do not need to read it all.
 
 ## Fastest Proof
 
+Hosted, no credentials:
+
+- `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof`
+- `submission-evidence/judge-launch/judge-launch.json`
+- `submission-evidence/judge-launch/judge-launch.md`
+
 No clone, no credentials:
 
 ```bash
@@ -22,26 +28,30 @@ npm run judge-proof
 Expected result: `PASS`, deterministic rule-engine authority, and
 `mutation: false`.
 
-## Six Evidence Files To Inspect
+## Seven Evidence Files To Inspect
 
-1. `submission-evidence/suite-proof/suite-proof-summary.md`
+1. `submission-evidence/judge-launch/judge-launch.md`
+   Compact launch packet: hosted route, no-clone command, first-read evidence,
+   and claim boundaries.
+
+2. `submission-evidence/suite-proof/suite-proof-summary.md`
    Credential-free fail-to-pass certification suite.
 
-2. `submission-evidence/mcp-proof/mcp-category-scorecard.json`
+3. `submission-evidence/mcp-proof/mcp-category-scorecard.json`
    Best Use of Splunk MCP Server scorecard: Splunk MCP as investigation/data
    plane, SplunkReady as deterministic readiness gate, strong external-client
    evidence, zero mutation.
 
-3. `submission-evidence/mcp-proof/mcp-proof-summary.md`
+4. `submission-evidence/mcp-proof/mcp-proof-summary.md`
    Splunk MCP transcript and two-server MCP certification proof.
 
-4. `submission-evidence/claim-ledger.md`
+5. `submission-evidence/claim-ledger.md`
    Public claim-to-evidence map.
 
-5. `submission-evidence/readiness-score-calibration/readiness-score-calibration.md`
+6. `submission-evidence/readiness-score-calibration/readiness-score-calibration.md`
    Deterministic READY / NEEDS REVIEW / NOT READY score calibration.
 
-6. `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`
+7. `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`
    Developer-tools evidence for the packaged Splunk app path, including the
    external blockers that are not claimed as complete.
 

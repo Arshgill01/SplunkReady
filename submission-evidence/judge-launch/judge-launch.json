@@ -1,0 +1,70 @@
+{
+  "source": "splunkready-judge-launch",
+  "status": "READY_FOR_JUDGES",
+  "product": "SplunkReady",
+  "engine": "Agent Readiness Compiler",
+  "primaryArtifact": "Readiness Receipt",
+  "primaryTrack": "Platform & Developer Experience",
+  "credentialFree": true,
+  "mutation": false,
+  "passFailAuthority": "deterministic-rule-engine",
+  "hostedWorkbench": {
+    "url": "https://arshgill01.github.io/SplunkReady/",
+    "defaultRoute": "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
+    "interactiveRoute": "?demo=interactive",
+    "currentnessArtifact": "submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json"
+  },
+  "commands": [
+    "npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json",
+    "npm install",
+    "npm run platform-proof",
+    "npm run judge-proof",
+    "npm run mcp-proof",
+    "npm run pr-gate:sample"
+  ],
+  "expectedResults": {
+    "judgeProofStatus": "PASS",
+    "platformProofStatus": "PASS",
+    "fixtureBefore": "NOT READY",
+    "fixtureAfter": "READY",
+    "mcpTranscriptReceipt": "READY",
+    "mutation": false
+  },
+  "firstReadEvidence": [
+    {
+      "label": "Credential-free launch packet",
+      "path": "submission-evidence/judge-launch/judge-launch.md"
+    },
+    {
+      "label": "Platform proof",
+      "path": "artifacts/platform-devex-proof/platform-devex-proof.json"
+    },
+    {
+      "label": "MCP category scorecard",
+      "path": "submission-evidence/mcp-proof/mcp-category-scorecard.json"
+    },
+    {
+      "label": "Suite proof summary",
+      "path": "submission-evidence/suite-proof/suite-proof-summary.md"
+    },
+    {
+      "label": "Claim ledger",
+      "path": "submission-evidence/claim-ledger.md"
+    },
+    {
+      "label": "Readiness score calibration",
+      "path": "submission-evidence/readiness-score-calibration/readiness-score-calibration.md"
+    },
+    {
+      "label": "Splunkbase listing dossier",
+      "path": "submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json"
+    }
+  ],
+  "boundaries": [
+    "SplunkReady is a certification harness, not a chatbot, SOC copilot, or telemetry dashboard.",
+    "LLMs may explain, plan, and propose remediation, but deterministic rules decide pass/fail.",
+    "The default judge path is credential-free and does not mutate Splunk.",
+    "Public npm source-currentness remains blocked until 0.1.8 is published and currentness passes.",
+    "Splunkbase/Splunk Cloud listing remains an external operator action until public approval exists."
+  ]
+}

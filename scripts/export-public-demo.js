@@ -5,7 +5,14 @@ import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runPlatformDevexProof } from "./run-platform-devex-proof.mjs";
 
-const requiredArtifactDirs = ["mcp-proof", "suite-proof", "ci-pr-gate", "public-proof-export", "real-splunk-stress-llm-layer"];
+const requiredArtifactDirs = [
+  "judge-launch",
+  "mcp-proof",
+  "suite-proof",
+  "ci-pr-gate",
+  "public-proof-export",
+  "real-splunk-stress-llm-layer"
+];
 const requiredArtifactCopies = [
   {
     source: "mcp-proof/mcp-transcript-certification",
@@ -24,6 +31,7 @@ export const publicDemoInputPaths = [
   "scripts/audit-public-demo-export.mjs",
   "src",
   "submission-evidence/ci-pr-gate",
+  "submission-evidence/judge-launch",
   "submission-evidence/mcp-proof",
   "submission-evidence/public-proof-export",
   "submission-evidence/real-splunk-stress-llm-layer",

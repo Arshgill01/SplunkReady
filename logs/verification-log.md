@@ -18622,3 +18622,29 @@ Result:
 - PASS for whitespace check: `git diff --check` produced no output.
 - PASS for anchor check: Gate 11, preflight, release-preflight, and scorecard
   anchors were found.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 12 Judge Launch Packet
+
+Commands and checks:
+
+- `npm whoami`
+- `npm test -- tests/scripts/public-demo-export.test.ts`
+- `npm run public-demo:build`
+- `npm run audit:public-demo-export`
+- `npm run audit:submission-copy`
+- `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `gh auth status`
+
+Result:
+
+- PARTIAL for npm auth: `npm whoami` still returns `E401`, so `0.1.8` publish
+  remains blocked.
+- PASS for focused public-demo export tests: 1 file, 2 tests.
+- PASS for local public-demo build: manifest artifact bases now include
+  `artifacts/judge-launch`.
+- PASS for public-demo export audit: 456 files, mutation false, default route
+  `mcp-proof`.
+- PASS for submission-copy audit: 464 required claims.
+- PARTIAL for hosted currentness: the hosted Pages site is stale until the
+  public-demo workflow is rerun from the pushed branch.
+- PASS for GitHub CLI auth: account `Arshgill01` is logged in with repo scope.
