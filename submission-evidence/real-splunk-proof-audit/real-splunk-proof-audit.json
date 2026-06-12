@@ -1,7 +1,7 @@
 {
   "source": "splunkready-real-splunk-proof-audit",
   "status": "PASS",
-  "generatedAt": "2026-06-12T11:09:17.863Z",
+  "generatedAt": "2026-06-12T16:20:39.579Z",
   "sourceDir": "submission-evidence/real-splunk-stress-replay",
   "llmSourceDir": "submission-evidence/real-splunk-stress-llm-layer",
   "score": 100,

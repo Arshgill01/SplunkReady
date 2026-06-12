@@ -1,20 +1,20 @@
 {
   "source": "splunkready-release-alignment",
-  "status": "BLOCKED",
+  "status": "ACTION_REQUIRED",
   "package": {
     "name": "splunkready",
-    "version": "0.1.9",
-    "recommendedNextVersion": null
+    "version": "0.1.10",
+    "recommendedNextVersion": "0.1.11"
   },
   "currentness": {
     "artifactPath": "submission-evidence/public-package-currentness/public-package-currentness.json",
     "status": "STALE",
-    "latestVersion": "0.1.8",
-    "localVersion": "0.1.9",
-    "localVersionPublished": false,
-    "latestMatchesLocal": false,
-    "latestGitHead": "a8a21e51198abefa2ec878cd6a33bd4645db43e0",
-    "packageInputGitHead": "fce7bd5091f1a3008844d888869028dd1bdd8242",
+    "latestVersion": "0.1.10",
+    "localVersion": "0.1.10",
+    "localVersionPublished": true,
+    "latestMatchesLocal": true,
+    "latestGitHead": "6b349906d3dacf0a6c7f3c8b228ddbe8daeef1a6",
+    "packageInputGitHead": "538789cc050dc3c0af1d92e3806f397f275d135c",
     "gitHeadMatchesPackageInputs": false,
     "packageInputPaths": [
       "package.json",
@@ -27,54 +27,57 @@
       "policies",
       "scripts/run-readiness-score-calibration.mjs"
     ],
-    "dirtyPackageInputs": [
-      "package-lock.json",
-      "package.json"
-    ]
+    "dirtyPackageInputs": []
   },
   "publishedProbeStatus": [
     {
       "id": "judgeProof",
-      "packageSpec": "splunkready@0.1.8",
+      "packageSpec": "splunkready@0.1.10",
       "status": "PASS",
-      "command": "npx -y splunkready@0.1.8 judge-proof --out ./judge-proof --json"
+      "command": "npx -y splunkready@0.1.10 judge-proof --out ./judge-proof --json"
     },
     {
       "id": "mcp",
-      "packageSpec": "splunkready@0.1.8",
+      "packageSpec": "splunkready@0.1.10",
       "status": "PASS",
       "command": null
     },
     {
       "id": "liveMockProof",
-      "packageSpec": "splunkready@0.1.8",
+      "packageSpec": "splunkready@0.1.10",
       "status": "PASS",
-      "command": "npx -y splunkready@0.1.8 live-proof --out ./live-mock --live-mock --json"
+      "command": "npx -y splunkready@0.1.10 live-proof --out ./live-mock --live-mock --json"
     },
     {
       "id": "recorder",
-      "packageSpec": "splunkready@0.1.8",
+      "packageSpec": "splunkready@0.1.10",
       "status": "PASS",
       "command": null
     },
     {
       "id": "policyRegistry",
-      "packageSpec": "splunkready@0.1.8",
+      "packageSpec": "splunkready@0.1.10",
       "status": "PASS",
       "command": null
     }
   ],
   "releasePreflight": {
     "artifactPath": "submission-evidence/npm-release-preflight/npm-release-preflight.json",
-    "status": "READY",
+    "status": "PUBLISHED",
     "authenticated": true,
-    "registryStatus": "EXISTS_VERSION_AVAILABLE",
-    "currentVersionAvailable": true,
+    "registryStatus": "VERSION_ALREADY_PUBLISHED",
+    "currentVersionAvailable": false,
     "blockers": [],
-    "releaseCommand": "npm publish --access public"
+    "releaseCommand": "npm version patch && npm publish --access public"
   },
-  "nextCommands": [],
-  "summary": "Release alignment cannot be claimed until the listed blockers are resolved.",
+  "nextCommands": [
+    "npm version 0.1.11 --no-git-tag-version",
+    "npm run audit:npm-release-preflight -- --require-ready --out submission-evidence/npm-release-preflight/npm-release-preflight.json",
+    "npm publish --access public",
+    "npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness",
+    "npm run audit:release-alignment -- --require-aligned"
+  ],
+  "summary": "The public package probes pass, but package inputs moved beyond 0.1.10; bump to 0.1.11, publish, and rerun currentness.",
   "mutation": false,
   "failures": []
 }

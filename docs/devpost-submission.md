@@ -51,7 +51,7 @@ The local fixture path requires no live Splunk credentials. The currently
 published clean-folder judge command is:
 
 ```bash
-npx -y splunkready@0.1.9 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.10 judge-proof --out ./judge-proof --json
 ```
 
 That clean-folder command is smoke-tested from a temp folder, returns `PASS`,
@@ -260,14 +260,12 @@ The tracked evidence pack does not claim live hosted-model entitlement. The work
 - Zod
 - Vitest
 - Vite
-- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.9 judge-proof`
+- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.10 judge-proof`
 - Current-source typed policy SDK subpath:
   `import { policy } from "splunkready/policy"` (see
   [`src/policy-sdk/README.md`](src/policy-sdk/README.md)) — loads,
   validates, signs, and binds named policy bundles (`default-readiness`,
-  `soc2-readiness`, `pci-dss-readiness`) to missions. This becomes a public
-  npm claim only after the next package release is published and
-  clean-install verified; `splunkready@0.1.9` does not export the subpath.
+  `soc2-readiness`, `pci-dss-readiness`) to missions. This is a public npm claim for `splunkready@0.1.10` and has been clean-install verified.
 - Splunk MCP adapter boundary
 - Deterministic trace grader rules
 - Local workbench API and UI

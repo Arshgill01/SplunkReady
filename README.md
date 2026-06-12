@@ -11,7 +11,7 @@ SplunkReady is a Splunk-native certification harness and local workbench for tea
 No clone, no credentials:
 
 ```bash
-npx -y splunkready@0.1.9 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.10 judge-proof --out ./judge-proof --json
 ```
 
 From a clone:
@@ -54,11 +54,10 @@ Developer workflow surfaces:
 - PR gate sample: `npm run pr-gate:sample`
 - GitHub Action: `action.yml`
 - Trace bridge and external-trace examples: [examples/README.md](examples/README.md)
-- Current-source typed policy SDK: `import { policy } from "splunkready/policy"`
+- Published typed policy SDK: `import { policy } from "splunkready/policy"`
   (see [`src/policy-sdk/README.md`](src/policy-sdk/README.md) and
-  [`policies/README.md`](policies/README.md)). This subpath is not in the
-  already published `splunkready@0.1.9` package; it requires the next package
-  release before it is a public npm claim.
+  [`policies/README.md`](policies/README.md)). This subpath is in the
+  published `splunkready@0.1.10` package and is clean-install verified.
 
 Start with [submission-evidence/JUDGE-PATH.md](submission-evidence/JUDGE-PATH.md)
 for the short evidence trail. The rest of `submission-evidence/`, `moves/`, and
@@ -75,12 +74,9 @@ The Agent Readiness Compiler compiles a fixture or live Splunk environment into 
 
 The flagship demo story is security investigation readiness: the bundled specimen confidently clears possible lateral movement after using `index=*`, a stale field, and no saved search provenance. SplunkReady catches the unsafe trace, exports a reviewable policy patch, reruns the same mission, and shows a bounded pass with evidence. The default specimen is deterministic for local reproducibility; set `SPLUNKREADY_LLM_ENABLED=true` to run the Gemini-backed specimen instead.
 
-### Policy SDK Quickstart (Current Source)
+### Policy SDK Quickstart
 
-This SDK subpath is present in current source and will become a public npm
-claim only after the next package release is published and clean-install
-verified. The already published `splunkready@0.1.9` package does not export
-`splunkready/policy`.
+This SDK subpath is present in the published `splunkready@0.1.10` package and has been clean-install verified.
 
 ```ts
 import { policy } from "splunkready/policy";
@@ -120,7 +116,7 @@ npm run judge-proof
 The currently published no-clone judge path is:
 
 ```bash
-npx -y splunkready@0.1.9 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.10 judge-proof --out ./judge-proof --json
 ```
 
 The repo-linked GitHub Packages mirror is `@arshgill01/splunkready@0.1.7`;
@@ -130,7 +126,7 @@ above is the unauthenticated judge path.
 That command is smoke-tested from a clean temp folder and must return `PASS`
 with `mutation: false`. The public package currentness audit also proves the
 published MCP tool surface, credential-free `live-proof --live-mock`, and signed
-policy-registry flow. The current audit reports the published `0.1.9` package
+policy-registry flow. The current audit reports the published `0.1.10` package
 passes those smoke tests. The repository now has newer package-input commits,
 including the current-source `splunkready/policy` SDK subpath, so the SDK is
 not a public npm claim until the next release is published and currentness
@@ -302,9 +298,9 @@ package can initialize the SplunkReady MCP stdio server.
 The release-alignment audit converts source-currentness drift into the exact
 next publish action. Current evidence is
 `submission-evidence/release-alignment/release-alignment.json`; it reports
-`ACTION_REQUIRED`, records local `0.1.10` as prepared for publication, includes
-the npm preflight artifact, and keeps the public `0.1.9` no-clone judge path
-valid until the `0.1.10` publish and clean-install currentness audit complete.
+`ACTION_REQUIRED`, records published `0.1.10` probes as passing, and keeps the
+public `0.1.10` no-clone judge path valid. Exact source-currentness still
+requires a clean publish from the committed package-input tree.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:
