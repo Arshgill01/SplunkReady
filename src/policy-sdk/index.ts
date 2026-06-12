@@ -14,7 +14,7 @@ import {
   validatePolicyForMission,
   verifySignedPolicyManifest
 } from "../policies/registry.js";
-import type { GraderRuleId, Mission, Severity } from "../schemas/core.js";
+import { graderRuleIdSchema, severitySchema, type Mission } from "../schemas/core.js";
 import type { PolicyBundle, PolicyIdentity, SignedPolicyManifest } from "../policies/registry.js";
 
 export {
@@ -28,6 +28,8 @@ export {
 export type { PolicyBundle, SignedPolicyManifest, PolicyIdentity };
 
 const policyObjectSchema = policyBundleSchema;
+type GraderRuleId = z.infer<typeof graderRuleIdSchema>;
+type Severity = z.infer<typeof severitySchema>;
 
 const listPolicyDirectoryCandidates = (): string[] => {
   const directories = ["policies"];
