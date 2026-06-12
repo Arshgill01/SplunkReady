@@ -11,6 +11,12 @@ Hosted, no credentials:
 - `submission-evidence/judge-launch/judge-launch.json`
 - `submission-evidence/judge-launch/judge-launch.md`
 
+Interactive in-browser certifier (judges can run this themselves):
+
+- `https://arshgill01.github.io/SplunkReady/?demo=interactive`
+- `submission-evidence/screenshots/interactive-demo.png`
+- `ui/src/interactiveCertifier.ts` (in-browser deterministic grader)
+
 No clone, no credentials:
 
 ```bash

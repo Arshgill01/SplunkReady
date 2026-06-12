@@ -16,7 +16,10 @@ Expected result: `PASS`, deterministic rule-engine authority, and
 
 - Workbench: `https://arshgill01.github.io/SplunkReady/`
 - Default route: `?artifacts=artifacts%2Fmcp-proof#mcp-proof`
-- Interactive fixture route: `?demo=interactive`
+- Interactive fixture route: `?demo=interactive` — judges can upload a
+  trace JSON in their browser and get a real signed Readiness Receipt
+  back, all on the deterministic rule engine. Screenshot:
+  `submission-evidence/screenshots/interactive-demo.png`.
 
 ## First Evidence To Inspect
 

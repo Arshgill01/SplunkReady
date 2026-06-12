@@ -99,6 +99,15 @@ The credential-free hosted workbench is available at:
 https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof
 ```
 
+A judge-runnable in-browser certifier is available at the same hosted
+origin at the route `?demo=interactive`. Judges can paste a trace JSON,
+run the deterministic Agent Readiness Compiler in their browser, and get
+a signed Readiness Receipt back without installing anything. The
+screenshot at `submission-evidence/screenshots/interactive-demo.png` shows
+the certifier returning `READY`, score `100`, and `receipt-interactive-001`
+with a SHA-256 receipt hash. The in-browser certifier imports the same
+grader rule modules as the CLI so behavior matches exactly.
+
 The hosted judge-proof receipt view is available at:
 
 ```text
