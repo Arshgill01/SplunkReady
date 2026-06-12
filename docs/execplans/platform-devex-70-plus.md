@@ -509,3 +509,42 @@ Strict ceiling after recalibration:
 Next work: complete the OTP-backed `0.1.9` npm publish, rerun public package
 currentness from the committed tree, then make the real Splunk proof audit a
 first-read judge artifact before adding new features.
+
+Gate 14 is implemented for source-current npm and SDK release alignment.
+
+Gate 14 progress:
+
+- Verified npm latest is now `splunkready@0.1.12`.
+- Regenerated public package currentness with `--require-current`; it reports
+  `CURRENT`, local/latest `0.1.12`, matching published gitHead, no dirty
+  package inputs, and passing judge-proof, MCP, live-mock, recorder, and policy
+  registry probes.
+- Regenerated npm release preflight; it reports `PUBLISHED` for `0.1.12`.
+- Regenerated release alignment with `--require-aligned`; it reports `CURRENT`
+  and no next commands.
+- Corrected first-read copy and claim ledger rows that still described
+  `0.1.12` as prepared-but-unpublished.
+
+Current harsh re-score after Gate 14:
+
+| Surface | After Gate 13 | After Gate 14 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 78% | 81% | Source-current npm is now real, not aspirational: `splunkready@0.1.12` is public, package gitHead matches package inputs, no-clone proof probes pass, and the typed `splunkready/policy` SDK is in the published package. This earns a modest move above 80 because it improves real developer adoption and judge reproducibility. |
+| Best Use of Splunk MCP Server | 63% | 64% | Public package currentness verifies the MCP tool surface and recorder gateway on `0.1.12`, but the live real-Splunk proof still uses the compatibility bridge, so the official MCP category ceiling is mostly unchanged. |
+| Best Use of Splunk Developer Tools | 57% | 62% | Published source-current npm, clean package probes, and the typed policy SDK materially improve developer-tool credibility. Splunkbase approval and standalone release recency still cap the category. |
+| Security track | 28% | 28% | Unchanged. Distribution currentness does not add new security workflow proof. |
+| Feedback prize preparedness | 84% | 84% | Unchanged until form submission is completed. |
+
+Strict ceiling after Gate 14:
+
+| Award surface | Current real chance | Real ceiling from here | What caps the ceiling |
+|---|---:|---:|---|
+| Platform & Developer Experience | 81% | 86-88% | Needs the real-Splunk proof to become the dominant first-run workflow, not just first-read evidence, plus a final hosted-demo currentness refresh after these docs/artifacts. |
+| Best Use of Splunk MCP Server | 64% | 70-73% | Needs direct official Splunk MCP Server live proof or a stronger third-party client session against the official MCP surface. |
+| Best Use of Splunk Developer Tools | 62% | 68-70% | Needs fresher standalone/setup-action release tags and any external Splunkbase movement. |
+| Security track | 28% | 45-50% | Needs a security-user workflow around the certification output without becoming a SOC copilot. |
+| Hosted Models | 8% | 20-25% | Entitlement remains blocked; advisory-only design is correct but not category-maximizing. |
+
+Next work: rebuild/audit the public demo export so the hosted launch packet and
+claim surfaces point at `splunkready@0.1.12`, then deploy/verify hosted
+currentness.

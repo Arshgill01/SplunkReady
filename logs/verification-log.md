@@ -18761,3 +18761,41 @@ Result:
   `READY`, but `npm publish --access public` returned `EOTP`; public latest
   remains `0.1.11`.
 - PASS for final whitespace check: `git diff --check` produced no output.
+
+# 2026-06-12 - Gate 14 Source-Current Npm And SDK Alignment
+
+Commands and checks:
+
+- `git status --short --branch`
+- `node -p "require('./package.json').version"`
+- `npm view splunkready version --json`
+- `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
+- `npm run audit:npm-release-preflight -- --out submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `npm run audit:release-alignment -- --require-aligned`
+- `npm run public-demo:build`
+- `npm test -- tests/scripts/public-demo-export.test.ts tests/scripts/submission-copy-audit.test.ts tests/scripts/release-alignment.test.ts`
+- `npm run audit:public-demo-export`
+- `npm run audit:submission-copy`
+- `git diff --check`
+
+Result:
+
+- PASS for base inspection: tree started clean on `splunkready-build` at
+  `6986f8e`.
+- PASS for local package version: `0.1.12`.
+- PASS for npm latest lookup: npm reports `0.1.12`.
+- PASS for public package currentness: status `CURRENT`, local/latest
+  `0.1.12`, published gitHead matches package-input gitHead, no dirty package
+  inputs, published judge-proof/MCP/live-mock/recorder/policy-registry probes
+  all `PASS`.
+- PASS for npm release preflight regeneration: status `PUBLISHED`, npm auth
+  user `brightybrainiac`, pack OK, mutation false.
+- PASS for release alignment: status `CURRENT`, no next commands.
+- PASS for public demo rebuild: exported 456 files with launch packet and
+  source/deployment commit `6986f8e`.
+- PASS for focused guard tests: 3 files, 8 tests.
+- PASS for public-demo export audit: 456 files, mutation false, default route
+  `mcp-proof`.
+- PASS for submission-copy audit after updating guards to `0.1.12`: 464
+  required claims.
+- PASS for whitespace check: `git diff --check` produced no output.

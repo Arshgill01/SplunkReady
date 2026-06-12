@@ -1,6 +1,6 @@
 {
   "source": "splunkready-release-alignment",
-  "status": "ACTION_REQUIRED",
+  "status": "CURRENT",
   "package": {
     "name": "splunkready",
     "version": "0.1.12",
@@ -8,14 +8,14 @@
   },
   "currentness": {
     "artifactPath": "submission-evidence/public-package-currentness/public-package-currentness.json",
-    "status": "STALE",
-    "latestVersion": "0.1.11",
+    "status": "CURRENT",
+    "latestVersion": "0.1.12",
     "localVersion": "0.1.12",
-    "localVersionPublished": false,
-    "latestMatchesLocal": false,
-    "latestGitHead": "ced44f1aebae554a60b84b80efb33209eb53539e",
+    "localVersionPublished": true,
+    "latestMatchesLocal": true,
+    "latestGitHead": "85c85173caf6bdf273ee68dd057dcf2a7f74da5a",
     "packageInputGitHead": "85c85173caf6bdf273ee68dd057dcf2a7f74da5a",
-    "gitHeadMatchesPackageInputs": false,
+    "gitHeadMatchesPackageInputs": true,
     "packageInputPaths": [
       "package.json",
       "package-lock.json",
@@ -32,51 +32,46 @@
   "publishedProbeStatus": [
     {
       "id": "judgeProof",
-      "packageSpec": "splunkready@0.1.11",
+      "packageSpec": "splunkready@0.1.12",
       "status": "PASS",
-      "command": "npx -y splunkready@0.1.11 judge-proof --out ./judge-proof --json"
+      "command": "npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json"
     },
     {
       "id": "mcp",
-      "packageSpec": "splunkready@0.1.11",
+      "packageSpec": "splunkready@0.1.12",
       "status": "PASS",
       "command": null
     },
     {
       "id": "liveMockProof",
-      "packageSpec": "splunkready@0.1.11",
+      "packageSpec": "splunkready@0.1.12",
       "status": "PASS",
-      "command": "npx -y splunkready@0.1.11 live-proof --out ./live-mock --live-mock --json"
+      "command": "npx -y splunkready@0.1.12 live-proof --out ./live-mock --live-mock --json"
     },
     {
       "id": "recorder",
-      "packageSpec": "splunkready@0.1.11",
+      "packageSpec": "splunkready@0.1.12",
       "status": "PASS",
       "command": null
     },
     {
       "id": "policyRegistry",
-      "packageSpec": "splunkready@0.1.11",
+      "packageSpec": "splunkready@0.1.12",
       "status": "PASS",
       "command": null
     }
   ],
   "releasePreflight": {
     "artifactPath": "submission-evidence/npm-release-preflight/npm-release-preflight.json",
-    "status": "READY",
+    "status": "PUBLISHED",
     "authenticated": true,
-    "registryStatus": "EXISTS_VERSION_AVAILABLE",
-    "currentVersionAvailable": true,
+    "registryStatus": "VERSION_ALREADY_PUBLISHED",
+    "currentVersionAvailable": false,
     "blockers": [],
-    "releaseCommand": "npm publish --access public"
+    "releaseCommand": "npm version patch && npm publish --access public"
   },
-  "nextCommands": [
-    "npm run audit:npm-release-preflight -- --require-ready --out submission-evidence/npm-release-preflight/npm-release-preflight.json",
-    "npm publish --access public",
-    "npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness",
-    "npm run audit:release-alignment -- --require-aligned"
-  ],
-  "summary": "The local package is prepared as 0.1.12 and npm preflight is ready; publish it and rerun currentness.",
+  "nextCommands": [],
+  "summary": "The public package gitHead matches the current package-input tree.",
   "mutation": false,
   "failures": []
 }

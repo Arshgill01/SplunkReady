@@ -17602,3 +17602,36 @@ Actions:
   publish.
 - Updated the judge-launch packet, public-demo export guard, claim ledger, and
   submission-copy audit to state the exact current boundary.
+
+# 2026-06-12 - Gate 14 Source-Current Npm And SDK Alignment
+
+Files expected to touch:
+
+- `README.md`
+- `docs/devpost-submission.md`
+- `docs/demo-script.md`
+- `docs/execplans/platform-devex-70-plus.md`
+- `submission-evidence/JUDGE-PATH.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/judge-launch/judge-launch.json`
+- `submission-evidence/judge-launch/judge-launch.md`
+- `submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `submission-evidence/public-package-currentness/public-package-currentness.json`
+- `submission-evidence/release-alignment/release-alignment.json`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Treated the merged Minimax/Codex-review commit `6986f8e` as the new base.
+- Verified npm now reports `splunkready@0.1.12` as latest.
+- Regenerated public package currentness with `--require-current`; it reports
+  `CURRENT`, matching local/latest `0.1.12`, matching package-input gitHead,
+  no dirty package inputs, and passing published judge-proof, MCP, live-mock,
+  recorder, and policy-registry probes.
+- Regenerated npm release preflight as `PUBLISHED` for `0.1.12`.
+- Regenerated release alignment as `CURRENT`.
+- Updated first-read release copy and claim-ledger rows that still described
+  `0.1.12` as prepared but unpublished.
+- Updated the Platform 70% ExecPlan Gate 14 scorecard: Platform & Developer
+  Experience 81%, MCP 64%, Developer Tools 62%, Security unchanged at 28%.
