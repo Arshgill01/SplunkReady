@@ -17547,3 +17547,58 @@ Actions:
 - Ran authenticated `0.1.9` preflight successfully, then attempted
   `npm publish --access public`; npm returned `EOTP`, so source-currentness is
   still blocked on a fresh OTP-backed publish.
+
+# 2026-06-12 - Selective Minimax Worktree Merge And Npm SDK Release
+
+Files expected to touch:
+
+- `README.md`
+- `docs/devpost-submission.md`
+- `docs/demo-script.md`
+- `architecture_diagram.md`
+- `package.json`
+- `package-lock.json`
+- `src/policy-sdk/index.ts`
+- `src/policy-sdk/README.md`
+- `policies/README.md`
+- `scripts/audit-release-alignment.mjs`
+- `scripts/audit-submission-copy.mjs`
+- `scripts/audit-public-demo-export.mjs`
+- `submission-evidence/JUDGE-PATH.md`
+- `submission-evidence/claim-ledger.md`
+- `submission-evidence/judge-launch/judge-launch.json`
+- `submission-evidence/judge-launch/judge-launch.md`
+- `submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `submission-evidence/public-package-currentness/public-package-currentness.json`
+- `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`
+- `submission-evidence/release-alignment/release-alignment.json`
+- `tests/policy-sdk/sdk.test.ts`
+- `tests/scripts/public-demo-export.test.ts`
+- `tests/scripts/release-alignment.test.ts`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Reviewed `/Users/arshdeepsingh/Developer/SplunkReady-final-lap` instead of
+  merging it wholesale.
+- Accepted the useful pieces: real-Splunk proof as first-read evidence,
+  current-source typed `splunkready/policy` SDK, interactive certifier path,
+  corrected SAIA four-tool architecture copy, final demo-script no-clone
+  command, and SDK visibility in README/Devpost.
+- Rejected the unsafe MCP category broadening from the side worktree because
+  it inflated proof with broader query/tool coverage rather than stronger
+  official Splunk MCP Server evidence.
+- Corrected side-worktree overclaims around public npm source-currentness and
+  SDK availability.
+- Fixed a TypeScript build break in the SDK by deriving rule/severity types
+  from canonical schemas instead of importing non-exported type names.
+- Published and verified `splunkready@0.1.11`; clean install can import
+  `splunkready/policy` and list the built-in policies.
+- Prepared local `splunkready@0.1.12` from a committed tree, but
+  `npm publish --access public` returned `EOTP`. Public latest remains
+  `0.1.11`; local `0.1.12` is preflight-ready and awaits an OTP-backed
+  publish.
+- Updated the judge-launch packet, public-demo export guard, claim ledger, and
+  submission-copy audit to state the exact current boundary.

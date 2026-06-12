@@ -18719,3 +18719,45 @@ Result:
   `100`.
 - PASS for final submission-copy audit: 464 required claims.
 - PASS for final whitespace check: `git diff --check` produced no output.
+
+# 2026-06-12 - Selective Minimax Worktree Merge And Npm SDK Release
+
+Commands and checks:
+
+- `npm test -- tests/policy-sdk/sdk.test.ts tests/cli/flow.test.ts tests/mcp/composition-recorder.test.ts tests/mcp/server.test.ts`
+- `npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness`
+- `npm test -- tests/policy-sdk/sdk.test.ts tests/scripts/submission-copy-audit.test.ts tests/scripts/public-demo-export.test.ts tests/scripts/release-alignment.test.ts`
+- `npm run build`
+- `npm run audit:submission-copy`
+- `npm run audit:real-splunk-proof -- --require-pass --out submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`
+- `npm run audit:public-demo-export`
+- `npm run audit:npm-release-preflight -- --require-ready --out submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `npm publish --access public`
+- `npm view splunkready version versions gitHead --json`
+- `tmp=$(mktemp -d) && cd "$tmp" && npm init -y >/dev/null && npm install splunkready@0.1.11 >/dev/null && node -e "import('splunkready/policy').then((m) => m.policy.list()).then((policies) => { console.log(JSON.stringify(policies.map((p) => p.id).sort())); })"`
+- `npm run public-demo:build`
+- `npm run audit:release-alignment`
+- `git diff --check`
+
+Result:
+
+- PASS for the side-worktree targeted tests before merge review: 4 files, 78
+  tests.
+- PASS for the final focused test set after merge and release-boundary fixes:
+  4 files, 16 tests.
+- PASS for TypeScript build after fixing the policy SDK type imports.
+- PASS for real Splunk proof audit: status `PASS`, score `100`,
+  deterministic authority preserved, mutation false, official MCP boundary not
+  overclaimed.
+- PASS for submission-copy audit: 464 required claims.
+- PASS for public-demo export audit after rebuilding with the corrected
+  `splunkready@0.1.11` judge-launch command: 456 files, mutation false,
+  default route `mcp-proof`.
+- PASS for `splunkready@0.1.11` publish and independent registry verification:
+  npm latest includes `0.1.11`, gitHead `ced44f1aebae554a60b84b80efb33209eb53539e`.
+- PASS for clean install SDK verification: `import("splunkready/policy")`
+  lists `default-readiness`, `pci-dss-readiness`, and `soc2-readiness`.
+- PARTIAL for final source-current npm alignment: local `0.1.12` preflight is
+  `READY`, but `npm publish --access public` returned `EOTP`; public latest
+  remains `0.1.11`.
+- PASS for final whitespace check: `git diff --check` produced no output.

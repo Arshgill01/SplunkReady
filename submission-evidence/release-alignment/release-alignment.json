@@ -1,21 +1,21 @@
 {
   "source": "splunkready-release-alignment",
-  "status": "CURRENT",
+  "status": "ACTION_REQUIRED",
   "package": {
     "name": "splunkready",
-    "version": "0.1.11",
+    "version": "0.1.12",
     "recommendedNextVersion": null
   },
   "currentness": {
     "artifactPath": "submission-evidence/public-package-currentness/public-package-currentness.json",
-    "status": "CURRENT",
+    "status": "STALE",
     "latestVersion": "0.1.11",
-    "localVersion": "0.1.11",
-    "localVersionPublished": true,
-    "latestMatchesLocal": true,
+    "localVersion": "0.1.12",
+    "localVersionPublished": false,
+    "latestMatchesLocal": false,
     "latestGitHead": "ced44f1aebae554a60b84b80efb33209eb53539e",
-    "packageInputGitHead": "ced44f1aebae554a60b84b80efb33209eb53539e",
-    "gitHeadMatchesPackageInputs": true,
+    "packageInputGitHead": "85c85173caf6bdf273ee68dd057dcf2a7f74da5a",
+    "gitHeadMatchesPackageInputs": false,
     "packageInputPaths": [
       "package.json",
       "package-lock.json",
@@ -63,15 +63,20 @@
   ],
   "releasePreflight": {
     "artifactPath": "submission-evidence/npm-release-preflight/npm-release-preflight.json",
-    "status": "PUBLISHED",
+    "status": "READY",
     "authenticated": true,
-    "registryStatus": "VERSION_ALREADY_PUBLISHED",
-    "currentVersionAvailable": false,
+    "registryStatus": "EXISTS_VERSION_AVAILABLE",
+    "currentVersionAvailable": true,
     "blockers": [],
-    "releaseCommand": "npm version patch && npm publish --access public"
+    "releaseCommand": "npm publish --access public"
   },
-  "nextCommands": [],
-  "summary": "The public package gitHead matches the current package-input tree.",
+  "nextCommands": [
+    "npm run audit:npm-release-preflight -- --require-ready --out submission-evidence/npm-release-preflight/npm-release-preflight.json",
+    "npm publish --access public",
+    "npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness",
+    "npm run audit:release-alignment -- --require-aligned"
+  ],
+  "summary": "The local package is prepared as 0.1.12 and npm preflight is ready; publish it and rerun currentness.",
   "mutation": false,
   "failures": []
 }
