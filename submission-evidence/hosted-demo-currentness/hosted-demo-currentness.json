@@ -3,18 +3,18 @@
   "status": "CURRENT",
   "hostedUrl": "https://arshgill01.github.io/SplunkReady/",
   "manifestUrl": "https://arshgill01.github.io/SplunkReady/public-demo-manifest.json",
-  "expectedPublicDemoInputCommit": "8311db417dcb2c3c4f2d034b7113cb6788af1f25",
-  "hostedSourceCommit": "a21cf3d9919074fe2302828d75e2b7a2e1c007f5",
-  "hostedSourceCommitShort": "a21cf3d",
+  "expectedPublicDemoInputCommit": "90bf52b0b8f15a559529b956864235b12474917e",
+  "hostedSourceCommit": "90bf52b0b8f15a559529b956864235b12474917e",
+  "hostedSourceCommitShort": "90bf52b",
   "hostedSourceCommitCoversExpectedInput": true,
   "assets": {
     "local": [
-      "index-B_h2OEqS.js",
-      "index-Chr0v3CG.css"
+      "index-Chr0v3CG.css",
+      "index-vJ-oqkYL.js"
     ],
     "hosted": [
-      "index-B_h2OEqS.js",
-      "index-Chr0v3CG.css"
+      "index-Chr0v3CG.css",
+      "index-vJ-oqkYL.js"
     ],
     "match": true
   },
@@ -23,11 +23,15 @@
     "mutation": false,
     "defaultUrl": "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
     "artifactBases": [
+      "artifacts/judge-launch",
       "artifacts/mcp-proof",
       "artifacts/suite-proof",
+      "artifacts/ci-pr-gate",
       "artifacts/public-proof-export",
       "artifacts/real-splunk-stress-llm-layer",
+      "artifacts/mcp-transcript",
       "artifacts/judge-proof",
+      "artifacts/platform-devex-proof",
       "artifacts/interactive-demo"
     ]
   },

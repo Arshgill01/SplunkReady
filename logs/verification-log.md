@@ -18634,6 +18634,14 @@ Commands and checks:
 - `npm run audit:submission-copy`
 - `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
 - `gh auth status`
+- `git push origin splunkready-build`
+- `gh workflow run public-demo-pages.yml --ref splunkready-build`
+- `gh run watch 27411362528 --exit-status`
+- `curl -fsSL https://arshgill01.github.io/SplunkReady/public-demo-manifest.json | rg -n "judge-launch|90bf52b|artifactBases|sourceCommit|deploymentCommit"`
+- `npm run audit:public-demo-export`
+- `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `npm run audit:submission-copy`
+- `git diff --check`
 
 Result:
 
@@ -18648,3 +18656,16 @@ Result:
 - PARTIAL for hosted currentness: the hosted Pages site is stale until the
   public-demo workflow is rerun from the pushed branch.
 - PASS for GitHub CLI auth: account `Arshgill01` is logged in with repo scope.
+- PASS for branch push: `splunkready-build` pushed to `origin` at `90bf52b`.
+- PASS for Pages workflow: run `27411362528` completed successfully.
+- PASS for hosted currentness after deploy: status `CURRENT`, hosted source
+  commit `90bf52b`, assets match, and manifest includes
+  `artifacts/judge-launch`.
+- PASS for hosted manifest spot-check: public manifest contains source and
+  deployment commit `90bf52b` plus `artifacts/judge-launch`.
+- PASS for final public-demo export audit: 456 files, mutation false, default
+  route `mcp-proof`.
+- PASS for final hosted currentness audit: status `CURRENT`, source commit
+  `90bf52b`, asset names match, and manifest includes `artifacts/judge-launch`.
+- PASS for final submission-copy audit: 464 required claims.
+- PASS for whitespace check: `git diff --check` produced no output.

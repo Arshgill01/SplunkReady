@@ -22,6 +22,12 @@ npm run platform-proof
 npm run judge-proof
 ```
 
+Fast hosted launch packet:
+
+- `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof`
+- `submission-evidence/judge-launch/judge-launch.md`
+- `submission-evidence/judge-launch/judge-launch.json`
+
 `npm run platform-proof` builds the CLI, runs the fixture demo, runs
 `judge-proof`, certifies the sample Splunk MCP JSON-RPC transcript with
 `--strict-import true --require-pass true`, and writes

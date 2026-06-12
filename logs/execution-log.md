@@ -17504,3 +17504,7 @@ Actions:
   evidence file.
 - Rebuilt the local public demo export and confirmed `artifacts/judge-launch`
   is present.
+- Pushed `splunkready-build`, ran `public-demo-pages.yml`, and refreshed hosted
+  currentness after the Pages deployment succeeded.
+- Updated README and claim ledger so the launch packet is visible from the
+  quickstart and claim map.

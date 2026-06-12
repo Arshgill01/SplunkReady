@@ -419,7 +419,7 @@ Next work: with npm auth unavailable, the largest remaining local product move
 is to strengthen the hosted/no-clone judge path or submit the mapped feedback
 form from an authenticated browser session.
 
-Gate 12 is in progress for a judge-launch packet and hosted no-clone path.
+Gate 12 is implemented for a judge-launch packet and hosted no-clone path.
 
 Gate 12 progress:
 
@@ -434,17 +434,19 @@ Gate 12 progress:
   non-credential-free, or missing the no-clone `splunkready@0.1.7` proof
   command.
 - Local public-demo build and export audit pass with `artifacts/judge-launch`.
-- Hosted Pages currentness is now stale until the public-demo workflow is
-  rerun from the pushed branch, so this gate is not fully scored yet.
+- Pushed the launch-packet change, reran `public-demo-pages.yml`, and refreshed
+  hosted currentness. The hosted manifest now includes `artifacts/judge-launch`
+  and reports source/deployment commit `90bf52b`.
 
-Interim score stance after local Gate 12 work:
+Current harsh re-score after Gate 12:
 
-| Surface | Gate 11 | Gate 12 local | Reason |
+| Surface | After Gate 11 | After Gate 12 | Reason |
 |---|---:|---:|---|
-| Platform & Developer Experience | 77% | 78% | First-read judge friction is lower locally and audit-required in the public export, but hosted Pages must be refreshed before taking the full score bump. |
-| Best Use of Splunk MCP Server | 65% | 65% | Unchanged until hosted route/currentness is refreshed. |
-| Best Use of Splunk Developer Tools | 52% | 53% | The public export now has a typed launch artifact, but hosted currentness still needs closure. |
+| Platform & Developer Experience | 77% | 80% | The hosted no-clone judge path now has an audit-required launch packet, current Pages deployment, deterministic authority boundary, and first-read evidence map. This is a real judge-friction reduction. |
+| Best Use of Splunk MCP Server | 65% | 66% | The launch packet makes the MCP category route harder to miss from the hosted entry point, but it does not add new MCP behavior. |
+| Best Use of Splunk Developer Tools | 52% | 55% | The public export now has a typed launch artifact and current hosted deployment, improving distribution and evaluation ergonomics. Actual npm source-current publication remains the major blocker. |
 | Feedback prize preparedness | 84% | 84% | Unchanged. |
 
-Next work: push the launch-packet change, rerun `public-demo-pages.yml`, and
-refresh hosted-demo currentness.
+Next work: either complete the `0.1.8` npm source-current publish once npm auth
+is active, or submit the mapped feedback form and preserve confirmation
+evidence.
