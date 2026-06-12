@@ -19,6 +19,10 @@ const createSourceTree = async (): Promise<string> => {
   await writeFixture(join(root, "dist-ui", "index.html"), "<!doctype html><div id=\"app\"></div>");
   await writeFixture(join(root, "dist-ui", "assets", "index.js"), "window.__splunkready = true;");
   await writeFixture(join(root, "submission-evidence", "mcp-proof", "mcp-proof-summary.json"), "{\"status\":\"PASS\"}\n");
+  await writeFixture(
+    join(root, "submission-evidence", "mcp-proof", "mcp-category-scorecard.json"),
+    "{\"source\":\"splunkready-mcp-category-evidence\",\"status\":\"PASS\",\"score\":100,\"mutation\":false}\n"
+  );
   await writeFixture(join(root, "submission-evidence", "mcp-proof", "mcp-client-session.jsonl"), "{\"method\":\"initialize\"}\n");
   await writeFixture(join(root, "submission-evidence", "mcp-proof", "mcp-client-session.md"), "# MCP client session\n");
   await writeFixture(
@@ -158,6 +162,9 @@ describe("public demo export", () => {
     await expect(readFile(join(root, "out/public-demo/artifacts/mcp-proof/artifact-manifest.json"), "utf8")).resolves.toContain(
       "mcp-proof-summary.json"
     );
+    await expect(
+      readFile(join(root, "out/public-demo/artifacts/mcp-proof/mcp-category-scorecard.json"), "utf8")
+    ).resolves.toContain("splunkready-mcp-category-evidence");
     await expect(readFile(join(root, "out/public-demo/artifacts/mcp-proof/mcp-client-session.jsonl"), "utf8")).resolves.toContain(
       "initialize"
     );

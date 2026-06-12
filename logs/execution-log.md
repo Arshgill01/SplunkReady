@@ -17358,3 +17358,26 @@ Actions:
 - Updated the Splunk feedback log so it no longer says the answer bank still
   needs to be created.
 - Updated the Platform 70% ExecPlan with the Gate 6 probability loop.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 7 MCP Category Proof UI
+
+Files expected to touch:
+
+- `ui/src/artifacts.ts`
+- `ui/src/render.ts`
+- `scripts/audit-public-demo-export.mjs`
+- `tests/scripts/public-demo-export.test.ts`
+- `tests/ui/app.test.ts`
+- `docs/execplans/platform-devex-70-plus.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Added `mcp-category-scorecard.json` to the typed UI artifact contract.
+- Rendered the MCP category scorecard as the first panel on the default MCP
+  proof route, before the lower-level developer gate.
+- Made the public-demo export audit require the MCP category scorecard so the
+  hosted default route cannot lose the key category proof artifact silently.
+- Updated focused UI and public-demo export tests for the new first-class MCP
+  category proof.

@@ -257,6 +257,50 @@ const renderOfficialSplunkMcpToolCoverage = (summary: McpProofSummary): string =
   )}`;
 };
 
+const renderMcpCategoryScorecard = (scorecard: UiArtifactBundle["mcpCategoryScorecard"]): string => {
+  if (!scorecard) {
+    return `<section class="panel mcp-proof-panel">
+      <h2>MCP category proof</h2>
+      ${renderFactTable([
+        ["Scorecard", "not loaded"],
+        ["Expected file", "mcp-category-scorecard.json"],
+        ["Generate", "node scripts/audit-mcp-category-evidence.mjs --out submission-evidence/mcp-proof --require-strong"],
+        ["Mutation", "false"]
+      ])}
+    </section>`;
+  }
+
+  return `<section class="panel mcp-proof-panel">
+    <h2>MCP category proof</h2>
+    ${renderFactTable([
+      ["Status", scorecard.status],
+      ["Score", scorecard.score],
+      ["Tools / resources", `${scorecard.summary.tools} / ${scorecard.summary.resources}`],
+      ["Zed evidence", `${scorecard.summary.zedEvidenceTier} / ${scorecard.summary.zedFrames} frame(s)`],
+      [
+        "Splunk investigation frames",
+        scorecard.claimBoundary.zedJsonlContainsSplunkInvestigationFrames ? "yes" : "no"
+      ],
+      [
+        "Recorder flush frame",
+        scorecard.claimBoundary.zedJsonlContainsSplunkReadyFlushFrame ? "yes" : "no"
+      ],
+      [
+        "Adjacent certification",
+        scorecard.claimBoundary.certificationProvenByAdjacentArtifacts ? "yes" : "no"
+      ],
+      ["Failures / warnings", `${scorecard.failures.length} / ${scorecard.warnings.length}`],
+      ["Deterministic authority", scorecard.deterministicAuthority ? "yes" : "no"],
+      ["Mutation", scorecard.mutation ? "yes" : "no"]
+    ])}
+    <p class="summary-note">${value(scorecard.claimBoundary.note)}</p>
+    ${renderMcpProofList(
+      scorecard.checks.slice(0, 8).map((check) => `${check.id}: ${check.status} - ${check.evidence}`),
+      "stage-list"
+    )}
+  </section>`;
+};
+
 const renderMcpCompositionRecorder = (summary: McpProofSummary): string => {
   const recorder = summary.compositionRecorder;
 
@@ -370,7 +414,8 @@ const renderMcpProof = (bundle: UiArtifactBundle): string => {
       <div class="receipt-ledger">
         ${
           summary
-            ? `${renderMcpDeveloperGate(summary)}
+            ? `${renderMcpCategoryScorecard(bundle.mcpCategoryScorecard)}
+              ${renderMcpDeveloperGate(summary)}
               <section class="panel mcp-proof-panel">
                 <h2>Certification loop</h2>
                 ${renderMcpProofTable(summary)}

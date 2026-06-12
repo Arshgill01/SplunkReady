@@ -791,6 +791,52 @@ const mcpProofSummary = {
   ]
 } as const;
 
+const mcpCategoryScorecard = {
+  source: "splunkready-mcp-category-evidence",
+  status: "PASS",
+  score: 100,
+  mutation: false,
+  deterministicAuthority: true,
+  summary: {
+    tools: 6,
+    resources: 13,
+    resourceTemplates: 1,
+    prompts: 6,
+    zedFrames: 15,
+    zedEvidenceTier: "VERIFIED_STRONG"
+  },
+  evidence: {
+    mcpProofSummary: "submission-evidence/mcp-proof/mcp-proof-summary.json",
+    topology: "docs/mcp-topology.md",
+    zedSession: "submission-evidence/mcp-proof/zed-client-session/zed-mcp-recorder-session.jsonl",
+    zedReceipt: "submission-evidence/mcp-proof/zed-client-session/receipt-external-001.json"
+  },
+  claimBoundary: {
+    zedJsonlContainsSplunkReadyFlushFrame: true,
+    zedJsonlContainsSplunkInvestigationFrames: true,
+    certificationProvenByAdjacentArtifacts: true,
+    note:
+      "The current Zed evidence is real third-party-client evidence with a visible recorder-flush JSONL frame and a strong multi-step transcript."
+  },
+  checks: [
+    { id: "mcp-proof-pass", status: "PASS", severity: "required", evidence: "summary.status=PASS" },
+    {
+      id: "official-splunk-mcp-tool-coverage",
+      status: "PASS",
+      severity: "required",
+      evidence: "status=PASS; tools=splunk_get_knowledge_objects, splunk_run_saved_search"
+    },
+    {
+      id: "zed-frame-depth",
+      status: "PASS",
+      severity: "required",
+      evidence: "15 tracked Zed frame(s); current evidence meets the strong external-client bar."
+    }
+  ],
+  failures: [],
+  warnings: []
+} as const;
+
 const judgeProofSummary = {
   source: "splunkready-judge-proof",
   status: "PASS",
@@ -1813,15 +1859,20 @@ describe("Vite UI artifact app", () => {
         return jsonResponse({
           source: "splunkready-artifact-file-manifest",
           generatedAt: "2026-06-06T00:00:00.000Z",
-          files: ["mcp-proof-summary.json", "mcp-client-walkthrough.md"]
+          files: ["mcp-proof-summary.json", "mcp-category-scorecard.json", "mcp-client-walkthrough.md"]
         });
       }
 
-      return fileName === "mcp-proof-summary.json" ? jsonResponse(mcpProofSummary) : htmlResponse();
+      if (fileName === "mcp-proof-summary.json") {
+        return jsonResponse(mcpProofSummary);
+      }
+
+      return fileName === "mcp-category-scorecard.json" ? jsonResponse(mcpCategoryScorecard) : htmlResponse();
     });
 
     expect(bundle.mcpProofSummary?.status).toBe("PASS");
-    expect(requested).toEqual(["artifact-manifest.json", "mcp-proof-summary.json"]);
+    expect(bundle.mcpCategoryScorecard?.status).toBe("PASS");
+    expect(requested).toEqual(["artifact-manifest.json", "mcp-proof-summary.json", "mcp-category-scorecard.json"]);
     expect(bundle.missing).toEqual([]);
   });
 
@@ -2105,7 +2156,8 @@ describe("Vite UI artifact app", () => {
     const bundle = await loadUiArtifactBundle(
       "artifacts/mcp-proof",
       fetcherFor({
-        "mcp-proof-summary.json": mcpProofSummary
+        "mcp-proof-summary.json": mcpProofSummary,
+        "mcp-category-scorecard.json": mcpCategoryScorecard
       })
     );
     const html = renderApp(bundle, "mcp-proof", { artifactOptions: defaultArtifactOptions });
@@ -2114,6 +2166,10 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain('data-view="mcp-proof"');
     expect(html).toContain('class="active">MCP</a>');
     expect(html).toContain("MCP proof");
+    expect(html).toContain("MCP category proof");
+    expect(html).toContain("VERIFIED_STRONG / 15 frame(s)");
+    expect(html).toContain("official-splunk-mcp-tool-coverage: PASS");
+    expect(html).toContain("The current Zed evidence is real third-party-client evidence");
     expect(html).toContain("Developer gate");
     expect(html).toContain("Splunk MCP trace -&gt; SplunkReady certification -&gt; Readiness Receipt");
     expect(html).toContain("npx splunkready judge-proof");

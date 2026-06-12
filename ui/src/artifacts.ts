@@ -887,6 +887,49 @@ const mcpTranscriptImportSchema = z
 
 export type McpTranscriptImport = z.infer<typeof mcpTranscriptImportSchema>;
 
+const mcpCategoryScorecardSchema = z
+  .object({
+    source: z.literal("splunkready-mcp-category-evidence"),
+    status: z.enum(["PASS", "PASS_WITH_LIMITATIONS", "FAIL"]),
+    score: z.number().nonnegative(),
+    mutation: z.literal(false),
+    deterministicAuthority: z.boolean(),
+    summary: z
+      .object({
+        tools: z.number().int().nonnegative(),
+        resources: z.number().int().nonnegative(),
+        resourceTemplates: z.number().int().nonnegative(),
+        prompts: z.number().int().nonnegative(),
+        zedFrames: z.number().int().nonnegative(),
+        zedEvidenceTier: z.string().min(1)
+      })
+      .strict(),
+    evidence: z.record(z.string(), z.string().min(1)),
+    claimBoundary: z
+      .object({
+        zedJsonlContainsSplunkReadyFlushFrame: z.boolean(),
+        zedJsonlContainsSplunkInvestigationFrames: z.boolean(),
+        certificationProvenByAdjacentArtifacts: z.boolean(),
+        note: z.string().min(1)
+      })
+      .strict(),
+    checks: z.array(
+      z
+        .object({
+          id: z.string().min(1),
+          status: z.enum(["PASS", "WARN", "FAIL"]),
+          severity: z.string().min(1),
+          evidence: z.string().min(1)
+        })
+        .strict()
+    ),
+    failures: z.array(z.unknown()),
+    warnings: z.array(z.unknown())
+  })
+  .strict();
+
+export type McpCategoryScorecard = z.infer<typeof mcpCategoryScorecardSchema>;
+
 const mcpProofSummarySchema = z
   .object({
     source: z.literal("splunkready-mcp-proof"),
@@ -1439,6 +1482,7 @@ export interface UiArtifactBundle {
   firewallBlock?: FirewallBlock;
   mcpTranscriptImport?: McpTranscriptImport;
   mcpProofSummary?: McpProofSummary;
+  mcpCategoryScorecard?: McpCategoryScorecard;
   publicProofExport?: PublicProofExportManifest;
   judgeProofSummary?: JudgeProofSummary;
   platformDevexProof?: PlatformDevexProof;
@@ -1478,6 +1522,7 @@ const optionalFiles = [
   "firewall-block-before.json",
   "firewall-block-after.json",
   "mcp-proof-summary.json",
+  "mcp-category-scorecard.json",
   "mcp-transcript-import.json",
   "public-proof-export-manifest.json",
   "judge-proof-summary.json",
@@ -1654,6 +1699,7 @@ export const loadUiArtifactBundle = async (
       .optional()
       .parse(loaded.get("firewall-block-before.json") ?? loaded.get("firewall-block-after.json")),
     mcpProofSummary: mcpProofSummarySchema.optional().parse(loaded.get("mcp-proof-summary.json")),
+    mcpCategoryScorecard: mcpCategoryScorecardSchema.optional().parse(loaded.get("mcp-category-scorecard.json")),
     mcpTranscriptImport: mcpTranscriptImportSchema.optional().parse(loaded.get("mcp-transcript-import.json")),
     publicProofExport: publicProofExportManifestSchema
       .optional()

@@ -277,3 +277,33 @@ Current harsh re-score after Gate 6:
 Next work: either open the authenticated feedback form and map exact fields, or
 return to product work by strengthening MCP-specific category proof beyond the
 Platform wrapper.
+
+Gate 7 is implemented for first-class MCP category proof visibility.
+
+Gate 7 progress:
+
+- Loaded `mcp-category-scorecard.json` as a typed optional workbench artifact.
+- Rendered a top-of-route `MCP category proof` panel before the lower-level
+  developer gate, showing status, score, tool/resource surface, Zed evidence
+  tier, Splunk investigation frames, recorder flush frame, adjacent
+  certification, deterministic authority, mutation boundary, and the first
+  category checks.
+- Required `artifacts/mcp-proof/mcp-category-scorecard.json` in the public-demo
+  export audit, so the hosted default MCP route cannot silently drop the
+  category scorecard.
+- Verified the current category audit still reports `PASS`, score `100`,
+  `VERIFIED_STRONG`, 15 Zed frames, zero warnings, and zero failures.
+
+Current harsh re-score after Gate 7:
+
+| Surface | After Gate 6 | After Gate 7 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 73% | 74% | The default hosted route now leads with a stronger proof browser artifact, which helps judge ergonomics but does not change the one-command platform proof. |
+| Best Use of Splunk MCP Server | 55% | 61% | The category scorecard is now first-class in the default public workbench and audit-required, making the Splunk MCP composition story much harder to miss. This is still below 70% because live official Splunk MCP proof remains partially bounded and the project is still a readiness layer around MCP, not an MCP server replacement. |
+| Best Use of Splunk Developer Tools | 44% | 46% | Typed artifact loading and audit enforcement improve developer-tool credibility, but external package/publication blockers remain. |
+| Feedback prize preparedness | 75% | 75% | Unchanged. |
+
+Next work: push MCP from visible proof to stronger category fit by making the
+official Splunk MCP composition comparison and boundaries unavoidable in README,
+Devpost copy, and the default hosted route without overstating live-operator
+coverage.

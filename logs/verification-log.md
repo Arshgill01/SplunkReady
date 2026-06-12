@@ -18513,3 +18513,26 @@ Result:
 - PASS for stale feedback-log cleanup: `rg` found no remaining
   "Next artifact to create" line for `docs/splunk-feedback-form-answers.md`.
 - PASS for whitespace check: `git diff --check` produced no output.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 7 MCP Category Proof UI
+
+Commands and checks:
+
+- `npm test -- tests/ui/app.test.ts tests/scripts/public-demo-export.test.ts`
+- `node scripts/audit-mcp-category-evidence.mjs --out submission-evidence/mcp-proof --require-strong`
+- `npm run public-demo:build`
+- `npm run audit:public-demo-export`
+- `npm run audit:submission-copy`
+- `git diff --check`
+
+Result:
+
+- PASS for focused UI and public-demo export tests: 2 test files, 34 tests.
+- PASS for MCP category audit: status `PASS`, score `100`,
+  `VERIFIED_STRONG`, 15 Zed frames, zero warnings, zero failures.
+- PASS for public demo rebuild; default route remains
+  `?artifacts=artifacts%2Fmcp-proof#mcp-proof`.
+- PASS for public-demo export audit: 453 files, mutation false, default route
+  `mcp-proof`.
+- PASS for submission-copy audit: 464 required claims.
+- PASS for whitespace check: `git diff --check` produced no output.

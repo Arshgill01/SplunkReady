@@ -52,6 +52,7 @@ try {
     "public-demo-manifest.json",
     "artifacts/mcp-proof/artifact-manifest.json",
     "artifacts/mcp-proof/mcp-proof-summary.json",
+    "artifacts/mcp-proof/mcp-category-scorecard.json",
     "artifacts/mcp-proof/mcp-client-walkthrough.json",
     "artifacts/mcp-proof/mcp-client-walkthrough.md",
     "artifacts/mcp-proof/mcp-client-session.jsonl",
