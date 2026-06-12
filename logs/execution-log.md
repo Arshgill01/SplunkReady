@@ -17310,3 +17310,8 @@ Actions:
   the in-app browser on desktop and 390px mobile width.
 - Updated the Gate 2 probability loop with a conservative partial re-score:
   Platform 56%, MCP 43%, Developer Tools 31%.
+- Added tracked PR-gate evidence to the public demo export artifact allowlist
+  and workbench artifact selector so CI readiness is visible from the hosted
+  demo path.
+- Verified the rebuilt hosted demo can load both the default MCP proof route
+  and the direct PR-gate artifact route without artifact failures.

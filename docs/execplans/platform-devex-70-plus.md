@@ -142,7 +142,7 @@ Verification:
 
 - `NPM_CONFIG_CACHE=/private/tmp/splunkready-npm-cache npm run check` passed.
 
-Gate 2 is partially implemented.
+Gate 2 is implemented for the MCP proof and PR-gate public-demo surfaces.
 
 Gate 2 progress:
 
@@ -154,14 +154,17 @@ Gate 2 progress:
   workflow surfaces.
 - Public demo export still defaults to `mcp-proof` and browser verification
   passed on desktop and 390px mobile width.
+- Public demo export now includes `artifacts/ci-pr-gate`, the artifact selector
+  exposes it as `PR gate`, and the direct PR-gate route loads the generated PR
+  comment and PASS receipt evidence in the browser.
 
-Current harsh re-score after partial Gate 2:
+Current harsh re-score after Gate 2:
 
-| Surface | After Gate 1 | After partial Gate 2 | Reason |
+| Surface | After Gate 1 | After Gate 2 | Reason |
 |---|---:|---:|---|
-| Platform & Developer Experience | 50% | 56% | The default demo route now opens on a clearer developer gate, but CI/trace import still need stronger visual proof. |
-| Best Use of Splunk MCP Server | 36% | 43% | The first MCP screen now states the trust-layer workflow instead of burying it in lower panels. |
-| Best Use of Splunk Developer Tools | 28% | 31% | Developer workflow surfaces are more visible, but external publication blockers remain. |
+| Platform & Developer Experience | 50% | 60% | The default demo route now opens on a clearer developer gate and the hosted artifact pack includes the CI/PR gate proof. Trace import still needs a more obvious judge-facing path. |
+| Best Use of Splunk MCP Server | 36% | 44% | The first MCP screen now states the trust-layer workflow instead of burying it in lower panels; direct MCP transcript import is still too hidden. |
+| Best Use of Splunk Developer Tools | 28% | 34% | PR gate evidence is now exported and browser-verifiable, but external publication blockers still cap this category. |
 
-Next work: make CI/PR-gate and trace-import proof visible in the workbench or
-judge path without bloating the first screen.
+Next work: make trace-import proof and the `npx splunkready` quickstart path
+visible in one judge-facing workflow without bloating the first screen.

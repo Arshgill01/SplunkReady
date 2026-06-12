@@ -91,7 +91,13 @@ describe("hosted demo currentness audit", () => {
         sourceCommitShort: expectedCommit.slice(0, 7),
         mutation: false,
         defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
-        artifactBases: ["artifacts/mcp-proof", "artifacts/suite-proof", "artifacts/public-proof-export", "artifacts/judge-proof"]
+        artifactBases: [
+          "artifacts/mcp-proof",
+          "artifacts/suite-proof",
+          "artifacts/ci-pr-gate",
+          "artifacts/public-proof-export",
+          "artifacts/judge-proof"
+        ]
       },
       '<!doctype html><script type="module" src="./assets/index-test.js"></script><link rel="stylesheet" href="./assets/index-test.css">'
     );
@@ -122,7 +128,13 @@ describe("hosted demo currentness audit", () => {
         sourceCommitShort: hostedCommit.slice(0, 7),
         mutation: false,
         defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
-        artifactBases: ["artifacts/mcp-proof", "artifacts/suite-proof", "artifacts/public-proof-export", "artifacts/judge-proof"]
+        artifactBases: [
+          "artifacts/mcp-proof",
+          "artifacts/suite-proof",
+          "artifacts/ci-pr-gate",
+          "artifacts/public-proof-export",
+          "artifacts/judge-proof"
+        ]
       },
       '<!doctype html><script type="module" src="./assets/index-test.js"></script><link rel="stylesheet" href="./assets/index-test.css">'
     );

@@ -1473,6 +1473,7 @@ export const defaultArtifactOptions: ArtifactOption[] = [
   { label: "Live security proof", path: "artifacts/live-security-ui" },
   { label: "Certification index", path: "artifacts/certification-index" },
   { label: "Suite proof", path: "artifacts/suite-proof" },
+  { label: "PR gate", path: "artifacts/ci-pr-gate" },
   { label: "Judge proof", path: "artifacts/judge-proof" },
   { label: "MCP proof", path: "artifacts/mcp-proof" },
   { label: "MCP transcript import", path: "artifacts/mcp-transcript" },

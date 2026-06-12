@@ -58,6 +58,10 @@ try {
     "artifacts/mcp-proof/mcp-client-session.md",
     "artifacts/suite-proof/artifact-manifest.json",
     "artifacts/suite-proof/suite-proof-summary.json",
+    "artifacts/ci-pr-gate/artifact-manifest.json",
+    "artifacts/ci-pr-gate/ci-pr-gate.json",
+    "artifacts/ci-pr-gate/pr-comment.md",
+    "artifacts/ci-pr-gate/receipt-after-001.json",
     "artifacts/judge-proof/artifact-manifest.json",
     "artifacts/judge-proof/judge-proof-summary.json",
     "artifacts/judge-proof/judge-proof-summary.md",
@@ -108,6 +112,7 @@ try {
   const expectedArtifactBases = [
     "artifacts/mcp-proof",
     "artifacts/suite-proof",
+    "artifacts/ci-pr-gate",
     "artifacts/public-proof-export",
     "artifacts/real-splunk-stress-llm-layer",
     "artifacts/judge-proof",

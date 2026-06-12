@@ -18386,3 +18386,37 @@ Result:
 - PASS for public-demo export audit: 308 files, mutation false, default route
   `mcp-proof`.
 - PASS for whitespace check: `git diff --check` produced no output.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 2 PR Gate Export
+
+Commands and checks:
+
+- `npm test -- tests/scripts/hosted-demo-currentness.test.ts`
+- `npm run public-demo:build`
+- `npm test -- tests/ui/app.test.ts`
+- `npm run audit:public-demo-export`
+- `npm test -- tests/scripts/hosted-demo-currentness.test.ts tests/ui/app.test.ts`
+- `npm run audit:submission-copy`
+- in-app browser check at `http://127.0.0.1:4173/?artifacts=artifacts%2Fmcp-proof#mcp-proof`
+- in-app browser check at `http://127.0.0.1:4173/?artifacts=artifacts%2Fci-pr-gate#proof-browser`
+- `git diff --check`
+
+Result:
+
+- PASS for hosted-demo currentness tests after adding `artifacts/ci-pr-gate` to
+  the expected public artifact bases.
+- PASS for public demo rebuild; manifest artifact bases now include
+  `artifacts/ci-pr-gate`.
+- PASS for full UI artifact regression suite: 31 tests passed.
+- PASS for public-demo export audit after requiring PR-gate manifest, summary,
+  generated PR comment, and receipt files: 333 files, mutation false, default
+  route `mcp-proof`.
+- PASS for combined hosted-demo currentness and UI artifact tests: 34 tests
+  passed.
+- PASS for submission-copy audit: 464 required claims.
+- PASS for browser verification of the default MCP proof route: active view
+  `mcp-proof`, PR-gate text present, no artifact-load failure.
+- PASS for browser verification of the direct PR-gate artifact route: active
+  view `proof-browser`, generated PR comment present, READY/PASS evidence
+  present, no artifact-load failure.
+- PASS for whitespace check: `git diff --check` produced no output.

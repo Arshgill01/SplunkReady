@@ -1665,6 +1665,7 @@ describe("Vite UI artifact app", () => {
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/live-security-ui");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/certification-index");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/suite-proof");
+    expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/ci-pr-gate");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/judge-proof");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/mcp-proof");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/mcp-transcript");

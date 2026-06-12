@@ -39,6 +39,11 @@ Expected result: `PASS`, deterministic rule-engine authority, and
    Developer-tools evidence for the packaged Splunk app path, including the
    external blockers that are not claimed as complete.
 
+Supporting developer workflow proof:
+
+- `submission-evidence/ci-pr-gate/pr-comment.md`
+- `submission-evidence/ci-pr-gate/ci-pr-gate.json`
+
 ## What This Proves
 
 - SplunkReady is a certification harness, not a chatbot.
