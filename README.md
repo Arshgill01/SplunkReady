@@ -249,6 +249,7 @@ readiness for the next version, run:
 ```bash
 npm run audit:npm-release-preflight
 npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness
+npm run audit:release-alignment
 ```
 
 That preflight checks package metadata, dry-run pack contents, npm registry
@@ -258,6 +259,12 @@ the package is otherwise ready but the machine is not logged in to npm. The
 currentness audit checks the public registry, runs the latest published
 `judge-proof` from a clean temp folder, and verifies whether the published
 package can initialize the SplunkReady MCP stdio server.
+The release-alignment audit converts source-currentness drift into the exact
+next publish action. Current evidence is
+`submission-evidence/release-alignment/release-alignment.json`; it reports
+`ACTION_REQUIRED`, recommends `0.1.8`, and keeps the public `0.1.7` no-clone
+judge path valid without claiming that the published tarball includes every
+newer repo-side proof improvement.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:

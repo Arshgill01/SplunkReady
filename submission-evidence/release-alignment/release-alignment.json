@@ -1,0 +1,74 @@
+{
+  "source": "splunkready-release-alignment",
+  "status": "ACTION_REQUIRED",
+  "package": {
+    "name": "splunkready",
+    "version": "0.1.7",
+    "recommendedNextVersion": "0.1.8"
+  },
+  "currentness": {
+    "artifactPath": "submission-evidence/public-package-currentness/public-package-currentness.json",
+    "status": "STALE",
+    "latestVersion": "0.1.7",
+    "localVersion": "0.1.7",
+    "localVersionPublished": true,
+    "latestMatchesLocal": true,
+    "latestGitHead": "634969b40df4d3aac75382df5306e6a1b5ba7ea9",
+    "packageInputGitHead": "e78210e149ece803d5235108bfe64e364be19a1c",
+    "gitHeadMatchesPackageInputs": false,
+    "packageInputPaths": [
+      "package.json",
+      "package-lock.json",
+      "README.md",
+      "action.yml",
+      "src",
+      "examples",
+      "fixtures",
+      "policies",
+      "scripts/run-readiness-score-calibration.mjs"
+    ],
+    "dirtyPackageInputs": []
+  },
+  "publishedProbeStatus": [
+    {
+      "id": "judgeProof",
+      "packageSpec": "splunkready@0.1.7",
+      "status": "PASS",
+      "command": "npx -y splunkready@0.1.7 judge-proof --out ./judge-proof --json"
+    },
+    {
+      "id": "mcp",
+      "packageSpec": "splunkready@0.1.7",
+      "status": "PASS",
+      "command": null
+    },
+    {
+      "id": "liveMockProof",
+      "packageSpec": "splunkready@0.1.7",
+      "status": "PASS",
+      "command": "npx -y splunkready@0.1.7 live-proof --out ./live-mock --live-mock --json"
+    },
+    {
+      "id": "recorder",
+      "packageSpec": "splunkready@0.1.7",
+      "status": "PASS",
+      "command": null
+    },
+    {
+      "id": "policyRegistry",
+      "packageSpec": "splunkready@0.1.7",
+      "status": "PASS",
+      "command": null
+    }
+  ],
+  "nextCommands": [
+    "npm version 0.1.8 --no-git-tag-version",
+    "npm run audit:npm-release-preflight -- --require-ready",
+    "npm publish --access public",
+    "npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness",
+    "npm run audit:release-alignment -- --require-aligned"
+  ],
+  "summary": "The public package probes pass, but package inputs moved beyond 0.1.7; bump to 0.1.8, publish, and rerun currentness.",
+  "mutation": false,
+  "failures": []
+}

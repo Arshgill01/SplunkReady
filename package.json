@@ -66,6 +66,7 @@
     "audit:package-installability": "node scripts/audit-package-installability.mjs",
     "audit:npm-release-preflight": "node scripts/audit-npm-release-preflight.mjs",
     "audit:public-package-currentness": "node scripts/audit-public-package-currentness.mjs",
+    "audit:release-alignment": "node scripts/audit-release-alignment.mjs",
     "audit:public-demo-export": "node scripts/audit-public-demo-export.mjs",
     "audit:hosted-demo-currentness": "node scripts/audit-hosted-demo-currentness.mjs",
     "audit:live-hosted-model-status": "node scripts/audit-live-hosted-model-status.mjs",

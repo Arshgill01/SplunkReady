@@ -17402,3 +17402,27 @@ Actions:
 - Updated the judge path from five to six first-read evidence files, adding the
   MCP category scorecard before the broader MCP proof summary.
 - Updated the Platform 70% ExecPlan with the Gate 8 probability loop.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 9 Release Alignment
+
+Files expected to touch:
+
+- `scripts/audit-release-alignment.mjs`
+- `package.json`
+- `tests/scripts/release-alignment.test.ts`
+- `submission-evidence/release-alignment/release-alignment.json`
+- `README.md`
+- `submission-evidence/claim-ledger.md`
+- `docs/execplans/platform-devex-70-plus.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Added a release-alignment audit that turns public package source drift into a
+  concrete next version and command list.
+- Generated the current release-alignment artifact. It reports
+  `ACTION_REQUIRED`, recommends `0.1.8`, and records that public `0.1.7`
+  probes still pass while the package-input gitHead is stale.
+- Updated README and claim ledger to expose the audited release boundary
+  without claiming the current source has already been published.

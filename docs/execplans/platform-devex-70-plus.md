@@ -332,3 +332,29 @@ Current harsh re-score after Gate 8:
 Next work: the largest remaining ceiling move is either exact feedback-form
 submission mapping or reducing public-package/source-currentness friction so
 the no-clone path and repository proof are fully aligned.
+
+Gate 9 is implemented for public-package release alignment.
+
+Gate 9 progress:
+
+- Added `npm run audit:release-alignment`, a local audit that reads the public
+  package currentness evidence and emits the exact next release action without
+  claiming a publish happened.
+- Generated `submission-evidence/release-alignment/release-alignment.json`.
+  Current status is `ACTION_REQUIRED`: public `0.1.7` probes pass, but the
+  package-input tree has moved beyond the published gitHead, so the next
+  version should be `0.1.8`.
+- Updated README and claim ledger so judges see the stale boundary and the
+  concrete release action in one place.
+
+Current harsh re-score after Gate 9:
+
+| Surface | After Gate 8 | After Gate 9 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 75% | 76% | Distribution risk is clearer and operator-actionable; it is not higher because the package still has not been republished from the current tree. |
+| Best Use of Splunk MCP Server | 64% | 64% | Unchanged. |
+| Best Use of Splunk Developer Tools | 47% | 49% | Release alignment is now audited and exact, which improves developer-tool credibility, but external publish still remains. |
+| Feedback prize preparedness | 75% | 75% | Unchanged. |
+
+Next work: either perform the actual `0.1.8` publish flow when credentials are
+available, or pursue exact feedback-form field capture/submission.
