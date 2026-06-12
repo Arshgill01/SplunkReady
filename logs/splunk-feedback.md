@@ -24,14 +24,23 @@ Strongest feedback themes so far:
 - AppInspect and Splunk app packaging feedback should distinguish local package
   readiness from external Splunkbase/Splunk Cloud review blockers.
 
-Current packet: `docs/splunk-feedback-form-answers.md` now contains a
-field-mapped, paste-ready answer packet grounded in this log. Public Devpost
-rules confirm the need for a complete online feedback submission with
-actionable comments; the exact Google Form question labels were not exposed in
-public HTML, so the packet does not claim exact question mapping or submission.
-When the authenticated form is opened, paste from the mapped sections and keep
-the final confirmation page or receipt before claiming the feedback prize path
-is complete.
+Current packet: `docs/splunk-feedback-form-answers.md` now contains an
+exact-field, paste-ready answer packet grounded in this log. Public Devpost
+HTML embeds the official Google Form URL, and the public Google Form payload
+exposes the question labels for basics, Splunk AI capabilities, MCP Server,
+SAIA, AITK, Hosted Models, setup/documentation, and overall feedback. The form
+has not been submitted yet; keep the final confirmation page or receipt before
+claiming the feedback prize path is complete.
+
+Verified official form details on 2026-06-12:
+
+- Devpost feedback page:
+  `https://splunk.devpost.com/details/feedback`
+- Embedded Google Form:
+  `https://docs.google.com/forms/d/e/1FAIpQLSde9xP1zGdcXuXX1h1bY42U9kPlitArLmKZweiLCLEH3x27Xg/viewform?embedded=true`
+- Form title: `Splunk Agentic Ops Hackathon | Feedback`
+- Form deadline text: feedback must be submitted by 9am PT on June 19, 2026.
+- Submission status: not submitted.
 
 ## Setup Friction Points
 

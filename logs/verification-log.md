@@ -18565,3 +18565,29 @@ Result:
 
 - PASS for submission-copy audit: 464 required claims.
 - PASS for whitespace check: `git diff --check` produced no output.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 10 Exact Feedback Form Mapping
+
+Commands and checks:
+
+- `curl -L --max-time 20 -s https://splunk.devpost.com/details/feedback | rg -n "Feedback Form|feedback|forms\\.gle|docs\\.google|google\\.com/forms|href=|data-|iframe|script"`
+- `curl -L --max-time 20 -s https://splunk.devpost.com/rules | rg -n "Feedback|feedback|Most Valuable|form|Submission|Period|actionable"`
+- `curl -I -L --max-time 20 https://splunk.devpost.com/details/feedback`
+- `curl -L --max-time 30 -s 'https://docs.google.com/forms/d/e/1FAIpQLSde9xP1zGdcXuXX1h1bY42U9kPlitArLmKZweiLCLEH3x27Xg/viewform?embedded=true' | rg -n "FB_PUBLIC_LOAD_DATA_|freebirdFormviewerViewItemsItemItemTitle|aria-label|entry\\.|Feedback|Splunk|What|How|Why|required|textarea|input"`
+- `npm run audit:submission-copy`
+- `rg -n "exact-field|Embedded Google Form|Full Name|Did you use the Splunk MCP Server|not submitted|Gate 10|Feedback prize preparedness" docs/splunk-feedback-form-answers.md logs/splunk-feedback.md docs/execplans/platform-devex-70-plus.md`
+- `git diff --check`
+
+Result:
+
+- PASS for Devpost feedback page fetch: HTTP 200 and embedded Google Form
+  iframe found.
+- PASS for rules fetch: feedback-submission criteria and prize language found.
+- PASS for Google Form fetch: public form payload exposed exact question
+  labels.
+- PASS for submission-copy audit: 464 required claims.
+- PASS for exact-field anchor check: expected form-mapping and scorecard
+  anchors found.
+- PASS for whitespace check: `git diff --check` produced no output.
+- PARTIAL for submission state: form was not submitted; no confirmation page or
+  receipt exists yet.

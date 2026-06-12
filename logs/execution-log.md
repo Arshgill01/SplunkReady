@@ -17426,3 +17426,25 @@ Actions:
   probes still pass while the package-input gitHead is stale.
 - Updated README and claim ledger to expose the audited release boundary
   without claiming the current source has already been published.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 10 Exact Feedback Form Mapping
+
+Files expected to touch:
+
+- `docs/splunk-feedback-form-answers.md`
+- `logs/splunk-feedback.md`
+- `docs/execplans/platform-devex-70-plus.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Rechecked the public Devpost feedback page and raw HTML.
+- Found the embedded Google Form URL for `Splunk Agentic Ops Hackathon |
+  Feedback`.
+- Fetched the public Google Form payload and extracted the exact question
+  labels and sections.
+- Converted the feedback answer packet from likely field mapping to exact
+  form-field mapping.
+- Updated the feedback log and Platform 70% ExecPlan with the verified form
+  URL, deadline text, not-submitted boundary, and harsh probability update.

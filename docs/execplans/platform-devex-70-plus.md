@@ -358,3 +358,30 @@ Current harsh re-score after Gate 9:
 
 Next work: either perform the actual `0.1.8` publish flow when credentials are
 available, or pursue exact feedback-form field capture/submission.
+
+Gate 10 is implemented for exact feedback-form field capture.
+
+Gate 10 progress:
+
+- Rechecked the public Devpost feedback page and found the embedded Google Form
+  URL in the fetched HTML.
+- Fetched the public Google Form payload and extracted the exact section and
+  question labels for basics, Splunk AI capabilities, MCP Server, SAIA, AITK,
+  Hosted Models, setup/documentation, and overall feedback.
+- Converted `docs/splunk-feedback-form-answers.md` from a likely field mapping
+  into an exact-field paste packet.
+- Updated `logs/splunk-feedback.md` with the verified form URL, deadline text,
+  and explicit not-submitted boundary.
+
+Current harsh re-score after Gate 10:
+
+| Surface | After Gate 9 | After Gate 10 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 76% | 76% | Exact feedback fields do not change the judged product path. |
+| Best Use of Splunk MCP Server | 64% | 65% | The MCP feedback answer is now aligned to the official form's exact MCP questions, but this remains feedback/category-adjacent rather than new product proof. |
+| Best Use of Splunk Developer Tools | 49% | 50% | The official setup/documentation and developer-experience answers now map exactly to the form, improving narrative precision. |
+| Feedback prize preparedness | 75% | 84% | The biggest prior gap was exact form-field uncertainty. That is now removed. It is not higher because the form is still not submitted and final answers depend on truthful final implementation state for optional SAIA/Python SDK/AITK/Hosted Models sections. |
+
+Next work: either submit the feedback form from an authenticated browser
+session and keep confirmation evidence, or return to product proof by reducing
+the `0.1.8` release/currentness gap.
