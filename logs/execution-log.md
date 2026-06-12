@@ -17328,3 +17328,10 @@ Actions:
   transcript certification.
 - Updated the README and judge path so clone-based judges see the wrapper
   before lower-level commands.
+- Made the Platform proof wrapper importable and generated it into the public
+  demo export as `artifacts/platform-devex-proof`.
+- Added workbench loading/rendering for the Platform proof summary and required
+  it in the public-demo export audit.
+- Attempted in-app browser verification of the Platform proof hosted route; the
+  browser policy blocked follow-up inspection, so validation continued through
+  renderer tests and export audits rather than a browser workaround.

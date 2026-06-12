@@ -97,7 +97,8 @@ describe("hosted demo currentness audit", () => {
           "artifacts/ci-pr-gate",
           "artifacts/public-proof-export",
           "artifacts/mcp-transcript",
-          "artifacts/judge-proof"
+          "artifacts/judge-proof",
+          "artifacts/platform-devex-proof"
         ]
       },
       '<!doctype html><script type="module" src="./assets/index-test.js"></script><link rel="stylesheet" href="./assets/index-test.css">'
@@ -135,7 +136,8 @@ describe("hosted demo currentness audit", () => {
           "artifacts/ci-pr-gate",
           "artifacts/public-proof-export",
           "artifacts/mcp-transcript",
-          "artifacts/judge-proof"
+          "artifacts/judge-proof",
+          "artifacts/platform-devex-proof"
         ]
       },
       '<!doctype html><script type="module" src="./assets/index-test.js"></script><link rel="stylesheet" href="./assets/index-test.css">'

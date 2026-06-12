@@ -12,6 +12,7 @@ import {
   type LlmDeliberationArtifact,
   type McpProofSummary,
   type McpTranscriptImport,
+  type PlatformDevexProof,
   type ProofAudit,
   type PublicProofExportManifest,
   type SuiteProofSummary,
@@ -1085,6 +1086,26 @@ const renderJudgeProofPanel = (summary: JudgeProofSummary | undefined): string =
         failingGates.length > 0 ? failingGates.map((gate) => `${gate.id}: ${gate.status}`).join(" / ") : "none"
       ],
       ["Next LLM command", summary.llmEvidence.nextCommand]
+    ])}
+  </section>`;
+};
+
+const renderPlatformDevexProofPanel = (summary: PlatformDevexProof | undefined): string => {
+  if (!summary) {
+    return "";
+  }
+
+  return `<section class="panel platform-proof-panel">
+    <h2>Platform proof</h2>
+    ${renderFactTable([
+      ["Status", summary.status],
+      ["Mutation", summary.mutation ? "yes" : "no"],
+      ["Deterministic authority", summary.deterministicAuthority ? "yes" : "no"],
+      ["Fixture receipt", `${summary.receipts.fixtureBefore} -> ${summary.receipts.fixtureAfter}`],
+      ["MCP transcript receipt", summary.receipts.transcript],
+      ["Steps", summary.steps.map((step) => `${step.label}: ${step.command}`).join(" / ")],
+      ["Fixture replay", summary.routes.fixtureReplay],
+      ["Transcript receipt", summary.routes.transcriptReceipt]
     ])}
   </section>`;
 };
@@ -2347,6 +2368,7 @@ const renderProofBrowser = (bundle: UiArtifactBundle, options: RenderOptions): s
         <div class="run-browser-detail">
           ${renderReceiptComparison(bundle)}
           ${renderTracePreview(bundle)}
+          ${renderPlatformDevexProofPanel(bundle.platformDevexProof)}
           ${renderJudgeProofPanel(bundle.judgeProofSummary)}
           ${renderPublicProofExportPanel(bundle.publicProofExport)}
           ${renderProofAuditPanel(bundle.proofAudit)}
@@ -2392,6 +2414,7 @@ const optionalRailStories = (summary: ReturnType<typeof summarizeBundle>): strin
     summary.indexStory,
     summary.mcpProofStory,
     summary.transcriptStory,
+    summary.platformProofStory,
     summary.judgeProofStory
   ].filter((story) => !story.includes("not loaded"));
 

@@ -1382,6 +1382,37 @@ const judgeProofSummarySchema = z
 
 export type JudgeProofSummary = z.infer<typeof judgeProofSummarySchema>;
 
+const platformDevexProofSchema = z
+  .object({
+    source: z.literal("splunkready-platform-devex-proof"),
+    generatedAt: z.string().min(1),
+    startedAt: z.string().min(1),
+    status: z.enum(["PASS", "FAIL"]),
+    mutation: z.literal(false),
+    deterministicAuthority: z.literal(true),
+    steps: z.array(
+      z
+        .object({
+          label: z.string().min(1),
+          command: z.string().min(1),
+          durationMs: z.number().int().nonnegative()
+        })
+        .strict()
+    ),
+    artifacts: z.record(z.string().min(1)),
+    receipts: z
+      .object({
+        fixtureBefore: z.string().min(1),
+        fixtureAfter: z.string().min(1),
+        transcript: z.string().min(1)
+      })
+      .strict(),
+    routes: z.record(z.string().min(1))
+  })
+  .strict();
+
+export type PlatformDevexProof = z.infer<typeof platformDevexProofSchema>;
+
 export interface UiArtifactBundle {
   artifactBase: string;
   contract?: EnvironmentContract;
@@ -1410,6 +1441,7 @@ export interface UiArtifactBundle {
   mcpProofSummary?: McpProofSummary;
   publicProofExport?: PublicProofExportManifest;
   judgeProofSummary?: JudgeProofSummary;
+  platformDevexProof?: PlatformDevexProof;
   beforeTrace: TraceEvent[];
   afterTrace: TraceEvent[];
   externalTrace: TraceEvent[];
@@ -1449,6 +1481,7 @@ const optionalFiles = [
   "mcp-transcript-import.json",
   "public-proof-export-manifest.json",
   "judge-proof-summary.json",
+  "platform-devex-proof.json",
   "trace-before.json",
   "trace-after.json",
   "trace-external.json",
@@ -1474,6 +1507,7 @@ export const defaultArtifactOptions: ArtifactOption[] = [
   { label: "Certification index", path: "artifacts/certification-index" },
   { label: "Suite proof", path: "artifacts/suite-proof" },
   { label: "PR gate", path: "artifacts/ci-pr-gate" },
+  { label: "Platform proof", path: "artifacts/platform-devex-proof" },
   { label: "Judge proof", path: "artifacts/judge-proof" },
   { label: "MCP proof", path: "artifacts/mcp-proof" },
   { label: "MCP transcript import", path: "artifacts/mcp-transcript" },
@@ -1625,6 +1659,7 @@ export const loadUiArtifactBundle = async (
       .optional()
       .parse(loaded.get("public-proof-export-manifest.json")),
     judgeProofSummary: judgeProofSummarySchema.optional().parse(loaded.get("judge-proof-summary.json")),
+    platformDevexProof: platformDevexProofSchema.optional().parse(loaded.get("platform-devex-proof.json")),
     beforeTrace: traceEventSchema.array().optional().parse(loaded.get("trace-before.json")) ?? [],
     afterTrace: traceEventSchema.array().optional().parse(loaded.get("trace-after.json")) ?? [],
     externalTrace: traceEventSchema.array().optional().parse(loaded.get("trace-external.json")) ?? [],
@@ -1656,6 +1691,7 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
   mcpProofStory: string;
   transcriptStory: string;
   judgeProofStory: string;
+  platformProofStory: string;
 } => {
   const receipt = bundle.receipt;
   const contract = bundle.liveSmokeContract ?? bundle.contract;
@@ -1718,6 +1754,9 @@ export const summarizeBundle = (bundle: UiArtifactBundle): {
       : "mcp import not loaded",
     judgeProofStory: bundle.judgeProofSummary
       ? `judge proof ${bundle.judgeProofSummary.status.toLowerCase()} / llm ${bundle.judgeProofSummary.llmEvidence.status.toLowerCase()}`
-      : "judge proof not loaded"
+      : "judge proof not loaded",
+    platformProofStory: bundle.platformDevexProof
+      ? `platform proof ${bundle.platformDevexProof.status.toLowerCase()}`
+      : "platform proof not loaded"
   };
 };

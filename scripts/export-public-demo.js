@@ -3,6 +3,7 @@ import { promisify } from "node:util";
 import { copyFile, lstat, mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runPlatformDevexProof } from "./run-platform-devex-proof.mjs";
 
 const requiredArtifactDirs = ["mcp-proof", "suite-proof", "ci-pr-gate", "public-proof-export", "real-splunk-stress-llm-layer"];
 const requiredArtifactCopies = [
@@ -12,12 +13,14 @@ const requiredArtifactCopies = [
   }
 ];
 const generatedArtifactDirs = ["judge-proof"];
+const generatedPlatformProofDir = "platform-devex-proof";
 const interactiveSourceDir = "judge-proof/suite-proof/mission-security-lateral-movement-readiness";
 const interactiveArtifactDir = "interactive-demo";
 const execFileAsync = promisify(execFile);
 export const publicDemoInputPaths = [
   "fixtures",
   "scripts/export-public-demo.js",
+  "scripts/run-platform-devex-proof.mjs",
   "scripts/audit-public-demo-export.mjs",
   "src",
   "submission-evidence/ci-pr-gate",
@@ -177,6 +180,7 @@ export const exportPublicDemo = async ({
   outDir = "artifacts/public-demo",
   generatedAt = new Date().toISOString(),
   generateJudgeProof = runCredentialFreeJudgeProof,
+  generatePlatformProof = runPlatformDevexProof,
   sourceCommit,
   deploymentCommit
 } = {}) => {
@@ -209,6 +213,10 @@ export const exportPublicDemo = async ({
     await writeArtifactManifest(targetArtifactDir, generatedAt);
   }
 
+  const platformProofArtifactDir = resolve(targetRoot, "artifacts", generatedPlatformProofDir);
+  await generatePlatformProof({ root: repoRoot, outDir: platformProofArtifactDir });
+  await writeArtifactManifest(platformProofArtifactDir, generatedAt);
+
   const interactiveTargetDir = resolve(targetRoot, "artifacts", interactiveArtifactDir);
   await copyTree(resolve(targetRoot, "artifacts", interactiveSourceDir), interactiveTargetDir);
   await writeArtifactManifest(interactiveTargetDir, generatedAt);
@@ -219,6 +227,7 @@ export const exportPublicDemo = async ({
     ...requiredArtifactDirs,
     ...requiredArtifactCopies.map((artifactCopy) => artifactCopy.target),
     ...generatedArtifactDirs,
+    generatedPlatformProofDir,
     interactiveArtifactDir
   ].map((artifactDir) => `artifacts/${artifactDir}`);
   const resolvedSourceCommit = sourceCommit ?? await resolvePublicDemoInputCommit(repoRoot);

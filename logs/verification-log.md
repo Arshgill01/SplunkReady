@@ -18469,3 +18469,32 @@ Result:
   - external MCP transcript receipt `READY`;
   - commands for fixture demo, judge proof, and strict MCP transcript
     certification.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 5 Public Platform Proof
+
+Commands and checks:
+
+- `npm test -- tests/scripts/public-demo-export.test.ts tests/scripts/hosted-demo-currentness.test.ts tests/ui/app.test.ts`
+- `npm run platform-proof`
+- `npm run public-demo:build`
+- `npm run audit:public-demo-export`
+- `npm run audit:submission-copy`
+- attempted in-app browser navigation to `http://127.0.0.1:4173/?artifacts=artifacts%2Fplatform-devex-proof#proof-browser`
+- `git diff --check`
+
+Result:
+
+- PASS for public-demo export, hosted-demo currentness, and UI artifact tests:
+  37 tests passed.
+- PASS for `npm run platform-proof`: status `PASS`, mutation `false`, fixture
+  `NOT READY -> READY`, MCP transcript `READY`.
+- PASS for public demo rebuild; manifest artifact bases now include
+  `artifacts/platform-devex-proof`.
+- PASS for public-demo export audit: 453 files, mutation false, default route
+  `mcp-proof`.
+- PASS for submission-copy audit: 464 required claims.
+- PARTIAL for browser verification: the local server returned HTTP 200 for the
+  Platform proof route, but in-app browser policy blocked follow-up inspection.
+  No alternate browser workaround was used. Renderer tests cover the Platform
+  proof panel content.
+- PASS for whitespace check: `git diff --check` produced no output.

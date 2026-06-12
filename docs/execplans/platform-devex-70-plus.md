@@ -220,3 +220,31 @@ Current harsh re-score after Gate 4:
 Next work: strengthen the public/hosted demonstration around this one-command
 proof and tighten the feedback-prize answer packet against the official form
 when accessible.
+
+Gate 5 is implemented for public-demo visibility of the Platform proof.
+
+Gate 5 progress:
+
+- Public demo export now generates `artifacts/platform-devex-proof` from the
+  same `run-platform-devex-proof` wrapper used by `npm run platform-proof`.
+- The workbench artifact selector includes `Platform proof`, and the proof
+  browser renders a Platform proof panel with status, mutation boundary,
+  deterministic authority, fixture `NOT READY -> READY`, transcript `READY`,
+  commands, and routes.
+- Public-demo export audit now requires the Platform proof summary, markdown,
+  before/after fixture receipts, and MCP transcript receipt.
+- Browser navigation to the Platform proof route was attempted, but the in-app
+  browser blocked follow-up inspection under its URL policy. This was not
+  bypassed through another browser. Renderer tests and public export audits
+  cover the route content instead.
+
+Current harsh re-score after Gate 5:
+
+| Surface | After Gate 4 | After Gate 5 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 70% | 73% | The one-command proof is now also a generated hosted-demo artifact with first-class workbench rendering and audit requirements. Browser policy blocked a manual route inspection, so this is not pushed higher. |
+| Best Use of Splunk MCP Server | 52% | 54% | Public proof now includes the transcript certification in the Platform path, but the MCP-specific narrative still needs a cleaner official Splunk MCP comparison. |
+| Best Use of Splunk Developer Tools | 40% | 42% | The hosted proof path improves developer ergonomics and CI-style evidence, while external publication blockers remain. |
+
+Next work: tighten the feedback answer packet and, if possible without policy
+workarounds, map the official feedback form fields exactly.

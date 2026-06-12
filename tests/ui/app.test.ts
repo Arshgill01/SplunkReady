@@ -831,6 +831,53 @@ const judgeProofSummary = {
   ]
 } as const;
 
+const platformDevexProof = {
+  source: "splunkready-platform-devex-proof",
+  generatedAt: "2026-06-12T10:14:52.206Z",
+  startedAt: "2026-06-12T10:14:51.840Z",
+  status: "PASS",
+  mutation: false,
+  deterministicAuthority: true,
+  steps: [
+    {
+      label: "fixture-demo",
+      command: "splunkready demo --out artifacts/platform-devex-proof/fixture-demo",
+      durationMs: 104
+    },
+    {
+      label: "judge-proof",
+      command: "splunkready judge-proof --out artifacts/platform-devex-proof/judge-proof --json",
+      durationMs: 161
+    },
+    {
+      label: "mcp-transcript",
+      command:
+        "splunkready certify-mcp-transcript --transcript examples/sample-mcp-transcript-pass.jsonl --out artifacts/platform-devex-proof/mcp-transcript --strict-import true --require-pass true --json",
+      durationMs: 100
+    }
+  ],
+  artifacts: {
+    fixtureDemo: "artifacts/platform-devex-proof/fixture-demo",
+    judgeProof: "artifacts/platform-devex-proof/judge-proof",
+    mcpTranscript: "artifacts/platform-devex-proof/mcp-transcript",
+    demoRehearsal: "artifacts/platform-devex-proof/fixture-demo/demo-rehearsal.json",
+    fixtureBeforeReceipt: "artifacts/platform-devex-proof/fixture-demo/receipt-before-001.json",
+    fixtureAfterReceipt: "artifacts/platform-devex-proof/fixture-demo/receipt-after-001.json",
+    judgeProofSummary: "artifacts/platform-devex-proof/judge-proof/judge-proof-summary.json",
+    transcriptCertification: "artifacts/platform-devex-proof/mcp-transcript/mcp-transcript-certification.json",
+    transcriptReceipt: "artifacts/platform-devex-proof/mcp-transcript/receipt-external-001.json"
+  },
+  receipts: {
+    fixtureBefore: "NOT READY",
+    fixtureAfter: "READY",
+    transcript: "READY"
+  },
+  routes: {
+    fixtureReplay: "artifacts/platform-devex-proof/fixture-demo/splunkready-shell.html#certification-replay",
+    transcriptReceipt: "artifacts/platform-devex-proof/mcp-transcript/receipt-external-001.json"
+  }
+} as const;
+
 const liveProofSummary = {
   status: "PASS",
   mode: "live",
@@ -1666,6 +1713,7 @@ describe("Vite UI artifact app", () => {
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/certification-index");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/suite-proof");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/ci-pr-gate");
+    expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/platform-devex-proof");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/judge-proof");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/mcp-proof");
     expect(defaultArtifactOptions.map((option) => option.path)).toContain("artifacts/mcp-transcript");
@@ -1802,6 +1850,23 @@ describe("Vite UI artifact app", () => {
     expect(html).toContain("trace-producer");
     expect(html).toContain("deterministic-rule-engine");
     expect(html).toContain("--include-llm-proof true");
+  });
+
+  it("loads and renders the Platform proof wrapper summary", async () => {
+    const bundle = await loadUiArtifactBundle(
+      "artifacts/platform-devex-proof",
+      fetcherFor({
+        "platform-devex-proof.json": platformDevexProof
+      })
+    );
+    const html = renderApp(bundle, "proof-browser", { artifactOptions: defaultArtifactOptions });
+
+    expect(bundle.platformDevexProof?.status).toBe("PASS");
+    expect(html).toContain("Platform proof");
+    expect(html).toContain("NOT READY -&gt; READY");
+    expect(html).toContain("MCP transcript receipt");
+    expect(html).toContain("splunkready certify-mcp-transcript");
+    expect(html).not.toContain("Artifact bundle incomplete");
   });
 
   it("loads artifact selector options from a generated UI manifest", async () => {

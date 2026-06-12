@@ -70,6 +70,12 @@ try {
     "artifacts/judge-proof/artifact-manifest.json",
     "artifacts/judge-proof/judge-proof-summary.json",
     "artifacts/judge-proof/judge-proof-summary.md",
+    "artifacts/platform-devex-proof/artifact-manifest.json",
+    "artifacts/platform-devex-proof/platform-devex-proof.json",
+    "artifacts/platform-devex-proof/platform-devex-proof.md",
+    "artifacts/platform-devex-proof/fixture-demo/receipt-before-001.json",
+    "artifacts/platform-devex-proof/fixture-demo/receipt-after-001.json",
+    "artifacts/platform-devex-proof/mcp-transcript/receipt-external-001.json",
     "artifacts/judge-proof/suite-proof/suite-proof-summary.json",
     "artifacts/judge-proof/firewall-check/firewall-block-before.json",
     "artifacts/judge-proof/certification-index.json",
@@ -122,6 +128,7 @@ try {
     "artifacts/real-splunk-stress-llm-layer",
     "artifacts/mcp-transcript",
     "artifacts/judge-proof",
+    "artifacts/platform-devex-proof",
     "artifacts/interactive-demo"
   ];
 

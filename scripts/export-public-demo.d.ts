@@ -22,6 +22,11 @@ export type PublicDemoJudgeProofGenerator = (input: {
   targetArtifactDir: string;
 }) => Promise<void>;
 
+export type PublicDemoPlatformProofGenerator = (input: {
+  root: string;
+  outDir: string;
+}) => Promise<void>;
+
 export const publicDemoInputPaths: string[];
 
 export function exportPublicDemo(input?: {
@@ -29,6 +34,7 @@ export function exportPublicDemo(input?: {
   outDir?: string;
   generatedAt?: string;
   generateJudgeProof?: PublicDemoJudgeProofGenerator;
+  generatePlatformProof?: PublicDemoPlatformProofGenerator;
   sourceCommit?: string;
   deploymentCommit?: string;
 }): Promise<PublicDemoExportResult>;

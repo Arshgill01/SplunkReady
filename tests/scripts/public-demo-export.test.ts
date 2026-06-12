@@ -21,7 +21,26 @@ const createSourceTree = async (): Promise<string> => {
   await writeFixture(join(root, "submission-evidence", "mcp-proof", "mcp-proof-summary.json"), "{\"status\":\"PASS\"}\n");
   await writeFixture(join(root, "submission-evidence", "mcp-proof", "mcp-client-session.jsonl"), "{\"method\":\"initialize\"}\n");
   await writeFixture(join(root, "submission-evidence", "mcp-proof", "mcp-client-session.md"), "# MCP client session\n");
+  await writeFixture(
+    join(root, "submission-evidence", "mcp-proof", "mcp-transcript-certification", "mcp-transcript-certification.json"),
+    "{\"status\":\"PASS\"}\n"
+  );
+  await writeFixture(
+    join(root, "submission-evidence", "mcp-proof", "mcp-transcript-certification", "mcp-transcript-import.json"),
+    "{\"status\":\"PASS\"}\n"
+  );
+  await writeFixture(
+    join(root, "submission-evidence", "mcp-proof", "mcp-transcript-certification", "receipt-external-001.json"),
+    "{\"verdict\":\"READY\"}\n"
+  );
+  await writeFixture(
+    join(root, "submission-evidence", "mcp-proof", "mcp-transcript-certification", "proof-audit.json"),
+    "{\"status\":\"PASS\"}\n"
+  );
   await writeFixture(join(root, "submission-evidence", "suite-proof", "suite-proof-summary.json"), "{\"status\":\"PASS\"}\n");
+  await writeFixture(join(root, "submission-evidence", "ci-pr-gate", "ci-pr-gate.json"), "{\"status\":\"PASS\"}\n");
+  await writeFixture(join(root, "submission-evidence", "ci-pr-gate", "pr-comment.md"), "READY\n");
+  await writeFixture(join(root, "submission-evidence", "ci-pr-gate", "receipt-after-001.json"), "{\"verdict\":\"READY\"}\n");
   await writeFixture(
     join(root, "submission-evidence", "public-proof-export", "public-proof-summary.json"),
     "{\"status\":\"REDACTED\"}\n"
@@ -101,6 +120,23 @@ const generateJudgeProofFixture = async ({ targetArtifactDir }: { targetArtifact
   await writeFixture(join(interactiveSource, "trace-after.json"), "[]\n");
 };
 
+const generatePlatformProofFixture = async ({ outDir }: { root: string; outDir: string }): Promise<void> => {
+  await writeFixture(
+    join(outDir, "platform-devex-proof.json"),
+    `${JSON.stringify({
+      source: "splunkready-platform-devex-proof",
+      status: "PASS",
+      mutation: false,
+      deterministicAuthority: true,
+      receipts: { fixtureBefore: "NOT READY", fixtureAfter: "READY", transcript: "READY" }
+    })}\n`
+  );
+  await writeFixture(join(outDir, "platform-devex-proof.md"), "# Platform proof\n");
+  await writeFixture(join(outDir, "fixture-demo", "receipt-before-001.json"), "{\"verdict\":\"NOT READY\"}\n");
+  await writeFixture(join(outDir, "fixture-demo", "receipt-after-001.json"), "{\"verdict\":\"READY\"}\n");
+  await writeFixture(join(outDir, "mcp-transcript", "receipt-external-001.json"), "{\"verdict\":\"READY\"}\n");
+};
+
 describe("public demo export", () => {
   it("copies the built UI and credential-free proof evidence into one static folder", async () => {
     const root = await createSourceTree();
@@ -109,6 +145,7 @@ describe("public demo export", () => {
       outDir: "out/public-demo",
       generatedAt: "2026-06-06T00:00:00.000Z",
       generateJudgeProof: generateJudgeProofFixture,
+      generatePlatformProof: generatePlatformProofFixture,
       sourceCommit: "public-demo-input-commit",
       deploymentCommit: "workflow-dispatch-commit"
     });
@@ -143,6 +180,9 @@ describe("public demo export", () => {
     await expect(readFile(join(root, "out/public-demo/artifacts/judge-proof/artifact-manifest.json"), "utf8")).resolves.toContain(
       "judge-proof-summary.json"
     );
+    await expect(
+      readFile(join(root, "out/public-demo/artifacts/platform-devex-proof/platform-devex-proof.json"), "utf8")
+    ).resolves.toContain("splunkready-platform-devex-proof");
     await expect(readFile(join(root, "out/public-demo/public-demo-manifest.json"), "utf8")).resolves.toContain(
       "?artifacts=artifacts%2Fmcp-proof#mcp-proof"
     );
@@ -155,9 +195,12 @@ describe("public demo export", () => {
     expect(result.copiedArtifactBases).toEqual([
       "artifacts/mcp-proof",
       "artifacts/suite-proof",
+      "artifacts/ci-pr-gate",
       "artifacts/public-proof-export",
       "artifacts/real-splunk-stress-llm-layer",
+      "artifacts/mcp-transcript",
       "artifacts/judge-proof",
+      "artifacts/platform-devex-proof",
       "artifacts/interactive-demo"
     ]);
     expect(result.manifest.mutation).toBe(false);
@@ -174,7 +217,12 @@ describe("public demo export", () => {
     );
 
     await expect(
-      exportPublicDemo({ root, outDir: "out/public-demo", generateJudgeProof: generateJudgeProofFixture })
+      exportPublicDemo({
+        root,
+        outDir: "out/public-demo",
+        generateJudgeProof: generateJudgeProofFixture,
+        generatePlatformProof: generatePlatformProofFixture
+      })
     ).rejects.toThrow(
       "Refusing to copy symbolic link into public demo export"
     );
