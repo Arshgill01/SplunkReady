@@ -42,8 +42,12 @@ const latestMatchesLocal = registry.latestMatchesLocal === true;
 const gitHeadMatchesPackageInputs = registry.gitHeadMatchesPackageInputs === true;
 const dirtyPackageInputs = Array.isArray(registry.dirtyPackageInputs) ? registry.dirtyPackageInputs : [];
 const packageInputsClean = dirtyPackageInputs.length === 0;
+const localVersion = registry.localVersion ?? packageJson.version;
+const preflightReady = preflight?.status === "READY" && preflight?.registry?.currentVersionAvailable === true;
 const packageInputsStale =
   localVersionPublished && latestMatchesLocal && packageInputsClean && gitHeadMatchesPackageInputs === false;
+const localVersionPreparedForPublish =
+  !localVersionPublished && !latestMatchesLocal && localVersion === packageJson.version && preflightReady;
 const aligned = currentness.status === "CURRENT" && gitHeadMatchesPackageInputs;
 const recommendedNextVersion = packageInputsStale ? bumpPatch(packageJson.version) : null;
 const status =
@@ -51,9 +55,25 @@ const status =
     ? "FAIL"
     : aligned
       ? "CURRENT"
-      : packageInputsStale && recommendedNextVersion
+      : localVersionPreparedForPublish || (packageInputsStale && recommendedNextVersion)
         ? "ACTION_REQUIRED"
         : "BLOCKED";
+const nextCommands = localVersionPreparedForPublish
+  ? [
+      "npm run audit:npm-release-preflight -- --require-ready --out submission-evidence/npm-release-preflight/npm-release-preflight.json",
+      "npm publish --access public",
+      "npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness",
+      "npm run audit:release-alignment -- --require-aligned"
+    ]
+  : status === "ACTION_REQUIRED"
+    ? [
+        `npm version ${recommendedNextVersion} --no-git-tag-version`,
+        "npm run audit:npm-release-preflight -- --require-ready --out submission-evidence/npm-release-preflight/npm-release-preflight.json",
+        "npm publish --access public",
+        "npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness",
+        "npm run audit:release-alignment -- --require-aligned"
+      ]
+    : [];
 
 const report = {
   source: "splunkready-release-alignment",
@@ -67,7 +87,7 @@ const report = {
     artifactPath: currentnessPath,
     status: currentness.status,
     latestVersion: registry.latestVersion ?? null,
-    localVersion: registry.localVersion ?? packageJson.version,
+    localVersion,
     localVersionPublished,
     latestMatchesLocal,
     latestGitHead: registry.latestGitHead ?? null,
@@ -101,21 +121,14 @@ const report = {
         releaseCommand: preflight.releaseCommand ?? null
       }
     : null,
-  nextCommands:
-    status === "ACTION_REQUIRED"
-      ? [
-          `npm version ${recommendedNextVersion} --no-git-tag-version`,
-          "npm run audit:npm-release-preflight -- --require-ready --out submission-evidence/npm-release-preflight/npm-release-preflight.json",
-          "npm publish --access public",
-          "npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness",
-          "npm run audit:release-alignment -- --require-aligned"
-        ]
-      : [],
+  nextCommands,
   summary:
     status === "CURRENT"
       ? "The public package gitHead matches the current package-input tree."
       : status === "ACTION_REQUIRED"
-        ? `The public package probes pass, but package inputs moved beyond ${packageJson.version}; bump to ${recommendedNextVersion}, publish, and rerun currentness.`
+        ? localVersionPreparedForPublish
+          ? `The local package is prepared as ${packageJson.version} and npm preflight is ready; publish it and rerun currentness.`
+          : `The public package probes pass, but package inputs moved beyond ${packageJson.version}; bump to ${recommendedNextVersion}, publish, and rerun currentness.`
         : "Release alignment cannot be claimed until the listed blockers are resolved.",
   mutation: false,
   failures: publishedProbeFailures.map((probe) => ({

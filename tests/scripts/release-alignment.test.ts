@@ -87,4 +87,38 @@ describe("release alignment audit", () => {
       code: 1
     });
   });
+
+  it("does not recommend another bump when the local version is prepared for publish", async () => {
+    const root = await tempRoot();
+    await writeFixture(join(root, "package.json"), { name: "splunkready", version: "0.1.10" });
+    await writeFixture(join(root, "submission-evidence/public-package-currentness/public-package-currentness.json"), {
+      ...baseCurrentness,
+      registry: {
+        ...baseCurrentness.registry,
+        latestVersion: "0.1.9",
+        localVersion: "0.1.10",
+        localVersionPublished: false,
+        latestMatchesLocal: false,
+        dirtyPackageInputs: []
+      }
+    });
+    await writeFixture(join(root, "submission-evidence/npm-release-preflight/npm-release-preflight.json"), {
+      source: "splunkready-npm-release-preflight",
+      status: "READY",
+      auth: { authenticated: true },
+      registry: { status: "EXISTS_VERSION_AVAILABLE", currentVersionAvailable: true },
+      blockers: [],
+      releaseCommand: "npm publish --access public",
+      mutation: false
+    });
+
+    const result = await execFileAsync(process.execPath, [scriptPath], { cwd: root });
+    const report = JSON.parse(result.stdout);
+
+    expect(report.status).toBe("ACTION_REQUIRED");
+    expect(report.package.recommendedNextVersion).toBeNull();
+    expect(report.nextCommands).not.toContain("npm version 0.1.11 --no-git-tag-version");
+    expect(report.nextCommands).toContain("npm publish --access public");
+    expect(report.summary).toContain("prepared as 0.1.10");
+  });
 });

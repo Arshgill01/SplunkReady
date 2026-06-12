@@ -302,10 +302,9 @@ package can initialize the SplunkReady MCP stdio server.
 The release-alignment audit converts source-currentness drift into the exact
 next publish action. Current evidence is
 `submission-evidence/release-alignment/release-alignment.json`; it reports
-`ACTION_REQUIRED`, recommends the next patch release, includes the current npm
-preflight artifact and auth blocker, and keeps the public `0.1.9` no-clone
-judge path valid without claiming that the published tarball includes every
-newer repo-side proof improvement.
+`ACTION_REQUIRED`, records local `0.1.10` as prepared for publication, includes
+the npm preflight artifact, and keeps the public `0.1.9` no-clone judge path
+valid until the `0.1.10` publish and clean-install currentness audit complete.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:
