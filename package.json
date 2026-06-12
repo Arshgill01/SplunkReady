@@ -1,6 +1,6 @@
 {
   "name": "splunkready",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "type": "module",
   "description": "Splunk-native certification harness for AI agents before they touch production Splunk.",
   "license": "MIT",
