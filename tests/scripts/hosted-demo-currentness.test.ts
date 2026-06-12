@@ -96,6 +96,7 @@ describe("hosted demo currentness audit", () => {
           "artifacts/suite-proof",
           "artifacts/ci-pr-gate",
           "artifacts/public-proof-export",
+          "artifacts/mcp-transcript",
           "artifacts/judge-proof"
         ]
       },
@@ -133,6 +134,7 @@ describe("hosted demo currentness audit", () => {
           "artifacts/suite-proof",
           "artifacts/ci-pr-gate",
           "artifacts/public-proof-export",
+          "artifacts/mcp-transcript",
           "artifacts/judge-proof"
         ]
       },

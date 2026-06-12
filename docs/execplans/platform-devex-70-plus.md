@@ -168,3 +168,29 @@ Current harsh re-score after Gate 2:
 
 Next work: make trace-import proof and the `npx splunkready` quickstart path
 visible in one judge-facing workflow without bloating the first screen.
+
+Gate 3 is implemented for the hosted transcript-import quickstart path.
+
+Gate 3 progress:
+
+- The MCP proof Developer gate now shows the exact credential-free quickstart
+  command and the strict transcript certification command.
+- The public demo export now materializes
+  `submission-evidence/mcp-proof/mcp-transcript-certification` as the
+  first-class hosted artifact base `artifacts/mcp-transcript`.
+- The public-demo export audit now requires the transcript certification,
+  transcript import summary, receipt, and proof audit files.
+- In-app browser verification passed for both the default MCP proof route and
+  the direct transcript proof route.
+
+Current harsh re-score after Gate 3:
+
+| Surface | After Gate 2 | After Gate 3 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 60% | 65% | A judge can now follow MCP proof -> npx quickstart -> strict transcript gate -> direct hosted receipt without cloning or guessing hidden artifact paths. The remaining gap is a single polished one-command/demo script path. |
+| Best Use of Splunk MCP Server | 44% | 50% | Transcript import is now directly loadable as public proof, which makes the MCP trust-layer story more concrete. It still needs a cleaner side-by-side Splunk MCP vs SplunkReady MCP narrative. |
+| Best Use of Splunk Developer Tools | 34% | 38% | Hosted proof now includes a CI gate and transcript certification gate, but Splunkbase/AppInspect external blockers remain the ceiling. |
+
+Next work: collapse the final judge path into one polished command/demo script
+and make the feedback-prize packet exact enough to paste once the official form
+is available.

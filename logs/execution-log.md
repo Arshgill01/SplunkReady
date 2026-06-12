@@ -17315,3 +17315,11 @@ Actions:
   demo path.
 - Verified the rebuilt hosted demo can load both the default MCP proof route
   and the direct PR-gate artifact route without artifact failures.
+- Added the strict MCP transcript certification as a first-class hosted public
+  artifact base, backed by the tracked `mcp-proof/mcp-transcript-certification`
+  evidence directory.
+- Added the credential-free `npx splunkready judge-proof` quickstart and strict
+  `certify-mcp-transcript` gate command to the MCP Developer gate.
+- Verified the rebuilt hosted demo can load the default MCP proof route with
+  quickstart text and the direct MCP transcript route with receipt evidence in
+  the in-app browser.

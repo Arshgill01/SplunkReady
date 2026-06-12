@@ -18420,3 +18420,32 @@ Result:
   view `proof-browser`, generated PR comment present, READY/PASS evidence
   present, no artifact-load failure.
 - PASS for whitespace check: `git diff --check` produced no output.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 3 Transcript Quickstart
+
+Commands and checks:
+
+- `npm test -- tests/scripts/hosted-demo-currentness.test.ts tests/ui/app.test.ts`
+- `npm run public-demo:build`
+- `npm run audit:public-demo-export`
+- `npm run audit:submission-copy`
+- in-app browser check at `http://127.0.0.1:4173/?artifacts=artifacts%2Fmcp-proof#mcp-proof`
+- in-app browser check at `http://127.0.0.1:4173/?artifacts=artifacts%2Fmcp-transcript#proof-browser`
+- `git diff --check`
+
+Result:
+
+- PASS for hosted-demo currentness and UI artifact tests: 34 tests passed.
+- PASS for public demo rebuild; manifest artifact bases now include
+  `artifacts/mcp-transcript`.
+- PASS for public-demo export audit after requiring transcript certification,
+  transcript import, receipt, and proof audit files: 350 files, mutation false,
+  default route `mcp-proof`.
+- PASS for submission-copy audit: 464 required claims.
+- PASS for browser verification of the default MCP proof route: active view
+  `mcp-proof`, `npx splunkready judge-proof` quickstart present, strict
+  `certify-mcp-transcript` gate present, no artifact-load failure.
+- PASS for browser verification of the direct MCP transcript route: active view
+  `proof-browser`, MCP transcript import present, receipt present, READY/PASS
+  evidence present, no artifact-load failure.
+- PASS for whitespace check: `git diff --check` produced no output.

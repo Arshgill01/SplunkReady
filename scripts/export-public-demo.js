@@ -5,6 +5,12 @@ import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const requiredArtifactDirs = ["mcp-proof", "suite-proof", "ci-pr-gate", "public-proof-export", "real-splunk-stress-llm-layer"];
+const requiredArtifactCopies = [
+  {
+    source: "mcp-proof/mcp-transcript-certification",
+    target: "mcp-transcript"
+  }
+];
 const generatedArtifactDirs = ["judge-proof"];
 const interactiveSourceDir = "judge-proof/suite-proof/mission-security-lateral-movement-readiness";
 const interactiveArtifactDir = "interactive-demo";
@@ -189,6 +195,13 @@ export const exportPublicDemo = async ({
     await writeArtifactManifest(targetArtifactDir, generatedAt);
   }
 
+  for (const artifactCopy of requiredArtifactCopies) {
+    const targetArtifactDir = resolve(targetRoot, "artifacts", artifactCopy.target);
+
+    await copyTree(resolve(evidenceRoot, artifactCopy.source), targetArtifactDir);
+    await writeArtifactManifest(targetArtifactDir, generatedAt);
+  }
+
   for (const artifactDir of generatedArtifactDirs) {
     const targetArtifactDir = resolve(targetRoot, "artifacts", artifactDir);
 
@@ -202,9 +215,12 @@ export const exportPublicDemo = async ({
 
   await copyTree(resolve(evidenceRoot, "screenshots"), resolve(targetRoot, "screenshots"));
 
-  const artifactBases = [...requiredArtifactDirs, ...generatedArtifactDirs, interactiveArtifactDir].map(
-    (artifactDir) => `artifacts/${artifactDir}`
-  );
+  const artifactBases = [
+    ...requiredArtifactDirs,
+    ...requiredArtifactCopies.map((artifactCopy) => artifactCopy.target),
+    ...generatedArtifactDirs,
+    interactiveArtifactDir
+  ].map((artifactDir) => `artifacts/${artifactDir}`);
   const resolvedSourceCommit = sourceCommit ?? await resolvePublicDemoInputCommit(repoRoot);
   const resolvedDeploymentCommit = deploymentCommit ?? await resolveDeploymentCommit(repoRoot);
   const manifest = {

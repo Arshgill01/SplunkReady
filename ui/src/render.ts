@@ -190,6 +190,9 @@ const renderMcpDeveloperGate = (summary: McpProofSummary): string => {
     ${renderFactTable([
       ["Workflow", "Splunk MCP trace -> SplunkReady certification -> Readiness Receipt"],
       ["Splunk MCP tools", certifiedTools],
+      ["CLI quickstart", "npx splunkready judge-proof"],
+      ["Transcript gate", "npx splunkready certify-mcp-transcript --strict-import true --require-pass true"],
+      ["Workbench artifact", "artifacts/mcp-transcript"],
       ["Receipt", boundary.receiptPath],
       ["Evidence refs", evidenceRefs],
       ["CI gate", "GitHub Action and npx judge-proof paths emit the same receipt artifacts"],

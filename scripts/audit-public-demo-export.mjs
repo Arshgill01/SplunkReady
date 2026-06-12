@@ -56,6 +56,11 @@ try {
     "artifacts/mcp-proof/mcp-client-walkthrough.md",
     "artifacts/mcp-proof/mcp-client-session.jsonl",
     "artifacts/mcp-proof/mcp-client-session.md",
+    "artifacts/mcp-transcript/artifact-manifest.json",
+    "artifacts/mcp-transcript/mcp-transcript-certification.json",
+    "artifacts/mcp-transcript/mcp-transcript-import.json",
+    "artifacts/mcp-transcript/receipt-external-001.json",
+    "artifacts/mcp-transcript/proof-audit.json",
     "artifacts/suite-proof/artifact-manifest.json",
     "artifacts/suite-proof/suite-proof-summary.json",
     "artifacts/ci-pr-gate/artifact-manifest.json",
@@ -115,6 +120,7 @@ try {
     "artifacts/ci-pr-gate",
     "artifacts/public-proof-export",
     "artifacts/real-splunk-stress-llm-layer",
+    "artifacts/mcp-transcript",
     "artifacts/judge-proof",
     "artifacts/interactive-demo"
   ];

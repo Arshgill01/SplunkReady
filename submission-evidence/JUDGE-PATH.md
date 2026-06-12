@@ -43,6 +43,8 @@ Supporting developer workflow proof:
 
 - `submission-evidence/ci-pr-gate/pr-comment.md`
 - `submission-evidence/ci-pr-gate/ci-pr-gate.json`
+- `submission-evidence/mcp-proof/mcp-transcript-certification/mcp-transcript-certification.json`
+- `submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json`
 
 ## What This Proves
 
