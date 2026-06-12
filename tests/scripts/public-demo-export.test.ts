@@ -20,7 +20,7 @@ const createSourceTree = async (): Promise<string> => {
   await writeFixture(join(root, "dist-ui", "assets", "index.js"), "window.__splunkready = true;");
   await writeFixture(
     join(root, "submission-evidence", "judge-launch", "judge-launch.json"),
-    "{\"source\":\"splunkready-judge-launch\",\"status\":\"READY_FOR_JUDGES\",\"credentialFree\":true,\"mutation\":false,\"passFailAuthority\":\"deterministic-rule-engine\",\"commands\":[\"npx -y splunkready@0.1.10 judge-proof --out ./judge-proof --json\"]}\n"
+    "{\"source\":\"splunkready-judge-launch\",\"status\":\"READY_FOR_JUDGES\",\"credentialFree\":true,\"mutation\":false,\"passFailAuthority\":\"deterministic-rule-engine\",\"commands\":[\"npx -y splunkready@0.1.11 judge-proof --out ./judge-proof --json\"]}\n"
   );
   await writeFixture(join(root, "submission-evidence", "judge-launch", "judge-launch.md"), "# Judge launch\n");
   await writeFixture(join(root, "submission-evidence", "mcp-proof", "mcp-proof-summary.json"), "{\"status\":\"PASS\"}\n");
