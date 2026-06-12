@@ -18591,3 +18591,34 @@ Result:
 - PASS for whitespace check: `git diff --check` produced no output.
 - PARTIAL for submission state: form was not submitted; no confirmation page or
   receipt exists yet.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 11 npm Release Preflight Evidence
+
+Commands and checks:
+
+- `npm whoami`
+- `npm run audit:npm-release-preflight -- --require-ready`
+- `npm test -- tests/scripts/npm-release-preflight.test.ts tests/scripts/release-alignment.test.ts`
+- `npm run audit:npm-release-preflight -- --out submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `npm run audit:release-alignment`
+- `npm run audit:submission-copy`
+- `git diff --check`
+- `rg -n "Gate 11|npm-release-preflight|releasePreflight|Feedback prize preparedness|Platform & Developer Experience \\| 76% \\| 77%" docs/execplans/platform-devex-70-plus.md README.md submission-evidence/claim-ledger.md logs/execution-log.md logs/verification-log.md`
+
+Result:
+
+- PARTIAL for npm auth: `npm whoami` returns `E401`, so this shell cannot
+  publish `0.1.8` yet.
+- PARTIAL for require-ready preflight: it fails closed with `status:
+  "BLOCKED"` because npm auth is missing; package metadata and dry-run pack
+  are otherwise OK.
+- PASS for focused release tests: 2 test files, 5 tests.
+- PASS for tracked npm preflight artifact generation: status `BLOCKED`,
+  authenticated false, dry-run pack OK, mutation false.
+- PASS for release-alignment regeneration: status `ACTION_REQUIRED`,
+  recommended next version `0.1.8`, release preflight `BLOCKED`, mutation
+  false.
+- PASS for submission-copy audit: 464 required claims.
+- PASS for whitespace check: `git diff --check` produced no output.
+- PASS for anchor check: Gate 11, preflight, release-preflight, and scorecard
+  anchors were found.

@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 const root = process.cwd();
 const requireReady = process.argv.includes("--require-ready");
+const outIndex = process.argv.indexOf("--out");
+const outPath = outIndex >= 0 ? process.argv[outIndex + 1] : null;
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const failures = [];
 const blockers = [];
@@ -113,6 +115,12 @@ const report = {
 };
 
 console.log(JSON.stringify(report, null, 2));
+
+if (outPath) {
+  const absoluteOutPath = join(root, outPath);
+  mkdirSync(dirname(absoluteOutPath), { recursive: true });
+  writeFileSync(absoluteOutPath, `${JSON.stringify(report, null, 2)}\n`);
+}
 
 if (status === "FAIL" || (requireReady && !["READY", "PUBLISHED"].includes(status))) {
   process.exitCode = 1;

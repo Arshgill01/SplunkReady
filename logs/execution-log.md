@@ -17448,3 +17448,33 @@ Actions:
   form-field mapping.
 - Updated the feedback log and Platform 70% ExecPlan with the verified form
   URL, deadline text, not-submitted boundary, and harsh probability update.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 11 npm Release Preflight Evidence
+
+Files expected to touch:
+
+- `scripts/audit-npm-release-preflight.mjs`
+- `scripts/audit-release-alignment.mjs`
+- `tests/scripts/npm-release-preflight.test.ts`
+- `tests/scripts/release-alignment.test.ts`
+- `submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `submission-evidence/release-alignment/release-alignment.json`
+- `README.md`
+- `submission-evidence/claim-ledger.md`
+- `docs/execplans/platform-devex-70-plus.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Added `--out` support to the npm release preflight audit so auth, registry,
+  pack, and release-command state can be tracked as evidence.
+- Updated release alignment to include the latest npm preflight artifact when
+  present.
+- Generated `submission-evidence/npm-release-preflight/npm-release-preflight.json`.
+  It reports `BLOCKED` because npm auth is not configured in this shell, while
+  `npm pack --dry-run` remains OK.
+- Regenerated release alignment so it carries the exact auth blocker beside
+  the `0.1.8` next-version action.
+- Updated README, claim ledger, and the Platform 70% ExecPlan to keep the
+  no-clone `0.1.7` judge path honest while recording the blocker.

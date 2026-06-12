@@ -61,9 +61,20 @@
       "command": null
     }
   ],
+  "releasePreflight": {
+    "artifactPath": "submission-evidence/npm-release-preflight/npm-release-preflight.json",
+    "status": "BLOCKED",
+    "authenticated": false,
+    "registryStatus": "VERSION_ALREADY_PUBLISHED",
+    "currentVersionAvailable": false,
+    "blockers": [
+      "npm auth is not configured; run npm adduser or npm login before publishing"
+    ],
+    "releaseCommand": "npm version patch && npm publish --access public"
+  },
   "nextCommands": [
     "npm version 0.1.8 --no-git-tag-version",
-    "npm run audit:npm-release-preflight -- --require-ready",
+    "npm run audit:npm-release-preflight -- --require-ready --out submission-evidence/npm-release-preflight/npm-release-preflight.json",
     "npm publish --access public",
     "npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness",
     "npm run audit:release-alignment -- --require-aligned"

@@ -247,7 +247,7 @@ The canonical gate still runs a package readiness audit with
 readiness for the next version, run:
 
 ```bash
-npm run audit:npm-release-preflight
+npm run audit:npm-release-preflight -- --out submission-evidence/npm-release-preflight/npm-release-preflight.json
 npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness
 npm run audit:release-alignment
 ```
@@ -262,9 +262,10 @@ package can initialize the SplunkReady MCP stdio server.
 The release-alignment audit converts source-currentness drift into the exact
 next publish action. Current evidence is
 `submission-evidence/release-alignment/release-alignment.json`; it reports
-`ACTION_REQUIRED`, recommends `0.1.8`, and keeps the public `0.1.7` no-clone
-judge path valid without claiming that the published tarball includes every
-newer repo-side proof improvement.
+`ACTION_REQUIRED`, recommends `0.1.8`, includes the current npm preflight
+artifact and auth blocker, and keeps the public `0.1.7` no-clone judge path
+valid without claiming that the published tarball includes every newer
+repo-side proof improvement.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:

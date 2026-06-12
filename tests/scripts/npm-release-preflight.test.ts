@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { chmod, mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -111,5 +111,18 @@ describe("npm release preflight", () => {
     expect(report.registry.currentVersionAvailable).toBe(true);
     expect(report.publishedPackage).toBeNull();
     expect(report.releaseCommand).toBe("npm publish --access public");
+  }, 15_000);
+
+  it("writes a machine-readable report when --out is provided", async () => {
+    const root = await tempRoot();
+    await writePackageJson(root, "0.1.1");
+    const outPath = "submission-evidence/npm-release-preflight/npm-release-preflight.json";
+
+    await runPreflight(root, ["--out", outPath]);
+
+    const report = JSON.parse(await readFile(join(root, outPath), "utf8"));
+    expect(report.source).toBe("splunkready-npm-release-preflight");
+    expect(report.status).toBe("READY");
+    expect(report.mutation).toBe(false);
   }, 15_000);
 });

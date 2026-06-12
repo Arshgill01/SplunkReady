@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 const root = process.cwd();
@@ -13,6 +13,10 @@ const requireAligned = process.argv.includes("--require-aligned");
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const currentnessPath = "submission-evidence/public-package-currentness/public-package-currentness.json";
 const currentness = JSON.parse(readFileSync(join(root, currentnessPath), "utf8"));
+const preflightPath = "submission-evidence/npm-release-preflight/npm-release-preflight.json";
+const preflight = existsSync(join(root, preflightPath))
+  ? JSON.parse(readFileSync(join(root, preflightPath), "utf8"))
+  : null;
 
 const bumpPatch = (version) => {
   const match = /^(\d+)\.(\d+)\.(\d+)(?:-.+)?$/.exec(version);
@@ -86,11 +90,22 @@ const report = {
       status: probe.status,
       command: probe.command ?? null
     })),
+  releasePreflight: preflight
+    ? {
+        artifactPath: preflightPath,
+        status: preflight.status,
+        authenticated: preflight.auth?.authenticated === true,
+        registryStatus: preflight.registry?.status ?? null,
+        currentVersionAvailable: preflight.registry?.currentVersionAvailable ?? null,
+        blockers: Array.isArray(preflight.blockers) ? preflight.blockers : [],
+        releaseCommand: preflight.releaseCommand ?? null
+      }
+    : null,
   nextCommands:
     status === "ACTION_REQUIRED"
       ? [
           `npm version ${recommendedNextVersion} --no-git-tag-version`,
-          "npm run audit:npm-release-preflight -- --require-ready",
+          "npm run audit:npm-release-preflight -- --require-ready --out submission-evidence/npm-release-preflight/npm-release-preflight.json",
           "npm publish --access public",
           "npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness",
           "npm run audit:release-alignment -- --require-aligned"

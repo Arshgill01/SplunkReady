@@ -48,6 +48,15 @@ describe("release alignment audit", () => {
       join(root, "submission-evidence/public-package-currentness/public-package-currentness.json"),
       baseCurrentness
     );
+    await writeFixture(join(root, "submission-evidence/npm-release-preflight/npm-release-preflight.json"), {
+      source: "splunkready-npm-release-preflight",
+      status: "BLOCKED",
+      auth: { authenticated: false },
+      registry: { status: "VERSION_ALREADY_PUBLISHED", currentVersionAvailable: false },
+      blockers: ["npm auth is not configured; run npm adduser or npm login before publishing"],
+      releaseCommand: "npm version patch && npm publish --access public",
+      mutation: false
+    });
 
     const result = await execFileAsync(process.execPath, [scriptPath], { cwd: root });
     const report = JSON.parse(result.stdout);
@@ -55,6 +64,11 @@ describe("release alignment audit", () => {
     expect(report.status).toBe("ACTION_REQUIRED");
     expect(report.package.recommendedNextVersion).toBe("0.1.8");
     expect(report.currentness.gitHeadMatchesPackageInputs).toBe(false);
+    expect(report.releasePreflight.status).toBe("BLOCKED");
+    expect(report.releasePreflight.authenticated).toBe(false);
+    expect(report.releasePreflight.blockers).toContain(
+      "npm auth is not configured; run npm adduser or npm login before publishing"
+    );
     expect(report.nextCommands).toContain("npm publish --access public");
     await expect(readFile(join(root, "submission-evidence/release-alignment/release-alignment.json"), "utf8")).resolves.toContain(
       "splunkready-release-alignment"

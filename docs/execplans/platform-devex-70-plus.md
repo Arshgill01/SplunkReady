@@ -385,3 +385,36 @@ Current harsh re-score after Gate 10:
 Next work: either submit the feedback form from an authenticated browser
 session and keep confirmation evidence, or return to product proof by reducing
 the `0.1.8` release/currentness gap.
+
+Gate 11 is implemented for npm release-preflight evidence.
+
+Gate 11 progress:
+
+- Confirmed the current machine is not authenticated to npm (`npm whoami`
+  returns `E401`), so an actual `0.1.8` publish cannot be honestly completed
+  from this session.
+- Added `--out` support to `scripts/audit-npm-release-preflight.mjs` so npm
+  auth/registry/pack state is captured as tracked machine-readable evidence.
+- Generated
+  `submission-evidence/npm-release-preflight/npm-release-preflight.json`; it
+  reports `status: "BLOCKED"`, `auth.authenticated: false`, dry-run pack OK,
+  and no package failures.
+- Regenerated `submission-evidence/release-alignment/release-alignment.json`
+  so the release report includes `releasePreflight.status: "BLOCKED"` and the
+  exact auth blocker beside the `0.1.8` next-version path.
+- Updated README and claim ledger so source-currentness is not overstated while
+  the no-clone `splunkready@0.1.7` judge path remains supported by published
+  probes.
+
+Current harsh re-score after Gate 11:
+
+| Surface | After Gate 10 | After Gate 11 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 76% | 77% | Release currentness is still blocked, but the blocker is now tracked, reproducible, and tied to the supported no-clone judge path instead of being a loose caveat. |
+| Best Use of Splunk MCP Server | 65% | 65% | Unchanged. |
+| Best Use of Splunk Developer Tools | 50% | 52% | The package/release pipeline now exposes auth, registry, pack, published-probe, and source-currentness state as machine-readable evidence. Actual source-current publication remains the major blocker. |
+| Feedback prize preparedness | 84% | 84% | Unchanged. |
+
+Next work: with npm auth unavailable, the largest remaining local product move
+is to strengthen the hosted/no-clone judge path or submit the mapped feedback
+form from an authenticated browser session.
