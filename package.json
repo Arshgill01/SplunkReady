@@ -1,6 +1,6 @@
 {
   "name": "splunkready",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "type": "module",
   "description": "Splunk-native certification harness for AI agents before they touch production Splunk.",
   "license": "MIT",
@@ -67,6 +67,7 @@
     "audit:npm-release-preflight": "node scripts/audit-npm-release-preflight.mjs",
     "audit:public-package-currentness": "node scripts/audit-public-package-currentness.mjs",
     "audit:release-alignment": "node scripts/audit-release-alignment.mjs",
+    "audit:real-splunk-proof": "node scripts/audit-real-splunk-proof.mjs",
     "audit:public-demo-export": "node scripts/audit-public-demo-export.mjs",
     "audit:hosted-demo-currentness": "node scripts/audit-hosted-demo-currentness.mjs",
     "audit:live-hosted-model-status": "node scripts/audit-live-hosted-model-status.mjs",

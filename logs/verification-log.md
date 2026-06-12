@@ -18669,3 +18669,29 @@ Result:
   `90bf52b`, asset names match, and manifest includes `artifacts/judge-launch`.
 - PASS for final submission-copy audit: 464 required claims.
 - PASS for whitespace check: `git diff --check` produced no output.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 13 Real Splunk Proof Recalibration
+
+Commands and checks:
+
+- `npm test -- tests/scripts/real-splunk-proof-audit.test.ts`
+- `npm run audit:real-splunk-proof -- --require-pass --out submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`
+- `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`
+- `npm run audit:npm-release-preflight -- --out submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `npm run audit:release-alignment`
+
+Result:
+
+- PASS after one audit-contract fix for the focused real-proof audit test: 1
+  test file, 1 test.
+- PASS for real Splunk proof audit: status `PASS`, score `100`, mutation
+  false, deterministic authority preserved, and official MCP boundary explicit.
+- PARTIAL for public package currentness: public `splunkready@0.1.8` probes all
+  pass, but the audit returns `STALE` because local `package.json` and
+  `package-lock.json` are dirty package inputs until committed.
+- PASS for npm release preflight regeneration: status `PUBLISHED`, auth
+  username `brightybrainiac`, package version `0.1.8` already published, pack
+  OK, mutation false.
+- PARTIAL for release alignment before the package-input commit: status
+  `BLOCKED` only because the currentness artifact still reports dirty local
+  package inputs.

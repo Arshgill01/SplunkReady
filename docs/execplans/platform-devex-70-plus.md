@@ -450,3 +450,59 @@ Current harsh re-score after Gate 12:
 Next work: either complete the `0.1.8` npm source-current publish once npm auth
 is active, or submit the mapped feedback form and preserve confirmation
 evidence.
+
+Gate 13 is implemented for real Splunk proof recalibration.
+
+User correction:
+
+- Do not raise award probabilities merely because a route, launch packet, or
+  demo wrapper is easier for judges to open.
+- Probability can move only when the repo proves the actual premise:
+  SplunkReady verifies an agent workflow against a real Splunk deployment,
+  records real evidence, and emits deterministic receipts.
+- Demoability remains useful only as access to evidence. It is not product
+  evidence by itself.
+
+Gate 13 progress:
+
+- Added `npm run audit:real-splunk-proof`, a strict audit of the tracked real
+  Splunk stress replay and LLM-layer evidence.
+- Generated
+  `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`
+  and `.md`.
+- The audit requires a fresh Splunk Enterprise deployment, operator-scoped
+  setup boundary, synthetic security stressors, deployment-derived saved-search
+  readiness, deterministic fail-to-pass receipts, live evidence references,
+  a healthy MCP transcript, explicit official-MCP boundary language, and
+  advisory-only LLM behavior.
+- Current audit result is `PASS`, score `100`.
+- The audit explicitly prevents overclaiming: the strongest live proof is real
+  Splunk REST through a local MCP compatibility bridge, not a fresh-container
+  official Splunk MCP Server app proof.
+- Public npm `splunkready@0.1.8` is now published and all public package probes
+  pass, but source currentness is still `STALE` until the local `0.1.8`
+  package-input changes are committed and the currentness audit is rerun.
+
+Current harsh re-score after Gate 13:
+
+| Surface | After Gate 12 | After Gate 13 | Reason |
+|---|---:|---:|---|
+| Platform & Developer Experience | 80% | 78% | Recalibrated downward because Gate 12 over-weighted judge-launch polish. The real Splunk audit is now PASS, so Platform remains above 70 on actual product evidence: live Splunk setup, agent-readiness workflow, deterministic receipts, and public package probes. It is not 80+ until source currentness is clean and the live proof is easier to rerun/read as the first judge path. |
+| Best Use of Splunk MCP Server | 66% | 63% | The real Splunk MCP-style transcript is credible, but the audit forces the honest boundary: live proof uses a local MCP compatibility bridge backed by real Splunk REST. This helps the trust-layer story but caps the category below a direct official Splunk MCP Server app proof. |
+| Best Use of Splunk Developer Tools | 55% | 57% | `splunkready@0.1.8` is published and public probes pass, and the real-proof audit gives stronger developer-tool evidence. Source currentness remains stale until the package bump is committed and re-audited; Splunkbase approval remains external. |
+| Security track | 18% | 28% | The real stress proof is genuinely security-shaped: prompt trap, decoy searches, live events, fail-to-pass readiness receipt. Still not a full Security-category product because SplunkReady is a certification harness, not a SOC workflow. |
+| Feedback prize preparedness | 84% | 84% | Unchanged. The official field map exists, but the form is not submitted. |
+
+Strict ceiling after recalibration:
+
+| Award surface | Current real chance | Real ceiling from here | What caps the ceiling |
+|---|---:|---:|---|
+| Platform & Developer Experience | 78% | 84-86% | Needs source-current package audit clean, a first-class real-Splunk proof entrypoint, and one clean judge narrative that starts from real verification rather than hosted-demo convenience. |
+| Best Use of Splunk MCP Server | 63% | 70-73% | Needs either a direct official Splunk MCP Server live proof or a much stronger third-party client session against the official MCP surface. Compatibility bridge evidence is real but capped. |
+| Best Use of Splunk Developer Tools | 57% | 65-68% | Needs source currentness, Splunk app/publication evidence tightened, and external Splunkbase state if available. |
+| Security track | 28% | 45-50% | Needs a security-user workflow around the certification output without drifting into SOC copilot territory. |
+| Hosted Models | 8% | 20-25% | Entitlement remains blocked; advisory-only design is correct but not category-maximizing. |
+
+Next work: commit the real-proof audit and local `0.1.8` package-input state,
+rerun public package currentness from the committed tree, then make the real
+Splunk proof audit a first-read judge artifact before adding new features.

@@ -1,0 +1,175 @@
+{
+  "source": "splunkready-real-splunk-proof-audit",
+  "status": "PASS",
+  "generatedAt": "2026-06-12T11:05:28.844Z",
+  "sourceDir": "submission-evidence/real-splunk-stress-replay",
+  "llmSourceDir": "submission-evidence/real-splunk-stress-llm-layer",
+  "score": 100,
+  "realSplunkAuthority": {
+    "deployment": "fresh disposable Splunk Enterprise container",
+    "workflow": "setup -> app install -> data ingest -> live saved-search proof -> deterministic receipts",
+    "passFailAuthority": "deterministic-rule-engine",
+    "defaultJudgePathMutatesSplunk": false,
+    "officialSplunkMcpBoundary": "Evidence is backed by real Splunk REST through a local MCP compatibility bridge; do not claim fresh-container official Splunk MCP Server app coverage."
+  },
+  "awardImpact": {
+    "platformDeveloperExperience": "Supports a real Platform & Developer Experience score above 70 because the developer workflow can certify live Splunk agent readiness into receipts.",
+    "splunkMcpServer": "Improves MCP trust-layer credibility but keeps the category capped below a direct official Splunk MCP Server app proof because the live path uses a compatibility bridge.",
+    "splunkDeveloperTools": "Supports developer-tool credibility through app package/install/live proof, but Splunkbase approval remains external."
+  },
+  "checks": [
+    {
+      "id": "real-splunk-enterprise-deployment",
+      "status": "PASS",
+      "evidence": {
+        "kind": "Docker Splunk Enterprise container",
+        "version": "10.4.0",
+        "freshContainer": true
+      },
+      "failure": null
+    },
+    {
+      "id": "operator-scoped-setup-not-default-judge-mutation",
+      "status": "PASS",
+      "evidence": {
+        "operatorOwnedWrites": [
+          "Started disposable Splunk Enterprise Docker container",
+          "Installed generated SplunkEnterpriseSecuritySuite app into disposable container",
+          "Restarted container through official Docker entrypoint",
+          "Ingested synthetic CSV via splunk add oneshot into wineventlog",
+          "Created wrong-app decoy saved search in search app via Splunk REST"
+        ],
+        "defaultJudgePathMutatesSplunk": false,
+        "credentialsTracked": false
+      },
+      "failure": null
+    },
+    {
+      "id": "security-stressors-present",
+      "status": "PASS",
+      "evidence": {
+        "rows": 85,
+        "promptInjectionEventRef": "prompt-trap-001",
+        "decoySavedSearches": [
+          "All Authentication Noise - Trap",
+          "Policy Injection Trap",
+          "search::ES - Lateral Movement Auth Chain"
+        ]
+      },
+      "failure": null
+    },
+    {
+      "id": "deployment-derived-readiness",
+      "status": "PASS",
+      "evidence": {
+        "status": "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF",
+        "indexes": 14,
+        "savedSearches": 178,
+        "exactSavedSearchPresent": true,
+        "exactSavedSearchResultCount": 4
+      },
+      "failure": null
+    },
+    {
+      "id": "deterministic-fail-to-pass-receipts",
+      "status": "PASS",
+      "evidence": {
+        "mutation": false,
+        "failToPass": true,
+        "summaryBefore": {
+          "verdict": "NOT READY",
+          "score": 60,
+          "violations": 2
+        },
+        "summaryAfter": {
+          "verdict": "READY",
+          "score": 100,
+          "violations": 0,
+          "evidenceRefs": [
+            "saved_searches:search:ES - Lateral Movement Auth Chain",
+            "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+            "prompt-trap-001",
+            "live-evt-141",
+            "live-evt-118",
+            "live-evt-102"
+          ]
+        },
+        "receiptBefore": {
+          "verdict": "NOT READY",
+          "score": 60
+        },
+        "receiptAfter": {
+          "verdict": "READY",
+          "score": 100
+        }
+      },
+      "failure": null
+    },
+    {
+      "id": "live-evidence-refs-survive-receipt",
+      "status": "PASS",
+      "evidence": {
+        "afterEvidenceRefs": [
+          "saved_searches:search:ES - Lateral Movement Auth Chain",
+          "saved_searches:SplunkEnterpriseSecuritySuite:ES - Lateral Movement Auth Chain",
+          "prompt-trap-001",
+          "live-evt-141",
+          "live-evt-118",
+          "live-evt-102"
+        ]
+      },
+      "failure": null
+    },
+    {
+      "id": "mcp-bridge-session-backed-by-real-splunk",
+      "status": "PASS",
+      "evidence": {
+        "status": "PASS",
+        "frames": 76,
+        "requests": 38,
+        "responses": 38,
+        "errors": 0,
+        "tools": [
+          "splunk_get_indexes",
+          "splunk_get_info",
+          "splunk_get_knowledge_objects",
+          "splunk_get_metadata",
+          "splunk_get_user_info",
+          "splunk_run_saved_search"
+        ]
+      },
+      "failure": null
+    },
+    {
+      "id": "official-mcp-boundary-not-overclaimed",
+      "status": "PASS",
+      "evidence": {
+        "limitations": [
+          "This replay uses a local MCP compatibility bridge backed by real Splunk REST because a fresh Splunk Enterprise container does not expose the Splunk MCP Server app by default.",
+          "Hosted-model/SAIA tools are advisory and are not claimed as available unless the proof summary reports them as available.",
+          "The local Splunk management endpoint uses self-signed TLS; NODE_TLS_REJECT_UNAUTHORIZED=0 is scoped to this local replay."
+        ]
+      },
+      "failure": null
+    },
+    {
+      "id": "llm-layer-advisory-non-authoritative",
+      "status": "PASS",
+      "evidence": {
+        "available": true,
+        "advisoryOnly": true,
+        "passFailAuthority": "deterministic-rule-engine",
+        "claimAuditAfter": {
+          "status": "PASS",
+          "totalClaims": 1,
+          "supportedClaims": 1,
+          "partialClaims": 0,
+          "unsupportedClaims": 0,
+          "hallucinatedRefs": []
+        }
+      },
+      "failure": null
+    }
+  ],
+  "failures": []
+}

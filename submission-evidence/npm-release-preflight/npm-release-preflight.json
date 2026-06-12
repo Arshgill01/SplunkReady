@@ -1,16 +1,16 @@
 {
   "source": "splunkready-npm-release-preflight",
-  "status": "BLOCKED",
+  "status": "PUBLISHED",
   "package": {
     "name": "splunkready",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "publishConfig": {
       "access": "public"
     }
   },
   "auth": {
-    "authenticated": false,
-    "reason": "npm error code E401\nnpm error 401 Unauthorized - GET https://registry.npmjs.org/-/whoami\nnpm error A complete log of this run can be found in: /Users/arshdeepsingh/.npm/_logs/2026-06-12T10_50_00_492Z-debug-0.log"
+    "authenticated": true,
+    "username": "brightybrainiac"
   },
   "registry": {
     "packageName": "splunkready",
@@ -22,20 +22,19 @@
       "0.1.3",
       "0.1.4",
       "0.1.5",
-      "0.1.7"
+      "0.1.7",
+      "0.1.8"
     ],
     "currentVersionAvailable": false
   },
   "pack": {
     "ok": true,
     "fileCount": 194,
-    "filename": "splunkready-0.1.7.tgz"
+    "filename": "splunkready-0.1.8.tgz"
   },
-  "blockers": [
-    "npm auth is not configured; run npm adduser or npm login before publishing"
-  ],
+  "blockers": [],
   "failures": [],
   "releaseCommand": "npm version patch && npm publish --access public",
-  "publishedPackage": "https://www.npmjs.com/package/splunkready/v/0.1.7",
+  "publishedPackage": "https://www.npmjs.com/package/splunkready/v/0.1.8",
   "mutation": false
 }

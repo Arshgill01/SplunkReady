@@ -17508,3 +17508,39 @@ Actions:
   currentness after the Pages deployment succeeded.
 - Updated README and claim ledger so the launch packet is visible from the
   quickstart and claim map.
+
+# 2026-06-12 - Platform DevEx 70% Push Gate 13 Real Splunk Proof Recalibration
+
+Files expected to touch:
+
+- `scripts/audit-real-splunk-proof.mjs`
+- `tests/scripts/real-splunk-proof-audit.test.ts`
+- `package.json`
+- `package-lock.json`
+- `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`
+- `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.md`
+- `submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `submission-evidence/public-package-currentness/public-package-currentness.json`
+- `submission-evidence/release-alignment/release-alignment.json`
+- `docs/execplans/platform-devex-70-plus.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Accepted the user correction that award probabilities must not move based on
+  demo packaging or hardcoded judge paths.
+- Added a strict real Splunk proof audit that checks the tracked stress replay
+  for fresh Splunk Enterprise deployment evidence, operator-scoped setup
+  boundaries, security stressors, deployment-derived saved-search readiness,
+  deterministic fail-to-pass receipts, live evidence references, MCP transcript
+  health, official-MCP boundary language, and advisory-only LLM behavior.
+- Generated tracked real-proof audit artifacts under
+  `submission-evidence/real-splunk-proof-audit/`.
+- Recalibrated the Platform 70% ExecPlan downward from the Gate 12 demoability
+  bump: Platform now stands at 78%, MCP at 63%, Developer Tools at 57%, and
+  Security at 28% under the stricter real-proof rubric.
+- Confirmed public npm `splunkready@0.1.8` is published and regenerated the npm
+  release preflight as `PUBLISHED`; public package probes pass but source
+  currentness remains stale until the local 0.1.8 package inputs are committed
+  and re-audited.
