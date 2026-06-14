@@ -3,7 +3,7 @@
   "status": "BLOCKED",
   "package": {
     "name": "splunkready",
-    "version": "0.1.13",
+    "version": "0.1.14",
     "recommendedNextVersion": null
   },
   "currentness": {
@@ -63,14 +63,12 @@
   ],
   "releasePreflight": {
     "artifactPath": "submission-evidence/npm-release-preflight/npm-release-preflight.json",
-    "status": "BLOCKED",
-    "authenticated": false,
-    "registryStatus": "EXISTS_VERSION_AVAILABLE",
-    "currentVersionAvailable": true,
-    "blockers": [
-      "npm auth is not configured; run npm adduser or npm login before publishing"
-    ],
-    "releaseCommand": "npm publish --access public"
+    "status": "PUBLISHED",
+    "authenticated": true,
+    "registryStatus": "VERSION_ALREADY_PUBLISHED",
+    "currentVersionAvailable": false,
+    "blockers": [],
+    "releaseCommand": "npm version patch && npm publish --access public"
   },
   "nextCommands": [],
   "summary": "Release alignment cannot be claimed until the listed blockers are resolved.",
