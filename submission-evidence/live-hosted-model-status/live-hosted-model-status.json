@@ -1,11 +1,11 @@
 {
   "source": "splunkready-live-hosted-model-status",
-  "status": "BLOCKED",
+  "status": "PASS",
   "mode": "live",
-  "blockerClass": "SAIA_CLOUD_ROUTE_NOT_FOUND",
-  "permissionStatus": "BLOCKED",
-  "permissionBlockerClass": "SAIA_CLOUD_ROUTE_NOT_FOUND",
-  "restHandlerProbeStatus": "PASS",
+  "blockerClass": "NONE",
+  "permissionStatus": "OK",
+  "permissionBlockerClass": "NONE",
+  "restHandlerProbeStatus": "NOT_RUN",
   "requiredTools": [
     "saia_generate_spl",
     "saia_explain_spl",
@@ -18,29 +18,25 @@
     "saia_optimize_spl",
     "saia_ask_splunk_question"
   ],
-  "passedTools": [],
-  "blockedTools": [
+  "passedTools": [
     "saia_generate_spl",
     "saia_explain_spl",
     "saia_optimize_spl",
     "saia_ask_splunk_question"
   ],
-  "summary": "The MCP contract advertises hosted-model tools and the local SAIA routes are registered, but the downstream Splunk AI Assistant cloud hosted-model route returned not found.",
+  "blockedTools": [],
+  "summary": "No hosted-model remediation is required.",
   "operatorChecks": [
-    "Do not change the local Splunk MCP endpoint yet; SplunkReady proved the local SAIA management routes are served by splunkd.",
-    "Confirm the Splunk AI Assistant cloud connection was activated for the same Splunk deployment, tenant, and user backing the MCP token.",
-    "Confirm the tenant is provisioned for the SAIA v2 hosted-model SPL API used by generate, explain, optimize, and ask-splunk-question.",
-    "If the SAIA metadata endpoint works but hosted-model SPL calls return 404, re-run cloud-connect activation or escalate the tenant provisioning mismatch to Splunk support.",
-    "Rerun the strict hosted-model diagnostic from the same env file."
+    "No hosted-model remediation required."
   ],
   "safeForPublicExport": true,
   "rawArtifactTracked": false,
-  "rawArtifactPath": "artifacts/live-hosted-model-diagnostic-current/hosted-model-diagnostic.json",
+  "rawArtifactPath": "artifacts/live-hosted-model-diagnostic-after-v1-toggle/hosted-model-diagnostic.json",
   "redactionAudit": {
     "status": "PASS",
     "envFileProvided": true,
     "checkedFiles": [
-      "artifacts/live-hosted-model-diagnostic-current/hosted-model-diagnostic.json"
+      "artifacts/live-hosted-model-diagnostic-after-v1-toggle/hosted-model-diagnostic.json"
     ],
     "checkedSecretValueCount": 4,
     "leakedSecretNames": [],

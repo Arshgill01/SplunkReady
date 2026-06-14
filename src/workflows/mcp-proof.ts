@@ -1120,7 +1120,7 @@ const buildMcpClientSession = (
 };
 
 const readOperatorLiveHostedModelStatus = async (
-  artifactPath = "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json"
+  artifactPath = "submission-evidence/live-hosted-model-status/live-hosted-model-status.json"
 ): Promise<McpProofSummary["operatorLiveHostedModelStatus"]> => {
   const notProvided: McpProofSummary["operatorLiveHostedModelStatus"] = {
     source: "splunkready-operator-live-hosted-model-status",
@@ -1154,10 +1154,13 @@ const readOperatorLiveHostedModelStatus = async (
   const remediation = safeRecord(record.remediation);
   const status = stringFromRecord(record, "status") === "PASS" ? "PASS" : "BLOCKED";
   const blockerClass = stringFromRecord(record, "blockerClass") || "UNKNOWN";
-  const permissionStatus = stringFromRecord(permission, "status") || "UNKNOWN";
-  const permissionBlockerClass = stringFromRecord(permission, "blockerClass") || blockerClass;
-  const restHandlerProbeStatus = stringFromRecord(restHandlerProbe, "status") || "NOT_RUN";
+  const permissionStatus = stringFromRecord(record, "permissionStatus") || stringFromRecord(permission, "status") || "UNKNOWN";
+  const permissionBlockerClass =
+    stringFromRecord(record, "permissionBlockerClass") || stringFromRecord(permission, "blockerClass") || blockerClass;
+  const restHandlerProbeStatus =
+    stringFromRecord(record, "restHandlerProbeStatus") || stringFromRecord(restHandlerProbe, "status") || "NOT_RUN";
   const summary =
+    stringFromRecord(record, "summary") ||
     stringFromRecord(remediation, "summary") ||
     stringFromRecord(permission, "message") ||
     "Operator-owned live hosted-model diagnostic artifact was present, but no summary field was available.";

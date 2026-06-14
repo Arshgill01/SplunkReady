@@ -34,7 +34,7 @@ Live Splunk evidence:
 - `submission-evidence/official-splunk-mcp-live/official-splunk-mcp-live-session.redacted.jsonl`
 - `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`
 - `submission-evidence/live-hosted-model-status/live-hosted-model-status.json`
-- Official `Splunk_MCP_Server` calls are captured from the operator-owned live endpoint; Splunk AI Assistant local handlers are live-probed at runtime and currently block only at the downstream hosted SAIA cloud route.
+- Official `Splunk_MCP_Server` calls are captured from the operator-owned live endpoint; after operator-authorized SAIA enablement, live Splunk AI Assistant hosted-model calls pass for generate, explain, optimize, and ask-splunk-question.
 
 `npm run platform-proof` writes:
 

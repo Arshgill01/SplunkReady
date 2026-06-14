@@ -1,0 +1,51 @@
+{
+  "source": "splunkready-authorized-saia-remediation",
+  "status": "PASS",
+  "mode": "live",
+  "generatedAt": "2026-06-14T16:49:00Z",
+  "authorization": "The operator explicitly authorized Splunk-side mutation for SAIA enablement in this session on 2026-06-14.",
+  "mutation": "operator-approved-saia-feature-enable",
+  "changes": [
+    {
+      "target": "Splunk_AI_Assistant_Cloud KV store saia_metadata",
+      "operation": "Set top-level mcp_tool_enabled true and enable customization, optimization, and mcp_tool_enabled feature flags.",
+      "result": "PASS"
+    },
+    {
+      "target": "Splunk_AI_Assistant_Cloud KV store saia_settings_v2",
+      "operation": "Set enable_saia_v2.enabled true during local feature enablement probe.",
+      "result": "PASS"
+    },
+    {
+      "target": "Splunk_AI_Assistant_Cloud local REST handler routing",
+      "operation": "After the vendor v2 cloud route returned 404, selected the app's v1 hosted-model route for one-shot SAIA handlers and restarted local Splunk so persistent handlers reloaded.",
+      "result": "PASS"
+    }
+  ],
+  "verification": {
+    "directSplunkAiAssistantProbe": {
+      "status": "PASS",
+      "route": "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
+      "evidence": "Direct POST returned non-empty generated SPL through the hosted-model service."
+    },
+    "strictHostedModelDiagnostic": {
+      "status": "PASS",
+      "artifact": "artifacts/live-hosted-model-diagnostic-after-v1-toggle/hosted-model-diagnostic.json",
+      "passedTools": [
+        "saia_generate_spl",
+        "saia_explain_spl",
+        "saia_optimize_spl",
+        "saia_ask_splunk_question"
+      ],
+      "blockedTools": []
+    },
+    "publicStatus": "submission-evidence/live-hosted-model-status/live-hosted-model-status.json"
+  },
+  "redaction": {
+    "status": "PASS",
+    "secretsWritten": false,
+    "tenantIdentifiersWritten": false,
+    "rawLiveArtifactTracked": false
+  },
+  "deterministicAuthority": true
+}

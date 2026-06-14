@@ -46,7 +46,7 @@ submission-evidence/official-splunk-mcp-live/official-splunk-mcp-live-session.re
 Official \`Splunk_MCP_Server\` calls
 submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json
 submission-evidence/live-hosted-model-status/live-hosted-model-status.json
-downstream hosted SAIA cloud route
+live Splunk AI Assistant hosted-model calls pass
 npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json
 @arshgill01/splunkready@0.1.7
 npm run audit:public-package-currentness
@@ -244,8 +244,9 @@ const baseClaimLedger = `# Submission Claim Ledger
 | A real Zed Agent session consumed the SplunkReady MCP recorder gateway and certified the captured Splunk MCP investigation with strong external-client evidence. | Supported | submission-evidence/mcp-proof/mcp-category-scorecard.json, zedEvidenceTier: "VERIFIED_STRONG", zedJsonlContainsSplunkReadyFlushFrame: true, zedJsonlContainsSplunkInvestigationFrames: true, zedFrames: 15, score \`100\` | node scripts/audit-mcp-category-evidence.mjs --out submission-evidence/mcp-proof --require-strong |
 | The MCP category scorecard summarizes SplunkReady MCP, mock Splunk MCP, AppInspect MCP, hosted-model MCP, and strong Zed external-client evidence without overclaiming live-operator Splunk usage. | Supported | submission-evidence/mcp-proof/mcp-category-scorecard.json, docs/mcp-topology.md, status \`PASS\` | node scripts/audit-mcp-category-evidence.mjs --out submission-evidence/mcp-proof --require-strong |
 | The MCP proof composes Splunk investigation, Splunk AppInspect validation, and SplunkReady deterministic certification without making AppInspect the receipt judge. | Supported | splunkready-appinspect-mcp-composition, submission-evidence/mcp-proof/appinspect-mcp-composition.json, inspect_app, appInspectAuthority: "advisory-static-validation", deterministicReceiptAuthority: "splunkready", failureCount: 0, warningCount: 1 | tests/workflows/appinspect-composition.test.ts |
-| The MCP proof distinguishes credential-free fixture hosted-model PASS from the current operator-live SAIA blocker. | Supported | operatorLiveHostedModelStatus, SAIA_CLOUD_ROUTE_NOT_FOUND, restHandlerProbeStatus | npm run mcp-proof |
-| The tracked live hosted-model status is public-safe while raw operator artifacts stay ignored. | Supported | submission-evidence/live-hosted-model-status/live-hosted-model-status.json, redactionAudit.status: "PASS", rawArtifactTracked: false | npm run audit:live-hosted-model-status |
+| The MCP proof distinguishes credential-free fixture hosted-model PASS from operator-live Splunk AI Assistant hosted-model PASS. | Supported | operatorLiveHostedModelStatus, restHandlerProbeStatus | npm run mcp-proof |
+| The operator-live hosted-model status now passes and stays public-safe while raw operator artifacts stay ignored. | Supported | submission-evidence/live-hosted-model-status/live-hosted-model-status.json, redactionAudit.status: "PASS", rawArtifactTracked: false | npm run audit:live-hosted-model-status |
+| Operator-authorized SAIA remediation converted the hosted-model proof from blocked to passing. | Supported | authorized-saia-remediation.json | hosted-model-diagnostic |
 | The MCP client config resources expose dedicated SAIA cloud routing placeholders without committing credentials. | Supported | SPLUNKREADY_SAIA_ENDPOINT, SPLUNKREADY_SAIA_TOKEN, SAIA_MCP_URL, SPLUNK_AI_ASSISTANT_MCP_URL, SPLUNKREADY_SAIA_REALM, SPLUNKREADY_SAIA_TENANT, hostedModelDiagnosticTool | npm run mcp-proof |
 | The MCP client config resources use Splunk's \`mcp-remote\` client shape for the existing Splunk MCP Server side. | Supported | mcp-remote, SPLUNKREADY_SPLUNK_MCP_URL, Authorization: Bearer \${SPLUNKREADY_SPLUNK_MCP_TOKEN} | npm run mcp-proof |
 `;

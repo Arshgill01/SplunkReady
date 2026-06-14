@@ -666,6 +666,8 @@ const hostedModelToolBlockedResult = (
 const hostedModelToolOutput = (value: Record<string, unknown>): Record<string, unknown> =>
   Object.fromEntries(Object.entries(value).filter(([, outputValue]) => outputValue !== undefined));
 
+const hasText = (value: string | undefined): value is string => Boolean(value?.trim());
+
 const collectHostedModelToolResults = async (
   adapter: SplunkAccessAdapter,
   contract: EnvironmentContract,
@@ -692,6 +694,11 @@ const collectHostedModelToolResults = async (
           continue;
         }
 
+        if (!hasText(generation.query)) {
+          toolResults.push(hostedModelToolBlockedResult(toolName, true, "SAIA generation returned no SPL text."));
+          continue;
+        }
+
         assistance.generatedQuery = generation.query;
         assistance.generationRationale = generation.rationale;
         assistance.warnings.push(...generation.warnings);
@@ -712,6 +719,11 @@ const collectHostedModelToolResults = async (
           continue;
         }
 
+        if (!hasText(explanation.explanation) || explanation.explanation === "Live SAIA explanation returned no text.") {
+          toolResults.push(hostedModelToolBlockedResult(toolName, true, "SAIA explanation returned no text."));
+          continue;
+        }
+
         assistance.explanation = explanation.explanation;
         assistance.warnings.push(...explanation.warnings);
         toolResults.push({
@@ -728,6 +740,11 @@ const collectHostedModelToolResults = async (
 
         if (!optimization) {
           toolResults.push(hostedModelToolBlockedResult(toolName, true, "Adapter does not expose optimizeSpl."));
+          continue;
+        }
+
+        if (!hasText(optimization.optimizedQuery)) {
+          toolResults.push(hostedModelToolBlockedResult(toolName, true, "SAIA optimization returned no SPL text."));
           continue;
         }
 
@@ -751,6 +768,11 @@ const collectHostedModelToolResults = async (
 
       if (!answer) {
         toolResults.push(hostedModelToolBlockedResult(toolName, true, "Adapter does not expose askSplunkQuestion."));
+        continue;
+      }
+
+      if (!hasText(answer.answer) || answer.answer === "Live SAIA question returned no answer text.") {
+        toolResults.push(hostedModelToolBlockedResult(toolName, true, "SAIA question returned no answer text."));
         continue;
       }
 

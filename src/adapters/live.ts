@@ -159,6 +159,21 @@ const rowsFrom = (value: unknown): Array<Record<string, unknown>> => {
 
 const firstRowFrom = (value: unknown): Record<string, unknown> => rowsFrom(value)[0] ?? (isRecord(value) ? value : {});
 
+const stringArrayValue = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.length > 0) : [];
+
+const firstTextValue = (value: unknown): string | undefined => {
+  if (typeof value === "string" && value.length > 0) {
+    return value;
+  }
+
+  const row = firstRowFrom(value);
+  const response = isRecord(value) ? value.response : undefined;
+  const responseText = stringValue(row.response) ?? stringArrayValue(response).join("\n").trim();
+
+  return responseText || undefined;
+};
+
 const normalizeLiveInfo = (value: unknown, capabilities: ReadOnlySplunkToolName[] | undefined): SplunkInfo => {
   const row = firstRowFrom(value);
   const deploymentName = stringValue(row.serverName) ?? stringValue(row.splunk_server) ?? "live-splunk";
@@ -334,7 +349,8 @@ const normalizeGenerateSplResult = (value: unknown): GenerateSplResult => {
     stringValue(row.spl) ??
     stringValue(row.generated_spl) ??
     stringValue(row.generatedSpl) ??
-    (typeof value === "string" ? value : "");
+    firstTextValue(value) ??
+    "";
   const rationale = stringValue(row.rationale) ?? stringValue(row.explanation);
 
   return { query, rationale, warnings: query ? [] : ["Live SAIA generation returned no SPL text."] };
@@ -346,7 +362,8 @@ const normalizeExplainSplResult = (value: unknown): ExplainSplResult => {
     stringValue(row.explanation) ??
     stringValue(row.answer) ??
     stringValue(row.content) ??
-    (typeof value === "string" ? value : "Live SAIA explanation returned no text.");
+    firstTextValue(value) ??
+    "Live SAIA explanation returned no text.";
 
   return { explanation, warnings: [] };
 };
@@ -358,7 +375,8 @@ const normalizeOptimizeSplResult = (value: unknown): OptimizeSplResult => {
     stringValue(row.optimized_query) ??
     stringValue(row.query) ??
     stringValue(row.spl) ??
-    (typeof value === "string" ? value : "");
+    firstTextValue(value) ??
+    "";
   const rationale = stringValue(row.rationale) ?? stringValue(row.explanation) ?? "Live SAIA optimization returned.";
 
   return { optimizedQuery, rationale, warnings: optimizedQuery ? [] : ["Live SAIA optimization returned no query text."] };
@@ -370,7 +388,8 @@ const normalizeAskSplunkQuestionResult = (value: unknown): AskSplunkQuestionResu
     stringValue(row.answer) ??
     stringValue(row.explanation) ??
     stringValue(row.content) ??
-    (typeof value === "string" ? value : "Live SAIA question returned no answer text.");
+    firstTextValue(value) ??
+    "Live SAIA question returned no answer text.";
 
   return { answer, warnings: [] };
 };

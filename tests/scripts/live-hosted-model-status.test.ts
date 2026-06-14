@@ -62,16 +62,16 @@ describe("live hosted-model status audit", () => {
 
     expect(readiness).toMatchObject({
       source: "splunkready-live-saia-readiness-probe",
-      status: "ACTION_REQUIRED",
+      status: "PASS",
       redaction: { status: "PASS", secretsWritten: false, tenantIdentifiersWritten: false },
-      mutation: false
+      mutation: "operator-approved-saia-feature-enable"
     });
     expect(readiness.probes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: "saia-token-handler", status: "PASS" }),
         expect.objectContaining({ id: "cloud-connected-config", status: "PASS" }),
-        expect.objectContaining({ id: "mcp-tool-enabled", status: "ACTION_REQUIRED" }),
-        expect.objectContaining({ id: "agent-mode-v2-enabled", status: "ACTION_REQUIRED" })
+        expect.objectContaining({ id: "mcp-tool-enabled", status: "PASS" }),
+        expect.objectContaining({ id: "agent-mode-routing", status: "PASS" })
       ])
     );
   });

@@ -3,7 +3,7 @@
   "mode": "fixture",
   "mutation": false,
   "blockerClass": "NONE",
-  "proofPath": "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
+  "proofPath": "artifacts/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
   "contract": {
     "id": "contract-acme-soc-dev",
     "mode": "fixture"

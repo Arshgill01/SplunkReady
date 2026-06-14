@@ -290,7 +290,7 @@
         "role": "user",
         "content": {
           "type": "text",
-          "text": "Certify this captured Splunk MCP transcript with SplunkReady.\n\nTranscript path: examples/sample-mcp-transcript-pass.jsonl\nOutput directory: submission-evidence/mcp-proof/mcp-transcript-certification\nFinal answer: Evidence supports suspicious lateral movement from win-finance-07 through admin-login-02 to dc-01 and finance-sql-03. Provenance saved-search-lateral-movement returned 3 rows for the -24h to now window, with evidence rows evt-102, evt-118, and evt-141.\n\nCall splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.\nUse the resulting Readiness Receipt as the source of truth. Deterministic rules decide READY or NOT READY; LLM output may only explain the receipt."
+          "text": "Certify this captured Splunk MCP transcript with SplunkReady.\n\nTranscript path: examples/sample-mcp-transcript-pass.jsonl\nOutput directory: artifacts/mcp-proof/mcp-transcript-certification\nFinal answer: Evidence supports suspicious lateral movement from win-finance-07 through admin-login-02 to dc-01 and finance-sql-03. Provenance saved-search-lateral-movement returned 3 rows for the -24h to now window, with evidence rows evt-102, evt-118, and evt-141.\n\nCall splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.\nUse the resulting Readiness Receipt as the source of truth. Deterministic rules decide READY or NOT READY; LLM output may only explain the receipt."
         }
       }
     ]
@@ -302,7 +302,7 @@
         "role": "user",
         "content": {
           "type": "text",
-          "text": "Run a Splunk MCP investigation loop and certify it with SplunkReady.\n\nSplunk MCP server: splunk\nTranscript path: examples/sample-mcp-transcript-pass.jsonl\nOutput directory: submission-evidence/mcp-proof/mcp-transcript-certification\n\nUse the two-server MCP client configuration: `splunk` is the existing Splunk MCP Server and `splunkready` is the local certification server.\nUse Splunk MCP only for read-only investigation actions. Prefer saved searches and knowledge objects when the deployment exposes them.\nPreserve the JSON-RPC transcript of the Splunk MCP tool calls and responses.\nThen call splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.\nUse the Readiness Receipt as the authoritative verdict; LLM or assistant text may only explain the deterministic result."
+          "text": "Run a Splunk MCP investigation loop and certify it with SplunkReady.\n\nSplunk MCP server: splunk\nTranscript path: examples/sample-mcp-transcript-pass.jsonl\nOutput directory: artifacts/mcp-proof/mcp-transcript-certification\n\nUse the two-server MCP client configuration: `splunk` is the existing Splunk MCP Server and `splunkready` is the local certification server.\nUse Splunk MCP only for read-only investigation actions. Prefer saved searches and knowledge objects when the deployment exposes them.\nPreserve the JSON-RPC transcript of the Splunk MCP tool calls and responses.\nThen call splunkready_certify_mcp_transcript with strictImport=true and requirePass=true.\nUse the Readiness Receipt as the authoritative verdict; LLM or assistant text may only explain the deterministic result."
         }
       }
     ]
@@ -314,7 +314,7 @@
         "role": "user",
         "content": {
           "type": "text",
-          "text": "Review this MCP composition proof before presenting it.\n\nProof summary path: submission-evidence/mcp-proof/mcp-proof-summary.json\n\nConfirm the proof composes two MCP servers: existing Splunk MCP for read-only investigation and SplunkReady MCP for deterministic certification.\nCheck for a dual-server client config, captured splunk_* tool calls, saved-search evidence refs, a generated Readiness Receipt, deterministic authority, and mutation=false.\nCall out any missing evidence directly. Do not treat LLM output as pass/fail authority."
+          "text": "Review this MCP composition proof before presenting it.\n\nProof summary path: artifacts/mcp-proof/mcp-proof-summary.json\n\nConfirm the proof composes two MCP servers: existing Splunk MCP for read-only investigation and SplunkReady MCP for deterministic certification.\nCheck for a dual-server client config, captured splunk_* tool calls, saved-search evidence refs, a generated Readiness Receipt, deterministic authority, and mutation=false.\nCall out any missing evidence directly. Do not treat LLM output as pass/fail authority."
         }
       }
     ]
@@ -326,53 +326,53 @@
         "role": "user",
         "content": {
           "type": "text",
-          "text": "Check Splunk AI Assistant hosted-model access through SplunkReady.\n\nMode: fixture\nOutput directory: submission-evidence/mcp-proof/mcp-hosted-model-access\n\nCall splunkready_check_hosted_model_access with requirePass=true when you need a strict PASS gate.\nFor public evidence, use fixture mode. For live evidence, run only from an operator-owned shell or explicit env file with Splunk MCP credentials already configured.\nConfirm required tools include saia_generate_spl, saia_explain_spl, saia_optimize_spl, and saia_ask_splunk_question; permissionStatus is OK; mutation=false.\nSAIA output may generate, explain, optimize, or answer SPL questions, but deterministic SplunkReady rules remain the pass/fail authority."
+          "text": "Check Splunk AI Assistant hosted-model access through SplunkReady.\n\nMode: fixture\nOutput directory: artifacts/mcp-proof/mcp-hosted-model-access\n\nCall splunkready_check_hosted_model_access with requirePass=true when you need a strict PASS gate.\nFor public evidence, use fixture mode. For live evidence, run only from an operator-owned shell or explicit env file with Splunk MCP credentials already configured.\nConfirm required tools include saia_generate_spl, saia_explain_spl, saia_optimize_spl, and saia_ask_splunk_question; permissionStatus is OK; mutation=false.\nSAIA output may generate, explain, optimize, or answer SPL questions, but deterministic SplunkReady rules remain the pass/fail authority."
         }
       }
     ]
   },
   "transcriptCertification": {
     "artifacts": [
-      "submission-evidence/mcp-proof/mcp-transcript-certification/uploaded-mcp-transcript.jsonl",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/environment-contract.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/missions.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/agent-policy.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/readiness-profile.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/trace-imported.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/mcp-transcript-import.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/trace-external.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/violations-external.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/score-external.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.md",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/mcp-transcript-certification.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/proof-audit.json",
-      "submission-evidence/mcp-proof/mcp-transcript-certification/proof-manifest.json"
+      "artifacts/mcp-proof/mcp-transcript-certification/uploaded-mcp-transcript.jsonl",
+      "artifacts/mcp-proof/mcp-transcript-certification/environment-contract.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/missions.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/agent-policy.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/readiness-profile.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/trace-imported.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/mcp-transcript-import.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/trace-external.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/violations-external.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/score-external.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.md",
+      "artifacts/mcp-proof/mcp-transcript-certification/mcp-transcript-certification.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/proof-audit.json",
+      "artifacts/mcp-proof/mcp-transcript-certification/proof-manifest.json"
     ],
     "status": "PASS",
-    "outDir": "submission-evidence/mcp-proof/mcp-transcript-certification",
+    "outDir": "artifacts/mcp-proof/mcp-transcript-certification",
     "mutation": false
   },
   "inlineTranscriptCertification": {
     "artifacts": [
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/uploaded-mcp-transcript.jsonl",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/environment-contract.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/missions.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/agent-policy.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/readiness-profile.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/trace-imported.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-import.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/trace-external.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/violations-external.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/score-external.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.md",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-certification.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-audit.json",
-      "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-manifest.json"
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/uploaded-mcp-transcript.jsonl",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/environment-contract.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/missions.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/agent-policy.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/readiness-profile.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/trace-imported.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-import.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/trace-external.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/violations-external.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/score-external.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.md",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-certification.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/proof-audit.json",
+      "artifacts/mcp-proof/mcp-inline-transcript-certification/proof-manifest.json"
     ],
     "status": "PASS",
-    "outDir": "submission-evidence/mcp-proof/mcp-inline-transcript-certification",
+    "outDir": "artifacts/mcp-proof/mcp-inline-transcript-certification",
     "mutation": false
   },
   "mcpCompositionReview": {
@@ -439,7 +439,7 @@
     "blockerClass": "NONE",
     "permissionStatus": "OK",
     "permissionBlockerClass": "NONE",
-    "outDir": "submission-evidence/mcp-proof/mcp-hosted-model-access",
+    "outDir": "artifacts/mcp-proof/mcp-hosted-model-access",
     "mutation": false,
     "requiredTools": [
       "saia_generate_spl",
@@ -538,21 +538,21 @@
       "rerunCommand": "splunkready hosted-model-diagnostic --mode live --env-file <operator-env-file> --out artifacts/hosted-model-diagnostic --require-pass true --json"
     },
     "artifacts": [
-      "submission-evidence/mcp-proof/mcp-hosted-model-access/environment-contract.json",
-      "submission-evidence/mcp-proof/mcp-hosted-model-access/missions.json",
-      "submission-evidence/mcp-proof/mcp-hosted-model-access/agent-policy.json",
-      "submission-evidence/mcp-proof/mcp-hosted-model-access/readiness-profile.json",
-      "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
-      "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-diagnostic.json"
+      "artifacts/mcp-proof/mcp-hosted-model-access/environment-contract.json",
+      "artifacts/mcp-proof/mcp-hosted-model-access/missions.json",
+      "artifacts/mcp-proof/mcp-hosted-model-access/agent-policy.json",
+      "artifacts/mcp-proof/mcp-hosted-model-access/readiness-profile.json",
+      "artifacts/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
+      "artifacts/mcp-proof/mcp-hosted-model-access/hosted-model-diagnostic.json"
     ]
   },
   "operatorLiveHostedModelStatus": {
     "source": "splunkready-operator-live-hosted-model-status",
-    "status": "BLOCKED",
-    "artifactPath": "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json",
-    "blockerClass": "SAIA_CLOUD_ROUTE_NOT_FOUND",
-    "permissionStatus": "BLOCKED",
-    "permissionBlockerClass": "SAIA_CLOUD_ROUTE_NOT_FOUND",
+    "status": "PASS",
+    "artifactPath": "submission-evidence/live-hosted-model-status/live-hosted-model-status.json",
+    "blockerClass": "NONE",
+    "permissionStatus": "OK",
+    "permissionBlockerClass": "NONE",
     "requiredTools": [
       "saia_generate_spl",
       "saia_explain_spl",
@@ -565,15 +565,15 @@
       "saia_optimize_spl",
       "saia_ask_splunk_question"
     ],
-    "passedTools": [],
-    "blockedTools": [
+    "passedTools": [
       "saia_generate_spl",
       "saia_explain_spl",
       "saia_optimize_spl",
       "saia_ask_splunk_question"
     ],
-    "restHandlerProbeStatus": "PASS",
-    "summary": "The MCP contract advertises hosted-model tools and the local SAIA routes are registered, but the downstream Splunk AI Assistant cloud hosted-model route returned not found.",
+    "blockedTools": [],
+    "restHandlerProbeStatus": "NOT_RUN",
+    "summary": "No hosted-model remediation is required.",
     "safeForPublicExport": true,
     "deterministicAuthority": true,
     "mutation": false
@@ -608,7 +608,7 @@
       "evt-118",
       "evt-141"
     ],
-    "receiptPath": "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+    "receiptPath": "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
     "deterministicAuthority": true,
     "mutation": false
   },
@@ -735,8 +735,8 @@
   "clientWalkthrough": {
     "source": "splunkready-mcp-client-walkthrough",
     "status": "PASS",
-    "artifactPath": "submission-evidence/mcp-proof/mcp-client-walkthrough.json",
-    "markdownPath": "submission-evidence/mcp-proof/mcp-client-walkthrough.md",
+    "artifactPath": "artifacts/mcp-proof/mcp-client-walkthrough.json",
+    "markdownPath": "artifacts/mcp-proof/mcp-client-walkthrough.md",
     "deterministicAuthority": true,
     "mutation": false,
     "servers": [
@@ -774,7 +774,7 @@
         "id": "splunkready-certifies",
         "title": "SplunkReady certifies the captured transcript",
         "server": "splunkready",
-        "evidence": "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json"
+        "evidence": "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json"
       },
       {
         "id": "receipt-is-authoritative",
@@ -798,7 +798,7 @@
       ]
     },
     "receipt": {
-      "path": "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+      "path": "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
       "status": "PASS",
       "authoritative": true
     }
@@ -806,8 +806,8 @@
   "clientSession": {
     "source": "splunkready-mcp-client-session",
     "status": "PASS",
-    "artifactPath": "submission-evidence/mcp-proof/mcp-client-session.jsonl",
-    "markdownPath": "submission-evidence/mcp-proof/mcp-client-session.md",
+    "artifactPath": "artifacts/mcp-proof/mcp-client-session.jsonl",
+    "markdownPath": "artifacts/mcp-proof/mcp-client-session.md",
     "protocol": "stdio-jsonrpc",
     "requestCount": 25,
     "responseCount": 25,
@@ -853,8 +853,8 @@
   "liveMockSplunkMcp": {
     "source": "splunkready-live-mock-splunk-mcp",
     "status": "PASS",
-    "artifactPath": "submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl",
-    "markdownPath": "submission-evidence/mcp-proof/mock-splunk-mcp-session.md",
+    "artifactPath": "artifacts/mcp-proof/mock-splunk-mcp-session.jsonl",
+    "markdownPath": "artifacts/mcp-proof/mock-splunk-mcp-session.md",
     "routeState": "ok",
     "toolNames": [
       "splunk_get_info",
@@ -939,8 +939,8 @@
   "compositionRecorder": {
     "source": "splunkready-mcp-composition-recorder",
     "status": "PASS",
-    "artifactPath": "submission-evidence/mcp-proof/dual-server-session.jsonl",
-    "markdownPath": "submission-evidence/mcp-proof/dual-server-session.md",
+    "artifactPath": "artifacts/mcp-proof/dual-server-session.jsonl",
+    "markdownPath": "artifacts/mcp-proof/dual-server-session.md",
     "frameCount": 11,
     "serverIds": [
       "splunk",
@@ -972,65 +972,65 @@
     "mutation": false,
     "certification": {
       "status": "PASS",
-      "outDir": "submission-evidence/mcp-proof/mcp-composition-recorder-certification",
+      "outDir": "artifacts/mcp-proof/mcp-composition-recorder-certification",
       "artifactCount": 14
     }
   },
   "artifacts": [
-    "submission-evidence/mcp-proof/mcp-proof-summary.json",
-    "submission-evidence/mcp-proof/mcp-proof-summary.md",
-    "submission-evidence/mcp-proof/mcp-client-walkthrough.json",
-    "submission-evidence/mcp-proof/mcp-client-walkthrough.md",
-    "submission-evidence/mcp-proof/mcp-client-session.jsonl",
-    "submission-evidence/mcp-proof/mcp-client-session.md",
-    "submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl",
-    "submission-evidence/mcp-proof/mock-splunk-mcp-session.md",
-    "submission-evidence/mcp-proof/appinspect-mcp-composition.json",
-    "submission-evidence/mcp-proof/appinspect-mcp-composition.md",
-    "submission-evidence/mcp-proof/dual-server-session.jsonl",
-    "submission-evidence/mcp-proof/dual-server-session.md",
-    "submission-evidence/mcp-proof/mcp-composition-recorder-certification",
-    "submission-evidence/mcp-proof/mcp-recorder-gateway-inline-certification",
-    "submission-evidence/mcp-proof/mcp-recorder-gateway-path-certification",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/uploaded-mcp-transcript.jsonl",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/environment-contract.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/missions.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/agent-policy.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/readiness-profile.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/trace-imported.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/mcp-transcript-import.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/trace-external.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/violations-external.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/score-external.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.md",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/mcp-transcript-certification.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/proof-audit.json",
-    "submission-evidence/mcp-proof/mcp-transcript-certification/proof-manifest.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/uploaded-mcp-transcript.jsonl",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/environment-contract.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/missions.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/agent-policy.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/readiness-profile.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/trace-imported.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-import.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/trace-external.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/violations-external.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/score-external.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.md",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-certification.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-audit.json",
-    "submission-evidence/mcp-proof/mcp-inline-transcript-certification/proof-manifest.json",
-    "submission-evidence/mcp-proof/mcp-hosted-model-access/environment-contract.json",
-    "submission-evidence/mcp-proof/mcp-hosted-model-access/missions.json",
-    "submission-evidence/mcp-proof/mcp-hosted-model-access/agent-policy.json",
-    "submission-evidence/mcp-proof/mcp-hosted-model-access/readiness-profile.json",
-    "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
-    "submission-evidence/mcp-proof/mcp-hosted-model-access/hosted-model-diagnostic.json"
+    "artifacts/mcp-proof/mcp-proof-summary.json",
+    "artifacts/mcp-proof/mcp-proof-summary.md",
+    "artifacts/mcp-proof/mcp-client-walkthrough.json",
+    "artifacts/mcp-proof/mcp-client-walkthrough.md",
+    "artifacts/mcp-proof/mcp-client-session.jsonl",
+    "artifacts/mcp-proof/mcp-client-session.md",
+    "artifacts/mcp-proof/mock-splunk-mcp-session.jsonl",
+    "artifacts/mcp-proof/mock-splunk-mcp-session.md",
+    "artifacts/mcp-proof/appinspect-mcp-composition.json",
+    "artifacts/mcp-proof/appinspect-mcp-composition.md",
+    "artifacts/mcp-proof/dual-server-session.jsonl",
+    "artifacts/mcp-proof/dual-server-session.md",
+    "artifacts/mcp-proof/mcp-composition-recorder-certification",
+    "artifacts/mcp-proof/mcp-recorder-gateway-inline-certification",
+    "artifacts/mcp-proof/mcp-recorder-gateway-path-certification",
+    "artifacts/mcp-proof/mcp-transcript-certification/uploaded-mcp-transcript.jsonl",
+    "artifacts/mcp-proof/mcp-transcript-certification/environment-contract.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/missions.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/agent-policy.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/readiness-profile.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/trace-imported.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/mcp-transcript-import.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/trace-external.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/violations-external.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/score-external.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.md",
+    "artifacts/mcp-proof/mcp-transcript-certification/mcp-transcript-certification.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/proof-audit.json",
+    "artifacts/mcp-proof/mcp-transcript-certification/proof-manifest.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/uploaded-mcp-transcript.jsonl",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/environment-contract.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/missions.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/agent-policy.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/readiness-profile.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/trace-imported.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-import.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/trace-external.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/violations-external.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/score-external.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/receipt-external-001.md",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/mcp-transcript-certification.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/proof-audit.json",
+    "artifacts/mcp-proof/mcp-inline-transcript-certification/proof-manifest.json",
+    "artifacts/mcp-proof/mcp-hosted-model-access/environment-contract.json",
+    "artifacts/mcp-proof/mcp-hosted-model-access/missions.json",
+    "artifacts/mcp-proof/mcp-hosted-model-access/agent-policy.json",
+    "artifacts/mcp-proof/mcp-hosted-model-access/readiness-profile.json",
+    "artifacts/mcp-proof/mcp-hosted-model-access/hosted-model-proof.json",
+    "artifacts/mcp-proof/mcp-hosted-model-access/hosted-model-diagnostic.json"
   ],
   "nextCommands": [
     "npm run mcp",
-    "npm run splunkready -- certify-mcp-transcript --transcript examples/sample-mcp-transcript-pass.jsonl --out submission-evidence/mcp-proof/mcp-transcript-certification --strict-import true --require-pass true --agent-name \"External MCP Agent\" --agent-version \"mcp-proof-jsonrpc-pass\" --json"
+    "npm run splunkready -- certify-mcp-transcript --transcript examples/sample-mcp-transcript-pass.jsonl --out artifacts/mcp-proof/mcp-transcript-certification --strict-import true --require-pass true --agent-name \"External MCP Agent\" --agent-version \"mcp-proof-jsonrpc-pass\" --json"
   ]
 }

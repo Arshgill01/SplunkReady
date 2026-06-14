@@ -2365,7 +2365,7 @@ describe("SplunkReady CLI flow", () => {
     );
     expect(summary.operatorLiveHostedModelStatus).toMatchObject({
       source: "splunkready-operator-live-hosted-model-status",
-      artifactPath: "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json",
+      artifactPath: "submission-evidence/live-hosted-model-status/live-hosted-model-status.json",
       safeForPublicExport: true,
       deterministicAuthority: true,
       mutation: false

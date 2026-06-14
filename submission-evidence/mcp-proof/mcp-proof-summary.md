@@ -59,7 +59,7 @@ Agent-driven workflow: PASS
 Transcript certification: PASS
 
 Inline transcript certification: PASS
-- Output: submission-evidence/mcp-proof/mcp-inline-transcript-certification
+- Output: artifacts/mcp-proof/mcp-inline-transcript-certification
 
 MCP composition review: PASS
 - Score: 100
@@ -72,23 +72,23 @@ Hosted-model access check: PASS
 - Permission blocker: NONE
 - Passed tools: saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question
 - Blocked tools: none
-- Output: submission-evidence/mcp-proof/mcp-hosted-model-access
+- Output: artifacts/mcp-proof/mcp-hosted-model-access
 
-Operator live hosted-model status: BLOCKED
-- Artifact: artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json
-- Blocker: SAIA_CLOUD_ROUTE_NOT_FOUND
-- Permission: BLOCKED
-- Permission blocker: SAIA_CLOUD_ROUTE_NOT_FOUND
-- Route probe: PASS
-- Passed tools: none
-- Blocked tools: saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question
-- Summary: The MCP contract advertises hosted-model tools and the local SAIA routes are registered, but the downstream Splunk AI Assistant cloud hosted-model route returned not found.
+Operator live hosted-model status: PASS
+- Artifact: submission-evidence/live-hosted-model-status/live-hosted-model-status.json
+- Blocker: NONE
+- Permission: OK
+- Permission blocker: NONE
+- Route probe: NOT_RUN
+- Passed tools: saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question
+- Blocked tools: none
+- Summary: No hosted-model remediation is required.
 
 Splunk MCP boundary: PASS
 - Certified tool calls: splunk_get_knowledge_objects, splunk_run_saved_search
 - Saved-search execution: yes
 - Evidence refs: evt-102, evt-118, evt-141
-- Receipt: submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json
+- Receipt: artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json
 
 MCP composition scorecard: PASS (100/100)
 - dual-server-client-config: PASS - Client config includes separate splunk and splunkready MCP servers.
@@ -113,19 +113,19 @@ Official Splunk MCP tool coverage: PASS
 - saia-hosted-model-tools: PASS - 4/4 SAIA hosted-model tools passed in the MCP proof.
 
 MCP client walkthrough: PASS
-- Artifact: submission-evidence/mcp-proof/mcp-client-walkthrough.json
-- Markdown: submission-evidence/mcp-proof/mcp-client-walkthrough.md
+- Artifact: artifacts/mcp-proof/mcp-client-walkthrough.json
+- Markdown: artifacts/mcp-proof/mcp-client-walkthrough.md
 - Existing Splunk MCP server: Existing Splunk MCP Server performs the read-only investigation and returns deployment evidence.
 - SplunkReady role: SplunkReady MCP certifies the captured Splunk MCP transcript into a deterministic Readiness Receipt.
 - client-discovers-two-servers: MCP client is configured with existing Splunk MCP plus SplunkReady MCP (client) - splunkready://client-config/splunk-and-splunkready
 - splunk-mcp-investigates: Agent investigates through read-only Splunk MCP tools (splunk) - splunk_get_knowledge_objects, splunk_run_saved_search
 - transcript-preserved: MCP JSON-RPC request/response transcript is preserved without secrets (client) - examples/sample-mcp-transcript-pass.jsonl
-- splunkready-certifies: SplunkReady certifies the captured transcript (splunkready) - submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json
+- splunkready-certifies: SplunkReady certifies the captured transcript (splunkready) - artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json
 - receipt-is-authoritative: Readiness Receipt is the authoritative verdict (splunkready) - certificationStatus=PASS; deterministicAuthority=true; mutation=false
 
 MCP client session: PASS
-- Artifact: submission-evidence/mcp-proof/mcp-client-session.jsonl
-- Markdown: submission-evidence/mcp-proof/mcp-client-session.md
+- Artifact: artifacts/mcp-proof/mcp-client-session.jsonl
+- Markdown: artifacts/mcp-proof/mcp-client-session.md
 - Protocol: stdio-jsonrpc
 - Requests: 25
 - Responses: 25
@@ -135,29 +135,29 @@ MCP client session: PASS
 - Tools called: splunkready_describe_certification, splunkready_review_mcp_composition, splunkready_certify_mcp_transcript, splunkready_certify_mcp_transcript_content, splunkready_check_hosted_model_access
 
 Live mock Splunk MCP: PASS
-- Artifact: submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl
-- Markdown: submission-evidence/mcp-proof/mock-splunk-mcp-session.md
+- Artifact: artifacts/mcp-proof/mock-splunk-mcp-session.jsonl
+- Markdown: artifacts/mcp-proof/mock-splunk-mcp-session.md
 - Route state: ok
 - Tools called: splunk_get_info, splunk_get_knowledge_objects, splunk_run_saved_search
 - Evidence refs: evt-102, evt-118, evt-141
 - Saved-search execution: yes
 
-AppInspect MCP composition: ERROR
+AppInspect MCP composition: PASS
 - Artifact: submission-evidence/mcp-proof/appinspect-mcp-composition.json
 - Markdown: submission-evidence/mcp-proof/appinspect-mcp-composition.md
-- Server: UNAVAILABLE
-- Tools: none
+- Server: AVAILABLE
+- Tools: inspect_app
 - App package: submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl
-- Validation: ERROR
+- Validation: SUCCESS
 - AppInspect failures: 0
 - AppInspect errors: 0
-- AppInspect warnings: 0
+- AppInspect warnings: 1
 - Receipt authority: splunkready
 - AppInspect authority: advisory-static-validation
 
 MCP composition recorder: PASS
-- Artifact: submission-evidence/mcp-proof/dual-server-session.jsonl
-- Markdown: submission-evidence/mcp-proof/dual-server-session.md
+- Artifact: artifacts/mcp-proof/dual-server-session.jsonl
+- Markdown: artifacts/mcp-proof/dual-server-session.md
 - Frames: 11
 - Servers: splunk, splunkready
 - Splunk tools: splunk_get_knowledge_objects, splunk_run_saved_search
@@ -165,4 +165,4 @@ MCP composition recorder: PASS
 - Redaction: PASS
 - Certification: PASS
 
-Receipt: submission-evidence/mcp-proof/mcp-transcript-certification/receipt-external-001.json
+Receipt: artifacts/mcp-proof/mcp-transcript-certification/receipt-external-001.json

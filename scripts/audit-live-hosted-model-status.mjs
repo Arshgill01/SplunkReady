@@ -10,7 +10,10 @@ const optionValue = (name, fallback) => {
 
 const hasFlag = (name) => args.includes(name);
 
-const artifactPath = optionValue("--artifact", "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json");
+const defaultArtifactPath = existsSync("artifacts/live-hosted-model-diagnostic-after-v1-toggle/hosted-model-diagnostic.json")
+  ? "artifacts/live-hosted-model-diagnostic-after-v1-toggle/hosted-model-diagnostic.json"
+  : "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json";
+const artifactPath = optionValue("--artifact", defaultArtifactPath);
 const envFilePath = optionValue("--env-file", undefined);
 const outPath = optionValue("--out", undefined);
 const expectBlocker = optionValue("--expect-blocker", undefined);
@@ -117,20 +120,26 @@ const report = {
   status: diagnostic.status === "PASS" ? "PASS" : "BLOCKED",
   mode: diagnostic.mode ?? "live",
   blockerClass: diagnostic.blockerClass ?? "UNKNOWN",
-  permissionStatus: permission.status ?? "UNKNOWN",
-  permissionBlockerClass: permission.blockerClass ?? diagnostic.blockerClass ?? "UNKNOWN",
-  restHandlerProbeStatus: restHandlerProbe.status ?? "NOT_RUN",
+  permissionStatus: diagnostic.permissionStatus ?? permission.status ?? "UNKNOWN",
+  permissionBlockerClass: diagnostic.permissionBlockerClass ?? permission.blockerClass ?? diagnostic.blockerClass ?? "UNKNOWN",
+  restHandlerProbeStatus: diagnostic.restHandlerProbeStatus ?? restHandlerProbe.status ?? "NOT_RUN",
   requiredTools: Array.isArray(diagnostic.requiredTools) ? diagnostic.requiredTools : [],
   availableTools: Array.isArray(diagnostic.availableTools) ? diagnostic.availableTools : [],
   passedTools: Array.isArray(diagnostic.passedTools) ? diagnostic.passedTools : [],
   blockedTools: Array.isArray(diagnostic.blockedTools) ? diagnostic.blockedTools : [],
   summary:
-    typeof remediation.summary === "string"
+    typeof diagnostic.summary === "string"
+      ? diagnostic.summary
+      : typeof remediation.summary === "string"
       ? remediation.summary
       : typeof permission.message === "string"
         ? permission.message
         : "Live hosted-model status was exported without a diagnostic summary.",
-  operatorChecks: Array.isArray(remediation.operatorChecks) ? remediation.operatorChecks : [],
+  operatorChecks: Array.isArray(diagnostic.operatorChecks)
+    ? diagnostic.operatorChecks
+    : Array.isArray(remediation.operatorChecks)
+      ? remediation.operatorChecks
+      : [],
   safeForPublicExport: true,
   rawArtifactTracked: false,
   rawArtifactPath: artifactPath,

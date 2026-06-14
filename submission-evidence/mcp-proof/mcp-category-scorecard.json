@@ -15,8 +15,8 @@
   "evidence": {
     "mcpProofSummary": "submission-evidence/mcp-proof/mcp-proof-summary.json",
     "topology": "docs/mcp-topology.md",
-    "dualServerSession": "submission-evidence/mcp-proof/dual-server-session.jsonl",
-    "mockSplunkMcpSession": "submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl",
+    "dualServerSession": "artifacts/mcp-proof/dual-server-session.jsonl",
+    "mockSplunkMcpSession": "artifacts/mcp-proof/mock-splunk-mcp-session.jsonl",
     "appInspectComposition": "submission-evidence/mcp-proof/appinspect-mcp-composition.json",
     "zedSession": "submission-evidence/mcp-proof/zed-client-session/zed-mcp-recorder-session.jsonl",
     "zedReceipt": "submission-evidence/mcp-proof/zed-client-session/receipt-external-001.json",
@@ -105,7 +105,7 @@
       "id": "operator-live-hosted-model-boundary",
       "status": "PASS",
       "severity": "required",
-      "evidence": "status=BLOCKED; blockerClass=SAIA_CLOUD_ROUTE_NOT_FOUND; safeForPublicExport=true"
+      "evidence": "status=PASS; blockerClass=NONE; safeForPublicExport=true"
     },
     {
       "id": "official-splunk-mcp-tool-coverage",

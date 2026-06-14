@@ -15,7 +15,7 @@ Deterministic authority: true
 - Dual-server recorder session: PASS with 11 frame(s).
 - AppInspect MCP composition: PASS.
 - Fixture hosted-model MCP access: PASS.
-- Operator-live hosted-model boundary: BLOCKED (SAIA_CLOUD_ROUTE_NOT_FOUND).
+- Operator-live hosted-model boundary: PASS (NONE).
 - Zed external-client evidence tier: VERIFIED_STRONG; 15 tracked frame(s).
 
 ## Claim Boundary
@@ -34,8 +34,8 @@ The current Zed evidence is real third-party-client evidence with a visible reco
 
 - submission-evidence/mcp-proof/mcp-proof-summary.json
 - docs/mcp-topology.md
-- submission-evidence/mcp-proof/dual-server-session.jsonl
-- submission-evidence/mcp-proof/mock-splunk-mcp-session.jsonl
+- artifacts/mcp-proof/dual-server-session.jsonl
+- artifacts/mcp-proof/mock-splunk-mcp-session.jsonl
 - submission-evidence/mcp-proof/appinspect-mcp-composition.json
 - submission-evidence/mcp-proof/zed-client-session/zed-mcp-recorder-session.jsonl
 - submission-evidence/mcp-proof/zed-client-session/mcp-transcript-certification.json

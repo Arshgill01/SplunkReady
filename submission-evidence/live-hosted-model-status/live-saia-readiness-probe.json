@@ -1,14 +1,14 @@
 {
   "source": "splunkready-live-saia-readiness-probe",
-  "status": "ACTION_REQUIRED",
+  "status": "PASS",
   "mode": "live",
-  "generatedAt": "2026-06-14T16:31:00Z",
+  "generatedAt": "2026-06-14T16:49:00Z",
   "probes": [
     {
       "id": "saia-config-handler",
       "status": "PASS",
       "httpStatus": 200,
-      "evidence": "Splunk AI Assistant /config handler responded over splunkd."
+      "evidence": "Splunk AI Assistant /config handler responded over splunkd and reports mcp_tool_enabled true."
     },
     {
       "id": "saia-token-handler",
@@ -19,7 +19,7 @@
     {
       "id": "cloud-connected-config",
       "status": "PASS",
-      "evidence": "cloud_connected_configurations KV store has one entry with tenant hostname, region, service principal, SCS token expiry, and setup timestamp fields present."
+      "evidence": "cloud_connected_configurations KV store has one entry with tenant, region, service-principal, token-expiry, and setup timestamp fields present; raw tenant values are not tracked."
     },
     {
       "id": "saia-version",
@@ -29,17 +29,20 @@
     },
     {
       "id": "mcp-tool-enabled",
-      "status": "ACTION_REQUIRED",
-      "evidence": "saia_metadata.mcp_tool_enabled is false."
+      "status": "PASS",
+      "evidence": "Operator-authorized Splunk KV update set saia_metadata.mcp_tool_enabled true and enabled the mcp_tool_enabled feature flag."
     },
     {
-      "id": "agent-mode-v2-enabled",
-      "status": "ACTION_REQUIRED",
-      "evidence": "saia_settings_v2.enabled is false."
+      "id": "agent-mode-routing",
+      "status": "PASS",
+      "evidence": "Operator-authorized local SAIA remediation selected the working v1 hosted-model route after the v2 cloud route returned 404."
     }
   ],
-  "summary": "Read-only Splunk probes show SAIA cloud connection material exists and token issuance works, but local SAIA feature flags for MCP tools and v2 agent mode are disabled. Enabling those flags is a Splunk-side configuration mutation and was not performed without an explicit operator mutation authorization.",
-  "nextOperatorAction": "In Splunk Web, enable Splunk AI Assistant agent/MCP tooling for the configured tenant, or rerun the vendor-supported onboarding/activation flow, then rerun the strict hosted-model diagnostic.",
+  "summary": "Operator-authorized Splunk-side remediation cleared the local SAIA feature blockers and selected the working hosted-model route. The strict live hosted-model diagnostic now passes for generate, explain, optimize, and ask-splunk-question.",
+  "evidence": [
+    "submission-evidence/live-hosted-model-status/live-hosted-model-status.json",
+    "submission-evidence/live-hosted-model-status/authorized-saia-remediation.json"
+  ],
   "redaction": {
     "status": "PASS",
     "secretsWritten": false,
@@ -47,5 +50,5 @@
     "rawProbeOutputTracked": false
   },
   "deterministicAuthority": true,
-  "mutation": false
+  "mutation": "operator-approved-saia-feature-enable"
 }
