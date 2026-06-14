@@ -26,6 +26,7 @@ const interactiveArtifactDir = "interactive-demo";
 const execFileAsync = promisify(execFile);
 export const publicDemoInputPaths = [
   "fixtures",
+  "docs/architecture.svg",
   "scripts/export-public-demo.js",
   "scripts/run-platform-devex-proof.mjs",
   "scripts/audit-public-demo-export.mjs",
@@ -230,6 +231,7 @@ export const exportPublicDemo = async ({
   await writeArtifactManifest(interactiveTargetDir, generatedAt);
 
   await copyTree(resolve(evidenceRoot, "screenshots"), resolve(targetRoot, "screenshots"));
+  await copyTree(resolve(repoRoot, "docs/architecture.svg"), resolve(targetRoot, "architecture.svg"));
 
   const artifactBases = [
     ...requiredArtifactDirs,
@@ -251,6 +253,7 @@ export const exportPublicDemo = async ({
     mutation: false,
     defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
     interactiveUrl: "?demo=interactive",
+    architectureDiagram: "architecture.svg",
     artifactBases,
     screenshots: "screenshots",
     notes:

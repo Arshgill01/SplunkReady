@@ -853,7 +853,10 @@ The Readiness Receipt is the product artifact. It records the environment contra
 
 The Agent Readiness Compiler keeps fixture and live Splunk access behind the same adapter boundary, then compiles a contract, runs missions, grades traces with deterministic rules, and emits a Readiness Receipt.
 
-See [architecture_diagram.md](architecture_diagram.md) for the root architecture diagram.
+See [architecture_diagram.md](architecture_diagram.md) for the root architecture
+diagram and [docs/architecture.svg](docs/architecture.svg) for the rendered
+visual. `npm run public-demo:build` exports the rendered visual at the stable
+public-demo path `artifacts/public-demo/architecture.svg`.
 
 Core flow:
 
@@ -890,7 +893,7 @@ npm run check
 - Official rubric grounding: [docs/hackathon-rubric.md](docs/hackathon-rubric.md)
 - Devpost copy: [docs/devpost-submission.md](docs/devpost-submission.md)
 - Demo script: [docs/demo-script.md](docs/demo-script.md)
-- Architecture diagram: [architecture_diagram.md](architecture_diagram.md)
+- Architecture diagram: [architecture_diagram.md](architecture_diagram.md) and rendered [docs/architecture.svg](docs/architecture.svg)
 - Evidence pack: [submission-evidence/](submission-evidence/README.md)
 - Claim ledger: [submission-evidence/claim-ledger.md](submission-evidence/claim-ledger.md)
 - Live adapter safety notes: [docs/live-adapter.md](docs/live-adapter.md)

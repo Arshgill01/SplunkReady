@@ -39,6 +39,8 @@ Not MCP telemetry.
 Not a detection-health dashboard.
 Not a generic eval harness.
 Not an LLM judging another LLM.
+docs/architecture.svg
+artifacts/public-demo/architecture.svg
 npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json
 @arshgill01/splunkready@0.1.7
 npm run audit:public-package-currentness
@@ -135,6 +137,7 @@ Readiness Receipt
 security investigation readiness
 requires no live Splunk credentials
 does not mutate Splunk
+artifacts/public-demo/architecture.svg
 npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json
 submission-evidence/public-package-currentness/
 submission-evidence/standalone-release/standalone-release-current-os.json
@@ -192,6 +195,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 | The package is published on npm and the published no-clone judge proof is smoke-tested at \`0.1.12\`. | Supported | https://www.npmjs.com/package/splunkready | npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json; latest \`0.1.12\` |
 | The local \`0.1.13\` package is pack-ready and installable; public npm latest remains \`0.1.12\` until npm auth is restored. | Conditional | logs/execution-log.md | npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness |
 | The deterministic readiness score is severity-weighted and non-binary, not hardcoded to 0/100. | Supported | submission-evidence/readiness-score-calibration/readiness-score-calibration.json, contractVersion: "readiness-score-calibration-v1", status: "PASS", passFailAuthority: "deterministic-rule-engine", mutation: false, \`NEEDS REVIEW\`, intermediate scores \`88\` and \`59\`, provesNonBinaryScoring: true | npm run score-calibration |
+| The rendered architecture diagram shows \`Agent -> SplunkReady Engine -> Splunk MCP Server\` and is exported at a stable public-demo path. | Supported | docs/architecture.svg, artifacts/public-demo/architecture.svg, architectureDiagram: "architecture.svg" | npm run audit:public-demo-export |
 | The public registry currentness proof verifies the published judge-proof, MCP tools, live-mock proof, policy-registry path, source \`gitHead\`, and \`mcp-recorder\` gateway before any package is called source-current. | Supported | submission-evidence/public-package-currentness/public-package-currentness.json, publishedLiveMockProof, publishedPolicyRegistry, publishedRecorder, registry.latestMatchesLocal: false, registry.localVersionPublished: false, registry.gitHeadMatchesPackageInputs: false, package-input head, npm latest is \`splunkready@0.1.12\`, the local package metadata is \`0.1.13\`, recommendedAction: "Publish splunkready@0.1.13 after npm-authenticated release preflight passes, then rerun this audit." | status: "STALE"; npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness |
 | The current source can produce a current-OS no-Node standalone release archive that runs judge proof from a clean temp folder. | Supported | submission-evidence/standalone-release/standalone-release-current-os.json, target \`macos-arm64\`, smoke \`status: "PASS"\`, 67 generated artifacts, releaseClaimBoundary.allPlatformReleaseRequiresTagWorkflow: true | npm run build:standalone-release -- --evidence-out submission-evidence/standalone-release/standalone-release-current-os.json |
 | The release-artifacts workflow builds, smokes, and uploads standalone archives on Linux, macOS, and Windows runners. | Supported | submission-evidence/standalone-release/standalone-release-matrix.json, run \`27128293723\`, splunkready-standalone-Linux-X64, splunkready-standalone-macOS-ARM64, splunkready-standalone-Windows-X64 | gh workflow run release-artifacts.yml --ref splunkready-build; gh run watch 27128293723 --exit-status |

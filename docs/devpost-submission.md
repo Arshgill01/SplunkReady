@@ -277,5 +277,5 @@ The tracked evidence pack does not claim live hosted-model entitlement. The work
 - Claim ledger: `submission-evidence/claim-ledger.md`
 - Hosted MCP proof: `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof`
 - Hosted judge proof: `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fjudge-proof#proof-browser`
-- Architecture diagram: `architecture_diagram.md`
+- Architecture diagram: `architecture_diagram.md`; rendered export path `artifacts/public-demo/architecture.svg`
 - Dev verification: `npm run check`

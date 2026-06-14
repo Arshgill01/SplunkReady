@@ -49,6 +49,7 @@ try {
 
   for (const requiredPath of [
     "index.html",
+    "architecture.svg",
     "public-demo-manifest.json",
     "artifacts/judge-launch/artifact-manifest.json",
     "artifacts/judge-launch/judge-launch.json",
@@ -122,6 +123,10 @@ try {
 
   if (manifest.interactiveUrl !== "?demo=interactive") {
     fail("public demo manifest must expose the hosted interactive certification route");
+  }
+
+  if (manifest.architectureDiagram !== "architecture.svg") {
+    fail("public demo manifest must expose the rendered architecture diagram path");
   }
 
   const expectedArtifactBases = [
@@ -207,9 +212,17 @@ try {
 
   const indexHtmlPath = join(outDir, "index.html");
   const indexHtml = existsSync(indexHtmlPath) ? readFileSync(indexHtmlPath, "utf8") : "";
+  const architectureSvgPath = join(outDir, "architecture.svg");
+  const architectureSvg = existsSync(architectureSvgPath) ? readFileSync(architectureSvgPath, "utf8") : "";
 
   if (indexHtml.includes('src="/assets/') || indexHtml.includes('href="/assets/')) {
     fail("public demo index must use relative asset paths for project-site hosting");
+  }
+
+  for (const requiredText of ["Agent", "SplunkReady Engine", "Splunk MCP", "Server"]) {
+    if (!architectureSvg.includes(requiredText)) {
+      fail(`public demo architecture diagram missing ${requiredText}`);
+    }
   }
 
   const files = walk(outDir);

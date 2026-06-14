@@ -19,6 +19,10 @@ const createSourceTree = async (): Promise<string> => {
   await writeFixture(join(root, "dist-ui", "index.html"), "<!doctype html><div id=\"app\"></div>");
   await writeFixture(join(root, "dist-ui", "assets", "index.js"), "window.__splunkready = true;");
   await writeFixture(
+    join(root, "docs", "architecture.svg"),
+    "<svg><text>Agent</text><text>SplunkReady Engine</text><text>Splunk MCP</text><text>Server</text></svg>"
+  );
+  await writeFixture(
     join(root, "submission-evidence", "judge-launch", "judge-launch.json"),
     "{\"source\":\"splunkready-judge-launch\",\"status\":\"READY_FOR_JUDGES\",\"credentialFree\":true,\"mutation\":false,\"passFailAuthority\":\"deterministic-rule-engine\",\"commands\":[\"npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json\"]}\n"
   );
@@ -161,6 +165,9 @@ describe("public demo export", () => {
 
     await expect(readFile(join(root, "out/public-demo/index.html"), "utf8")).resolves.toContain("app");
     await expect(readFile(join(root, "out/public-demo/assets/index.js"), "utf8")).resolves.toContain("splunkready");
+    await expect(readFile(join(root, "out/public-demo/architecture.svg"), "utf8")).resolves.toContain(
+      "SplunkReady Engine"
+    );
     await expect(readFile(join(root, "out/public-demo/artifacts/judge-launch/judge-launch.json"), "utf8")).resolves.toContain(
       "READY_FOR_JUDGES"
     );
@@ -206,6 +213,9 @@ describe("public demo export", () => {
     );
     await expect(readFile(join(root, "out/public-demo/public-demo-manifest.json"), "utf8")).resolves.toContain(
       "?demo=interactive"
+    );
+    await expect(readFile(join(root, "out/public-demo/public-demo-manifest.json"), "utf8")).resolves.toContain(
+      "\"architectureDiagram\": \"architecture.svg\""
     );
     await expect(
       readFile(join(root, "out/public-demo/artifacts/interactive-demo/artifact-manifest.json"), "utf8")
