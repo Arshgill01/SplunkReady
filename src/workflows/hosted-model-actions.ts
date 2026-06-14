@@ -96,6 +96,7 @@ type SaiaRestHandlerProbe = {
   managementRoutes?: Array<{
     method: "GET";
     path: string;
+    capability: "namespace" | ReadOnlySplunkToolName;
     status: "PASS" | "NOT_REGISTERED" | "BLOCKED";
     httpStatus?: number;
     message: string;
@@ -125,12 +126,21 @@ const hostedModelQuestion =
 const hostedModelDiagnosticCommand =
   "splunkready hosted-model-diagnostic --mode live --out artifacts/hosted-model-diagnostic --require-pass true --json";
 const saiaRestHandlerProbeQuery = "| rest /servicesNS/nobody/Splunk_AI_Assistant_Cloud";
-const saiaRestHandlerProbePaths = [
-  "/servicesNS/nobody/Splunk_AI_Assistant_Cloud",
-  "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
-  "/servicesNS/-/Splunk_AI_Assistant_Cloud/explainspl",
-  "/servicesNS/-/Splunk_AI_Assistant_Cloud/optimizespl",
-  "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask"
+const saiaRestHandlerProbeGroups: Array<{
+  capability: "namespace" | ReadOnlySplunkToolName;
+  paths: string[];
+}> = [
+  { capability: "namespace", paths: ["/servicesNS/nobody/Splunk_AI_Assistant_Cloud"] },
+  { capability: "saia_generate_spl", paths: ["/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl"] },
+  { capability: "saia_explain_spl", paths: ["/servicesNS/-/Splunk_AI_Assistant_Cloud/explainspl"] },
+  { capability: "saia_optimize_spl", paths: ["/servicesNS/-/Splunk_AI_Assistant_Cloud/optimizespl"] },
+  {
+    capability: "saia_ask_splunk_question",
+    paths: [
+      "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme",
+      "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask"
+    ]
+  }
 ];
 
 const writeJson = async (filePath: string, value: unknown): Promise<void> => {
@@ -513,7 +523,7 @@ const hostedModelRemediationChecks = (
   if (blockerClass === "SAIA_REST_HANDLERS_NOT_REGISTERED") {
     return [
       "Restart splunkd after the Splunk AI Assistant install, upgrade, or cloud-connect activation.",
-      "Probe the Splunk AI Assistant app REST namespace from the operator shell; `/servicesNS/nobody/Splunk_AI_Assistant_Cloud` and the generate/explain/optimize/ask handlers must not return 404.",
+      "Probe the Splunk AI Assistant app REST namespace from the operator shell; `/servicesNS/nobody/Splunk_AI_Assistant_Cloud` plus generate, explain, optimize, and the tellme-backed ask handler must not return 404.",
       "Confirm `$SPLUNK_HOME/etc/apps/Splunk_AI_Assistant_Cloud/bin/` contains the app's Python REST handler files.",
       "If the namespace still returns 404 after restart, reinstall Splunk_AI_Assistant_Cloud v2.0.0 or later, then restart splunkd again.",
       "Rerun the strict hosted-model diagnostic from the same env file."
@@ -523,7 +533,7 @@ const hostedModelRemediationChecks = (
   if (blockerClass === "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED") {
     return [
       "Compare the Splunk MCP Server app's SAIA endpoint metadata against the Splunk AI Assistant app routes served by splunkd.",
-      "Confirm every advertised SAIA handler route is present; partial route registration means the app or MCP tool metadata is not aligned.",
+      "Confirm every advertised SAIA capability has a served local handler route; Splunk MCP Server maps ask-splunk-question to the Splunk AI Assistant `/tellme` handler.",
       "Restart splunkd after the Splunk AI Assistant install, upgrade, or cloud-connect activation.",
       "If a route remains missing after restart, reinstall or upgrade Splunk_AI_Assistant_Cloud and the Splunk MCP Server app together.",
       "If local routes are present but hosted-model calls still return 404, confirm the tenant is not a Splunk Trial stack and is provisioned for Splunk AI Assistant cloud connected hosted-model endpoints."
@@ -804,48 +814,65 @@ const runSaiaManagementRouteProbe = async (env: NodeJS.ProcessEnv): Promise<Saia
     };
   }
 
-  const managementRoutes = await Promise.all(
-    saiaRestHandlerProbePaths.map(async (path) => {
-      try {
-        const response = await fetch(new URL(path, origin), {
-          method: "GET",
-          headers: {
-            authorization: `Bearer ${authToken}`,
-            accept: "application/json"
+  const managementRoutes = (
+    await Promise.all(
+      saiaRestHandlerProbeGroups.flatMap((group) =>
+        group.paths.map(async (path) => {
+          try {
+            const response = await fetch(new URL(path, origin), {
+              method: "GET",
+              headers: {
+                authorization: `Bearer ${authToken}`,
+                accept: "application/json"
+              }
+            });
+            const routeStatus: SaiaRestHandlerRouteStatus =
+              response.status === 404
+                ? "NOT_REGISTERED"
+                : response.status === 401 || response.status === 403
+                  ? "BLOCKED"
+                  : "PASS";
+
+            return {
+              method: "GET" as const,
+              path,
+              capability: group.capability,
+              status: routeStatus,
+              httpStatus: response.status,
+              message:
+                routeStatus === "NOT_REGISTERED"
+                  ? "Splunk AI Assistant management route returned 404."
+                  : routeStatus === "PASS"
+                    ? "Splunk AI Assistant management route is served by splunkd; this registration probe treats any non-auth, non-404 response as route-present evidence."
+                    : "Splunk AI Assistant management route probe was blocked before handler registration could be proven."
+            };
+          } catch {
+            return {
+              method: "GET" as const,
+              path,
+              capability: group.capability,
+              status: "BLOCKED" as const,
+              message: "Splunk AI Assistant management route probe could not reach the shared Splunk MCP origin."
+            };
           }
-        });
-        const routeStatus: SaiaRestHandlerRouteStatus =
-          response.status === 404
-            ? "NOT_REGISTERED"
-            : response.status === 401 || response.status === 403
-              ? "BLOCKED"
-              : "PASS";
+        })
+      )
+    )
+  ).flat();
 
-        return {
-          method: "GET" as const,
-          path,
-          status: routeStatus,
-          httpStatus: response.status,
-          message:
-            routeStatus === "NOT_REGISTERED"
-              ? "Splunk AI Assistant management route returned 404."
-              : routeStatus === "PASS"
-                ? "Splunk AI Assistant management route is served by splunkd; this registration probe treats any non-auth, non-404 response as route-present evidence."
-                : "Splunk AI Assistant management route probe was blocked before handler registration could be proven."
-        };
-      } catch {
-        return {
-          method: "GET" as const,
-          path,
-          status: "BLOCKED" as const,
-          message: "Splunk AI Assistant management route probe could not reach the shared Splunk MCP origin."
-        };
-      }
-    })
-  );
+  const routeGroupStatuses = saiaRestHandlerProbeGroups.map((group) => {
+    const routes = managementRoutes.filter((route) => route.capability === group.capability);
+    const status: SaiaRestHandlerRouteStatus = routes.some((route) => route.status === "PASS")
+      ? "PASS"
+      : routes.some((route) => route.status === "BLOCKED")
+        ? "BLOCKED"
+        : "NOT_REGISTERED";
 
-  const routeNotRegistered = managementRoutes.some((route) => route.status === "NOT_REGISTERED");
-  const routePresent = managementRoutes.some((route) => route.status === "PASS");
+    return { capability: group.capability, status };
+  });
+
+  const routeNotRegistered = routeGroupStatuses.some((route) => route.status === "NOT_REGISTERED");
+  const routePresent = routeGroupStatuses.some((route) => route.status === "PASS");
 
   if (routeNotRegistered && routePresent) {
     return {
@@ -854,9 +881,9 @@ const runSaiaManagementRouteProbe = async (env: NodeJS.ProcessEnv): Promise<Saia
       mutation: false,
       query: saiaRestHandlerProbeQuery,
       managementRoutes,
-      message: "Some Splunk AI Assistant management routes are served by splunkd, but one or more advertised SAIA routes returned 404.",
+      message: "Some Splunk AI Assistant management routes are served by splunkd, but one or more advertised SAIA capabilities returned 404 for every known local handler route.",
       error:
-        "Splunk AI Assistant REST namespace Splunk_AI_Assistant_Cloud is only partially registered; at least one advertised SAIA route returned 404."
+        "Splunk AI Assistant REST namespace Splunk_AI_Assistant_Cloud is only partially registered; at least one advertised SAIA capability returned 404 for every known local handler route."
     };
   }
 
@@ -873,7 +900,7 @@ const runSaiaManagementRouteProbe = async (env: NodeJS.ProcessEnv): Promise<Saia
     };
   }
 
-  if (managementRoutes.every((route) => route.status === "PASS")) {
+  if (routeGroupStatuses.every((route) => route.status === "PASS")) {
     return {
       source: "splunkready-saia-rest-handler-probe",
       status: "PASS",

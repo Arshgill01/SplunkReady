@@ -105,7 +105,7 @@
       "id": "operator-live-hosted-model-boundary",
       "status": "PASS",
       "severity": "required",
-      "evidence": "status=BLOCKED; blockerClass=SAIA_REST_HANDLERS_PARTIALLY_REGISTERED; safeForPublicExport=true"
+      "evidence": "status=BLOCKED; blockerClass=SAIA_CLOUD_ROUTE_NOT_FOUND; safeForPublicExport=true"
     },
     {
       "id": "official-splunk-mcp-tool-coverage",

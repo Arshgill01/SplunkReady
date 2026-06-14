@@ -606,7 +606,7 @@ const checks = [
   ["README MCP composition recorder artifact", files.readme, "dual-server-session.jsonl"],
   ["Devpost MCP composition recorder artifact", files.devpost, "submission-evidence/mcp-proof/dual-server-session.jsonl"],
   ["Claim ledger operator live hosted-model status", files.claimLedger, "operatorLiveHostedModelStatus"],
-  ["Claim ledger operator live SAIA route blocker", files.claimLedger, "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED"],
+  ["Claim ledger operator live SAIA cloud blocker", files.claimLedger, "SAIA_CLOUD_ROUTE_NOT_FOUND"],
   ["Claim ledger operator live route probe status", files.claimLedger, "restHandlerProbeStatus"],
   ["Claim ledger live hosted-model status artifact", files.claimLedger, "submission-evidence/live-hosted-model-status/live-hosted-model-status.json"],
   ["Claim ledger live hosted-model redaction audit", files.claimLedger, "redactionAudit.status: \"PASS\""],

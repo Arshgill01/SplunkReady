@@ -3550,6 +3550,7 @@ describe("SplunkReady CLI flow", () => {
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/explainspl",
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/optimizespl",
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme",
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask"
       ])
     );
@@ -3649,6 +3650,7 @@ describe("SplunkReady CLI flow", () => {
     expect(mcp.managementCalls.map((call) => call.path)).toEqual(
       expect.arrayContaining([
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl",
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme",
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask"
       ])
     );
@@ -3664,6 +3666,7 @@ describe("SplunkReady CLI flow", () => {
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl": 400,
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/explainspl": 400,
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/optimizespl": 400,
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme": 404,
         "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask": 404
       }
     });
@@ -3731,6 +3734,11 @@ describe("SplunkReady CLI flow", () => {
           httpStatus: 400
         }),
         expect.objectContaining({
+          path: "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme",
+          status: "NOT_REGISTERED",
+          httpStatus: 404
+        }),
+        expect.objectContaining({
           path: "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask",
           status: "NOT_REGISTERED",
           httpStatus: 404
@@ -3745,8 +3753,74 @@ describe("SplunkReady CLI flow", () => {
     );
     expect(diagnostic.remediation.operatorChecks).toEqual(
       expect.arrayContaining([
-        "Confirm every advertised SAIA handler route is present; partial route registration means the app or MCP tool metadata is not aligned.",
+        "Confirm every advertised SAIA capability has a served local handler route; Splunk MCP Server maps ask-splunk-question to the Splunk AI Assistant `/tellme` handler.",
         "If local routes are present but hosted-model calls still return 404, confirm the tenant is not a Splunk Trial stack and is provisioned for Splunk AI Assistant cloud connected hosted-model endpoints."
+      ])
+    );
+  });
+
+  it("accepts the Splunk MCP Server tellme route as the ask-splunk-question handler", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "splunkready-hosted-model-diagnostic-tellme-route-"));
+    const mcp = await startMockMcpServer({
+      hostedModelErrorText: "404 Client Error: Not Found for url: https://splunk.example.invalid/mcp/saia",
+      saiaManagementRestStatusByPath: {
+        "/servicesNS/nobody/Splunk_AI_Assistant_Cloud": 200,
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/generatespl": 400,
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/explainspl": 400,
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/optimizespl": 400,
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme": 400,
+        "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask": 404
+      }
+    });
+    const env = {
+      SPLUNKREADY_LIVE_ENABLED: "true",
+      SPLUNKREADY_SPLUNK_MCP_URL: mcp.url,
+      SPLUNKREADY_SPLUNK_MCP_TOKEN: "test-token"
+    };
+
+    try {
+      const output = parseCliJsonOutput(
+        (await runCli(["hosted-model-diagnostic", "--mode", "live", "--out", outDir, "--json"], process.cwd(), env))
+          .stdout
+      );
+
+      expect(output).toMatchObject({
+        command: "hosted-model-diagnostic",
+        status: "BLOCKED",
+        artifacts: expect.arrayContaining([join(outDir, "hosted-model-diagnostic.json")])
+      });
+    } finally {
+      await mcp.close();
+    }
+
+    const diagnostic = JSON.parse(await readFile(join(outDir, "hosted-model-diagnostic.json"), "utf8")) as {
+      blockerClass: string;
+      remediation: { blockerClass: string };
+      restHandlerProbe: {
+        status: string;
+        managementRoutes: Array<{ path: string; capability: string; status: string; httpStatus: number }>;
+      };
+    };
+
+    expect(diagnostic).toMatchObject({
+      blockerClass: "SAIA_CLOUD_ROUTE_NOT_FOUND",
+      remediation: { blockerClass: "SAIA_CLOUD_ROUTE_NOT_FOUND" },
+      restHandlerProbe: { status: "PASS" }
+    });
+    expect(diagnostic.restHandlerProbe.managementRoutes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "/servicesNS/-/Splunk_AI_Assistant_Cloud/tellme",
+          capability: "saia_ask_splunk_question",
+          status: "PASS",
+          httpStatus: 400
+        }),
+        expect.objectContaining({
+          path: "/servicesNS/-/Splunk_AI_Assistant_Cloud/ask",
+          capability: "saia_ask_splunk_question",
+          status: "NOT_REGISTERED",
+          httpStatus: 404
+        })
       ])
     );
   });

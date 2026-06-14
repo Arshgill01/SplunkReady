@@ -2,10 +2,10 @@
   "source": "splunkready-live-hosted-model-status",
   "status": "BLOCKED",
   "mode": "live",
-  "blockerClass": "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED",
+  "blockerClass": "SAIA_CLOUD_ROUTE_NOT_FOUND",
   "permissionStatus": "BLOCKED",
-  "permissionBlockerClass": "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED",
-  "restHandlerProbeStatus": "PARTIALLY_REGISTERED",
+  "permissionBlockerClass": "SAIA_CLOUD_ROUTE_NOT_FOUND",
+  "restHandlerProbeStatus": "PASS",
   "requiredTools": [
     "saia_generate_spl",
     "saia_explain_spl",
@@ -25,22 +25,22 @@
     "saia_optimize_spl",
     "saia_ask_splunk_question"
   ],
-  "summary": "The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are only partially registered for the SAIA routes.",
+  "summary": "The MCP contract advertises hosted-model tools and the local SAIA routes are registered, but the downstream Splunk AI Assistant cloud hosted-model route returned not found.",
   "operatorChecks": [
-    "Compare the Splunk MCP Server app's SAIA endpoint metadata against the Splunk AI Assistant app routes served by splunkd.",
-    "Confirm every advertised SAIA handler route is present; partial route registration means the app or MCP tool metadata is not aligned.",
-    "Restart splunkd after the Splunk AI Assistant install, upgrade, or cloud-connect activation.",
-    "If a route remains missing after restart, reinstall or upgrade Splunk_AI_Assistant_Cloud and the Splunk MCP Server app together.",
-    "If local routes are present but hosted-model calls still return 404, confirm the tenant is not a Splunk Trial stack and is provisioned for Splunk AI Assistant cloud connected hosted-model endpoints."
+    "Do not change the local Splunk MCP endpoint yet; SplunkReady proved the local SAIA management routes are served by splunkd.",
+    "Confirm the Splunk AI Assistant cloud connection was activated for the same Splunk deployment, tenant, and user backing the MCP token.",
+    "Confirm the tenant is provisioned for the SAIA v2 hosted-model SPL API used by generate, explain, optimize, and ask-splunk-question.",
+    "If the SAIA metadata endpoint works but hosted-model SPL calls return 404, re-run cloud-connect activation or escalate the tenant provisioning mismatch to Splunk support.",
+    "Rerun the strict hosted-model diagnostic from the same env file."
   ],
   "safeForPublicExport": true,
   "rawArtifactTracked": false,
-  "rawArtifactPath": "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json",
+  "rawArtifactPath": "artifacts/live-hosted-model-diagnostic-current/hosted-model-diagnostic.json",
   "redactionAudit": {
     "status": "PASS",
     "envFileProvided": true,
     "checkedFiles": [
-      "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json"
+      "artifacts/live-hosted-model-diagnostic-current/hosted-model-diagnostic.json"
     ],
     "checkedSecretValueCount": 4,
     "leakedSecretNames": [],

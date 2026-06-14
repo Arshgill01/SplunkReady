@@ -76,13 +76,13 @@ Hosted-model access check: PASS
 
 Operator live hosted-model status: BLOCKED
 - Artifact: artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json
-- Blocker: SAIA_REST_HANDLERS_PARTIALLY_REGISTERED
+- Blocker: SAIA_CLOUD_ROUTE_NOT_FOUND
 - Permission: BLOCKED
-- Permission blocker: SAIA_REST_HANDLERS_PARTIALLY_REGISTERED
-- Route probe: PARTIALLY_REGISTERED
+- Permission blocker: SAIA_CLOUD_ROUTE_NOT_FOUND
+- Route probe: PASS
 - Passed tools: none
 - Blocked tools: saia_generate_spl, saia_explain_spl, saia_optimize_spl, saia_ask_splunk_question
-- Summary: The MCP contract advertises hosted-model tools, but Splunk AI Assistant's splunkd REST handlers are only partially registered for the SAIA routes.
+- Summary: The MCP contract advertises hosted-model tools and the local SAIA routes are registered, but the downstream Splunk AI Assistant cloud hosted-model route returned not found.
 
 Splunk MCP boundary: PASS
 - Certified tool calls: splunk_get_knowledge_objects, splunk_run_saved_search
@@ -142,16 +142,16 @@ Live mock Splunk MCP: PASS
 - Evidence refs: evt-102, evt-118, evt-141
 - Saved-search execution: yes
 
-AppInspect MCP composition: PASS
+AppInspect MCP composition: ERROR
 - Artifact: submission-evidence/mcp-proof/appinspect-mcp-composition.json
 - Markdown: submission-evidence/mcp-proof/appinspect-mcp-composition.md
-- Server: AVAILABLE (AppInspect MCP Server 2.14.7)
-- Tools: inspect_app
+- Server: UNAVAILABLE
+- Tools: none
 - App package: submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl
-- Validation: SUCCESS
+- Validation: ERROR
 - AppInspect failures: 0
 - AppInspect errors: 0
-- AppInspect warnings: 1
+- AppInspect warnings: 0
 - Receipt authority: splunkready
 - AppInspect authority: advisory-static-validation
 

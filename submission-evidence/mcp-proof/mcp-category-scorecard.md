@@ -15,7 +15,7 @@ Deterministic authority: true
 - Dual-server recorder session: PASS with 11 frame(s).
 - AppInspect MCP composition: PASS.
 - Fixture hosted-model MCP access: PASS.
-- Operator-live hosted-model boundary: BLOCKED (SAIA_REST_HANDLERS_PARTIALLY_REGISTERED).
+- Operator-live hosted-model boundary: BLOCKED (SAIA_CLOUD_ROUTE_NOT_FOUND).
 - Zed external-client evidence tier: VERIFIED_STRONG; 15 tracked frame(s).
 
 ## Claim Boundary

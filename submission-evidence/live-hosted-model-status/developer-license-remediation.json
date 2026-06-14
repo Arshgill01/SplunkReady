@@ -28,7 +28,7 @@
     "exitStatus": "FAIL",
     "artifact": "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json",
     "trackedStatusArtifact": "submission-evidence/live-hosted-model-status/live-hosted-model-status.json",
-    "blockerClass": "SAIA_REST_HANDLERS_PARTIALLY_REGISTERED",
+    "blockerClass": "SAIA_CLOUD_ROUTE_NOT_FOUND",
     "requiredTools": [
       "saia_generate_spl",
       "saia_explain_spl",
@@ -46,10 +46,10 @@
   "operatorFindings": [
     "The previous Trial license hypothesis was tested and is no longer the primary blocker: the instance now has a valid Enterprise developer license.",
     "The local Splunk AI Assistant app namespace is served by splunkd.",
-    "The generatespl, explainspl, and optimizespl local REST handler routes are served by splunkd.",
-    "The local ask route remains missing from Splunk_AI_Assistant_Cloud restmap/web exposure for the route shape advertised through MCP.",
-    "The local SAIA handlers that do run still receive 404 responses from the downstream Splunk-hosted SAIA v2 SPL API.",
-    "The remaining blocker is tenant/cloud-service provisioning or Splunk AI Assistant/MCP app route metadata alignment, not SplunkReady grading logic."
+    "The generatespl, explainspl, optimizespl, and tellme local REST handler routes are served by splunkd.",
+    "Splunk MCP Server maps ask-splunk-question to Splunk AI Assistant's tellme handler; the older /ask probe is not required for the installed app.",
+    "Direct POST probes with the official MCP body shape reach the local Splunk AI Assistant handlers and then receive 404 responses from the downstream Splunk-hosted SAIA v2 SPL API.",
+    "The remaining blocker is tenant/cloud-service provisioning or Splunk AI Assistant cloud-route activation, not SplunkReady grading logic or local REST handler registration."
   ],
   "redaction": {
     "endpointValuesWritten": false,
