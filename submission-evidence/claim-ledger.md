@@ -93,3 +93,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Refresh and record the real Splunk proof audit for the hard runtime-evidence gate.
 - Evidence: `npm run audit:real-splunk-proof -- --require-pass --out submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`; `npm run splunkready -- verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json`; `git ls-remote https://github.com/Arshgill01/SplunkReady.git HEAD`; `git log --after="2026-05-18" --oneline | wc -l`
 - Award impact: Best Overall / Best Use of Splunk AI / Best Security Trust Story
+
+## Iteration 5 — 2026-06-14T10:36:15Z
+- Changed: `docs/architecture.svg`, `submission-evidence/claim-ledger.md`
+- Why: Make the rendered architecture visual explicitly show `Agent -> SplunkReady Engine -> Splunk MCP Server`.
+- Evidence: `rg -n "Agent|SplunkReady Engine|Splunk MCP|Server" docs/architecture.svg`; `bash scripts/verify-scaffold.sh && git diff --check`
+- Award impact: Best Overall / Most Innovative / Best Developer Experience

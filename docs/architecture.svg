@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
   <title id="title">SplunkReady architecture diagram</title>
-  <desc id="desc">Fixture and optional live Splunk MCP adapters feed the Agent Readiness Compiler, which produces missions, traces, deterministic grading results, policy patches, and Readiness Receipts.</desc>
+  <desc id="desc">An agent under certification flows through the SplunkReady Engine to the Splunk MCP Server. Fixture and optional live Splunk MCP adapters feed the Agent Readiness Compiler, which produces missions, traces, deterministic grading results, policy patches, and Readiness Receipts.</desc>
   <style>
     .bg { fill: #f7f7f4; }
     .box { fill: #ffffff; stroke: #242622; stroke-width: 2; rx: 10; }
@@ -24,6 +24,19 @@
   <rect class="bg" width="1280" height="720" />
   <text class="title" x="64" y="62">SplunkReady: Agent Readiness Compiler</text>
   <text class="small" x="64" y="92">Certify AI agents before they touch production Splunk.</text>
+
+  <rect class="box" x="690" y="42" width="148" height="58" />
+  <text class="label" x="716" y="76">Agent</text>
+
+  <rect class="accent" x="878" y="42" width="204" height="58" />
+  <text class="white" x="904" y="76">SplunkReady Engine</text>
+
+  <rect class="box" x="1122" y="42" width="134" height="58" />
+  <text class="label" x="1140" y="68">Splunk MCP</text>
+  <text class="small" x="1140" y="88">Server</text>
+
+  <path class="arrow" d="M838 71 H878" />
+  <path class="arrow" d="M1082 71 H1122" />
 
   <rect class="box" x="64" y="140" width="230" height="92" />
   <text class="label" x="88" y="174">Fixture Adapter</text>
