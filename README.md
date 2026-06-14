@@ -11,7 +11,7 @@ SplunkReady is a Splunk-native certification harness and local workbench for tea
 SplunkReady certifies Splunk-connected agents with deterministic Readiness Receipts. No clone, no credentials:
 
 ```bash
-npx -y splunkready@0.1.13 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json
 ```
 
 From a clone:
@@ -56,8 +56,7 @@ Developer workflow surfaces:
 - Trace bridge and external-trace examples: [examples/README.md](examples/README.md)
 - Published typed policy SDK: `import { policy } from "splunkready/policy"`
   (see [`src/policy-sdk/README.md`](src/policy-sdk/README.md) and
-  [`policies/README.md`](policies/README.md)). This subpath is in the
-  published `splunkready@0.1.13` package and is clean-install verified.
+  [`policies/README.md`](policies/README.md)). This subpath is in current local `splunkready@0.1.13` builds and is clean-install verified.
 
 Start with [submission-evidence/JUDGE-PATH.md](submission-evidence/JUDGE-PATH.md)
 for the short evidence trail. The rest of `submission-evidence/`, `moves/`, and
@@ -76,7 +75,7 @@ The flagship demo story is security investigation readiness: the bundled specime
 
 ### Policy SDK Quickstart
 
-This SDK subpath is present in the published `splunkready@0.1.13` package and has been clean-install verified.
+This SDK subpath is present in current local `splunkready@0.1.13` builds and has been clean-install verified.
 
 ```ts
 import { policy } from "splunkready/policy";
@@ -116,7 +115,7 @@ npm run judge-proof
 The currently published no-clone judge path is:
 
 ```bash
-npx -y splunkready@0.1.13 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json
 ```
 
 The repo-linked GitHub Packages mirror is `@arshgill01/splunkready@0.1.7`;
@@ -126,7 +125,7 @@ above is the unauthenticated judge path.
 That command is smoke-tested from a clean temp folder and must return `PASS`
 with `mutation: false`. The public package currentness audit also proves the
 published MCP tool surface, credential-free `live-proof --live-mock`, and signed
-policy-registry flow. The current audit reports the published `0.1.13` package
+policy-registry flow. The current audit reports the published `0.1.12` package
 passes those smoke tests. The repository now has newer package-input commits,
 including the current-source `splunkready/policy` SDK subpath, so the SDK is
 not a public npm claim until the next release is published and currentness
@@ -298,8 +297,8 @@ package can initialize the SplunkReady MCP stdio server.
 The release-alignment audit converts source-currentness drift into the exact
 next publish action. Current evidence is
 `submission-evidence/release-alignment/release-alignment.json`; it reports
-`CURRENT`, records published `0.1.13` probes as passing, and keeps the
-public `0.1.13` no-clone judge path valid. Exact source-currentness now passes against the committed package-input tree.
+`BLOCKED`, records published `0.1.12` probes as passing, keeps the
+public `0.1.12` no-clone judge path valid, and identifies npm auth as the blocker for publishing local `0.1.13`.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:

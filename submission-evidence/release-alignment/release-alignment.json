@@ -1,21 +1,21 @@
 {
   "source": "splunkready-release-alignment",
-  "status": "CURRENT",
+  "status": "BLOCKED",
   "package": {
     "name": "splunkready",
-    "version": "0.1.12",
+    "version": "0.1.13",
     "recommendedNextVersion": null
   },
   "currentness": {
     "artifactPath": "submission-evidence/public-package-currentness/public-package-currentness.json",
-    "status": "CURRENT",
+    "status": "STALE",
     "latestVersion": "0.1.12",
-    "localVersion": "0.1.12",
-    "localVersionPublished": true,
-    "latestMatchesLocal": true,
+    "localVersion": "0.1.13",
+    "localVersionPublished": false,
+    "latestMatchesLocal": false,
     "latestGitHead": "85c85173caf6bdf273ee68dd057dcf2a7f74da5a",
-    "packageInputGitHead": "85c85173caf6bdf273ee68dd057dcf2a7f74da5a",
-    "gitHeadMatchesPackageInputs": true,
+    "packageInputGitHead": "85df1eb72407391fedc43331e97c77d8bc94193a",
+    "gitHeadMatchesPackageInputs": false,
     "packageInputPaths": [
       "package.json",
       "package-lock.json",
@@ -63,15 +63,17 @@
   ],
   "releasePreflight": {
     "artifactPath": "submission-evidence/npm-release-preflight/npm-release-preflight.json",
-    "status": "PUBLISHED",
-    "authenticated": true,
-    "registryStatus": "VERSION_ALREADY_PUBLISHED",
-    "currentVersionAvailable": false,
-    "blockers": [],
-    "releaseCommand": "npm version patch && npm publish --access public"
+    "status": "BLOCKED",
+    "authenticated": false,
+    "registryStatus": "EXISTS_VERSION_AVAILABLE",
+    "currentVersionAvailable": true,
+    "blockers": [
+      "npm auth is not configured; run npm adduser or npm login before publishing"
+    ],
+    "releaseCommand": "npm publish --access public"
   },
   "nextCommands": [],
-  "summary": "The public package gitHead matches the current package-input tree.",
+  "summary": "Release alignment cannot be claimed until the listed blockers are resolved.",
   "mutation": false,
   "failures": []
 }
