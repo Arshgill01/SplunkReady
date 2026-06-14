@@ -313,15 +313,18 @@ const liveSavedSearchInput = (input: RunSavedSearchRequest): Record<string, unkn
 });
 
 const liveSplAssistanceInput = (input: ExplainSplRequest | OptimizeSplRequest): Record<string, unknown> => ({
-  spl: input.query
+  spl: input.query,
+  chat_history: "[]"
 });
 
 const liveSplGenerationInput = (input: GenerateSplRequest): Record<string, unknown> => ({
-  prompt: input.prompt
+  prompt: input.prompt,
+  chat_history: "[]"
 });
 
 const liveSplunkQuestionInput = (input: AskSplunkQuestionRequest): Record<string, unknown> => ({
-  prompt: input.question
+  prompt: input.question,
+  chat_history: "[]"
 });
 
 const normalizeGenerateSplResult = (value: unknown): GenerateSplResult => {

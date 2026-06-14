@@ -150,10 +150,10 @@ describe("live Splunk adapter skeleton", () => {
       answer: "Prefer authorized indexes and saved searches for evidence provenance."
     });
     expect(calls).toEqual([
-      { toolName: "saia_generate_spl", input: { prompt } },
-      { toolName: "saia_explain_spl", input: { spl: query } },
-      { toolName: "saia_optimize_spl", input: { spl: query } },
-      { toolName: "saia_ask_splunk_question", input: { prompt: question } }
+      { toolName: "saia_generate_spl", input: { prompt, chat_history: "[]" } },
+      { toolName: "saia_explain_spl", input: { spl: query, chat_history: "[]" } },
+      { toolName: "saia_optimize_spl", input: { spl: query, chat_history: "[]" } },
+      { toolName: "saia_ask_splunk_question", input: { prompt: question, chat_history: "[]" } }
     ]);
   });
 

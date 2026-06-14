@@ -159,3 +159,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Make C1 runtime Splunk evidence explicit by auditing redacted MCP `tools/call` request/response frames, not only summarized real-Splunk artifacts.
 - Evidence: `npm test tests/scripts/real-splunk-proof-audit.test.ts`; `npm run audit:real-splunk-proof -- --require-pass --out submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`; `npm test tests/scripts/submission-copy-audit.test.ts`; `npm run audit:submission-copy`
 - Award impact: Best Overall / Best Use of Splunk AI / Platform & Developer Experience
+
+## Iteration 19 — 2026-06-14T16:22:00Z
+- Changed: `src/adapters/live.ts`, `tests/adapters/live.test.ts`, `submission-evidence/claim-ledger.md`
+- Why: Best Use of Splunk AI / Best Overall. Direct official Splunk MCP schema probing showed SAIA tools reject missing or empty `chat_history`, so SplunkReady now sends the required non-empty history sentinel while preserving the internal fixture/live adapter interface.
+- Evidence: `npm test tests/adapters/live.test.ts`; `npm run build`; `NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/src/cli.js hosted-model-diagnostic --mode live --env-file ./.splunkready-live.env --out artifacts/live-hosted-model-diagnostic-current --require-pass true --json` still reaches the hosted SAIA cloud route and returns `SAIA_CLOUD_ROUTE_NOT_FOUND`; `node scripts/audit-live-hosted-model-status.mjs --artifact artifacts/live-hosted-model-diagnostic-current/hosted-model-diagnostic.json --env-file ./.splunkready-live.env --out submission-evidence/live-hosted-model-status/live-hosted-model-status.json --require-blocked --expect-blocker SAIA_CLOUD_ROUTE_NOT_FOUND` passed redaction and blocker classification.
+- Award impact: Removes a local official-MCP compatibility defect and narrows the remaining hosted SAIA blocker to downstream tenant/cloud route provisioning without overclaiming a pass.
