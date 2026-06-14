@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SplunkReady - Ops HUD Concept</title>
+  <!-- Google Fonts: Spline Sans & Spline Sans Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;700&family=Spline+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-ops: #090a0c;
+      --bg-panel: #111318;
+      --bg-panel-header: #171b22;
+      --border-color: #222630;
+      --border-accent: #3b4252;
+      
+      /* Pure semantic indicator colors - no gradients */
+      --color-ready: #00e676;     /* Pass/Ready Green */
+      --color-warning: #ffd600;   /* Warning Amber */
+      --color-critical: #ff1744;  /* Violation Red */
+      --color-text-primary: #f8f9fa;
+      --color-text-secondary: #9099a8;
+      --color-text-muted: #57606a;
+      
+      --font-sans: 'Spline Sans', -apple-system, sans-serif;
+      --font-mono: 'Spline Sans Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-ops);
+      color: var(--color-text-primary);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.5;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Full-screen HUD Layout */
+    .hud-grid {
+      display: grid;
+      grid-template-rows: 50px 1fr;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* Top HUD Header */
+    .hud-header {
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+
+    .hud-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hud-title-status {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      background-color: rgba(0, 230, 118, 0.1);
+      color: var(--color-ready);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      padding: 1px 6px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .hud-nav {
+      display: flex;
+      gap: 8px;
+    }
+
+    .hud-tab-btn {
+      background: none;
+      border: 1px solid transparent;
+      color: var(--color-text-secondary);
+      padding: 6px 16px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.1s ease;
+    }
+
+    .hud-tab-btn:hover {
+      color: var(--color-text-primary);
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .hud-tab-btn.active {
+      color: var(--color-ready);
+      border-color: var(--color-ready);
+      background-color: rgba(0, 230, 118, 0.05);
+      font-weight: 700;
+    }
+
+    .hud-system-telemetry {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-text-secondary);
+    }
+
+    /* Core Panel Layout (3 Columns) */
+    .hud-main {
+      display: grid;
+      grid-template-columns: 280px 1fr 340px;
+      gap: 12px;
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    /* Left Sidebar: Runs History & Setup */
+    .hud-column {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .column-header {
+      background-color: var(--bg-panel-header);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .column-body {
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Structured HUD Cards (Not rounded AI cards, but sharp, dark telemetry plates) */
+    .ops-plate {
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-ops);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ops-plate:hover {
+      border-color: var(--border-accent);
+    }
+
+    .ops-plate.active {
+      border-color: var(--color-ready);
+      background-color: rgba(0, 230, 118, 0.01);
+    }
+
+    .plate-title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .plate-meta {
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Interactive section display switching */
+    .hud-view {
+      display: none;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .hud-view.active {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Center Section: Main Details / Trace Flow */
+    .center-scrollable {
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Ops Grid Table */
+    .ops-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .ops-table th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .ops-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+
+    .ops-table tr:hover td {
+      background-color: rgba(255, 255, 255, 0.01);
+    }
+
+    /* Visual Trace Flow Timeline */
+    .flow-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .flow-node {
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-ops);
+      display: grid;
+      grid-template-columns: 50px 1fr;
+    }
+
+    .flow-node-badge {
+      background-color: var(--bg-panel-header);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--color-text-secondary);
+    }
+
+    .flow-node-badge.alert {
+      color: var(--color-critical);
+      border-right-color: var(--color-critical);
+    }
+
+    .flow-node-content {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 16px;
+    }
+
+    .code-editor {
+      font-family: var(--font-mono);
+      background-color: #06070a;
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .diagnostic-panel {
+      border: 1px solid var(--color-critical);
+      background-color: rgba(255, 23, 68, 0.02);
+      padding: 12px;
+      font-size: 12px;
+    }
+
+    .diagnostic-title {
+      color: var(--color-critical);
+      font-weight: 700;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    /* Badge indicators */
+    .badge-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      border: 1px solid;
+      text-transform: uppercase;
+    }
+
+    .badge-pill.pass {
+      color: var(--color-ready);
+      border-color: rgba(0, 230, 118, 0.3);
+      background-color: rgba(0, 230, 118, 0.05);
+    }
+
+    .badge-pill.fail {
+      color: var(--color-critical);
+      border-color: rgba(255, 23, 68, 0.3);
+      background-color: rgba(255, 23, 68, 0.05);
+    }
+
+    /* Right Sidebar: Policy Control Checklist */
+    .policy-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    .policy-item:last-child {
+      border-bottom: none;
+    }
+
+    .checkbox-custom {
+      margin-top: 3px;
+      width: 14px;
+      height: 14px;
+      accent-color: var(--color-ready);
+    }
+
+    .policy-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .policy-name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .policy-desc {
+      font-size: 11.5px;
+      color: var(--color-text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hud-grid">
+    
+    <!-- Top HUD Bar -->
+    <header class="hud-header">
+      <div class="hud-title">
+        <span>SplunkReady</span>
+        <span class="hud-title-status">SECURE // DEPLOYED</span>
+      </div>
+
+      <nav class="hud-nav">
+        <button class="hud-tab-btn active" onclick="switchHudTab('replay')">Replay Stream</button>
+        <button class="hud-tab-btn" onclick="switchHudTab('receipt')">Receipt Proof</button>
+        <button class="hud-tab-btn" onclick="switchHudTab('trace')">Trace observability</button>
+      </nav>
+
+      <div class="hud-system-telemetry">
+        <span>VERDICT: <strong style="color: var(--color-ready);">READY</strong></span>
+        <span>LATENCY: <strong>14ms</strong></span>
+        <span>DB_STATE: <strong>SYNCED</strong></span>
+      </div>
+    </header>
+
+    <!-- Core Grid Area -->
+    <div class="hud-main">
+      
+      <!-- Column 1: Runs / Runs Target (Always visible left pane) -->
+      <section class="hud-column">
+        <div class="column-header">
+          <span>Run Targets</span>
+          <span style="font-family: var(--font-mono); font-size: 9px;">Target: 2 available</span>
+        </div>
+        <div class="column-body">
+          
+          <div class="ops-plate active">
+            <div class="plate-title">
+              <span>run-2026-06-05T12</span>
+              <span style="color: var(--color-ready);">100/100</span>
+            </div>
+            <div class="plate-meta">
+              <span>Fixture Certification</span>
+              <span>VERDICT: READY</span>
+            </div>
+          </div>
+
+          <div class="ops-plate">
+            <div class="plate-title">
+              <span>run-2026-06-01T16</span>
+              <span style="color: var(--color-ready);">95/100</span>
+            </div>
+            <div class="plate-meta">
+              <span>Live Probe Proof</span>
+              <span>VERDICT: READY</span>
+            </div>
+          </div>
+
+          <div style="margin-top: auto;">
+            <button style="width: 100%; padding: 10px; background-color: var(--color-ready); color: #000; font-weight: 700; border: none; font-family: var(--font-mono); text-transform: uppercase; cursor: pointer;">
+              Execute Readiness Harness
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Column 2: Swappable Views (Middle Pane) -->
+      <section style="background-color: var(--bg-panel); border: 1px solid var(--border-color); overflow: hidden;">
+        
+        <!-- View 1: Replay (Logs) -->
+        <div id="hud-view-replay" class="hud-view active">
+          <div class="column-header">
+            <span>Replay Stream Logs</span>
+            <span style="font-family: var(--font-mono); font-size: 10px; color: var(--color-text-secondary);">Target: run-2026-06-05T12</span>
+          </div>
+          <div class="center-scrollable">
+            <table class="ops-table">
+              <thead>
+                <tr>
+                  <th style="width: 15%;">Timestamp</th>
+                  <th style="width: 15%;">Level</th>
+                  <th>Log Event Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-family: var(--font-mono); font-size: 11px;">12:23:35</td>
+                  <td><span class="badge-pill pass">Phase</span></td>
+                  <td>Queued fixture certification.</td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); font-size: 11px;">12:23:35</td>
+                  <td><span class="badge-pill pass">Phase</span></td>
+                  <td>Running Agent Readiness Compiler fixture certification.</td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); font-size: 11px;">12:23:36</td>
+                  <td><span class="badge-pill" style="color: var(--color-text-secondary); border-color: var(--border-color);">Artifact</span></td>
+                  <td>Wrote environment-contract.json to output workspace.</td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); font-size: 11px;">12:23:36</td>
+                  <td><span class="badge-pill" style="color: var(--color-text-secondary); border-color: var(--border-color);">Artifact</span></td>
+                  <td>Wrote missions.json to output workspace.</td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); font-size: 11px;">12:23:37</td>
+                  <td><span class="badge-pill pass">Done</span></td>
+                  <td>Wrote readiness receipt with status: READY, score: 100.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- View 2: Receipt -->
+        <div id="hud-view-receipt" class="hud-view">
+          <div class="column-header">
+            <span>Readiness Receipt Verification</span>
+            <span style="font-family: var(--font-mono); font-size: 10px; color: var(--color-ready);">VERIFIED PROOF</span>
+          </div>
+          <div class="center-scrollable">
+            
+            <div class="ops-plate" style="border-color: var(--color-ready); background-color: rgba(0, 230, 118, 0.02);">
+              <div style="font-size: 16px; font-weight: 700; color: var(--color-ready);">READY / 100/100</div>
+              <div style="font-size: 12px; color: var(--color-text-secondary);">Cryptographic proof has been compiled. The AI specimen passed all deterministic checks.</div>
+            </div>
+
+            <div class="ops-plate">
+              <div style="font-weight: 700; text-transform: uppercase; font-size: 11px; color: var(--color-text-secondary);">Receipt Cryptographic Hash</div>
+              <div class="code-editor" style="margin-top: 6px;">fb5e6d83aa6c9bd1b1ae35e1ca6c62bdb9081c85d20d2085e838037431d481d0</div>
+            </div>
+
+            <div class="ops-plate">
+              <div style="font-weight: 700; text-transform: uppercase; font-size: 11px; color: var(--color-text-secondary);">Evidence Reference Points</div>
+              <div class="code-editor" style="margin-top: 6px;">saved-search-lateral-movement / saved-search-lateral-movement-wrong-app / evt-102 / evt-118</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- View 3: Trace -->
+        <div id="hud-view-trace" class="hud-view">
+          <div class="column-header">
+            <span>Trace Observability</span>
+            <span style="font-family: var(--font-mono); font-size: 10px;">Trace Timeline Nodes</span>
+          </div>
+          <div class="center-scrollable">
+            
+            <div class="flow-timeline">
+              
+              <div class="flow-node">
+                <div class="flow-node-badge alert">!</div>
+                <div class="flow-node-content">
+                  <div>
+                    <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px; text-transform: uppercase;">Executed SPL Query</div>
+                    <div class="code-editor">search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now</div>
+                  </div>
+                  <div>
+                    <div class="diagnostic-panel">
+                      <div class="diagnostic-title">SPL-001: Forbidden SPL Pattern</div>
+                      <div style="color: var(--color-text-secondary); margin-bottom: 8px;">Query accesses wildcard index and forbidden src_ip field. Recommended replacement:</div>
+                      <div class="code-editor" style="border-color: var(--color-ready);">search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flow-node">
+                <div class="flow-node-badge" style="color: var(--color-ready); border-right-color: var(--color-ready);">✔</div>
+                <div class="flow-node-content">
+                  <div>
+                    <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px; text-transform: uppercase;">Executed SPL Query</div>
+                    <div class="code-editor">search index=main sourcetype=access_combined status=500</div>
+                  </div>
+                  <div style="display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border-color); padding: 12px;">
+                    <span style="font-family: var(--font-mono); color: var(--color-ready); font-weight: 700;">VERIFIED OK</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Column 3: Policy Control Checklist (Always visible right pane) -->
+      <section class="hud-column">
+        <div class="column-header">
+          <span>Harness Security Policies</span>
+          <span style="font-family: var(--font-mono); font-size: 9px;">Rules Enabled: 4</span>
+        </div>
+        <div class="column-body" style="gap: 20px;">
+          
+          <div class="policy-item">
+            <input type="checkbox" class="checkbox-custom" checked disabled>
+            <div class="policy-info">
+              <span class="policy-name">SPL-001 (Index Restriction)</span>
+              <span class="policy-desc">Strictly prohibit wildcard index queries. Require target index scoping.</span>
+            </div>
+          </div>
+
+          <div class="policy-item">
+            <input type="checkbox" class="checkbox-custom" checked disabled>
+            <div class="policy-info">
+              <span class="policy-name">SPL-002 (Write Operation Check)</span>
+              <span class="policy-desc">Prevent mutation queries from executing without explicit administrative approval.</span>
+            </div>
+          </div>
+
+          <div class="policy-item">
+            <input type="checkbox" class="checkbox-custom" checked disabled>
+            <div class="policy-info">
+              <span class="policy-name">SPL-003 (Metadata Constraints)</span>
+              <span class="policy-desc">Ensure fields referenced map precisely to target contract specifications.</span>
+            </div>
+          </div>
+
+          <div class="policy-item">
+            <input type="checkbox" class="checkbox-custom" checked disabled>
+            <div class="policy-info">
+              <span class="policy-name">SPL-004 (Query Complexity Limit)</span>
+              <span class="policy-desc">Flag nested subsearches exceeding search optimization thresholds.</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+  <script>
+    function switchHudTab(tabId) {
+      // Deactivate all nav tabs
+      document.querySelectorAll('.hud-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      // Deactivate all view containers
+      document.querySelectorAll('.hud-view').forEach(view => {
+        view.classList.remove('active');
+      });
+
+      // Activate selected tab
+      const activeBtn = Array.from(document.querySelectorAll('.hud-tab-btn')).find(btn => {
+        return btn.textContent.toLowerCase().includes(tabId.toLowerCase());
+      });
+      if (activeBtn) activeBtn.classList.add('active');
+
+      // Activate view block
+      const activeView = document.getElementById('hud-view-' + tabId);
+      if (activeView) activeView.classList.add('active');
+    }
+  </script>
+</body>
+</html>

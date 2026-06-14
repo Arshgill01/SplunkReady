@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SplunkReady - Terminal Concept</title>
+  <!-- Google Fonts: JetBrains Mono & Spline Sans Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #0a0b0d;
+      --bg-surface: #121418;
+      --bg-active: #1c1f26;
+      --border-color: #2b313d;
+      --border-focus: #4b556c;
+      
+      /* Primary Brand / Accent Indicators */
+      --color-primary: #ffb000; /* Amber Gold */
+      --color-success: #00ff66; /* Telemetry Green */
+      --color-error: #ff3333;   /* Warning Red */
+      --color-text: #e1e4ea;
+      --color-muted: #8b949e;
+      --color-dim: #484f58;
+      
+      --font-mono: 'JetBrains Mono', 'Spline Sans Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--color-text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.5;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Layout Structure */
+    .app-container {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* Sidebar / Control Panel */
+    .sidebar {
+      background-color: var(--bg-base);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    .brand-section {
+      margin-bottom: 30px;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title::before {
+      content: "■";
+      color: var(--color-success);
+    }
+
+    .brand-subtitle {
+      font-size: 10.5px;
+      color: var(--color-muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      color: var(--color-muted);
+      text-decoration: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .nav-item:hover {
+      color: var(--color-text);
+      background-color: var(--bg-surface);
+      border-color: var(--border-color);
+    }
+
+    .nav-item.active {
+      color: var(--bg-base);
+      background-color: var(--color-primary);
+      border-color: var(--color-primary);
+      font-weight: 700;
+    }
+
+    .sidebar-footer {
+      border-top: 1px dashed var(--border-color);
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .status-badge {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .status-label {
+      font-size: 10px;
+      color: var(--color-muted);
+      text-transform: uppercase;
+    }
+
+    .status-value {
+      font-weight: 700;
+      color: var(--color-success);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-value.ready::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: var(--color-success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--color-success);
+    }
+
+    /* Main Console Screen */
+    .main-screen {
+      display: grid;
+      grid-template-rows: 60px 1fr;
+      background-color: var(--bg-surface);
+      overflow: hidden;
+    }
+
+    .header-bar {
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background-color: var(--bg-base);
+    }
+
+    .header-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-title::before {
+      content: ">";
+      color: var(--color-primary);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-terminal {
+      background: transparent;
+      border: 1px solid var(--color-primary);
+      color: var(--color-primary);
+      padding: 6px 12px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .btn-terminal:hover {
+      background-color: rgba(255, 176, 0, 0.1);
+    }
+
+    .btn-terminal:active {
+      background-color: rgba(255, 176, 0, 0.25);
+    }
+
+    /* Content Area Layout */
+    .content-area {
+      padding: 24px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .content-area.active {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Panels & Telemetry Grids */
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .panel {
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-base);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .panel-header-accent {
+      color: var(--color-primary);
+    }
+
+    .panel-body {
+      padding: 16px;
+      flex-grow: 1;
+    }
+
+    /* Monospace Tables */
+    .console-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .console-table th {
+      color: var(--color-muted);
+      border-bottom: 1px solid var(--border-color);
+      padding: 8px;
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+
+    .console-table td {
+      padding: 8px;
+      border-bottom: 1px dashed var(--border-color);
+      vertical-align: top;
+    }
+
+    .console-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 10.5px;
+      font-weight: 500;
+      border: 1px solid;
+    }
+
+    .tag-success {
+      color: var(--color-success);
+      border-color: rgba(0, 255, 102, 0.3);
+      background-color: rgba(0, 255, 102, 0.05);
+    }
+
+    .tag-error {
+      color: var(--color-error);
+      border-color: rgba(255, 51, 51, 0.3);
+      background-color: rgba(255, 51, 51, 0.05);
+    }
+
+    .tag-warning {
+      color: var(--color-primary);
+      border-color: rgba(255, 176, 0, 0.3);
+      background-color: rgba(255, 176, 0, 0.05);
+    }
+
+    /* Log Stream Display */
+    .log-stream {
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      background-color: #050607;
+      border: 1px solid var(--border-color);
+      padding: 16px;
+      max-height: 400px;
+    }
+
+    .log-row {
+      display: grid;
+      grid-template-columns: 80px 100px 1fr;
+      gap: 16px;
+      font-family: var(--font-mono);
+    }
+
+    .log-time {
+      color: var(--color-dim);
+    }
+
+    .log-type {
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .log-type.phase {
+      color: var(--color-primary);
+    }
+
+    .log-type.artifact {
+      color: var(--color-muted);
+    }
+
+    .log-type.info {
+      color: var(--color-success);
+    }
+
+    .log-message {
+      color: var(--color-text);
+      word-break: break-all;
+    }
+
+    /* Trace timeline details */
+    .trace-item {
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-base);
+      margin-bottom: 12px;
+    }
+
+    .trace-item-header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 16px;
+      display: grid;
+      grid-template-columns: 40px 120px 150px 1fr;
+      align-items: center;
+      font-weight: 500;
+    }
+
+    .trace-item-body {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .code-block {
+      background-color: #050607;
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      color: var(--color-text);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-size: 11.5px;
+    }
+
+    .code-block.highlight {
+      border-left: 2px solid var(--color-primary);
+    }
+
+    .finding-block {
+      border: 1px dashed var(--color-error);
+      background-color: rgba(255, 51, 51, 0.02);
+      padding: 12px;
+      font-size: 12px;
+    }
+
+    .finding-header {
+      color: var(--color-error);
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .finding-desc {
+      color: var(--color-muted);
+      margin-bottom: 10px;
+    }
+
+    /* Artifact select dropdown styling override */
+    .dropdown-terminal {
+      background-color: var(--bg-base);
+      border: 1px solid var(--border-color);
+      color: var(--color-text);
+      font-family: var(--font-mono);
+      padding: 6px 10px;
+      font-size: 12px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .dropdown-terminal:focus {
+      border-color: var(--color-primary);
+    }
+
+    /* Blinking terminal cursor indicator */
+    .cursor-prompt::after {
+      content: "_";
+      animation: blink 1s step-end infinite;
+      color: var(--color-primary);
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Sidebar Control Panel -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand-section">
+          <div class="brand-title">SplunkReady</div>
+          <div class="brand-subtitle">ARC Readiness Compiler</div>
+        </div>
+        
+        <nav>
+          <ul class="nav-list">
+            <li>
+              <div class="nav-item active" onclick="switchTab('replay')">
+                <span>01. certification-replay</span>
+              </div>
+            </li>
+            <li>
+              <div class="nav-item" onclick="switchTab('receipt')">
+                <span>02. readiness-receipt</span>
+              </div>
+            </li>
+            <li>
+              <div class="nav-item" onclick="switchTab('trace')">
+                <span>03. trace-timeline</span>
+              </div>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="status-badge">
+          <span class="status-label">Artifact Target</span>
+          <select class="dropdown-terminal">
+            <option>workbench-run-2026-06-05T12</option>
+            <option>live-security-proof-latest</option>
+          </select>
+        </div>
+        <div class="status-badge">
+          <span class="status-label">Engine Verdict</span>
+          <span class="status-value ready">READY [100/100]</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Dashboard Console -->
+    <main class="main-screen">
+      
+      <!-- Top Actions Bar -->
+      <header class="header-bar">
+        <div class="header-title" id="tab-indicator">Active View: replay</div>
+        <div class="header-actions">
+          <button class="btn-terminal">Run certification harness</button>
+        </div>
+      </header>
+
+      <!-- VIEW: Replay (Terminal logs) -->
+      <div id="view-replay" class="content-area active">
+        <div class="panel">
+          <div class="panel-header">
+            <span>Execution Summary</span>
+            <span class="panel-header-accent">SYS_STATUS: READY</span>
+          </div>
+          <div class="panel-body">
+            <table class="console-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Harness Mode</td>
+                  <td>browser-hosted-deterministic-certifier</td>
+                </tr>
+                <tr>
+                  <td>Target Job</td>
+                  <td>job-1 / succeeded</td>
+                </tr>
+                <tr>
+                  <td>Execution ID</td>
+                  <td>run-2026-06-05T12-23-35-298Z-2ceb5840</td>
+                </tr>
+                <tr>
+                  <td>Base Directory</td>
+                  <td>/api/artifacts/run-2026-06-05T12-23-35-298Z-2ceb5840</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span>Real-time Log Stream</span>
+            <span class="cursor-prompt">ARC_LISTENER</span>
+          </div>
+          <div class="panel-body">
+            <div class="log-stream">
+              <div class="log-row">
+                <span class="log-time">12:23:35</span>
+                <span class="log-type phase">PHASE</span>
+                <span class="log-message">Queued fixture certification.</span>
+              </div>
+              <div class="log-row">
+                <span class="log-time">12:23:35</span>
+                <span class="log-type phase">PHASE</span>
+                <span class="log-message">Running Agent Readiness Compiler fixture certification.</span>
+              </div>
+              <div class="log-row">
+                <span class="log-time">12:23:36</span>
+                <span class="log-type artifact">ARTIFACT</span>
+                <span class="log-message">Wrote environment-contract.json</span>
+              </div>
+              <div class="log-row">
+                <span class="log-time">12:23:36</span>
+                <span class="log-type artifact">ARTIFACT</span>
+                <span class="log-message">Wrote missions.json</span>
+              </div>
+              <div class="log-row">
+                <span class="log-time">12:23:37</span>
+                <span class="log-type info">INFO</span>
+                <span class="log-message">Trace analysis verification: all policies passed.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: Receipt (Flat raw structure) -->
+      <div id="view-receipt" class="content-area">
+        <div class="telemetry-grid">
+          <div class="panel">
+            <div class="panel-header">Receipt Specifications</div>
+            <div class="panel-body">
+              <table class="console-table">
+                <tbody>
+                  <tr>
+                    <td>Verdict</td>
+                    <td><span class="tag tag-success">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td>Security Score</td>
+                    <td style="color: var(--color-success); font-weight: 700;">100 / 100</td>
+                  </tr>
+                  <tr>
+                    <td>Active Mission</td>
+                    <td>security-lateral-movement-readiness</td>
+                  </tr>
+                  <tr>
+                    <td>Contract Mapping</td>
+                    <td>contract-acme-soc-dev</td>
+                  </tr>
+                  <tr>
+                    <td>Mutation Safe</td>
+                    <td style="color: var(--color-success);">FALSE (No Write Action Detected)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">Cryptographic Signatures</div>
+            <div class="panel-body" style="display: flex; flex-direction: column; gap: 12px;">
+              <div>
+                <div style="font-size: 11px; color: var(--color-muted); margin-bottom: 4px;">RECEIPT HASH</div>
+                <div class="code-block">fb5e6d83aa6c9bd1b1ae35e1ca6c62bdb9081c85d20d2085e838037431d481d0</div>
+              </div>
+              <div>
+                <div style="font-size: 11px; color: var(--color-muted); margin-bottom: 4px;">EVIDENCE REFERENCES</div>
+                <div class="code-block">saved-search-lateral-movement / saved-search-lateral-movement-wrong-app / evt-102 / evt-118 / evt-141</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">Readiness Receipt Document</div>
+          <div class="panel-body">
+            <div class="code-block" style="font-size: 11px; max-height: 250px;">{
+  "readinessReceipt": {
+    "version": "1.0.0",
+    "timestamp": "2026-06-05T12:23:37.198Z",
+    "verdict": "READY",
+    "score": 100,
+    "signer": "splunkready-arc-engine-v1",
+    "summary": {
+      "violations": 0,
+      "checksRun": 5,
+      "mutationsAllowed": false
+    }
+  }
+}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: Trace (Annotated queries) -->
+      <div id="view-trace" class="content-area">
+        <div style="margin-bottom: 12px; font-weight: 700; text-transform: uppercase;">
+          Executed Splunk Traces (Pre-Patch Checks)
+        </div>
+
+        <div class="trace-item">
+          <div class="trace-item-header">
+            <span>#1</span>
+            <span style="color: var(--color-primary);">tool_call</span>
+            <span>splunk_run_query</span>
+            <span style="color: var(--color-muted); font-size: 11px; text-align: right;">ID: mission-sec-lateral-trace-001</span>
+          </div>
+          <div class="trace-item-body">
+            <div>
+              <div style="font-size: 11px; color: var(--color-muted); margin-bottom: 6px; text-transform: uppercase;">Query Executed</div>
+              <div class="code-block highlight">search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now</div>
+            </div>
+            <div>
+              <div class="finding-block">
+                <div class="finding-header">SPL-001: Forbidden SPL Pattern</div>
+                <div class="finding-desc">The query searches all indexes ("index=*") and references src_ip, which is not permitted under the current ACME security contract.</div>
+                
+                <div style="font-size: 10px; color: var(--color-muted); margin-bottom: 4px; text-transform: uppercase;">SAIA Recommended Patch</div>
+                <div class="code-block" style="border-color: var(--color-success);">search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="trace-item">
+          <div class="trace-item-header">
+            <span>#2</span>
+            <span style="color: var(--color-primary);">tool_call</span>
+            <span>splunk_run_query</span>
+            <span style="color: var(--color-muted); font-size: 11px; text-align: right;">ID: mission-sec-lateral-trace-002</span>
+          </div>
+          <div class="trace-item-body">
+            <div>
+              <div style="font-size: 11px; color: var(--color-muted); margin-bottom: 6px; text-transform: uppercase;">Query Executed</div>
+              <div class="code-block highlight">search index=main sourcetype=access_combined status=500</div>
+            </div>
+            <div>
+              <div class="finding-block" style="border-color: var(--color-success); background-color: rgba(0, 255, 102, 0.01);">
+                <div class="finding-header" style="color: var(--color-success);">Deterministic Verification: OK</div>
+                <div class="finding-desc" style="color: var(--color-text);">No contract violations or restricted telemetry detected. Query conforms to acme-soc-dev rules.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    function switchTab(tabId) {
+      // Deactivate all nav items
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      // Deactivate all view content areas
+      document.querySelectorAll('.content-area').forEach(view => {
+        view.classList.remove('active');
+      });
+
+      // Find the clicked item and view
+      const activeItem = Array.from(document.querySelectorAll('.nav-item')).find(item => {
+        return item.textContent.includes(tabId);
+      });
+      if (activeItem) activeItem.classList.add('active');
+
+      const activeView = document.getElementById('view-' + tabId);
+      if (activeView) activeView.classList.add('active');
+
+      // Update top header indicator
+      document.getElementById('tab-indicator').textContent = 'Active View: ' + tabId;
+    }
+  </script>
+</body>
+</html>

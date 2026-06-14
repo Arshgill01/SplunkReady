@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SplunkReady - Swiss Editorial Spec</title>
+  <!-- Google Fonts: Spline Sans (Already in project) & Spline Sans Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;700&family=Spline+Sans:wght@300;400;500;650;750&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-document: #ffffff;
+      --bg-surface: #f9fafb;
+      --border-thick: 2px solid #111111;
+      --border-thin: 1px solid #111111;
+      --border-dashed: 1px dashed #71717a;
+      
+      --color-ink: #111111;
+      --color-muted: #52525b;
+      --color-dim: #a1a1aa;
+      
+      /* Pure semantic flags - no gradients */
+      --color-ready-accent: #00875a;  /* Deep Forest Green */
+      --color-ready-bg: #e3fcef;
+      --color-violation-accent: #de350b; /* Safety Orange-Red */
+      --color-violation-bg: #ffebe6;
+      
+      --font-sans: 'Spline Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'Spline Sans Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #f3f4f6;
+      color: var(--color-ink);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.6;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    /* Outer Dossier Wrapper */
+    .dossier-wrapper {
+      background-color: var(--bg-document);
+      border: var(--border-thick);
+      width: 100%;
+      max-width: 1100px;
+      min-height: 90vh;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Top Masthead */
+    .dossier-masthead {
+      border-bottom: var(--border-thick);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding: 30px;
+    }
+
+    .masthead-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .masthead-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      text-align: right;
+    }
+
+    .dossier-title {
+      font-size: 26px;
+      font-weight: 750;
+      letter-spacing: -0.8px;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+
+    .dossier-subtitle {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    .metadata-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      border: var(--border-thin);
+      padding: 4px 10px;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+
+    /* Sub-header Navigation Row */
+    .dossier-nav {
+      border-bottom: var(--border-thin);
+      display: flex;
+      background-color: var(--bg-surface);
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      border-right: var(--border-thin);
+      padding: 12px 24px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      color: var(--color-muted);
+      transition: all 0.1s ease;
+    }
+
+    .nav-btn:hover {
+      background-color: #f1f2f4;
+      color: var(--color-ink);
+    }
+
+    .nav-btn.active {
+      background-color: var(--bg-document);
+      color: var(--color-ink);
+      border-bottom: 2px solid var(--color-ink);
+      margin-bottom: -1px;
+      padding-bottom: 11px;
+    }
+
+    /* Body Layout (Asymmetric grid) */
+    .dossier-body {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: 500px;
+    }
+
+    .dossier-sidebar {
+      border-right: var(--border-thin);
+      padding: 30px;
+      background-color: var(--bg-surface);
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .dossier-main {
+      padding: 40px;
+      overflow-y: auto;
+    }
+
+    /* Structured Sections */
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .section-header {
+      border-bottom: var(--border-thin);
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: -0.3px;
+    }
+
+    /* Sidebar Widgets */
+    .sidebar-block {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .block-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-muted);
+    }
+
+    .block-value {
+      font-size: 14px;
+      font-weight: 650;
+      word-break: break-all;
+    }
+
+    /* Dossier Stats block */
+    .dossier-stat-box {
+      border: var(--border-thin);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      text-align: center;
+    }
+
+    .dossier-stat-num {
+      font-size: 48px;
+      font-weight: 750;
+      line-height: 1;
+    }
+
+    .dossier-stat-label {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-muted);
+    }
+
+    /* Spec Sheets & Data grids */
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      margin-top: 10px;
+    }
+
+    .spec-table th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      border-bottom: var(--border-thin);
+      padding: 10px 8px;
+      font-weight: 700;
+    }
+
+    .spec-table td {
+      padding: 12px 8px;
+      border-bottom: var(--border-dashed);
+      vertical-align: top;
+      font-size: 13.5px;
+    }
+
+    .spec-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .mono-cell {
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    /* Execution Log List */
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      border: var(--border-thin);
+    }
+
+    .log-list-row {
+      display: grid;
+      grid-template-columns: 80px 100px 1fr;
+      border-bottom: var(--border-thin);
+      padding: 10px 16px;
+    }
+
+    .log-list-row:last-child {
+      border-bottom: none;
+    }
+
+    .log-list-row:nth-child(even) {
+      background-color: var(--bg-surface);
+    }
+
+    .log-meta {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--color-muted);
+    }
+
+    .log-message {
+      font-size: 13px;
+    }
+
+    /* Action button */
+    .btn-action {
+      background-color: var(--color-ink);
+      color: var(--bg-document);
+      border: var(--border-thin);
+      padding: 10px 20px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .btn-action:hover {
+      background-color: var(--color-muted);
+    }
+
+    /* Timeline events */
+    .timeline-event-card {
+      border: var(--border-thin);
+      margin-bottom: 20px;
+    }
+
+    .timeline-event-header {
+      background-color: var(--bg-surface);
+      border-bottom: var(--border-thin);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 650;
+      font-size: 13px;
+    }
+
+    .timeline-event-body {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .code-view {
+      font-family: var(--font-mono);
+      background-color: var(--bg-surface);
+      border: var(--border-dashed);
+      padding: 12px;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .finding-alert {
+      border: 1px solid var(--color-violation-accent);
+      background-color: var(--color-violation-bg);
+      padding: 16px;
+    }
+
+    .finding-alert-header {
+      color: var(--color-violation-accent);
+      font-weight: 750;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .finding-alert-desc {
+      font-size: 13px;
+      color: var(--color-ink);
+    }
+
+    /* Verification Status Banner */
+    .verdict-banner {
+      padding: 12px 20px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 12px;
+      border: var(--border-thin);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .verdict-banner.pass {
+      background-color: var(--color-ready-bg);
+      border-color: var(--color-ready-accent);
+      color: var(--color-ready-accent);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dossier-wrapper">
+    
+    <!-- Masthead Section -->
+    <header class="dossier-masthead">
+      <div class="masthead-left">
+        <div>
+          <h1 class="dossier-title">SplunkReady</h1>
+          <div class="dossier-subtitle">Agent Readiness Dossier</div>
+        </div>
+        <div class="metadata-pill" style="margin-top: 20px;">
+          ARC-SPEC-REPORT
+        </div>
+      </div>
+      <div class="masthead-right">
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 10px; color: var(--color-muted);">DATE GENERATED</div>
+          <div style="font-size: 13px; font-weight: 500;">2026-06-05 // 12:23:37 GMT</div>
+        </div>
+        <div>
+          <button class="btn-action">Re-Run Certification</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tabbed navigation header -->
+    <nav class="dossier-nav">
+      <button class="nav-btn active" onclick="switchTab('replay')">Replay Dossier</button>
+      <button class="nav-btn" onclick="switchTab('receipt')">Readiness Receipt</button>
+      <button class="nav-btn" onclick="switchTab('trace')">Trace Audit</button>
+    </nav>
+
+    <!-- Main Dossier Content -->
+    <div class="dossier-body">
+      
+      <!-- Asymmetric Sidebar for Quick-Specs -->
+      <aside class="dossier-sidebar">
+        
+        <div class="dossier-stat-box">
+          <div class="dossier-stat-num">100</div>
+          <div class="dossier-stat-label">Readiness Score</div>
+        </div>
+
+        <div class="sidebar-block">
+          <div class="block-label">Target Environment</div>
+          <div class="block-value">contract-acme-soc-dev</div>
+        </div>
+
+        <div class="sidebar-block">
+          <div class="block-label">Assigned Mission</div>
+          <div class="block-value">security-lateral-movement-readiness</div>
+        </div>
+
+        <div class="sidebar-block">
+          <div class="block-label">Active Artifact</div>
+          <select class="dropdown-terminal" style="font-family: var(--font-mono); font-size: 11px; padding: 6px; border: var(--border-thin); width: 100%;">
+            <option>run-2026-06-05T12-23-35</option>
+            <option>run-2026-06-01T16-18-37</option>
+          </select>
+        </div>
+
+      </aside>
+
+      <!-- Main Column -->
+      <main class="dossier-main">
+        
+        <!-- SECTION: REPLAY -->
+        <section id="sect-replay" class="section active">
+          <div class="section-header">
+            <h2 class="section-title">Certification Replay Logs</h2>
+            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--color-muted);">RUN-2CEB5840</div>
+          </div>
+
+          <div class="log-list">
+            <div class="log-list-row">
+              <span class="log-meta">12:23:35</span>
+              <span class="log-meta" style="color: var(--color-ink); font-weight: 700;">[PHASE]</span>
+              <span class="log-message">Queued fixture certification.</span>
+            </div>
+            <div class="log-list-row">
+              <span class="log-meta">12:23:35</span>
+              <span class="log-meta" style="color: var(--color-ink); font-weight: 700;">[PHASE]</span>
+              <span class="log-message">Running Agent Readiness Compiler fixture certification.</span>
+            </div>
+            <div class="log-list-row">
+              <span class="log-meta">12:23:36</span>
+              <span class="log-meta" style="color: var(--color-muted);">[ARTIFACT]</span>
+              <span class="log-message">Wrote environment-contract.json</span>
+            </div>
+            <div class="log-list-row">
+              <span class="log-meta">12:23:36</span>
+              <span class="log-meta" style="color: var(--color-muted);">[ARTIFACT]</span>
+              <span class="log-message">Wrote missions.json</span>
+            </div>
+            <div class="log-list-row">
+              <span class="log-meta">12:23:37</span>
+              <span class="log-meta" style="color: var(--color-muted);">[ARTIFACT]</span>
+              <span class="log-message">Wrote agent-policy.json</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION: RECEIPT -->
+        <section id="sect-receipt" class="section">
+          <div class="section-header">
+            <h2 class="section-title">Readiness Receipt</h2>
+            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--color-muted);">CRYPTOGRAPHIC PROOF</div>
+          </div>
+
+          <div class="verdict-banner pass">
+            <span>✔</span>
+            <span>VERDICT: READY / SUCCESS CONFIRMED</span>
+          </div>
+
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th style="width: 30%;">Contract Param</th>
+                <th>Verified Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Verdict Hash</td>
+                <td class="mono-cell">fb5e6d83aa6c9bd1b1ae35e1ca6c62bdb9081c85d20d2085e838037431d481d0</td>
+              </tr>
+              <tr>
+                <td>Evidence Logs</td>
+                <td class="mono-cell">saved-search-lateral-movement / saved-search-lateral-movement-wrong-app / evt-102 / evt-118</td>
+              </tr>
+              <tr>
+                <td>Mutation Allowed</td>
+                <td>FALSE (Execution path is read-only)</td>
+              </tr>
+              <tr>
+                <td>Violations Flagged</td>
+                <td style="color: var(--color-ready-accent); font-weight: 700;">0 Violations</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- SECTION: TRACE -->
+        <section id="sect-trace" class="section">
+          <div class="section-header">
+            <h2 class="section-title">Trace Audit Details</h2>
+            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--color-muted);">SPLUNK QUERY OBSERVABILITY</div>
+          </div>
+
+          <div class="timeline-event-card">
+            <div class="timeline-event-header">
+              <span>Event 1: splunk_run_query</span>
+              <span class="mono-cell" style="color: var(--color-muted);">ID: lateral-trace-001</span>
+            </div>
+            <div class="timeline-event-body">
+              <div>
+                <div style="font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Executed Query</div>
+                <div class="code-view">search index=* host=win-finance-07 src_ip=* earliest=-24h latest=now</div>
+              </div>
+              <div>
+                <div class="finding-alert">
+                  <div class="finding-alert-header">SPL-001: Forbidden SPL Pattern</div>
+                  <div class="finding-alert-desc">
+                    Query references wildcard index ("index=*") and forbidden field src_ip. Recommended replacement query:
+                  </div>
+                  <div class="code-view" style="margin-top: 10px; border-color: var(--color-ready-accent);">
+                    search index=wineventlog host=win-finance-07 src=* earliest=-24h latest=now
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-event-card">
+            <div class="timeline-event-header">
+              <span>Event 2: splunk_run_query</span>
+              <span class="mono-cell" style="color: var(--color-muted);">ID: lateral-trace-002</span>
+            </div>
+            <div class="timeline-event-body">
+              <div>
+                <div style="font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Executed Query</div>
+                <div class="code-view">search index=main sourcetype=access_combined status=500</div>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: center; border: var(--border-dashed); padding: 20px;">
+                <div style="text-align: center;">
+                  <span style="font-size: 24px; color: var(--color-ready-accent);">✔</span>
+                  <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; margin-top: 6px;">Contract Compliant</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <script>
+    function switchTab(tabId) {
+      // Deactivate all nav buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      // Deactivate all section blocks
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+
+      // Find active nav button
+      const activeBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => {
+        return btn.textContent.toLowerCase().includes(tabId.toLowerCase());
+      });
+      if (activeBtn) activeBtn.classList.add('active');
+
+      // Find active section
+      let sectionMap = {
+        'replay': 'sect-replay',
+        'receipt': 'sect-receipt',
+        'trace': 'sect-trace'
+      };
+      const activeSection = document.getElementById(sectionMap[tabId]);
+      if (activeSection) activeSection.classList.add('active');
+    }
+  </script>
+</body>
+</html>
