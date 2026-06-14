@@ -41,6 +41,9 @@ Not a generic eval harness.
 Not an LLM judging another LLM.
 docs/architecture.svg
 artifacts/public-demo/architecture.svg
+submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json
+submission-evidence/live-hosted-model-status/live-hosted-model-status.json
+downstream hosted SAIA cloud route
 npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json
 @arshgill01/splunkready@0.1.7
 npm run audit:public-package-currentness
