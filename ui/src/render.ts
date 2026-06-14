@@ -2487,7 +2487,7 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: Re
     </div>
     
     <div class="dossier-stat-box" style="border: 1px solid var(--line); padding: 16px; margin: 12px 0; display: flex; flex-direction: column; align-items: center; text-align: center; background: var(--surface);">
-      <div class="dossier-stat-num" style="font-size: 26px; font-weight: 750; line-height: 1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${value(summary.score)}</div>
+      <div class="dossier-stat-num" style="font-size: 26px; font-weight: 750; line-height: 1; width: 100%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${value(summary.score)}</div>
       <div class="dossier-stat-label" style="font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-top: 4px;">Readiness Score</div>
       <div class="dossier-stat-verdict" style="margin-top: 8px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 8px; background: ${isReady ? "rgba(0, 135, 90, 0.08)" : "rgba(222, 53, 11, 0.08)"}; color: ${isReady ? "var(--ready)" : "var(--bad)"}; border: 1px solid currentColor;">
         ${value(summary.verdict)}
