@@ -1,0 +1,51 @@
+{
+  "source": "splunkready-live-saia-readiness-probe",
+  "status": "ACTION_REQUIRED",
+  "mode": "live",
+  "generatedAt": "2026-06-14T16:31:00Z",
+  "probes": [
+    {
+      "id": "saia-config-handler",
+      "status": "PASS",
+      "httpStatus": 200,
+      "evidence": "Splunk AI Assistant /config handler responded over splunkd."
+    },
+    {
+      "id": "saia-token-handler",
+      "status": "PASS",
+      "httpStatus": 200,
+      "evidence": "Splunk AI Assistant /saia_token handler returned redacted SCS and EC token fields."
+    },
+    {
+      "id": "cloud-connected-config",
+      "status": "PASS",
+      "evidence": "cloud_connected_configurations KV store has one entry with tenant hostname, region, service principal, SCS token expiry, and setup timestamp fields present."
+    },
+    {
+      "id": "saia-version",
+      "status": "PASS",
+      "httpStatus": 200,
+      "evidence": "Splunk AI Assistant /version returned 1.0.0."
+    },
+    {
+      "id": "mcp-tool-enabled",
+      "status": "ACTION_REQUIRED",
+      "evidence": "saia_metadata.mcp_tool_enabled is false."
+    },
+    {
+      "id": "agent-mode-v2-enabled",
+      "status": "ACTION_REQUIRED",
+      "evidence": "saia_settings_v2.enabled is false."
+    }
+  ],
+  "summary": "Read-only Splunk probes show SAIA cloud connection material exists and token issuance works, but local SAIA feature flags for MCP tools and v2 agent mode are disabled. Enabling those flags is a Splunk-side configuration mutation and was not performed without an explicit operator mutation authorization.",
+  "nextOperatorAction": "In Splunk Web, enable Splunk AI Assistant agent/MCP tooling for the configured tenant, or rerun the vendor-supported onboarding/activation flow, then rerun the strict hosted-model diagnostic.",
+  "redaction": {
+    "status": "PASS",
+    "secretsWritten": false,
+    "tenantIdentifiersWritten": false,
+    "rawProbeOutputTracked": false
+  },
+  "deterministicAuthority": true,
+  "mutation": false
+}

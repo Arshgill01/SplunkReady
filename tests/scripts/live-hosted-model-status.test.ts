@@ -47,6 +47,35 @@ const diagnosticFixture = (overrides: Record<string, unknown> = {}): string =>
   )}\n`;
 
 describe("live hosted-model status audit", () => {
+  it("tracks the read-only SAIA readiness probe without secrets", async () => {
+    const readinessPath = join(
+      repoRoot,
+      "submission-evidence/live-hosted-model-status/live-saia-readiness-probe.json"
+    );
+    const readiness = JSON.parse(await readFile(readinessPath, "utf8")) as {
+      source: string;
+      status: string;
+      probes: Array<{ id: string; status: string }>;
+      redaction: { status: string; secretsWritten: boolean; tenantIdentifiersWritten: boolean };
+      mutation: boolean;
+    };
+
+    expect(readiness).toMatchObject({
+      source: "splunkready-live-saia-readiness-probe",
+      status: "ACTION_REQUIRED",
+      redaction: { status: "PASS", secretsWritten: false, tenantIdentifiersWritten: false },
+      mutation: false
+    });
+    expect(readiness.probes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "saia-token-handler", status: "PASS" }),
+        expect.objectContaining({ id: "cloud-connected-config", status: "PASS" }),
+        expect.objectContaining({ id: "mcp-tool-enabled", status: "ACTION_REQUIRED" }),
+        expect.objectContaining({ id: "agent-mode-v2-enabled", status: "ACTION_REQUIRED" })
+      ])
+    );
+  });
+
   it("exports a secret-safe public status summary", async () => {
     const root = await tempRoot();
     const artifactPath = join(root, "artifacts/live-hosted-model-diagnostic/hosted-model-diagnostic.json");
