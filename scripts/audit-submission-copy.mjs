@@ -256,8 +256,11 @@ const checks = [
     files.claimLedger,
     "The hosted public demo is source-current against the latest public-demo input commit."
   ],
-  ["Claim ledger hosted demo expected input source", files.claimLedger, "expected input commit `8311db4`"],
-  ["Claim ledger hosted demo current source", files.claimLedger, "hosted source commit `a21cf3d`"],
+  ["Claim ledger hosted demo expected input source", files.claimLedger, "expected input commit `971f8bf`"],
+  ["Claim ledger hosted demo source commit", files.claimLedger, "hosted source commit `971f8bf`"],
+  ["Claim ledger hosted demo architecture pass", files.claimLedger, 'architectureDiagram.status: "PASS"'],
+  ["Claim ledger hosted demo architecture URL", files.claimLedger, "https://arshgill01.github.io/SplunkReady/architecture.svg"],
+  ["Claim ledger hosted demo current source", files.claimLedger, "hosted source commit `971f8bf`"],
   ["Claim ledger hosted demo LLM artifact base", files.claimLedger, "`artifactBases` includes `artifacts/real-splunk-stress-llm-layer`"],
   ["Claim ledger hosted demo LLM screenshot", files.claimLedger, "submission-evidence/screenshots/hosted-demo-llm-deliberation.png"],
   ["Claim ledger hosted demo LLM route", files.claimLedger, "https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Freal-splunk-stress-llm-layer#llm-deliberation"],

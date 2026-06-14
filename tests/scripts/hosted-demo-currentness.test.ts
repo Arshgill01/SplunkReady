@@ -37,11 +37,19 @@ const createCommit = async (root: string, path: string, value: string): Promise<
   return git(root, ["rev-parse", "HEAD"]);
 };
 
+const architectureSvg = "<svg><text>Agent</text><text>SplunkReady Engine</text><text>Splunk MCP</text><text>Server</text></svg>";
+
 const startHostedDemo = async (manifest: Record<string, unknown>, indexHtml: string): Promise<string> => {
   const server = createServer((request, response) => {
     if (request.url === "/public-demo-manifest.json") {
       response.setHeader("content-type", "application/json");
       response.end(JSON.stringify(manifest));
+      return;
+    }
+
+    if (request.url === "/architecture.svg") {
+      response.setHeader("content-type", "image/svg+xml");
+      response.end(architectureSvg);
       return;
     }
 
@@ -65,7 +73,13 @@ const runAudit = async (
   root: string,
   url: string,
   expectedCommit: string
-): Promise<{ status: string; failures: string[]; assets: { match: boolean }; hostedSourceCommit: string }> => {
+): Promise<{
+  status: string;
+  failures: string[];
+  assets: { match: boolean };
+  hostedSourceCommit: string;
+  architectureDiagram: { status: string; requiredText: Record<string, boolean> };
+}> => {
   const result = await execFileAsync(process.execPath, [scriptPath, "--url", url, "--expected-commit", expectedCommit], {
     cwd: root,
     env: process.env
@@ -91,6 +105,7 @@ describe("hosted demo currentness audit", () => {
         sourceCommitShort: expectedCommit.slice(0, 7),
         mutation: false,
         defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
+        architectureDiagram: "architecture.svg",
         artifactBases: [
           "artifacts/mcp-proof",
           "artifacts/suite-proof",
@@ -109,6 +124,15 @@ describe("hosted demo currentness audit", () => {
       status: "CURRENT",
       hostedSourceCommit: expectedCommit,
       assets: { match: true },
+      architectureDiagram: {
+        status: "PASS",
+        requiredText: {
+          Agent: true,
+          "SplunkReady Engine": true,
+          "Splunk MCP": true,
+          Server: true
+        }
+      },
       mutation: false,
       failures: []
     });
@@ -130,6 +154,7 @@ describe("hosted demo currentness audit", () => {
         sourceCommitShort: hostedCommit.slice(0, 7),
         mutation: false,
         defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
+        architectureDiagram: "architecture.svg",
         artifactBases: [
           "artifacts/mcp-proof",
           "artifacts/suite-proof",
@@ -161,7 +186,8 @@ describe("hosted demo currentness audit", () => {
         source: "splunkready-public-demo-export",
         sourceCommit: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         mutation: false,
-        defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof"
+        defaultUrl: "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
+        architectureDiagram: "architecture.svg"
       },
       '<!doctype html><script type="module" src="./assets/index-test.js"></script><link rel="stylesheet" href="./assets/index-test.css">'
     );

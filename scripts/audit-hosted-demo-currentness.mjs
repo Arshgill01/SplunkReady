@@ -109,7 +109,11 @@ const main = async () => {
   const baseUrl = normalizeBaseUrl(args.hostedUrl);
   const manifestUrl = new URL("public-demo-manifest.json", baseUrl);
   const manifest = await jsonFromUrl(manifestUrl);
+  const architectureDiagramPath =
+    typeof manifest.architectureDiagram === "string" ? manifest.architectureDiagram : "architecture.svg";
+  const architectureDiagramUrl = new URL(architectureDiagramPath, baseUrl);
   const hostedIndexHtml = await textFromUrl(baseUrl);
+  const hostedArchitectureSvg = await textFromUrl(architectureDiagramUrl);
   const hostedAssets = assetNamesFromHtml(hostedIndexHtml);
   const localAssets = await localAssetNames();
   const expectedCommit = args.expectedCommit || await latestPublicDemoInputCommit();
@@ -127,6 +131,21 @@ const main = async () => {
 
   if (manifest.defaultUrl !== "?artifacts=artifacts%2Fmcp-proof#mcp-proof") {
     failures.push("hosted manifest default route is not the MCP proof route");
+  }
+
+  if (manifest.architectureDiagram !== "architecture.svg") {
+    failures.push("hosted manifest does not expose architecture.svg");
+  }
+
+  const architectureRequiredText = ["Agent", "SplunkReady Engine", "Splunk MCP", "Server"];
+  const architectureTextChecks = Object.fromEntries(
+    architectureRequiredText.map((text) => [text, hostedArchitectureSvg.includes(text)])
+  );
+
+  for (const [text, present] of Object.entries(architectureTextChecks)) {
+    if (!present) {
+      failures.push(`hosted architecture diagram missing ${text}`);
+    }
   }
 
   if (!hostedSourceCommit || hostedSourceCommit === "UNKNOWN") {
@@ -157,7 +176,13 @@ const main = async () => {
       source: manifest.source,
       mutation: manifest.mutation,
       defaultUrl: manifest.defaultUrl,
+      architectureDiagram: manifest.architectureDiagram,
       artifactBases: manifest.artifactBases
+    },
+    architectureDiagram: {
+      url: architectureDiagramUrl.toString(),
+      requiredText: architectureTextChecks,
+      status: Object.values(architectureTextChecks).every(Boolean) ? "PASS" : "FAIL"
     },
     mutation: false,
     failures

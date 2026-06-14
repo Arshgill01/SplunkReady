@@ -3,9 +3,9 @@
   "status": "CURRENT",
   "hostedUrl": "https://arshgill01.github.io/SplunkReady/",
   "manifestUrl": "https://arshgill01.github.io/SplunkReady/public-demo-manifest.json",
-  "expectedPublicDemoInputCommit": "1a1071f382d86694b232c4f59c089288941e6fb6",
-  "hostedSourceCommit": "1a1071f382d86694b232c4f59c089288941e6fb6",
-  "hostedSourceCommitShort": "1a1071f",
+  "expectedPublicDemoInputCommit": "971f8bf53f17fafe40c40660f034254f47684bed",
+  "hostedSourceCommit": "971f8bf53f17fafe40c40660f034254f47684bed",
+  "hostedSourceCommitShort": "971f8bf",
   "hostedSourceCommitCoversExpectedInput": true,
   "assets": {
     "local": [
@@ -22,6 +22,7 @@
     "source": "splunkready-public-demo-export",
     "mutation": false,
     "defaultUrl": "?artifacts=artifacts%2Fmcp-proof#mcp-proof",
+    "architectureDiagram": "architecture.svg",
     "artifactBases": [
       "artifacts/judge-launch",
       "artifacts/mcp-proof",
@@ -34,6 +35,16 @@
       "artifacts/platform-devex-proof",
       "artifacts/interactive-demo"
     ]
+  },
+  "architectureDiagram": {
+    "url": "https://arshgill01.github.io/SplunkReady/architecture.svg",
+    "requiredText": {
+      "Agent": true,
+      "SplunkReady Engine": true,
+      "Splunk MCP": true,
+      "Server": true
+    },
+    "status": "PASS"
   },
   "mutation": false,
   "failures": []
