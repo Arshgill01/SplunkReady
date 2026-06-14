@@ -1,21 +1,21 @@
 {
   "source": "splunkready-release-alignment",
-  "status": "BLOCKED",
+  "status": "CURRENT",
   "package": {
     "name": "splunkready",
-    "version": "0.1.14",
+    "version": "0.1.15",
     "recommendedNextVersion": null
   },
   "currentness": {
     "artifactPath": "submission-evidence/public-package-currentness/public-package-currentness.json",
-    "status": "STALE",
-    "latestVersion": "0.1.12",
-    "localVersion": "0.1.13",
-    "localVersionPublished": false,
-    "latestMatchesLocal": false,
-    "latestGitHead": "85c85173caf6bdf273ee68dd057dcf2a7f74da5a",
-    "packageInputGitHead": "85df1eb72407391fedc43331e97c77d8bc94193a",
-    "gitHeadMatchesPackageInputs": false,
+    "status": "CURRENT",
+    "latestVersion": "0.1.15",
+    "localVersion": "0.1.15",
+    "localVersionPublished": true,
+    "latestMatchesLocal": true,
+    "latestGitHead": "7260642ed40bba06706c86e7851bc4890ab6e9e9",
+    "packageInputGitHead": "7260642ed40bba06706c86e7851bc4890ab6e9e9",
+    "gitHeadMatchesPackageInputs": true,
     "packageInputPaths": [
       "package.json",
       "package-lock.json",
@@ -32,31 +32,31 @@
   "publishedProbeStatus": [
     {
       "id": "judgeProof",
-      "packageSpec": "splunkready@0.1.12",
+      "packageSpec": "splunkready@0.1.15",
       "status": "PASS",
-      "command": "npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json"
+      "command": "npx -y splunkready@0.1.15 judge-proof --out ./judge-proof --json"
     },
     {
       "id": "mcp",
-      "packageSpec": "splunkready@0.1.12",
+      "packageSpec": "splunkready@0.1.15",
       "status": "PASS",
       "command": null
     },
     {
       "id": "liveMockProof",
-      "packageSpec": "splunkready@0.1.12",
+      "packageSpec": "splunkready@0.1.15",
       "status": "PASS",
-      "command": "npx -y splunkready@0.1.12 live-proof --out ./live-mock --live-mock --json"
+      "command": "npx -y splunkready@0.1.15 live-proof --out ./live-mock --live-mock --json"
     },
     {
       "id": "recorder",
-      "packageSpec": "splunkready@0.1.12",
+      "packageSpec": "splunkready@0.1.15",
       "status": "PASS",
       "command": null
     },
     {
       "id": "policyRegistry",
-      "packageSpec": "splunkready@0.1.12",
+      "packageSpec": "splunkready@0.1.15",
       "status": "PASS",
       "command": null
     }
@@ -71,7 +71,7 @@
     "releaseCommand": "npm version patch && npm publish --access public"
   },
   "nextCommands": [],
-  "summary": "Release alignment cannot be claimed until the listed blockers are resolved.",
+  "summary": "The public package gitHead matches the current package-input tree.",
   "mutation": false,
   "failures": []
 }

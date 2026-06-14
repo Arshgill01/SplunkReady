@@ -1,6 +1,6 @@
 {
   "source": "splunkready-public-package-currentness",
-  "status": "STALE",
+  "status": "CURRENT",
   "registry": {
     "packageName": "splunkready",
     "versions": [
@@ -17,14 +17,15 @@
       "0.1.11",
       "0.1.12",
       "0.1.13",
-      "0.1.14"
+      "0.1.14",
+      "0.1.15"
     ],
-    "latestVersion": "0.1.14",
-    "localVersion": "0.1.14",
+    "latestVersion": "0.1.15",
+    "localVersion": "0.1.15",
     "localVersionPublished": true,
     "latestMatchesLocal": true,
-    "latestGitHead": "0b43b9314ff3374e7ef32a215dde5062237ddc42",
-    "packageInputGitHead": "38c08e51dc1afba8c212a29d013bfd200fb0131f",
+    "latestGitHead": "7260642ed40bba06706c86e7851bc4890ab6e9e9",
+    "packageInputGitHead": "7260642ed40bba06706c86e7851bc4890ab6e9e9",
     "packageInputPaths": [
       "package.json",
       "package-lock.json",
@@ -37,17 +38,17 @@
       "scripts/run-readiness-score-calibration.mjs"
     ],
     "dirtyPackageInputs": [],
-    "gitHeadMatchesPackageInputs": false
+    "gitHeadMatchesPackageInputs": true
   },
   "publishedJudgeProof": {
-    "packageSpec": "splunkready@0.1.14",
+    "packageSpec": "splunkready@0.1.15",
     "status": "PASS",
     "mutation": false,
-    "command": "npx -y splunkready@0.1.14 judge-proof --out ./judge-proof --json",
+    "command": "npx -y splunkready@0.1.15 judge-proof --out ./judge-proof --json",
     "error": null
   },
   "publishedMcp": {
-    "packageSpec": "splunkready@0.1.14",
+    "packageSpec": "splunkready@0.1.15",
     "status": "PASS",
     "initialized": true,
     "serverInfo": {
@@ -72,16 +73,16 @@
     "error": null
   },
   "publishedLiveMockProof": {
-    "packageSpec": "splunkready@0.1.14",
+    "packageSpec": "splunkready@0.1.15",
     "status": "PASS",
     "mutation": false,
     "mode": "live",
     "failToPass": true,
-    "command": "npx -y splunkready@0.1.14 live-proof --out ./live-mock --live-mock --json",
+    "command": "npx -y splunkready@0.1.15 live-proof --out ./live-mock --live-mock --json",
     "error": null
   },
   "publishedRecorder": {
-    "packageSpec": "splunkready@0.1.14",
+    "packageSpec": "splunkready@0.1.15",
     "status": "PASS",
     "initialized": true,
     "capabilitiesPresent": true,
@@ -116,21 +117,21 @@
     "error": null
   },
   "publishedPolicyRegistry": {
-    "packageSpec": "splunkready@0.1.14",
+    "packageSpec": "splunkready@0.1.15",
     "status": "PASS",
     "signedPolicyManifest": true,
     "signatureAlgorithm": "ed25519",
     "receiptPolicyId": "pci-dss-readiness",
     "receiptPolicyHash": "ecef938107a9fae6777c7e36e850fb17625c6f064af2d2fb3cad74cb7f56c59e",
     "commands": [
-      "npx -y splunkready@0.1.14 policy-publish --policy soc2-readiness --out ./policy-registry --json",
-      "npx -y splunkready@0.1.14 compile --out ./policy-eval --json",
-      "npx -y splunkready@0.1.14 evaluate --out ./policy-eval --policy pci-dss-readiness --json",
-      "npx -y splunkready@0.1.14 receipt --out ./policy-eval --json"
+      "npx -y splunkready@0.1.15 policy-publish --policy soc2-readiness --out ./policy-registry --json",
+      "npx -y splunkready@0.1.15 compile --out ./policy-eval --json",
+      "npx -y splunkready@0.1.15 evaluate --out ./policy-eval --policy pci-dss-readiness --json",
+      "npx -y splunkready@0.1.15 receipt --out ./policy-eval --json"
     ],
     "error": null
   },
-  "recommendedAction": "Bump splunkready above 0.1.14, run npm-authenticated release preflight, publish the new version, then rerun this audit.",
+  "recommendedAction": "No registry action required.",
   "mutation": false,
   "failures": []
 }

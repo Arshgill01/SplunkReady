@@ -201,3 +201,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience / Most Innovative. The README still had dense proof paragraphs in the npm release, MCP proof, GitHub Action, SAIA, receipt verification, policy registry, and architecture sections.
 - Evidence: custom README prose scan excluding fenced code blocks returned no paragraph over 320 chars; `awk 'length($0)>140 {printf "%d:%d:%s\n", NR, length($0), $0}' README.md`; `npm run audit:submission-copy`; `npm test tests/scripts/submission-copy-audit.test.ts`; `git diff --check`.
 - Award impact: Makes the judge-facing README scan-first with tables and grouped bullets while preserving audited public package, MCP, SAIA, zero-mutation, and deterministic receipt claims.
+
+## Iteration 30 — 2026-06-14T17:27:47Z
+- Changed: `submission-evidence/public-package-currentness/public-package-currentness.json`, `submission-evidence/release-alignment/release-alignment.json`, `submission-evidence/npm-release-preflight/npm-release-preflight.json`, `submission-evidence/claim-ledger.md`, `submission-evidence/evidence-pack-sha256.txt`
+- Why: Best Developer Experience / Best Overall. The public npm package had to be source-current after the README and package-input updates.
+- Evidence: `npm view splunkready version gitHead --json`; `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`; `npm run audit:npm-release-preflight -- --out submission-evidence/npm-release-preflight/npm-release-preflight.json`; `npm run audit:release-alignment -- --require-aligned --out submission-evidence/release-alignment/release-alignment.json`; `npm run audit:submission-copy`; `npm test tests/scripts/submission-copy-audit.test.ts`.
+- Award impact: Makes the no-clone npm judge path source-current at `splunkready@0.1.15` with published judge-proof, MCP, live-mock, recorder, and signed policy-registry probes passing.
