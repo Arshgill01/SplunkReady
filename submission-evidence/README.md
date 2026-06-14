@@ -40,7 +40,7 @@ Run these from the repository root:
 ```bash
 npm run splunkready -- proof-audit --out submission-evidence/suite-proof --require-pass true --json
 npm run splunkready -- verify-manifest --out submission-evidence/suite-proof --json
-npm run splunkready -- verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json
+npm run splunkready -- verify-receipt --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json
 npm run splunkready -- receipt-replay --dir submission-evidence/suite-proof --json
 npm run live-mock-proof
 npm run pr-gate:sample

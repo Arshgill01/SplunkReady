@@ -742,6 +742,7 @@ describe("SplunkReady CLI flow", () => {
     const receiptChainOutput = parseCliJsonOutput(
       (await runCli(["verify-receipt-chain", "--dir", outDir, "--json"])).stdout
     );
+    const receiptAliasOutput = parseCliJsonOutput((await runCli(["verify-receipt", "--dir", outDir, "--json"])).stdout);
     const receiptChain = JSON.parse(await readFile(join(outDir, "receipt-chain.json"), "utf8")) as {
       status: string;
       chainValid: boolean;
@@ -788,6 +789,11 @@ describe("SplunkReady CLI flow", () => {
     });
     expect(receiptChainOutput).toMatchObject({
       command: "verify-receipt-chain",
+      status: "PASS",
+      artifacts: [join(outDir, "receipt-chain.json")]
+    });
+    expect(receiptAliasOutput).toMatchObject({
+      command: "verify-receipt",
       status: "PASS",
       artifacts: [join(outDir, "receipt-chain.json")]
     });

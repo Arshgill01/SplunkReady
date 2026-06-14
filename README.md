@@ -572,8 +572,9 @@ For external-agent CI, `proof-audit --require-pass true` recognizes `receipt-ext
 To add replay lineage over all receipt artifacts in a bundle:
 
 ```bash
-npm run splunkready -- verify-receipt-chain \
+npm run splunkready -- verify-receipt \
   --dir submission-evidence/suite-proof \
+  --public-key submission-evidence/receipt-public-key.pem \
   --json
 npm run splunkready -- receipt-replay \
   --dir submission-evidence/suite-proof \
@@ -586,7 +587,8 @@ records `mutation: false` and keeps deterministic grading as the authority; it
 does not make any model or Splunk calls. `receipt-replay` writes
 `receipt-replay.json` by re-deriving receipts from the proof bundle's compiled
 contract, mission, trace, and violation artifacts, then comparing canonical
-receipt hashes.
+receipt hashes. `verify-receipt-chain` remains supported as a compatibility
+alias for the same verifier.
 
 For a signed local chain, initialize a key pair outside tracked evidence and
 sign the bundle:

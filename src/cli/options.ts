@@ -64,6 +64,7 @@ Commands:
   hosted-model-diagnostic --mode fixture|live --out <dir> [--env-file <path>] [--require-pass true|false] [--json]
   proof-audit --out <dir> [--require-pass true|false] [--json]
   verify-manifest --out <dir> [--json]
+  verify-receipt --dir <dir> [--public-key <path>] [--json]
   verify-receipt-chain --dir <dir> [--public-key <path>] [--json]
   receipt-replay --dir <dir> [--json]
   sign-receipt --dir <dir> --private-key <path> --public-key <path> [--json]

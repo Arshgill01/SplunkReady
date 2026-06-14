@@ -80,7 +80,7 @@ export const runCliCommand = async (command: string, options: CliOptions): Promi
     artifacts = await proofAuditCommand(options);
   } else if (command === "verify-manifest") {
     artifacts = await verifyManifestCommand(options);
-  } else if (command === "verify-receipt-chain") {
+  } else if (command === "verify-receipt" || command === "verify-receipt-chain") {
     artifacts = await receiptChainCommand(options);
   } else if (command === "receipt-replay") {
     artifacts = await receiptReplayCommand(options);

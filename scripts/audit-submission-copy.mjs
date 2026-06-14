@@ -491,7 +491,7 @@ const checks = [
   [
     "Claim ledger receipt chain command",
     files.claimLedger,
-    "verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json"
+    "verify-receipt --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json"
   ],
   ["Claim ledger receipt replay command", files.claimLedger, "receipt-replay --dir submission-evidence/suite-proof --json"],
   ["README hosted MCP proof URL", files.readme, hostedMcpProofUrl],
@@ -647,7 +647,8 @@ const checks = [
   ["README SAIA realm header placeholder", files.readme, "SPLUNKREADY_SAIA_REALM"],
   ["README SAIA tenant header placeholder", files.readme, "SPLUNKREADY_SAIA_TENANT"],
   ["README package MCP entrypoint", files.readme, "splunkready mcp"],
-  ["README receipt chain command", files.readme, "verify-receipt-chain"],
+  ["README receipt verifier command", files.readme, "verify-receipt"],
+  ["README receipt chain compatibility alias", files.readme, "verify-receipt-chain"],
   ["README receipt replay command", files.readme, "receipt-replay"],
   ["README sign receipt command", files.readme, "sign-receipt"],
   ["README keys init command", files.readme, "keys init"],
