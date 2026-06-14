@@ -195,3 +195,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience / Most Innovative. Judge-facing README sections still had large dense paragraphs, especially Splunk App Package proof, external trace grading, suite proof, live proof, LLM mode, and receipt concept sections.
 - Evidence: `awk 'length($0)>180 {printf "%d:%d:%s\n", NR, length($0), $0}' README.md`; `npm test tests/scripts/submission-copy-audit.test.ts`; `npm run audit:submission-copy`; `git diff --check`.
 - Award impact: Keeps the first-read path scannable while preserving audited claims about Splunk app packaging, receipt-store proof, live SAIA PASS, deterministic authority, and zero-mutation boundaries.
+
+## Iteration 29 — 2026-06-14T17:21:57Z
+- Changed: `README.md`, `submission-evidence/claim-ledger.md`, `submission-evidence/evidence-pack-sha256.txt`
+- Why: Best Developer Experience / Most Innovative. The README still had dense proof paragraphs in the npm release, MCP proof, GitHub Action, SAIA, receipt verification, policy registry, and architecture sections.
+- Evidence: custom README prose scan excluding fenced code blocks returned no paragraph over 320 chars; `awk 'length($0)>140 {printf "%d:%d:%s\n", NR, length($0), $0}' README.md`; `npm run audit:submission-copy`; `npm test tests/scripts/submission-copy-audit.test.ts`; `git diff --check`.
+- Award impact: Makes the judge-facing README scan-first with tables and grouped bullets while preserving audited public package, MCP, SAIA, zero-mutation, and deterministic receipt claims.

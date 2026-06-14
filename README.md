@@ -280,10 +280,15 @@ review comment from real receipt artifacts:
 npm run pr-gate:sample
 ```
 
-The sample evidence is tracked under `submission-evidence/ci-pr-gate/`. On pull
-requests, `.github/workflows/live-certification-gate.yml` runs the proof,
-renders `pr-comment.md`, uploads the artifact bundle, and updates one
-SplunkReady bot comment when GitHub permissions allow it.
+PR gate evidence:
+
+- Sample artifacts: `submission-evidence/ci-pr-gate/`
+- Workflow: `.github/workflows/live-certification-gate.yml`
+- What it does:
+  - runs the proof
+  - renders `pr-comment.md`
+  - uploads the artifact bundle
+  - updates one SplunkReady bot comment when GitHub permissions allow it
 
 The MCP proof can also capture a mock Splunk MCP session alongside the
 SplunkReady MCP certification loop:
@@ -298,13 +303,15 @@ The lower-level recorder gateway can also be run directly as a stdio MCP server:
 npm run splunkready -- mcp-recorder --server splunk=mock-splunk-mcp --server splunkready=mcp --out artifacts/mcp-recorder
 ```
 
-The judge bundle also records `llmActivation` and `llmEvidence` in
-`judge-proof-summary.json`. With no LLM environment enabled, that evidence stays
-`NOT_REQUESTED` so the command remains credential-free and makes no model calls.
-When `SPLUNKREADY_LLM_ENABLED=true` is set, the same `judge-proof` command
-includes the Gemini-produced fixture trace in the judge-facing bundle while
-keeping deterministic grading authoritative. The convenience script below sets
-the same path up for judging sessions:
+LLM evidence stays opt-in:
+
+| Mode | Behavior |
+| --- | --- |
+| Default | `llmEvidence.status` stays `NOT_REQUESTED`; no model calls are made. |
+| `SPLUNKREADY_LLM_ENABLED=true` | `judge-proof` includes the Gemini-produced fixture trace. |
+| Pass/fail authority | Deterministic rules still decide the receipt verdict. |
+
+For judging sessions:
 
 ```bash
 export SPLUNKREADY_LLM_ENABLED=true
@@ -346,18 +353,29 @@ npm run audit:public-package-currentness -- --out submission-evidence/public-pac
 npm run audit:release-alignment
 ```
 
-That preflight checks package metadata, dry-run pack contents, npm registry
-state, and local npm authentication. It prints `PUBLISHED` for the current
-released version, `READY` for a bumped unpublished version, and `BLOCKED` when
-the package is otherwise ready but the machine is not logged in to npm. The
-currentness audit checks the public registry, runs the latest published
-`judge-proof` from a clean temp folder, and verifies whether the published
-package can initialize the SplunkReady MCP stdio server.
-The release-alignment audit converts source-currentness drift into the exact
-next publish action. Current evidence is
-`submission-evidence/release-alignment/release-alignment.json`; after the
-`0.1.14` release it should report that public npm latest matches the local
-package and that published probes pass.
+Release checks:
+
+| Check | Proves |
+| --- | --- |
+| `audit:npm-release-preflight` | package metadata, dry-run pack contents, registry state, and local npm auth |
+| `audit:public-package-currentness` | latest public package runs `judge-proof` from a clean temp folder |
+| `audit:public-package-currentness` | latest public package initializes the SplunkReady MCP stdio server |
+| `audit:release-alignment` | source-currentness drift and the exact next publish action |
+
+Preflight statuses:
+
+| Status | Meaning |
+| --- | --- |
+| `PUBLISHED` | current local version is already released |
+| `READY` | bumped local version is ready to publish |
+| `BLOCKED` | package is ready, but npm auth or registry access is missing |
+
+Current evidence:
+
+- `submission-evidence/release-alignment/release-alignment.json`
+- After the `0.1.14` release, it should report:
+  - public npm latest matches the local package;
+  - published probes pass.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:
@@ -368,13 +386,21 @@ export GEMINI_MODEL="gemini-3.1-flash-lite"
 npm run llm-proof
 ```
 
-`npm run llm-proof` builds the runtime, forces the Gemini-backed specimen for
-the proof run, generates a failing pre-policy trace and a passing policy-guided
-rerun trace, then writes `artifacts/llm-proof/llm-proof-summary.json`. The
-summary records `llmRole: "trace-producer"` and
-`passFailAuthority: "deterministic-rule-engine"` so the AI story is visible
-without turning the model into the judge. Use `npm run judge-proof:llm` when the
-LLM proof should be attached to the main judge proof bundle.
+`npm run llm-proof`:
+
+- builds the runtime;
+- forces the Gemini-backed specimen for the proof run;
+- generates a failing pre-policy trace;
+- generates a passing policy-guided rerun trace;
+- writes `artifacts/llm-proof/llm-proof-summary.json`.
+
+The summary records:
+
+- `llmRole: "trace-producer"`
+- `passFailAuthority: "deterministic-rule-engine"`
+
+Use `npm run judge-proof:llm` when the LLM proof should be attached to the main
+judge proof bundle.
 
 To prove the local MCP certification server path, run:
 
@@ -476,19 +502,32 @@ with:
 npm run mcp
 ```
 
-The client-config resources use `npm run mcp` with a `/path/to/SplunkReady`
-placeholder for SplunkReady. Antigravity uses
-`~/.gemini/antigravity/mcp_config.json` with `mcpServers`; Zed uses
-`~/.config/zed/settings.json` with `context_servers`. The existing Splunk MCP
-side uses an `npx -y mcp-remote` template with
-`${SPLUNKREADY_SPLUNK_MCP_URL}` and `${SPLUNKREADY_SPLUNK_MCP_TOKEN}`
-placeholders copied from the Splunk MCP Server app sample client configuration.
-The published public npm package supports the no-clone `judge-proof` command,
-the `splunkready mcp` entrypoint, credential-free `live-proof --live-mock`,
-signed policy-registry commands, and the `mcp-recorder` gateway. Newer
-current-source subpaths, including `splunkready/policy`, require the next npm
-release and a clean public-package currentness audit before they are public npm
-claims.
+Client-config resources:
+
+| Client | Config shape |
+| --- | --- |
+| Claude Desktop / Cursor | `npm run mcp` with `/path/to/SplunkReady` |
+| Antigravity | `~/.gemini/antigravity/mcp_config.json` with `mcpServers` |
+| Zed | `~/.config/zed/settings.json` with `context_servers` |
+| Splunk MCP side | `npx -y mcp-remote` template |
+
+Splunk MCP placeholders:
+
+- `${SPLUNKREADY_SPLUNK_MCP_URL}`
+- `${SPLUNKREADY_SPLUNK_MCP_TOKEN}`
+
+Public npm package supports:
+
+- no-clone `judge-proof`;
+- `splunkready mcp`;
+- credential-free `live-proof --live-mock`;
+- signed policy-registry commands;
+- `mcp-recorder` gateway.
+
+Current-source package boundary:
+
+- `splunkready/policy` requires the next npm release;
+- public npm claims require a clean public-package currentness audit.
 
 The release gate also packs the current source into a clean temp project and
 requires the installed package to complete both `npx splunkready judge-proof`
@@ -554,9 +593,12 @@ For UI development with Vite middleware, use:
 npm run workbench:dev
 ```
 
-The workbench API and UI are served from the same local origin. Live actions
-remain disabled unless the live environment variables in the Live Mode section
-are set in the shell that starts the server.
+Workbench boundary:
+
+- API and UI are served from the same local origin.
+- Fixture actions work without live Splunk credentials.
+- Live actions stay disabled unless the Live Mode environment variables are set
+  in the shell that starts the server.
 
 ## Public Demo Export
 
@@ -763,10 +805,15 @@ For external-agent CI, `proof-audit --require-pass true` recognizes
 `receipt-external-001.json` as an `external-trace` proof and fails the gate
 unless the deterministic receipt is `READY`.
 
-Each audit also writes `proof-manifest.json`, a SHA-256 manifest for the proof
-bundle files. That lets shared artifacts be checked without re-running the
-agent. `verify-manifest` re-hashes the bundle and fails if any audited artifact
-was changed, removed, or added after the manifest was created.
+Each audit also writes `proof-manifest.json`.
+
+Manifest behavior:
+
+- records SHA-256 hashes for proof bundle files;
+- lets shared artifacts be checked without re-running the agent;
+- fails if an audited artifact was changed, removed, or added.
+
+Verifier command: `verify-manifest`.
 
 To add replay lineage over all receipt artifacts in a bundle:
 
@@ -780,14 +827,21 @@ npm run splunkready -- receipt-replay \
   --json
 ```
 
-This writes `receipt-chain.json`, a deterministic SHA-256 chain over every
-schema-valid `receipt-*.json` artifact in the directory tree. The chain report
-records `mutation: false` and keeps deterministic grading as the authority; it
-does not make any model or Splunk calls. `receipt-replay` writes
-`receipt-replay.json` by re-deriving receipts from the proof bundle's compiled
-contract, mission, trace, and violation artifacts, then comparing canonical
-receipt hashes. `verify-receipt-chain` remains supported as a compatibility
-alias for the same verifier.
+This writes two replay artifacts:
+
+| Artifact | Purpose |
+| --- | --- |
+| `receipt-chain.json` | deterministic SHA-256 chain over every schema-valid `receipt-*.json` |
+| `receipt-replay.json` | re-derived receipt hashes from contract, mission, trace, and violations |
+
+Receipt-chain boundary:
+
+- records `mutation: false`;
+- keeps deterministic grading as the authority;
+- makes no model calls;
+- makes no Splunk calls.
+
+Compatibility alias: `verify-receipt-chain`.
 
 For a signed local chain, initialize a key pair outside tracked evidence and
 sign the bundle:
@@ -831,14 +885,30 @@ npm run splunkready -- evaluate \
 npm run splunkready -- receipt --out artifacts/policy-eval --json
 ```
 
-The receipt will include `policy.id: "pci-dss-readiness"` plus the policy
-version and canonical policy hash. The tracked examples are
-`policies/default.policy.json`, `policies/soc2-readiness.policy.json`, and
-`policies/pci-dss-readiness.policy.json`; signed installed copies are tracked in
-`submission-evidence/policy-registry/`. See
-[docs/policy-authoring.md](docs/policy-authoring.md) for the authoring contract.
-For a compact smoke path, the important step is
-`evaluate --policy pci-dss-readiness` before generating the receipt.
+The receipt includes:
+
+- `policy.id: "pci-dss-readiness"`
+- policy version
+- canonical policy hash
+
+Tracked policy examples:
+
+- `policies/default.policy.json`
+- `policies/soc2-readiness.policy.json`
+- `policies/pci-dss-readiness.policy.json`
+
+Signed installed copies:
+
+- `submission-evidence/policy-registry/`
+
+Authoring contract:
+
+- [docs/policy-authoring.md](docs/policy-authoring.md)
+
+Compact smoke path:
+
+- run `evaluate --policy pci-dss-readiness`
+- then generate the receipt
 
 See [examples/README.md](examples/README.md) for:
 
@@ -899,14 +969,24 @@ To use the same transcript gate as a GitHub Action step:
     path: ${{ steps.splunkready.outputs.diagnostics-path }}
 ```
 
-The repository-root `action.yml` is a composite action. It installs and builds
-SplunkReady from the action checkout, writes proof artifacts into the caller
-workspace, and exposes `out-dir`, `receipt-path`, and `summary-path` outputs.
-It also exposes `diagnostics-path`: `compiler-diagnostics.json` for
-`judge-proof`, or `readiness-profile.json` for transcript/trace gates. The
-action writes a short GitHub job summary with the selected mode, status, proof
-directory, receipt path, summary path, and diagnostics path. Pin it to a tag or
-commit for production CI.
+The repository-root `action.yml` is a composite action.
+
+It:
+
+- installs and builds SplunkReady from the action checkout;
+- writes proof artifacts into the caller workspace;
+- exposes `out-dir`, `receipt-path`, and `summary-path`;
+- exposes `diagnostics-path`;
+- writes a short GitHub job summary.
+
+Diagnostics output:
+
+| Mode | `diagnostics-path` |
+| --- | --- |
+| `judge-proof` | `compiler-diagnostics.json` |
+| transcript/trace gates | `readiness-profile.json` |
+
+For production CI, pin the action to a tag or commit.
 
 To exercise the same certification path through the stdio MCP server itself:
 
@@ -914,30 +994,51 @@ To exercise the same certification path through the stdio MCP server itself:
 npm run mcp-proof
 ```
 
-That command writes an MCP proof summary with explicit Splunk MCP boundary
-evidence, MCP resource-template discovery, hosted-model diagnostic
-resource/prompt discovery, Claude Desktop and Cursor MCP client config
-resources, inline transcript certification, deterministic MCP composition
-review, a redacted dual-server recorder session at
-`dual-server-session.jsonl`, recorder-gateway inline and path certification
-receipts when run with `--live-mock`, fixture hosted-model access,
-operator-live hosted-model status when a redacted live diagnostic exists, the
-uploaded transcript copy, `trace-imported.json`, `trace-external.json`,
-`receipt-external-001.json`, `proof-audit.json`, and the transcript
-certification summary under `artifacts/mcp-proof/`.
+That command writes `artifacts/mcp-proof/`.
 
-For operator-owned live SAIA checks, `hosted-model-proof` and
-`hosted-model-diagnostic` accept `--env-file <path>` so ignored
-`.splunkready*` files can supply live variables without printing token values.
-If Splunk AI Assistant uses a separate cloud MCP endpoint, set
-`SPLUNKREADY_SAIA_ENDPOINT` and `SPLUNKREADY_SAIA_TOKEN`; SplunkReady keeps core
-Splunk MCP calls on `SPLUNKREADY_SPLUNK_MCP_URL` and routes only `saia_*`
-hosted-model calls to the SAIA target. `SPLUNKREADY_SAIA_MCP_URL` /
-`SPLUNKREADY_SAIA_MCP_TOKEN`, `SAIA_MCP_URL` / `SAIA_MCP_TOKEN`, and
-`SPLUNK_AI_ASSISTANT_MCP_URL` / `SPLUNK_AI_ASSISTANT_MCP_TOKEN` are accepted
-aliases when the values are copied from an MCP client configuration. Dedicated
-SAIA/cloud routes can also set `SPLUNKREADY_SAIA_REALM` and
-`SPLUNKREADY_SAIA_TENANT` when the remote MCP gateway requires those headers.
+The summary includes:
+
+- explicit Splunk MCP boundary evidence;
+- MCP resource-template discovery;
+- hosted-model diagnostic resource and prompt discovery;
+- Claude Desktop and Cursor MCP client config resources;
+- inline transcript certification;
+- deterministic MCP composition review;
+- redacted dual-server recorder session: `dual-server-session.jsonl`;
+- recorder-gateway inline and path certification receipts when run with
+  `--live-mock`;
+- fixture hosted-model access;
+- operator-live hosted-model status when a redacted live diagnostic exists.
+
+Transcript artifacts:
+
+- uploaded transcript copy
+- `trace-imported.json`
+- `trace-external.json`
+- `receipt-external-001.json`
+- `proof-audit.json`
+- transcript certification summary
+
+Operator-owned live SAIA checks:
+
+| Need | Setting |
+| --- | --- |
+| Load ignored live variables | `--env-file <path>` |
+| Separate Splunk AI Assistant endpoint | `SPLUNKREADY_SAIA_ENDPOINT` |
+| Separate Splunk AI Assistant token | `SPLUNKREADY_SAIA_TOKEN` |
+| Core Splunk MCP target | `SPLUNKREADY_SPLUNK_MCP_URL` |
+| SAIA-only routing | only `saia_*` hosted-model calls go to the SAIA target |
+
+Accepted SAIA endpoint/token aliases:
+
+- `SPLUNKREADY_SAIA_MCP_URL` / `SPLUNKREADY_SAIA_MCP_TOKEN`
+- `SAIA_MCP_URL` / `SAIA_MCP_TOKEN`
+- `SPLUNK_AI_ASSISTANT_MCP_URL` / `SPLUNK_AI_ASSISTANT_MCP_TOKEN`
+
+Optional remote gateway headers:
+
+- `SPLUNKREADY_SAIA_REALM`
+- `SPLUNKREADY_SAIA_TENANT`
 
 To summarize several proof bundles for one environment, generate a certification index:
 
@@ -959,8 +1060,10 @@ The command writes `certification-index.json`, a compact ledger of:
 - proof-manifest hashes;
 - UI links back to each proof bundle.
 
-It also writes `ui-artifacts.json`, which lets the Vite app populate its
-artifact selector from the generated proof set instead of a hardcoded demo list.
+It also writes `ui-artifacts.json`.
+
+The Vite app uses that file to populate the artifact selector from generated
+proof sets instead of a hardcoded demo list.
 
 Use `--require-pass true` in CI to fail the job if any indexed proof audit is
 `WARN` or `FAIL`.
@@ -1220,10 +1323,13 @@ It then:
 - grades traces with deterministic rules;
 - emits a Readiness Receipt.
 
-See [architecture_diagram.md](architecture_diagram.md) for the root architecture
-diagram and [docs/architecture.svg](docs/architecture.svg) for the rendered
-visual. `npm run public-demo:build` exports the rendered visual at the stable
-public-demo path `artifacts/public-demo/architecture.svg`.
+Architecture visuals:
+
+| Artifact | Path |
+| --- | --- |
+| Root diagram source | [architecture_diagram.md](architecture_diagram.md) |
+| Rendered SVG | [docs/architecture.svg](docs/architecture.svg) |
+| Public-demo export | `artifacts/public-demo/architecture.svg` |
 
 Core flow:
 
@@ -1231,10 +1337,14 @@ Core flow:
    shared adapter contract.
 2. The compiler builds an environment contract with indexes, sourcetypes,
    saved searches, knowledge objects, fields, app context, and query budgets.
-3. The compiler emits a readiness profile binding deterministic rule IDs to those Splunk contract facts.
-4. The harness runs the bundled deterministic specimen or ingests an externally captured agent trace.
-5. The trace recorder/schema captures tool calls, evidence, results, and final answers.
-6. Deterministic grader rules produce violations, score, verdict, and policy patch guidance.
+3. The compiler emits a readiness profile binding deterministic rule IDs to
+   those Splunk contract facts.
+4. The harness runs the bundled deterministic specimen or ingests an externally
+   captured agent trace.
+5. The trace recorder/schema captures tool calls, evidence, results, and final
+   answers.
+6. Deterministic grader rules produce violations, score, verdict, and policy
+   patch guidance.
 7. The Readiness Receipt and static UI make the evidence reviewable.
 
 ## Development
