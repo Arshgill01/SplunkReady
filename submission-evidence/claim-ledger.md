@@ -189,3 +189,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Overall / Best Use of Splunk AI / Best Developer Experience. The public workbench had to serve the newly committed live SAIA PASS evidence instead of the older pre-remediation commit.
 - Evidence: `git push origin splunkready-build`; `gh workflow run public-demo-pages.yml --ref splunkready-build`; `gh run watch 27505856235 --exit-status`; `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`; hosted manifest now reports `sourceCommit: "1e32825af35a524900cdba5047964cab01ccf53c"` and default route `?artifacts=artifacts%2Fmcp-proof#mcp-proof`.
 - Award impact: Makes the public demo source-current with the verified live Splunk AI Assistant hosted-model PASS evidence.
+
+## Iteration 24 — 2026-06-14T17:06:00Z
+- Changed: `README.md`, `submission-evidence/claim-ledger.md`, `submission-evidence/evidence-pack-sha256.txt`
+- Why: Best Developer Experience / Most Innovative. Judge-facing README sections still had large dense paragraphs, especially Splunk App Package proof, external trace grading, suite proof, live proof, LLM mode, and receipt concept sections.
+- Evidence: `awk 'length($0)>180 {printf "%d:%d:%s\n", NR, length($0), $0}' README.md`; `npm test tests/scripts/submission-copy-audit.test.ts`; `npm run audit:submission-copy`; `git diff --check`.
+- Award impact: Keeps the first-read path scannable while preserving audited claims about Splunk app packaging, receipt-store proof, live SAIA PASS, deterministic authority, and zero-mutation boundaries.

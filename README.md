@@ -4,7 +4,10 @@
 
 Certify AI agents before they touch production Splunk.
 
-SplunkReady is a Splunk-native certification harness and local workbench for teams shipping agents that can call Splunk. It does not answer alerts for the operator. It proves whether a specific agent can safely operate against a specific Splunk deployment.
+SplunkReady is a Splunk-native certification harness and local workbench for
+teams shipping agents that can call Splunk. It does not answer alerts for the
+operator. It proves whether a specific agent can safely operate against a
+specific Splunk deployment.
 
 ## TL;DR
 
@@ -34,7 +37,10 @@ Live Splunk evidence:
 - `submission-evidence/official-splunk-mcp-live/official-splunk-mcp-live-session.redacted.jsonl`
 - `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`
 - `submission-evidence/live-hosted-model-status/live-hosted-model-status.json`
-- Official `Splunk_MCP_Server` calls are captured from the operator-owned live endpoint; after operator-authorized SAIA enablement, live Splunk AI Assistant hosted-model calls pass for generate, explain, optimize, and ask-splunk-question.
+- Official `Splunk_MCP_Server` calls are captured from the operator-owned live
+  endpoint.
+- After operator-authorized SAIA enablement, live Splunk AI Assistant hosted-model calls pass.
+  Covered tools: generate, explain, optimize, and ask-splunk-question.
 
 `npm run platform-proof` writes:
 
@@ -62,7 +68,9 @@ Developer workflow surfaces:
 - PR gate sample: `npm run pr-gate:sample`
 - GitHub Action: `action.yml`
 - Trace bridge and external-trace examples: [examples/README.md](examples/README.md)
-- Published typed policy SDK: `import { policy } from "splunkready/policy"` (see [`src/policy-sdk/README.md`](src/policy-sdk/README.md) and [`policies/README.md`](policies/README.md)).
+- Published typed policy SDK: `import { policy } from "splunkready/policy"`
+  (see [`src/policy-sdk/README.md`](src/policy-sdk/README.md) and
+  [`policies/README.md`](policies/README.md)).
 - Local package boundary: this subpath is in current local `splunkready@0.1.13` builds and is clean-install verified.
 
 Start with [submission-evidence/JUDGE-PATH.md](submission-evidence/JUDGE-PATH.md)
@@ -177,7 +185,17 @@ Evidence:
 - Public release: `https://github.com/Arshgill01/SplunkReady/releases/tag/v0.1.7`
 - Public release evidence: `submission-evidence/standalone-release/standalone-release-github-release.json`
 
-The current-OS evidence reports `status: "PASS"`, target `macos-arm64`, smoke `PASS`, stdout command `judge-proof`, 67 generated artifacts, and `mutation: false`. The matrix evidence shows Linux, macOS, and Windows runners each built, smoked, and uploaded standalone artifacts.
+The current-OS evidence records:
+
+- `status: "PASS"`
+- target `macos-arm64`
+- smoke `PASS`
+- stdout command `judge-proof`
+- 67 generated artifacts
+- `mutation: false`
+
+The matrix evidence shows Linux, macOS, and Windows runners each built,
+smoked, and uploaded standalone artifacts.
 
 Public download smoke:
 
@@ -421,7 +439,17 @@ Category-facing summary:
 - `submission-evidence/mcp-proof/mcp-category-scorecard.json`
 - `submission-evidence/mcp-proof/mcp-category-scorecard.md`
 
-The scorecard combines the SplunkReady MCP surface, mock Splunk MCP session, dual-server recorder transcript, AppInspect MCP composition, hosted-model MCP diagnostic, and strong Zed external-client evidence. It reports `PASS`, score `100`, `VERIFIED_STRONG`, 15 Zed frames, zero warnings, zero failures, deterministic authority, and `mutation: false`. It also keeps the live-operator hosted-model limitation explicit instead of claiming full live entitlement.
+The scorecard combines:
+
+- SplunkReady MCP surface
+- mock Splunk MCP session
+- dual-server recorder transcript
+- AppInspect MCP composition
+- hosted-model MCP diagnostic
+- strong Zed external-client evidence
+
+It reports `PASS`, score `100`, `VERIFIED_STRONG`, 15 Zed frames, zero
+warnings, zero failures, deterministic authority, and `mutation: false`.
 
 For external MCP clients, the checked-out source can start the stdio server
 with:
@@ -492,7 +520,15 @@ For the interactive workbench, run one local command:
 npm run workbench
 ```
 
-The command builds the TypeScript runtime and Vite UI, starts one localhost-only server, and prints the local URL, artifact root, fixture capability, live capability, and SAIA status. The first screen is the usable certification replay; no live Splunk credentials are required for the fixture path.
+The command:
+
+- builds the TypeScript runtime and Vite UI;
+- starts one localhost-only server;
+- prints the local URL, artifact root, fixture capability, live capability, and
+  SAIA status;
+- opens on the usable certification replay, not a marketing page.
+
+No live Splunk credentials are required for the fixture path.
 
 For UI development with Vite middleware, use:
 
@@ -500,7 +536,9 @@ For UI development with Vite middleware, use:
 npm run workbench:dev
 ```
 
-The workbench API and UI are served from the same local origin. Live actions remain disabled unless the live environment variables in the Live Mode section are set in the shell that starts the server.
+The workbench API and UI are served from the same local origin. Live actions
+remain disabled unless the live environment variables in the Live Mode section
+are set in the shell that starts the server.
 
 ## Public Demo Export
 
@@ -511,9 +549,33 @@ npm run public-demo:build
 npm run audit:public-demo-export
 ```
 
-The export writes `artifacts/public-demo` from the built Vite workbench plus tracked submission evidence. The audit checks required proof bundles, the default MCP proof route, the public LLM deliberation artifact route, no secret-named files, no symlinks, and `mutation=false`.
+The export writes `artifacts/public-demo` from:
 
-To deploy that export through GitHub Pages, enable Pages for the repository and run the `Public Demo Pages` workflow manually. The workflow builds `artifacts/public-demo`, runs `audit:public-demo-export`, uploads the Pages artifact, and deploys without live Splunk or Gemini secrets. Do not claim a public URL until that workflow has completed and the Pages URL has been opened successfully.
+- the built Vite workbench;
+- tracked submission evidence;
+- the rendered architecture diagram.
+
+The audit checks:
+
+- required proof bundles;
+- the default MCP proof route;
+- the public LLM deliberation artifact route;
+- no secret-named files;
+- no symlinks;
+- `mutation=false`.
+
+To deploy that export through GitHub Pages, enable Pages for the repository and
+run the `Public Demo Pages` workflow manually.
+
+The workflow:
+
+- builds `artifacts/public-demo`;
+- runs `audit:public-demo-export`;
+- uploads the Pages artifact;
+- deploys without live Splunk or Gemini secrets.
+
+Do not claim a public URL until that workflow has completed and the Pages URL
+has been opened successfully.
 
 Verified hosted demo:
 
@@ -546,48 +608,76 @@ To build an inspectable Splunk app shell around the public artifact workbench:
 npm run splunk-app:package
 ```
 
-The command writes `submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl`
-and `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`.
-The package is static and credential-free: it contains no `local/` directory,
-Python REST handlers, scripted inputs, modular inputs, saved searches, tokens,
-or default-path Splunk write operations. The tracked operator-approved live
-install proof is `submission-evidence/splunk-app-install/splunk-app-install-proof.json`;
-it installed/upgraded the same `.spl`, verified app metadata, views, nav,
-`splunkready_receipts`, and `splunkready_receipts_lookup`, and redacts endpoint,
-username, password, and token values. This is not a Splunkbase approval claim.
-The browser-render proof at
-`submission-evidence/splunk-app-web-proof/splunk-app-web-proof.json` logs into
-operator-owned Splunk Web, verifies the installed launcher route, opens the
-static workbench receipt route
-`/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt`,
-detects the overview dashboard panels, and captures
-`submission-evidence/screenshots/splunk-app-web-proof.png` without writing
-endpoint, username, secret, or cookie values.
-The receipt store proof is
-`submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json`; it
-uses an explicit `--confirm-write true` operator gate to write six public-safe
-receipt summaries into the installed app's KV Store and read them back through
-`splunkready_receipts_lookup`. It does not upload raw traces, raw Splunk events,
-endpoints, usernames, passwords, or tokens.
+The command writes:
 
-The Splunkbase readiness report is
-`submission-evidence/splunkbase-readiness/splunkbase-readiness.json`. It records
-the current `.spl` package SHA, AppInspect precertification result, live install
-proof, receipt-store proof, official Splunk submission references, exact
-packaged listing assets (`appIcon.png` 36x36, `appIcon_2x.png` 72x72, and
-`screenshot.png` 623x350), and remaining external blockers. Current local
-evidence is AppInspect-clean with 0 errors, 0 failures, and one expected KV Store
-warning, but SplunkReady does not claim an "Available on Splunkbase" badge until
-the package is submitted through a publisher account and publicly listed.
-The operator-ready portal copy is tracked in
-`submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json` and
-`docs/splunkbase-listing-dossier.md`; it binds the listing text, release notes,
-support-contact blocker, package SHA, AppInspect result, and the no-badge
-guardrail into a verifier-backed dossier.
+- `submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl`
+- `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`
+
+The package is static and credential-free. It contains no:
+
+- `local/` directory;
+- Python REST handlers;
+- scripted inputs or modular inputs;
+- saved searches;
+- tokens;
+- default-path Splunk write operations.
+
+Operator-approved install proof:
+
+- Evidence: `submission-evidence/splunk-app-install/splunk-app-install-proof.json`
+- Action: installed/upgraded the same `.spl`
+- Verified: app metadata, views, nav, `splunkready_receipts`, and
+  `splunkready_receipts_lookup`
+- Redaction: endpoint, username, password, and token values are not written
+- Boundary: this is not a Splunkbase approval claim
+
+Browser-render proof:
+
+- Evidence: `submission-evidence/splunk-app-web-proof/splunk-app-web-proof.json`
+- Runs against operator-owned Splunk Web
+- Verifies the installed launcher route
+- Opens the static workbench receipt route:
+  `/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt`
+- Detects the overview dashboard panels
+- Captures `submission-evidence/screenshots/splunk-app-web-proof.png`
+- Does not write endpoint, username, secret, or cookie values
+
+Receipt store proof:
+
+- Evidence: `submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json`
+- Requires explicit `--confirm-write true`
+- Writes six public-safe receipt summaries into the installed app's KV Store
+- Reads them back through `splunkready_receipts_lookup`
+- Does not upload raw traces, raw Splunk events, endpoints, usernames,
+  passwords, or tokens
+
+Splunkbase readiness:
+
+- Report: `submission-evidence/splunkbase-readiness/splunkbase-readiness.json`
+- Records the current `.spl` package SHA, AppInspect precertification result,
+  live install proof, receipt-store proof, and official Splunk submission
+  references
+- Tracks packaged listing assets: `appIcon.png` 36x36, `appIcon_2x.png` 72x72,
+  and `screenshot.png` 623x350
+- Current local evidence: 0 errors, 0 failures, and one expected KV Store
+  warning
+- Boundary: SplunkReady does not claim an "Available on Splunkbase" badge until
+  the package is submitted through a publisher account and publicly listed
+
+Operator-ready portal copy:
+
+- `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`
+- `docs/splunkbase-listing-dossier.md`
+- Includes listing text, release notes, support-contact blocker, package SHA,
+  AppInspect result, and the no-badge guardrail
 
 ## Grade a Captured Agent Trace
 
-The fixture demo is reproducible, but SplunkReady is not limited to its bundled specimen. After compiling the environment contract, pass in a schema-valid trace captured from another Splunk-connected agent:
+The fixture demo is reproducible, but SplunkReady is not limited to its bundled
+specimen.
+
+After compiling the environment contract, pass in a schema-valid trace captured
+from another Splunk-connected agent:
 
 ```bash
 npm run build
@@ -607,9 +697,29 @@ npm run splunkready -- verify-manifest \
   --json
 ```
 
-The compile command also writes `readiness-profile.json`, which binds active rule IDs to the compiled Splunk contract. The trace grading command writes `trace-external.json`, deterministic violations, a score, and `receipt-external-001.json` / `.md`. It rejects traces whose `missionId` does not match the selected mission. The trace producer is outside SplunkReady; the deterministic rule engine remains the pass/fail authority.
+The compile command also writes `readiness-profile.json`, which binds active
+rule IDs to the compiled Splunk contract.
 
-For external-agent CI, `proof-audit --require-pass true` recognizes `receipt-external-001.json` as an `external-trace` proof and fails the gate unless the deterministic receipt is `READY`. Each audit also writes `proof-manifest.json`, a SHA-256 manifest for the proof bundle files so shared artifacts can be checked without re-running the agent. `verify-manifest` re-hashes the bundle and fails if any audited artifact was changed, removed, or added after the manifest was created.
+The trace grading command writes:
+
+- `trace-external.json`
+- deterministic violations
+- a score
+- `receipt-external-001.json`
+- `receipt-external-001.md`
+
+It rejects traces whose `missionId` does not match the selected mission. The
+trace producer is outside SplunkReady; the deterministic rule engine remains the
+pass/fail authority.
+
+For external-agent CI, `proof-audit --require-pass true` recognizes
+`receipt-external-001.json` as an `external-trace` proof and fails the gate
+unless the deterministic receipt is `READY`.
+
+Each audit also writes `proof-manifest.json`, a SHA-256 manifest for the proof
+bundle files. That lets shared artifacts be checked without re-running the
+agent. `verify-manifest` re-hashes the bundle and fails if any audited artifact
+was changed, removed, or added after the manifest was created.
 
 To add replay lineage over all receipt artifacts in a bundle:
 
@@ -698,7 +808,18 @@ npm run splunkready -- certify-mcp-transcript \
   --json
 ```
 
-This single gate writes the full evidence chain: compiled contract, imported canonical trace, deterministic violations, external receipt, proof audit, and `mcp-transcript-certification.json`. `--strict-import true` rejects incomplete JSON-RPC logs; `--require-pass true` blocks CI unless the external MCP agent receives a deterministic `READY` receipt.
+This single gate writes:
+
+- compiled contract;
+- imported canonical trace;
+- deterministic violations;
+- external receipt;
+- proof audit;
+- `mcp-transcript-certification.json`.
+
+`--strict-import true` rejects incomplete JSON-RPC logs. `--require-pass true`
+blocks CI unless the external MCP agent receives a deterministic `READY`
+receipt.
 
 To use the same transcript gate as a GitHub Action step:
 
@@ -777,7 +898,21 @@ npm run splunkready -- certification-index \
   --json
 ```
 
-The command writes `certification-index.json`, a compact ledger of proof directories, audit status, receipt verdicts, scores, evidence counts, mutation posture, proof-manifest hashes, and UI links back to each proof bundle. It also writes `ui-artifacts.json`, which lets the Vite app populate its artifact selector from the generated proof set instead of a hardcoded demo list. Use `--require-pass true` in CI to fail the job if any indexed proof audit is `WARN` or `FAIL`.
+The command writes `certification-index.json`, a compact ledger of:
+
+- proof directories;
+- audit status;
+- receipt verdicts and scores;
+- evidence counts;
+- mutation posture;
+- proof-manifest hashes;
+- UI links back to each proof bundle.
+
+It also writes `ui-artifacts.json`, which lets the Vite app populate its
+artifact selector from the generated proof set instead of a hardcoded demo list.
+
+Use `--require-pass true` in CI to fail the job if any indexed proof audit is
+`WARN` or `FAIL`.
 
 ## Multi-Mission Fixture Proof
 
@@ -791,7 +926,31 @@ npm run splunkready -- proof-audit --out artifacts/suite-proof-ci --require-pass
 npm run splunkready -- suite-proof --suite fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json --out artifacts/suite-proof-custom --require-fail-to-pass true --json
 ```
 
-`suite-proof` runs the fixture fail -> patch -> rerun -> pass loop across a suite manifest, defaulting to `fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json`: two security missions and one observability mission. It writes each mission's normal artifacts plus `suite-proof-summary.json` / `.md`, with proof-loop classification, domains covered, evidence counts, suite manifest provenance, and `mutation: false`. This path is credential-free and does not call live Splunk. Use `--require-fail-to-pass true` in CI when a READY receipt is not enough and every mission must prove the full certification loop. `proof-audit --require-pass true` also understands suite bundles and checks the suite summary, mutation posture, fail-to-pass count, READY-after-patch count, and evidence refs.
+`suite-proof` runs the fixture fail -> patch -> rerun -> pass loop across a
+suite manifest.
+
+Default suite:
+
+- `fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json`
+- two security missions
+- one observability mission
+
+It writes each mission's normal artifacts plus `suite-proof-summary.json` /
+`.md`, including:
+
+- proof-loop classification;
+- domains covered;
+- evidence counts;
+- suite manifest provenance;
+- `mutation: false`.
+
+This path is credential-free and does not call live Splunk.
+
+Use `--require-fail-to-pass true` in CI when a READY receipt is not enough and
+every mission must prove the full certification loop. `proof-audit
+--require-pass true` also understands suite bundles and checks the suite
+summary, mutation posture, fail-to-pass count, READY-after-patch count, and
+evidence refs.
 
 ## Runtime Firewall Gate
 
@@ -802,7 +961,19 @@ npm run splunkready -- compile --out artifacts/firewall-check
 npm run splunkready -- evaluate --out artifacts/firewall-check --firewall
 ```
 
-When the firewall blocks a query, SplunkReady rejects it before Splunk execution, writes `firewall-block-before.json` or `firewall-block-after.json`, and exits nonzero. The block report records the query, deterministic rule IDs, tool name, phase, and `mutation: false`. You can audit that bundle directly:
+When the firewall blocks a query, SplunkReady rejects it before Splunk
+execution and exits nonzero.
+
+It writes:
+
+- `firewall-block-before.json` or `firewall-block-after.json`
+- blocked query
+- deterministic rule IDs
+- tool name
+- phase
+- `mutation: false`
+
+You can audit that bundle directly:
 
 ```bash
 npm run splunkready -- proof-audit --out artifacts/firewall-check --require-pass true --json
@@ -829,7 +1000,18 @@ npm run build
 npm run splunkready -- live-smoke --out artifacts/live-smoke
 ```
 
-Without live configuration, the live smoke command skips safely. With live configuration, it calls read-only MCP tools only, writes `live-smoke-contract.json` plus `live-smoke-readiness-profile.json`, and does not run searches or mutate Splunk configuration. See [docs/live-adapter.md](docs/live-adapter.md) and [docs/live-setup-checklist.md](docs/live-setup-checklist.md).
+Without live configuration, the live smoke command skips safely.
+
+With live configuration, it:
+
+- calls read-only MCP tools only;
+- writes `live-smoke-contract.json`;
+- writes `live-smoke-readiness-profile.json`;
+- does not run searches;
+- does not mutate Splunk configuration.
+
+See [docs/live-adapter.md](docs/live-adapter.md) and
+[docs/live-setup-checklist.md](docs/live-setup-checklist.md).
 
 To derive and certify a live mission from the target deployment's own saved-search/index inventory:
 
@@ -844,9 +1026,42 @@ npm run build
 npm run splunkready -- live-proof --out artifacts/live-proof --candidate-limit 12
 ```
 
-`live-proof` compiles the live contract, scans bounded read-only saved-search candidates, writes `live-derived-mission.json`, then runs evaluate -> receipt -> rerun against that generated mission. It also writes `live-proof-summary.json`, including the explicit `proofLoop` classification (`fail-to-pass`, `ready-without-patch`, or not ready after rerun). If no saved search returns rows but `_internal` is available, it falls back to a bounded `_internal` query mission. It does not create indexes, install apps, write saved searches, or mutate Splunk.
+`live-proof`:
 
-For the flagship security story, `live-security-proof` is stricter: it first requires the lateral-movement saved search and evidence rows discovered by `live-security-check`, then runs the live Gemini specimen through the fail -> patch -> rerun -> pass loop and writes `live-security-proof-summary.json`. The readiness JSON now records `proofMode.fallbackAllowed: false`, setup requirements, and a fallback policy. A fresh Splunk trial without the exact saved search is a clear `BLOCKED` diagnostic, not a hidden `_internal` downgrade.
+- compiles the live contract;
+- scans bounded read-only saved-search candidates;
+- writes `live-derived-mission.json`;
+- runs evaluate -> receipt -> rerun against that generated mission;
+- writes `live-proof-summary.json`.
+
+The summary includes the explicit `proofLoop` classification:
+
+- `fail-to-pass`
+- `ready-without-patch`
+- not ready after rerun
+
+If no saved search returns rows but `_internal` is available, it falls back to a
+bounded `_internal` query mission.
+
+It does not create indexes, install apps, write saved searches, or mutate
+Splunk.
+
+For the flagship security story, `live-security-proof` is stricter.
+
+It requires:
+
+- the lateral-movement saved search;
+- evidence rows discovered by `live-security-check`;
+- the live Gemini specimen fail -> patch -> rerun -> pass loop.
+
+It writes `live-security-proof-summary.json`. The readiness JSON records:
+
+- `proofMode.fallbackAllowed: false`
+- setup requirements
+- fallback policy
+
+A fresh Splunk trial without the exact saved search is a clear `BLOCKED`
+diagnostic, not a hidden `_internal` downgrade.
 
 ## LLM Specimen Agent
 
@@ -872,7 +1087,23 @@ npm run splunkready -- receipt --out artifacts/llm-fixture-proof
 npm run splunkready -- rerun --out artifacts/llm-fixture-proof
 ```
 
-In LLM mode, `evaluate` prompts the model without compiled Splunk contract injection. `rerun` injects the compiled policy and contract. SplunkReady still executes tool calls through the adapter and the deterministic grader still decides pass/fail. The current real-Splunk LLM evidence is tracked under `submission-evidence/real-splunk-stress-llm-layer/`, including `llm-deliberation-before.json`, `llm-deliberation-after.json`, `llm-claim-audit-before.json`, `llm-claim-audit-after.json`, and the rendered workbench screenshot `screenshots/workbench-llm-deliberation.png` in the submission evidence pack. See [docs/llm-specimen-agent.md](docs/llm-specimen-agent.md).
+In LLM mode:
+
+- `evaluate` prompts the model without compiled Splunk contract injection;
+- `rerun` injects the compiled policy and contract;
+- SplunkReady still executes tool calls through the adapter;
+- the deterministic grader still decides pass/fail.
+
+Current real-Splunk LLM evidence is tracked under
+`submission-evidence/real-splunk-stress-llm-layer/`:
+
+- `llm-deliberation-before.json`
+- `llm-deliberation-after.json`
+- `llm-claim-audit-before.json`
+- `llm-claim-audit-after.json`
+- `screenshots/workbench-llm-deliberation.png`
+
+See [docs/llm-specimen-agent.md](docs/llm-specimen-agent.md).
 
 ## Submission Strategy
 
@@ -889,11 +1120,39 @@ SplunkReady targets the Platform & Developer Experience track. The product story
 
 ## Primary Artifact
 
-The Readiness Receipt is the product artifact. It records the environment contract version, mission suite version, trace evidence, deterministic violations, score, verdict, and policy patch summary. The score is severity-weighted and thresholded by deterministic blockers, not hardcoded to `0` or `100`; the calibration artifact under `submission-evidence/readiness-score-calibration/` shows READY `100`, NEEDS REVIEW `88`, and NOT READY `59` examples from the same scorer. The companion readiness profile records why the rule surface is active for this Splunk deployment.
+The Readiness Receipt is the product artifact.
+
+It records:
+
+- environment contract version;
+- mission suite version;
+- trace evidence;
+- deterministic violations;
+- score;
+- verdict;
+- policy patch summary.
+
+The score is severity-weighted and thresholded by deterministic blockers, not
+hardcoded to `0` or `100`.
+
+The calibration artifact under `submission-evidence/readiness-score-calibration/`
+shows READY `100`, NEEDS REVIEW `88`, and NOT READY `59` examples from the same
+scorer.
+
+The companion readiness profile records why the rule surface is active for this
+Splunk deployment.
 
 ## Architecture
 
-The Agent Readiness Compiler keeps fixture and live Splunk access behind the same adapter boundary, then compiles a contract, runs missions, grades traces with deterministic rules, and emits a Readiness Receipt.
+The Agent Readiness Compiler keeps fixture and live Splunk access behind the
+same adapter boundary.
+
+It then:
+
+- compiles a contract;
+- runs missions;
+- grades traces with deterministic rules;
+- emits a Readiness Receipt.
 
 See [architecture_diagram.md](architecture_diagram.md) for the root architecture
 diagram and [docs/architecture.svg](docs/architecture.svg) for the rendered
@@ -923,12 +1182,22 @@ npm run check
 
 ## Limitations
 
-- SplunkReady is a certification harness, not a chatbot, SOC copilot, detection-health product, or generic eval platform.
-- The fixture demo uses representative Splunk fixture data; it is designed for deterministic local verification, not as a claim about every production deployment.
-- Live mode is read-only from SplunkReady's side. The live smoke path only inventories Splunk; `live-proof` and `live-security-proof` run bounded read-only searches through MCP.
+- SplunkReady is a certification harness, not a chatbot, SOC copilot,
+  detection-health product, or generic eval platform.
+- The fixture demo uses representative Splunk fixture data. It is designed for
+  deterministic local verification, not as a claim about every production
+  deployment.
+- Live mode is read-only from SplunkReady's side. The live smoke path only
+  inventories Splunk; `live-proof` and `live-security-proof` run bounded
+  read-only searches through MCP.
 - SplunkReady never auto-mutates Splunk. Policy patches are exported for operator review.
 - LLMs may explain results or draft policy text, but deterministic grader rules decide pass/fail.
-- The default bundled specimen is deterministic TypeScript code for reproducible fixture demos. The env-gated Gemini specimen produces fixture and live traces. The strict flagship live security proof requires operator-owned Splunk setup data because SplunkReady does not install apps, indexes, saved searches, or events automatically.
+- The default bundled specimen is deterministic TypeScript code for
+  reproducible fixture demos.
+- The env-gated Gemini specimen produces fixture and live traces.
+- The strict flagship live security proof requires operator-owned Splunk setup
+  data because SplunkReady does not install apps, indexes, saved searches, or
+  events automatically.
 
 ## Submission Materials
 
