@@ -1,0 +1,93 @@
+{
+  "source": "splunkready-official-splunk-mcp-live-audit",
+  "status": "PASS",
+  "score": 7,
+  "maxScore": 7,
+  "mutation": false,
+  "deterministicAuthority": true,
+  "summaryPath": "submission-evidence/official-splunk-mcp-live/official-splunk-mcp-live-summary.json",
+  "sessionPath": "submission-evidence/official-splunk-mcp-live/official-splunk-mcp-live-session.redacted.jsonl",
+  "checks": [
+    {
+      "id": "official-splunk-mcp-server",
+      "status": "PASS",
+      "evidence": {
+        "status": "PASS",
+        "serverInfo": {
+          "name": "Splunk_MCP_Server",
+          "version": "1.2.0"
+        }
+      },
+      "failure": null
+    },
+    {
+      "id": "official-splunk-mcp-tools-listed",
+      "status": "PASS",
+      "evidence": {
+        "toolCount": 14,
+        "requiredToolsPresent": [
+          "splunk_get_info",
+          "splunk_get_knowledge_objects",
+          "splunk_run_saved_search"
+        ]
+      },
+      "failure": null
+    },
+    {
+      "id": "official-splunk-mcp-saia-tools-advertised",
+      "status": "PASS",
+      "evidence": {
+        "hostedModelToolsPresent": [
+          "saia_generate_spl",
+          "saia_explain_spl",
+          "saia_optimize_spl",
+          "saia_ask_splunk_question"
+        ]
+      },
+      "failure": null
+    },
+    {
+      "id": "official-splunk-mcp-runtime-tool-calls",
+      "status": "PASS",
+      "evidence": {
+        "calledTools": [
+          "splunk_get_info",
+          "splunk_get_knowledge_objects",
+          "splunk_run_saved_search"
+        ],
+        "toolCallRequestCount": 3,
+        "responseFrameCount": 5
+      },
+      "failure": null
+    },
+    {
+      "id": "official-splunk-mcp-saved-search-executed",
+      "status": "PASS",
+      "evidence": {
+        "savedSearchCallAttempted": true,
+        "savedSearchStatus": "PASS"
+      },
+      "failure": null
+    },
+    {
+      "id": "official-splunk-mcp-public-redaction",
+      "status": "PASS",
+      "evidence": {
+        "endpointWritten": false,
+        "tokenWritten": false,
+        "localUserWritten": false
+      },
+      "failure": null
+    },
+    {
+      "id": "official-splunk-mcp-no-mutation",
+      "status": "PASS",
+      "evidence": {
+        "mutation": false,
+        "deterministicAuthority": true
+      },
+      "failure": null
+    }
+  ],
+  "failures": []
+}

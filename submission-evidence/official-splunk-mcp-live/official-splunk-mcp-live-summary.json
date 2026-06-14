@@ -1,0 +1,43 @@
+{
+  "source": "splunkready-official-splunk-mcp-live-proof",
+  "status": "PASS",
+  "generatedAt": "2026-06-14T11:34:25.790Z",
+  "endpoint": "[SPLUNK_MCP_URL]",
+  "serverInfo": {
+    "name": "Splunk_MCP_Server",
+    "version": "1.2.0"
+  },
+  "protocolVersion": "2025-06-18",
+  "toolCount": 14,
+  "requiredToolsPresent": [
+    "splunk_get_info",
+    "splunk_get_knowledge_objects",
+    "splunk_run_saved_search"
+  ],
+  "hostedModelToolsPresent": [
+    "saia_generate_spl",
+    "saia_explain_spl",
+    "saia_optimize_spl",
+    "saia_ask_splunk_question"
+  ],
+  "calledTools": [
+    "splunk_get_info",
+    "splunk_get_knowledge_objects",
+    "splunk_run_saved_search"
+  ],
+  "savedSearchCallAttempted": true,
+  "savedSearchName": "[REDACTED_SAVED_SEARCH_NAME]",
+  "savedSearchStatus": "PASS",
+  "redaction": {
+    "endpointWritten": false,
+    "tokenWritten": false,
+    "localUserWritten": false
+  },
+  "mutation": false,
+  "deterministicAuthority": true,
+  "artifacts": [
+    "submission-evidence/official-splunk-mcp-live/official-splunk-mcp-live-summary.json",
+    "submission-evidence/official-splunk-mcp-live/official-splunk-mcp-live-session.redacted.jsonl",
+    "submission-evidence/official-splunk-mcp-live/README.md"
+  ]
+}

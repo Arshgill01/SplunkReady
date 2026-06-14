@@ -30,9 +30,11 @@ Fast hosted launch packet:
 
 Live Splunk evidence:
 
+- `submission-evidence/official-splunk-mcp-live/official-splunk-mcp-live-summary.json`
+- `submission-evidence/official-splunk-mcp-live/official-splunk-mcp-live-session.redacted.jsonl`
 - `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`
 - `submission-evidence/live-hosted-model-status/live-hosted-model-status.json`
-- Core Splunk MCP calls are replay-audited from a real Splunk-backed MCP bridge; Splunk AI Assistant local handlers are live-probed at runtime and currently block only at the downstream hosted SAIA cloud route.
+- Official `Splunk_MCP_Server` calls are captured from the operator-owned live endpoint; Splunk AI Assistant local handlers are live-probed at runtime and currently block only at the downstream hosted SAIA cloud route.
 
 `npm run platform-proof` builds the CLI, runs the fixture demo, runs
 `judge-proof`, certifies the sample Splunk MCP JSON-RPC transcript with

@@ -41,6 +41,9 @@ Not a generic eval harness.
 Not an LLM judging another LLM.
 docs/architecture.svg
 artifacts/public-demo/architecture.svg
+submission-evidence/official-splunk-mcp-live/official-splunk-mcp-live-summary.json
+submission-evidence/official-splunk-mcp-live/official-splunk-mcp-live-session.redacted.jsonl
+Official \`Splunk_MCP_Server\` calls
 submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json
 submission-evidence/live-hosted-model-status/live-hosted-model-status.json
 downstream hosted SAIA cloud route
