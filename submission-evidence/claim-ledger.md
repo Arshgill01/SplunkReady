@@ -171,3 +171,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Use of Splunk AI / Best Overall. Read-only Splunk probes showed SAIA token issuance and cloud-connected configuration are present, but `saia_metadata.mcp_tool_enabled` and `saia_settings_v2.enabled` are false; this makes the remaining hosted-model blocker actionable without performing hidden Splunk config mutation.
 - Evidence: Read-only GET probes against `/config`, `/saia_token`, `/version`, `cloud_connected_configurations`, `saia_metadata`, and `saia_settings_v2`; `npm test tests/scripts/live-hosted-model-status.test.ts`.
 - Award impact: Turns the SAIA blocker from a generic cloud 404 into a precise operator action while preserving the zero-mutation boundary.
+
+## Iteration 21 — 2026-06-14T16:34:12Z
+- Changed: `README.md`, `docs/architecture.svg`, `submission-evidence/claim-ledger.md`
+- Why: Best Overall / Best Developer Experience / Most Innovative. The README first-read path had dense paragraphs, and the rendered architecture SVG had stale layout/text problems relative to `architecture_diagram.md`.
+- Evidence: `npx playwright install chromium`; Playwright rendered `http://127.0.0.1:8765/docs/architecture.svg` to `output/playwright/architecture-svg.png`; `xmllint --noout docs/architecture.svg`; `npm run audit:public-demo-export`; `npm test tests/scripts/submission-copy-audit.test.ts`; `npm run audit:submission-copy`.
+- Award impact: Makes the Agent -> SplunkReady Engine -> Splunk MCP architecture legible in one screen and keeps judge-facing README copy scannable without changing runtime claims.

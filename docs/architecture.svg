@@ -1,83 +1,151 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
   <title id="title">SplunkReady architecture diagram</title>
-  <desc id="desc">An agent under certification flows through the SplunkReady Engine to the Splunk MCP Server. Fixture and optional live Splunk MCP adapters feed the Agent Readiness Compiler, which produces missions, traces, deterministic grading results, policy patches, and Readiness Receipts.</desc>
+  <desc id="desc">Agent under certification sends traces to the SplunkReady Engine and Agent Readiness Compiler. The compiler uses fixture or live Splunk MCP data, treats Splunk AI Assistant hosted-model output as advisory only, and produces deterministic Readiness Receipts, proof audits, manifests, workbench views, and submission evidence.</desc>
   <style>
-    .bg { fill: #f7f7f4; }
-    .box { fill: #ffffff; stroke: #242622; stroke-width: 2; rx: 10; }
-    .dark { fill: #242622; stroke: #242622; stroke-width: 2; rx: 10; }
-    .accent { fill: #b45224; stroke: #8f3f19; stroke-width: 2; rx: 10; }
-    .muted { fill: #eef0ea; stroke: #7f857c; stroke-width: 2; rx: 10; }
-    .title { font: 700 28px Arial, sans-serif; fill: #1f2421; }
-    .label { font: 700 19px Arial, sans-serif; fill: #1f2421; }
-    .small { font: 400 15px Arial, sans-serif; fill: #474d49; }
-    .darkText { font: 700 19px Arial, sans-serif; fill: #ffffff; }
-    .darkSmall { font: 400 15px Arial, sans-serif; fill: #f7f7f4; }
-    .white { font: 700 19px Arial, sans-serif; fill: #ffffff; }
-    .arrow { stroke: #242622; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .bg { fill: #f6f7f4; }
+    .panel { fill: #ffffff; stroke: #c9cec4; stroke-width: 2; rx: 14; }
+    .panelTitle { font: 700 18px Arial, sans-serif; fill: #232823; letter-spacing: 0; }
+    .node { fill: #ffffff; stroke: #222821; stroke-width: 2; rx: 10; }
+    .nodeSoft { fill: #eef1eb; stroke: #7c8578; stroke-width: 2; rx: 10; }
+    .nodeDark { fill: #202620; stroke: #202620; stroke-width: 2; rx: 10; }
+    .nodeAccent { fill: #b45224; stroke: #8f3f19; stroke-width: 2; rx: 10; }
+    .nodeWarn { fill: #fff5df; stroke: #ba8a2a; stroke-width: 2; rx: 10; }
+    .title { font: 700 30px Arial, sans-serif; fill: #202620; letter-spacing: 0; }
+    .subtitle { font: 400 15px Arial, sans-serif; fill: #4d554c; letter-spacing: 0; }
+    .label { font: 700 16px Arial, sans-serif; fill: #202620; letter-spacing: 0; }
+    .small { font: 400 13px Arial, sans-serif; fill: #4d554c; letter-spacing: 0; }
+    .smallBold { font: 700 13px Arial, sans-serif; fill: #30372f; letter-spacing: 0; }
+    .darkLabel { font: 700 16px Arial, sans-serif; fill: #ffffff; letter-spacing: 0; }
+    .darkSmall { font: 400 13px Arial, sans-serif; fill: #f5f6f2; letter-spacing: 0; }
+    .whiteLabel { font: 700 16px Arial, sans-serif; fill: #ffffff; letter-spacing: 0; }
+    .whiteSmall { font: 400 13px Arial, sans-serif; fill: #fff9f4; letter-spacing: 0; }
+    .arrow { stroke: #202620; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .arrowSoft { stroke: #677064; stroke-width: 2.5; fill: none; marker-end: url(#arrowSoft); }
+    .arrowAdvisory { stroke: #ba8a2a; stroke-width: 2.5; fill: none; stroke-dasharray: 7 7; marker-end: url(#arrowAdvisory); }
   </style>
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L0,6 L9,3 z" fill="#242622" />
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,8 L11,4 z" fill="#202620" />
+    </marker>
+    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,8 L11,4 z" fill="#677064" />
+    </marker>
+    <marker id="arrowAdvisory" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,8 L11,4 z" fill="#ba8a2a" />
     </marker>
   </defs>
 
   <rect class="bg" width="1280" height="720" />
-  <text class="title" x="64" y="62">SplunkReady: Agent Readiness Compiler</text>
-  <text class="small" x="64" y="92">Certify AI agents before they touch production Splunk.</text>
+  <text class="title" x="54" y="54">SplunkReady Architecture</text>
+  <text class="subtitle" x="54" y="80">Certify AI agents before production Splunk.</text>
 
-  <rect class="box" x="690" y="42" width="148" height="58" />
-  <text class="label" x="716" y="76">Agent</text>
+  <rect class="node" x="430" y="34" width="150" height="56" />
+  <text class="label" x="478" y="58">Agent</text>
+  <text class="small" x="466" y="76">under test</text>
 
-  <rect class="accent" x="878" y="42" width="204" height="58" />
-  <text class="white" x="904" y="76">SplunkReady Engine</text>
+  <rect class="nodeAccent" x="636" y="34" width="230" height="56" />
+  <text class="whiteLabel" x="672" y="58">SplunkReady Engine</text>
+  <text class="whiteSmall" x="690" y="76">deterministic gate</text>
 
-  <rect class="box" x="1122" y="42" width="134" height="58" />
-  <text class="label" x="1140" y="68">Splunk MCP</text>
-  <text class="small" x="1140" y="88">Server</text>
+  <rect class="node" x="922" y="34" width="190" height="56" />
+  <text class="label" x="968" y="58">Splunk MCP</text>
+  <text class="small" x="992" y="76">Server</text>
 
-  <path class="arrow" d="M838 71 H878" />
-  <path class="arrow" d="M1082 71 H1122" />
+  <path class="arrow" d="M580 62 H636" />
+  <path class="arrow" d="M866 62 H922" />
 
-  <rect class="box" x="64" y="140" width="230" height="92" />
-  <text class="label" x="88" y="174">Fixture Adapter</text>
-  <text class="small" x="88" y="202">No credentials required</text>
+  <rect class="panel" x="50" y="128" width="250" height="244" />
+  <text class="panelTitle" x="74" y="158">Agent under certification</text>
 
-  <rect class="box" x="64" y="272" width="230" height="92" />
-  <text class="label" x="88" y="306">Live MCP Adapter</text>
-  <text class="small" x="88" y="334">Optional read-only smoke</text>
+  <rect class="nodeSoft" x="74" y="182" width="202" height="48" />
+  <text class="label" x="96" y="211">Bundled specimen</text>
 
-  <rect class="dark" x="378" y="194" width="280" height="118" />
-  <text class="darkText" x="408" y="232">Shared Adapter Boundary</text>
-  <text class="darkSmall" x="408" y="262">Same contract after this point</text>
-  <text class="darkSmall" x="408" y="288">No Splunk auto-mutation</text>
+  <rect class="nodeSoft" x="74" y="246" width="202" height="58" />
+  <text class="label" x="96" y="272">Gemini specimen</text>
+  <text class="small" x="96" y="290">env-gated trace producer</text>
 
-  <rect class="accent" x="742" y="174" width="300" height="158" />
-  <text class="white" x="772" y="214">Environment Contract</text>
-  <text class="darkSmall" x="772" y="244">Indexes and sourcetypes</text>
-  <text class="darkSmall" x="772" y="270">Saved searches and fields</text>
-  <text class="darkSmall" x="772" y="296">App context and budgets</text>
+  <rect class="nodeSoft" x="74" y="320" width="202" height="34" />
+  <text class="label" x="96" y="342">External MCP trace</text>
 
-  <rect class="muted" x="170" y="458" width="250" height="112" />
-  <text class="label" x="198" y="494">Security Missions</text>
-  <text class="small" x="198" y="522">Naive specimen agent</text>
-  <text class="small" x="198" y="548">Real trace capture</text>
+  <rect class="panel" x="350" y="128" width="400" height="456" />
+  <text class="panelTitle" x="374" y="158">Agent Readiness Compiler</text>
 
-  <rect class="muted" x="514" y="458" width="250" height="112" />
-  <text class="label" x="542" y="494">Deterministic Grader</text>
-  <text class="small" x="542" y="522">Rule IDs and evidence</text>
-  <text class="small" x="542" y="548">No LLM pass/fail judging</text>
+  <rect class="nodeDark" x="378" y="182" width="344" height="64" />
+  <text class="darkLabel" x="406" y="208">Fixture/live adapter boundary</text>
+  <text class="darkSmall" x="406" y="228">same interface before compiler logic</text>
 
-  <rect class="dark" x="858" y="438" width="310" height="152" />
-  <text class="darkText" x="890" y="478">Readiness Receipt</text>
-  <text class="darkSmall" x="890" y="508">Verdict, score, violations</text>
-  <text class="darkSmall" x="890" y="534">Policy patch summary</text>
-  <text class="darkSmall" x="890" y="560">Fail -> patch -> rerun -> pass</text>
+  <rect class="nodeAccent" x="378" y="270" width="156" height="64" />
+  <text class="whiteLabel" x="404" y="296">Environment</text>
+  <text class="whiteLabel" x="414" y="316">Contract</text>
 
-  <path class="arrow" d="M294 186 H378" />
-  <path class="arrow" d="M294 318 H338 C358 318 358 253 378 253" />
-  <path class="arrow" d="M658 253 H742" />
-  <path class="arrow" d="M892 332 V396 C892 420 764 420 764 458" />
-  <path class="arrow" d="M420 514 H514" />
-  <path class="arrow" d="M764 514 H858" />
-  <path class="arrow" d="M892 332 V380 C892 410 420 410 420 458" />
+  <rect class="nodeAccent" x="566" y="270" width="156" height="64" />
+  <text class="whiteLabel" x="598" y="296">Readiness</text>
+  <text class="whiteLabel" x="612" y="316">Profile</text>
+
+  <rect class="nodeSoft" x="378" y="360" width="156" height="68" />
+  <text class="label" x="404" y="386">Mission runner</text>
+  <text class="small" x="404" y="406">trace recorder</text>
+
+  <rect class="nodeDark" x="566" y="360" width="156" height="68" />
+  <text class="darkLabel" x="594" y="386">Deterministic</text>
+  <text class="darkLabel" x="620" y="406">grader</text>
+
+  <rect class="nodeWarn" x="472" y="458" width="156" height="72" />
+  <text class="label" x="502" y="484">Policy patch</text>
+  <text class="small" x="502" y="504">review artifact</text>
+
+  <path class="arrowSoft" d="M550 246 V270" />
+  <path class="arrowSoft" d="M534 302 H566" />
+  <path class="arrowSoft" d="M644 334 V360" />
+  <path class="arrowSoft" d="M566 394 H534" />
+  <path class="arrowSoft" d="M550 428 V458" />
+
+  <rect class="panel" x="800" y="128" width="430" height="244" />
+  <text class="panelTitle" x="824" y="158">Splunk deployment</text>
+
+  <rect class="node" x="824" y="182" width="178" height="58" />
+  <text class="label" x="850" y="208">Splunk MCP Server</text>
+  <text class="small" x="850" y="226">read-only tool plane</text>
+
+  <rect class="nodeSoft" x="1026" y="182" width="180" height="58" />
+  <text class="label" x="1052" y="208">Knowledge objects</text>
+  <text class="small" x="1052" y="226">indexes, fields, searches</text>
+
+  <rect class="nodeWarn" x="824" y="268" width="382" height="74" />
+  <text class="label" x="850" y="294">Optional Splunk AI Assistant tools</text>
+  <text class="small" x="850" y="314">generate, explain, optimize, ask</text>
+  <text class="smallBold" x="850" y="332">advisory only; never pass/fail authority</text>
+
+  <path class="arrowSoft" d="M824 211 H722" />
+  <path class="arrowSoft" d="M1026 211 H1008 C790 211 790 214 722 214" />
+  <path class="arrowAdvisory" d="M824 305 H760 C704 305 680 420 628 494" />
+
+  <rect class="panel" x="142" y="614" width="996" height="72" />
+  <text class="panelTitle" x="166" y="644">Reviewable outputs</text>
+
+  <rect class="nodeDark" x="340" y="626" width="190" height="44" />
+  <text class="darkLabel" x="370" y="653">Readiness Receipt</text>
+
+  <rect class="nodeSoft" x="536" y="626" width="126" height="44" />
+  <text class="label" x="562" y="653">Proof audit</text>
+
+  <rect class="nodeSoft" x="686" y="626" width="126" height="44" />
+  <text class="label" x="710" y="653">Manifest</text>
+
+  <rect class="nodeSoft" x="836" y="626" width="142" height="44" />
+  <text class="label" x="862" y="653">Workbench UI</text>
+
+  <rect class="nodeSoft" x="1002" y="626" width="112" height="44" />
+  <text class="label" x="1024" y="653">Evidence</text>
+
+  <path class="arrow" d="M644 428 V560 C644 600 435 600 435 626" />
+  <path class="arrowSoft" d="M644 428 V584 C644 602 599 602 599 626" />
+  <path class="arrowSoft" d="M644 428 V584 C644 602 749 602 749 626" />
+  <path class="arrowSoft" d="M435 670 H836" />
+  <path class="arrowSoft" d="M812 648 H836" />
+  <path class="arrowSoft" d="M978 648 H1002" />
+
+  <path class="arrow" d="M300 274 H350" />
+  <path class="arrow" d="M750 214 H800" />
+  <path class="arrowSoft" d="M750 62 C786 62 786 122 786 182 H800" />
 </svg>
