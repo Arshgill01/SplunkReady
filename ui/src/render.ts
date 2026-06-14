@@ -1786,6 +1786,14 @@ const renderReceipt = (bundle: UiArtifactBundle, options: RenderOptions): string
   const policyRows: Array<[string, unknown]> = receipt?.policy
     ? [["Policy", `${receipt.policy.name} ${receipt.policy.version} / ${receipt.policy.id}`]]
     : [];
+  const isReady = receipt ? receipt.verdict.toUpperCase().includes("READY") && !receipt.verdict.toUpperCase().includes("NOT") : false;
+
+  const verdictBanner = receipt
+    ? `<div class="verdict-banner ${isReady ? "pass" : "fail"}">
+        <span>${isReady ? "✔" : "✘"}</span>
+        <span>VERDICT: ${value(receipt.verdict)} / SCORE: ${value(receipt.score)} CONFIRMED</span>
+       </div>`
+    : "";
 
   return `<main class="view" data-view="receipt">
     <section class="workbench">
@@ -1793,6 +1801,7 @@ const renderReceipt = (bundle: UiArtifactBundle, options: RenderOptions): string
         <h1>Readiness Receipt</h1>
       </div>
       ${renderProofArtifactWarning(bundle)}
+      ${verdictBanner}
       <div class="receipt-simulator-layout">
         <section class="panel receipt-book">
           <section class="receipt-book-section">

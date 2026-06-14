@@ -1561,3 +1561,28 @@ code {
     min-height: 300px;
   }
 }
+
+.verdict-banner {
+  padding: 12px 20px;
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.verdict-banner.pass {
+  background-color: rgba(0, 135, 90, 0.08);
+  border-color: var(--ready);
+  color: var(--ready);
+}
+
+.verdict-banner.fail {
+  background-color: rgba(222, 53, 11, 0.08);
+  border-color: var(--bad);
+  color: var(--bad);
+}
