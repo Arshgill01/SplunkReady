@@ -25,6 +25,7 @@ const baseReadme = `# SplunkReady
 [![npm version](https://badge.fury.io/js/splunkready.svg)](https://www.npmjs.com/package/splunkready)
 
 Certify AI agents before they touch production Splunk.
+## TL;DR
 Agent Readiness Compiler
 Readiness Receipt
 Fixture mode is the default path. It requires no Splunk credentials

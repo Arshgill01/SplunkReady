@@ -99,3 +99,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Make the rendered architecture visual explicitly show `Agent -> SplunkReady Engine -> Splunk MCP Server`.
 - Evidence: `rg -n "Agent|SplunkReady Engine|Splunk MCP|Server" docs/architecture.svg`; `bash scripts/verify-scaffold.sh && git diff --check`
 - Award impact: Best Overall / Most Innovative / Best Developer Experience
+
+## Iteration 7 — 2026-06-14T10:39:25Z
+- Changed: `README.md`, `scripts/audit-submission-copy.mjs`, `tests/scripts/submission-copy-audit.test.ts`, `submission-evidence/claim-ledger.md`
+- Why: Put a literal TL;DR block and one-command proof path in the first 60 README lines, then guard it in the submission-copy audit.
+- Evidence: `npm test tests/scripts/submission-copy-audit.test.ts`; `npm run audit:submission-copy`; `npm run check`; `git diff --check`
+- Award impact: Most Innovative / Best Developer Experience / Best Overall

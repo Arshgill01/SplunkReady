@@ -16,6 +16,7 @@ const files = {
 
 const checks = [
   ["README product name", files.readme, "SplunkReady"],
+  ["README TLDR block", files.readme, "## TL;DR"],
   ["README tagline", files.readme, "Certify AI agents before they touch production Splunk."],
   ["README engine", files.readme, "Agent Readiness Compiler"],
   ["README primary artifact", files.readme, "Readiness Receipt"],
