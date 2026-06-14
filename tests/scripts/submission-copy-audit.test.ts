@@ -144,6 +144,9 @@ security investigation readiness
 requires no live Splunk credentials
 does not mutate Splunk
 artifacts/public-demo/architecture.svg
+official-splunk-mcp-live/
+\`Splunk_MCP_Server\` 1.2.0
+runtime \`tools/call\` frames for \`splunk_get_info\`
 npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json
 submission-evidence/public-package-currentness/
 submission-evidence/standalone-release/standalone-release-current-os.json
@@ -178,6 +181,13 @@ advisory static validation
 redacted runtime \`tools/call\` transcript frames
 ${hostedMcpProofUrl}
 ${hostedJudgeProofUrl}
+`;
+
+const baseJudgePath = `# SplunkReady Judge Path
+
+submission-evidence/official-splunk-mcp-live/README.md
+\`Splunk_MCP_Server\` 1.2.0
+Strict 10-check audit
 `;
 
 const baseDemo = `# Demo
@@ -243,6 +253,7 @@ const baseClaimLedger = `# Submission Claim Ledger
 const writeSubmissionTree = async (root: string, claimLedger = baseClaimLedger): Promise<void> => {
   await writeFixture(join(root, "README.md"), baseReadme);
   await writeFixture(join(root, "docs/devpost-submission.md"), baseDevpost);
+  await writeFixture(join(root, "submission-evidence/JUDGE-PATH.md"), baseJudgePath);
   await writeFixture(join(root, "docs/demo-script.md"), baseDemo);
   await writeFixture(join(root, "docs/live-adapter.md"), baseLiveAdapter);
   await writeFixture(join(root, "submission-evidence/claim-ledger.md"), claimLedger);

@@ -30,6 +30,13 @@ The workbench can run a reproducible fixture certification, inspect proof runs, 
 
 The tracked evidence pack is in `submission-evidence/`:
 
+- `official-splunk-mcp-live/` is the direct official Splunk MCP Server live
+  proof. It initializes against the operator-owned `Splunk_MCP_Server` 1.2.0
+  endpoint, lists 14 tools, confirms all required read-only Splunk MCP tools
+  and all four SAIA hosted-model tools are advertised, and records redacted
+  runtime `tools/call` frames for `splunk_get_info`,
+  `splunk_get_knowledge_objects`, and `splunk_run_saved_search` with
+  `mutation: false`.
 - `real-splunk-proof-audit/` is the strict 10-check audit of the real Splunk
   Enterprise 10.4.0 stress replay. Fresh disposable container, operator-scoped
   setup, security stressors, deployment-derived readiness, deterministic

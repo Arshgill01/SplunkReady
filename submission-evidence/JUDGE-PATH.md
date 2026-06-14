@@ -45,8 +45,15 @@ story.
    Compact launch packet: hosted route, no-clone command, first-read evidence,
    and claim boundaries.
 
-2. `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.md`
-   Strict 9-check audit of the real Splunk Enterprise 10.4.0 stress replay.
+2. `submission-evidence/official-splunk-mcp-live/README.md`
+   Direct official Splunk MCP Server live proof. The redacted JSON-RPC session
+   initializes against `Splunk_MCP_Server` 1.2.0, lists 14 tools, proves all
+   required read-only Splunk MCP tools and all four SAIA hosted-model tools are
+   advertised, and records runtime `tools/call` frames for `splunk_get_info`,
+   `splunk_get_knowledge_objects`, and `splunk_run_saved_search`.
+
+3. `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.md`
+   Strict 10-check audit of the real Splunk Enterprise 10.4.0 stress replay.
    Fresh disposable container, operator-scoped setup, security stressors,
    deployment-derived readiness, deterministic fail-to-pass receipts
    (`NOT READY 60` -> `READY 100`), live evidence refs, MCP bridge session,
@@ -54,24 +61,24 @@ story.
    This is the strongest product evidence in the pack and is the recommended
    first-read for the Platform & Developer Experience track.
 
-3. `submission-evidence/suite-proof/suite-proof-summary.md`
+4. `submission-evidence/suite-proof/suite-proof-summary.md`
    Credential-free fail-to-pass certification suite.
 
-4. `submission-evidence/mcp-proof/mcp-category-scorecard.json`
+5. `submission-evidence/mcp-proof/mcp-category-scorecard.json`
    Best Use of Splunk MCP Server scorecard: Splunk MCP as investigation/data
    plane, SplunkReady as deterministic readiness gate, strong external-client
    evidence, zero mutation.
 
-5. `submission-evidence/mcp-proof/mcp-proof-summary.md`
+6. `submission-evidence/mcp-proof/mcp-proof-summary.md`
    Splunk MCP transcript and two-server MCP certification proof.
 
-6. `submission-evidence/claim-ledger.md`
+7. `submission-evidence/claim-ledger.md`
    Public claim-to-evidence map.
 
-7. `submission-evidence/readiness-score-calibration/readiness-score-calibration.md`
+8. `submission-evidence/readiness-score-calibration/readiness-score-calibration.md`
    Deterministic READY / NEEDS REVIEW / NOT READY score calibration.
 
-8. `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`
+9. `submission-evidence/splunkbase-readiness/splunkbase-listing-dossier.json`
    Developer-tools evidence for the packaged Splunk app path, including the
    external blockers that are not claimed as complete.
 

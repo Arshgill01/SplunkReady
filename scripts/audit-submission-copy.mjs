@@ -9,6 +9,7 @@ const hostedJudgeProofUrl =
 const files = {
   readme: readFileSync(join(rootDir, "README.md"), "utf8"),
   devpost: readFileSync(join(rootDir, "docs/devpost-submission.md"), "utf8"),
+  judgePath: readFileSync(join(rootDir, "submission-evidence/JUDGE-PATH.md"), "utf8"),
   demo: readFileSync(join(rootDir, "docs/demo-script.md"), "utf8"),
   liveAdapter: readFileSync(join(rootDir, "docs/live-adapter.md"), "utf8"),
   claimLedger: readFileSync(join(rootDir, "submission-evidence/claim-ledger.md"), "utf8")
@@ -48,6 +49,12 @@ const checks = [
   ["Devpost no credentials", files.devpost, "requires no live Splunk credentials"],
   ["Devpost no mutation", files.devpost, "does not mutate Splunk"],
   ["Devpost rendered architecture export", files.devpost, "artifacts/public-demo/architecture.svg"],
+  ["Devpost official Splunk MCP live proof", files.devpost, "official-splunk-mcp-live/"],
+  ["Devpost official Splunk MCP server", files.devpost, "`Splunk_MCP_Server` 1.2.0"],
+  ["Devpost official Splunk MCP runtime calls", files.devpost, "runtime `tools/call` frames for `splunk_get_info`"],
+  ["Judge Path official Splunk MCP live proof", files.judgePath, "submission-evidence/official-splunk-mcp-live/README.md"],
+  ["Judge Path official Splunk MCP server", files.judgePath, "`Splunk_MCP_Server` 1.2.0"],
+  ["Judge Path real Splunk proof 10-check", files.judgePath, "Strict 10-check audit"],
   ["README npm package link", files.readme, "https://www.npmjs.com/package/splunkready"],
   ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json"],
   ["README GitHub Packages mirror", files.readme, "@arshgill01/splunkready@0.1.7"],
