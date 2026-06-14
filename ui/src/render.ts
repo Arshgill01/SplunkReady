@@ -2466,12 +2466,25 @@ const optionalRailStories = (summary: ReturnType<typeof summarizeBundle>): strin
 const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: RenderOptions): string => {
   const summary = summarizeBundle(bundle);
   const railStory = optionalRailStories(summary)[0];
+  const isReady = summary.verdict.toUpperCase().includes("READY") && !summary.verdict.toUpperCase().includes("NOT");
 
   return `<aside class="side-rail">
     <div class="brand">
       <h1>SplunkReady</h1>
-      <p>Certify AI agents before they touch production Splunk.</p>
+      <p style="font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Agent Readiness Dossier</p>
+      <div style="margin-top: 12px; font-family: var(--font-mono); font-size: 10px; border: 1px solid var(--line); padding: 2px 6px; display: inline-block; text-transform: uppercase; font-weight: 700;">
+        ARC-SPEC-REPORT
+      </div>
     </div>
+    
+    <div class="dossier-stat-box" style="border: 1px solid var(--line); padding: 16px; margin: 12px 0; display: flex; flex-direction: column; align-items: center; text-align: center; background: var(--surface);">
+      <div class="dossier-stat-num" style="font-size: 38px; font-weight: 750; line-height: 1;">${value(summary.score)}</div>
+      <div class="dossier-stat-label" style="font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-top: 4px;">Readiness Score</div>
+      <div class="dossier-stat-verdict" style="margin-top: 8px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 8px; background: ${isReady ? "rgba(0, 135, 90, 0.08)" : "rgba(222, 53, 11, 0.08)"}; color: ${isReady ? "var(--ready)" : "var(--bad)"}; border: 1px solid currentColor;">
+        ${value(summary.verdict)}
+      </div>
+    </div>
+
     <div class="rail-body">
       <nav aria-label="Views">
         ${views
@@ -2483,12 +2496,14 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: Re
       </nav>
       ${renderArtifactSelector(bundle, options.artifactOptions)}
     </div>
-    <div class="rail-footer">
-      <div class="rail-receipt">
-        <strong>${value(summary.verdict)} / ${value(summary.score)}</strong>
-        <span>${value(summary.mode)} / ${value(summary.contract)}</span>
-        <span>${summary.beforeViolations} before / ${summary.afterViolations} after</span>
-        ${railStory ? `<span>${value(railStory)}</span>` : ""}
+    <div class="rail-footer" style="border-top: 1px dashed var(--line-soft); padding-top: 12px; margin-top: 12px;">
+      <div class="rail-receipt" style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-family: var(--font-mono); color: var(--muted);">
+        <span style="display: none;">${value(summary.verdict)} / ${value(summary.score)}</span>
+        <span style="font-weight: 700; color: var(--text); text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px;">Verification Metadata</span>
+        <span>Mode: ${value(summary.mode)}</span>
+        <span>Contract: ${value(summary.contract)}</span>
+        <span>Violations: ${summary.beforeViolations} before / ${summary.afterViolations} after</span>
+        ${railStory ? `<span style="margin-top: 4px; color: var(--text);">${value(railStory)}</span>` : ""}
       </div>
     </div>
   </aside>`;
@@ -2553,7 +2568,7 @@ export const renderError = (message: string): string =>
     <aside class="side-rail">
       <div class="brand">
         <h1>SplunkReady</h1>
-        <p>Certify AI agents before they touch production Splunk.</p>
+        <p style="font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Agent Readiness Dossier</p>
       </div>
     </aside>
     <main class="view">
