@@ -87,3 +87,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Align judge-facing public npm copy and the submission-copy guardrail to local package version `0.1.13`.
 - Evidence: `npm test tests/scripts/submission-copy-audit.test.ts`; `npm run check`; `npm test`; `git diff --check`
 - Award impact: Best Developer Experience / Most Innovative / Best Overall
+
+## Iteration 3 — 2026-06-14T10:34:36Z
+- Changed: `submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`, `submission-evidence/claim-ledger.md`
+- Why: Refresh and record the real Splunk proof audit for the hard runtime-evidence gate.
+- Evidence: `npm run audit:real-splunk-proof -- --require-pass --out submission-evidence/real-splunk-proof-audit/real-splunk-proof-audit.json`; `npm run splunkready -- verify-receipt-chain --dir submission-evidence/suite-proof --public-key submission-evidence/receipt-public-key.pem --json`; `git ls-remote https://github.com/Arshgill01/SplunkReady.git HEAD`; `git log --after="2026-05-18" --oneline | wc -l`
+- Award impact: Best Overall / Best Use of Splunk AI / Best Security Trust Story
