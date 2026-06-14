@@ -1,6 +1,6 @@
 {
   "source": "splunkready-public-package-currentness",
-  "status": "CURRENT",
+  "status": "STALE",
   "registry": {
     "packageName": "splunkready",
     "versions": [
@@ -22,7 +22,7 @@
     "localVersionPublished": true,
     "latestMatchesLocal": true,
     "latestGitHead": "85c85173caf6bdf273ee68dd057dcf2a7f74da5a",
-    "packageInputGitHead": "85c85173caf6bdf273ee68dd057dcf2a7f74da5a",
+    "packageInputGitHead": "1a1071f382d86694b232c4f59c089288941e6fb6",
     "packageInputPaths": [
       "package.json",
       "package-lock.json",
@@ -34,8 +34,10 @@
       "policies",
       "scripts/run-readiness-score-calibration.mjs"
     ],
-    "dirtyPackageInputs": [],
-    "gitHeadMatchesPackageInputs": true
+    "dirtyPackageInputs": [
+      "package.json"
+    ],
+    "gitHeadMatchesPackageInputs": false
   },
   "publishedJudgeProof": {
     "packageSpec": "splunkready@0.1.12",
@@ -128,7 +130,7 @@
     ],
     "error": null
   },
-  "recommendedAction": "No registry action required.",
+  "recommendedAction": "Bump splunkready above 0.1.12, run npm-authenticated release preflight, publish the new version, then rerun this audit.",
   "mutation": false,
   "failures": []
 }

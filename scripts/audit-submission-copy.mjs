@@ -39,15 +39,15 @@ const checks = [
   ["Devpost no credentials", files.devpost, "requires no live Splunk credentials"],
   ["Devpost no mutation", files.devpost, "does not mutate Splunk"],
   ["README npm package link", files.readme, "https://www.npmjs.com/package/splunkready"],
-  ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json"],
+  ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.13 judge-proof --out ./judge-proof --json"],
   ["README GitHub Packages mirror", files.readme, "@arshgill01/splunkready@0.1.7"],
   ["README public package currentness audit", files.readme, "npm run audit:public-package-currentness"],
-  ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json"],
+  ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.13 judge-proof --out ./judge-proof --json"],
   ["Devpost public package currentness evidence", files.devpost, "submission-evidence/public-package-currentness/"],
   [
     "Claim ledger published npm package",
     files.claimLedger,
-    "The package is published on npm and the published no-clone judge proof is smoke-tested at `0.1.12`."
+    "The package is published on npm and the published no-clone judge proof is smoke-tested at `0.1.13`."
   ],
   [
     "Claim ledger readiness score calibration",
@@ -68,9 +68,9 @@ const checks = [
   ["Claim ledger readiness score calibration proof", files.claimLedger, "provesNonBinaryScoring: true"],
   ["Claim ledger readiness score calibration command", files.claimLedger, "npm run score-calibration"],
   ["Claim ledger npm package page", files.claimLedger, "https://www.npmjs.com/package/splunkready"],
-  ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json"],
-  ["Claim ledger published package current version", files.claimLedger, "latest `0.1.12`"],
-  ["Claim ledger source-current release boundary", files.claimLedger, "The `0.1.12` source release is published and clean-install verified."],
+  ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.13 judge-proof --out ./judge-proof --json"],
+  ["Claim ledger published package current version", files.claimLedger, "latest `0.1.13`"],
+  ["Claim ledger source-current release boundary", files.claimLedger, "The `0.1.13` source release is published and clean-install verified."],
   ["Claim ledger source-current release status", files.claimLedger, "| Conditional |"],
   ["Claim ledger source-current release command", files.claimLedger, "npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness"],
   [
@@ -85,7 +85,7 @@ const checks = [
   ["Claim ledger public package stale status", files.claimLedger, 'status: "CURRENT"'],
   ["Claim ledger public package local version unpublished", files.claimLedger, "registry.localVersionPublished: true"],
   ["Claim ledger public package latest does not match local", files.claimLedger, "registry.latestMatchesLocal: true"],
-  ["Claim ledger public package latest local", files.claimLedger, "npm latest is `splunkready@0.1.12`, the local package metadata is `0.1.12`"],
+  ["Claim ledger public package latest local", files.claimLedger, "npm latest is `splunkready@0.1.13`, the local package metadata is `0.1.13`"],
   ["Claim ledger public package current source head", files.claimLedger, "package-input head"],
   ["Claim ledger public package gitHead mismatch", files.claimLedger, "registry.gitHeadMatchesPackageInputs: true"],
   ["Claim ledger public package recommended action", files.claimLedger, 'recommendedAction: "No registry action required."'],
