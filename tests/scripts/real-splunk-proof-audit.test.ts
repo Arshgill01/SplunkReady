@@ -27,6 +27,7 @@ describe("real Splunk proof audit", () => {
     expect(report.failures).toEqual([]);
     expect(printed.status).toBe("PASS");
     expect(report.realSplunkAuthority.workflow).toContain("live saved-search proof");
+    expect(report.realSplunkAuthority.runtimeCallEvidence).toContain("tools/call request/response");
     expect(report.realSplunkAuthority.officialSplunkMcpBoundary).toContain("compatibility bridge");
     expect(report.checks.map((check: { id: string }) => check.id)).toEqual([
       "real-splunk-enterprise-deployment",
@@ -36,6 +37,7 @@ describe("real Splunk proof audit", () => {
       "deterministic-fail-to-pass-receipts",
       "live-evidence-refs-survive-receipt",
       "mcp-bridge-session-backed-by-real-splunk",
+      "runtime-splunk-mcp-tool-calls-present",
       "official-mcp-boundary-not-overclaimed",
       "llm-layer-advisory-non-authoritative"
     ]);

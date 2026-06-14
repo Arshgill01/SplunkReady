@@ -1,13 +1,14 @@
 {
   "source": "splunkready-real-splunk-proof-audit",
   "status": "PASS",
-  "generatedAt": "2026-06-14T10:34:21.827Z",
+  "generatedAt": "2026-06-14T11:12:09.426Z",
   "sourceDir": "submission-evidence/real-splunk-stress-replay",
   "llmSourceDir": "submission-evidence/real-splunk-stress-llm-layer",
   "score": 100,
   "realSplunkAuthority": {
     "deployment": "fresh disposable Splunk Enterprise container",
     "workflow": "setup -> app install -> data ingest -> live saved-search proof -> deterministic receipts",
+    "runtimeCallEvidence": "Redacted MCP JSONL transcript contains tools/call request/response frames for live Splunk tools.",
     "passFailAuthority": "deterministic-rule-engine",
     "defaultJudgePathMutatesSplunk": false,
     "officialSplunkMcpBoundary": "Evidence is backed by real Splunk REST through a local MCP compatibility bridge; do not claim fresh-container official Splunk MCP Server app coverage."
@@ -135,6 +136,29 @@
           "splunk_get_knowledge_objects",
           "splunk_get_metadata",
           "splunk_get_user_info",
+          "splunk_run_saved_search"
+        ]
+      },
+      "failure": null
+    },
+    {
+      "id": "runtime-splunk-mcp-tool-calls-present",
+      "status": "PASS",
+      "evidence": {
+        "transcript": "submission-evidence/real-splunk-stress-replay/mcp-bridge-session.redacted.jsonl",
+        "requestFrames": 38,
+        "responseFrames": 38,
+        "tools": [
+          "splunk_get_indexes",
+          "splunk_get_info",
+          "splunk_get_knowledge_objects",
+          "splunk_get_metadata",
+          "splunk_get_user_info",
+          "splunk_run_saved_search"
+        ],
+        "requiredRuntimeTools": [
+          "splunk_get_info",
+          "splunk_get_knowledge_objects",
           "splunk_run_saved_search"
         ]
       },

@@ -15,6 +15,7 @@ It requires real Splunk deployment evidence, stress data, fail-to-pass receipts,
 - PASS: deterministic-fail-to-pass-receipts
 - PASS: live-evidence-refs-survive-receipt
 - PASS: mcp-bridge-session-backed-by-real-splunk
+- PASS: runtime-splunk-mcp-tool-calls-present
 - PASS: official-mcp-boundary-not-overclaimed
 - PASS: llm-layer-advisory-non-authoritative
 

@@ -191,6 +191,9 @@ const checks = [
   ["Claim ledger real Splunk stress replay summary", files.claimLedger, "submission-evidence/real-splunk-stress-replay/real-splunk-stress-replay-summary.json"],
   ["Claim ledger real Splunk stress replay readiness", files.claimLedger, "READY_FOR_FLAGSHIP_LIVE_SECURITY_PROOF"],
   ["Claim ledger real Splunk stress replay frames", files.claimLedger, "mcpBridgeFrames: 76"],
+  ["Claim ledger real Splunk runtime audit check", files.claimLedger, "runtime-splunk-mcp-tool-calls-present"],
+  ["Claim ledger real Splunk ten-check audit", files.claimLedger, "all ten checks PASS"],
+  ["Devpost real Splunk runtime frames", files.devpost, "redacted runtime `tools/call` transcript frames"],
   [
     "Claim ledger real Splunk LLM deliberation proof",
     files.claimLedger,

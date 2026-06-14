@@ -21,12 +21,17 @@ const repoPath = (path) => (isAbsolute(path) ? path : join(root, path));
 
 const summaryPath = join(sourceDir, "real-splunk-stress-replay-summary.json");
 const bridgePath = join(sourceDir, "mcp-bridge-session-summary.json");
+const bridgeTranscriptPath = join(sourceDir, "mcp-bridge-session.redacted.jsonl");
 const beforeReceiptPath = join(sourceDir, "receipt-before-001.json");
 const afterReceiptPath = join(sourceDir, "receipt-after-001.json");
 const llmSummaryPath = join(llmSourceDir, "real-splunk-stress-replay-summary.json");
 
 const summary = readJson(summaryPath);
 const bridge = readJson(bridgePath);
+const bridgeTranscript = readFileSync(join(root, bridgeTranscriptPath), "utf8")
+  .split(/\r?\n/)
+  .filter(Boolean)
+  .map((line) => JSON.parse(line));
 const beforeReceipt = readJson(beforeReceiptPath);
 const afterReceipt = readJson(afterReceiptPath);
 const llmSummary = exists(llmSummaryPath) ? readJson(llmSummaryPath) : null;
@@ -39,6 +44,10 @@ const check = (id, pass, evidence, failure) => {
 const afterEvidenceRefs = summary.proof?.after?.evidenceRefs ?? summary.receipts?.after?.evidenceRefs ?? [];
 const tools = bridge.tools ?? summary.mcpBridgeSession?.tools ?? [];
 const limitations = summary.limitations ?? [];
+const bridgeRequests = bridgeTranscript.filter((frame) => frame.direction === "request" && frame.method === "tools/call");
+const bridgeResponses = bridgeTranscript.filter((frame) => frame.direction === "response");
+const transcriptTools = [...new Set(bridgeTranscript.map((frame) => frame.toolName).filter(Boolean))].sort();
+const requiredRuntimeTools = ["splunk_get_info", "splunk_get_knowledge_objects", "splunk_run_saved_search"];
 
 check(
   "real-splunk-enterprise-deployment",
@@ -148,6 +157,21 @@ check(
 );
 
 check(
+  "runtime-splunk-mcp-tool-calls-present",
+  bridgeRequests.length >= 3 &&
+    bridgeResponses.length >= bridgeRequests.length &&
+    requiredRuntimeTools.every((toolName) => transcriptTools.includes(toolName)),
+  {
+    transcript: bridgeTranscriptPath,
+    requestFrames: bridgeRequests.length,
+    responseFrames: bridgeResponses.length,
+    tools: transcriptTools,
+    requiredRuntimeTools
+  },
+  "Redacted MCP transcript does not prove runtime Splunk tool invocation."
+);
+
+check(
   "official-mcp-boundary-not-overclaimed",
   limitations.some((text) => String(text).includes("local MCP compatibility bridge backed by real Splunk REST")) &&
     limitations.some((text) => String(text).includes("Hosted-model/SAIA tools are advisory")),
@@ -183,6 +207,8 @@ const report = {
   realSplunkAuthority: {
     deployment: "fresh disposable Splunk Enterprise container",
     workflow: "setup -> app install -> data ingest -> live saved-search proof -> deterministic receipts",
+    runtimeCallEvidence:
+      "Redacted MCP JSONL transcript contains tools/call request/response frames for live Splunk tools.",
     passFailAuthority: "deterministic-rule-engine",
     defaultJudgePathMutatesSplunk: false,
     officialSplunkMcpBoundary:
