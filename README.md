@@ -14,7 +14,7 @@ specific Splunk deployment.
 SplunkReady certifies Splunk-connected agents with deterministic Readiness Receipts. No clone, no credentials:
 
 ```bash
-npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.14 judge-proof --out ./judge-proof --json
 ```
 
 From a clone:
@@ -61,7 +61,10 @@ Fastest MCP judging path:
 - Hosted route: `https://arshgill01.github.io/SplunkReady/?artifacts=artifacts%2Fmcp-proof#mcp-proof`
 - Scorecard: `submission-evidence/mcp-proof/mcp-category-scorecard.json`
 - Audit command: `node scripts/audit-mcp-category-evidence.mjs --out submission-evidence/mcp-proof --require-strong`
-- Boundary: Splunk MCP is the investigation/data plane. SplunkReady is the deterministic readiness gate that certifies captured Splunk MCP behavior into a Readiness Receipt.
+- Boundary:
+  - Splunk MCP is the investigation/data plane.
+  - SplunkReady is the deterministic readiness gate.
+  - Captured Splunk MCP behavior becomes a Readiness Receipt.
 
 Developer workflow surfaces:
 
@@ -71,7 +74,7 @@ Developer workflow surfaces:
 - Published typed policy SDK: `import { policy } from "splunkready/policy"`
   (see [`src/policy-sdk/README.md`](src/policy-sdk/README.md) and
   [`policies/README.md`](policies/README.md)).
-- Local package boundary: this subpath is in current local `splunkready@0.1.13` builds and is clean-install verified.
+- Local package boundary: this subpath is in current local `splunkready@0.1.14` builds and is clean-install verified.
 
 Start with [submission-evidence/JUDGE-PATH.md](submission-evidence/JUDGE-PATH.md)
 for the short evidence trail. The rest of `submission-evidence/`, `moves/`, and
@@ -102,7 +105,7 @@ Flagship story: security investigation readiness.
 
 ### Policy SDK Quickstart
 
-This SDK subpath is present in current local `splunkready@0.1.13` builds and has been clean-install verified.
+This SDK subpath is present in current local `splunkready@0.1.14` builds and has been clean-install verified.
 
 ```ts
 import { policy } from "splunkready/policy";
@@ -148,7 +151,7 @@ npm run judge-proof
 The currently published no-clone judge path is:
 
 ```bash
-npx -y splunkready@0.1.12 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.14 judge-proof --out ./judge-proof --json
 ```
 
 The repo-linked GitHub Packages mirror is `@arshgill01/splunkready@0.1.7`;
@@ -159,9 +162,9 @@ Package claim boundary:
 
 - Clean temp smoke: the command must return `PASS` with `mutation: false`.
 - Public audit: `npm run audit:public-package-currentness`.
-- Published `0.1.12`: judge proof, MCP surface, `live-proof --live-mock`, and signed policy-registry smoke tests pass.
-- Current source: newer package-input commits include `splunkready/policy`.
-- Public npm claim: the SDK waits for the next release and passing currentness audit.
+- Published `0.1.14`: judge proof, MCP surface, `live-proof --live-mock`, and signed policy-registry smoke tests pass.
+- Current source: package-input commits include `splunkready/policy`.
+- Public npm claim: source-current after `0.1.14` publish and passing currentness audit.
 
 ### Standalone Release Artifact
 
@@ -352,9 +355,9 @@ currentness audit checks the public registry, runs the latest published
 package can initialize the SplunkReady MCP stdio server.
 The release-alignment audit converts source-currentness drift into the exact
 next publish action. Current evidence is
-`submission-evidence/release-alignment/release-alignment.json`; it reports
-`BLOCKED`, records published `0.1.12` probes as passing, keeps the
-public `0.1.12` no-clone judge path valid, and identifies npm auth as the blocker for publishing local `0.1.13`.
+`submission-evidence/release-alignment/release-alignment.json`; after the
+`0.1.14` release it should report that public npm latest matches the local
+package and that published probes pass.
 
 To prove a real model-produced fixture trace while keeping deterministic
 grading authoritative, export a Gemini key and run:
@@ -412,11 +415,26 @@ What it writes:
 
 Important evidence blocks:
 
-- `splunkMcpBoundary`: certified `splunk_*` tools, saved-search execution, evidence refs, receipt link, and deterministic authority.
-- `compositionRecorder`: redacted dual-server session preserving `serverId` for Splunk MCP and SplunkReady MCP.
-- `appInspectComposition`: starts `uvx splunk-appinspect[mcp] mcp-server`, calls `inspect_app`, and records AppInspect as advisory static validation.
-- `agentDrivenWorkflow`: MCP client investigates with Splunk MCP, captures JSON-RPC, calls SplunkReady MCP for certification, then explains the receipt without overriding it.
-- `operatorLiveHostedModelStatus`: records the current live SAIA blocker class when a redacted operator-owned diagnostic artifact is present.
+- `splunkMcpBoundary`
+  - certified `splunk_*` tools
+  - saved-search execution
+  - evidence refs and receipt link
+  - deterministic authority
+- `compositionRecorder`
+  - redacted dual-server session
+  - preserved `serverId` values for Splunk MCP and SplunkReady MCP
+- `appInspectComposition`
+  - starts `uvx splunk-appinspect[mcp] mcp-server`
+  - calls `inspect_app`
+  - records AppInspect as advisory static validation
+- `agentDrivenWorkflow`
+  - MCP client investigates with Splunk MCP
+  - captures JSON-RPC
+  - calls SplunkReady MCP for certification
+  - explains the receipt without overriding it
+- `operatorLiveHostedModelStatus`
+  - records the live SAIA blocker class
+  - uses a redacted operator-owned diagnostic artifact when present
 
 Current AppInspect evidence:
 
@@ -613,7 +631,13 @@ The command writes:
 - `submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl`
 - `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`
 
-The package is static and credential-free. It contains no:
+Package boundary:
+
+- Static.
+- Credential-free.
+- No default-path writes.
+
+It contains no:
 
 - `local/` directory;
 - Python REST handlers;
@@ -622,14 +646,22 @@ The package is static and credential-free. It contains no:
 - tokens;
 - default-path Splunk write operations.
 
-Operator-approved install proof:
+Install proof:
 
 - Evidence: `submission-evidence/splunk-app-install/splunk-app-install-proof.json`
-- Action: installed/upgraded the same `.spl`
-- Verified: app metadata, views, nav, `splunkready_receipts`, and
-  `splunkready_receipts_lookup`
-- Redaction: endpoint, username, password, and token values are not written
-- Boundary: this is not a Splunkbase approval claim
+- Scope: operator-approved install or upgrade of the same `.spl`
+- Verified:
+  - app metadata
+  - views and navigation
+  - `splunkready_receipts`
+  - `splunkready_receipts_lookup`
+- Redaction:
+  - endpoint values are not written
+  - username values are not written
+  - password and token values are not written
+- Boundary:
+  - this is install evidence only
+  - this is not a Splunkbase approval claim
 
 Browser-render proof:
 
@@ -640,7 +672,10 @@ Browser-render proof:
   `/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt`
 - Detects the overview dashboard panels
 - Captures `submission-evidence/screenshots/splunk-app-web-proof.png`
-- Does not write endpoint, username, secret, or cookie values
+- Redaction:
+  - endpoint values are not written
+  - username values are not written
+  - secret and cookie values are not written
 
 Receipt store proof:
 
@@ -648,21 +683,33 @@ Receipt store proof:
 - Requires explicit `--confirm-write true`
 - Writes six public-safe receipt summaries into the installed app's KV Store
 - Reads them back through `splunkready_receipts_lookup`
-- Does not upload raw traces, raw Splunk events, endpoints, usernames,
-  passwords, or tokens
+- Does not upload:
+  - raw traces
+  - raw Splunk events
+  - endpoints
+  - usernames
+  - passwords or tokens
 
 Splunkbase readiness:
 
 - Report: `submission-evidence/splunkbase-readiness/splunkbase-readiness.json`
-- Records the current `.spl` package SHA, AppInspect precertification result,
-  live install proof, receipt-store proof, and official Splunk submission
-  references
-- Tracks packaged listing assets: `appIcon.png` 36x36, `appIcon_2x.png` 72x72,
-  and `screenshot.png` 623x350
-- Current local evidence: 0 errors, 0 failures, and one expected KV Store
-  warning
-- Boundary: SplunkReady does not claim an "Available on Splunkbase" badge until
-  the package is submitted through a publisher account and publicly listed
+- Records:
+  - current `.spl` package SHA
+  - AppInspect precertification result
+  - live install proof
+  - receipt-store proof
+  - official Splunk submission references
+- Tracks packaged listing assets:
+  - `appIcon.png` 36x36
+  - `appIcon_2x.png` 72x72
+  - `screenshot.png` 623x350
+- Current local evidence:
+  - 0 errors
+  - 0 failures
+  - one expected KV Store warning
+- Boundary:
+  - no "Available on Splunkbase" badge is claimed
+  - public listing requires publisher-account submission and Splunk approval
 
 Operator-ready portal copy:
 
@@ -793,7 +840,11 @@ version and canonical policy hash. The tracked examples are
 For a compact smoke path, the important step is
 `evaluate --policy pci-dss-readiness` before generating the receipt.
 
-See [examples/README.md](examples/README.md) for runnable external-trace capture scripts and generated sample receipts for both `NOT READY` and `READY / 100` external agent traces.
+See [examples/README.md](examples/README.md) for:
+
+- runnable external-trace capture scripts;
+- generated sample receipts for `NOT READY` external agent traces;
+- generated sample receipts for `READY / 100` external agent traces.
 
 If an external agent only logs Splunk MCP JSON-RPC calls, certify the transcript directly:
 
@@ -923,7 +974,11 @@ npm run build
 npm run splunkready -- suite-proof --out artifacts/suite-proof --json
 npm run splunkready -- suite-proof --out artifacts/suite-proof-ci --require-fail-to-pass true --json
 npm run splunkready -- proof-audit --out artifacts/suite-proof-ci --require-pass true --json
-npm run splunkready -- suite-proof --suite fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json --out artifacts/suite-proof-custom --require-fail-to-pass true --json
+npm run splunkready -- suite-proof \
+  --suite fixtures/acme-soc-dev/suites/phase-live-readiness-suite.json \
+  --out artifacts/suite-proof-custom \
+  --require-fail-to-pass true \
+  --json
 ```
 
 `suite-proof` runs the fixture fail -> patch -> rerun -> pass loop across a
@@ -954,7 +1009,15 @@ evidence refs.
 
 ## Runtime Firewall Gate
 
-Use `--firewall` on `evaluate`, `rerun`, `live-proof`, or `live-security-proof` to wrap the Splunk adapter with the compiled policy before the specimen can run SPL:
+Use `--firewall` to wrap the Splunk adapter with the compiled policy before
+the specimen can run SPL.
+
+Supported commands:
+
+- `evaluate`
+- `rerun`
+- `live-proof`
+- `live-security-proof`
 
 ```bash
 npm run splunkready -- compile --out artifacts/firewall-check
@@ -1107,7 +1170,10 @@ See [docs/llm-specimen-agent.md](docs/llm-specimen-agent.md).
 
 ## Submission Strategy
 
-SplunkReady targets the Platform & Developer Experience track. The product story is infrastructure for safer Splunk-connected agents, with security as the memorable demo scenario.
+SplunkReady targets the Platform & Developer Experience track.
+
+The product story is infrastructure for safer Splunk-connected agents. The
+security investigation is the memorable demo scenario.
 
 ## What It Is Not
 
@@ -1161,8 +1227,10 @@ public-demo path `artifacts/public-demo/architecture.svg`.
 
 Core flow:
 
-1. Fixture or optional live MCP adapter exposes Splunk inventory through the shared adapter contract.
-2. The compiler builds an environment contract with indexes, sourcetypes, saved searches, knowledge objects, fields, app context, and query budgets.
+1. Fixture or optional live MCP adapter exposes Splunk inventory through the
+   shared adapter contract.
+2. The compiler builds an environment contract with indexes, sourcetypes,
+   saved searches, knowledge objects, fields, app context, and query budgets.
 3. The compiler emits a readiness profile binding deterministic rule IDs to those Splunk contract facts.
 4. The harness runs the bundled deterministic specimen or ingests an externally captured agent trace.
 5. The trace recorder/schema captures tool calls, evidence, results, and final answers.
