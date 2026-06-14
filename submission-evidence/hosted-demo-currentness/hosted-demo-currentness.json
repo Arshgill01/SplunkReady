@@ -3,9 +3,9 @@
   "status": "CURRENT",
   "hostedUrl": "https://arshgill01.github.io/SplunkReady/",
   "manifestUrl": "https://arshgill01.github.io/SplunkReady/public-demo-manifest.json",
-  "expectedPublicDemoInputCommit": "971f8bf53f17fafe40c40660f034254f47684bed",
-  "hostedSourceCommit": "971f8bf53f17fafe40c40660f034254f47684bed",
-  "hostedSourceCommitShort": "971f8bf",
+  "expectedPublicDemoInputCommit": "1e32825af35a524900cdba5047964cab01ccf53c",
+  "hostedSourceCommit": "1e32825af35a524900cdba5047964cab01ccf53c",
+  "hostedSourceCommitShort": "1e32825",
   "hostedSourceCommitCoversExpectedInput": true,
   "assets": {
     "local": [
