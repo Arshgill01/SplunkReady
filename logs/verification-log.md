@@ -19011,3 +19011,29 @@ Result:
   including 82 Vitest files and 466 tests.
 - OPEN RISK: npm install reported two high-severity advisories; no
   force-upgrade remediation was applied in this iteration.
+
+# 2026-06-15 - Iteration 40 Mobile Live-Connect Overflow Fix
+
+Commands and checks:
+
+- `git status --short --branch`
+- `npm audit --json`
+- `npm run audit:ui-workbench -- --out /tmp/ui-workbench-audit-iter6.json`
+- `npm run audit:live-hosted-model-status`
+- `npm run audit:ui-workbench`
+- `npm test -- tests/ui/app.test.ts tests/ui/shell.test.ts`
+- `npm run check`
+
+Result:
+
+- FAIL reproduced before the fix: mobile `live-connect` reported internal
+  overflow for `div.receipt-ledger`, `section.panel.live-action-panel`, and
+  `p.empty`.
+- PASS after CSS containment: `npm run audit:ui-workbench` returned no console
+  errors, page errors, overflow, undersized controls, or contrast failures.
+- PASS for focused UI tests: 2 files, 44 tests.
+- PASS for full verification: `npm run check` completed, including 82 Vitest
+  files and 466 tests.
+- PASS for live hosted-model status: SAIA tools remain available and passed.
+- OPEN RISK: `npm audit --json` reports high-severity dev dependency
+  advisories for `esbuild`/`vite`; npm recommends semver-major upgrades.

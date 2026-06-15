@@ -249,3 +249,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience / Best Overall. The UI refactor and Impeccable pass needed a repeatable browser gate instead of one-off screenshots.
 - Evidence: `npm install --save-dev playwright`; `npx playwright install chromium`; `npm run audit:ui-workbench`; `npm run check`; the audit starts the local workbench, visits default, fixture receipt, MCP proof, and live-connect routes at desktop and mobile sizes, and fails on console errors, page errors, horizontal overflow, internal overflow, sub-44px controls, and status/verdict contrast issues.
 - Award impact: Makes the final workbench design quality defensible and regression-tested in the default verification path.
+
+## Iteration 40 — 2026-06-15T10:47:55Z
+- Changed: `ui/src/styles.css`, `submission-evidence/ui-workbench-audit/ui-workbench-audit.json`, `submission-evidence/claim-ledger.md`, `logs/execution-log.md`, `logs/verification-log.md`
+- Why: Best Developer Experience. The new Playwright gate caught mobile `#live-connect` internal overflow in the live-action panel and empty-state copy.
+- Evidence: `npm run audit:ui-workbench -- --out /tmp/ui-workbench-audit-iter6.json` failed before the fix on mobile live-connect overflow; after CSS containment, `npm run audit:ui-workbench`, `npm test -- tests/ui/app.test.ts tests/ui/shell.test.ts`, and `npm run check` all passed.
+- Award impact: Converts the browser gate from a recorded proof into an active regression finder and keeps the live-connect operator surface mobile-safe.

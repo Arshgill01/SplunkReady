@@ -17769,3 +17769,24 @@ Actions:
 - Observed `npm install --save-dev playwright` report two high-severity npm
   advisories; no force audit fix was run because that would be unrelated and
   potentially breaking.
+
+# 2026-06-15 - Iteration 40 Mobile Live-Connect Overflow Fix
+
+Files expected to touch:
+
+- `ui/src/styles.css`
+- `submission-evidence/ui-workbench-audit/ui-workbench-audit.json`
+- `submission-evidence/claim-ledger.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Re-ran the new Playwright workbench audit from a clean worktree.
+- Confirmed SAIA hosted-model evidence still reports `PASS`.
+- Investigated the mobile `#live-connect` failure: `.receipt-ledger`,
+  `.live-action-panel`, and the live-mode `.empty` paragraph overflowed by
+  several pixels when the backend env-missing sentence was long.
+- Added min-width containment and explicit text wrapping to the affected
+  panel/empty-state containers.
+- Regenerated the UI workbench audit evidence after the fix.

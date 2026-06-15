@@ -1,6 +1,6 @@
 {
   "source": "splunkready-ui-workbench-audit",
-  "generatedAt": "2026-06-15T10:43:20.563Z",
+  "generatedAt": "2026-06-15T10:47:20.651Z",
   "status": "PASS",
   "mutation": false,
   "routes": [
@@ -17,56 +17,56 @@
     {
       "route": "default",
       "viewport": "desktop",
-      "url": "http://127.0.0.1:64960/",
+      "url": "http://127.0.0.1:49158/",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "fixture-receipt",
       "viewport": "desktop",
-      "url": "http://127.0.0.1:64960/?artifacts=artifacts/fixture-demo#receipt",
+      "url": "http://127.0.0.1:49158/?artifacts=artifacts/fixture-demo#receipt",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "mcp-proof",
       "viewport": "desktop",
-      "url": "http://127.0.0.1:64960/?artifacts=artifacts/mcp-proof#mcp-proof",
+      "url": "http://127.0.0.1:49158/?artifacts=artifacts/mcp-proof#mcp-proof",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "live-connect",
       "viewport": "desktop",
-      "url": "http://127.0.0.1:64960/#live-connect",
+      "url": "http://127.0.0.1:49158/#live-connect",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "default",
       "viewport": "mobile",
-      "url": "http://127.0.0.1:64960/",
+      "url": "http://127.0.0.1:49158/",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "fixture-receipt",
       "viewport": "mobile",
-      "url": "http://127.0.0.1:64960/?artifacts=artifacts/fixture-demo#receipt",
+      "url": "http://127.0.0.1:49158/?artifacts=artifacts/fixture-demo#receipt",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "mcp-proof",
       "viewport": "mobile",
-      "url": "http://127.0.0.1:64960/?artifacts=artifacts/mcp-proof#mcp-proof",
+      "url": "http://127.0.0.1:49158/?artifacts=artifacts/mcp-proof#mcp-proof",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "live-connect",
       "viewport": "mobile",
-      "url": "http://127.0.0.1:64960/#live-connect",
+      "url": "http://127.0.0.1:49158/#live-connect",
       "status": "PASS",
       "failures": []
     }

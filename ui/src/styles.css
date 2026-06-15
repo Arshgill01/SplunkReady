@@ -375,6 +375,7 @@ code {
 
 .live-action-panel {
   grid-column: 1 / -1;
+  min-width: 0;
 }
 
 .policy-action-panel,
@@ -1060,6 +1061,7 @@ code {
 .receipt-ledger {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .stage-list {
@@ -1133,6 +1135,8 @@ code {
   margin: 0;
   padding: 18px;
   color: var(--muted);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .fact-table,
