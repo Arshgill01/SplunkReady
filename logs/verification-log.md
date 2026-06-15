@@ -19088,3 +19088,28 @@ Result:
   Vitest files, and 466 tests.
 - NEXT REQUIRED: publish `0.1.16`, rerun public-package currentness and
   release-alignment, refresh hosted demo currentness from the final commit.
+
+# 2026-06-15 - Iteration 43 Corrective Npm Patch Release Prep
+
+Commands and checks:
+
+- `npm view splunkready@0.1.16 version gitHead dist-tags --json`
+- `npm view splunkready version gitHead --json`
+- `npm version patch --no-git-tag-version`
+- `npm run audit:npm-release-preflight -- --out submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `npm test tests/scripts/submission-copy-audit.test.ts tests/scripts/public-demo-export.test.ts`
+- `npm run check`
+
+Result:
+
+- PASS for root-cause verification: npm latest `0.1.16` existed, but registry
+  `gitHead` was `9af12e2189112fd5f6df6995a53aea82b61df266` while the
+  release-prep package-input commit had moved.
+- PASS for corrective bump: local package metadata is `0.1.17`.
+- PASS for release preflight: status `READY`, current version available, pack
+  OK, no blockers.
+- PASS for focused copy/export tests: 2 files, 5 tests.
+- PASS for full verification: `npm run check` completed for the `0.1.17`
+  tree, including package installability, 82 Vitest files, and 466 tests.
+- NEXT REQUIRED: publish `0.1.17`, rerun public-package currentness and
+  release-alignment, then redeploy hosted demo from the final commit.

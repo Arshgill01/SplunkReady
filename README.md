@@ -14,7 +14,7 @@ specific Splunk deployment.
 SplunkReady certifies Splunk-connected agents with deterministic Readiness Receipts. No clone, no credentials:
 
 ```bash
-npx -y splunkready@0.1.16 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.17 judge-proof --out ./judge-proof --json
 ```
 
 From a clone:
@@ -74,7 +74,7 @@ Developer workflow surfaces:
 - Published typed policy SDK: `import { policy } from "splunkready/policy"`
   (see [`src/policy-sdk/README.md`](src/policy-sdk/README.md) and
   [`policies/README.md`](policies/README.md)).
-- Local package boundary: this subpath is in current local `splunkready@0.1.16` builds and is clean-install verified.
+- Local package boundary: this subpath is in current local `splunkready@0.1.17` builds and is clean-install verified.
 
 Start with [submission-evidence/JUDGE-PATH.md](submission-evidence/JUDGE-PATH.md)
 for the short evidence trail. The rest of `submission-evidence/`, `moves/`, and
@@ -105,7 +105,7 @@ Flagship story: security investigation readiness.
 
 ### Policy SDK Quickstart
 
-This SDK subpath is present in current local `splunkready@0.1.16` builds and has been clean-install verified.
+This SDK subpath is present in current local `splunkready@0.1.17` builds and has been clean-install verified.
 
 ```ts
 import { policy } from "splunkready/policy";
@@ -151,7 +151,7 @@ npm run judge-proof
 The currently published no-clone judge path is:
 
 ```bash
-npx -y splunkready@0.1.16 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.17 judge-proof --out ./judge-proof --json
 ```
 
 The repo-linked GitHub Packages mirror is `@arshgill01/splunkready@0.1.7`;
@@ -162,9 +162,9 @@ Package claim boundary:
 
 - Clean temp smoke: the command must return `PASS` with `mutation: false`.
 - Public audit: `npm run audit:public-package-currentness`.
-- Published `0.1.16`: judge proof, MCP surface, `live-proof --live-mock`, and signed policy-registry smoke tests pass.
+- Published `0.1.17`: judge proof, MCP surface, `live-proof --live-mock`, and signed policy-registry smoke tests pass.
 - Current source: package-input commits include `splunkready/policy`.
-- Public npm claim: source-current after `0.1.16` publish and passing currentness audit.
+- Public npm claim: source-current after `0.1.17` publish and passing currentness audit.
 
 ### Standalone Release Artifact
 
@@ -373,7 +373,7 @@ Preflight statuses:
 Current evidence:
 
 - `submission-evidence/release-alignment/release-alignment.json`
-- After the `0.1.16` release, it should report:
+- After the `0.1.17` release, it should report:
   - public npm latest matches the local package;
   - published probes pass.
 

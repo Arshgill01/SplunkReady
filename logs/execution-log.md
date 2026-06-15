@@ -17844,3 +17844,25 @@ Actions:
   point at `splunkready@0.1.16`.
 - Regenerated npm release preflight; it reports `READY`, authenticated as the
   npm operator, with no blockers and release command `npm publish --access public`.
+
+# 2026-06-15 - Iteration 43 Corrective Npm Patch Release Prep
+
+Files expected to touch:
+
+- `package.json`
+- `package-lock.json`
+- judge-facing `0.1.17` docs and guardrails
+- `submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `submission-evidence/claim-ledger.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Verified the attempted `0.1.16` publish made npm latest `0.1.16`, but npm
+  registry `gitHead` pointed at the previous dependency-upgrade commit instead
+  of the release-prep commit.
+- Bumped to `0.1.17` as the corrective source-current release.
+- Updated judge-facing no-clone commands and guardrails to `splunkready@0.1.17`.
+- Regenerated release preflight; it reports `READY`, authenticated, pack OK,
+  and no blockers.
