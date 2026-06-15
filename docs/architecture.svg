@@ -126,24 +126,24 @@
   <rect class="nodeDark" x="340" y="626" width="190" height="44" />
   <text class="darkLabel" x="370" y="653">Readiness Receipt</text>
 
-  <rect class="nodeSoft" x="536" y="626" width="126" height="44" />
-  <text class="label" x="562" y="653">Proof audit</text>
+  <rect class="nodeSoft" x="550" y="626" width="126" height="44" />
+  <text class="label" x="576" y="653">Proof audit</text>
 
-  <rect class="nodeSoft" x="686" y="626" width="126" height="44" />
-  <text class="label" x="710" y="653">Manifest</text>
+  <rect class="nodeSoft" x="696" y="626" width="126" height="44" />
+  <text class="label" x="720" y="653">Manifest</text>
 
-  <rect class="nodeSoft" x="836" y="626" width="142" height="44" />
-  <text class="label" x="862" y="653">Workbench UI</text>
+  <rect class="nodeSoft" x="842" y="626" width="142" height="44" />
+  <text class="label" x="868" y="653">Workbench UI</text>
 
-  <rect class="nodeSoft" x="1002" y="626" width="112" height="44" />
-  <text class="label" x="1024" y="653">Evidence</text>
+  <rect class="nodeSoft" x="1004" y="626" width="112" height="44" />
+  <text class="label" x="1026" y="653">Evidence</text>
 
   <path class="arrow" d="M644 428 V560 C644 600 435 600 435 626" />
-  <path class="arrowSoft" d="M644 428 V584 C644 602 599 602 599 626" />
-  <path class="arrowSoft" d="M644 428 V584 C644 602 749 602 749 626" />
-  <path class="arrowSoft" d="M435 670 H836" />
-  <path class="arrowSoft" d="M812 648 H836" />
-  <path class="arrowSoft" d="M978 648 H1002" />
+  <path class="arrowSoft" d="M644 428 V584 C644 602 613 602 613 626" />
+  <path class="arrowSoft" d="M644 428 V584 C644 602 759 602 759 626" />
+  <path class="arrowSoft" d="M435 670 H842" />
+  <path class="arrowSoft" d="M822 648 H842" />
+  <path class="arrowSoft" d="M984 648 H1004" />
 
   <path class="arrow" d="M300 274 H350" />
   <path class="arrow" d="M750 214 H800" />
