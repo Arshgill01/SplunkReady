@@ -237,3 +237,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience / Best Overall. The Codex-compatible Impeccable audit found measurable UI issues after the dossier refactor: semantic status contrast below AA, 42px nav/select targets, and mobile MCP proof internal overflow.
 - Evidence: Impeccable `audit` instructions loaded from `/Users/arshdeepsingh/.agents/skills/impeccable/reference/audit.md`; Playwright live audit rerun across default, fixture receipt, MCP proof, and live-connect routes at desktop and mobile returned no console errors, no contrast issues, no touch-target issues, and no overflow; `npm test -- tests/ui/app.test.ts tests/ui/shell.test.ts tests/scripts/submission-copy-audit.test.ts`; `npm run ui:build`; `npm run check`.
 - Award impact: Converts the concept UI refactor from visually plausible to verified: accessible status colors, mobile-safe evidence panels, and touch targets aligned with product UI quality expectations.
+
+## Iteration 38 — 2026-06-15T06:04:32Z
+- Changed: `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`, `submission-evidence/claim-ledger.md`, `logs/execution-log.md`, `logs/verification-log.md`
+- Why: Best Developer Experience / Best Overall. The public demo was still serving assets from an older commit after the dossier UI and Impeccable audit fixes.
+- Evidence: `gh workflow run public-demo-pages.yml --ref splunkready-build`; `gh run watch 27527215476 --exit-status`; `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`; hosted manifest now reports `sourceCommit: "36fa81854ff99d024f0582198dc89f42c5201480"` and hosted assets match local `index-CPtrUQUV.css` / `index-CbOV8wVl.js`.
+- Award impact: Keeps the live public workbench source-current with the verified dossier UI, architecture diagram, and MCP proof default route.

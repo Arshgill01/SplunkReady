@@ -17722,3 +17722,23 @@ Actions:
   Experience 81%, MCP 64%, Developer Tools 62%, Security unchanged at 28%.
 - Rebuilt the public demo export from commit `1a1071f`, pushed the branch, ran
   the `public-demo-pages.yml` workflow, and refreshed hosted currentness.
+
+# 2026-06-15 - Iteration 38 Hosted Demo Currentness Refresh
+
+Files expected to touch:
+
+- `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `submission-evidence/claim-ledger.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Verified the local branch was clean except for the stale hosted-demo
+  currentness evidence written by the failed audit.
+- Dispatched `public-demo-pages.yml` on `splunkready-build`.
+- Watched run `27527215476` complete successfully for both the build/export
+  job and the GitHub Pages deployment job.
+- Reran hosted currentness with `--require-current`; the live manifest now
+  reports source commit `36fa81854ff99d024f0582198dc89f42c5201480`, matching
+  local public-demo input and static asset names.

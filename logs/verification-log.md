@@ -18968,3 +18968,24 @@ Result:
   commit `1a1071f`, assets match, manifest includes `artifacts/judge-launch`.
 - PASS for hosted manifest spot-check: source/deployment commit `1a1071f` and
   `artifacts/judge-launch` were present.
+
+# 2026-06-15 - Iteration 38 Hosted Demo Currentness Refresh
+
+Commands and checks:
+
+- `git status --short --branch`
+- `gh workflow run public-demo-pages.yml --ref splunkready-build`
+- `gh run list --workflow public-demo-pages.yml --branch splunkready-build --limit 1 --json databaseId,status,conclusion,headSha,createdAt,url`
+- `gh run watch 27527215476 --exit-status`
+- `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+
+Result:
+
+- PASS for workflow dispatch: run `27527215476` started on commit
+  `36fa81854ff99d024f0582198dc89f42c5201480`.
+- PASS for Pages deployment: build/export and deploy jobs completed
+  successfully.
+- PASS for hosted currentness: status `CURRENT`, hosted source commit matches
+  expected public-demo input commit `36fa81854ff99d024f0582198dc89f42c5201480`,
+  hosted assets match local assets, architecture diagram required text passes,
+  and mutation is false.
