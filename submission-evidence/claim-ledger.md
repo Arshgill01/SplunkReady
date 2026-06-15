@@ -207,3 +207,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience / Best Overall. The public npm package had to be source-current after the README and package-input updates.
 - Evidence: `npm view splunkready version gitHead --json`; `npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness`; `npm run audit:npm-release-preflight -- --out submission-evidence/npm-release-preflight/npm-release-preflight.json`; `npm run audit:release-alignment -- --require-aligned --out submission-evidence/release-alignment/release-alignment.json`; `npm run audit:submission-copy`; `npm test tests/scripts/submission-copy-audit.test.ts`.
 - Award impact: Makes the no-clone npm judge path source-current at `splunkready@0.1.15` with published judge-proof, MCP, live-mock, recorder, and signed policy-registry probes passing.
+
+## Iteration 33 — 2026-06-14T17:36:27Z
+- Changed: `submission-evidence/JUDGE-PATH.md`, `scripts/audit-submission-copy.mjs`, `tests/scripts/submission-copy-audit.test.ts`, `submission-evidence/claim-ledger.md`, `submission-evidence/evidence-pack-sha256.txt`
+- Why: Best Developer Experience / Best Overall. The first-read judge path still showed the stale `splunkready@0.1.12` no-clone command after the public npm package became source-current at `0.1.15`.
+- Evidence: `npm run audit:submission-copy`; `npm test tests/scripts/submission-copy-audit.test.ts`; stale-version search over `submission-evidence/JUDGE-PATH.md`, `README.md`, `docs/devpost-submission.md`, and `docs/demo-script.md`; `git diff --check`.
+- Award impact: Keeps the judge launch path aligned with the source-current public npm proof and adds a guardrail so the first-read no-clone command cannot drift silently again.

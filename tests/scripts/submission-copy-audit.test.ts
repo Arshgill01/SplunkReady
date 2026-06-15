@@ -190,6 +190,7 @@ const baseJudgePath = `# SplunkReady Judge Path
 submission-evidence/official-splunk-mcp-live/README.md
 \`Splunk_MCP_Server\` 1.2.0
 Strict 10-check audit
+npx -y splunkready@0.1.15 judge-proof --out ./judge-proof --json
 `;
 
 const baseDemo = `# Demo
