@@ -243,3 +243,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience / Best Overall. The public demo was still serving assets from an older commit after the dossier UI and Impeccable audit fixes.
 - Evidence: `gh workflow run public-demo-pages.yml --ref splunkready-build`; `gh run watch 27527215476 --exit-status`; `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`; hosted manifest now reports `sourceCommit: "36fa81854ff99d024f0582198dc89f42c5201480"` and hosted assets match local `index-CPtrUQUV.css` / `index-CbOV8wVl.js`.
 - Award impact: Keeps the live public workbench source-current with the verified dossier UI, architecture diagram, and MCP proof default route.
+
+## Iteration 39 — 2026-06-15T10:43:59Z
+- Changed: `scripts/audit-ui-workbench.mjs`, `package.json`, `package-lock.json`, `submission-evidence/ui-workbench-audit/ui-workbench-audit.json`, `submission-evidence/claim-ledger.md`, `logs/execution-log.md`, `logs/verification-log.md`
+- Why: Best Developer Experience / Best Overall. The UI refactor and Impeccable pass needed a repeatable browser gate instead of one-off screenshots.
+- Evidence: `npm install --save-dev playwright`; `npx playwright install chromium`; `npm run audit:ui-workbench`; `npm run check`; the audit starts the local workbench, visits default, fixture receipt, MCP proof, and live-connect routes at desktop and mobile sizes, and fails on console errors, page errors, horizontal overflow, internal overflow, sub-44px controls, and status/verdict contrast issues.
+- Award impact: Makes the final workbench design quality defensible and regression-tested in the default verification path.

@@ -17742,3 +17742,30 @@ Actions:
 - Reran hosted currentness with `--require-current`; the live manifest now
   reports source commit `36fa81854ff99d024f0582198dc89f42c5201480`, matching
   local public-demo input and static asset names.
+
+# 2026-06-15 - Iteration 39 Repeatable Workbench UI Audit
+
+Files expected to touch:
+
+- `scripts/audit-ui-workbench.mjs`
+- `package.json`
+- `package-lock.json`
+- `submission-evidence/ui-workbench-audit/ui-workbench-audit.json`
+- `submission-evidence/claim-ledger.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Added Playwright as a dev dependency and installed Chromium through the
+  project-local Playwright package.
+- Added `audit:ui-workbench`, a local browser audit that starts the workbench
+  with Vite middleware on an ephemeral port.
+- Covered the default route, fixture receipt route, MCP proof route, and
+  live-connect route at desktop and mobile viewport sizes.
+- Promoted the audit into `npm run check` so UI console errors, page errors,
+  layout overflow, undersized controls, and status/verdict contrast regressions
+  fail the default verification path.
+- Observed `npm install --save-dev playwright` report two high-severity npm
+  advisories; no force audit fix was run because that would be unrelated and
+  potentially breaking.
