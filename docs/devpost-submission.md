@@ -58,7 +58,7 @@ The local fixture path requires no live Splunk credentials. The currently
 published clean-folder judge command is:
 
 ```bash
-npx -y splunkready@0.1.15 judge-proof --out ./judge-proof --json
+npx -y splunkready@0.1.16 judge-proof --out ./judge-proof --json
 ```
 
 That clean-folder command is smoke-tested from a temp folder, returns `PASS`,
@@ -67,7 +67,7 @@ repository clone. The public-package currentness audit also verifies the
 published MCP tool surface, credential-free `live-proof --live-mock`, and signed
 policy-registry commands. The tracked currentness audit in
 `submission-evidence/public-package-currentness/` records that npm latest is
-`0.1.15`, the published smoke probes pass, and the public package is
+`0.1.16`, the published smoke probes pass, and the public package is
 source-current with the package-input commit after release.
 
 The current source also has a no-Node standalone release path. Move 170 builds a
@@ -267,12 +267,12 @@ The tracked evidence pack does not claim live hosted-model entitlement. The work
 - Zod
 - Vitest
 - Vite
-- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.15 judge-proof`
+- Published npm CLI: `npm install -g splunkready` or `npx -y splunkready@0.1.16 judge-proof`
 - Current-source typed policy SDK subpath:
   `import { policy } from "splunkready/policy"` (see
   [`src/policy-sdk/README.md`](src/policy-sdk/README.md)) — loads,
   validates, signs, and binds named policy bundles (`default-readiness`,
-  `soc2-readiness`, `pci-dss-readiness`) to missions. This is a current-source package claim for `splunkready@0.1.15` and has been clean-install verified.
+  `soc2-readiness`, `pci-dss-readiness`) to missions. This is a current-source package claim for `splunkready@0.1.16` and has been clean-install verified.
 - Splunk MCP adapter boundary
 - Deterministic trace grader rules
 - Local workbench API and UI

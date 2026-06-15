@@ -1,9 +1,9 @@
 {
   "source": "splunkready-npm-release-preflight",
-  "status": "PUBLISHED",
+  "status": "READY",
   "package": {
     "name": "splunkready",
-    "version": "0.1.15",
+    "version": "0.1.16",
     "publishConfig": {
       "access": "public"
     }
@@ -14,7 +14,7 @@
   },
   "registry": {
     "packageName": "splunkready",
-    "status": "VERSION_ALREADY_PUBLISHED",
+    "status": "EXISTS_VERSION_AVAILABLE",
     "versions": [
       "0.1.0",
       "0.1.1",
@@ -32,16 +32,16 @@
       "0.1.14",
       "0.1.15"
     ],
-    "currentVersionAvailable": false
+    "currentVersionAvailable": true
   },
   "pack": {
     "ok": true,
     "fileCount": 197,
-    "filename": "splunkready-0.1.15.tgz"
+    "filename": "splunkready-0.1.16.tgz"
   },
   "blockers": [],
   "failures": [],
-  "releaseCommand": "npm version patch && npm publish --access public",
-  "publishedPackage": "https://www.npmjs.com/package/splunkready/v/0.1.15",
+  "releaseCommand": "npm publish --access public",
+  "publishedPackage": null,
   "mutation": false
 }

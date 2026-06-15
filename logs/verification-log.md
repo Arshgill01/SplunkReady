@@ -19063,3 +19063,28 @@ Result:
   and passed.
 - OPEN RISK: hosted demo currentness was stale immediately after local changes;
   the Pages deployment must be refreshed from the final pushed commit.
+
+# 2026-06-15 - Iteration 42 Final Npm Source-Current Release Prep
+
+Commands and checks:
+
+- `npm whoami`
+- `npm login --auth-type=web`
+- `npm version patch --no-git-tag-version`
+- version-reference search for `0.1.15`
+- `npm test tests/scripts/submission-copy-audit.test.ts tests/scripts/public-demo-export.test.ts`
+- `npm run audit:npm-release-preflight -- --out submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `npm run check`
+
+Result:
+
+- PASS for npm auth restoration: npm web login completed successfully.
+- PASS for package bump: local package metadata is `0.1.16`.
+- PASS for release preflight: status `READY`, current version available, pack
+  OK, no blockers, and release command `npm publish --access public`.
+- PASS for focused copy/export tests: 2 files, 5 tests.
+- PASS for full verification: `npm run check` completed for the `0.1.16`
+  tree, including package installability for `splunkready-0.1.16.tgz`, 82
+  Vitest files, and 466 tests.
+- NEXT REQUIRED: publish `0.1.16`, rerun public-package currentness and
+  release-alignment, refresh hosted demo currentness from the final commit.

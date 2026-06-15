@@ -17810,3 +17810,37 @@ Actions:
 - Rebuilt and reran the default verification path to ensure the Vite 8
   migration did not break the static UI build, Vite middleware workbench,
   Playwright UI audit, package checks, or tests.
+
+# 2026-06-15 - Iteration 42 Final Npm Source-Current Release Prep
+
+Files expected to touch:
+
+- `package.json`
+- `package-lock.json`
+- `README.md`
+- `docs/devpost-submission.md`
+- `docs/demo-script.md`
+- `submission-evidence/JUDGE-PATH.md`
+- `submission-evidence/judge-launch/judge-launch.json`
+- `submission-evidence/judge-launch/judge-launch.md`
+- `submission-evidence/npm-release-preflight/npm-release-preflight.json`
+- `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`
+- `scripts/audit-submission-copy.mjs`
+- `scripts/audit-public-demo-export.mjs`
+- `tests/scripts/submission-copy-audit.test.ts`
+- `tests/scripts/public-demo-export.test.ts`
+- `submission-evidence/claim-ledger.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Ran final gate checks after the Vite/esbuild upgrade and found public npm
+  source-currentness stale because package inputs had moved beyond published
+  `0.1.15`.
+- Restored npm authentication via npm web login.
+- Bumped package metadata from `0.1.15` to `0.1.16` without creating a tag.
+- Updated judge-facing no-clone commands and submission-copy guardrails to
+  point at `splunkready@0.1.16`.
+- Regenerated npm release preflight; it reports `READY`, authenticated as the
+  npm operator, with no blockers and release command `npm publish --access public`.
