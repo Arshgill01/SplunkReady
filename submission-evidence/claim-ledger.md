@@ -219,3 +219,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience / Best Overall. The compact judge launch packet exported into the public demo still advertised stale `splunkready@0.1.12` no-clone commands after npm latest became source-current at `0.1.15`.
 - Evidence: `npm test tests/scripts/public-demo-export.test.ts`; `npm run audit:public-demo-export`; stale-version search across judge-launch, JUDGE-PATH, README, Devpost, and demo-script files; `git diff --check`.
 - Award impact: Keeps the hosted/public-demo launch packet aligned with the current public npm proof and prevents stale no-clone commands from shipping in the static demo export.
+
+## Iteration 35 — 2026-06-15T05:09:30Z
+- Changed: `submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`, `submission-evidence/claim-ledger.md`, `submission-evidence/evidence-pack-sha256.txt`
+- Why: Best Developer Experience / Best Overall. After the judge-launch packet was corrected, the GitHub Pages public demo had to be redeployed so hosted evidence served the same `splunkready@0.1.15` launch path.
+- Evidence: `gh workflow run public-demo-pages.yml --ref splunkready-build`; `gh run watch 27525327784 --exit-status`; `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`.
+- Award impact: Keeps the hosted public demo source-current with the latest judge launch packet and architecture/demo artifact manifest.
