@@ -30,7 +30,10 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Install verification tools
-        run: sudo apt-get update && sudo apt-get install -y ripgrep
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+          npx playwright install --with-deps chromium
 
       - name: Run canonical gate
         run: npm run check
