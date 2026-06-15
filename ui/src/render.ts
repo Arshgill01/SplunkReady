@@ -1786,6 +1786,18 @@ const renderReceipt = (bundle: UiArtifactBundle, options: RenderOptions): string
   const policyRows: Array<[string, unknown]> = receipt?.policy
     ? [["Policy", `${receipt.policy.name} ${receipt.policy.version} / ${receipt.policy.id}`]]
     : [];
+  const isReady =
+    receipt !== undefined &&
+    receipt.verdict.toUpperCase().includes("READY") &&
+    !receipt.verdict.toUpperCase().includes("NOT");
+  const verdictBanner = receipt
+    ? `<div class="receipt-verdict-banner ${isReady ? "ready" : "not-ready"}" aria-label="Current receipt verdict">
+        <span class="receipt-verdict-mark" aria-hidden="true">${isReady ? "PASS" : "FAIL"}</span>
+        <span>Verdict ${value(receipt.verdict)}</span>
+        <span>Score ${value(receipt.score)}</span>
+        <span>Deterministic rule engine</span>
+      </div>`
+    : "";
 
   return `<main class="view" data-view="receipt">
     <section class="workbench">
@@ -1793,6 +1805,7 @@ const renderReceipt = (bundle: UiArtifactBundle, options: RenderOptions): string
         <h1>Readiness Receipt</h1>
       </div>
       ${renderProofArtifactWarning(bundle)}
+      ${verdictBanner}
       <div class="receipt-simulator-layout">
         <section class="panel receipt-book">
           <section class="receipt-book-section">
@@ -2466,11 +2479,24 @@ const optionalRailStories = (summary: ReturnType<typeof summarizeBundle>): strin
 const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: RenderOptions): string => {
   const summary = summarizeBundle(bundle);
   const railStory = optionalRailStories(summary)[0];
+  const jobState = options.workbench?.job?.state;
+  const isJobActive = jobState === "queued" || jobState === "running";
+  const isReady = summary.verdict.toUpperCase().includes("READY") && !summary.verdict.toUpperCase().includes("NOT");
+  const scoreDisplay = isJobActive ? "--" : summary.score;
+  const verdictDisplay = isJobActive ? "RUNNING" : summary.verdict;
+  const verdictClass = isJobActive ? "running" : isReady ? "ready" : "not-ready";
 
   return `<aside class="side-rail">
     <div class="brand">
       <h1>SplunkReady</h1>
-      <p>Certify AI agents before they touch production Splunk.</p>
+      <p class="brand-kicker">Agent Readiness Dossier</p>
+      <p class="brand-tagline">Certify AI agents before they touch production Splunk.</p>
+      <div class="dossier-badge">ARC-SPEC-REPORT</div>
+      <div class="dossier-stat" aria-label="Current readiness status">
+        <strong>${value(scoreDisplay)}</strong>
+        <span>Readiness Score</span>
+        <em class="${verdictClass}">${value(verdictDisplay)}</em>
+      </div>
     </div>
     <div class="rail-body">
       <nav aria-label="Views">
@@ -2485,9 +2511,10 @@ const renderSidebar = (bundle: UiArtifactBundle, activeView: ViewId, options: Re
     </div>
     <div class="rail-footer">
       <div class="rail-receipt">
-        <strong>${value(summary.verdict)} / ${value(summary.score)}</strong>
-        <span>${value(summary.mode)} / ${value(summary.contract)}</span>
-        <span>${summary.beforeViolations} before / ${summary.afterViolations} after</span>
+        <strong>Verification Metadata</strong>
+        <span>Mode: ${value(summary.mode)}</span>
+        <span>Contract: ${value(summary.contract)}</span>
+        <span>Violations: ${summary.beforeViolations} before / ${summary.afterViolations} after</span>
         ${railStory ? `<span>${value(railStory)}</span>` : ""}
       </div>
     </div>
@@ -2553,7 +2580,8 @@ export const renderError = (message: string): string =>
     <aside class="side-rail">
       <div class="brand">
         <h1>SplunkReady</h1>
-        <p>Certify AI agents before they touch production Splunk.</p>
+        <p class="brand-kicker">Agent Readiness Dossier</p>
+        <p class="brand-tagline">Certify AI agents before they touch production Splunk.</p>
       </div>
     </aside>
     <main class="view">

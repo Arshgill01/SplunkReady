@@ -2,6 +2,68 @@
 
 Implementation stack setup started in Wave 02. Runtime behavior is not implemented yet.
 
+## 2026-06-15 11:14 IST - Wave 85 Concept Workbench Refactor Slice
+
+Commands and checks:
+
+- `node /Users/arshdeepsingh/.agents/skills/impeccable/scripts/context.mjs`
+- `command -v impeccable || command -v /impeccable || true`
+- `npm test -- tests/ui/app.test.ts`
+- `npm test -- tests/ui/app.test.ts tests/ui/shell.test.ts`
+- `npm test -- tests/workbench/workbench.test.ts`
+- `npm run ui:build`
+- `npx playwright install chromium --force`
+- `npm run workbench:dev`
+- `node --input-type=module ...` Playwright desktop and narrow viewport checks
+- `node --input-type=module ...` Playwright fixture receipt route check
+- `npm run check`
+- `git diff --check`
+
+Result:
+
+- PASS for direct Impeccable context after adding `PRODUCT.md`; the script
+  identified the project register as `product` and required
+  `reference/product.md`.
+- PASS for command availability check: no `impeccable` or `/impeccable`
+  executable is available in this shell session, so the installed skill files
+  were used directly.
+- PASS for focused UI render tests: 32 tests passed in `tests/ui/app.test.ts`.
+- PASS for focused UI shell plus app tests: 44 tests passed across 2 files.
+- PASS for workbench tests: 31 tests passed in `tests/workbench/workbench.test.ts`.
+- PASS for production UI build with Vite.
+- PASS for restoring the missing Playwright Chromium/headless-shell browser.
+- PASS for browser inspection at `http://127.0.0.1:4317`: desktop and narrow
+  routes rendered `.app-frame` and `.dossier-stat` with no console errors,
+  no horizontal overflow, and no detected element overflow.
+- PASS for receipt-backed route
+  `http://127.0.0.1:4317/?artifacts=artifacts/fixture-demo#receipt`: the
+  receipt banner rendered `PASS Verdict READY Score 100 Deterministic rule
+  engine`; no console errors or overflow were detected.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 457 files and mutation false;
+  - package readiness and installability audits passed;
+  - 82 test files passed;
+  - 466 tests passed;
+  - secret env ignore, reviewer inbox, and submission-copy audits passed;
+  - final `git diff --check` completed cleanly.
+- Screenshot evidence:
+  `/tmp/splunkready-wave85-desktop.png`,
+  `/tmp/splunkready-wave85-narrow.png`,
+  `/tmp/splunkready-wave85-fixture-receipt.png`.
+
+Notes:
+
+- The default `live-security-proof` artifact currently lacks a receipt, so the
+  receipt banner is intentionally absent on that route and the sidebar shows
+  `--` / `NO RECEIPT`.
+- `PRODUCT.md` is a Codex-environment unblocker for Impeccable context, not a
+  replacement for a future first-class `/impeccable init` run in a tool that
+  exposes that slash command.
+
 ## 2026-06-05 - Move 59 Workbench CI Timeout Stabilization
 
 Commands:

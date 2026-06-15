@@ -2,6 +2,43 @@
 
 Implementation stack setup started in Wave 02. Product runtime behavior is not implemented yet.
 
+## 2026-06-15 11:14 IST - Wave 85 Concept Workbench Refactor Slice
+
+Scope:
+- Ported the strongest receipt-first hierarchy from
+  `/Users/arshdeepsingh/Developer/SplunkReady-concepts-3` into the main
+  workbench without copying inline-style sprawl.
+- Used the installed Impeccable skill references directly. No callable
+  `impeccable` shell command or slash-command wrapper was available in this
+  Codex session.
+- Kept the refactor inside the artifact workbench UI. No receipt schema,
+  deterministic grading, Splunk live mode, or mutation behavior changed.
+
+Files changed:
+- `PRODUCT.md`
+- `docs/waves/wave-85-concept-workbench-refactor.md`
+- `ui/src/render.ts`
+- `ui/src/styles.css`
+- `tests/ui/app.test.ts`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+- Added Wave 85 as the current scoped refactor contract.
+- Added a minimal `PRODUCT.md` so the Impeccable context script could proceed
+  in this environment; this should be replaced by the real `/impeccable init`
+  output if that slash command is run from a tool that supports it.
+- Added a receipt verdict banner that labels verdict, score, and deterministic
+  rule-engine authority when a receipt is present.
+- Reworked the sidebar into an Agent Readiness Dossier summary with score,
+  verdict, and metadata separated from navigation and artifact selection.
+- Fixed the active-job display path so queued/running workbench jobs show
+  `--` / `RUNNING` instead of stale completed scores.
+- Moved the main UI palette toward the concept's high-contrast light dossier
+  direction using CSS classes and tokens instead of inline styles.
+- Reinstalled the missing Playwright Chromium browser and captured desktop,
+  narrow, and receipt-route screenshots under `/tmp/`.
+
 ## 2026-06-05 22:12 - Move 59 Workbench CI Timeout Stabilization
 
 Scope:

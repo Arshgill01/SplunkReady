@@ -1991,7 +1991,10 @@ describe("Vite UI artifact app", () => {
     expect(rail).toContain('class="rail-receipt"');
     expect(rail.indexOf('data-view-link="live-connect"')).toBeLessThan(rail.indexOf('class="artifact-picker"'));
     expect(rail.indexOf('class="artifact-picker"')).toBeLessThan(rail.indexOf('class="rail-receipt"'));
-    expect(rail).toContain("READY / 100/100");
+    expect(rail).toContain('class="dossier-stat"');
+    expect(rail).toContain("<strong>100/100</strong>");
+    expect(rail).toContain('<em class="ready">READY</em>');
+    expect(rail).toContain("Verification Metadata");
     expect(rail).not.toContain("not loaded");
     expect(rail).not.toContain("security not loaded");
     expect(rail).not.toContain("kit not loaded");

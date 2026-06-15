@@ -1,24 +1,27 @@
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   font-family: "Spline Sans Variable", "Spline Sans", sans-serif;
   line-height: 1.45;
   font-weight: 420;
-  color: #eee8dc;
-  background: #151309;
+  color: #111111;
+  background: #f3f4f6;
   font-synthesis: none;
   text-rendering: geometricPrecision;
-  --bg: #151309;
-  --rail: #1f1b0d;
-  --surface: #231f12;
-  --surface-2: #30291a;
-  --line: #776e59;
-  --line-soft: #4d4635;
-  --text: #f3edde;
-  --muted: #c7bcaa;
-  --quiet: #928875;
-  --ready: #7ff0c8;
-  --warn: #f4b36d;
-  --bad: #ff7d6e;
+  --bg: #f3f4f6;
+  --rail: #f9fafb;
+  --surface: #ffffff;
+  --surface-2: #f7f7f8;
+  --line: #111111;
+  --line-soft: #d8dade;
+  --text: #111111;
+  --muted: #52525b;
+  --quiet: #71717a;
+  --ready: #00875a;
+  --warn: #946200;
+  --bad: #de350b;
+  --ready-bg: #e3fcef;
+  --warn-bg: #fff4d6;
+  --bad-bg: #ffebe6;
 }
 
 * {
@@ -47,7 +50,7 @@ a {
 code {
   font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
   font-size: 0.92em;
-  color: #f5ead6;
+  color: var(--text);
 }
 
 .app-frame {
@@ -85,12 +88,90 @@ code {
   color: var(--text);
 }
 
-.brand p {
+.brand-tagline {
   max-width: 220px;
   margin: 12px 0 0;
   color: var(--muted);
-  font-size: clamp(13px, 1.7vh, 15px);
+  font-size: 13px;
   font-weight: 410;
+}
+
+.brand-kicker {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 720;
+  letter-spacing: 0.5px;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.dossier-badge {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 3px 7px;
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 720;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.dossier-stat {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  text-align: center;
+}
+
+.dossier-stat strong {
+  color: var(--text);
+  font-size: 31px;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.dossier-stat span {
+  color: var(--muted);
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 650;
+  letter-spacing: 0.45px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.dossier-stat em {
+  padding: 3px 8px;
+  border: 1px solid currentColor;
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 760;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.dossier-stat em.ready {
+  color: var(--ready);
+  background: var(--ready-bg);
+}
+
+.dossier-stat em.not-ready {
+  color: var(--bad);
+  background: var(--bad-bg);
+}
+
+.dossier-stat em.running {
+  color: var(--quiet);
+  background: var(--surface-2);
 }
 
 .rail-body {
@@ -134,11 +215,11 @@ code {
 }
 
 .side-rail a:hover {
-  background: #282313;
+  background: #eef0f3;
 }
 
 .side-rail a.active {
-  background: #342d12;
+  background: var(--surface);
   border-color: var(--line);
 }
 
@@ -168,24 +249,27 @@ code {
   min-width: 0;
   padding: 9px 10px;
   color: var(--text);
-  background: #282313;
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .rail-receipt {
   display: grid;
-  gap: 7px;
+  gap: 6px;
   min-width: 0;
   padding-top: 12px;
-  border-top: 2px solid var(--line);
+  border-top: 1px dashed var(--line-soft);
 }
 
 .rail-receipt strong {
-  color: var(--ready);
-  font-size: 16px;
+  color: var(--text);
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 10px;
   line-height: 1.15;
   font-weight: 720;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .rail-receipt span {
@@ -225,25 +309,66 @@ code {
 .replay-button {
   padding: 9px 14px;
   color: var(--text);
-  background: #2a2415;
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
 }
 
 .replay-button:hover {
-  background: #38301b;
+  background: #eef0f3;
 }
 
 .replay-button:disabled {
   cursor: not-allowed;
   color: var(--quiet);
-  background: #2d291d;
+  background: var(--surface-2);
   border-color: var(--line-soft);
 }
 
 .workbench-run-panel {
   margin-top: 18px;
+}
+
+.receipt-verdict-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.receipt-verdict-banner.ready {
+  color: var(--ready);
+  background: var(--ready-bg);
+  border-color: var(--ready);
+}
+
+.receipt-verdict-banner.not-ready {
+  color: var(--bad);
+  background: var(--bad-bg);
+  border-color: var(--bad);
+}
+
+.receipt-verdict-mark {
+  color: var(--surface);
+  background: currentColor;
+  border: 1px solid currentColor;
+  padding: 2px 7px;
+}
+
+.receipt-verdict-banner.ready .receipt-verdict-mark,
+.receipt-verdict-banner.not-ready .receipt-verdict-mark {
+  color: var(--surface);
+  background: var(--text);
+  border-color: var(--text);
 }
 
 .live-action-panel {
@@ -396,7 +521,7 @@ code {
   min-width: 0;
   padding: 9px 10px;
   color: var(--text);
-  background: #201c10;
+  background: var(--surface-2);
   border: 1px solid var(--line-soft);
 }
 
@@ -524,12 +649,12 @@ code {
   min-width: 0;
   padding: 10px;
   border: 1px solid var(--line-soft);
-  background: #201c10;
+  background: var(--surface-2);
 }
 
 .run-card.active {
   border-color: var(--line);
-  background: #2a2415;
+  background: var(--surface);
 }
 
 .run-card-title {
@@ -661,7 +786,7 @@ code {
   gap: 10px;
   min-width: 0;
   padding: 12px;
-  background: #201c10;
+  background: var(--surface-2);
   border: 1px solid var(--line-soft);
 }
 
@@ -980,7 +1105,7 @@ code {
 .panel {
   min-width: 0;
   border: 1px solid var(--line);
-  background: #211d10;
+  background: var(--surface);
 }
 
 .panel h2 {
@@ -1033,7 +1158,7 @@ code {
 .index-table th {
   width: 210px;
   color: var(--text);
-  background: #312a19;
+  background: var(--surface-2);
   font-weight: 720;
 }
 
@@ -1170,7 +1295,7 @@ code {
 .llm-quality-grid section {
   min-width: 0;
   border: 1px solid var(--line-soft);
-  background: #201c10;
+  background: var(--surface-2);
 }
 
 .llm-quality-grid h3 {
@@ -1375,7 +1500,7 @@ code {
 }
 
 .rule-switch:hover {
-  background: #292414;
+  background: #eef0f3;
 }
 
 .rule-switch input {
