@@ -1,0 +1,36 @@
+
+> splunkready@0.1.18 splunkready
+> node dist/src/cli.js live-security-proof --out artifacts/live-security-proof-endgame --json
+
+(node:10608) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "command": "live-security-proof",
+  "status": "PASS",
+  "artifacts": [
+    "artifacts/live-security-proof-endgame/environment-contract.json",
+    "artifacts/live-security-proof-endgame/live-security-readiness.json",
+    "artifacts/live-security-proof-endgame/missions.json",
+    "artifacts/live-security-proof-endgame/agent-policy.json",
+    "artifacts/live-security-proof-endgame/readiness-profile.json",
+    "artifacts/live-security-proof-endgame/llm-deliberation-before.json",
+    "artifacts/live-security-proof-endgame/llm-claim-audit-before.json",
+    "artifacts/live-security-proof-endgame/trace-before.json",
+    "artifacts/live-security-proof-endgame/violations-before.json",
+    "artifacts/live-security-proof-endgame/score-before.json",
+    "artifacts/live-security-proof-endgame/receipt-before-001.json",
+    "artifacts/live-security-proof-endgame/receipt-before-001.md",
+    "artifacts/live-security-proof-endgame/policy-patch.json",
+    "artifacts/live-security-proof-endgame/policy-patch.md",
+    "artifacts/live-security-proof-endgame/llm-deliberation-after.json",
+    "artifacts/live-security-proof-endgame/llm-claim-audit-after.json",
+    "artifacts/live-security-proof-endgame/trace-after.json",
+    "artifacts/live-security-proof-endgame/violations-after.json",
+    "artifacts/live-security-proof-endgame/score-after.json",
+    "artifacts/live-security-proof-endgame/receipt-after-001.json",
+    "artifacts/live-security-proof-endgame/receipt-after-001.md",
+    "artifacts/live-security-proof-endgame/hosted-model-proof.json",
+    "artifacts/live-security-proof-endgame/live-proof-summary.json",
+    "artifacts/live-security-proof-endgame/live-security-proof-summary.json"
+  ]
+}
