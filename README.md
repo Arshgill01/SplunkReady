@@ -1292,8 +1292,8 @@ Architecture visuals:
 | Artifact | Path |
 | --- | --- |
 | Root diagram source | [architecture_diagram.md](architecture_diagram.md) |
-| Rendered SVG | [docs/architecture.svg](docs/architecture.svg) |
-| Public-demo export | `artifacts/public-demo/architecture.svg` |
+| Rendered diagram | [docs/architecture.png](docs/architecture.png) |
+| Public-demo export | `artifacts/public-demo/architecture.png` |
 
 Core flow:
 
@@ -1336,7 +1336,7 @@ npm run check
 - Official rubric grounding: [docs/hackathon-rubric.md](docs/hackathon-rubric.md)
 - Devpost copy: [docs/devpost-submission.md](docs/devpost-submission.md)
 - Demo script: [docs/demo-script.md](docs/demo-script.md)
-- Architecture diagram: [architecture_diagram.md](architecture_diagram.md) and rendered [docs/architecture.svg](docs/architecture.svg)
+- Architecture diagram: [architecture_diagram.md](architecture_diagram.md) and rendered [docs/architecture.png](docs/architecture.png)
 - Evidence pack: [submission-evidence/](submission-evidence/README.md)
 - Claim ledger: [submission-evidence/claim-ledger.md](submission-evidence/claim-ledger.md)
 - Live adapter safety notes: [docs/live-adapter.md](docs/live-adapter.md)
