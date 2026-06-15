@@ -225,3 +225,15 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience / Best Overall. After the judge-launch packet was corrected, the GitHub Pages public demo had to be redeployed so hosted evidence served the same `splunkready@0.1.15` launch path.
 - Evidence: `gh workflow run public-demo-pages.yml --ref splunkready-build`; `gh run watch 27525327784 --exit-status`; `npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json`.
 - Award impact: Keeps the hosted public demo source-current with the latest judge launch packet and architecture/demo artifact manifest.
+
+## Iteration 36 — 2026-06-15T05:52:00Z
+- Changed: `README.md`, `submission-evidence/claim-ledger.md`
+- Why: Best Developer Experience / Most Innovative. The README still had dense proof blocks in MCP evidence, Splunk App Package proof, architecture flow, and limitations sections.
+- Evidence: README density scan for 70+ word non-code/non-table blocks returned `[]`; `npm test tests/scripts/submission-copy-audit.test.ts`; `npm run audit:submission-copy`; `npm run check`.
+- Award impact: Makes the judge-facing README scan-first with tables while preserving audited zero-mutation, Splunkbase-boundary, redaction, deterministic-authority, and receipt claims.
+
+## Iteration 37 — 2026-06-15T05:58:00Z
+- Changed: `ui/src/styles.css`, `logs/execution-log.md`, `logs/verification-log.md`, `submission-evidence/claim-ledger.md`
+- Why: Best Developer Experience / Best Overall. The Codex-compatible Impeccable audit found measurable UI issues after the dossier refactor: semantic status contrast below AA, 42px nav/select targets, and mobile MCP proof internal overflow.
+- Evidence: Impeccable `audit` instructions loaded from `/Users/arshdeepsingh/.agents/skills/impeccable/reference/audit.md`; Playwright live audit rerun across default, fixture receipt, MCP proof, and live-connect routes at desktop and mobile returned no console errors, no contrast issues, no touch-target issues, and no overflow; `npm test -- tests/ui/app.test.ts tests/ui/shell.test.ts tests/scripts/submission-copy-audit.test.ts`; `npm run ui:build`; `npm run check`.
+- Award impact: Converts the concept UI refactor from visually plausible to verified: accessible status colors, mobile-safe evidence panels, and touch targets aligned with product UI quality expectations.

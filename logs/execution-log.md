@@ -39,6 +39,54 @@ Actions:
 - Reinstalled the missing Playwright Chromium browser and captured desktop,
   narrow, and receipt-route screenshots under `/tmp/`.
 
+## 2026-06-15 11:22 IST - README Proof Readability Pass
+
+Scope:
+- Continued the final-lap copy/readability cleanup after Wave 85.
+- Kept the change to README structure only; no proof claims, commands, schemas,
+  Splunk integration behavior, or UI runtime behavior changed.
+
+Files changed:
+- `README.md`
+- `submission-evidence/claim-ledger.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+- Converted the remaining dense README proof blocks into scan-first tables:
+  MCP evidence blocks, Splunk App Package proof, core architecture flow, and
+  limitations.
+- Preserved exact audited copy for zero mutation, Splunkbase boundary, and
+  Splunk Web redaction claims after the submission-copy audit caught wording
+  drift.
+- Verified the README density scan now returns no 70+ word non-code/non-table
+  blocks.
+
+## 2026-06-15 11:28 IST - Impeccable Frontend Audit Hardening
+
+Scope:
+- Ran Impeccable's `audit` workflow manually from the installed skill files,
+  since Codex CLI has no slash-command router for `/impeccable`.
+- Used the audit as a measurable frontend quality pass over the live workbench,
+  not as a replacement for tests.
+
+Files changed:
+- `ui/src/styles.css`
+- `submission-evidence/claim-ledger.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+- Loaded `/Users/arshdeepsingh/.agents/skills/impeccable/reference/audit.md`
+  and applied its accessibility, responsive, theming, and anti-pattern checks.
+- Started `npm run workbench:dev` and audited default, fixture receipt, MCP
+  proof, and live-connect routes at 1440px desktop and 390px mobile.
+- Fixed semantic status contrast by darkening `--ready` and `--bad`.
+- Raised nav links, artifact selector, and replay buttons to 44px minimum
+  interactive height.
+- Added `stage-list` wrapping so MCP proof evidence does not internally
+  overflow on mobile.
+
 ## 2026-06-05 22:12 - Move 59 Workbench CI Timeout Stabilization
 
 Scope:

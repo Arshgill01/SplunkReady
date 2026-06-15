@@ -64,6 +64,99 @@ Notes:
   replacement for a future first-class `/impeccable init` run in a tool that
   exposes that slash command.
 
+## 2026-06-15 11:22 IST - README Proof Readability Pass
+
+Commands and checks:
+
+- `git push origin splunkready-build`
+- `git ls-remote --heads origin splunkready-build`
+- README density scan for 70+ word non-code/non-table blocks
+- `npm test tests/scripts/submission-copy-audit.test.ts`
+- `npm run audit:submission-copy`
+- `npm run check`
+
+Result:
+
+- PASS for public branch sync after Wave 85: local and
+  `origin/splunkready-build` both pointed at
+  `f1fcc3245747e9dc725af619b7a33df40c25c1fc`.
+- PASS for README density scan after table conversion: `[]`.
+- PASS for focused submission-copy test: 3 tests passed.
+- PASS for submission-copy audit: 495 required claims.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 457 files and mutation false;
+  - package readiness and installability audits passed;
+  - 82 test files passed;
+  - 466 tests passed;
+  - secret env ignore, reviewer inbox, and submission-copy audits passed;
+  - final `git diff --check` completed cleanly.
+
+Notes:
+
+- The first full check after the README table conversion failed because exact
+  audited README phrases changed. The final patch restored the required
+  strings inside the new tables before the successful full check.
+
+## 2026-06-15 11:28 IST - Impeccable Frontend Audit Hardening
+
+Commands and checks:
+
+- `sed -n '1,260p' /Users/arshdeepsingh/.agents/skills/impeccable/reference/audit.md`
+- `npm run workbench:dev`
+- Playwright live audit over:
+  - `http://127.0.0.1:4317/`
+  - `http://127.0.0.1:4317/?artifacts=artifacts/fixture-demo#receipt`
+  - `http://127.0.0.1:4317/?artifacts=artifacts/mcp-proof#mcp-proof`
+  - `http://127.0.0.1:4317/#live-connect`
+- `npm test -- tests/ui/app.test.ts tests/ui/shell.test.ts`
+- `npm run ui:build`
+- Playwright live audit rerun over the same routes and desktop/mobile viewports
+- `npm test -- tests/ui/app.test.ts tests/ui/shell.test.ts tests/scripts/submission-copy-audit.test.ts`
+- `npm run check`
+
+Result:
+
+- Initial Impeccable-style audit found:
+  - status contrast ratios below AA for `READY`/`NO RECEIPT` badges;
+  - 42px nav/select/replay controls below the 44px touch-target target;
+  - internal mobile overflow in the MCP proof evidence list.
+- PASS for focused UI tests after CSS fixes: 44 tests passed.
+- PASS for production UI build.
+- PASS for rerun Playwright audit across default, fixture receipt, MCP proof,
+  and live-connect routes at 1440px and 390px:
+  - no console errors;
+  - no contrast issues;
+  - no touch-target issues, excluding native checkbox/radio glyph size;
+  - no horizontal page overflow;
+  - no detected internal element overflow.
+- PASS for focused UI plus submission-copy tests: 47 tests passed.
+- PASS for full `npm run check`:
+  - scaffold verified;
+  - runtime contracts verified;
+  - TypeScript build completed;
+  - production UI build completed;
+  - public demo export audit passed with 457 files and mutation false;
+  - package readiness and installability audits passed;
+  - 82 test files passed;
+  - 466 tests passed;
+  - secret env ignore, reviewer inbox, and submission-copy audits passed;
+  - final `git diff --check` completed cleanly.
+
+Screenshot evidence:
+
+- `/tmp/splunkready-impeccable-rerun-default-desktop.png`
+- `/tmp/splunkready-impeccable-rerun-default-mobile.png`
+- `/tmp/splunkready-impeccable-rerun-fixture-receipt-desktop.png`
+- `/tmp/splunkready-impeccable-rerun-fixture-receipt-mobile.png`
+- `/tmp/splunkready-impeccable-rerun-mcp-proof-desktop.png`
+- `/tmp/splunkready-impeccable-rerun-mcp-proof-mobile.png`
+- `/tmp/splunkready-impeccable-rerun-live-connect-desktop.png`
+- `/tmp/splunkready-impeccable-rerun-live-connect-mobile.png`
+
 ## 2026-06-05 - Move 59 Workbench CI Timeout Stabilization
 
 Commands:

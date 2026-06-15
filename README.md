@@ -441,26 +441,13 @@ What it writes:
 
 Important evidence blocks:
 
-- `splunkMcpBoundary`
-  - certified `splunk_*` tools
-  - saved-search execution
-  - evidence refs and receipt link
-  - deterministic authority
-- `compositionRecorder`
-  - redacted dual-server session
-  - preserved `serverId` values for Splunk MCP and SplunkReady MCP
-- `appInspectComposition`
-  - starts `uvx splunk-appinspect[mcp] mcp-server`
-  - calls `inspect_app`
-  - records AppInspect as advisory static validation
-- `agentDrivenWorkflow`
-  - MCP client investigates with Splunk MCP
-  - captures JSON-RPC
-  - calls SplunkReady MCP for certification
-  - explains the receipt without overriding it
-- `operatorLiveHostedModelStatus`
-  - records the live SAIA blocker class
-  - uses a redacted operator-owned diagnostic artifact when present
+| Block | What to scan for |
+| --- | --- |
+| `splunkMcpBoundary` | certified `splunk_*` tools, saved-search execution, evidence refs, receipt link, deterministic authority |
+| `compositionRecorder` | redacted dual-server session and preserved `serverId` values for Splunk MCP and SplunkReady MCP |
+| `appInspectComposition` | starts `uvx splunk-appinspect[mcp] mcp-server`, calls `inspect_app`, records advisory static validation |
+| `agentDrivenWorkflow` | MCP client investigates with Splunk MCP, captures JSON-RPC, calls SplunkReady MCP, explains the receipt without overriding it |
+| `operatorLiveHostedModelStatus` | live SAIA blocker class and redacted operator-owned diagnostic artifact when present |
 
 Current AppInspect evidence:
 
@@ -668,90 +655,67 @@ To build an inspectable Splunk app shell around the public artifact workbench:
 npm run splunk-app:package
 ```
 
-The command writes:
+Package outputs:
 
-- `submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl`
-- `submission-evidence/splunk-app-package/splunk-app-package-manifest.json`
+| Artifact | Path |
+| --- | --- |
+| `.spl` package | `submission-evidence/splunk-app-package/SplunkReady-0.1.7.spl` |
+| Package manifest | `submission-evidence/splunk-app-package/splunk-app-package-manifest.json` |
 
 Package boundary:
 
-- Static.
-- Credential-free.
-- No default-path writes.
-
-It contains no:
-
-- `local/` directory;
-- Python REST handlers;
-- scripted inputs or modular inputs;
-- saved searches;
-- tokens;
-- default-path Splunk write operations.
+| Property | Status |
+| --- | --- |
+| Static workbench shell | Yes |
+| Credential-free | Yes |
+| Default-path writes | No |
+| `local/` directory | No |
+| Python REST handlers | No |
+| Scripted or modular inputs | No |
+| Saved searches | No |
+| Tokens | No |
 
 Install proof:
 
-- Evidence: `submission-evidence/splunk-app-install/splunk-app-install-proof.json`
-- Scope: operator-approved install or upgrade of the same `.spl`
-- Verified:
-  - app metadata
-  - views and navigation
-  - `splunkready_receipts`
-  - `splunkready_receipts_lookup`
-- Redaction:
-  - endpoint values are not written
-  - username values are not written
-  - password and token values are not written
-- Boundary:
-  - this is install evidence only
-  - this is not a Splunkbase approval claim
+| Field | Evidence |
+| --- | --- |
+| Proof file | `submission-evidence/splunk-app-install/splunk-app-install-proof.json` |
+| Scope | operator-approved install or upgrade of the same `.spl` |
+| Verified | app metadata, views, navigation, `splunkready_receipts`, `splunkready_receipts_lookup` |
+| Redacted | endpoint, username, password, and token values |
+| Boundary | install evidence only; not a Splunkbase approval claim |
 
 Browser-render proof:
 
-- Evidence: `submission-evidence/splunk-app-web-proof/splunk-app-web-proof.json`
-- Runs against operator-owned Splunk Web
-- Verifies the installed launcher route
-- Opens the static workbench receipt route:
-  `/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt`
-- Detects the overview dashboard panels
-- Captures `submission-evidence/screenshots/splunk-app-web-proof.png`
-- Redaction:
-  - endpoint values are not written
-  - username values are not written
-  - secret and cookie values are not written
+| Field | Evidence |
+| --- | --- |
+| Proof file | `submission-evidence/splunk-app-web-proof/splunk-app-web-proof.json` |
+| Runtime | operator-owned Splunk Web |
+| Route checked | installed launcher route |
+| Receipt route | `/en-US/static/app/SplunkReady/splunkready/index.html?artifacts=artifacts%2Fpublic-proof-export#receipt` |
+| UI check | overview dashboard panels detected |
+| Screenshot | `submission-evidence/screenshots/splunk-app-web-proof.png` |
+| Redacted | endpoint values are not written; username values are not written; secret and cookie values are not written |
 
 Receipt store proof:
 
-- Evidence: `submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json`
-- Requires explicit `--confirm-write true`
-- Writes six public-safe receipt summaries into the installed app's KV Store
-- Reads them back through `splunkready_receipts_lookup`
-- Does not upload:
-  - raw traces
-  - raw Splunk events
-  - endpoints
-  - usernames
-  - passwords or tokens
+| Field | Evidence |
+| --- | --- |
+| Proof file | `submission-evidence/splunk-receipt-store/splunk-receipt-store-proof.json` |
+| Required authorization | explicit `--confirm-write true` |
+| Write scope | six public-safe receipt summaries in the installed app's KV Store |
+| Readback | `splunkready_receipts_lookup` |
+| Never uploaded | raw traces, raw Splunk events, endpoints, usernames, passwords, tokens |
 
 Splunkbase readiness:
 
-- Report: `submission-evidence/splunkbase-readiness/splunkbase-readiness.json`
-- Records:
-  - current `.spl` package SHA
-  - AppInspect precertification result
-  - live install proof
-  - receipt-store proof
-  - official Splunk submission references
-- Tracks packaged listing assets:
-  - `appIcon.png` 36x36
-  - `appIcon_2x.png` 72x72
-  - `screenshot.png` 623x350
-- Current local evidence:
-  - 0 errors
-  - 0 failures
-  - one expected KV Store warning
-- Boundary:
-  - no "Available on Splunkbase" badge is claimed
-  - public listing requires publisher-account submission and Splunk approval
+| Field | Evidence |
+| --- | --- |
+| Report | `submission-evidence/splunkbase-readiness/splunkbase-readiness.json` |
+| Records | package SHA, AppInspect precertification, live install proof, receipt-store proof, official submission references |
+| Listing assets | `appIcon.png` 36x36, `appIcon_2x.png` 72x72, `screenshot.png` 623x350 |
+| Current local evidence | 0 errors, 0 failures, one expected KV Store warning |
+| Boundary | no "Available on Splunkbase" badge is claimed; public listing still requires publisher-account submission and Splunk approval |
 
 Operator-ready portal copy:
 
@@ -1333,19 +1297,15 @@ Architecture visuals:
 
 Core flow:
 
-1. Fixture or optional live MCP adapter exposes Splunk inventory through the
-   shared adapter contract.
-2. The compiler builds an environment contract with indexes, sourcetypes,
-   saved searches, knowledge objects, fields, app context, and query budgets.
-3. The compiler emits a readiness profile binding deterministic rule IDs to
-   those Splunk contract facts.
-4. The harness runs the bundled deterministic specimen or ingests an externally
-   captured agent trace.
-5. The trace recorder/schema captures tool calls, evidence, results, and final
-   answers.
-6. Deterministic grader rules produce violations, score, verdict, and policy
-   patch guidance.
-7. The Readiness Receipt and static UI make the evidence reviewable.
+| Step | Output |
+| --- | --- |
+| Adapter exposes fixture or optional live MCP inventory | shared Splunk contract boundary |
+| Compiler normalizes Splunk facts | environment contract with indexes, sourcetypes, saved searches, fields, app context, and budgets |
+| Compiler binds deterministic rules | `readiness-profile.json` |
+| Harness runs or imports an agent trace | bundled deterministic specimen trace or external captured trace |
+| Recorder/schema normalizes behavior | tool calls, evidence, results, and final answers |
+| Deterministic grader evaluates the trace | violations, score, verdict, and policy patch guidance |
+| Receipt/UI package the proof | reviewable Readiness Receipt and artifact workbench |
 
 ## Development
 
@@ -1360,22 +1320,16 @@ npm run check
 
 ## Limitations
 
-- SplunkReady is a certification harness, not a chatbot, SOC copilot,
-  detection-health product, or generic eval platform.
-- The fixture demo uses representative Splunk fixture data. It is designed for
-  deterministic local verification, not as a claim about every production
-  deployment.
-- Live mode is read-only from SplunkReady's side. The live smoke path only
-  inventories Splunk; `live-proof` and `live-security-proof` run bounded
-  read-only searches through MCP.
-- SplunkReady never auto-mutates Splunk. Policy patches are exported for operator review.
-- LLMs may explain results or draft policy text, but deterministic grader rules decide pass/fail.
-- The default bundled specimen is deterministic TypeScript code for
-  reproducible fixture demos.
-- The env-gated Gemini specimen produces fixture and live traces.
-- The strict flagship live security proof requires operator-owned Splunk setup
-  data because SplunkReady does not install apps, indexes, saved searches, or
-  events automatically.
+| Boundary | Meaning |
+| --- | --- |
+| Product category | Certification harness, not chatbot, SOC copilot, detection-health product, or generic eval platform |
+| Fixture data | Representative Splunk fixture data for deterministic local verification, not a claim about every production deployment |
+| Live mode | Read-only from SplunkReady's side; live smoke inventories Splunk, and proof commands run bounded read-only MCP searches |
+| Mutation | SplunkReady never auto-mutates Splunk. Policy patches are exported for operator review |
+| LLM role | LLMs may explain or draft policy text; deterministic grader rules decide pass/fail |
+| Bundled specimen | Deterministic TypeScript code for reproducible fixture demos |
+| Gemini specimen | Env-gated trace producer for fixture and live traces |
+| Flagship live proof | Requires operator-owned Splunk setup data because SplunkReady does not install apps, indexes, saved searches, or events automatically |
 
 ## Submission Materials
 
