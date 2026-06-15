@@ -1,0 +1,1 @@
+{"type":"llm","provider":"gemini","model":"gemini-3.1-flash-lite","request":{"prompt":"You are a read-only Splunk investigation agent. In one sentence, state that you will use only read-only MCP calls and cite returned evidence."},"response":{"error":{"code":503,"message":"The service is currently unavailable.","status":"UNAVAILABLE"}},"durationMs":540}

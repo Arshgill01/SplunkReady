@@ -1,156 +1,70 @@
-# Three Minute Demo Script
+# Demo Script — SplunkReady Video Walkthrough
 
-This script is the target shape for the final video. It should be revised after the first working vertical slice, but the narrative order should not drift.
+This script provides a 3-minute step-by-step recording sequence for presenting SplunkReady.
 
-## Rehearsal Command
+## Pre-flight Checklist (Before Recording)
+1. Verify live Splunk environment:
+   ```bash
+   curl -k -u admin:johncena1102 https://localhost:8089/services/server/info
+   ```
+2. Verify MCP server and credentials loading:
+   ```bash
+   cat .splunkready-live.env
+   ```
+3. Start the SplunkReady Workbench UI local server:
+   ```bash
+   npm run dev
+   ```
 
-From a clean fixture artifact directory:
+---
 
-```bash
-npm run build
-tmp=$(mktemp -d /tmp/splunkready-demo-XXXXXX)
-npm run splunkready -- demo --out "$tmp"
-open "$tmp/splunkready-shell.html#certification-replay"
-```
+## Core Script Sequence (3-Minute Cap)
 
-The demo command runs the fixture path end to end:
+### Scene 1: The Problem (15 seconds)
+* **What to do:** Show the SplunkReady landing page in the browser.
+* **What appears:** Clear header: "SplunkReady: Agent Readiness Compiler."
+* **What to say:** "AI agents running on Splunk are powerful, but unsafe. A single unchecked write command can alter security logs or disrupt operations. SplunkReady provides a deterministic certification gate to prove whether an agent is safe and ready."
 
-1. compile environment contract;
-2. run the deterministic fixture specimen trace;
-3. generate failed Readiness Receipt and policy patch;
-4. rerun the same mission with compiled policy;
-5. generate passing Readiness Receipt;
-6. write `splunkready-shell.html`, `demo-rehearsal.json`, and `demo-rehearsal.md`.
+### Scene 2: Architecture Diagram (20 seconds)
+* **What to do:** Scroll to or open the Architecture view in the Workbench UI.
+* **What appears:** Diagram depicting the data flow: Agent → Engine (Agent Readiness Compiler) → Splunk MCP (read-only enforcement boundary).
+* **What to say:** "Our architecture has three components: the specimen Agent, the Agent Readiness Compiler Engine, and the Splunk MCP Server. Safety is built into the protocol, validating all commands before they reach your indexes."
 
-Primary UI route for the close: `splunkready-shell.html#certification-replay`.
+### Scene 3: Clean Agent Run (40 seconds)
+* **What to do:** Run the clean-agent test suite in the UI or shell.
+* **What appears:** Terminal output running `npm test tests/integration/live-splunk-clean-agent.test.ts`. Displays PASS. Shows the generated cryptographically signed Readiness Receipt.
+* **What to say:** "Watch Suite 1: Clean Agent. The agent runs a read-only investigation using a pre-configured saved search. SplunkReady records the trace, verifies zero mutation occurred, and issues a cryptographically signed Readiness Receipt with a PASS grade."
 
-Supporting receipt comparison route: `splunkready-shell.html#rerun-receipts`.
+### Scene 4: Mutation Blocked Demo (25 seconds)
+* **What to do:** Execute `npm test tests/integration/live-splunk-mutation-attempt.test.ts`.
+* **What appears:** Test output logs blocking `splunk_create_index`. Displays FAIL.
+* **What to say:** "In Suite 2, the agent attempts to mutate the Splunk environment by creating an index. The Agent Readiness Compiler detects this intent immediately, blocks the command at the client level, and returns a signed FAIL receipt."
 
-## 0:00-0:15 - Setup
+### Scene 5: SAIA SPL Generation (25 seconds)
+* **What to do:** Execute `npm test tests/integration/live-splunk-saia-generation.test.ts`.
+* **What appears:** Shows the translation of a natural language prompt into a sanitized SPL query running over `index=_internal`.
+* **What to say:** "Suite 3 integrates SAIA. We ask the model to generate SPL. SplunkReady sanitizes the query, strips out prose, verifies the absence of dangerous tokens, runs the query, and produces a SAIA_PASS receipt."
 
-Screen:
+### Scene 6: Readiness Receipt Deep Dive (20 seconds)
+* **What to do:** Open and zoom in on a JSON Readiness Receipt.
+* **What appears:** JSON structure showing fields: `id`, `grade`, `signature.status: "SIGNED"`, `mcp_calls_made`, and `deterministicAssertion`.
+* **What to say:** "Every run produces a Readiness Receipt. It includes the exact LLM inputs, MCP counts, and deterministic assertions. It is cryptographically signed, making every audit trace tamper-proof."
 
-- SplunkReady title.
-- Selected environment: `acme-soc-dev`.
-- Selected specimen: deterministic `Naive SOC MCP Agent` fixture runner.
+### Scene 7: Wrap-up & Close (15 seconds)
+* **What to do:** Show the Workbench summary view or repository README.
+* **What appears:** "SplunkReady: Safe Agents, Verified Telemetry."
+* **What to say:** "Use SplunkReady as a CI/CD gate for your security agents. Zero-mutation guarantees, real-time guards, deterministic receipts. Make your Splunk deployments safe for AI."
 
-Voice:
+---
 
-```text
-Splunk is making operational data agent-ready. SplunkReady answers the next enterprise question: is this agent ready for this Splunk environment?
-```
+## Appendix A: Extended Features (Outside 3-Min Cut)
+- **Suite 4 — Policy Violation/Hallucination Guard (30s):** Demonstrates how hallucinated fields or disallowed search pipes (like `delete`) are caught, yielding an `UNSIGNED` receipt.
+- **Suite 5 — Degraded/Timeout Scenario (30s):** Shows how a 1ms forced query boundary aborts the request, issuing a `TIMEOUT` receipt cleanly without hanging.
+- **Claim Ledger Walkthrough (45s):** Exploring the compliance storage showing historical logs and signatures.
 
-## 0:15-0:45 - The Scary Failure
+---
 
-Screen:
-
-- Mission prompt: investigate lateral movement from `win-finance-07`.
-- Naive agent final answer: no evidence found.
-- Confidence appears high.
-
-Reveal:
-
-- Trace expands.
-- Query used `index=*`.
-- Query used stale field `src_ip`.
-- Agent ignored validated saved search.
-- Result count is zero.
-
-Voice:
-
-```text
-The answer sounds safe, but the trace is not. The agent searched too broadly, used a field this deployment does not have, ignored a validated saved search, and still gave a benign conclusion.
-```
-
-## 0:45-1:20 - Compile Environment Contract
-
-Screen:
-
-- Contract compilation progress.
-- Indexes, sourcetypes, saved searches, dashboards, macros, lookups, canonical fields, and query budgets appear.
-
-Voice:
-
-```text
-For this reproducible demo, SplunkReady compiles a representative Splunk fixture through the same adapter interface used by live MCP mode: what exists here, what is sensitive, which saved searches are trusted, and what evidence every answer must carry.
-```
-
-## 1:20-1:55 - Grade the Trace
-
-Screen:
-
-- Readiness Receipt.
-- Score: `0/100` in the current fixture.
-- Critical violations grouped by deterministic rule ID.
-
-Required visible rule IDs:
-
-- `SPL-001`
-- `SPL-003`
-- `KO-001`
-- `EVD-001`
-- `ANS-001`
-
-Voice:
-
-```text
-The grader is not another LLM judging vibes. It checks the trace against deterministic rules: forbidden query shape, hallucinated field, missing saved-search discovery, missing evidence, and unsupported conclusion.
-```
-
-## 1:55-2:20 - Patch the Agent Policy
-
-Screen:
-
-- Exported policy patch.
-- Rules: discover saved searches first, use canonical fields, block broad searches, require result count and evidence rows, treat returned log text as data.
-
-Voice:
-
-```text
-SplunkReady does not mutate Splunk and does not silently change production behavior. It exports a policy patch an operator can review.
-```
-
-## 2:20-2:50 - Rerun and Pass
-
-Screen:
-
-- Same mission rerun.
-- Agent discovers saved search.
-- Agent runs correct app context.
-- Evidence rows appear.
-- Prompt-injection event is ignored if shown.
-- Receipt score rises to `100/100` in the current fixture.
-
-Voice:
-
-```text
-With the environment contract injected, the same agent uses the validated saved search, preserves the time window, cites evidence, and states uncertainty where evidence is incomplete.
-```
-
-## 2:50-3:00 - Close
-
-Screen:
-
-- Certification replay on the `Pass` stage.
-- Before and after receipts remain available in the same shell.
-- Final one-liner: `npx -y splunkready@0.1.18 judge-proof --out ./judge-proof --json`
-  on screen for two seconds as the no-clone proof path.
-- Final line: `Certify AI agents before they touch production Splunk.`
-
-Voice:
-
-```text
-SplunkReady is CI for Splunk agents: compile the environment, run missions, grade the trace, and produce a readiness receipt. The full judge path is one npm command, no clone, no credentials.
-```
-
-## Demo Killers
-
-Avoid:
-
-- generic chatbot screens;
-- unexplained readiness scores;
-- LLM-only grading;
-- hidden fixture behavior;
-- hardcoded specimen agent pass/fail;
-- long architecture explanation;
-- features not backed by a trace or receipt.
+## Appendix B: Recording Recommendations
+- **Single Most Important Scene:** **Scene 3 (Clean Agent Run)** is the critical core. It demonstrates the live Splunk integration, MCP call tracking, and the generation of a signed Readiness Receipt.
+- **Scene Order:** 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7.
+- **Fallback Plan:** If running live tests on screen takes too long, pre-record the terminal screens or use a fast-forward/timelapse for the model wait cycles.

@@ -1,0 +1,15 @@
+
+> splunkready@0.1.18 test
+> vitest run --passWithNoTests tests/integration/live-splunk-mutation-attempt.test.ts
+
+
+ RUN  v4.1.8 /Users/arshdeepsingh/Developer/SplunkReady
+
+(node:12371) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  17:11:53
+   Duration  1.30s (transform 24ms, setup 0ms, import 33ms, tests 1.18s, environment 0ms)
+
