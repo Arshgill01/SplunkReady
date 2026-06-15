@@ -17871,3 +17871,8 @@ Actions:
 - Prepared splunkready 0.1.18 because registry 0.1.17 existed with a stale gitHead relative to current package-input source.
 - Regenerated npm release preflight evidence; status READY, authenticated true, currentVersionAvailable true.
 - Validation: npm test tests/scripts/submission-copy-audit.test.ts tests/scripts/public-demo-export.test.ts; npm run check.
+
+## Iteration 45 — 2026-06-15T11:13:45Z
+- Fixed CI by installing Playwright Chromium during the verification-tools step before npm run check.
+- Verified GitHub Actions CI run 27542243318 passed on splunkready-build.
+- Regenerated public npm evidence after splunkready@0.1.18 was published.

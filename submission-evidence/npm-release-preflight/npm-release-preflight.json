@@ -1,6 +1,6 @@
 {
   "source": "splunkready-npm-release-preflight",
-  "status": "READY",
+  "status": "PUBLISHED",
   "package": {
     "name": "splunkready",
     "version": "0.1.18",
@@ -14,7 +14,7 @@
   },
   "registry": {
     "packageName": "splunkready",
-    "status": "EXISTS_VERSION_AVAILABLE",
+    "status": "VERSION_ALREADY_PUBLISHED",
     "versions": [
       "0.1.0",
       "0.1.1",
@@ -32,9 +32,10 @@
       "0.1.14",
       "0.1.15",
       "0.1.16",
-      "0.1.17"
+      "0.1.17",
+      "0.1.18"
     ],
-    "currentVersionAvailable": true
+    "currentVersionAvailable": false
   },
   "pack": {
     "ok": true,
@@ -43,7 +44,7 @@
   },
   "blockers": [],
   "failures": [],
-  "releaseCommand": "npm publish --access public",
-  "publishedPackage": null,
+  "releaseCommand": "npm version patch && npm publish --access public",
+  "publishedPackage": "https://www.npmjs.com/package/splunkready/v/0.1.18",
   "mutation": false
 }

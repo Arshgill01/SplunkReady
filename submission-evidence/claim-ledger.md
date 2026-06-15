@@ -279,3 +279,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience / Best Overall. Prepare a source-current public npm release after registry 0.1.17 pointed at an older gitHead.
 - Evidence: npm run audit:npm-release-preflight -- --out submission-evidence/npm-release-preflight/npm-release-preflight.json reported READY for 0.1.18; npm test tests/scripts/submission-copy-audit.test.ts tests/scripts/public-demo-export.test.ts passed; npm run check passed with 82 test files and 466 tests.
 - Award impact: Keeps the no-clone judge path aligned with current source, published package installability, MCP startup, and deterministic judge-proof evidence.
+
+## Iteration 45 — 2026-06-15T11:13:45Z
+- Changed: .github/workflows/ci.yml, submission-evidence/ui-workbench-audit/ui-workbench-audit.json, submission-evidence/public-package-currentness/public-package-currentness.json, submission-evidence/release-alignment/release-alignment.json, submission-evidence/npm-release-preflight/npm-release-preflight.json.
+- Why: Best Developer Experience / Best Overall. CI needed the Playwright Chromium browser for the UI workbench audit, and npm 0.1.18 needed committed source-current evidence after publication.
+- Evidence: GitHub Actions CI run 27542243318 passed; npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness reported CURRENT for 0.1.18; npm run audit:release-alignment -- --require-aligned --out submission-evidence/release-alignment/release-alignment.json reported CURRENT.
+- Award impact: Restores green hosted CI and proves the public no-clone npm judge path is source-current with published MCP, live-mock, recorder, and policy-registry probes passing.
