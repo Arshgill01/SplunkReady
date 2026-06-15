@@ -213,3 +213,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience / Best Overall. The first-read judge path still showed the stale `splunkready@0.1.12` no-clone command after the public npm package became source-current at `0.1.15`.
 - Evidence: `npm run audit:submission-copy`; `npm test tests/scripts/submission-copy-audit.test.ts`; stale-version search over `submission-evidence/JUDGE-PATH.md`, `README.md`, `docs/devpost-submission.md`, and `docs/demo-script.md`; `git diff --check`.
 - Award impact: Keeps the judge launch path aligned with the source-current public npm proof and adds a guardrail so the first-read no-clone command cannot drift silently again.
+
+## Iteration 34 — 2026-06-15T05:07:16Z
+- Changed: `submission-evidence/judge-launch/judge-launch.json`, `submission-evidence/judge-launch/judge-launch.md`, `scripts/audit-public-demo-export.mjs`, `tests/scripts/public-demo-export.test.ts`, `submission-evidence/claim-ledger.md`, `submission-evidence/evidence-pack-sha256.txt`
+- Why: Best Developer Experience / Best Overall. The compact judge launch packet exported into the public demo still advertised stale `splunkready@0.1.12` no-clone commands after npm latest became source-current at `0.1.15`.
+- Evidence: `npm test tests/scripts/public-demo-export.test.ts`; `npm run audit:public-demo-export`; stale-version search across judge-launch, JUDGE-PATH, README, Devpost, and demo-script files; `git diff --check`.
+- Award impact: Keeps the hosted/public-demo launch packet aligned with the current public npm proof and prevents stale no-clone commands from shipping in the static demo export.
