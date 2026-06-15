@@ -285,3 +285,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience / Best Overall. CI needed the Playwright Chromium browser for the UI workbench audit, and npm 0.1.18 needed committed source-current evidence after publication.
 - Evidence: GitHub Actions CI run 27542243318 passed; npm run audit:public-package-currentness -- --require-current --out submission-evidence/public-package-currentness reported CURRENT for 0.1.18; npm run audit:release-alignment -- --require-aligned --out submission-evidence/release-alignment/release-alignment.json reported CURRENT.
 - Award impact: Restores green hosted CI and proves the public no-clone npm judge path is source-current with published MCP, live-mock, recorder, and policy-registry probes passing.
+
+## Iteration 46 — 2026-06-15T11:18:53Z
+- Changed: submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json.
+- Why: Best Overall / Best Developer Experience. Redeploy the public workbench so hosted evidence serves current judge-launch and architecture artifacts after the final release evidence.
+- Evidence: GitHub Actions Public Demo Pages run 27542576364 passed; npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json reported CURRENT with hosted source cbade0c covering expected public-demo input a2039c5.
+- Award impact: Keeps the live demo URL aligned with the public no-clone judge path and rendered architecture diagram.

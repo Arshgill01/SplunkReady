@@ -17876,3 +17876,7 @@ Actions:
 - Fixed CI by installing Playwright Chromium during the verification-tools step before npm run check.
 - Verified GitHub Actions CI run 27542243318 passed on splunkready-build.
 - Regenerated public npm evidence after splunkready@0.1.18 was published.
+
+## Iteration 46 — 2026-06-15T11:18:53Z
+- Redeployed the public demo with GitHub Actions run 27542576364.
+- Hosted currentness now reports CURRENT; hosted source cbade0c covers expected public-demo input a2039c5; architecture diagram required text passes.
