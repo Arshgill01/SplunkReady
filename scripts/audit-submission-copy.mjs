@@ -55,17 +55,17 @@ const checks = [
   ["Judge Path official Splunk MCP live proof", files.judgePath, "submission-evidence/official-splunk-mcp-live/README.md"],
   ["Judge Path official Splunk MCP server", files.judgePath, "`Splunk_MCP_Server` 1.2.0"],
   ["Judge Path real Splunk proof 10-check", files.judgePath, "Strict 10-check audit"],
-  ["Judge Path clean npx judge proof", files.judgePath, "npx -y splunkready@0.1.17 judge-proof --out ./judge-proof --json"],
+  ["Judge Path clean npx judge proof", files.judgePath, "npx -y splunkready@0.1.18 judge-proof --out ./judge-proof --json"],
   ["README npm package link", files.readme, "https://www.npmjs.com/package/splunkready"],
-  ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.17 judge-proof --out ./judge-proof --json"],
+  ["README clean npx judge proof", files.readme, "npx -y splunkready@0.1.18 judge-proof --out ./judge-proof --json"],
   ["README GitHub Packages mirror", files.readme, "@arshgill01/splunkready@0.1.7"],
   ["README public package currentness audit", files.readme, "npm run audit:public-package-currentness"],
-  ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.17 judge-proof --out ./judge-proof --json"],
+  ["Devpost clean npx judge proof", files.devpost, "npx -y splunkready@0.1.18 judge-proof --out ./judge-proof --json"],
   ["Devpost public package currentness evidence", files.devpost, "submission-evidence/public-package-currentness/"],
   [
     "Claim ledger published npm package",
     files.claimLedger,
-    "The package is published on npm and the published no-clone judge proof is smoke-tested at `0.1.17`."
+    "The package is published on npm and the published no-clone judge proof is smoke-tested at `0.1.18`."
   ],
   [
     "Claim ledger readiness score calibration",
@@ -90,9 +90,9 @@ const checks = [
   ["Claim ledger rendered architecture export", files.claimLedger, "artifacts/public-demo/architecture.svg"],
   ["Claim ledger rendered architecture manifest", files.claimLedger, 'architectureDiagram: "architecture.svg"'],
   ["Claim ledger npm package page", files.claimLedger, "https://www.npmjs.com/package/splunkready"],
-  ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.17 judge-proof --out ./judge-proof --json"],
-  ["Claim ledger published package current version", files.claimLedger, "latest `0.1.17`"],
-  ["Claim ledger source-current release boundary", files.claimLedger, "The `0.1.17` package is published on npm and source-current with this package-input commit."],
+  ["Claim ledger published package smoke", files.claimLedger, "npx -y splunkready@0.1.18 judge-proof --out ./judge-proof --json"],
+  ["Claim ledger published package current version", files.claimLedger, "latest `0.1.18`"],
+  ["Claim ledger source-current release boundary", files.claimLedger, "The `0.1.18` package is published on npm and source-current with this package-input commit."],
   ["Claim ledger source-current release status", files.claimLedger, "| Supported |"],
   ["Claim ledger source-current release command", files.claimLedger, "npm run audit:public-package-currentness -- --out submission-evidence/public-package-currentness"],
   [
@@ -107,7 +107,7 @@ const checks = [
   ["Claim ledger public package current status", files.claimLedger, 'status: "CURRENT"'],
   ["Claim ledger public package local version published", files.claimLedger, "registry.localVersionPublished: true"],
   ["Claim ledger public package latest matches local", files.claimLedger, "registry.latestMatchesLocal: true"],
-  ["Claim ledger public package latest local", files.claimLedger, "npm latest is `splunkready@0.1.17`, the local package metadata is `0.1.17`"],
+  ["Claim ledger public package latest local", files.claimLedger, "npm latest is `splunkready@0.1.18`, the local package metadata is `0.1.18`"],
   ["Claim ledger public package current source head", files.claimLedger, "package-input head"],
   ["Claim ledger public package gitHead match", files.claimLedger, "registry.gitHeadMatchesPackageInputs: true"],
   ["Claim ledger public package recommended action", files.claimLedger, 'recommendedAction: "None; public npm package is source-current."'],

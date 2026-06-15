@@ -19113,3 +19113,8 @@ Result:
   tree, including package installability, 82 Vitest files, and 466 tests.
 - NEXT REQUIRED: publish `0.1.17`, rerun public-package currentness and
   release-alignment, then redeploy hosted demo from the final commit.
+
+## Iteration 44 — 2026-06-15T11:07:05Z
+- PASS: npm run audit:npm-release-preflight -- --out submission-evidence/npm-release-preflight/npm-release-preflight.json
+- PASS: npm test tests/scripts/submission-copy-audit.test.ts tests/scripts/public-demo-export.test.ts
+- PASS: npm run check

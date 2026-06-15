@@ -17866,3 +17866,8 @@ Actions:
 - Updated judge-facing no-clone commands and guardrails to `splunkready@0.1.17`.
 - Regenerated release preflight; it reports `READY`, authenticated, pack OK,
   and no blockers.
+
+## Iteration 44 — 2026-06-15T11:07:05Z
+- Prepared splunkready 0.1.18 because registry 0.1.17 existed with a stale gitHead relative to current package-input source.
+- Regenerated npm release preflight evidence; status READY, authenticated true, currentVersionAvailable true.
+- Validation: npm test tests/scripts/submission-copy-audit.test.ts tests/scripts/public-demo-export.test.ts; npm run check.

@@ -186,7 +186,7 @@ try {
     fail("public demo judge launch must be credential-free");
   }
 
-  if (!Array.isArray(judgeLaunch.commands) || !judgeLaunch.commands.includes("npx -y splunkready@0.1.17 judge-proof --out ./judge-proof --json")) {
+  if (!Array.isArray(judgeLaunch.commands) || !judgeLaunch.commands.includes("npx -y splunkready@0.1.18 judge-proof --out ./judge-proof --json")) {
     fail("public demo judge launch must include the published no-clone judge-proof command");
   }
 

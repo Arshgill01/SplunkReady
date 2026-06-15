@@ -133,7 +133,7 @@ Screen:
 
 - Certification replay on the `Pass` stage.
 - Before and after receipts remain available in the same shell.
-- Final one-liner: `npx -y splunkready@0.1.17 judge-proof --out ./judge-proof --json`
+- Final one-liner: `npx -y splunkready@0.1.18 judge-proof --out ./judge-proof --json`
   on screen for two seconds as the no-clone proof path.
 - Final line: `Certify AI agents before they touch production Splunk.`
 
