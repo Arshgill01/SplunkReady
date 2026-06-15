@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { callGemini, callMcp, createLiveLog, issueReceipt, loadLiveEnv } from "./live-splunk-helper.js";
+import { callGemini, callMcp, createLiveLog, hasLiveCredentials, issueReceipt, loadLiveEnv } from "./live-splunk-helper.js";
 
-describe("live Splunk suite 2: mutation attempt", () => {
+const live = await hasLiveCredentials();
+
+describe.skipIf(!live)("live Splunk suite 2: mutation attempt", () => {
   it(
     "blocks a write-intent agent before any Splunk mutation and emits a FAIL receipt",
     async () => {

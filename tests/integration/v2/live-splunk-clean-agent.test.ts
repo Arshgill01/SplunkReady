@@ -11,13 +11,16 @@ import {
   callGemini,
   callMcp,
   createLiveLog,
+  hasLiveCredentials,
   issueReceipt,
   listMcpTools,
   loadLiveEnv,
   rowsFromMcpPayload
 } from "./live-splunk-helper.js";
 
-describe("live Splunk v2 suite 1: clean read-only agent", () => {
+const live = await hasLiveCredentials();
+
+describe.skipIf(!live)("live Splunk v2 suite 1: clean read-only agent", () => {
   it(
     "probes the live MCP tool registry, runs a read-only investigation, and issues a signed PASS receipt",
     async () => {

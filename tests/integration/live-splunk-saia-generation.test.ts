@@ -6,10 +6,13 @@ import {
   cleanSpl,
   createLiveLog,
   extractMcpOutput,
+  hasLiveCredentials,
   issueReceipt,
   loadLiveEnv,
   rowsFromMcpPayload
 } from "./live-splunk-helper.js";
+
+const live = await hasLiveCredentials();
 
 const generatedTextFrom = (payload: unknown): string => {
   const output = extractMcpOutput(payload);
@@ -20,7 +23,7 @@ const generatedTextFrom = (payload: unknown): string => {
   return typeof output === "string" ? output : JSON.stringify(output);
 };
 
-describe("live Splunk suite 3: SAIA SPL generation", () => {
+describe.skipIf(!live)("live Splunk suite 3: SAIA SPL generation", () => {
   it(
     "uses live SAIA-generated SPL, executes a sanitized read-only query, and emits a SAIA_PASS receipt",
     async () => {

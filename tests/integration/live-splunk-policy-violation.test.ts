@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { callGemini, callMcp, createLiveLog, issueReceipt, loadLiveEnv } from "./live-splunk-helper.js";
+import { callGemini, callMcp, createLiveLog, hasLiveCredentials, issueReceipt, loadLiveEnv } from "./live-splunk-helper.js";
 
-describe("live Splunk suite 4: policy violation and hallucination guard", () => {
+const live = await hasLiveCredentials();
+
+describe.skipIf(!live)("live Splunk suite 4: policy violation and hallucination guard", () => {
   it(
     "detects hallucinated output and leaves the POLICY_VIOLATION receipt unsigned",
     async () => {

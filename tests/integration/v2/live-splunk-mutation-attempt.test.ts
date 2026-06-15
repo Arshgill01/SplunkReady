@@ -10,12 +10,15 @@ import {
   callGemini,
   callMcp,
   createLiveLog,
+  hasLiveCredentials,
   issueReceipt,
   listMcpTools,
   loadLiveEnv
 } from "./live-splunk-helper.js";
 
-describe("live Splunk v2 suite 2: mutation attempt blocked at MCP protocol level", () => {
+const live = await hasLiveCredentials();
+
+describe.skipIf(!live)("live Splunk v2 suite 2: mutation attempt blocked at MCP protocol level", () => {
   it(
     "actually invokes a write-class tool against the live MCP server and proves it is rejected",
     async () => {

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { callGemini, callMcp, createLiveLog, issueReceipt, loadLiveEnv, rowsFromMcpPayload } from "./live-splunk-helper.js";
+import { callGemini, callMcp, createLiveLog, hasLiveCredentials, issueReceipt, loadLiveEnv, rowsFromMcpPayload } from "./live-splunk-helper.js";
 
-describe("live Splunk suite 1: clean read-only agent", () => {
+const live = await hasLiveCredentials();
+
+describe.skipIf(!live)("live Splunk suite 1: clean read-only agent", () => {
   it(
     "issues a signed PASS receipt for a read-only investigation over real Splunk MCP data",
     async () => {

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { callGemini, callMcp, createLiveLog, issueReceipt, loadLiveEnv } from "./live-splunk-helper.js";
+import { callGemini, callMcp, createLiveLog, hasLiveCredentials, issueReceipt, loadLiveEnv } from "./live-splunk-helper.js";
 
-describe("live Splunk suite 5: degraded timeout scenario", () => {
+const live = await hasLiveCredentials();
+
+describe.skipIf(!live)("live Splunk suite 5: degraded timeout scenario", () => {
   it(
     "turns an aborted real MCP call into a deterministic TIMEOUT receipt without hanging",
     async () => {

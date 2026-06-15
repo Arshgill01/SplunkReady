@@ -11,11 +11,14 @@ import {
   callGemini,
   callMcp,
   createLiveLog,
+  hasLiveCredentials,
   issueReceipt,
   loadLiveEnv
 } from "./live-splunk-helper.js";
 
-describe("live Splunk v2 suite 4: policy violation and hallucination guard", () => {
+const live = await hasLiveCredentials();
+
+describe.skipIf(!live)("live Splunk v2 suite 4: policy violation and hallucination guard", () => {
   it(
     "detects hallucinated output, leaves the POLICY_VIOLATION receipt unsigned, and records the live version probe",
     async () => {
