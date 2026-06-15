@@ -5,29 +5,29 @@
 
 [1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90m/Users/arshdeepsingh/Developer/SplunkReady[39m
 
-(node:60116) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(node:21017) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:60117) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(node:21020) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:60120) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(node:21018) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:60118) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(node:21016) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:60119) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(node:21019) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
 (Use `node --trace-warnings ...` to show where the warning was created)
- [32m✓[39m tests/integration/live-splunk-timeout.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1011[2mms[22m[39m
-     [33m[2m✓[22m[39m turns an aborted real MCP call into a deterministic TIMEOUT receipt without hanging [33m 1010[2mms[22m[39m
- [32m✓[39m tests/integration/live-splunk-clean-agent.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1882[2mms[22m[39m
-     [33m[2m✓[22m[39m issues a signed PASS receipt for a read-only investigation over real Splunk MCP data [33m 1881[2mms[22m[39m
- [32m✓[39m tests/integration/live-splunk-policy-violation.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1943[2mms[22m[39m
-     [33m[2m✓[22m[39m detects hallucinated output and leaves the POLICY_VIOLATION receipt unsigned [33m 1942[2mms[22m[39m
- [32m✓[39m tests/integration/live-splunk-mutation-attempt.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2136[2mms[22m[39m
-     [33m[2m✓[22m[39m blocks a write-intent agent before any Splunk mutation and emits a FAIL receipt [33m 2135[2mms[22m[39m
- [32m✓[39m tests/integration/live-splunk-saia-generation.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 8495[2mms[22m[39m
-     [33m[2m✓[22m[39m uses live SAIA-generated SPL, executes a sanitized read-only query, and emits a SAIA_PASS receipt [33m 8494[2mms[22m[39m
+ [32m✓[39m tests/integration/live-splunk-timeout.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1366[2mms[22m[39m
+     [33m[2m✓[22m[39m turns an aborted real MCP call into a deterministic TIMEOUT receipt without hanging [33m 1365[2mms[22m[39m
+ [32m✓[39m tests/integration/live-splunk-mutation-attempt.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1367[2mms[22m[39m
+     [33m[2m✓[22m[39m blocks a write-intent agent before any Splunk mutation and emits a FAIL receipt [33m 1366[2mms[22m[39m
+ [32m✓[39m tests/integration/live-splunk-policy-violation.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1515[2mms[22m[39m
+     [33m[2m✓[22m[39m detects hallucinated output and leaves the POLICY_VIOLATION receipt unsigned [33m 1514[2mms[22m[39m
+ [32m✓[39m tests/integration/live-splunk-clean-agent.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1978[2mms[22m[39m
+     [33m[2m✓[22m[39m issues a signed PASS receipt for a read-only investigation over real Splunk MCP data [33m 1977[2mms[22m[39m
+ [32m✓[39m tests/integration/live-splunk-saia-generation.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 8323[2mms[22m[39m
+     [33m[2m✓[22m[39m uses live SAIA-generated SPL, executes a sanitized read-only query, and emits a SAIA_PASS receipt [33m 8321[2mms[22m[39m
 
 [2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
 [2m      Tests [22m [1m[32m5 passed[39m[22m[90m (5)[39m
-[2m   Start at [22m 17:31:45
-[2m   Duration [22m 8.68s[2m (transform 139ms, setup 0ms, import 210ms, tests 15.47s, environment 0ms)[22m
+[2m   Start at [22m 17:41:04
+[2m   Duration [22m 8.52s[2m (transform 171ms, setup 0ms, import 271ms, tests 14.55s, environment 0ms)[22m
 

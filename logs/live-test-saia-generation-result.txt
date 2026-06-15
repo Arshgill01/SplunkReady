@@ -1,0 +1,17 @@
+
+> splunkready@0.1.18 test
+> vitest run --passWithNoTests tests/integration/live-splunk-saia-generation.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90m/Users/arshdeepsingh/Developer/SplunkReady[39m
+
+(node:18954) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m tests/integration/live-splunk-saia-generation.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 8874[2mms[22m[39m
+     [33m[2m✓[22m[39m uses live SAIA-generated SPL, executes a sanitized read-only query, and emits a SAIA_PASS receipt [33m 8873[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 17:40:44
+[2m   Duration [22m 9.00s[2m (transform 24ms, setup 0ms, import 35ms, tests 8.87s, environment 0ms)[22m
+

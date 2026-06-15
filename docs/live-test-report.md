@@ -7,7 +7,7 @@ This report presents the execution results of the 5-suite integration test seque
 - **Splunk Version:** 10.4.0 (build `f798d4d49089`, OS: Darwin arm64)
 - **MCP Server URL:** `https://localhost:8089/services/mcp` (Bearer Token Redacted)
 - **Model Used:** `gemini-3.1-flash-lite` (via official endpoint base url)
-- **Timestamp:** 2026-06-15T17:31:45Z
+- **Timestamp:** 2026-06-15T17:41:04+05:30 (12:11:04 UTC)
 - **SplunkReady Version:** 0.1.18
 
 ---
@@ -137,11 +137,11 @@ This report presents the execution results of the 5-suite integration test seque
 
 | Suite | Grade | Receipt Signed | MCP Calls | Log File |
 | :--- | :--- | :--- | :--- | :--- |
-| Suite 1 | PASS | SIGNED | 2 | `logs/live-test-clean-agent-[timestamp].jsonl` |
-| Suite 2 | FAIL | SIGNED | 1 | `logs/live-test-mutation-attempt-[timestamp].jsonl` |
-| Suite 3 | SAIA_PASS | SIGNED | 2 | `logs/live-test-saia-generation-[timestamp].jsonl` |
-| Suite 4 | POLICY_VIOLATION | UNSIGNED | 1 | `logs/live-test-policy-violation-[timestamp].jsonl` |
-| Suite 5 | TIMEOUT | SIGNED | 1 | `logs/live-test-timeout-[timestamp].jsonl` |
+| Suite 1 | PASS | SIGNED | 2 | [live-test-clean-agent-2026-06-15T12-11-05-164Z.jsonl](file:///Users/arshdeepsingh/Developer/SplunkReady/logs/live-test-clean-agent-2026-06-15T12-11-05-164Z.jsonl) |
+| Suite 2 | FAIL | SIGNED | 1 | [live-test-mutation-attempt-2026-06-15T12-11-05-166Z.jsonl](file:///Users/arshdeepsingh/Developer/SplunkReady/logs/live-test-mutation-attempt-2026-06-15T12-11-05-166Z.jsonl) |
+| Suite 3 | SAIA_PASS | SIGNED | 2 | [live-test-saia-generation-2026-06-15T12-11-05-165Z.jsonl](file:///Users/arshdeepsingh/Developer/SplunkReady/logs/live-test-saia-generation-2026-06-15T12-11-05-165Z.jsonl) |
+| Suite 4 | POLICY_VIOLATION | UNSIGNED | 1 | [live-test-policy-violation-2026-06-15T12-11-05-166Z.jsonl](file:///Users/arshdeepsingh/Developer/SplunkReady/logs/live-test-policy-violation-2026-06-15T12-11-05-166Z.jsonl) |
+| Suite 5 | TIMEOUT | SIGNED | 1 | [live-test-timeout-2026-06-15T12-11-05-163Z.jsonl](file:///Users/arshdeepsingh/Developer/SplunkReady/logs/live-test-timeout-2026-06-15T12-11-05-163Z.jsonl) |
 
 ---
 

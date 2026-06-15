@@ -3,13 +3,15 @@
 > vitest run --passWithNoTests tests/integration/live-splunk-mutation-attempt.test.ts
 
 
- RUN  v4.1.8 /Users/arshdeepsingh/Developer/SplunkReady
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90m/Users/arshdeepsingh/Developer/SplunkReady[39m
 
-(node:12371) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(node:18394) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
 (Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m tests/integration/live-splunk-mutation-attempt.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1155[2mms[22m[39m
+     [33m[2m✓[22m[39m blocks a write-intent agent before any Splunk mutation and emits a FAIL receipt [33m 1154[2mms[22m[39m
 
- Test Files  1 passed (1)
-      Tests  1 passed (1)
-   Start at  17:11:53
-   Duration  1.30s (transform 24ms, setup 0ms, import 33ms, tests 1.18s, environment 0ms)
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 17:40:40
+[2m   Duration [22m 1.28s[2m (transform 29ms, setup 0ms, import 39ms, tests 1.15s, environment 0ms)[22m
 
