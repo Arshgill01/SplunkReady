@@ -17790,3 +17790,23 @@ Actions:
 - Added min-width containment and explicit text wrapping to the affected
   panel/empty-state containers.
 - Regenerated the UI workbench audit evidence after the fix.
+
+# 2026-06-15 - Iteration 41 Vite Esbuild Security Upgrade
+
+Files expected to touch:
+
+- `package.json`
+- `package-lock.json`
+- `submission-evidence/ui-workbench-audit/ui-workbench-audit.json`
+- `submission-evidence/claim-ledger.md`
+- `logs/execution-log.md`
+- `logs/verification-log.md`
+
+Actions:
+
+- Confirmed `npm audit --json` reported high-severity advisories against the
+  direct dev-tooling dependency chain `vite` -> `esbuild`.
+- Upgraded Vite from `7.3.5` to `8.0.16` and esbuild from `0.27.7` to `0.28.1`.
+- Rebuilt and reran the default verification path to ensure the Vite 8
+  migration did not break the static UI build, Vite middleware workbench,
+  Playwright UI audit, package checks, or tests.

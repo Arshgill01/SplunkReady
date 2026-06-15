@@ -19037,3 +19037,29 @@ Result:
 - PASS for live hosted-model status: SAIA tools remain available and passed.
 - OPEN RISK: `npm audit --json` reports high-severity dev dependency
   advisories for `esbuild`/`vite`; npm recommends semver-major upgrades.
+
+# 2026-06-15 - Iteration 41 Vite Esbuild Security Upgrade
+
+Commands and checks:
+
+- `git status --short --branch`
+- `node -p "({vite: require('./node_modules/vite/package.json').version, esbuild: require('./node_modules/esbuild/package.json').version, playwright: require('./node_modules/playwright/package.json').version})"`
+- `npm audit --json`
+- `npm view vite version && npm view esbuild version`
+- `npm install --save-dev vite@8.0.16 esbuild@0.28.1`
+- `npm run check`
+- `npm audit --json`
+- `npm run audit:live-hosted-model-status`
+
+Result:
+
+- PASS for dependency upgrade: local versions are `vite@8.0.16` and
+  `esbuild@0.28.1`.
+- PASS for dependency audit: `npm audit --json` reports zero vulnerabilities.
+- PASS for full verification: `npm run check` completed with the Vite 8 UI
+  build, Playwright workbench audit, package readiness/installability, 82
+  Vitest files, and 466 tests.
+- PASS for live hosted-model status: SAIA hosted-model tools remain available
+  and passed.
+- OPEN RISK: hosted demo currentness was stale immediately after local changes;
+  the Pages deployment must be refreshed from the final pushed commit.

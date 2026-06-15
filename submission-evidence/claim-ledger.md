@@ -255,3 +255,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Developer Experience. The new Playwright gate caught mobile `#live-connect` internal overflow in the live-action panel and empty-state copy.
 - Evidence: `npm run audit:ui-workbench -- --out /tmp/ui-workbench-audit-iter6.json` failed before the fix on mobile live-connect overflow; after CSS containment, `npm run audit:ui-workbench`, `npm test -- tests/ui/app.test.ts tests/ui/shell.test.ts`, and `npm run check` all passed.
 - Award impact: Converts the browser gate from a recorded proof into an active regression finder and keeps the live-connect operator surface mobile-safe.
+
+## Iteration 41 — 2026-06-15T10:51:45Z
+- Changed: `package.json`, `package-lock.json`, `submission-evidence/ui-workbench-audit/ui-workbench-audit.json`, `submission-evidence/claim-ledger.md`, `logs/execution-log.md`, `logs/verification-log.md`
+- Why: Security / Trust and Developer Experience. `npm audit --json` reported direct dev-tooling advisories through `vite@7.3.5` and `esbuild@0.27.7`.
+- Evidence: upgraded to `vite@8.0.16` and `esbuild@0.28.1`; `npm audit --json` reports `total: 0`; `npm run check` passed with Vite 8 build output, Playwright workbench audit, package readiness/installability, 82 test files, and 466 tests.
+- Award impact: Removes a visible dependency-security warning while preserving the final workbench verification path.
