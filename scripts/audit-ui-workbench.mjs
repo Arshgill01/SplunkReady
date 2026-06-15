@@ -183,7 +183,7 @@ const run = async () => {
         checks.push({
           route: route.id,
           viewport: viewport.id,
-          url,
+          path: route.path,
           status: failures.length === 0 ? "PASS" : "FAIL",
           failures
         });
@@ -197,7 +197,6 @@ const run = async () => {
   const failures = checks.flatMap((check) => check.failures.map((failure) => ({ route: check.route, viewport: check.viewport, ...failure })));
   const summary = {
     source: "splunkready-ui-workbench-audit",
-    generatedAt: new Date().toISOString(),
     status: failures.length === 0 ? "PASS" : "FAIL",
     mutation: false,
     routes: routes.map((route) => route.id),

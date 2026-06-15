@@ -1,6 +1,5 @@
 {
   "source": "splunkready-ui-workbench-audit",
-  "generatedAt": "2026-06-15T11:14:20.013Z",
   "status": "PASS",
   "mutation": false,
   "routes": [
@@ -17,56 +16,56 @@
     {
       "route": "default",
       "viewport": "desktop",
-      "url": "http://127.0.0.1:51623/",
+      "path": "/",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "fixture-receipt",
       "viewport": "desktop",
-      "url": "http://127.0.0.1:51623/?artifacts=artifacts/fixture-demo#receipt",
+      "path": "/?artifacts=artifacts/fixture-demo#receipt",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "mcp-proof",
       "viewport": "desktop",
-      "url": "http://127.0.0.1:51623/?artifacts=artifacts/mcp-proof#mcp-proof",
+      "path": "/?artifacts=artifacts/mcp-proof#mcp-proof",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "live-connect",
       "viewport": "desktop",
-      "url": "http://127.0.0.1:51623/#live-connect",
+      "path": "/#live-connect",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "default",
       "viewport": "mobile",
-      "url": "http://127.0.0.1:51623/",
+      "path": "/",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "fixture-receipt",
       "viewport": "mobile",
-      "url": "http://127.0.0.1:51623/?artifacts=artifacts/fixture-demo#receipt",
+      "path": "/?artifacts=artifacts/fixture-demo#receipt",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "mcp-proof",
       "viewport": "mobile",
-      "url": "http://127.0.0.1:51623/?artifacts=artifacts/mcp-proof#mcp-proof",
+      "path": "/?artifacts=artifacts/mcp-proof#mcp-proof",
       "status": "PASS",
       "failures": []
     },
     {
       "route": "live-connect",
       "viewport": "mobile",
-      "url": "http://127.0.0.1:51623/#live-connect",
+      "path": "/#live-connect",
       "status": "PASS",
       "failures": []
     }

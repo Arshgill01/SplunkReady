@@ -17880,3 +17880,7 @@ Actions:
 ## Iteration 46 — 2026-06-15T11:18:53Z
 - Redeployed the public demo with GitHub Actions run 27542576364.
 - Hosted currentness now reports CURRENT; hosted source cbade0c covers expected public-demo input a2039c5; architecture diagram required text passes.
+
+## Iteration 47 — 2026-06-15T11:21:42Z
+- Made UI workbench audit evidence deterministic by recording route paths instead of ephemeral localhost URLs and omitting generatedAt.
+- Validation: npm run audit:ui-workbench; npm run check.

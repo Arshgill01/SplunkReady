@@ -291,3 +291,9 @@ Regenerated on 2026-06-06 for Move 78 and extended with Move 80/82/92 MCP workbe
 - Why: Best Overall / Best Developer Experience. Redeploy the public workbench so hosted evidence serves current judge-launch and architecture artifacts after the final release evidence.
 - Evidence: GitHub Actions Public Demo Pages run 27542576364 passed; npm run audit:hosted-demo-currentness -- --require-current --out submission-evidence/hosted-demo-currentness/hosted-demo-currentness.json reported CURRENT with hosted source cbade0c covering expected public-demo input a2039c5.
 - Award impact: Keeps the live demo URL aligned with the public no-clone judge path and rendered architecture diagram.
+
+## Iteration 47 — 2026-06-15T11:21:42Z
+- Changed: scripts/audit-ui-workbench.mjs, submission-evidence/ui-workbench-audit/ui-workbench-audit.json.
+- Why: Best Developer Experience / final verification hygiene. The Playwright UI audit wrote wall-clock timestamps and ephemeral localhost ports into tracked evidence, causing final checks to dirty the tree.
+- Evidence: npm run audit:ui-workbench passed with deterministic path-based evidence; npm run check passed with 82 test files and 466 tests.
+- Award impact: Keeps the browser-based UI verification in the canonical gate while making final evidence stable and reviewable.
