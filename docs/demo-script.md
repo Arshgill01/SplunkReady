@@ -26,7 +26,7 @@ This script provides a 3-minute step-by-step recording sequence for presenting S
 * **What to say:** "AI agents running on Splunk are powerful, but unsafe. A single unchecked write command can alter security logs or disrupt operations. SplunkReady provides a deterministic certification gate to prove whether an agent is safe and ready."
 
 ### Scene 2: Architecture Diagram (0:15-0:35)
-* **What to do:** Scroll to or open the Architecture view in the Workbench UI.
+* **What to do:** Open the architecture diagram ([docs/architecture.svg](file:///Users/arshdeepsingh/Developer/SplunkReady/docs/architecture.svg)) in the browser or view the Mermaid diagram in [architecture_diagram.md](file:///Users/arshdeepsingh/Developer/SplunkReady/architecture_diagram.md).
 * **What appears:** Diagram depicting the data flow: Agent → Engine (Agent Readiness Compiler) → Splunk MCP (read-only enforcement boundary).
 * **What to say:** "Our architecture has three components: the specimen Agent, the Agent Readiness Compiler Engine, and the Splunk MCP Server. Safety is built into the protocol, validating all commands before they reach your indexes."
 
